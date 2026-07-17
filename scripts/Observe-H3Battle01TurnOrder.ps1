@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -32,6 +32,8 @@ local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
 local damage = nil
 local damage_playback = false
+local chain = nil
+local chain_playback = false
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -142,11 +144,137 @@ event.on_bus_exec(function()
         memory.write_u8(entry(128) + 47, 17, "M68K BUS")
         memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
+    elseif scenario == "chain" then
+        local function entry(combatant)
+            local slot = combatant
+            if combatant >= 128 then slot = combatant - 96 end
+            return 0xFFE800 + slot * 56
+        end
+        memory.write_u16_be(entry(0) + 12, 200, "M68K BUS")
+        memory.write_u16_be(entry(0) + 14, 200, "M68K BUS")
+        memory.write_u8(entry(0) + 19, 50, "M68K BUS")
+        memory.write_u8(entry(0) + 21, 30, "M68K BUS")
+        memory.write_u8(entry(0) + 31, 0x38, "M68K BUS")
+        memory.write_u8(entry(0) + 49, 0x00, "M68K BUS")
+        memory.write_u16_be(entry(0) + 52, 4, "M68K BUS")
+        memory.write_u16_be(entry(128) + 12, 200, "M68K BUS")
+        memory.write_u16_be(entry(128) + 14, 200, "M68K BUS")
+        memory.write_u8(entry(128) + 19, 40, "M68K BUS")
+        memory.write_u8(entry(128) + 21, 20, "M68K BUS")
+        memory.write_u8(entry(128) + 31, 0xC8, "M68K BUS")
+        memory.write_u8(entry(128) + 46, 8, "M68K BUS")
+        memory.write_u8(entry(128) + 47, 17, "M68K BUS")
+        memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
+        memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
+        memory.write_u8(0xFF5F00 + 18 * 48 + 8, 1, "M68K BUS")
+        chain = { attacks = {}, reactions = {}, decision = nil, decision_active = false }
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
 
+local function chain_attack()
+    if chain == nil or #chain.attacks == 0 then return nil end
+    return chain.attacks[#chain.attacks]
+end
+
 event.on_bus_exec(function()
-    if scenario == "damage" then return end
+    if scenario ~= "chain" or chain == nil then return end
+    local a4 = emu.getregister("M68K A4")
+    local a5 = emu.getregister("M68K A5")
+    chain.attacks[#chain.attacks + 1] = {
+        attack_type = memory.read_u16_be(0xFFB636, "M68K BUS"),
+        actor = memory.read_u8(a4 & 0xFFFFFF, "M68K BUS"),
+        target = memory.read_u8(a5 & 0xFFFFFF, "M68K BUS")
+    }
+end, 0xAAFC, "sf2-chain-attack-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" then return end
+    local attack = chain_attack(); if attack == nil then return end
+    memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
+    attack.dodge_range = emu.getregister("M68K D2") & 0xFFFF
+end, 0xAB7C, "sf2-chain-dodge-seed", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.dodge_roll = emu.getregister("M68K D0") & 0xFFFF
+end, 0xAB82, "sf2-chain-dodge-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.base_damage = emu.getregister("M68K D6") & 0xFFFF
+end, 0xAC4C, "sf2-chain-base-damage", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.inflict_entry = emu.getregister("M68K D6") & 0xFFFF
+end, 0xACEA, "sf2-chain-inflict-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.pre_variance = emu.getregister("M68K D6") & 0xFFFF
+end, 0xAD3E, "sf2-chain-pre-variance", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.variance_range = emu.getregister("M68K D0") & 0xFFFF
+end, 0xAD46, "sf2-chain-variance-range", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.first_roll = emu.getregister("M68K D0") & 0xFFFF
+    attack.after_first = emu.getregister("M68K D6") & 0xFFFF
+end, 0xAD4C, "sf2-chain-variance-first", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.second_roll = emu.getregister("M68K D0") & 0xFFFF
+end, 0xAD52, "sf2-chain-variance-second", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    attack.final_damage = emu.getregister("M68K D6") & 0xFFFF
+end, 0xAD58, "sf2-chain-variance-final", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    local target = attack.target
+    local slot = target; if target >= 128 then slot = target - 96 end
+    attack.hp_before = memory.read_u16_be(0xFFE800 + slot * 56 + 14, "M68K BUS")
+end, 0xAD74, "sf2-chain-hp-before", "M68K BUS")
+
+event.on_bus_exec(function()
+    local attack = chain_attack(); if scenario ~= "chain" or attack == nil then return end
+    local target = attack.target
+    local slot = target; if target >= 128 then slot = target - 96 end
+    attack.hp_after = memory.read_u16_be(0xFFE800 + slot * 56 + 14, "M68K BUS")
+end, 0xAD7E, "sf2-chain-hp-after", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or chain == nil or chain.decision ~= nil then return end
+    memory.write_u16_be(0xFFDEA4, 0, "M68K BUS")
+    chain.decision = {}; chain.decision_active = true
+end, 0xB00E, "sf2-chain-decision-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or not chain.decision_active then return end
+    chain.decision.double_roll = emu.getregister("M68K D0") & 0xFFFF
+end, 0xB03C, "sf2-chain-double-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or not chain.decision_active then return end
+    chain.decision.counter_roll = emu.getregister("M68K D0") & 0xFFFF
+end, 0xB074, "sf2-chain-counter-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or not chain.decision_active then return end
+    local a2 = emu.getregister("M68K A2")
+    chain.decision.double = memory.read_u8((a2 - 13) & 0xFFFFFF, "M68K BUS") ~= 0
+    chain.decision.counter = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    chain.decision_active = false
+end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario == "damage" or scenario == "chain" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -286,6 +414,14 @@ event.on_bus_exec(function()
 end, 0xA3E6, "sf2-damage-hp-restored", "M68K BUS")
 
 event.on_bus_exec(function()
+    if scenario ~= "chain" or chain == nil then return end
+    chain.restored_ally_hp = memory.read_u16_be(0xFFE800 + 14, "M68K BUS")
+    chain.restored_enemy_hp = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    chain_playback = true
+    status("milestone:chain-script-complete")
+end, 0xA3E6, "sf2-chain-hp-restored", "M68K BUS")
+
+event.on_bus_exec(function()
     if scenario ~= "damage" or damage == nil then return end
     damage.award_calculation = {
         seed = memory.read_u16_be(0xFFDEA4, "M68K BUS"),
@@ -321,9 +457,72 @@ event.on_bus_exec(function()
 end, 0x18F4E, "sf2-damage-reaction-entry", "M68K BUS")
 
 event.on_bus_exec(function()
+    if scenario ~= "chain" or chain == nil then return end
+    local a6 = emu.getregister("M68K A6")
+    chain.reactions[#chain.reactions + 1] = {
+        kind = "enemy",
+        combatant = memory.read_u16_be(0xFFB3CE, "M68K BUS"),
+        hp_change = memory.read_s16_be(a6 & 0xFFFFFF, "M68K BUS")
+    }
+end, 0x18F4E, "sf2-chain-enemy-reaction-entry", "M68K BUS")
+
+event.on_bus_exec(function()
     if scenario ~= "damage" or damage == nil or damage.reaction == nil then return end
     damage.reaction.hp_after = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
 end, 0x18F7E, "sf2-damage-reaction-applied", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or chain == nil or #chain.reactions == 0 then return end
+    local reaction = chain.reactions[#chain.reactions]
+    if reaction.kind == "enemy" then
+        reaction.hp_after = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    end
+end, 0x18F7E, "sf2-chain-enemy-reaction-applied", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or chain == nil then return end
+    local a6 = emu.getregister("M68K A6")
+    chain.reactions[#chain.reactions + 1] = {
+        kind = "ally",
+        combatant = memory.read_u16_be(0xFFB3D4, "M68K BUS"),
+        hp_change = memory.read_s16_be(a6 & 0xFFFFFF, "M68K BUS")
+    }
+end, 0x18DBE, "sf2-chain-ally-reaction-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "chain" or chain == nil or #chain.reactions == 0 then return end
+    local reaction = chain.reactions[#chain.reactions]
+    if reaction.kind ~= "ally" then return end
+    reaction.hp_after = memory.read_u16_be(0xFFE800 + 14, "M68K BUS")
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"chain","battle":%d,"decision":{"doubleRoll":%d,"counterRoll":%d,"double":%s,"counter":%s},"restored":{"allyHp":%d,"enemyHp":%d},"attacks":[',
+        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), chain.decision.double_roll,
+        chain.decision.counter_roll, tostring(chain.decision.double), tostring(chain.decision.counter),
+        chain.restored_ally_hp, chain.restored_enemy_hp
+    ))
+    for index = 1, #chain.attacks do
+        if index > 1 then output:write(",") end
+        local attack = chain.attacks[index]
+        output:write(string.format(
+            '{"attackType":%d,"actor":%d,"target":%d,"dodgeRange":%d,"dodgeRoll":%d,"baseDamage":%d,"inflictEntry":%d,"preVariance":%d,"varianceRange":%d,"firstRoll":%d,"afterFirst":%d,"secondRoll":%d,"finalDamage":%d,"hpBefore":%d,"hpAfter":%d}',
+            attack.attack_type, attack.actor, attack.target, attack.dodge_range, attack.dodge_roll,
+            attack.base_damage, attack.inflict_entry, attack.pre_variance, attack.variance_range,
+            attack.first_roll, attack.after_first, attack.second_roll, attack.final_damage,
+            attack.hp_before, attack.hp_after
+        ))
+    end
+    output:write('],"reactions":[')
+    for index = 1, #chain.reactions do
+        if index > 1 then output:write(",") end
+        local item = chain.reactions[index]
+        output:write(string.format('{"kind":"%s","combatant":%d,"hpChange":%d,"hpAfter":%d}',
+            item.kind, item.combatant, item.hp_change, item.hp_after))
+    end
+    output:write("]}\n")
+    output:close()
+    client.exitCode(0)
+end, 0x18DE8, "sf2-chain-ally-reaction-applied", "M68K BUS")
 
 event.on_bus_exec(function()
     if scenario ~= "damage" or damage == nil then return end
@@ -366,11 +565,11 @@ while true do
         button = table.remove(queue, 1)
     elseif stage == "ui" and memory.read_u8(0xFFF712, "M68K BUS") == 1 then
         button = "C"
-    elseif stage == "battle" and damage_playback and frames % 12 < 4 then
+    elseif stage == "battle" and (damage_playback or chain_playback) and frames % 12 < 4 then
         button = "C"
     end
     set_button(button)
-    joypad.set({ Start = ((stage == "ui" and memory.read_u8(0xFFF712, "M68K BUS") == 1) or damage_playback) }, 2)
+    joypad.set({ Start = ((stage == "ui" and memory.read_u8(0xFFF712, "M68K BUS") == 1) or damage_playback or chain_playback) }, 2)
     emu.frameadvance()
     if frames % 600 == 0 then
         status(string.format("frame=%d,stage=%s,pc=%X,pointer=%X,debug=%d,prompts=%d,queue=%d,battle=%d", frames, stage,

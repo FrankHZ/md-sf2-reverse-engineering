@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and physical damage replay**
+- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and the physical attack chain**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -22,6 +22,8 @@ the locked ROM instruction bytes.
 | final EXP | `battlesceneScript_GiveExpAndGold` | `0xA7F8..0xA870` | `code/gameflow/battle/battleactions/giveexpandgold.asm` |
 | enemy reaction | `bsc0A_executeEnemyReaction` | `0x18F4E..0x190A4` | `code/gameflow/battle/battlescenes/battlesceneengine_0.asm` |
 | EXP replay | `bsc0F_giveExp` | `0x190DC..0x191E0` | same file |
+| dodge | `battlesceneScript_DetermineDodge` | `0xAAFC..0xABBE` | `code/gameflow/battle/battleactions/determinedodge.asm` |
+| double/counter | `battlesceneScript_DetermineDoubleAndCounter` | `0xB00E..0xB080` | `code/gameflow/battle/battleactions/determinedoubleandcounter.asm` |
 | turn order | `GenerateBattleTurnOrder` | `0x25544` | `code/gameflow/battle/battleloop/turnorderfunctions.asm` |
 | turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
 
@@ -194,8 +196,38 @@ and uses normal debug text-skip input during playback; it does not patch the com
 either interpreter directly. `tests/fixtures/h3/battle-scene-replay-v1.json` and the same independent
 RNG model validate restoration, both EXP rolls, signed reaction, persistent HP, and final EXP.
 
-Dialogue/death-animation semantics, level-up after EXP >= 100, double, counter, dodge, resistance,
-and status behavior are not claimed by this fixture.
+The damage/replay fixture alone does not claim dialogue/death-animation semantics, level-up after
+EXP >= 100, double, counter, dodge, resistance, or status behavior; the next fixture owns the
+non-dodge double/counter chain.
+
+## Confirmed: Double Attack and Counter Chain
+
+The attack-chain fixture uses the same natural Battle 01 AI action but makes both combatants
+nonlethal at 200 HP. Bowie has ATT 50, DEF 30, ground movetype, and prowess `0x38`; the Gizmo has
+ATT 40, DEF 20, hovering movetype, and prowess `0xC8`. Low critical nibbles are 8 (`NONE`). The
+double field in `0x38` and counter field in `0xC8` are both setting 3, selecting a 1/4 RNG range.
+
+At each dodge RNG boundary, seed `0xFFFF` produces nonzero rolls. Because the target is hovering and
+Bowie is not an archer, the first and second attacks use airborne-target dodge range 8 and roll 7.
+The counter targets a ground combatant and uses default range 32, rolling 31. These calls confirm the
+range selection and non-dodge path; they do not yet execute the successful dodge branch.
+
+At the first `DetermineDoubleAndCounter` entry, seed 0 makes both range-4 rolls zero, setting both
+stack-frame toggles. The original engine validates them and constructs three attacks in order:
+
+1. First attack (type 0): base 24, spread rolls 3 and 3, final damage 18.
+2. Second attack (type 1): the same calculation, reducing temporary enemy HP from 182 to 164.
+3. Counter (type 2): enemy ATT 40 minus ally DEF 30 gives 10; `InflictDamage` halves it to 5 before
+   its range-1 spread, reducing temporary ally HP from 200 to 195.
+
+`battlesceneScript_End` restores both snapshots to 200 before playback. The command interpreter then
+replays enemy reactions `-18, -18` and ally reaction `-5`, leaving persistent enemy/ally HP 164/195.
+The verifier independently models dodge ranges, all LCG transitions, land reduction, counter
+halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
+
+This scenario confirms one valid adjacent counter and one double attack. Successful dodge, failed
+double/counter validation (death, range, status, same-side, special enemy exclusions), and whether a
+second/counter critical can occur remain separate fixture cases.
 
 ## Unknown / Next Fixtures
 
@@ -204,8 +236,8 @@ and status behavior are not claimed by this fixture.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add explicit dodge, double, counter, resistance, non-critical variance, and EXP-caused level-up cases
-  to the now-confirmed physical construction/replay path.
+- Add a successful-dodge case, failed double/counter validation cases, resistance, additional
+  non-critical variance seeds, and an EXP-caused level-up to the confirmed physical path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

@@ -184,7 +184,7 @@ fixture 覆盖和对现代重制的合同影响。
 dead/unplaced 过滤与 signed-byte 稳定排序。区域激活 H3 进一步确认初始三块区域均未触发；把 Bowie
 移到 `(8,12)`（region 2 的边界）会同时触发三个 polygon，并只给对应六个 Gizmo 的原始 AI
 bitfield 增加 primary-active 位。AI 驱动的自然攻击另确认 30% 地形减伤和弓手对 hovering
-目标的 25% 加成顺序及整数截断，并继续覆盖受控 critical、两次向下 spread、HP 零下限、击杀
+目标的 25% 加成顺序及整数截断，并继续覆盖受控 critical、两次向下 spread、double/counter、HP 零下限、击杀
 判定、单行动 49 EXP 累加上限、reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP
 实际入账。
 
@@ -212,7 +212,7 @@ bitfield 增加 primary-active 位。AI 驱动的自然攻击另确认 30% 地�
 
 ## 下一步
 
-下一块继续扩展 **Phase 2 的运行时证据**：补齐 dodge/double/counter、非 critical spread、
+下一块继续扩展 **Phase 2 的运行时证据**：补齐实际 dodge、非 critical 的非零 spread、
 secondary activation 与状态/抗性分支。
 同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。
 

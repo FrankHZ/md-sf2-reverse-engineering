@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-attack-chain-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "function", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-attack-chain-double-counter-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 }, "scenario": { "const": "chain" },
+    "function": {
+      "type": "object", "additionalProperties": false, "required": ["dodgeEntryAddress", "doubleCounterEntryAddress", "inflictDamageEntryAddress"],
+      "properties": { "dodgeEntryAddress": { "const": 43772 }, "doubleCounterEntryAddress": { "const": 45070 }, "inflictDamageEntryAddress": { "const": 44266 } }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "target", "targetLandEffect", "actorLandEffect", "dodgeSeed", "decisionSeed"],
+      "properties": {
+        "actor": { "$ref": "#/definitions/combatantSetup" }, "target": { "$ref": "#/definitions/combatantSetup" },
+        "targetLandEffect": { "const": 2 }, "actorLandEffect": { "const": 0 },
+        "dodgeSeed": { "const": 65535 }, "decisionSeed": { "const": 0 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["decision", "restored", "attacks", "reactions"],
+      "properties": {
+        "decision": { "$ref": "#/definitions/decision" },
+        "restored": { "type": "object", "additionalProperties": false, "required": ["allyHp", "enemyHp"], "properties": { "allyHp": { "const": 200 }, "enemyHp": { "const": 200 } } },
+        "attacks": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/attack" } },
+        "reactions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/reaction" } }
+      }
+    }
+  },
+  "definitions": {
+    "combatantSetup": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "hp", "attack", "defense", "movetype", "prowess"],
+      "properties": {
+        "combatant": { "type": "integer", "minimum": 0, "maximum": 255 }, "hp": { "const": 200 },
+        "attack": { "type": "integer", "minimum": 0, "maximum": 255 }, "defense": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "movetype": { "type": "integer", "minimum": 0, "maximum": 15 }, "prowess": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "decision": {
+      "type": "object", "additionalProperties": false, "required": ["doubleRoll", "counterRoll", "double", "counter"],
+      "properties": { "doubleRoll": { "const": 0 }, "counterRoll": { "const": 0 }, "double": { "const": true }, "counter": { "const": true } }
+    },
+    "attack": {
+      "type": "object", "additionalProperties": false,
+      "required": ["attackType", "actor", "target", "dodgeRange", "dodgeRoll", "baseDamage", "inflictEntry", "preVariance", "varianceRange", "firstRoll", "afterFirst", "secondRoll", "finalDamage", "hpBefore", "hpAfter"],
+      "properties": {
+        "attackType": { "type": "integer", "minimum": 0, "maximum": 2 }, "actor": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "target": { "type": "integer", "minimum": 0, "maximum": 255 }, "dodgeRange": { "type": "integer", "minimum": 1, "maximum": 32 },
+        "dodgeRoll": { "type": "integer", "minimum": 0, "maximum": 31 }, "baseDamage": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "inflictEntry": { "type": "integer", "minimum": 1, "maximum": 65535 }, "preVariance": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "varianceRange": { "type": "integer", "minimum": 1, "maximum": 8192 }, "firstRoll": { "type": "integer", "minimum": 0, "maximum": 8191 },
+        "afterFirst": { "type": "integer", "minimum": 1, "maximum": 65535 }, "secondRoll": { "type": "integer", "minimum": 0, "maximum": 8191 },
+        "finalDamage": { "type": "integer", "minimum": 1, "maximum": 65535 }, "hpBefore": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "hpAfter": { "type": "integer", "minimum": 0, "maximum": 65535 }
+      }
+    },
+    "reaction": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "combatant", "hpChange", "hpAfter"],
+      "properties": {
+        "kind": { "enum": ["ally", "enemy"] }, "combatant": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "hpChange": { "type": "integer", "maximum": -1 }, "hpAfter": { "type": "integer", "minimum": 0, "maximum": 65535 }
+      }
+    }
+  }
+}

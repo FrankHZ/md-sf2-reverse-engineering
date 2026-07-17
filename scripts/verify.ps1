@@ -49,6 +49,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3TurnOrderBoundariesFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: physical damage construction and persistent battle-scene replay ==='
     & (Join-Path $PSScriptRoot 'Test-H3PhysicalDamageFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: dodge, double attack, counter, and counter half-damage ==='
+    & (Join-Path $PSScriptRoot 'Test-H3AttackChainFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-attack-chain-double-counter-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "chain",
+  "function": { "dodgeEntryAddress": 43772, "doubleCounterEntryAddress": 45070, "inflictDamageEntryAddress": 44266 },
+  "setup": {
+    "actor": { "combatant": 0, "hp": 200, "attack": 50, "defense": 30, "movetype": 0, "prowess": 56 },
+    "target": { "combatant": 128, "hp": 200, "attack": 40, "defense": 20, "movetype": 6, "prowess": 200 },
+    "targetLandEffect": 2,
+    "actorLandEffect": 0,
+    "dodgeSeed": 65535,
+    "decisionSeed": 0
+  },
+  "expected": {
+    "decision": { "doubleRoll": 0, "counterRoll": 0, "double": true, "counter": true },
+    "restored": { "allyHp": 200, "enemyHp": 200 },
+    "attacks": [
+      { "attackType": 0, "actor": 0, "target": 128, "dodgeRange": 8, "dodgeRoll": 7, "baseDamage": 24, "inflictEntry": 24, "preVariance": 24, "varianceRange": 4, "firstRoll": 3, "afterFirst": 21, "secondRoll": 3, "finalDamage": 18, "hpBefore": 200, "hpAfter": 182 },
+      { "attackType": 1, "actor": 0, "target": 128, "dodgeRange": 8, "dodgeRoll": 7, "baseDamage": 24, "inflictEntry": 24, "preVariance": 24, "varianceRange": 4, "firstRoll": 3, "afterFirst": 21, "secondRoll": 3, "finalDamage": 18, "hpBefore": 182, "hpAfter": 164 },
+      { "attackType": 2, "actor": 128, "target": 0, "dodgeRange": 32, "dodgeRoll": 31, "baseDamage": 10, "inflictEntry": 10, "preVariance": 5, "varianceRange": 1, "firstRoll": 0, "afterFirst": 5, "secondRoll": 0, "finalDamage": 5, "hpBefore": 200, "hpAfter": 195 }
+    ],
+    "reactions": [
+      { "kind": "enemy", "combatant": 128, "hpChange": -18, "hpAfter": 182 },
+      { "kind": "enemy", "combatant": 128, "hpChange": -18, "hpAfter": 164 },
+      { "kind": "ally", "combatant": 0, "hpChange": -5, "hpAfter": 195 }
+    ]
+  }
+}
