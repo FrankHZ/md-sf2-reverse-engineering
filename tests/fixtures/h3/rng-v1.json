@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-rng-generate-random-number-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "function": {
+    "entryAddress": 5632,
+    "observeAddress": 5670,
+    "seedAddress": 16768676,
+    "seedRegister": "M68K D7",
+    "rangeRegister": "M68K D6"
+  },
+  "cases": [
+    { "id": "zero-range128", "seed": 0, "range": 128, "expectedSeed": 7, "expectedValue": 0 },
+    { "id": "one-range128", "seed": 1, "range": 128, "expectedSeed": 20, "expectedValue": 0 },
+    { "id": "1234-range128", "seed": 4660, "range": 128, "expectedSeed": 60587, "expectedValue": 118 },
+    { "id": "8000-range128", "seed": 32768, "range": 128, "expectedSeed": 32775, "expectedValue": 64 },
+    { "id": "ffff-range128", "seed": 65535, "range": 128, "expectedSeed": 65530, "expectedValue": 127 },
+    { "id": "beef-range128", "seed": 48879, "range": 128, "expectedSeed": 45610, "expectedValue": 89 },
+    { "id": "5555-range128", "seed": 21845, "range": 128, "expectedSeed": 21848, "expectedValue": 42 }
+  ]
+}

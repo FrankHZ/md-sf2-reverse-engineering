@@ -39,16 +39,16 @@ two trailing start-definition records, whose runtime reachability remains unknow
 ## Semantics Boundary
 
 **Confirmed** here means the stored curves, projections, list inheritance, and references reproduce
-the pinned source contract. It does not yet establish the complete level-up algorithm: random
-variance, caps, promotion-level handling, and how projected values are rounded must be traced through
-the 68000 routines and then exercised in H3.
+the pinned source contract. The random variance, expected-minimum rounding, and promotion-level path
+have now been traced statically in
+[`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md), but controlled level-up outcomes,
+caps, and the documented TORT edge case still require H3 scenarios.
 
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Trace the stat-gain routine from its curve lookup through random adjustment and caps, then create a
-small emulator-backed fixture that records deterministic gains for a controlled ally/class/level and
-RNG state. That fixture should become the implementation-neutral input for a later remake growth
-module.
+Create a small emulator-backed fixture that records deterministic gains for a controlled
+ally/class/level and RNG state, including the expected-minimum bonus and TORT promotion boundary.
+That fixture should become the implementation-neutral input for a later remake growth module.

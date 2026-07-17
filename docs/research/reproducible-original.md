@@ -33,6 +33,7 @@ ignored local workspace.
 | Build-tool hashes | [`manifests/toolchain.json`](../../manifests/toolchain.json) |
 | Local Java | Eclipse Temurin `17.0.19+10` |
 | Java archive SHA-256 | `B5B235C48ADF6A081874B812C630B9F4B5F637B7A5ED18B9174D08A41EC4C235` |
+| H3 emulator | BizHawk `2.11.1`, Genesis Plus GX |
 
 The ROM MD5 and SHA-1 also match the public USA-version records at
 [TASVideos](https://tasvideos.org/615G) and
@@ -70,8 +71,8 @@ tool order and arguments while making exit-code handling and provenance explicit
 
 The setup script never obtains a ROM. Given a user-supplied compatible ROM, it validates the input
 before copying it into `local/`, fetches only the pinned SF2DISASM commit, downloads the pinned
-Temurin archive, verifies its size/hash, extracts it locally, and scans the upstream tools when
-Microsoft Defender is available:
+Temurin and BizHawk archives, verifies their size/hash, extracts them locally, and scans the upstream
+tools when Microsoft Defender is available:
 
 ```powershell
 pwsh ./scripts/Initialize-LocalResearch.ps1 -RomPath <ROM path>
@@ -98,14 +99,15 @@ No system PATH or system Java installation is changed.
   correct. Byte-perfect reconstruction validates composition, not documentation quality.
 - Whether the Java editors produce deterministic or semantically correct exports; no editor JAR was
   executed in Phase 1.
-- Runtime parity across emulators or real hardware. No H3 emulator has been selected yet.
+- Runtime parity across emulators or real hardware. H3 currently locks one BizHawk/Genesis Plus GX
+  path and one RNG fixture; it is not cross-emulator or hardware validation.
 - Licensing permission to redistribute upstream disassembly code, executable tools, extracted game
   content, or rebuilt ROMs.
 - Any modern-engine design choice. H1 only establishes the original evidence baseline.
 
 ## Next Research Contract
 
-Phase 2 should build a machine-readable symbol/range index, then extract one connected static-data
-slice—characters, classes, items, and spells—into canonical JSON with schemas and cross-reference
-checks. Findings should cite the pinned assembly symbols and ROM ranges, while uncertain mechanics
-move into an explicit behavioral-test queue rather than the data model.
+Phase 2 continues from the static core-data contracts and first RNG H3 fixture into level-up,
+turn-order, and damage behavior fixtures. Findings should cite pinned assembly symbols and ROM
+ranges, while uncertain mechanics move into the explicit behavioral-test queue rather than the data
+model.

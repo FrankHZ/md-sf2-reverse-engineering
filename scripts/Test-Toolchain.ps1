@@ -25,6 +25,8 @@ if (-not $JavaPath) {
 
 $resolvedUpstream = (Resolve-Path -LiteralPath $UpstreamPath).Path
 $resolvedJava = (Resolve-Path -LiteralPath $JavaPath).Path
+$bizHawkArchive = (Resolve-Path -LiteralPath (Join-Path $repoRoot ([string] $manifest.bizhawk.localArchivePath))).Path
+$bizHawkExecutable = (Resolve-Path -LiteralPath (Join-Path $repoRoot ([string] $manifest.bizhawk.localExecutablePath))).Path
 
 $actualRemote = (& git -C $resolvedUpstream remote get-url origin).Trim()
 if ($LASTEXITCODE -ne 0) {
@@ -74,11 +76,25 @@ if (($javaOutput -join "`n") -notmatch [regex]::Escape($expectedJavaVersion)) {
     throw "Java version mismatch: expected $($manifest.java.version), got $($javaOutput -join '; ')"
 }
 
+$bizHawkArchiveItem = Get-Item -LiteralPath $bizHawkArchive
+$bizHawkArchiveHash = (Get-FileHash -LiteralPath $bizHawkArchive -Algorithm SHA256).Hash
+if ($bizHawkArchiveItem.Length -ne [long] $manifest.bizhawk.archiveSizeBytes -or
+    $bizHawkArchiveHash -ne [string] $manifest.bizhawk.archiveSha256) {
+    throw "BizHawk archive provenance mismatch: $bizHawkArchive"
+}
+$bizHawkExecutableItem = Get-Item -LiteralPath $bizHawkExecutable
+$bizHawkExecutableHash = (Get-FileHash -LiteralPath $bizHawkExecutable -Algorithm SHA256).Hash
+if ($bizHawkExecutableItem.Length -ne [long] $manifest.bizhawk.executableSizeBytes -or
+    $bizHawkExecutableHash -ne [string] $manifest.bizhawk.executableSha256) {
+    throw "BizHawk executable provenance mismatch: $bizHawkExecutable"
+}
 [pscustomobject] @{
     UpstreamPath = $resolvedUpstream
     UpstreamCommit = $actualCommit
     BuildToolsVerified = @($toolResults).Count
     JavaPath = $resolvedJava
     JavaVersion = [string] $manifest.java.version
+    BizHawkPath = $bizHawkExecutable
+    BizHawkVersion = [string] $manifest.bizhawk.release
     Status = 'PASS'
 } | Format-List

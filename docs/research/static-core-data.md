@@ -131,6 +131,6 @@ still require code-path or runtime evidence before they become complete gameplay
 
 ## Next Evidence Slice
 
-Promote uncertain battle semantics into emulator-backed H3 scenarios, starting with RNG, action
-order, damage, and the exceptional `LASER radius = 3` record. The next static-data expansion should
-cover promotions/enemies or one battle map without weakening the existing dual-source parity rail.
+Continue from the completed base-RNG H3 into action order, damage, and the exceptional
+`LASER radius = 3` record. The next static-data expansion should cover promotions/enemies or one
+battle map without weakening the existing dual-source parity rail.

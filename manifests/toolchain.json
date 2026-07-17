@@ -45,5 +45,21 @@
     "archiveSha256": "B5B235C48ADF6A081874B812C630B9F4B5F637B7A5ED18B9174D08A41EC4C235",
     "localJavaPath": "local/toolchains/jdk-17.0.19+10/jdk-17.0.19+10/bin/java.exe",
     "purpose": "SF2DISASM Java editors and future source builds; the vanilla ROM rebuild itself does not require Java"
+  },
+  "bizhawk": {
+    "repository": "https://github.com/TASEmulators/BizHawk",
+    "release": "2.11.1",
+    "releaseUrl": "https://github.com/TASEmulators/BizHawk/releases/tag/2.11.1",
+    "archiveName": "BizHawk-2.11.1-win-x64.zip",
+    "archiveUrl": "https://github.com/TASEmulators/BizHawk/releases/download/2.11.1/BizHawk-2.11.1-win-x64.zip",
+    "archiveSizeBytes": 97984101,
+    "archiveSha256": "DD7CBD5E205B09C5BCE6AFABC4F8AA525ACC0BBEB9753B198A8DB3FE6A5E5717",
+    "localArchivePath": "local/toolchains/BizHawk-2.11.1-win-x64.zip",
+    "localExecutablePath": "local/toolchains/BizHawk-2.11.1-win-x64/EmuHawk.exe",
+    "executableSizeBytes": 5376512,
+    "executableSha256": "F8CDB93551A544F680BF3876D9D8D72643859E7A44A23B04E1A25B92E48F80CD",
+    "core": "Genesis Plus GX",
+    "licenseStatus": "EmuHawk source is MIT; release bundles include separately licensed components, so the binary stays local and is not redistributed",
+    "purpose": "Pinned H3 Mega Drive runtime observations through command-line Lua automation"
   }
 }

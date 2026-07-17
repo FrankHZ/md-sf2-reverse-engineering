@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-rng-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": {
+        "name": { "const": "BizHawk" }, "version": { "type": "string" }, "core": { "const": "Genesis Plus GX" }
+      }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "observeAddress", "seedAddress", "seedRegister", "rangeRegister"],
+      "properties": {
+        "entryAddress": { "type": "integer", "minimum": 0 },
+        "observeAddress": { "type": "integer", "minimum": 0 },
+        "seedAddress": { "type": "integer", "minimum": 0 },
+        "seedRegister": { "const": "M68K D7" },
+        "rangeRegister": { "const": "M68K D6" }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "seed", "range", "expectedSeed", "expectedValue"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+          "seed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "range": { "type": "integer", "minimum": 1, "maximum": 32767 },
+          "expectedSeed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "expectedValue": { "type": "integer", "minimum": 0, "maximum": 32766 }
+        }
+      }
+    }
+  }
+}

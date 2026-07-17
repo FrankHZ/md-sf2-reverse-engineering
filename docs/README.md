@@ -12,6 +12,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`static-core-data.md`](./research/static-core-data.md)：角色槽位、职业、物品、法术的 ROM
   ranges、ROM byte packing、双路径 parity 和待验证语义。
 - [`ally-growth.md`](./research/ally-growth.md)：成长曲线、职业成长投影、法术学习与继承控制码。
+- [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)：RNG 的 H3 动态
+  fixture，以及升级、行动顺序和物理伤害的首轮静态调用链。
 
 ## Design
 
@@ -22,6 +24,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 
 `decisions/` 记录引擎、模拟器、数据格式和工具链等耐久选择。只有出现真实分歧且选择会约束
 后续实现时才创建 decision record。
+
+- [`0001-bizhawk-for-h3-runtime-observation.md`](./decisions/0001-bizhawk-for-h3-runtime-observation.md)：
+  固定 BizHawk 2.11.1，并记录 Genesis Plus GX 寄存器写入的实测边界。
 
 ## Evidence Vocabulary
 

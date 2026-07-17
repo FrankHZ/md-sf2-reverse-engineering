@@ -3,7 +3,8 @@ param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [string] $UpstreamPath = (Join-Path $PSScriptRoot '..\local\upstream\SF2DISASM'),
     [switch] $SkipRebuild,
-    [switch] $SkipExtraction
+    [switch] $SkipExtraction,
+    [switch] $SkipRuntime
 )
 
 Set-StrictMode -Version Latest
@@ -27,6 +28,11 @@ if (-not $SkipExtraction) {
     & (Join-Path $PSScriptRoot 'Test-RomStaticParity.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
     Write-Output '=== H2: ally growth and spell-learning extraction ==='
     & (Join-Path $PSScriptRoot 'Test-GrowthExtraction.ps1') -UpstreamPath $UpstreamPath
+}
+
+if (-not $SkipRuntime) {
+    Write-Output '=== H3: original RNG runtime behavior ==='
+    & (Join-Path $PSScriptRoot 'Test-H3RngFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='

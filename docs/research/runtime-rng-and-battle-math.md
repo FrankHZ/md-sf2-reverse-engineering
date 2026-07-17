@@ -1,0 +1,110 @@
+# Runtime RNG and Battle-Math Call Chains
+
+- Status: **Mixed — RNG confirmed statically and at runtime; dependent mechanics static-only**
+- Evidence date: 2026-07-17
+- ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
+- Source baseline: `ShiningForceCentral/SF2DISASM` commit
+  `c834c652b6862bc5679fd7f69a38a7093206efc6`
+
+## Evidence Map
+
+Addresses come from the H1 assembler listing produced by the pinned source and independently match
+the locked ROM instruction bytes.
+
+| System | Symbol | ROM address/range | Owning source |
+| --- | --- | --- | --- |
+| RNG | `GenerateRandomNumber` | `0x1600..0x1628` | `code/common/tech/randomnumbergenerator.asm` |
+| debug-aware RNG | `GenerateRandomOrDebugNumber` | `0x1674..0x16BE` | same file |
+| level up | `LevelUp` | `0x9484` | `code/common/stats/levelup.asm` |
+| physical damage | `battlesceneScript_CalculateDamage` | `0xABBE..0xAC4E` | `code/gameflow/battle/battleactions/calculatedamage.asm` |
+| critical hit | `battlesceneScript_DetermineCriticalHit` | `0xAC4E..0xACCA` | `code/gameflow/battle/battleactions/determinecriticalhit.asm` |
+| turn order | `GenerateBattleTurnOrder` | `0x25544` | `code/gameflow/battle/battleloop/turnorderfunctions.asm` |
+| turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
+
+Relevant RAM symbols are `RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
+`LEVELUP_ARGUMENTS=$FFAF82`, `BATTLE_TURN_ORDER=$FFF71A`, and
+`CURRENT_BATTLE_TURN=$FFF79A` in `disasm/sf2const.asm`.
+
+## Confirmed: Base RNG
+
+Input is `D6.w = range`; output is `D7.w`. The original routine performs:
+
+```text
+newSeed = (oldSeed * 13 + 7) & 0xFFFF
+RANDOM_SEED = newSeed
+result = floor(newSeed * range / 65536)   // for the normal range <= 32767
+```
+
+The assembly obtains the result by multiplying `newSeed * (range * 2)`, taking the upper word, then
+shifting it right once. D6 is saved and restored around the calculation.
+
+H3 runs the original ROM in BizHawk 2.11.1 / Genesis Plus GX. Lua callbacks fire at entry `0x1600`
+and immediately before `RTS` at `0x1626`. At entry the harness confirms the game's natural D6 is
+128 and writes the case's 16-bit seed to `$FFDEA4`; at observation it reads the updated seed, D7, and
+restored D6. Seven boundary/representative seeds pass the committed fixture
+`tests/fixtures/h3/rng-v1.json`.
+
+Reproduce with:
+
+```powershell
+pwsh ./scripts/Test-H3RngFixture.ps1
+```
+
+Generated Lua and observations are private/derived and remain under `local/derived/h3/`.
+
+## Confirmed Statically: Level-Up Randomization
+
+`CalculateStatGain` reads the selected growth curve and calculates the projected growth portion for
+the current level. It then sets range 128, adds one RNG result, subtracts a second, adds 128 for
+rounding, and shifts right eight bits. After adding that randomized gain to the current stat, it
+compares against the rounded expected minimum; if the new value is below that minimum, the returned
+gain receives the source-labeled “loser pity bonus” of +1.
+
+The source also documents a concrete original bug at two class comparisons in `LevelUp`: TORT equals
+`CHAR_CLASS_LASTNONPROMOTED`, but the `blt` branch treats it as promoted and adds the 20-level promoted
+offset. This is confirmed as executable source/ROM logic, but its player-visible scenarios are not
+yet covered by H3. A remake must not silently choose preserve/fix behavior before a design decision.
+
+## Confirmed Statically: Turn-Order Score
+
+Inactive or zero-HP combatants are skipped. For each active combatant:
+
+1. Start from current agility masked to the low seven bits.
+2. Set RNG range to `agility >> 3`; add one RNG result and subtract a second.
+3. Add `RNG(3) - 1`.
+4. Store `(combatant index, altered agility)` as a two-byte entry.
+5. If raw agility is at least 128, add a second entry. Its base is
+   `floor((agility & 0x7F) * 5 / 6)` and it receives the same add/subtract pair with range `base >> 3`,
+   but not the extra `RNG(3)-1` term.
+
+The fixed-size list is bubble-sorted by its signed agility byte in descending order, then
+`CURRENT_BATTLE_TURN` is cleared. Tie stability and overflow/signed-edge behavior should be preserved
+as explicit fixture cases rather than “cleaned up” from the prose formula.
+
+## Confirmed Statically: Physical Base Damage
+
+`battlesceneScript_CalculateDamage` computes `max(current ATT - current DEF, 1)`, then applies the
+target's land-effect setting with integer truncation:
+
+| Land-effect setting | Multiplier |
+| --- | --- |
+| 0 | `256 / 256` |
+| 1 | `230 / 256` |
+| other | `205 / 256` |
+
+If the target movement type is flying or hovering and the attacker movement type is brass gunner,
+archer, centaur archer, or stealth archer, it then adds `floor(damage / 4)`. Critical, double,
+counter, dodge, resistance, status, and the final random damage spread occur in surrounding battle
+action routines and are not implied by this base-damage function alone.
+
+## Unknown / Next Fixtures
+
+- Runtime fixtures for `CalculateStatGain`, including curve boundaries, the pity increment, and the
+  TORT effective-level bug.
+- Turn-order fixtures covering ties, AGI 127/128, second turns, dead/unplaced combatants, and exact
+  RNG consumption order.
+- End-to-end physical attack fixtures separating base damage, land effect, archer bonus, random
+  spread, critical/double/counter logic, and HP application.
+- The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
+  AI, need a traced scenario rather than a name-based assumption.
+- The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

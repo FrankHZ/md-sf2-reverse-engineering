@@ -84,7 +84,30 @@ if (-not $SkipDefenderScan -and (Get-Command Start-MpScan -ErrorAction SilentlyC
     Start-MpScan -ScanType CustomScan -ScanPath (Join-Path $upstreamPath 'tools')
 }
 
+$bizHawkArchive = Join-Path $repoRoot ([string] $manifest.bizhawk.localArchivePath)
+$bizHawkExecutable = Join-Path $repoRoot ([string] $manifest.bizhawk.localExecutablePath)
+$bizHawkExtractRoot = Split-Path -Parent $bizHawkExecutable
+New-Item -ItemType Directory -Path (Split-Path -Parent $bizHawkArchive) -Force | Out-Null
+if (-not (Test-Path -LiteralPath $bizHawkArchive)) {
+    Invoke-WebRequest -Uri ([string] $manifest.bizhawk.archiveUrl) -OutFile $bizHawkArchive -Headers @{
+        'User-Agent' = 'md-sf2-research/h3'
+    }
+}
+$bizHawkArchiveItem = Get-Item -LiteralPath $bizHawkArchive
+$bizHawkArchiveHash = (Get-FileHash -LiteralPath $bizHawkArchive -Algorithm SHA256).Hash
+if ($bizHawkArchiveItem.Length -ne [long] $manifest.bizhawk.archiveSizeBytes -or
+    $bizHawkArchiveHash -ne [string] $manifest.bizhawk.archiveSha256) {
+    throw "BizHawk archive provenance mismatch: $bizHawkArchive"
+}
+if (-not (Test-Path -LiteralPath $bizHawkExecutable)) {
+    if (Test-Path -LiteralPath $bizHawkExtractRoot) {
+        throw "BizHawk extraction root exists but EmuHawk.exe is missing: $bizHawkExtractRoot"
+    }
+    Expand-Archive -LiteralPath $bizHawkArchive -DestinationPath $bizHawkExtractRoot
+}
+
 Write-Warning ([string] $manifest.sf2disasm.licenseStatus)
+Write-Warning ([string] $manifest.bizhawk.licenseStatus)
 & (Join-Path $PSScriptRoot 'Test-Toolchain.ps1') -UpstreamPath $upstreamPath -JavaPath $javaPath
 
 Write-Output 'Local research environment is ready. Run: pwsh ./scripts/verify.ps1'

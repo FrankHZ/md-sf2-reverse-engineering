@@ -5,8 +5,8 @@
 
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
-并已完成角色槽位、职业、物品和法术的 source/ROM 双路径 H2，以及成长曲线和法术学习合同；
-尚未下载外部补丁、选择现代引擎或开始重制实现。
+并已完成角色槽位、职业、物品和法术的 source/ROM 双路径 H2、成长曲线与法术学习合同，以及
+首个 RNG 整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始重制实现。
 
 ## 我们要交付什么
 
@@ -108,8 +108,8 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 pwsh ./scripts/verify.ps1
 ```
 
-统一入口已经覆盖 H0、toolchain provenance、H1，以及静态表双路径 parity 与成长合同 H2；后续
-在同一入口继续补齐：
+统一入口已经覆盖 H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
+固定 BizHawk/Genesis Plus GX 的 RNG H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -174,7 +174,8 @@ fixture 覆盖和对现代重制的合同影响。
 当前 H2 已完成：8 个 ROM table range、角色/职业/物品/法术 enum 交叉引用、四类固定记录的
 ROM bytes 独立解码、281 条记录 source/ROM 字段级零差异，以及 5 条成长曲线、59 个职业成长
 记录和 122 个学法术条目。三个 canonical JSON 均有 schema、固定 hash 与重复导出验证，内容只
-写入 ignored 的 `local/derived/`，仓库不保存原版名称清单。
+写入 ignored 的 `local/derived/`，仓库不保存原版名称清单。首个 H3 另以 7 组受控 seed 验证
+`GenerateRandomNumber` 的原版 ROM 指令、RAM seed 更新和 D7 输出。
 
 ### Phase 3 — Game Design Reconstruction
 
@@ -200,8 +201,9 @@ ROM bytes 独立解码、281 条记录 source/ROM 字段级零差异，以及 5 
 
 ## 下一步
 
-下一块进入 **Phase 2 的首批运行时证据**：定位随机数、成长计算、行动顺序与伤害调用链，选择
-并固定可自动化的模拟器，建立第一个 H3 状态 fixture；同时把 `LASER radius = 3` 放进行为验证
-队列。静态侧随后选择 promotions/enemies 或一张战斗地图作为下一个端到端扩展。
+下一块继续扩展 **Phase 2 的运行时证据**：把已经定位的成长计算、行动顺序与伤害调用链变成
+可控场景，优先覆盖升级随机增益/保底、AGI 127/128 与第二回合、地形减伤和弓手对飞行单位
+加成；同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。静态侧随后
+选择 promotions/enemies 或一张战斗地图作为下一个端到端扩展。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

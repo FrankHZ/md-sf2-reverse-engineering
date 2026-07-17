@@ -110,8 +110,8 @@ active slice.
 
 The root verification entry point is `pwsh ./scripts/verify.ps1`. Keep it
 non-interactive, deterministic, and safe to rerun. It currently implements input,
-toolchain-provenance, original-rebuild, source/ROM static parity, and ally-growth extraction checks; extend
-the same entry point as later rails become available:
+toolchain-provenance, original-rebuild, source/ROM static parity, ally-growth extraction, and the
+first BizHawk RNG behavior fixture; extend the same entry point as later rails become available:
 
 1. **Input identity**: size, hashes, console header, product code, region, and ROM
    checksum.
