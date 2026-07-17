@@ -120,9 +120,12 @@ first attack -> second attack -> counterattack
 ```
 
 The second attack reads the target's already reduced temporary HP. The counter reverses actor and
-target and uses attack type 2. Death, range, side, status, and special-enemy rejection rules are not
-yet generalized; callers must not treat the one successful fixture as proof that every requested
-follow-up is valid.
+target and uses attack type 2. **Confirmed:** target death rejects both follow-ups. The lethal
+fixture supplies true double/counter toggles at the validation boundary after the natural first hit
+sets `targetDies`; each is false at return, with only one damage calculation. The successful chain
+separately owns the natural prowess/RNG decision. Range, side, status, and special-enemy rejection
+rules are not yet generalized; callers must not treat the one successful fixture as proof that every
+requested follow-up is valid.
 
 ### 8. Restore snapshots, then replay commands persistently
 
@@ -179,6 +182,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-battle-scene-replay-v1` | `tests/fixtures/h3/battle-scene-replay-v1.json` | Snapshot restore, EXP modification, persistent replay |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
+| `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
 
 H4 passes only when ordered RNG consumption, intermediate integers, command order, and persistent
 state match. Rendering, animation duration, input feel, and audiovisual assets are not H4 assertions.
@@ -196,7 +200,7 @@ The following remain **Unknown** for a general implementation and block declarin
 complete:
 
 - all dodge eligibility and range-selection branches;
-- failed double/counter validation: death, distance, side, status, and special-enemy exclusions;
+- remaining failed double/counter validation: distance, side, status, and special-enemy exclusions;
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;

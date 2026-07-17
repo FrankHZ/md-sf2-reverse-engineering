@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -35,6 +35,7 @@ local damage_playback = false
 local chain = nil
 local chain_playback = false
 local dodge_case = nil
+local lethal_validation = nil
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -189,6 +190,29 @@ event.on_bus_exec(function()
         memory.write_u8(entry(128) + 47, 17, "M68K BUS")
         memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
         dodge_case = { calculate_calls = 0 }
+    elseif scenario == "lethal" then
+        local function entry(combatant)
+            local slot = combatant
+            if combatant >= 128 then slot = combatant - 96 end
+            return 0xFFE800 + slot * 56
+        end
+        memory.write_u16_be(entry(0) + 12, 200, "M68K BUS")
+        memory.write_u16_be(entry(0) + 14, 200, "M68K BUS")
+        memory.write_u8(entry(0) + 19, 50, "M68K BUS")
+        memory.write_u8(entry(0) + 21, 30, "M68K BUS")
+        memory.write_u8(entry(0) + 31, 0x38, "M68K BUS")
+        memory.write_u8(entry(0) + 49, 0x00, "M68K BUS")
+        memory.write_u16_be(entry(0) + 52, 4, "M68K BUS")
+        memory.write_u16_be(entry(128) + 12, 10, "M68K BUS")
+        memory.write_u16_be(entry(128) + 14, 10, "M68K BUS")
+        memory.write_u8(entry(128) + 19, 40, "M68K BUS")
+        memory.write_u8(entry(128) + 21, 20, "M68K BUS")
+        memory.write_u8(entry(128) + 31, 0xC8, "M68K BUS")
+        memory.write_u8(entry(128) + 46, 8, "M68K BUS")
+        memory.write_u8(entry(128) + 47, 17, "M68K BUS")
+        memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
+        memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
+        if lethal_validation == nil then lethal_validation = { damage_calls = 0 } end
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
 
@@ -200,6 +224,10 @@ event.on_bus_exec(function()
 end, 0xAAFC, "sf2-dodge-case-entry", "M68K BUS")
 
 event.on_bus_exec(function()
+    if scenario == "lethal" and lethal_validation ~= nil then
+        memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
+        return
+    end
     if scenario ~= "dodge" or dodge_case == nil then return end
     memory.write_u16_be(0xFFDEA4, 0, "M68K BUS")
     dodge_case.range = emu.getregister("M68K D2") & 0xFFFF
@@ -222,21 +250,26 @@ event.on_bus_exec(function()
 end, 0xABBC, "sf2-dodge-case-return", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario ~= "dodge" or dodge_case == nil then return end
-    memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
+    if scenario == "dodge" and dodge_case ~= nil then
+        memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
+    end
 end, 0xB00E, "sf2-dodge-followup-seed", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario == "dodge" and dodge_case ~= nil then dodge_case.double_roll = emu.getregister("M68K D0") & 0xFFFF end
+    if scenario == "dodge" and dodge_case ~= nil then
+        dodge_case.double_roll = emu.getregister("M68K D0") & 0xFFFF
+    end
 end, 0xB03C, "sf2-dodge-followup-double", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario == "dodge" and dodge_case ~= nil then dodge_case.counter_roll = emu.getregister("M68K D0") & 0xFFFF end
+    if scenario == "dodge" and dodge_case ~= nil then
+        dodge_case.counter_roll = emu.getregister("M68K D0") & 0xFFFF
+    end
 end, 0xB074, "sf2-dodge-followup-counter", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario ~= "dodge" or dodge_case == nil then return end
     local a2 = emu.getregister("M68K A2")
+    if scenario ~= "dodge" or dodge_case == nil then return end
     dodge_case.double = memory.read_u8((a2 - 13) & 0xFFFFFF, "M68K BUS") ~= 0
     dodge_case.counter = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
     local output = assert(io.open(output_path, "w"))
@@ -249,6 +282,46 @@ event.on_bus_exec(function()
     ))
     output:close(); client.exitCode(0)
 end, 0xB07E, "sf2-dodge-case-observe", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "lethal" or lethal_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    local target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
+    memory.write_u8((a2 - 13) & 0xFFFFFF, 0xFF, "M68K BUS")
+    memory.write_u8((a2 - 12) & 0xFFFFFF, 0xFF, "M68K BUS")
+    lethal_validation.validation = {
+        target_dies = target_dies,
+        double_before = memory.read_u8((a2 - 13) & 0xFFFFFF, "M68K BUS") ~= 0
+    }
+end, 0xA45E, "sf2-lethal-double-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "lethal" or lethal_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    lethal_validation.validation.double_after = memory.read_u8((a2 - 13) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA49A, "sf2-lethal-double-validation-return", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "lethal" or lethal_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    lethal_validation.validation.counter_before = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA49C, "sf2-lethal-counter-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "lethal" or lethal_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    lethal_validation.validation.counter_after = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"lethal","battle":%d,"validation":{"targetDies":%s,"doubleBefore":%s,"doubleAfter":%s,"counterBefore":%s,"counterAfter":%s},"damageCalls":%d,"targetHp":%d}\n',
+        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"),
+        tostring(lethal_validation.validation.target_dies), tostring(lethal_validation.validation.double_before),
+        tostring(lethal_validation.validation.double_after), tostring(lethal_validation.validation.counter_before),
+        tostring(lethal_validation.validation.counter_after), lethal_validation.damage_calls,
+        memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    ))
+    output:close(); client.exitCode(0)
+end, 0xA54C, "sf2-lethal-counter-validation-return", "M68K BUS")
 
 local function chain_attack()
     if chain == nil or #chain.attacks == 0 then return nil end
@@ -353,7 +426,7 @@ event.on_bus_exec(function()
 end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario == "damage" or scenario == "chain" or scenario == "dodge" then return end
+    if scenario == "damage" or scenario == "chain" or scenario == "dodge" or scenario == "lethal" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -384,6 +457,10 @@ event.on_bus_exec(function()
 end, 0x2559E, "sf2-turn-order-observe", "M68K BUS")
 
 event.on_bus_exec(function()
+    if scenario == "lethal" and lethal_validation ~= nil then
+        lethal_validation.damage_calls = lethal_validation.damage_calls + 1
+        return
+    end
     if scenario ~= "damage" then return end
     damage = { bonus = false }
 end, 0xABBE, "sf2-damage-entry", "M68K BUS")
@@ -674,7 +751,9 @@ try {
         $process.Kill($true); $process.WaitForExit()
         $stdout = $stdoutTask.GetAwaiter().GetResult(); $stderr = $stderrTask.GetAwaiter().GetResult()
         $status = if (Test-Path -LiteralPath $statusPath) { Get-Content -Raw -LiteralPath $statusPath } else { 'no status' }
-        throw "Turn-order observation timed out after $TimeoutSeconds seconds ($status)."
+        $diagnostic = ($stdout + "`n" + $stderr).Trim()
+        if ($diagnostic.Length -gt 4000) { $diagnostic = $diagnostic.Substring($diagnostic.Length - 4000) }
+        throw "Turn-order observation timed out after $TimeoutSeconds seconds ($status).`n$diagnostic"
     }
     $stdout = $stdoutTask.GetAwaiter().GetResult(); $stderr = $stderrTask.GetAwaiter().GetResult()
     if ($process.ExitCode -ne 0) { throw "BizHawk failed: $($process.ExitCode)`n$stdout`n$stderr" }

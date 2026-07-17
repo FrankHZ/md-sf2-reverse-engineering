@@ -178,8 +178,17 @@ kill value. Damage EXP computes `floor(50 * 117 / 100) = 58` and immediately rea
 cap of 49; adding kill EXP remains capped at 49. The committed application fixture and independent
 PowerShell model lock every intermediate value and the relevant instruction addresses.
 
+The separate lethal-validation fixture reuses the naturally selected Battle 01 attack with 10 target
+HP, making the already-confirmed 18-point lower damage bound lethal. At the validation boundary the
+harness sets both follow-up toggles true, isolating the original rejection code from the separately
+confirmed prowess/RNG decision. With `targetDies` already true,
+`battlesceneScript_ValidateDoubleAttack` clears double at `0xA486`, and
+`battlesceneScript_ValidateCounterAttack` clears counter at `0xA538`. Both are true at entry and
+false at return; only the lethal first damage calculation executes.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
+pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -225,8 +234,8 @@ replays enemy reactions `-18, -18` and ally reaction `-5`, leaving persistent en
 The verifier independently models dodge ranges, all LCG transitions, land reduction, counter
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
-This scenario confirms one valid adjacent counter and one double attack. Failed double/counter
-validation (death, range, status, same-side, special enemy exclusions) and whether a second/counter
+This scenario confirms one valid adjacent counter and one double attack. Remaining failed
+double/counter validation (range, status, same-side, special enemy exclusions) and whether a second/counter
 critical can occur remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
@@ -243,7 +252,7 @@ control-flow contract independently of the earlier non-dodge observations.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add failed double/counter validation cases, resistance, additional non-critical variance seeds,
+- Add the remaining failed double/counter validation cases, resistance, additional non-critical variance seeds,
   and an EXP-caused level-up to the confirmed physical path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
