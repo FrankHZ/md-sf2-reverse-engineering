@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle01-scene-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "sourceOutputPath": "local/derived/battle01-scene.json",
+  "sourceOutputSha256": "DB9CCC8A40EBC1E0DB23C3EE5BDD67CAF026EF3EBD280B819FAB40E739BAD567",
+  "romOutputPath": "local/derived/rom-battle01-scene.json",
+  "romOutputSha256": "A46301FBE293516FB9F9665881C782EC1BB435CEDD959A7776389FDBE65ACD9A",
+  "terrainCompressedRange": { "start": 1758020, "endExclusive": 1758304, "lengthBytes": 284 },
+  "terrainCompressedSha256": "A0E6B0D4F656C7BD893923330148B3F9366CA7D839F5A0676272A2C95DAABC4A",
+  "terrainDecompressedSha256": "ECA7CDDAC612489FFD835A44D32D1C82E955A686F2D1C6DBFA5ED2959453C835"
+}

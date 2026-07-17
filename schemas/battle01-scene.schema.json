@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/battle01-scene.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "provenance", "battle", "map", "scene", "terrain"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "commit", "terrainSourcePath", "terrainSourceSha256"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "terrainSourcePath": { "const": "data/battles/entries/battle01/terrain.bin" },
+        "terrainSourceSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+      }
+    },
+    "battle": {
+      "type": "object", "additionalProperties": false, "required": ["id", "code"],
+      "properties": { "id": { "const": 1 }, "code": { "const": "INSIDE_ANCIENT_TOWER" } }
+    },
+    "map": { "$ref": "#/$defs/map" },
+    "scene": {
+      "type": "object", "additionalProperties": false,
+      "required": ["customBackgroundExpression", "enemyLeaderPresent", "halfExperience"],
+      "properties": {
+        "customBackgroundExpression": { "const": "TOWER_INTERIOR" },
+        "enemyLeaderPresent": { "const": false }, "halfExperience": { "const": true }
+      }
+    },
+    "terrain": { "$ref": "#/$defs/terrain" }
+  },
+  "$defs": {
+    "map": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "x", "y", "width", "height", "triggerX", "triggerY"],
+      "properties": {
+        "id": { "const": 57 }, "x": { "const": 0 }, "y": { "const": 0 },
+        "width": { "const": 16 }, "height": { "const": 20 },
+        "triggerX": { "const": 255 }, "triggerY": { "const": 255 }
+      }
+    },
+    "range": {
+      "type": "object", "additionalProperties": false, "required": ["start", "endExclusive", "lengthBytes"],
+      "properties": { "start": { "const": 1758020 }, "endExclusive": { "const": 1758304 }, "lengthBytes": { "const": 284 } }
+    },
+    "counts": {
+      "type": "object", "additionalProperties": false, "required": ["0", "1", "2", "3", "255"],
+      "properties": { "0": { "const": 102 }, "1": { "const": 108 }, "2": { "const": 11 }, "3": { "const": 5 }, "255": { "const": 2078 } }
+    },
+    "terrain": {
+      "type": "object", "additionalProperties": false,
+      "required": ["compressedRange", "compressedSha256", "decompressedWidth", "decompressedHeight", "decompressedLengthBytes", "decompressedSha256", "valueCounts"],
+      "properties": {
+        "compressedRange": { "$ref": "#/$defs/range" },
+        "compressedSha256": { "const": "A0E6B0D4F656C7BD893923330148B3F9366CA7D839F5A0676272A2C95DAABC4A" },
+        "decompressedWidth": { "const": 48 }, "decompressedHeight": { "const": 48 }, "decompressedLengthBytes": { "const": 2304 },
+        "decompressedSha256": { "const": "ECA7CDDAC612489FFD835A44D32D1C82E955A686F2D1C6DBFA5ED2959453C835" },
+        "valueCounts": { "$ref": "#/$defs/counts" }
+      }
+    }
+  }
+}

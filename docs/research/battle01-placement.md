@@ -1,6 +1,6 @@
-# Battle 01 Placement and AI-Region Contract
+# Battle 01 Static Scene Contract
 
-- Status: **Confirmed storage contract; activation behavior pending H3**
+- Status: **Confirmed static scene contract and first-turn initialization; region activation pending H3**
 - Evidence date: 2026-07-17
 - Battle: ID 1, `INSIDE_ANCIENT_TOWER`
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -11,11 +11,39 @@
 
 ```powershell
 pwsh ./scripts/Test-Battle01Extraction.ps1
+pwsh ./scripts/Test-Battle01SceneExtraction.ps1
+pwsh ./scripts/Test-H3Battle01TurnOrderFixture.ps1
 ```
 
 The pinned assembly source and an independent ROM decoder produce deterministic schema-valid
-documents with fixed hashes. The verifier compares 148 structured values with zero mismatch. Full
-generated placement data remains under ignored `local/derived/`.
+documents with fixed hashes. The placement verifier compares 148 structured values with zero
+mismatch; the scene verifier independently follows the ROM terrain pointer, decompresses the Stack
+bitstream, and compares map/global metadata plus hashes and value counts. Full generated placement
+and terrain data remain under ignored `local/derived/`.
+
+## Map, Terrain, and Global Scene Metadata
+
+Battle 01 uses map 57 (`MAP_ANCIENT_TOWER_ENTRANCE`). Its battle area starts at `(0,0)`, is 16×20
+spaces, and stores trigger X/Y as 255 (`any`). The map link is the second seven-byte record in
+`table_BattleMapCoordinates` at `0x7A36`.
+
+The terrain pointer table starts at `0x1AD104`; Battle 01 points to the 284 compressed bytes at
+`0x1AD344..0x1AD460`. The project-owned decoder reproduces `LoadStackCompressedData` and emits the
+full 2,304-byte (48×48) `BATTLE_TERRAIN_ARRAY`. The source split and direct ROM slice both have
+compressed SHA-256 `A0E6B0D4...DAABC4A`; the decompressed array has SHA-256
+`ECA7CDDA...453C835`.
+
+Only five stored values occur: 2,078 obstructed cells (`255`), 102 low-sky cells (`0`), 108 plains
+cells (`1`), 11 road cells (`2`), and 5 grass cells (`3`). These values are original terrain-array
+bytes; occupancy bits are added or cleared later at runtime and are not baked into the file.
+
+Global tables add three confirmed Battle 01 facts:
+
+- `table_CustomBackgrounds[1] = TOWER_INTERIOR` (ID 9), so battle scenes do not fall through to the
+  per-terrain background table.
+- `table_HalvedExpEarnedBattles` contains `INSIDE_ANCIENT_TOWER`.
+- `table_EnemyLeaderPresentFlags[1] = 0`. This table controls defeated-cutscene cleanup; it is not a
+  separate “kill the leader” victory rule.
 
 ## Table Layout
 
@@ -64,13 +92,21 @@ The storage contract deliberately calls these ordered polygons and activation-re
 does not yet claim which boundary rule is used, when a combatant activates, how overlaps resolve, or
 whether the two trailing bytes participate in runtime logic.
 
-## Scope Boundary and H3 Entry
+## Victory/Defeat and First Turn
 
-This slice does not decode `battle01/terrain.bin`, map-to-battle coordinates, cutscenes, victory
-conditions, background selection, enemy upgrades, difficulty adjustment, or the AI command-set
-programs themselves. Those are separate dependencies rather than hidden fields of the spriteset.
+`CountRemainingCombatants` at `0x23C58` counts only placed, living units. Battle victory occurs when
+that enemy count reaches zero. Defeat occurs when no living placed ally remains, and is also forced
+when combatant 0 (Bowie) has zero HP even if another ally survives. Battle 01 does not override this
+generic loop with a leader-victory condition.
 
-Battle 01 is now the preferred first scripted battle scenario: its six identical low-AGI enemies
-make definition lookup constant while region selection and command-set differences remain visible.
-The next runtime fixture should observe combatant initialization and the first generated turn-order
-array, then add movement across one region boundary.
+The H3 fixture enters the original built-in Debug Battle Test using real controller input, chooses
+Battle 01, and skips cutscene text with the original Player 2 Start behavior. After the original game
+initializes combatants, the harness fixes only `RANDOM_SEED` to `0x1234` at
+`GenerateBattleTurnOrder` (`0x25544`). At `0x2559E`, the sorted list contains exactly three allies
+(0, 2, 1) and six enemies (128–133), proving unplaced joined allies are skipped and all six stored
+Gizmos are live participants. Exact randomized scores are committed in
+`tests/fixtures/h3/battle01-turn-order-v1.json`.
+
+Cutscene command semantics, AI command-set programs, region boundary/overlap behavior, map graphics,
+and terrain-to-map-block rendering remain outside this contract. The next Battle 01 runtime fixture
+should cross one activation-region boundary and observe the affected enemy state.

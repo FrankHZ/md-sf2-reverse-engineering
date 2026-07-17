@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Mixed — RNG and stat gain confirmed at runtime; battle mechanics static-only**
+- Status: **Mixed — RNG, stat gain, and Battle 01 turn order confirmed at runtime; damage static-only**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -81,7 +81,7 @@ offset. This is confirmed as executable source/ROM logic, but its player-visible
 yet covered by H3. The fixture validates `CalculateStatGain`, not the complete `LevelUp` side effects.
 A remake must not silently choose preserve/fix behavior before a design decision.
 
-## Confirmed Statically: Turn-Order Score
+## Confirmed Statically and at Runtime: Turn-Order Score
 
 Inactive or zero-HP combatants are skipped. For each active combatant:
 
@@ -96,6 +96,22 @@ Inactive or zero-HP combatants are skipped. For each active combatant:
 The fixed-size list is bubble-sorted by its signed agility byte in descending order, then
 `CURRENT_BATTLE_TURN` is cleared. Tie stability and overflow/signed-edge behavior should be preserved
 as explicit fixture cases rather than “cleaned up” from the prose formula.
+
+The first end-to-end turn-order fixture uses the original debug-mode input sequence and built-in
+Battle Test UI to enter Battle 01 from reset. Player 2 Start invokes the original debug text-skip
+path; no save state, movie, patched ROM, or register write is used. After normal combatant
+initialization, the harness writes seed `0x1234` at function entry `0x25544` and observes the sorted
+array at `0x2559E`.
+
+Nine entries pass: three placed allies and six Gizmos. Bowie (combatant 0, debug-test AGI 99) sorts
+first with score 109; the remaining ordered `(combatant, score)` pairs are `(2,8)`, `(1,6)`,
+`(128,6)`, `(133,6)`, `(129,4)`, `(130,4)`, `(131,4)`, and `(132,4)`. The stable equal-score order is
+therefore executable evidence for this scenario, while the general tie/overflow boundary still
+needs targeted cases.
+
+```powershell
+pwsh ./scripts/Test-H3Battle01TurnOrderFixture.ps1
+```
 
 ## Confirmed Statically: Physical Base Damage
 
@@ -117,8 +133,9 @@ action routines and are not implied by this base-damage function alone.
 
 - Extend stat-gain runtime coverage through projection level 30 and promoted effective levels; cover
   the TORT effective-level bug through the complete `LevelUp` caller.
-- Turn-order fixtures covering ties, AGI 127/128, second turns, dead/unplaced combatants, and exact
-  RNG consumption order.
+- Extend turn-order coverage to AGI 127/128, second turns, dead placed combatants, general tie
+  stability, signed overflow, and exact RNG consumption. Battle 01 already confirms unplaced allies
+  are skipped.
 - End-to-end physical attack fixtures separating base damage, land effect, archer bonus, random
   spread, critical/double/counter logic, and HP application.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for

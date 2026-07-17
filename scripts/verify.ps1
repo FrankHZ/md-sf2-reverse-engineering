@@ -32,6 +32,8 @@ if (-not $SkipExtraction) {
     & (Join-Path $PSScriptRoot 'Test-EnemyPromotionExtraction.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
     Write-Output '=== H2: battle 01 placement and AI regions ==='
     & (Join-Path $PSScriptRoot 'Test-Battle01Extraction.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
+    Write-Output '=== H2: battle 01 terrain and scene metadata ==='
+    & (Join-Path $PSScriptRoot 'Test-Battle01SceneExtraction.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
 }
 
 if (-not $SkipRuntime) {
@@ -39,6 +41,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3RngFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: original stat-gain runtime behavior ==='
     & (Join-Path $PSScriptRoot 'Test-H3StatGainFixture.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
+    Write-Output '=== H3: battle 01 initialization and turn order ==='
+    & (Join-Path $PSScriptRoot 'Test-H3Battle01TurnOrderFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='

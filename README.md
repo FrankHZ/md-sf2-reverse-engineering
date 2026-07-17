@@ -5,8 +5,8 @@
 
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
-并已完成角色槽位、职业、物品、法术、转职和敌人定义的 source/ROM 双路径 H2、成长曲线与
-法术学习合同，以及 RNG/成长计算整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
+H2、成长曲线与法术学习合同，以及 RNG/成长计算/首回合排序整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。
 
 ## 我们要交付什么
@@ -110,7 +110,7 @@ pwsh ./scripts/verify.ps1
 ```
 
 统一入口已经覆盖 H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的 RNG 与成长计算 H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的 RNG、成长计算与 Battle 01 首回合排序 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -178,8 +178,9 @@ fixture 覆盖和对现代重制的合同影响。
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
 原版名称清单。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
-最低成长补偿分支。第一场剧情战斗另有 9 个 placement/AI 实体和 3 个 region polygon 的独立
-ROM decode，148 个结构值零差异。
+最低成长补偿分支。第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
+全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然
+初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo。
 
 ### Phase 3 — Game Design Reconstruction
 
@@ -205,9 +206,9 @@ ROM decode，148 个结构值零差异。
 
 ## 下一步
 
-下一块继续扩展 **Phase 2 的运行时证据**：把已经定位的成长计算、行动顺序与伤害调用链变成
-可控场景，优先覆盖升级随机增益/保底、AGI 127/128 与第二回合、地形减伤和弓手对飞行单位
-加成；同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。静态侧沿
-已完成的 Battle 01 placement/AI 合同继续解 terrain、map link 和胜负条件。
+下一块继续扩展 **Phase 2 的运行时证据**：在已打通的 Battle Test 输入 harness 上覆盖 AGI
+127/128 与第二回合、dead/placed 过滤、地形减伤和弓手对飞行单位加成；随后观察 Battle 01
+跨越 activation region 的敌人状态变化。同时保留 TORT effective-level bug 与
+`LASER radius = 3` 的显式行为验证队列。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

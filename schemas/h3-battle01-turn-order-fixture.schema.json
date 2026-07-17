@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-battle01-turn-order-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "inputHarness", "function", "battleId", "seed", "expectedEntries"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle01-turn-order-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }, "inputHarness": { "type": "string", "minLength": 20 },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false, "required": ["entryAddress", "observeAddress", "seedAddress", "turnOrderAddress"],
+      "properties": {
+        "entryAddress": { "const": 152900 }, "observeAddress": { "const": 152990 },
+        "seedAddress": { "const": 16768676 }, "turnOrderAddress": { "const": 16774938 }
+      }
+    },
+    "battleId": { "const": 1 }, "seed": { "const": 4660 },
+    "expectedEntries": {
+      "type": "array", "minItems": 9, "maxItems": 9,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["combatant", "score"],
+        "properties": { "combatant": { "type": "integer", "minimum": 0, "maximum": 255 }, "score": { "type": "integer", "minimum": 0, "maximum": 255 } }
+      }
+    }
+  }
+}
