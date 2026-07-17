@@ -224,6 +224,13 @@ countered, while Burst Rock, Kraken Head, Prism Flower, and Zeon Guard cannot co
 keeps the target alive at 182 HP and observes one damage calculation. The source comparison names
 Kraken Head, not Kraken Arm; the runtime matrix deliberately follows the exact enum and address.
 
+The double-validation matrix completes the corresponding smaller validator. Both cases keep the
+target alive at 182 HP and force double true while disabling counter. The natural `muddledActor` and
+`targetIsOnSameSide` flags are false. Setting either one true immediately at entry `0xA45E` makes the
+original code clear double at `0xA486`; at return `0xA49C`, double is false and only the first damage
+calculation has run. Together with the lethal fixture, these are all non-debug rejection checks in
+`battlesceneScript_ValidateDoubleAttack`.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
@@ -233,6 +240,7 @@ pwsh ./scripts/Test-H3CounterStunFixture.ps1
 pwsh ./scripts/Test-H3CounterSameSideFixture.ps1
 pwsh ./scripts/Test-H3CounterBurstRockFixture.ps1
 pwsh ./scripts/Test-H3CounterSpecialEnemiesFixture.ps1
+pwsh ./scripts/Test-H3DoubleValidationFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -278,8 +286,8 @@ replays enemy reactions `-18, -18` and ally reaction `-5`, leaving persistent en
 The verifier independently models dodge ranges, all LCG transitions, land reduction, counter
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
-This scenario confirms one valid adjacent counter and one double attack. Natural same-side and
-special-enemy action reachability before the now-confirmed validation seam, plus whether a
+This scenario confirms one valid adjacent counter and one double attack. Natural muddled/same-side
+and special-enemy action reachability before the now-confirmed validation seams, plus whether a
 second/counter critical can occur, remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
@@ -296,7 +304,7 @@ control-flow contract independently of the earlier non-dodge observations.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add natural same-side/special-enemy action reachability, resistance, additional non-critical
+- Add natural muddled/same-side/special-enemy action reachability, resistance, additional non-critical
   variance seeds, and an EXP-caused level-up to the confirmed physical path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.

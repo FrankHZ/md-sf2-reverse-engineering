@@ -162,6 +162,13 @@ adjacent attack, changes the relevant combatant/enemy identity immediately befor
 clears the forced-valid counter, and retains one damage calculation. Kraken Arm (59) is not in this
 table; the similarly named Kraken Head is.
 
+**Confirmed at the validation seam:** the double-attack validator has exactly three rejection inputs
+after a true toggle: target death, muddled actor, and same-side target. Death is owned by the lethal
+fixture. The double-validation matrix keeps the target alive, observes both remaining flags naturally
+false, then independently forces `muddledActor` or `targetIsOnSameSide` true. Each case clears double
+at `0xA486` and retains one damage calculation. This completes the validator itself; natural action
+production for the two controlled flags remains separate.
+
 ### 8. Restore snapshots, then replay commands persistently
 
 **Confirmed:** battle-scene construction restores saved HP snapshots before playback. The command
@@ -224,6 +231,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-counter-same-side-validation-v1` | `tests/fixtures/h3/counter-same-side-v1.json` | Same-side flag rejection at the original counter-validation seam |
 | `sf2-counter-burst-rock-validation-v1` | `tests/fixtures/h3/counter-burst-rock-v1.json` | Burst Rock rejection as the prospective counterattacker |
 | `sf2-counter-special-enemies-validation-v1` | `tests/fixtures/h3/counter-special-enemies-v1.json` | Directional Taros, Kraken Head, Prism Flower, and Zeon Guard exclusions |
+| `sf2-double-validation-gates-v1` | `tests/fixtures/h3/double-validation-v1.json` | Muddled-actor and same-side rejection of a forced-valid double toggle |
 
 H4 passes only when ordered RNG consumption, intermediate integers, command order, and persistent
 state match. Rendering, animation duration, input feel, and audiovisual assets are not H4 assertions.
@@ -241,7 +249,7 @@ The following remain **Unknown** for a general implementation and block declarin
 complete:
 
 - all dodge eligibility and range-selection branches;
-- natural same-side and special-enemy action reachability before the confirmed validation seam;
+- natural muddled/same-side and special-enemy action reachability before the confirmed validation seams;
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;

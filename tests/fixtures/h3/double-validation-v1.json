@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-double-validation-gates-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "double-validation",
+  "function": {
+    "calculateDamageEntryAddress": 43966,
+    "validateDoubleEntryAddress": 42078,
+    "validateDoubleClearAddress": 42118,
+    "validateDoubleReturnAddress": 42140
+  },
+  "setup": {
+    "actor": { "combatant": 0, "hp": 200, "attack": 50, "defense": 30, "movetype": 0, "prowess": 56 },
+    "target": { "combatant": 128, "hp": 200, "attack": 40, "defense": 20, "movetype": 6, "prowess": 200 },
+    "targetLandEffect": 2,
+    "dodgeSeed": 65535,
+    "forcedValidationToggles": { "double": true, "counter": false }
+  },
+  "cases": [
+    { "name": "muddled-actor", "muddled": true, "sameSide": false },
+    { "name": "same-side", "muddled": false, "sameSide": true }
+  ],
+  "expected": {
+    "firstDamage": 18,
+    "targetDies": false,
+    "naturalMuddled": false,
+    "naturalSameSide": false,
+    "doubleBefore": true,
+    "doubleAfter": false,
+    "damageCalls": 1,
+    "targetHp": 182
+  }
+}

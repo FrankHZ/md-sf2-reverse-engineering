@@ -70,6 +70,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3CounterBurstRockFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: remaining special-enemy counter exclusions ==='
     & (Join-Path $PSScriptRoot 'Test-H3CounterSpecialEnemiesFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: muddle and same-side reject double follow-up ==='
+    & (Join-Path $PSScriptRoot 'Test-H3DoubleValidationFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='
