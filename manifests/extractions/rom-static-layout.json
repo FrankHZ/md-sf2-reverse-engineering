@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-us-static-layout-v1",
+  "romManifest": "manifests/roms/sf2-us.json",
+  "outputPath": "local/derived/rom-static-data.json",
+  "outputSha256": "482F03ACB4B3D1856DE82A62BB043739C139654BB5BCCB5CD9D1D025730617D3",
+  "tables": {
+    "allyStartDefinitions": { "start": 2025424, "recordCount": 32, "recordSize": 6 },
+    "classDefinitions": { "start": 2025616, "recordCount": 32, "recordSize": 5 },
+    "itemDefinitions": { "start": 93862, "recordCount": 128, "recordSize": 16 },
+    "spellDefinitions": { "start": 95910, "recordCount": 89, "recordSize": 8 }
+  },
+  "encoding": {
+    "byteOrder": "big-endian",
+    "allyItem": { "idMask": 127, "equippedMask": 128 },
+    "spellEntry": { "idMask": 63, "levelShift": 6 },
+    "movementType": { "mask": 240, "shift": 4 },
+    "spellAnimation": { "indexMask": 31, "variationMask": 96, "variationShift": 5, "mirroredMask": 128 }
+  }
+}

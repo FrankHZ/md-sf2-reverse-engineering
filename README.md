@@ -5,8 +5,8 @@
 
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
-并已完成角色槽位、职业、物品和法术的首个确定性 H2 导出；尚未下载外部补丁、选择现代引擎
-或开始重制实现。
+并已完成角色槽位、职业、物品和法术的 source/ROM 双路径 H2，以及成长曲线和法术学习合同；
+尚未下载外部补丁、选择现代引擎或开始重制实现。
 
 ## 我们要交付什么
 
@@ -108,7 +108,8 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 pwsh ./scripts/verify.ps1
 ```
 
-统一入口已经覆盖 H0、toolchain provenance、H1 与首个 H2；后续在同一入口继续补齐：
+统一入口已经覆盖 H0、toolchain provenance、H1，以及静态表双路径 parity 与成长合同 H2；后续
+在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -170,8 +171,9 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
-首个静态数据切片已完成：8 个 ROM table range、9 个上游源文件、角色/职业/物品/法术 enum
-交叉引用、canonical JSON、JSON Schema、固定输出 hash 和重复导出一致性均进入 H2。抽取内容只
+当前 H2 已完成：8 个 ROM table range、角色/职业/物品/法术 enum 交叉引用、四类固定记录的
+ROM bytes 独立解码、281 条记录 source/ROM 字段级零差异，以及 5 条成长曲线、59 个职业成长
+记录和 122 个学法术条目。三个 canonical JSON 均有 schema、固定 hash 与重复导出验证，内容只
 写入 ignored 的 `local/derived/`，仓库不保存原版名称清单。
 
 ### Phase 3 — Game Design Reconstruction
@@ -198,8 +200,8 @@ fixture 覆盖和对现代重制的合同影响。
 
 ## 下一步
 
-下一块是 **Phase 2 的第二个纵向切片**：从 ROM 原始 bytes 独立解码已知固定宽度表，与当前
-ASM-source 导出做双向差分；随后加入角色成长/法术学习表，并开始整理随机数、行动顺序、伤害
-和 `LASER radius = 3` 的行为验证队列。这样在扩展地图前，静态合同不会只依赖上游宏语义。
+下一块进入 **Phase 2 的首批运行时证据**：定位随机数、成长计算、行动顺序与伤害调用链，选择
+并固定可自动化的模拟器，建立第一个 H3 状态 fixture；同时把 `LASER radius = 3` 放进行为验证
+队列。静态侧随后选择 promotions/enemies 或一张战斗地图作为下一个端到端扩展。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

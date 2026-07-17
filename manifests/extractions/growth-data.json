@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-growth-data-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "outputPath": "local/derived/growth-data.json",
+  "outputSha256": "AAD613BD38B68CE7B983A54A7825FDA5280A363F0F152FB19A392CBD276A7059",
+  "counts": {
+    "curves": 5,
+    "levelsPerCurve": 29,
+    "allies": 30,
+    "classRecords": 59,
+    "spellEntries": 122
+  }
+}

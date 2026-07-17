@@ -10,7 +10,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`reproducible-original.md`](./research/reproducible-original.md)：ROM H0、固定工具链与
   bit-perfect H1 基线。
 - [`static-core-data.md`](./research/static-core-data.md)：角色槽位、职业、物品、法术的 ROM
-  ranges、canonical H2 合同和待验证语义。
+  ranges、ROM byte packing、双路径 parity 和待验证语义。
+- [`ally-growth.md`](./research/ally-growth.md)：成长曲线、职业成长投影、法术学习与继承控制码。
 
 ## Design
 

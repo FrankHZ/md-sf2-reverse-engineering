@@ -23,6 +23,10 @@ if (-not $SkipRebuild) {
 if (-not $SkipExtraction) {
     Write-Output '=== H2: deterministic static-data extraction ==='
     & (Join-Path $PSScriptRoot 'Test-StaticExtraction.ps1') -UpstreamPath $UpstreamPath
+    Write-Output '=== H2: ROM byte decode and source parity ==='
+    & (Join-Path $PSScriptRoot 'Test-RomStaticParity.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
+    Write-Output '=== H2: ally growth and spell-learning extraction ==='
+    & (Join-Path $PSScriptRoot 'Test-GrowthExtraction.ps1') -UpstreamPath $UpstreamPath
 }
 
 Write-Output '=== Repository verification: PASS ==='

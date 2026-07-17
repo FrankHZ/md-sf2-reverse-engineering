@@ -1,6 +1,6 @@
 # Static Core Data Contract
 
-- Status: **Confirmed** for source structure, counts, ranges, and deterministic extraction
+- Status: **Confirmed** for source structure, ROM-byte layout, counts, ranges, deterministic extraction, and source/ROM parity
 - Evidence date: 2026-07-17
 - Scope: ally start slots, classes, items, spell names, and spell definitions
 
@@ -25,6 +25,19 @@ The expectation is owned by
 [`manifests/extractions/static-data.json`](../../manifests/extractions/static-data.json). A changed
 hash requires reviewing the pinned inputs, parser, schema, and resulting semantic diff; it must not
 be updated merely to make verification pass.
+
+The four fixed-width tables now have an independent ROM decoder:
+
+```powershell
+pwsh ./scripts/Test-RomStaticParity.ps1
+```
+
+It reads only the locked ROM plus
+[`rom-static-layout.json`](../../manifests/extractions/rom-static-layout.json), emits a schema-validated
+raw/decoded document with SHA-256
+`482F03ACB4B3D1856DE82A62BB043739C139654BB5BCCB5CD9D1D025730617D3`, then compares the decoded fields
+against the separately parsed ASM-source document. All 281 fixed-width records currently agree with
+zero field mismatches.
 
 ## ROM Table Map
 
@@ -92,20 +105,32 @@ The generated JSON includes original names and game data, so it remains ignored 
 Downstream tools may consume it locally, but a distributable remake must replace or separately clear
 copyrighted content.
 
+## Confirmed Byte Packing
+
+- Ally start record: class ID, level, then four item bytes; item bit 7 means equipped and bits 0–6
+  hold item ID.
+- Class record: movement byte, big-endian resistance word, movement type in the high nibble, and
+  prowess byte.
+- Item record: big-endian 32-bit equip flags, max/min range bytes, big-endian price word, item type,
+  spell ID/level byte, then three effect/parameter byte pairs.
+- Spell record: spell ID/level, MP cost, animation, properties, max/min range, radius, and power.
+  Spell level is the upper two bits of its entry; animation uses five index bits, two variation bits,
+  and one mirrored bit.
+
+These statements are about storage. Names such as prowess, resistance, animation, and properties
+still require code-path or runtime evidence before they become complete gameplay rules.
+
 ## What H2 Does Not Yet Prove
 
-- The extractor currently parses SF2DISASM macro source. H1 proves that source rebuilds the ROM, but
-  H2 does not yet independently decode these records from raw ROM bytes.
 - Token names such as resistance, prowess, equip effects, spell properties, and animation variations
   are preserved; their complete runtime semantics are not established by this slice.
 - The unused/reachable status of ally slots 30–31 is unknown.
 - The runtime interpretation of spell radius 3 is unknown.
-- Growth curves, ally stat progressions, learned-spell tables, promotions, shops, enemy definitions,
-  and map/battle data are outside this contract.
+- Growth is owned by [`ally-growth.md`](./ally-growth.md). Promotions, shops, enemy definitions, and
+  map/battle data remain outside this contract.
 
 ## Next Evidence Slice
 
-Implement raw-byte decoders for the four fixed-width tables and compare their fields with the
-source-derived canonical records. This requires documenting macro bit packing rather than trusting
-macro names. Once the two paths agree, add growth and learned-spell tables, then promote uncertain
-battle semantics into emulator-backed H3 scenarios.
+Promote uncertain battle semantics into emulator-backed H3 scenarios, starting with RNG, action
+order, damage, and the exceptional `LASER radius = 3` record. The next static-data expansion should
+cover promotions/enemies or one battle map without weakening the existing dual-source parity rail.
