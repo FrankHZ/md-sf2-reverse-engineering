@@ -2,7 +2,8 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun', 'counter-same-side', 'counter-burst-rock')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun', 'counter-same-side', 'counter-burst-rock', 'counter-special')] [string] $Scenario = 'baseline',
+    [ValidateSet('kraken-head', 'prism-flower', 'zeon-guard', 'taros')] [string] $SpecialCounterCase = 'kraken-head',
     [int] $TimeoutSeconds = 45
 )
 
@@ -20,11 +21,13 @@ Remove-Item -LiteralPath $outputPath, $statusPath -Force -ErrorAction SilentlyCo
 $luaOutput = $outputPath.Replace('\', '/')
 $luaStatus = $statusPath.Replace('\', '/')
 $luaScenario = $Scenario
+$luaSpecialCounterCase = $SpecialCounterCase
 $lua = @'
 local output_path = "__OUTPUT__"
 local status_path = "__STATUS__"
 local seed = __SEED__
 local scenario = "__SCENARIO__"
+local special_case = "__SPECIAL_COUNTER_CASE__"
 local stage = "cheat"
 local prompt_count = 0
 local queue = {}
@@ -40,6 +43,7 @@ local range_validation = nil
 local status_validation = nil
 local side_validation = nil
 local special_validation = nil
+local special_matrix_validation = nil
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -218,7 +222,7 @@ event.on_bus_exec(function()
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
         if lethal_validation == nil then lethal_validation = { damage_calls = 0 } end
     elseif scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" or
-           scenario == "counter-same-side" or scenario == "counter-burst-rock" then
+           scenario == "counter-same-side" or scenario == "counter-burst-rock" or scenario == "counter-special" then
         local function entry(combatant)
             local slot = combatant
             if combatant >= 128 then slot = combatant - 96 end
@@ -250,6 +254,12 @@ event.on_bus_exec(function()
             side_validation = { damage_calls = 0 }
         elseif scenario == "counter-burst-rock" and special_validation == nil then
             special_validation = { damage_calls = 0 }
+        elseif scenario == "counter-special" and special_matrix_validation == nil then
+            local enemy_value = 87
+            if special_case == "prism-flower" then enemy_value = 93
+            elseif special_case == "zeon-guard" then enemy_value = 38
+            elseif special_case == "taros" then enemy_value = 88 end
+            special_matrix_validation = { damage_calls = 0, enemy_value = enemy_value }
         end
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
@@ -266,7 +276,8 @@ event.on_bus_exec(function()
        (scenario == "counter-range" and range_validation ~= nil) or
        ((scenario == "counter-sleep" or scenario == "counter-stun") and status_validation ~= nil) or
        (scenario == "counter-same-side" and side_validation ~= nil) or
-       (scenario == "counter-burst-rock" and special_validation ~= nil) then
+       (scenario == "counter-burst-rock" and special_validation ~= nil) or
+       (scenario == "counter-special" and special_matrix_validation ~= nil) then
         memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
         return
     end
@@ -498,6 +509,51 @@ event.on_bus_exec(function()
     output:close(); client.exitCode(0)
 end, 0xA54C, "sf2-burst-rock-counter-validation-return", "M68K BUS")
 
+event.on_bus_exec(function()
+    if scenario ~= "counter-special" or special_matrix_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    memory.write_u8((a2 - 13) & 0xFFFFFF, 0, "M68K BUS")
+    memory.write_u8((a2 - 12) & 0xFFFFFF, 0xFF, "M68K BUS")
+    special_matrix_validation.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA45E, "sf2-special-matrix-double-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-special" or special_matrix_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    local pointer = emu.getregister("M68K A4") & 0xFFFFFF
+    if special_case == "taros" then pointer = emu.getregister("M68K A5") & 0xFFFFFF end
+    special_matrix_validation.natural_combatant = memory.read_u8(pointer, "M68K BUS")
+    local combatant = special_matrix_validation.natural_combatant
+    if special_case == "taros" then
+        combatant = 129
+        memory.write_u8(pointer, combatant, "M68K BUS")
+    end
+    special_matrix_validation.combatant = combatant
+    local slot = combatant
+    if combatant >= 128 then slot = combatant - 96 end
+    local combatant_entry = 0xFFE800 + slot * 56
+    special_matrix_validation.natural_enemy = memory.read_u8(combatant_entry + 55, "M68K BUS")
+    memory.write_u8(combatant_entry + 55, special_matrix_validation.enemy_value, "M68K BUS")
+    special_matrix_validation.enemy = memory.read_u8(combatant_entry + 55, "M68K BUS")
+    special_matrix_validation.counter_before = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA49C, "sf2-special-matrix-counter-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-special" or special_matrix_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    special_matrix_validation.counter_after = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"counter-special","case":"%s","battle":%d,"targetDies":%s,"naturalCombatant":%d,"combatant":%d,"naturalEnemy":%d,"enemy":%d,"counterBefore":%s,"counterAfter":%s,"damageCalls":%d,"targetHp":%d}\n',
+        emu.getsystemid(), special_case, memory.read_u8(0xFFF712, "M68K BUS"),
+        tostring(special_matrix_validation.target_dies), special_matrix_validation.natural_combatant,
+        special_matrix_validation.combatant, special_matrix_validation.natural_enemy, special_matrix_validation.enemy,
+        tostring(special_matrix_validation.counter_before), tostring(special_matrix_validation.counter_after),
+        special_matrix_validation.damage_calls, memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    ))
+    output:close(); client.exitCode(0)
+end, 0xA54C, "sf2-special-matrix-counter-validation-return", "M68K BUS")
+
 local function chain_attack()
     if chain == nil or #chain.attacks == 0 then return nil end
     return chain.attacks[#chain.attacks]
@@ -603,7 +659,7 @@ end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
 event.on_bus_exec(function()
     if scenario == "damage" or scenario == "chain" or scenario == "dodge" or scenario == "lethal" or
        scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" or
-       scenario == "counter-same-side" or scenario == "counter-burst-rock" then return end
+       scenario == "counter-same-side" or scenario == "counter-burst-rock" or scenario == "counter-special" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -652,6 +708,10 @@ event.on_bus_exec(function()
     end
     if scenario == "counter-burst-rock" and special_validation ~= nil then
         special_validation.damage_calls = special_validation.damage_calls + 1
+        return
+    end
+    if scenario == "counter-special" and special_matrix_validation ~= nil then
+        special_matrix_validation.damage_calls = special_matrix_validation.damage_calls + 1
         return
     end
     if scenario ~= "damage" then return end
@@ -928,7 +988,7 @@ while true do
             memory.read_u32_be(0xFFB1A0, "M68K BUS"), memory.read_u8(0xFFB0A9, "M68K BUS"), prompt_count, #queue))
     end
 end
-'@.Replace('__OUTPUT__', $luaOutput).Replace('__STATUS__', $luaStatus).Replace('__SEED__', [string] $Seed).Replace('__SCENARIO__', $luaScenario)
+'@.Replace('__OUTPUT__', $luaOutput).Replace('__STATUS__', $luaStatus).Replace('__SEED__', [string] $Seed).Replace('__SCENARIO__', $luaScenario).Replace('__SPECIAL_COUNTER_CASE__', $luaSpecialCounterCase)
 Set-Content -LiteralPath $luaPath -Value $lua -Encoding utf8
 
 $start = [Diagnostics.ProcessStartInfo]::new()

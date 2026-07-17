@@ -123,15 +123,14 @@ The second attack reads the target's already reduced temporary HP. The counter r
 target and uses attack type 2. **Confirmed:** target death rejects both follow-ups. The lethal
 fixture supplies true double/counter toggles at the validation boundary after the natural first hit
 sets `targetDies`; each is false at return, with only one damage calculation. The successful chain
-separately owns the natural prowess/RNG decision. Remaining special-enemy rejection rules are
-not yet generalized; callers must not treat the one successful fixture as proof that every requested
-follow-up is valid.
+separately owns the natural prowess/RNG decision. Natural production of same-side and special-enemy
+actions is not yet generalized; callers must not treat the one successful fixture as proof that every
+requested follow-up is valid.
 
 **Confirmed:** an otherwise eligible counter is also rejected when the target cannot reach the
 original actor. The range fixture keeps the target alive, disables double, supplies a true counter
 toggle, and moves the actor to produce Manhattan distance 25 before the original validator executes;
-the counter returns false and no additional damage call occurs. Remaining special-enemy
-rejections remain unverified.
+the counter returns false and no additional damage call occurs.
 
 **Confirmed:** sleep also rejects an otherwise eligible counter. The sleep fixture keeps the target
 alive and adjacent, disables double, supplies a true counter toggle, and writes status word `0x00C0`
@@ -154,6 +153,14 @@ the original target as enemy index 39 (Gizmo), then changes only its combatant e
 32 (Burst Rock) before validation. The original `GetEnemy` path clears the forced-valid counter and
 performs no second damage calculation. This establishes the direction of this exclusion: the
 original attack target is the prospective counterattacker.
+
+**Confirmed at the validation seam:** the remaining hard-coded enemy exclusions are directional.
+Kraken Head (87), Prism Flower (93), and Zeon Guard (38), like Burst Rock, cannot perform a counter
+when they are the original attack target. Taros (88) is checked on the opposite pointer: when Taros
+is the original attacker, the target cannot counter it. Each matrix case starts from the same live
+adjacent attack, changes the relevant combatant/enemy identity immediately before validation,
+clears the forced-valid counter, and retains one damage calculation. Kraken Arm (59) is not in this
+table; the similarly named Kraken Head is.
 
 ### 8. Restore snapshots, then replay commands persistently
 
@@ -216,6 +223,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-counter-stun-validation-v1` | `tests/fixtures/h3/counter-stun-v1.json` | Stunned-target rejection of a forced-valid counter toggle |
 | `sf2-counter-same-side-validation-v1` | `tests/fixtures/h3/counter-same-side-v1.json` | Same-side flag rejection at the original counter-validation seam |
 | `sf2-counter-burst-rock-validation-v1` | `tests/fixtures/h3/counter-burst-rock-v1.json` | Burst Rock rejection as the prospective counterattacker |
+| `sf2-counter-special-enemies-validation-v1` | `tests/fixtures/h3/counter-special-enemies-v1.json` | Directional Taros, Kraken Head, Prism Flower, and Zeon Guard exclusions |
 
 H4 passes only when ordered RNG consumption, intermediate integers, command order, and persistent
 state match. Rendering, animation duration, input feel, and audiovisual assets are not H4 assertions.
@@ -233,7 +241,7 @@ The following remain **Unknown** for a general implementation and block declarin
 complete:
 
 - all dodge eligibility and range-selection branches;
-- remaining failed double/counter validation: Taros, Kraken Arm, and Zeon Guard exclusions plus natural same-side action reachability;
+- natural same-side and special-enemy action reachability before the confirmed validation seam;
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;

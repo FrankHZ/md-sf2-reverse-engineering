@@ -30,6 +30,7 @@ $references = @(
     @{ Path = 'tests/fixtures/h3/counter-stun-v1.json'; Id = 'sf2-counter-stun-validation-v1' }
     @{ Path = 'tests/fixtures/h3/counter-same-side-v1.json'; Id = 'sf2-counter-same-side-validation-v1' }
     @{ Path = 'tests/fixtures/h3/counter-burst-rock-v1.json'; Id = 'sf2-counter-burst-rock-validation-v1' }
+    @{ Path = 'tests/fixtures/h3/counter-special-enemies-v1.json'; Id = 'sf2-counter-special-enemies-validation-v1' }
 )
 
 foreach ($reference in $references) {

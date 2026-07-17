@@ -216,6 +216,14 @@ The counter-Burst-Rock companion observes the prospective counterattacker's natu
 target, so this runtime result also resolves the nearby source comment's ambiguous direction: Burst
 Rock is prevented from counterattacking.
 
+The special-enemy matrix completes the hard-coded list. Changing the prospective counterattacker
+from Gizmo to Kraken Head (87), Prism Flower (93), or Zeon Guard (38) clears counter in all three
+cases. The Taros case instead changes the original-attacker pointer from Bowie to enemy combatant
+129 and its enemy index from Gizmo to Taros (88); that also clears counter. Thus Taros cannot be
+countered, while Burst Rock, Kraken Head, Prism Flower, and Zeon Guard cannot counter. Every case
+keeps the target alive at 182 HP and observes one damage calculation. The source comparison names
+Kraken Head, not Kraken Arm; the runtime matrix deliberately follows the exact enum and address.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
@@ -224,6 +232,7 @@ pwsh ./scripts/Test-H3CounterSleepFixture.ps1
 pwsh ./scripts/Test-H3CounterStunFixture.ps1
 pwsh ./scripts/Test-H3CounterSameSideFixture.ps1
 pwsh ./scripts/Test-H3CounterBurstRockFixture.ps1
+pwsh ./scripts/Test-H3CounterSpecialEnemiesFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -269,9 +278,9 @@ replays enemy reactions `-18, -18` and ally reaction `-5`, leaving persistent en
 The verifier independently models dodge ranges, all LCG transitions, land reduction, counter
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
-This scenario confirms one valid adjacent counter and one double attack. Remaining failed
-double/counter validation (remaining special-enemy exclusions and natural same-side reachability) and whether a second/counter
-critical can occur remain separate fixture cases.
+This scenario confirms one valid adjacent counter and one double attack. Natural same-side and
+special-enemy action reachability before the now-confirmed validation seam, plus whether a
+second/counter critical can occur, remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
 seed 0 at the range-8 dodge call. The original routine returns 0, writes the dodge stack flag, and
@@ -287,8 +296,8 @@ control-flow contract independently of the earlier non-dodge observations.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add the remaining failed double/counter validation cases, resistance, additional non-critical variance seeds,
-  and an EXP-caused level-up to the confirmed physical path.
+- Add natural same-side/special-enemy action reachability, resistance, additional non-critical
+  variance seeds, and an EXP-caused level-up to the confirmed physical path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.
