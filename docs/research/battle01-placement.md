@@ -107,6 +107,11 @@ initializes combatants, the harness fixes only `RANDOM_SEED` to `0x1234` at
 Gizmos are live participants. Exact randomized scores are committed in
 `tests/fixtures/h3/battle01-turn-order-v1.json`.
 
+The companion boundary fixture reuses the same initialized scene and confirms the generic filters:
+a dead placed ally and a living unplaced enemy are omitted, while AGI 128 adds a second turn. It also
+locks the original signed-byte sort behavior at AGI 127/128; see
+[`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md).
+
 Cutscene command semantics, AI command-set programs, region boundary/overlap behavior, map graphics,
 and terrain-to-map-block rendering remain outside this contract. The next Battle 01 runtime fixture
 should cross one activation-region boundary and observe the affected enemy state.

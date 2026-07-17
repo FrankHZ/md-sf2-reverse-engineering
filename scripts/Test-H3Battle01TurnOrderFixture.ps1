@@ -18,9 +18,9 @@ if ((Get-FileHash -LiteralPath $RomPath -Algorithm SHA256).Hash -ne [string] $fi
 if ([string] $toolchain.bizhawk.release -ne [string] $fixture.emulator.version -or
     [string] $toolchain.bizhawk.core -ne [string] $fixture.emulator.core) { throw 'H3 Battle01 turn-order emulator contract mismatch.' }
 
-$observedJson = (& (Join-Path $PSScriptRoot 'Observe-H3Battle01TurnOrder.ps1') -RomPath $RomPath -Seed ([int] $fixture.seed) -TimeoutSeconds $TimeoutSeconds) -join "`n"
+$observedJson = (& (Join-Path $PSScriptRoot 'Observe-H3Battle01TurnOrder.ps1') -RomPath $RomPath -Seed ([int] $fixture.seed) -Scenario baseline -TimeoutSeconds $TimeoutSeconds) -join "`n"
 $observed = $observedJson | ConvertFrom-Json
-if ($observed.system -ne 'GEN' -or $observed.core -ne [string] $fixture.emulator.core -or
+if ($observed.system -ne 'GEN' -or $observed.core -ne [string] $fixture.emulator.core -or $observed.scenario -ne 'baseline' -or
     [int] $observed.seed -ne [int] $fixture.seed -or [int] $observed.battle -ne [int] $fixture.battleId) {
     throw 'H3 Battle01 turn-order execution context mismatch.'
 }

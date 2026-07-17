@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-turn-order-boundaries-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": { "entryAddress": 152900, "observeAddress": 152990, "seedAddress": 16768676, "turnOrderAddress": 16774938 },
+  "battleId": 1,
+  "scenario": "boundaries",
+  "seed": 0,
+  "mutations": [
+    { "combatant": 0, "field": "currentAgi", "value": 128 },
+    { "combatant": 1, "field": "currentAgi", "value": 127 },
+    { "combatant": 2, "field": "currentHp", "value": 0 },
+    { "combatant": 128, "field": "x", "value": 255 }
+  ],
+  "expectedEntries": [
+    { "combatant": 130, "score": 6 },
+    { "combatant": 129, "score": 5 },
+    { "combatant": 132, "score": 5 },
+    { "combatant": 133, "score": 5 },
+    { "combatant": 131, "score": 4 },
+    { "combatant": 0, "score": 0 },
+    { "combatant": 0, "score": 255 },
+    { "combatant": 1, "score": 135 }
+  ]
+}

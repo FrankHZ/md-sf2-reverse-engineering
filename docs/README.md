@@ -13,7 +13,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   ranges、ROM byte packing、双路径 parity 和待验证语义。
 - [`ally-growth.md`](./research/ally-growth.md)：成长曲线、职业成长投影、法术学习与继承控制码。
 - [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)：RNG、成长计算与
-  Battle 01 行动顺序的 H3 动态 fixture，以及物理伤害的首轮静态调用链。
+  Battle 01 行动顺序和 AGI 127/128 边界的 H3 动态 fixture，以及物理伤害的首轮静态调用链。
 - [`enemy-promotions.md`](./research/enemy-promotions.md)：五段转职映射、103 个敌人名称和
   56-byte 敌人定义的 source/ROM 双路径合同，以及教堂与敌人初始化的静态消费者。
 - [`battle01-placement.md`](./research/battle01-placement.md)：第一场剧情战斗的 map link、Stack

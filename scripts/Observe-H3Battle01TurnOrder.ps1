@@ -2,6 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
+    [ValidateSet('baseline', 'boundaries')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -18,10 +19,12 @@ New-Item -ItemType Directory -Path $derived -Force | Out-Null
 Remove-Item -LiteralPath $outputPath, $statusPath -Force -ErrorAction SilentlyContinue
 $luaOutput = $outputPath.Replace('\', '/')
 $luaStatus = $statusPath.Replace('\', '/')
+$luaScenario = $Scenario
 $lua = @'
 local output_path = "__OUTPUT__"
 local status_path = "__STATUS__"
 local seed = __SEED__
+local scenario = "__SCENARIO__"
 local stage = "cheat"
 local prompt_count = 0
 local queue = {}
@@ -67,12 +70,23 @@ event.on_bus_exec(function()
     status("milestone:turn-order-entry")
     print("milestone:turn-order-entry")
     memory.write_u16_be(0xFFDEA4, seed, "M68K BUS")
+    if scenario == "boundaries" then
+        local function entry(combatant)
+            local slot = combatant
+            if combatant >= 128 then slot = combatant - 96 end
+            return 0xFFE800 + slot * 56
+        end
+        memory.write_u8(entry(0) + 23, 128, "M68K BUS")
+        memory.write_u8(entry(1) + 23, 127, "M68K BUS")
+        memory.write_u16_be(entry(2) + 14, 0, "M68K BUS")
+        memory.write_u8(entry(128) + 46, 255, "M68K BUS")
+    end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
 
 event.on_bus_exec(function()
     local output = assert(io.open(output_path, "w"))
-    output:write(string.format('{"system":"%s","core":"Genesis Plus GX","seed":%d,"battle":%d,"entries":[',
-        emu.getsystemid(), seed, memory.read_u8(0xFFF712, "M68K BUS")))
+    output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
+        emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
     local first = true
     for index = 0, 63 do
         local combatant = memory.read_u8(0xFFF71A + index * 2, "M68K BUS")
@@ -112,7 +126,7 @@ while true do
             memory.read_u32_be(0xFFB1A0, "M68K BUS"), memory.read_u8(0xFFB0A9, "M68K BUS"), prompt_count, #queue))
     end
 end
-'@.Replace('__OUTPUT__', $luaOutput).Replace('__STATUS__', $luaStatus).Replace('__SEED__', [string] $Seed)
+'@.Replace('__OUTPUT__', $luaOutput).Replace('__STATUS__', $luaStatus).Replace('__SEED__', [string] $Seed).Replace('__SCENARIO__', $luaScenario)
 Set-Content -LiteralPath $luaPath -Value $lua -Encoding utf8
 
 $start = [Diagnostics.ProcessStartInfo]::new()

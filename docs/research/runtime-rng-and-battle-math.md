@@ -113,6 +113,25 @@ needs targeted cases.
 pwsh ./scripts/Test-H3Battle01TurnOrderFixture.ps1
 ```
 
+A second fixture reuses the same reset-to-Battle-Test input harness, then mutates only four combatant
+fields immediately before the original function runs: ally 0 AGI 128, ally 1 AGI 127, ally 2 HP 0,
+and enemy 128 X = -1 (`255`). With seed `0x0000`, the original code produces eight entries:
+
+- AGI 128 gives combatant 0 two turns, scored `0` and `255` (signed `-1`).
+- AGI 127 produces raw byte score `135` (signed `-121`) for combatant 1, so it sorts after the
+  smaller positive byte scores rather than numerically ahead of them.
+- dead but placed combatant 2 and living but unplaced combatant 128 are both absent.
+- equal positive scores retain source insertion order in the observed list, matching the static
+  stable bubble-sort model.
+
+Before launching BizHawk, the verifier independently applies the confirmed LCG, per-combatant RNG
+consumption, second-turn formula, byte wrapping, and signed stable sort. Both this model and original
+ROM execution must match the committed golden.
+
+```powershell
+pwsh ./scripts/Test-H3TurnOrderBoundariesFixture.ps1
+```
+
 ## Confirmed Statically: Physical Base Damage
 
 `battlesceneScript_CalculateDamage` computes `max(current ATT - current DEF, 1)`, then applies the
@@ -133,9 +152,9 @@ action routines and are not implied by this base-damage function alone.
 
 - Extend stat-gain runtime coverage through projection level 30 and promoted effective levels; cover
   the TORT effective-level bug through the complete `LevelUp` caller.
-- Extend turn-order coverage to AGI 127/128, second turns, dead placed combatants, general tie
-  stability, signed overflow, and exact RNG consumption. Battle 01 already confirms unplaced allies
-  are skipped.
+- Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
+  signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
+  combatants in one round.
 - End-to-end physical attack fixtures separating base damage, land effect, archer bonus, random
   spread, critical/double/counter logic, and HP application.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
