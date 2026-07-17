@@ -48,6 +48,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3Battle01TurnOrderFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: battle 01 activation regions and enemy AI state ==='
     & (Join-Path $PSScriptRoot 'Test-H3Battle01RegionActivationFixture.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
+    Write-Output '=== H3: battle 01 secondary-region activation state ==='
+    & (Join-Path $PSScriptRoot 'Test-H3Battle01SecondaryActivationFixture.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
     Write-Output '=== H3: turn-order boundary behavior ==='
     & (Join-Path $PSScriptRoot 'Test-H3TurnOrderBoundariesFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: physical damage construction and persistent battle-scene replay ==='

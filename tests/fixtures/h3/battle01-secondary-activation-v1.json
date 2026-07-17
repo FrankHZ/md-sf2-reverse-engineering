@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle01-secondary-activation-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "activation-secondary",
+  "function": {
+    "activateEnemiesEntryAddress": 152844,
+    "captureAddress": 152900,
+    "triggerRegionsAddress": 1756746
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "activationBitfieldOffset": 52,
+    "triggerRegionsOffset": 54
+  },
+  "setup": {
+    "ally": { "combatant": 0, "x": 8, "y": 12 },
+    "enemy": {
+      "combatant": 128,
+      "naturalPrimaryRegion": 2,
+      "naturalSecondaryRegion": 15,
+      "controlledPrimaryRegion": 15,
+      "controlledSecondaryRegion": 2,
+      "controlledTriggerRegions": 242,
+      "initialActivationBitfield": 8288
+    }
+  },
+  "expected": {
+    "newlyTriggered": 7,
+    "regionFlags": [true, true, true],
+    "enemy": { "combatant": 128, "triggerRegions": 242, "activationBitfield": 8291 },
+    "otherPrimaryOnly": [
+      { "combatant": 129, "activationBitfield": 8289 },
+      { "combatant": 130, "activationBitfield": 8289 },
+      { "combatant": 131, "activationBitfield": 8289 },
+      { "combatant": 132, "activationBitfield": 8305 },
+      { "combatant": 133, "activationBitfield": 8305 }
+    ]
+  }
+}

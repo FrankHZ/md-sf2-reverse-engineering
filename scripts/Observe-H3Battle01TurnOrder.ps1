@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun', 'counter-same-side', 'counter-burst-rock', 'counter-special', 'double-validation')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'activation-secondary', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun', 'counter-same-side', 'counter-burst-rock', 'counter-special', 'double-validation')] [string] $Scenario = 'baseline',
     [ValidateSet('kraken-head', 'prism-flower', 'zeon-guard', 'taros')] [string] $SpecialCounterCase = 'kraken-head',
     [ValidateSet('muddled-actor', 'same-side')] [string] $DoubleValidationCase = 'muddled-actor',
     [int] $TimeoutSeconds = 45
@@ -85,7 +85,7 @@ event.on_bus_exec(function()
 end, 0x163BC, "sf2-flag-prompt", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario ~= "activation" then return end
+    if scenario ~= "activation" and scenario ~= "activation-secondary" then return end
     local function entry(combatant)
         local slot = combatant
         if combatant >= 128 then slot = combatant - 96 end
@@ -93,6 +93,9 @@ event.on_bus_exec(function()
     end
     memory.write_u8(entry(0) + 46, 8, "M68K BUS")
     memory.write_u8(entry(0) + 47, 12, "M68K BUS")
+    if scenario == "activation-secondary" then
+        memory.write_u8(entry(128) + 54, 0xF2, "M68K BUS")
+    end
     status("milestone:activation-boundary-setup")
 end, 0x2550C, "sf2-activation-boundary-setup", "M68K BUS")
 
@@ -115,7 +118,8 @@ local function capture_activation()
     for combatant = 128, 133 do
         snapshot.enemies[#snapshot.enemies + 1] = {
             combatant = combatant,
-            bitfield = memory.read_u16_be(entry(combatant) + 52, "M68K BUS")
+            bitfield = memory.read_u16_be(entry(combatant) + 52, "M68K BUS"),
+            trigger_regions = memory.read_u8(entry(combatant) + 54, "M68K BUS")
         }
     end
     return snapshot
@@ -726,7 +730,8 @@ event.on_bus_exec(function()
     for index = 1, #activation.enemies do
         if index > 1 then output:write(",") end
         local enemy = activation.enemies[index]
-        output:write(string.format('{"combatant":%d,"bitfield":%d}', enemy.combatant, enemy.bitfield))
+        output:write(string.format('{"combatant":%d,"bitfield":%d,"triggerRegions":%d}',
+            enemy.combatant, enemy.bitfield, enemy.trigger_regions))
     end
     output:write("]}}\n")
     output:close()

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-battle01-secondary-activation-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "function", "ram", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle01-secondary-activation-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 },
+    "scenario": { "const": "activation-secondary" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["activateEnemiesEntryAddress", "captureAddress", "triggerRegionsAddress"],
+      "properties": {
+        "activateEnemiesEntryAddress": { "const": 152844 },
+        "captureAddress": { "const": 152900 },
+        "triggerRegionsAddress": { "const": 1756746 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "activationBitfieldOffset", "triggerRegionsOffset"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 },
+        "combatantEntrySize": { "const": 56 },
+        "activationBitfieldOffset": { "const": 52 },
+        "triggerRegionsOffset": { "const": 54 }
+      }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false, "required": ["ally", "enemy"],
+      "properties": {
+        "ally": {
+          "type": "object", "additionalProperties": false, "required": ["combatant", "x", "y"],
+          "properties": { "combatant": { "const": 0 }, "x": { "const": 8 }, "y": { "const": 12 } }
+        },
+        "enemy": {
+          "type": "object", "additionalProperties": false,
+          "required": ["combatant", "naturalPrimaryRegion", "naturalSecondaryRegion", "controlledPrimaryRegion", "controlledSecondaryRegion", "controlledTriggerRegions", "initialActivationBitfield"],
+          "properties": {
+            "combatant": { "const": 128 },
+            "naturalPrimaryRegion": { "const": 2 },
+            "naturalSecondaryRegion": { "const": 15 },
+            "controlledPrimaryRegion": { "const": 15 },
+            "controlledSecondaryRegion": { "const": 2 },
+            "controlledTriggerRegions": { "const": 242 },
+            "initialActivationBitfield": { "const": 8288 }
+          }
+        }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["newlyTriggered", "regionFlags", "enemy", "otherPrimaryOnly"],
+      "properties": {
+        "newlyTriggered": { "const": 7 },
+        "regionFlags": { "const": [true, true, true] },
+        "enemy": { "$ref": "#/definitions/controlledEnemy" },
+        "otherPrimaryOnly": {
+          "type": "array", "minItems": 5, "maxItems": 5,
+          "items": { "$ref": "#/definitions/primaryOnlyEnemy" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "controlledEnemy": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "triggerRegions", "activationBitfield"],
+      "properties": { "combatant": { "const": 128 }, "triggerRegions": { "const": 242 }, "activationBitfield": { "const": 8291 } }
+    },
+    "primaryOnlyEnemy": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "activationBitfield"],
+      "properties": {
+        "combatant": { "type": "integer", "minimum": 129, "maximum": 133 },
+        "activationBitfield": { "enum": [8289, 8305] }
+      }
+    }
+  }
+}

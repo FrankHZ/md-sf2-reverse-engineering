@@ -14,6 +14,7 @@ pwsh ./scripts/Test-Battle01Extraction.ps1
 pwsh ./scripts/Test-Battle01SceneExtraction.ps1
 pwsh ./scripts/Test-H3Battle01TurnOrderFixture.ps1
 pwsh ./scripts/Test-H3Battle01RegionActivationFixture.ps1
+pwsh ./scripts/Test-H3Battle01SecondaryActivationFixture.ps1
 ```
 
 The pinned assembly source and an independent ROM decoder produce deterministic schema-valid
@@ -130,9 +131,15 @@ sets only bit 0 (`PRIMARY_ACTIVE`) for enemies whose primary region is active. A
 cross-product model independently evaluates the same two positions and source-extracted polygons
 before BizHawk launches.
 
-All six secondary region values are 15 (`NONE`), so this fixture does not yet exercise secondary
-activation or the resulting secondary-active bit. It also covers first-round evaluation only; later
-round clearing of the scan bitfield and region cutscene timing remain open.
+All six natural secondary region values are 15 (`NONE`). The companion controlled fixture therefore
+changes enemy 128 only at `ActivateEnemies` entry: its packed trigger byte goes from `0x2F`
+(`primary=2, secondary=NONE`) to `0xF2` (`primary=NONE, secondary=2`). Bowie remains at `(8,12)`, so
+all region flags become active. The original `TriggerRegionsAndActivateEnemies` secondary branch at
+`0x1ACE4A` changes that enemy's bitfield from `0x2060` to `0x2063`, setting both `PRIMARY_ACTIVE`
+and `SECONDARY_ACTIVE`. The other five enemies retain the primary-only results `0x2061`/`0x2071`.
+This confirms that secondary activation deliberately enables both mode bits rather than selecting
+only bit 1. First-round evaluation is covered; later-round clearing of the scan bitfield and region
+cutscene timing remain open.
 
-Cutscene command semantics, AI command-set programs, secondary-region activation, later-round region
-state, map graphics, and terrain-to-map-block rendering remain outside this contract.
+Cutscene command semantics, AI command-set programs, natural Battle 01 secondary-region data,
+later-round region state, map graphics, and terrain-to-map-block rendering remain outside this contract.

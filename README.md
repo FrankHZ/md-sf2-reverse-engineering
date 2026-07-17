@@ -184,7 +184,8 @@ fixture 覆盖和对现代重制的合同影响。
 初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo，边界 H3 另确认 AGI 127/128、第二行动、
 dead/unplaced 过滤与 signed-byte 稳定排序。区域激活 H3 进一步确认初始三块区域均未触发；把 Bowie
 移到 `(8,12)`（region 2 的边界）会同时触发三个 polygon，并只给对应六个 Gizmo 的原始 AI
-bitfield 增加 primary-active 位。AI 驱动的自然攻击另确认 30% 地形减伤和弓手对 hovering
+bitfield 增加 primary-active 位；受控 secondary-region 用例进一步确认 secondary 命中会同时置
+primary/secondary active 两位。AI 驱动的自然攻击另确认 30% 地形减伤和弓手对 hovering
 目标的 25% 加成顺序及整数截断，并继续覆盖 dodge、受控 critical、两次向下 spread、double/counter、
 死亡目标清除后续 double/counter，完整覆盖 double validator，并确认距离、睡眠/眩晕状态、同阵营标志及五种特殊敌人的方向性反击排除、HP 零下限、击杀判定、单行动 49 EXP 累加上限、
 reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实际入账。
@@ -213,8 +214,8 @@ reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实�
 
 ## 下一步
 
-下一块继续扩展 **Phase 2 的运行时证据**：补齐非 critical 的其他 spread seed、剩余的
-double/counter validation、secondary activation 与状态/抗性分支。
+下一块继续扩展 **Phase 2 的运行时证据**：补齐非 critical 的其他 spread seed、状态/抗性分支、
+后续回合 region 状态与自然 muddle/same-side/special-enemy action reachability。
 同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。
