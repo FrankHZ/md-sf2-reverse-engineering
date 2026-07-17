@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Mixed — RNG confirmed statically and at runtime; dependent mechanics static-only**
+- Status: **Mixed — RNG and stat gain confirmed at runtime; battle mechanics static-only**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -52,7 +52,7 @@ pwsh ./scripts/Test-H3RngFixture.ps1
 
 Generated Lua and observations are private/derived and remain under `local/derived/h3/`.
 
-## Confirmed Statically: Level-Up Randomization
+## Confirmed Statically and at Runtime: Stat-Gain Randomization
 
 `CalculateStatGain` reads the selected growth curve and calculates the projected growth portion for
 the current level. It then sets range 128, adds one RNG result, subtracts a second, adds 128 for
@@ -60,10 +60,26 @@ rounding, and shifts right eight bits. After adding that randomized gain to the 
 compares against the rounded expected minimum; if the new value is below that minimum, the returned
 gain receives the source-labeled “loser pity bonus” of +1.
 
+The second H3 fixture observes natural startup calls at `CalculateStatGain` entry `0x96BA`, its
+no-growth return at `0x96C2`, the pity branch at `0x972C`, and the normal return at `0x9734`. It
+controls only the two RNG seeds used by each active growth calculation and records the natural D1-D5
+inputs, both RNG results, selected return path, pity-branch execution, and returned D1 gain.
+
+Eighteen ordered cases pass across curve IDs 0–3 and levels 1–3. Coverage includes one curve-None
+early return, zero/one/two-point gains, and one observed pity increment. Before launching the
+emulator, the verifier independently recomputes every expected result from the H2 growth curves and
+the confirmed RNG formula; the runtime golden is therefore tied to both ROM execution and the static
+data contract.
+
+```powershell
+pwsh ./scripts/Test-H3StatGainFixture.ps1
+```
+
 The source also documents a concrete original bug at two class comparisons in `LevelUp`: TORT equals
 `CHAR_CLASS_LASTNONPROMOTED`, but the `blt` branch treats it as promoted and adds the 20-level promoted
 offset. This is confirmed as executable source/ROM logic, but its player-visible scenarios are not
-yet covered by H3. A remake must not silently choose preserve/fix behavior before a design decision.
+yet covered by H3. The fixture validates `CalculateStatGain`, not the complete `LevelUp` side effects.
+A remake must not silently choose preserve/fix behavior before a design decision.
 
 ## Confirmed Statically: Turn-Order Score
 
@@ -99,8 +115,8 @@ action routines and are not implied by this base-damage function alone.
 
 ## Unknown / Next Fixtures
 
-- Runtime fixtures for `CalculateStatGain`, including curve boundaries, the pity increment, and the
-  TORT effective-level bug.
+- Extend stat-gain runtime coverage through projection level 30 and promoted effective levels; cover
+  the TORT effective-level bug through the complete `LevelUp` caller.
 - Turn-order fixtures covering ties, AGI 127/128, second turns, dead/unplaced combatants, and exact
   RNG consumption order.
 - End-to-end physical attack fixtures separating base damage, land effect, archer bonus, random

@@ -1,6 +1,6 @@
 # Ally Growth and Spell Learning Contract
 
-- Status: **Confirmed** for source structure, curve arithmetic, counts, references, and deterministic extraction
+- Status: **Confirmed** static contract with initial stat-gain H3 coverage
 - Evidence date: 2026-07-17
 - Scope: stat-growth curves, per-class ally projections, and learned-spell lists
 
@@ -39,16 +39,17 @@ two trailing start-definition records, whose runtime reachability remains unknow
 ## Semantics Boundary
 
 **Confirmed** here means the stored curves, projections, list inheritance, and references reproduce
-the pinned source contract. The random variance, expected-minimum rounding, and promotion-level path
-have now been traced statically in
-[`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md), but controlled level-up outcomes,
-caps, and the documented TORT edge case still require H3 scenarios.
+the pinned source contract. Random variance, expected-minimum rounding, the curve-None path, and one
+minimum-stat pity increment are now covered by controlled H3 observations in
+[`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md). Complete level-up side effects,
+projection-level boundaries, promotion handling, caps, and the documented TORT edge case still need
+additional scenarios.
 
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Create a small emulator-backed fixture that records deterministic gains for a controlled
-ally/class/level and RNG state, including the expected-minimum bonus and TORT promotion boundary.
-That fixture should become the implementation-neutral input for a later remake growth module.
+Extend the committed emulator-backed stat-gain fixture to the projection-level and promotion
+boundaries, then drive the complete `LevelUp` caller for the TORT edge case. The existing fixture is
+already suitable as the first implementation-neutral input for a later remake growth module.

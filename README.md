@@ -6,8 +6,8 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职和敌人定义的 source/ROM 双路径 H2、成长曲线与
-法术学习合同，以及首个 RNG 整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始重制
-实现。
+法术学习合同，以及 RNG/成长计算整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+重制实现。
 
 ## 我们要交付什么
 
@@ -110,7 +110,7 @@ pwsh ./scripts/verify.ps1
 ```
 
 统一入口已经覆盖 H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的 RNG H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的 RNG 与成长计算 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -176,8 +176,9 @@ fixture 覆盖和对现代重制的合同影响。
 5 条成长曲线、59 个职业成长记录和 122 个学法术条目，以及 5 段转职表、103 个敌人名称和
 103 个 56-byte 敌人定义。新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
-原版名称清单。首个 H3 另以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM
-seed 更新和 D7 输出。
+原版名称清单。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
+更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
+最低成长补偿分支。
 
 ### Phase 3 — Game Design Reconstruction
 

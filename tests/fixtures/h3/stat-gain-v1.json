@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-calculate-stat-gain-startup-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": {
+    "entryAddress": 38586,
+    "noneReturnAddress": 38594,
+    "growthReturnAddress": 38708,
+    "pityAddress": 38700,
+    "rngEntryAddress": 5632,
+    "rngObserveAddress": 5670,
+    "seedAddress": 16768676
+  },
+  "cases": [
+    { "id": "startup-stat-01", "input": { "current": 10, "curve": 1, "start": 10, "projected": 34, "level": 1 }, "rng": [{ "seed": 4660, "expectedSeed": 60587, "expectedValue": 118 }, { "seed": 65278, "expectedSeed": 62189, "expectedValue": 121 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-02", "input": { "current": 7, "curve": 3, "start": 7, "projected": 54, "level": 1 }, "rng": [{ "seed": 9320, "expectedSeed": 55631, "expectedValue": 108 }, { "seed": 65021, "expectedSeed": 58848, "expectedValue": 114 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 2 },
+    { "id": "startup-stat-03", "input": { "current": 4, "curve": 1, "start": 4, "projected": 18, "level": 1 }, "rng": [{ "seed": 13980, "expectedSeed": 50675, "expectedValue": 98 }, { "seed": 64764, "expectedSeed": 55507, "expectedValue": 108 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 0 },
+    { "id": "startup-stat-04", "input": { "current": 4, "curve": 1, "start": 4, "projected": 26, "level": 1 }, "rng": [{ "seed": 18640, "expectedSeed": 45719, "expectedValue": 89 }, { "seed": 64507, "expectedSeed": 52166, "expectedValue": 101 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-05", "input": { "current": 6, "curve": 1, "start": 6, "projected": 42, "level": 1 }, "rng": [{ "seed": 23300, "expectedSeed": 40763, "expectedValue": 79 }, { "seed": 64250, "expectedSeed": 48825, "expectedValue": 95 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-06", "input": { "current": 11, "curve": 1, "start": 10, "projected": 34, "level": 2 }, "rng": [{ "seed": 27960, "expectedSeed": 35807, "expectedValue": 69 }, { "seed": 63993, "expectedSeed": 45484, "expectedValue": 88 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-07", "input": { "current": 9, "curve": 3, "start": 7, "projected": 54, "level": 2 }, "rng": [{ "seed": 32620, "expectedSeed": 30851, "expectedValue": 60 }, { "seed": 63736, "expectedSeed": 42143, "expectedValue": 82 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 2 },
+    { "id": "startup-stat-08", "input": { "current": 4, "curve": 1, "start": 4, "projected": 18, "level": 2 }, "rng": [{ "seed": 37280, "expectedSeed": 25895, "expectedValue": 50 }, { "seed": 63479, "expectedSeed": 38802, "expectedValue": 75 }], "expectedPath": "growth", "expectedPity": true, "expectedGain": 1 },
+    { "id": "startup-stat-09", "input": { "current": 5, "curve": 1, "start": 4, "projected": 26, "level": 2 }, "rng": [{ "seed": 41940, "expectedSeed": 20939, "expectedValue": 40 }, { "seed": 63222, "expectedSeed": 35461, "expectedValue": 69 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-10", "input": { "current": 7, "curve": 1, "start": 6, "projected": 42, "level": 2 }, "rng": [{ "seed": 46600, "expectedSeed": 15983, "expectedValue": 31 }, { "seed": 62965, "expectedSeed": 32120, "expectedValue": 62 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-11", "input": { "current": 12, "curve": 1, "start": 10, "projected": 34, "level": 3 }, "rng": [{ "seed": 51260, "expectedSeed": 11027, "expectedValue": 21 }, { "seed": 62708, "expectedSeed": 28779, "expectedValue": 56 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-12", "input": { "current": 11, "curve": 3, "start": 7, "projected": 54, "level": 3 }, "rng": [{ "seed": 55920, "expectedSeed": 6071, "expectedValue": 11 }, { "seed": 62451, "expectedSeed": 25438, "expectedValue": 49 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 2 },
+    { "id": "startup-stat-13", "input": { "current": 5, "curve": 1, "start": 4, "projected": 18, "level": 3 }, "rng": [{ "seed": 60580, "expectedSeed": 1115, "expectedValue": 2 }, { "seed": 62194, "expectedSeed": 22097, "expectedValue": 43 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 0 },
+    { "id": "startup-stat-14", "input": { "current": 6, "curve": 1, "start": 4, "projected": 26, "level": 3 }, "rng": [{ "seed": 65240, "expectedSeed": 61695, "expectedValue": 120 }, { "seed": 61937, "expectedSeed": 18756, "expectedValue": 36 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-15", "input": { "current": 8, "curve": 1, "start": 6, "projected": 42, "level": 3 }, "rng": [{ "seed": 4364, "expectedSeed": 56739, "expectedValue": 110 }, { "seed": 61680, "expectedSeed": 15415, "expectedValue": 30 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 2 },
+    { "id": "startup-stat-16", "input": { "current": 8, "curve": 2, "start": 8, "projected": 42, "level": 1 }, "rng": [{ "seed": 9024, "expectedSeed": 51783, "expectedValue": 101 }, { "seed": 61423, "expectedSeed": 12074, "expectedValue": 23 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 },
+    { "id": "startup-stat-17", "input": { "current": 0, "curve": 0, "start": 0, "projected": 0, "level": 1 }, "rng": [], "expectedPath": "none", "expectedPity": false, "expectedGain": 0 },
+    { "id": "startup-stat-18", "input": { "current": 5, "curve": 2, "start": 5, "projected": 45, "level": 1 }, "rng": [{ "seed": 18344, "expectedSeed": 41871, "expectedValue": 81 }, { "seed": 60909, "expectedSeed": 5392, "expectedValue": 10 }], "expectedPath": "growth", "expectedPity": false, "expectedGain": 1 }
+  ]
+}

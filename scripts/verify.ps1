@@ -35,6 +35,8 @@ if (-not $SkipExtraction) {
 if (-not $SkipRuntime) {
     Write-Output '=== H3: original RNG runtime behavior ==='
     & (Join-Path $PSScriptRoot 'Test-H3RngFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: original stat-gain runtime behavior ==='
+    & (Join-Path $PSScriptRoot 'Test-H3StatGainFixture.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
 }
 
 Write-Output '=== Repository verification: PASS ==='
