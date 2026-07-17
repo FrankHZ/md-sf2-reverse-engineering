@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-physical-damage-land-archer-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": { "entryAddress": 43966, "returnAddress": 44108 },
+  "battleId": 1,
+  "scenario": "damage",
+  "setup": {
+    "actor": 0, "target": 128,
+    "attack": 99, "defense": 20,
+    "actorMovetype": 8, "targetMovetype": 6,
+    "targetTerrain": 3, "landEffect": 2
+  },
+  "expected": { "base": 79, "multiplier": 205, "reduced": 63, "archerBonus": true, "result": 78 }
+}

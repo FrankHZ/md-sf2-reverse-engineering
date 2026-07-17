@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-physical-damage-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "battleId", "scenario", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-physical-damage-land-archer-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false, "required": ["entryAddress", "returnAddress"],
+      "properties": { "entryAddress": { "const": 43966 }, "returnAddress": { "const": 44108 } }
+    },
+    "battleId": { "const": 1 }, "scenario": { "const": "damage" },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "target", "attack", "defense", "actorMovetype", "targetMovetype", "targetTerrain", "landEffect"],
+      "properties": {
+        "actor": { "const": 0 }, "target": { "const": 128 }, "attack": { "const": 99 }, "defense": { "const": 20 },
+        "actorMovetype": { "const": 8 }, "targetMovetype": { "const": 6 }, "targetTerrain": { "const": 3 }, "landEffect": { "const": 2 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["base", "multiplier", "reduced", "archerBonus", "result"],
+      "properties": {
+        "base": { "const": 79 }, "multiplier": { "const": 205 }, "reduced": { "const": 63 },
+        "archerBonus": { "const": true }, "result": { "const": 78 }
+      }
+    }
+  }
+}

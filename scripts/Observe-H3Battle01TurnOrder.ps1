@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'damage')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -30,6 +30,7 @@ local prompt_count = 0
 local queue = {}
 local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C" }
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
+local damage = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
 end
@@ -80,10 +81,27 @@ event.on_bus_exec(function()
         memory.write_u8(entry(1) + 23, 127, "M68K BUS")
         memory.write_u16_be(entry(2) + 14, 0, "M68K BUS")
         memory.write_u8(entry(128) + 46, 255, "M68K BUS")
+    elseif scenario == "damage" then
+        local function entry(combatant)
+            local slot = combatant
+            if combatant >= 128 then slot = combatant - 96 end
+            return 0xFFE800 + slot * 56
+        end
+        memory.write_u8(entry(0) + 19, 99, "M68K BUS")
+        memory.write_u8(entry(0) + 49, 0x80, "M68K BUS")
+        memory.write_u16_be(entry(0) + 52, 4, "M68K BUS")
+        memory.write_u16_be(entry(128) + 12, 100, "M68K BUS")
+        memory.write_u16_be(entry(128) + 14, 100, "M68K BUS")
+        memory.write_u8(entry(128) + 21, 20, "M68K BUS")
+        memory.write_u8(entry(128) + 46, 8, "M68K BUS")
+        memory.write_u8(entry(128) + 47, 17, "M68K BUS")
+        memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
+        memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
 
 event.on_bus_exec(function()
+    if scenario == "damage" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -101,6 +119,48 @@ event.on_bus_exec(function()
     output:close()
     client.exitCode(0)
 end, 0x2559E, "sf2-turn-order-observe", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" then return end
+    damage = { bonus = false }
+end, 0xABBE, "sf2-damage-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.actor = emu.getregister("M68K D0") & 0xFF end
+end, 0xABC0, "sf2-damage-actor", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.target = emu.getregister("M68K D0") & 0xFF end
+end, 0xABCA, "sf2-damage-target", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.land_effect = emu.getregister("M68K D1") & 0xFF end
+end, 0xABE0, "sf2-damage-land-effect", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.base = emu.getregister("M68K D6") & 0xFFFF; damage.multiplier = emu.getregister("M68K D3") & 0xFFFF end
+end, 0xABFA, "sf2-damage-before-land", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.reduced = emu.getregister("M68K D6") & 0xFFFF end
+end, 0xABFE, "sf2-damage-after-land", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.bonus = true end
+end, 0xAC46, "sf2-damage-archer-bonus", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    damage.result = emu.getregister("M68K D6") & 0xFFFF
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"damage","battle":%d,"actor":%d,"target":%d,"base":%d,"landEffect":%d,"multiplier":%d,"reduced":%d,"archerBonus":%s,"result":%d}\n',
+        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), damage.actor, damage.target, damage.base,
+        damage.land_effect, damage.multiplier, damage.reduced, tostring(damage.bonus), damage.result
+    ))
+    output:close()
+    client.exitCode(0)
+end, 0xAC4C, "sf2-damage-return", "M68K BUS")
 
 local frames = 0
 while true do

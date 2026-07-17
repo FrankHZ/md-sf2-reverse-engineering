@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Mixed — RNG, stat gain, and Battle 01 turn order confirmed at runtime; damage static-only**
+- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and physical base damage**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -132,7 +132,7 @@ ROM execution must match the committed golden.
 pwsh ./scripts/Test-H3TurnOrderBoundariesFixture.ps1
 ```
 
-## Confirmed Statically: Physical Base Damage
+## Confirmed Statically and at Runtime: Physical Base Damage
 
 `battlesceneScript_CalculateDamage` computes `max(current ATT - current DEF, 1)`, then applies the
 target's land-effect setting with integer truncation:
@@ -148,6 +148,24 @@ archer, centaur archer, or stealth archer, it then adds `floor(damage / 4)`. Cri
 counter, dodge, resistance, status, and the final random damage spread occur in surrounding battle
 action routines and are not implied by this base-damage function alone.
 
+The physical-damage H3 fixture reuses the reset-to-Battle-Test harness. Immediately before the
+first turn it sets Bowie to the original AI-controlled state, gives him archer movetype and ATT 99,
+and places a hovering Gizmo with DEF 20 on adjacent grass. The original AI then selects a normal
+attack and naturally calls `battlesceneScript_CalculateDamage`; the harness does not jump to the
+routine or write CPU registers.
+
+Callbacks confirm the complete integer path: base damage `99 - 20 = 79`; hovering-on-grass land
+effect setting 2 selects multiplier 205; `floor(79 * 205 / 256) = 63`; the archer branch adds
+`floor(63 / 4) = 15`; the routine returns 78. A static model recomputes those values before emulator
+launch, while runtime callbacks separately prove the land-effect and archer branches executed.
+
+```powershell
+pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
+```
+
+This fixture ends at the base-damage return. It does not claim the later random spread, critical,
+double, counter, dodge, resistance, HP application, EXP, or death-message behavior.
+
 ## Unknown / Next Fixtures
 
 - Extend stat-gain runtime coverage through projection level 30 and promoted effective levels; cover
@@ -155,8 +173,8 @@ action routines and are not implied by this base-damage function alone.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- End-to-end physical attack fixtures separating base damage, land effect, archer bonus, random
-  spread, critical/double/counter logic, and HP application.
+- Extend the now-confirmed base-damage, land-effect, and archer-bonus path through random spread,
+  critical/double/counter logic, HP application, and damage EXP.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

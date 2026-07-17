@@ -45,6 +45,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3Battle01TurnOrderFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: turn-order boundary behavior ==='
     & (Join-Path $PSScriptRoot 'Test-H3TurnOrderBoundariesFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: physical damage, land effect, and archer bonus ==='
+    & (Join-Path $PSScriptRoot 'Test-H3PhysicalDamageFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='
