@@ -123,15 +123,20 @@ The second attack reads the target's already reduced temporary HP. The counter r
 target and uses attack type 2. **Confirmed:** target death rejects both follow-ups. The lethal
 fixture supplies true double/counter toggles at the validation boundary after the natural first hit
 sets `targetDies`; each is false at return, with only one damage calculation. The successful chain
-separately owns the natural prowess/RNG decision. Side, status, and special-enemy rejection rules are
+separately owns the natural prowess/RNG decision. Side, stun, and special-enemy rejection rules are
 not yet generalized; callers must not treat the one successful fixture as proof that every requested
 follow-up is valid.
 
 **Confirmed:** an otherwise eligible counter is also rejected when the target cannot reach the
 original actor. The range fixture keeps the target alive, disables double, supplies a true counter
 toggle, and moves the actor to produce Manhattan distance 25 before the original validator executes;
-the counter returns false and no additional damage call occurs. Status, side, and special-enemy
+the counter returns false and no additional damage call occurs. Stun, side, and special-enemy
 rejections remain unverified.
+
+**Confirmed:** sleep also rejects an otherwise eligible counter. The sleep fixture keeps the target
+alive and adjacent, disables double, supplies a true counter toggle, and writes status word `0x00C0`
+at the documented combatant status offset immediately before validation. The original status getter
+identifies sleep, the counter returns false, and no additional damage call occurs.
 
 ### 8. Restore snapshots, then replay commands persistently
 
@@ -190,6 +195,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
 | `sf2-counter-range-validation-v1` | `tests/fixtures/h3/counter-range-v1.json` | Out-of-range rejection of a forced-valid counter toggle |
+| `sf2-counter-sleep-validation-v1` | `tests/fixtures/h3/counter-sleep-v1.json` | Sleeping-target rejection of a forced-valid counter toggle |
 
 H4 passes only when ordered RNG consumption, intermediate integers, command order, and persistent
 state match. Rendering, animation duration, input feel, and audiovisual assets are not H4 assertions.
@@ -207,7 +213,7 @@ The following remain **Unknown** for a general implementation and block declarin
 complete:
 
 - all dodge eligibility and range-selection branches;
-- remaining failed double/counter validation: side, status, and special-enemy exclusions;
+- remaining failed double/counter validation: side, stun, and special-enemy exclusions;
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;

@@ -193,10 +193,17 @@ The observed Manhattan distance is 25. With the ordinary opposing-side, consciou
 special-enemy exclusion changed, `battlesceneScript_ValidateCounterAttack` clears the counter at
 `0xA538`; no second damage calculation executes. This isolates the out-of-range rejection branch.
 
+The counter-sleep companion keeps the same 182 HP nonlethal target, disabled double, and true
+counter toggle. Immediately before validation, it writes status word `0x00C0` at combatant offset
+44. The original `GetStatusEffects` returns `STATUSEFFECT_SLEEP`, so
+`battlesceneScript_ValidateCounterAttack` clears the counter at `0xA538`; only the first damage
+calculation executes. This isolates the sleeping-target rejection from range and death checks.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
 pwsh ./scripts/Test-H3CounterRangeFixture.ps1
+pwsh ./scripts/Test-H3CounterSleepFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -243,7 +250,7 @@ The verifier independently models dodge ranges, all LCG transitions, land reduct
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
 This scenario confirms one valid adjacent counter and one double attack. Remaining failed
-double/counter validation (status, same-side, special enemy exclusions) and whether a second/counter
+double/counter validation (stun, same-side, special enemy exclusions) and whether a second/counter
 critical can occur remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
