@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-counter-burst-rock-validation-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "counter-burst-rock",
+  "function": {
+    "calculateDamageEntryAddress": 43966,
+    "validateDoubleEntryAddress": 42078,
+    "validateCounterEntryAddress": 42140,
+    "validateCounterReturnAddress": 42316,
+    "getEnemyAddress": 34012
+  },
+  "setup": {
+    "actor": { "combatant": 0, "hp": 200, "attack": 50, "defense": 30, "movetype": 0, "prowess": 56 },
+    "target": { "combatant": 128, "hp": 200, "attack": 40, "defense": 20, "movetype": 6, "prowess": 200 },
+    "targetLandEffect": 2,
+    "dodgeSeed": 65535,
+    "forcedValidationToggles": { "double": false, "counter": true },
+    "forcedTargetEnemy": 32
+  },
+  "expected": {
+    "firstDamage": 18,
+    "targetDies": false,
+    "naturalEnemy": 39,
+    "enemy": 32,
+    "counterBefore": true,
+    "counterAfter": false,
+    "damageCalls": 1,
+    "targetHp": 182
+  }
+}

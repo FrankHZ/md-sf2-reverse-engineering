@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun', 'counter-same-side')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun', 'counter-same-side', 'counter-burst-rock')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -39,6 +39,7 @@ local lethal_validation = nil
 local range_validation = nil
 local status_validation = nil
 local side_validation = nil
+local special_validation = nil
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -216,7 +217,8 @@ event.on_bus_exec(function()
         memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
         if lethal_validation == nil then lethal_validation = { damage_calls = 0 } end
-    elseif scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" or scenario == "counter-same-side" then
+    elseif scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" or
+           scenario == "counter-same-side" or scenario == "counter-burst-rock" then
         local function entry(combatant)
             local slot = combatant
             if combatant >= 128 then slot = combatant - 96 end
@@ -246,6 +248,8 @@ event.on_bus_exec(function()
             status_validation = { damage_calls = 0, status_value = status_value }
         elseif scenario == "counter-same-side" and side_validation == nil then
             side_validation = { damage_calls = 0 }
+        elseif scenario == "counter-burst-rock" and special_validation == nil then
+            special_validation = { damage_calls = 0 }
         end
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
@@ -261,7 +265,8 @@ event.on_bus_exec(function()
     if (scenario == "lethal" and lethal_validation ~= nil) or
        (scenario == "counter-range" and range_validation ~= nil) or
        ((scenario == "counter-sleep" or scenario == "counter-stun") and status_validation ~= nil) or
-       (scenario == "counter-same-side" and side_validation ~= nil) then
+       (scenario == "counter-same-side" and side_validation ~= nil) or
+       (scenario == "counter-burst-rock" and special_validation ~= nil) then
         memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
         return
     end
@@ -460,6 +465,39 @@ event.on_bus_exec(function()
     output:close(); client.exitCode(0)
 end, 0xA54C, "sf2-same-side-counter-validation-return", "M68K BUS")
 
+event.on_bus_exec(function()
+    if scenario ~= "counter-burst-rock" or special_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    memory.write_u8((a2 - 13) & 0xFFFFFF, 0, "M68K BUS")
+    memory.write_u8((a2 - 12) & 0xFFFFFF, 0xFF, "M68K BUS")
+    special_validation.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA45E, "sf2-burst-rock-double-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-burst-rock" or special_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    local target_entry = 0xFFE800 + 32 * 56
+    special_validation.natural_enemy = memory.read_u8(target_entry + 55, "M68K BUS")
+    memory.write_u8(target_entry + 55, 32, "M68K BUS")
+    special_validation.enemy = memory.read_u8(target_entry + 55, "M68K BUS")
+    special_validation.counter_before = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA49C, "sf2-burst-rock-counter-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-burst-rock" or special_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    special_validation.counter_after = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"counter-burst-rock","battle":%d,"targetDies":%s,"naturalEnemy":%d,"enemy":%d,"counterBefore":%s,"counterAfter":%s,"damageCalls":%d,"targetHp":%d}\n',
+        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), tostring(special_validation.target_dies),
+        special_validation.natural_enemy, special_validation.enemy, tostring(special_validation.counter_before),
+        tostring(special_validation.counter_after), special_validation.damage_calls,
+        memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    ))
+    output:close(); client.exitCode(0)
+end, 0xA54C, "sf2-burst-rock-counter-validation-return", "M68K BUS")
+
 local function chain_attack()
     if chain == nil or #chain.attacks == 0 then return nil end
     return chain.attacks[#chain.attacks]
@@ -565,7 +603,7 @@ end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
 event.on_bus_exec(function()
     if scenario == "damage" or scenario == "chain" or scenario == "dodge" or scenario == "lethal" or
        scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" or
-       scenario == "counter-same-side" then return end
+       scenario == "counter-same-side" or scenario == "counter-burst-rock" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -610,6 +648,10 @@ event.on_bus_exec(function()
     end
     if scenario == "counter-same-side" and side_validation ~= nil then
         side_validation.damage_calls = side_validation.damage_calls + 1
+        return
+    end
+    if scenario == "counter-burst-rock" and special_validation ~= nil then
+        special_validation.damage_calls = special_validation.damage_calls + 1
         return
     end
     if scenario ~= "damage" then return end

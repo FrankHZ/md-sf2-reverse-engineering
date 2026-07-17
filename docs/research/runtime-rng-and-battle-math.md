@@ -209,6 +209,13 @@ only that flag to true. The original early check clears the forced-valid counter
 at 182 HP with one damage calculation. This confirms the validator branch without claiming that the
 ordinary action selector naturally schedules an ally-on-ally physical attack.
 
+The counter-Burst-Rock companion observes the prospective counterattacker's natural enemy index 39
+(Gizmo), then changes only combatant offset 55 to enemy index 32 (Burst Rock). The original
+`GetEnemy` call sees Burst Rock and clears the counter before range evaluation; target HP remains
+182 with one damage calculation. In the actual call convention `a4` points at the original attack
+target, so this runtime result also resolves the nearby source comment's ambiguous direction: Burst
+Rock is prevented from counterattacking.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
@@ -216,6 +223,7 @@ pwsh ./scripts/Test-H3CounterRangeFixture.ps1
 pwsh ./scripts/Test-H3CounterSleepFixture.ps1
 pwsh ./scripts/Test-H3CounterStunFixture.ps1
 pwsh ./scripts/Test-H3CounterSameSideFixture.ps1
+pwsh ./scripts/Test-H3CounterBurstRockFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -262,7 +270,7 @@ The verifier independently models dodge ranges, all LCG transitions, land reduct
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
 This scenario confirms one valid adjacent counter and one double attack. Remaining failed
-double/counter validation (special enemy exclusions and natural same-side reachability) and whether a second/counter
+double/counter validation (remaining special-enemy exclusions and natural same-side reachability) and whether a second/counter
 critical can occur remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
