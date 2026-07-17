@@ -123,14 +123,14 @@ The second attack reads the target's already reduced temporary HP. The counter r
 target and uses attack type 2. **Confirmed:** target death rejects both follow-ups. The lethal
 fixture supplies true double/counter toggles at the validation boundary after the natural first hit
 sets `targetDies`; each is false at return, with only one damage calculation. The successful chain
-separately owns the natural prowess/RNG decision. Side and special-enemy rejection rules are
+separately owns the natural prowess/RNG decision. Special-enemy rejection rules are
 not yet generalized; callers must not treat the one successful fixture as proof that every requested
 follow-up is valid.
 
 **Confirmed:** an otherwise eligible counter is also rejected when the target cannot reach the
 original actor. The range fixture keeps the target alive, disables double, supplies a true counter
 toggle, and moves the actor to produce Manhattan distance 25 before the original validator executes;
-the counter returns false and no additional damage call occurs. Side and special-enemy
+the counter returns false and no additional damage call occurs. Special-enemy
 rejections remain unverified.
 
 **Confirmed:** sleep also rejects an otherwise eligible counter. The sleep fixture keeps the target
@@ -142,6 +142,12 @@ identifies sleep, the counter returns false, and no additional damage call occur
 same live adjacent target and forced-valid counter seam but writes status word `0x0001`. The original
 status getter identifies stun after its separate sleep check, clears counter, and performs no second
 damage calculation.
+
+**Confirmed at the validation seam:** the same-side flag rejects a counter. The fixture observes the
+natural opposing-side flag as false, then sets only `targetIsOnSameSide` true immediately before the
+original validator. With a live adjacent target and forced-valid counter, the validator clears the
+toggle and performs no second damage calculation. A later fixture should still exercise a naturally
+same-side action producer; this result owns the validator branch, not target-selection reachability.
 
 ### 8. Restore snapshots, then replay commands persistently
 
@@ -202,6 +208,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-counter-range-validation-v1` | `tests/fixtures/h3/counter-range-v1.json` | Out-of-range rejection of a forced-valid counter toggle |
 | `sf2-counter-sleep-validation-v1` | `tests/fixtures/h3/counter-sleep-v1.json` | Sleeping-target rejection of a forced-valid counter toggle |
 | `sf2-counter-stun-validation-v1` | `tests/fixtures/h3/counter-stun-v1.json` | Stunned-target rejection of a forced-valid counter toggle |
+| `sf2-counter-same-side-validation-v1` | `tests/fixtures/h3/counter-same-side-v1.json` | Same-side flag rejection at the original counter-validation seam |
 
 H4 passes only when ordered RNG consumption, intermediate integers, command order, and persistent
 state match. Rendering, animation duration, input feel, and audiovisual assets are not H4 assertions.
@@ -219,7 +226,7 @@ The following remain **Unknown** for a general implementation and block declarin
 complete:
 
 - all dodge eligibility and range-selection branches;
-- remaining failed double/counter validation: side and special-enemy exclusions;
+- remaining failed double/counter validation: special-enemy exclusions and natural same-side action reachability;
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;

@@ -203,12 +203,19 @@ The counter-stun companion instead writes status word `0x0001`. It passes the or
 then the second `GetStatusEffects` call returns `STATUSEFFECT_STUN`; the same clear path rejects the
 otherwise eligible live adjacent counter with one total damage calculation.
 
+The counter-same-side companion leaves the opposing Battle 01 combatants unchanged and observes the
+natural `targetIsOnSameSide` stack flag as false. Immediately before counter validation it changes
+only that flag to true. The original early check clears the forced-valid counter, leaving the target
+at 182 HP with one damage calculation. This confirms the validator branch without claiming that the
+ordinary action selector naturally schedules an ally-on-ally physical attack.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
 pwsh ./scripts/Test-H3CounterRangeFixture.ps1
 pwsh ./scripts/Test-H3CounterSleepFixture.ps1
 pwsh ./scripts/Test-H3CounterStunFixture.ps1
+pwsh ./scripts/Test-H3CounterSameSideFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -255,7 +262,7 @@ The verifier independently models dodge ranges, all LCG transitions, land reduct
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
 This scenario confirms one valid adjacent counter and one double attack. Remaining failed
-double/counter validation (same-side and special enemy exclusions) and whether a second/counter
+double/counter validation (special enemy exclusions and natural same-side reachability) and whether a second/counter
 critical can occur remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets

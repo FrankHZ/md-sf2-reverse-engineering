@@ -64,6 +64,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3CounterSleepFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: stunned target rejects counter follow-up ==='
     & (Join-Path $PSScriptRoot 'Test-H3CounterStunFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: same-side target rejects counter follow-up ==='
+    & (Join-Path $PSScriptRoot 'Test-H3CounterSameSideFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='
