@@ -109,10 +109,10 @@ active slice.
 ## Harness Contract
 
 The root verification entry point is `pwsh ./scripts/verify.ps1`. Keep it
-non-interactive, deterministic, and safe to rerun. It currently implements input,
-toolchain-provenance, original-rebuild, source/ROM static parity, ally-growth, promotion/enemy and
-Battle 01 scene extraction, plus BizHawk RNG/stat-gain/turn-order/region-activation/physical-attack-chain
-behavior fixtures; extend the same entry
+non-interactive, deterministic, and safe to rerun. It currently implements design-contract
+traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
+promotion/enemy and Battle 01 scene extraction, plus BizHawk
+RNG/stat-gain/turn-order/region-activation/physical-attack-chain/dodge behavior fixtures; extend the same entry
 point as later rails become available:
 
 1. **Input identity**: size, hashes, console header, product code, region, and ROM

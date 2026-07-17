@@ -25,6 +25,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 `design/` 将已确认行为整理成实现无关的游戏设计规格。Phase 2 开始按 subsystem 创建；不能用
 设计文档反向“证明”逆向结论。
 
+- [`combat-resolution.md`](./design/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
+  spread、double/counter 到临时 HP、reaction 回放和 EXP 的实现无关合同，以及未来 H4 的共享
+  fixture 边界。
+
 ## Decisions
 
 `decisions/` 记录引擎、模拟器、数据格式和工具链等耐久选择。只有出现真实分歧且选择会约束

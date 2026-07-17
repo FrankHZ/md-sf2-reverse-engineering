@@ -10,6 +10,9 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+Write-Output '=== Documentation: design-contract traceability ==='
+& (Join-Path $PSScriptRoot 'Test-DesignContracts.ps1')
+
 Write-Output '=== H0: ROM baseline ==='
 & (Join-Path $PSScriptRoot 'Test-RomBaseline.ps1') -RomPath $RomPath
 
