@@ -13,6 +13,9 @@ $ErrorActionPreference = 'Stop'
 Write-Output '=== Documentation: design-contract traceability ==='
 & (Join-Path $PSScriptRoot 'Test-DesignContracts.ps1')
 
+Write-Output '=== Research: symbol, address, fixture, and document index ==='
+& (Join-Path $PSScriptRoot 'Test-ResearchIndex.ps1') -UpstreamPath $UpstreamPath
+
 Write-Output '=== H0: ROM baseline ==='
 & (Join-Path $PSScriptRoot 'Test-RomBaseline.ps1') -RomPath $RomPath
 

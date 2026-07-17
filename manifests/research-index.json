@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "sourceRoot": "disasm",
+    "listingPath": "build/sf2build-h1.lst"
+  },
+  "rom": {
+    "release": "Shining Force II (USA retail)",
+    "sha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+  },
+  "records": [
+    {
+      "id": "battle.activation.activate-enemies",
+      "subsystem": "battle.activation",
+      "status": "confirmed",
+      "symbol": "ActivateEnemies",
+      "sourcePath": "code/gameflow/battle/battleloop/activateenemies.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 152844 },
+        { "id": "capture", "space": "rom", "kind": "observation", "value": 152900 },
+        { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072, "symbol": "COMBATANT_DATA" },
+        { "id": "game-flags", "space": "ram", "kind": "state", "value": 16774790, "symbol": "GAME_FLAGS" },
+        { "id": "newly-triggered-regions", "space": "ram", "kind": "state", "value": 16757260, "symbol": "NEWLY_TRIGGERED_BATTLE_REGIONS" }
+      ],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle01-region-activation-v1.json", "fixtureId": "sf2-battle01-region-activation-v1", "verifier": "scripts/Test-H3Battle01RegionActivationFixture.ps1",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.entryAddress" },
+            { "addressId": "capture", "fixtureField": "function.observeAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+            { "addressId": "game-flags", "fixtureField": "ram.gameFlagsAddress" },
+            { "addressId": "newly-triggered-regions", "fixtureField": "ram.newlyTriggeredRegionsAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle01-secondary-activation-v1.json", "fixtureId": "sf2-battle01-secondary-activation-v1", "verifier": "scripts/Test-H3Battle01SecondaryActivationFixture.ps1",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.activateEnemiesEntryAddress" },
+            { "addressId": "capture", "fixtureField": "function.captureAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" }
+          ]
+        }
+      ],
+      "documents": ["docs/research/battle01-placement.md"]
+    },
+    {
+      "id": "battle.activation.trigger-regions-and-activate-enemies",
+      "subsystem": "battle.activation",
+      "status": "confirmed",
+      "symbol": "TriggerRegionsAndActivateEnemies",
+      "sourcePath": "code/gameflow/battle/battleloop/triggerregions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1756746 }],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/battle01-secondary-activation-v1.json", "fixtureId": "sf2-battle01-secondary-activation-v1", "verifier": "scripts/Test-H3Battle01SecondaryActivationFixture.ps1",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.triggerRegionsAddress" }]
+      }],
+      "documents": ["docs/research/battle01-placement.md"]
+    },
+    {
+      "id": "battle.combatant.get-enemy",
+      "subsystem": "battle.combatant",
+      "status": "confirmed",
+      "symbol": "GetEnemy",
+      "sourcePath": "code/common/stats/combatantstats_1.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 34012 }],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-burst-rock-v1.json", "fixtureId": "sf2-counter-burst-rock-validation-v1", "verifier": "scripts/Test-H3CounterBurstRockFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.getEnemyAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-special-enemies-v1.json", "fixtureId": "sf2-counter-special-enemies-validation-v1", "verifier": "scripts/Test-H3CounterSpecialEnemiesFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.getEnemyAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.combatant.get-status-effects",
+      "subsystem": "battle.combatant",
+      "status": "confirmed",
+      "symbol": "GetStatusEffects",
+      "sourcePath": "code/common/stats/combatantstats_1.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 33830 }],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-sleep-v1.json", "fixtureId": "sf2-counter-sleep-validation-v1", "verifier": "scripts/Test-H3CounterSleepFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.getStatusEffectsAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-stun-v1.json", "fixtureId": "sf2-counter-stun-validation-v1", "verifier": "scripts/Test-H3CounterStunFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.getStatusEffectsAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.damage.calculate-physical",
+      "subsystem": "battle.damage",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_CalculateDamage",
+      "sourcePath": "code/gameflow/battle/battleactions/calculatedamage.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43966 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 44108 }
+      ],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/physical-damage-v1.json", "fixtureId": "sf2-physical-damage-land-archer-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "return", "fixtureField": "function.returnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/lethal-followup-v1.json", "fixtureId": "sf2-lethal-followup-validation-v1", "verifier": "scripts/Test-H3LethalFollowupFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-range-v1.json", "fixtureId": "sf2-counter-range-validation-v1", "verifier": "scripts/Test-H3CounterRangeFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-sleep-v1.json", "fixtureId": "sf2-counter-sleep-validation-v1", "verifier": "scripts/Test-H3CounterSleepFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-stun-v1.json", "fixtureId": "sf2-counter-stun-validation-v1", "verifier": "scripts/Test-H3CounterStunFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-same-side-v1.json", "fixtureId": "sf2-counter-same-side-validation-v1", "verifier": "scripts/Test-H3CounterSameSideFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-burst-rock-v1.json", "fixtureId": "sf2-counter-burst-rock-validation-v1", "verifier": "scripts/Test-H3CounterBurstRockFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-special-enemies-v1.json", "fixtureId": "sf2-counter-special-enemies-validation-v1", "verifier": "scripts/Test-H3CounterSpecialEnemiesFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/double-validation-v1.json", "fixtureId": "sf2-double-validation-gates-v1", "verifier": "scripts/Test-H3DoubleValidationFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDamageEntryAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.damage.determine-critical",
+      "subsystem": "battle.damage",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_DetermineCriticalHit",
+      "sourcePath": "code/gameflow/battle/battleactions/determinecriticalhit.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 44110 },
+        { "id": "roll", "space": "rom", "kind": "observation", "value": 44156 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/physical-damage-application-v1.json", "fixtureId": "sf2-physical-damage-application-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.criticalEntryAddress" }, { "addressId": "roll", "fixtureField": "function.criticalRollAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.damage.determine-dodge",
+      "subsystem": "battle.damage",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_DetermineDodge",
+      "sourcePath": "code/gameflow/battle/battleactions/determinedodge.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43772 },
+        { "id": "rng-roll", "space": "rom", "kind": "observation", "value": 43900 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 43964 }
+      ],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/dodge-v1.json", "fixtureId": "sf2-successful-airborne-dodge-v1", "verifier": "scripts/Test-H3DodgeFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "rng-roll", "fixtureField": "function.rngAddress" }, { "addressId": "return", "fixtureField": "function.returnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/attack-chain-v1.json", "fixtureId": "sf2-attack-chain-double-counter-v1", "verifier": "scripts/Test-H3AttackChainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.dodgeEntryAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.damage.determine-double-counter",
+      "subsystem": "battle.damage",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_DetermineDoubleAndCounter",
+      "sourcePath": "code/gameflow/battle/battleactions/determinedoubleandcounter.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 45070 }],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/dodge-v1.json", "fixtureId": "sf2-successful-airborne-dodge-v1", "verifier": "scripts/Test-H3DodgeFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.followupAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/attack-chain-v1.json", "fixtureId": "sf2-attack-chain-double-counter-v1", "verifier": "scripts/Test-H3AttackChainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.doubleCounterEntryAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.damage.inflict",
+      "subsystem": "battle.damage",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_InflictDamage",
+      "sourcePath": "code/gameflow/battle/battleactions/inflictdamage.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 44266 },
+        { "id": "variance-first", "space": "rom", "kind": "observation", "value": 44364 },
+        { "id": "variance-second", "space": "rom", "kind": "observation", "value": 44370 },
+        { "id": "damage-exp-return", "space": "rom", "kind": "observation", "value": 44382 },
+        { "id": "hp-apply", "space": "rom", "kind": "observation", "value": 44414 },
+        { "id": "observe", "space": "rom", "kind": "observation", "value": 44434 }
+      ],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/physical-damage-application-v1.json", "fixtureId": "sf2-physical-damage-application-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.inflictDamageEntryAddress" },
+            { "addressId": "variance-first", "fixtureField": "function.varianceFirstAddress" },
+            { "addressId": "variance-second", "fixtureField": "function.varianceSecondAddress" },
+            { "addressId": "damage-exp-return", "fixtureField": "function.damageExpReturnAddress" },
+            { "addressId": "hp-apply", "fixtureField": "function.hpApplyAddress" },
+            { "addressId": "observe", "fixtureField": "function.observeAddress" }
+          ]
+        },
+        { "level": "H3", "fixture": "tests/fixtures/h3/attack-chain-v1.json", "fixtureId": "sf2-attack-chain-double-counter-v1", "verifier": "scripts/Test-H3AttackChainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.inflictDamageEntryAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.followup.validate-counter",
+      "subsystem": "battle.followup",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_ValidateCounterAttack",
+      "sourcePath": "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 42140 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 42316 }
+      ],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/lethal-followup-v1.json", "fixtureId": "sf2-lethal-followup-validation-v1", "verifier": "scripts/Test-H3LethalFollowupFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-range-v1.json", "fixtureId": "sf2-counter-range-validation-v1", "verifier": "scripts/Test-H3CounterRangeFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-sleep-v1.json", "fixtureId": "sf2-counter-sleep-validation-v1", "verifier": "scripts/Test-H3CounterSleepFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-stun-v1.json", "fixtureId": "sf2-counter-stun-validation-v1", "verifier": "scripts/Test-H3CounterStunFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-same-side-v1.json", "fixtureId": "sf2-counter-same-side-validation-v1", "verifier": "scripts/Test-H3CounterSameSideFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-burst-rock-v1.json", "fixtureId": "sf2-counter-burst-rock-validation-v1", "verifier": "scripts/Test-H3CounterBurstRockFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-special-enemies-v1.json", "fixtureId": "sf2-counter-special-enemies-validation-v1", "verifier": "scripts/Test-H3CounterSpecialEnemiesFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateCounterEntryAddress" }, { "addressId": "return", "fixtureField": "function.validateCounterReturnAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.followup.validate-double",
+      "subsystem": "battle.followup",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_ValidateDoubleAttack",
+      "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_2.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 42078 },
+        { "id": "clear", "space": "rom", "kind": "observation", "value": 42118 },
+        { "id": "rejected-return", "space": "rom", "kind": "observation", "value": 42138 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 42140 }
+      ],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/lethal-followup-v1.json", "fixtureId": "sf2-lethal-followup-validation-v1", "verifier": "scripts/Test-H3LethalFollowupFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }, { "addressId": "rejected-return", "fixtureField": "function.validateDoubleReturnAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-range-v1.json", "fixtureId": "sf2-counter-range-validation-v1", "verifier": "scripts/Test-H3CounterRangeFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-sleep-v1.json", "fixtureId": "sf2-counter-sleep-validation-v1", "verifier": "scripts/Test-H3CounterSleepFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-stun-v1.json", "fixtureId": "sf2-counter-stun-validation-v1", "verifier": "scripts/Test-H3CounterStunFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-same-side-v1.json", "fixtureId": "sf2-counter-same-side-validation-v1", "verifier": "scripts/Test-H3CounterSameSideFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-burst-rock-v1.json", "fixtureId": "sf2-counter-burst-rock-validation-v1", "verifier": "scripts/Test-H3CounterBurstRockFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/counter-special-enemies-v1.json", "fixtureId": "sf2-counter-special-enemies-validation-v1", "verifier": "scripts/Test-H3CounterSpecialEnemiesFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/double-validation-v1.json", "fixtureId": "sf2-double-validation-gates-v1", "verifier": "scripts/Test-H3DoubleValidationFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.validateDoubleEntryAddress" }, { "addressId": "clear", "fixtureField": "function.validateDoubleClearAddress" }, { "addressId": "return", "fixtureField": "function.validateDoubleReturnAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.replay.end",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_End",
+      "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_2.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 41806 },
+        { "id": "hp-restore", "space": "rom", "kind": "observation", "value": 41958 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+        "bindings": [{ "addressId": "hp-restore", "fixtureField": "function.hpRestoreAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.replay.enemy-reaction",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "bsc0A_executeEnemyReaction",
+      "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 102222 },
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 102270 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.enemyReactionEntryAddress" }, { "addressId": "applied", "fixtureField": "function.enemyReactionAppliedAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.replay.give-exp",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "bsc0F_giveExp",
+      "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 102620 },
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 102648 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" }, { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.replay.give-exp-and-gold",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_GiveExpAndGold",
+      "sourcePath": "code/gameflow/battle/battleactions/giveexpandgold.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43000 },
+        { "id": "exp-halved", "space": "rom", "kind": "observation", "value": 43038 },
+        { "id": "exp-first-roll", "space": "rom", "kind": "observation", "value": 43046 },
+        { "id": "exp-second-roll", "space": "rom", "kind": "observation", "value": 43060 },
+        { "id": "exp-final", "space": "rom", "kind": "observation", "value": 43072 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+        "bindings": [
+          { "addressId": "exp-halved", "fixtureField": "function.expHalvedAddress" },
+          { "addressId": "exp-first-roll", "fixtureField": "function.expFirstRollAddress" },
+          { "addressId": "exp-second-roll", "fixtureField": "function.expSecondRollAddress" },
+          { "addressId": "exp-final", "fixtureField": "function.expFinalAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.turn-order.generate",
+      "subsystem": "battle.turn-order",
+      "status": "confirmed",
+      "symbol": "GenerateBattleTurnOrder",
+      "sourcePath": "code/gameflow/battle/battleloop/turnorderfunctions.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 152900 },
+        { "id": "observe", "space": "rom", "kind": "observation", "value": 152990 },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" },
+        { "id": "turn-order", "space": "ram", "kind": "state", "value": 16774938, "symbol": "BATTLE_TURN_ORDER" }
+      ],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/battle01-turn-order-v1.json", "fixtureId": "sf2-battle01-turn-order-v1", "verifier": "scripts/Test-H3Battle01TurnOrderFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }, { "addressId": "turn-order", "fixtureField": "function.turnOrderAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/turn-order-boundaries-v1.json", "fixtureId": "sf2-turn-order-boundaries-v1", "verifier": "scripts/Test-H3TurnOrderBoundariesFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }, { "addressId": "turn-order", "fixtureField": "function.turnOrderAddress" }] }
+      ],
+      "documents": ["docs/research/battle01-placement.md", "docs/research/runtime-rng-and-battle-math.md"]
+    },
+    {
+      "id": "growth.calculate-stat-gain",
+      "subsystem": "growth.stats",
+      "status": "confirmed",
+      "symbol": "CalculateStatGain",
+      "sourcePath": "code/common/stats/levelup.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 38586 },
+        { "id": "none-return", "space": "rom", "kind": "observation", "value": 38594 },
+        { "id": "pity", "space": "rom", "kind": "observation", "value": 38700 },
+        { "id": "growth-return", "space": "rom", "kind": "observation", "value": 38708 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "scripts/Test-H3StatGainFixture.ps1",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "none-return", "fixtureField": "function.noneReturnAddress" },
+          { "addressId": "pity", "fixtureField": "function.pityAddress" },
+          { "addressId": "growth-return", "fixtureField": "function.growthReturnAddress" }
+        ]
+      }],
+      "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"]
+    },
+    {
+      "id": "rng.generate-random-number",
+      "subsystem": "rng",
+      "status": "confirmed",
+      "symbol": "GenerateRandomNumber",
+      "sourcePath": "code/common/tech/randomnumbergenerator.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 5632 },
+        { "id": "observe", "space": "rom", "kind": "observation", "value": 5670 },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
+      ],
+      "evidence": [
+        { "level": "H3", "fixture": "tests/fixtures/h3/rng-v1.json", "fixtureId": "sf2-rng-generate-random-number-v1", "verifier": "scripts/Test-H3RngFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "scripts/Test-H3StatGainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.rngEntryAddress" }, { "addressId": "observe", "fixtureField": "function.rngObserveAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"]
+    }
+  ]
+}

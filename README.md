@@ -92,6 +92,7 @@ docs/
   design/              从证据提炼的实现无关设计文档
   decisions/           引擎、格式和工具链等架构决策
 schemas/               规范化导出数据的 schema
+manifests/              ROM、工具链、提取布局与逆向研究关系索引
 tools/                 盘点、提取、转换、差分和报告工具
 scripts/verify.ps1     统一的非交互验证入口
 tests/fixtures/        小型、可再分发的元数据与行为期望
@@ -110,7 +111,7 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 pwsh ./scripts/verify.ps1
 ```
 
-统一入口已经覆盖 H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
+统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
 固定 BizHawk/Genesis Plus GX 的 RNG、成长计算、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
@@ -134,6 +135,11 @@ pwsh ./scripts/verify.ps1
 
 每条重要设计结论都应能回到 H1-H3 的证据；每个重制系统都应能被 H4 独立测试。截图和人工
 试玩可以辅助理解，但不能替代可重复的状态验证。
+
+当前 H3 关系可通过 [`manifests/research-index.json`](./manifests/research-index.json) 查询。它把固定
+上游 symbol、ROM/RAM 地址、fixture/verifier、研究文档与已接受的设计合同连成机器可读记录，并由
+`pwsh ./scripts/Test-ResearchIndex.ps1` 检查全部 H3 fixture 的地址绑定；使用方法和边界见
+[`docs/research/indexing.md`](./docs/research/indexing.md)。
 
 ## 研究地图
 
@@ -168,7 +174,7 @@ fixture 覆盖和对现代重制的合同影响。
 
 ### Phase 2 — Discovery & Contracts（当前）
 
-- 建立 ROM/RAM/symbol 索引和研究文档模板；
+- 建立 ROM/RAM/symbol 索引和研究文档模板（当前 H3 关系索引已落地，后续随 H2/H3 扩展）；
 - 先打通角色/职业/物品/法术与一张战斗地图的端到端提取；
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。

@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/research-index.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "upstream", "rom", "records"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "sourceRoot", "listingPath"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sourceRoot": { "type": "string", "minLength": 1 },
+        "listingPath": { "type": "string", "minLength": 1 }
+      }
+    },
+    "rom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release", "sha256"],
+      "properties": {
+        "release": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+      }
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "subsystem", "status", "symbol", "sourcePath", "addresses", "evidence", "documents"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+          "subsystem": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+          "status": { "enum": ["confirmed", "inferred", "unknown"] },
+          "symbol": { "type": "string", "pattern": "^[A-Za-z_@][A-Za-z0-9_@.]*$" },
+          "sourcePath": { "type": "string", "pattern": "^code/.+\\.asm$" },
+          "addresses": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "space", "kind", "value"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                "space": { "enum": ["rom", "ram"] },
+                "kind": { "enum": ["symbol", "observation", "state"] },
+                "value": { "type": "integer", "minimum": 0, "maximum": 16777215 },
+                "symbol": { "type": "string", "pattern": "^[A-Za-z_@][A-Za-z0-9_@.]*$" },
+                "description": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["level", "fixture", "fixtureId", "verifier", "bindings"],
+              "properties": {
+                "level": { "enum": ["H2", "H3", "H4"] },
+                "fixture": { "type": "string", "pattern": "^tests/fixtures/.+\\.json$" },
+                "fixtureId": { "type": "string", "minLength": 1 },
+                "verifier": { "type": "string", "pattern": "^scripts/.+\\.ps1$" },
+                "bindings": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["addressId", "fixtureField"],
+                    "properties": {
+                      "addressId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                      "fixtureField": { "type": "string", "pattern": "^(function|ram)(?:\\.[A-Za-z][A-Za-z0-9]*)+$" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "documents": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^docs/.+\\.md$" }
+          },
+          "designContracts": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^docs/design/.+\\.md$" }
+          }
+        }
+      }
+    }
+  }
+}

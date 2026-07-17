@@ -19,6 +19,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   56-byte 敌人定义的 source/ROM 双路径合同，以及教堂与敌人初始化的静态消费者。
 - [`battle01-placement.md`](./research/battle01-placement.md)：第一场剧情战斗的 map link、Stack
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
+- [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
+  合同索引、校验规则和新增发现的落地流程。
 
 ## Design
 
