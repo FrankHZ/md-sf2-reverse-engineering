@@ -5,8 +5,9 @@
 
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
-并已完成角色槽位、职业、物品和法术的 source/ROM 双路径 H2、成长曲线与法术学习合同，以及
-首个 RNG 整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始重制实现。
+并已完成角色槽位、职业、物品、法术、转职和敌人定义的 source/ROM 双路径 H2、成长曲线与
+法术学习合同，以及首个 RNG 整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始重制
+实现。
 
 ## 我们要交付什么
 
@@ -171,11 +172,12 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
-当前 H2 已完成：8 个 ROM table range、角色/职业/物品/法术 enum 交叉引用、四类固定记录的
-ROM bytes 独立解码、281 条记录 source/ROM 字段级零差异，以及 5 条成长曲线、59 个职业成长
-记录和 122 个学法术条目。三个 canonical JSON 均有 schema、固定 hash 与重复导出验证，内容只
-写入 ignored 的 `local/derived/`，仓库不保存原版名称清单。首个 H3 另以 7 组受控 seed 验证
-`GenerateRandomNumber` 的原版 ROM 指令、RAM seed 更新和 D7 输出。
+当前 H2 已覆盖 11 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
+5 条成长曲线、59 个职业成长记录和 122 个学法术条目，以及 5 段转职表、103 个敌人名称和
+103 个 56-byte 敌人定义。新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
+均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
+原版名称清单。首个 H3 另以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM
+seed 更新和 D7 输出。
 
 ### Phase 3 — Game Design Reconstruction
 
@@ -203,7 +205,7 @@ ROM bytes 独立解码、281 条记录 source/ROM 字段级零差异，以及 5 
 
 下一块继续扩展 **Phase 2 的运行时证据**：把已经定位的成长计算、行动顺序与伤害调用链变成
 可控场景，优先覆盖升级随机增益/保底、AGI 127/128 与第二回合、地形减伤和弓手对飞行单位
-加成；同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。静态侧随后
-选择 promotions/enemies 或一张战斗地图作为下一个端到端扩展。
+加成；同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。静态侧下一
+个端到端扩展是一张战斗地图及其敌人 placement/AI 引用。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

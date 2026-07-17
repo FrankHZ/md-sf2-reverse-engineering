@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-promotion-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "sourceOutputPath": "local/derived/enemy-promotion-data.json",
+  "sourceOutputSha256": "8E77363833F31861DB23765E5BEE7263EA2BD2D09F5F4DA869C302A83C25BE06",
+  "romOutputPath": "local/derived/rom-enemy-promotion-data.json",
+  "romOutputSha256": "BD759502C9E57FF8F3BEC85AAD82B2C1FD7F4457C7670538A07D98F1F4A15A6D",
+  "counts": {
+    "promotionSections": 5,
+    "promotionValues": 39,
+    "enemyNames": 103,
+    "enemyDefinitions": 103
+  },
+  "fixedRecordSizes": {
+    "enemyDefinitions": 56
+  }
+}

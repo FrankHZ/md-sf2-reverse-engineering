@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/enemy-promotion-data.schema.json",
+  "title": "Shining Force II promotion and enemy source extraction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "provenance", "romRangeConvention", "romRanges", "promotions", "enemies"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "provenance": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit", "sources"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sources": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/$defs/source" } }
+      }
+    },
+    "romRangeConvention": { "const": "[start, endExclusive)" },
+    "romRanges": {
+      "type": "object", "additionalProperties": false,
+      "required": ["promotions", "enemyNames", "enemyDefinitions"],
+      "properties": {
+        "promotions": { "$ref": "#/$defs/romRange" },
+        "enemyNames": { "$ref": "#/$defs/romRange" },
+        "enemyDefinitions": { "$ref": "#/$defs/romRange" }
+      }
+    },
+    "promotions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["regularBaseClasses", "regularPromotedClasses", "specialBaseClasses", "specialPromotedClasses", "specialPromotionItems"],
+      "properties": {
+        "regularBaseClasses": { "$ref": "#/$defs/promotionList12" },
+        "regularPromotedClasses": { "$ref": "#/$defs/promotionList12" },
+        "specialBaseClasses": { "$ref": "#/$defs/promotionList5" },
+        "specialPromotedClasses": { "$ref": "#/$defs/promotionList5" },
+        "specialPromotionItems": { "$ref": "#/$defs/promotionList5" }
+      }
+    },
+    "enemies": { "type": "array", "minItems": 103, "maxItems": 103, "items": { "$ref": "#/$defs/enemy" } }
+  },
+  "$defs": {
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["path", "sha256"],
+      "properties": { "path": { "type": "string", "minLength": 1 }, "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" } }
+    },
+    "romRange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "description", "start", "endExclusive", "lengthBytes", "recordCount", "recordSizeBytes"],
+      "properties": {
+        "sourcePath": { "type": "string", "minLength": 1 }, "description": { "type": "string", "minLength": 1 },
+        "start": { "type": "integer", "minimum": 0 }, "endExclusive": { "type": "integer", "minimum": 1 },
+        "lengthBytes": { "type": "integer", "minimum": 1 }, "recordCount": { "type": "integer", "minimum": 1 },
+        "recordSizeBytes": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "promotionRef": {
+      "type": "object", "additionalProperties": false, "required": ["expression", "id", "code"],
+      "properties": {
+        "expression": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+        "id": { "type": "integer", "minimum": 0, "maximum": 127 },
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]+$" }
+      }
+    },
+    "promotionList12": { "type": "array", "minItems": 12, "maxItems": 12, "items": { "$ref": "#/$defs/promotionRef" } },
+    "promotionList5": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/$defs/promotionRef" } },
+    "stringArray": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "enemyItem": {
+      "type": "object", "additionalProperties": false, "required": ["expression", "item", "equipped"],
+      "properties": { "expression": { "type": "string", "minLength": 1 }, "item": { "type": "string", "minLength": 1 }, "equipped": { "type": "boolean" } }
+    },
+    "enemySpell": {
+      "type": "object", "additionalProperties": false, "required": ["expression", "spell", "level"],
+      "properties": {
+        "expression": { "type": "string", "minLength": 1 }, "spell": { "type": "string", "minLength": 1 },
+        "level": { "type": "integer", "minimum": 1, "maximum": 4 }
+      }
+    },
+    "enemy": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "id", "code", "displayName", "nameExpression", "nameEncodedLength", "nameSuffixBytes", "unknownByte",
+        "spellPower", "level", "maxHp", "maxMp", "baseAttack", "baseDefense", "baseAgility", "baseMovement",
+        "resistanceExpression", "resistanceTokens", "prowessExpression", "prowessTokens", "items", "spells",
+        "initialStatusExpression", "movementType", "aiBitfieldExpression", "aiBitfieldTokens"
+      ],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 102 },
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+        "displayName": { "type": "string", "minLength": 1 }, "nameExpression": { "type": "string", "minLength": 1 },
+        "nameEncodedLength": { "type": "integer", "minimum": 1, "maximum": 255 },
+        "nameSuffixBytes": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "unknownByte": { "type": "integer", "minimum": 0, "maximum": 255 }, "spellPower": { "type": "string", "minLength": 1 },
+        "level": { "type": "integer", "minimum": 0, "maximum": 255 }, "maxHp": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "maxMp": { "type": "integer", "minimum": 0, "maximum": 255 }, "baseAttack": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseDefense": { "type": "integer", "minimum": 0, "maximum": 255 }, "baseAgility": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseMovement": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "resistanceExpression": { "type": "string", "minLength": 1 }, "resistanceTokens": { "$ref": "#/$defs/stringArray" },
+        "prowessExpression": { "type": "string", "minLength": 1 }, "prowessTokens": { "$ref": "#/$defs/stringArray" },
+        "items": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/$defs/enemyItem" } },
+        "spells": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/$defs/enemySpell" } },
+        "initialStatusExpression": { "type": "string", "minLength": 1 }, "movementType": { "type": "string", "minLength": 1 },
+        "aiBitfieldExpression": { "type": "string", "minLength": 1 }, "aiBitfieldTokens": { "$ref": "#/$defs/stringArray" }
+      }
+    }
+  }
+}

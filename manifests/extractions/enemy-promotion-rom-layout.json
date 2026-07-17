@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-us-enemy-promotion-layout-v1",
+  "romManifest": "manifests/roms/sf2-us.json",
+  "outputPath": "local/derived/rom-enemy-promotion-data.json",
+  "outputSha256": "BD759502C9E57FF8F3BEC85AAD82B2C1FD7F4457C7670538A07D98F1F4A15A6D",
+  "tables": {
+    "promotions": { "start": 135238, "endExclusive": 135282, "sectionCount": 5 },
+    "enemyNames": { "start": 64394, "endExclusive": 65415, "recordCount": 103 },
+    "enemyDefinitions": { "start": 1776230, "endExclusive": 1781998, "recordCount": 103, "recordSize": 56 }
+  },
+  "encoding": {
+    "byteOrder": "big-endian",
+    "name": "one-byte length followed by ASCII payload",
+    "item": { "idMask": 127, "equippedMask": 128 },
+    "spell": { "idMask": 63, "levelShift": 6 },
+    "movementType": { "mask": 240, "shift": 4 }
+  }
+}
