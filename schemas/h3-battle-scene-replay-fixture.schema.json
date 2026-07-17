@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-battle-scene-replay-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "observationBoundary", "function", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-scene-replay-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 }, "scenario": { "const": "damage" },
+    "observationBoundary": { "type": "string", "minLength": 50 },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["hpRestoreAddress", "expHalvedAddress", "expFirstRollAddress", "expSecondRollAddress", "expFinalAddress", "enemyReactionEntryAddress", "enemyReactionAppliedAddress", "giveExpEntryAddress", "giveExpAppliedAddress"],
+      "properties": {
+        "hpRestoreAddress": { "const": 41958 }, "expHalvedAddress": { "const": 43038 },
+        "expFirstRollAddress": { "const": 43046 }, "expSecondRollAddress": { "const": 43060 },
+        "expFinalAddress": { "const": 43072 }, "enemyReactionEntryAddress": { "const": 102222 },
+        "enemyReactionAppliedAddress": { "const": 102270 }, "giveExpEntryAddress": { "const": 102620 },
+        "giveExpAppliedAddress": { "const": 102648 }
+      }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["accumulatedExp", "halvedBattle", "randomRange", "startingSeed", "actorInitialExp"],
+      "properties": {
+        "accumulatedExp": { "const": 49 }, "halvedBattle": { "const": true }, "randomRange": { "const": 16 },
+        "startingSeed": { "const": 1281 }, "actorInitialExp": { "const": 0 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["restoredHp", "awardCalculation", "reaction", "award"],
+      "properties": {
+        "restoredHp": { "const": 100 }, "awardCalculation": { "$ref": "#/definitions/awardCalculation" },
+        "reaction": { "$ref": "#/definitions/reaction" }, "award": { "$ref": "#/definitions/award" }
+      }
+    }
+  },
+  "definitions": {
+    "awardCalculation": {
+      "type": "object", "additionalProperties": false, "required": ["halved", "first", "second", "final"],
+      "properties": { "halved": { "const": 24 }, "first": { "const": 4 }, "second": { "const": 4 }, "final": { "const": 24 } }
+    },
+    "reaction": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "hpChange", "hpAfter"],
+      "properties": { "combatant": { "const": 128 }, "hpChange": { "const": -117 }, "hpAfter": { "const": 0 } }
+    },
+    "award": {
+      "type": "object", "additionalProperties": false, "required": ["commandExp", "actorExpBefore", "actorExpAfter"],
+      "properties": { "commandExp": { "const": 24 }, "actorExpBefore": { "const": 0 }, "actorExpAfter": { "const": 24 } }
+    }
+  }
+}

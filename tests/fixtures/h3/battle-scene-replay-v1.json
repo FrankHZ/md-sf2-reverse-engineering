@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-scene-replay-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "damage",
+  "observationBoundary": "Original battle-scene command interpreter after persistent enemy HP and ally EXP writes.",
+  "function": {
+    "hpRestoreAddress": 41958,
+    "expHalvedAddress": 43038,
+    "expFirstRollAddress": 43046,
+    "expSecondRollAddress": 43060,
+    "expFinalAddress": 43072,
+    "enemyReactionEntryAddress": 102222,
+    "enemyReactionAppliedAddress": 102270,
+    "giveExpEntryAddress": 102620,
+    "giveExpAppliedAddress": 102648
+  },
+  "setup": {
+    "accumulatedExp": 49,
+    "halvedBattle": true,
+    "randomRange": 16,
+    "startingSeed": 1281,
+    "actorInitialExp": 0
+  },
+  "expected": {
+    "restoredHp": 100,
+    "awardCalculation": { "halved": 24, "first": 4, "second": 4, "final": 24 },
+    "reaction": { "combatant": 128, "hpChange": -117, "hpAfter": 0 },
+    "award": { "commandExp": 24, "actorExpBefore": 0, "actorExpAfter": 24 }
+  }
+}

@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and physical damage application**
+- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and physical damage replay**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -19,6 +19,9 @@ the locked ROM instruction bytes.
 | physical damage | `battlesceneScript_CalculateDamage` | `0xABBE..0xAC4E` | `code/gameflow/battle/battleactions/calculatedamage.asm` |
 | critical hit | `battlesceneScript_DetermineCriticalHit` | `0xAC4E..0xACCA` | `code/gameflow/battle/battleactions/determinecriticalhit.asm` |
 | damage application | `battlesceneScript_InflictDamage` | `0xACEA..0xAE32` | `code/gameflow/battle/battleactions/inflictdamage.asm` |
+| final EXP | `battlesceneScript_GiveExpAndGold` | `0xA7F8..0xA870` | `code/gameflow/battle/battleactions/giveexpandgold.asm` |
+| enemy reaction | `bsc0A_executeEnemyReaction` | `0x18F4E..0x190A4` | `code/gameflow/battle/battlescenes/battlesceneengine_0.asm` |
+| EXP replay | `bsc0F_giveExp` | `0x190DC..0x191E0` | same file |
 | turn order | `GenerateBattleTurnOrder` | `0x25544` | `code/gameflow/battle/battleloop/turnorderfunctions.asm` |
 | turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
 
@@ -177,12 +180,22 @@ PowerShell model lock every intermediate value and the relevant instruction addr
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 ```
 
-The application observation ends at `0xAD92` while the game is constructing the battle-scene command
-list. At this stage current HP has been reduced and the EXP accumulator is final, but
-`battlesceneScript_End` subsequently restores its saved HP snapshot before the command interpreter
-replays the signed reaction. The fixture therefore does not yet claim persistent post-animation HP,
-Battle 01's halved and ±1 randomized EXP award, dialogue/death animation, double, counter, dodge,
-resistance, or status behavior.
+The application snapshot at `0xAD92` is deliberately not treated as the final state. During
+`battlesceneScript_End`, the game first turns the 49-point accumulator into a `giveEXP` command.
+Battle 01 appears in `table_HalvedExpEarnedBattles`, so integer halving yields 24. Starting from the
+post-variance seed 1281, both subsequent `RNG(16)` results are 4; neither the +1 nor -1 branch fires,
+and the command retains 24. The routine then restores the saved target HP snapshot from 0 to 100.
+
+The command interpreter proves why that restoration is not healing. `bsc0A_executeEnemyReaction`
+reads combatant 128 and signed HP change -117 from the generated command, calls the original clamped
+decrease routine, and leaves persistent current HP at 0. Later, `bsc0F_giveExp` reads command amount
+24 and changes Bowie's stored EXP from 0 to 24. The harness allows the original battle scene to run
+and uses normal debug text-skip input during playback; it does not patch the command list or invoke
+either interpreter directly. `tests/fixtures/h3/battle-scene-replay-v1.json` and the same independent
+RNG model validate restoration, both EXP rolls, signed reaction, persistent HP, and final EXP.
+
+Dialogue/death-animation semantics, level-up after EXP >= 100, double, counter, dodge, resistance,
+and status behavior are not claimed by this fixture.
 
 ## Unknown / Next Fixtures
 
@@ -191,8 +204,8 @@ resistance, or status behavior.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Extend the now-confirmed physical path through battle-scene reaction replay and final EXP award;
-  add explicit dodge, double, counter, resistance, and non-critical variance cases.
+- Add explicit dodge, double, counter, resistance, non-critical variance, and EXP-caused level-up cases
+  to the now-confirmed physical construction/replay path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

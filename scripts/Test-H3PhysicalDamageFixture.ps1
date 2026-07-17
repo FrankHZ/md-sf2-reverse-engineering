@@ -5,6 +5,8 @@ param(
     [string] $SchemaPath = (Join-Path $PSScriptRoot '..\schemas\h3-physical-damage-fixture.schema.json'),
     [string] $ApplicationFixturePath = (Join-Path $PSScriptRoot '..\tests\fixtures\h3\physical-damage-application-v1.json'),
     [string] $ApplicationSchemaPath = (Join-Path $PSScriptRoot '..\schemas\h3-physical-damage-application-fixture.schema.json'),
+    [string] $ReplayFixturePath = (Join-Path $PSScriptRoot '..\tests\fixtures\h3\battle-scene-replay-v1.json'),
+    [string] $ReplaySchemaPath = (Join-Path $PSScriptRoot '..\schemas\h3-battle-scene-replay-fixture.schema.json'),
     [int] $TimeoutSeconds = 55
 )
 
@@ -18,6 +20,9 @@ $fixture = $fixtureJson | ConvertFrom-Json
 $applicationJson = Get-Content -Raw -LiteralPath $ApplicationFixturePath -Encoding utf8
 if (-not ($applicationJson | Test-Json -SchemaFile $ApplicationSchemaPath)) { throw 'H3 physical-damage application fixture failed schema validation.' }
 $application = $applicationJson | ConvertFrom-Json
+$replayJson = Get-Content -Raw -LiteralPath $ReplayFixturePath -Encoding utf8
+if (-not ($replayJson | Test-Json -SchemaFile $ReplaySchemaPath)) { throw 'H3 battle-scene replay fixture failed schema validation.' }
+$replay = $replayJson | ConvertFrom-Json
 & (Join-Path $PSScriptRoot 'Test-RomBaseline.ps1') -RomPath $RomPath
 if ((Get-FileHash -LiteralPath $RomPath -Algorithm SHA256).Hash -ne [string] $fixture.romSha256) { throw 'H3 physical-damage ROM mismatch.' }
 if ([string] $toolchain.bizhawk.release -ne [string] $fixture.emulator.version -or
@@ -53,6 +58,20 @@ if ($criticalRng.Result -ne [int] $application.expected.critical.roll -or $criti
     $hpAfter -ne [int] $application.expected.hp.after -or $damageExp -ne [int] $application.expected.exp.afterDamage -or
     $finalExp -ne [int] $application.expected.exp.final) { throw 'Static physical-damage application model mismatch.' }
 
+$halvedExp = if ([bool] $replay.setup.halvedBattle) { $finalExp -shr 1 } else { $finalExp }
+$expFirst = Invoke-OriginalRng ([int] $replay.setup.startingSeed) ([int] $replay.setup.randomRange)
+$awardExp = $halvedExp + $(if ($expFirst.Result -eq 0) { 1 } else { 0 })
+$expSecond = Invoke-OriginalRng $expFirst.Seed ([int] $replay.setup.randomRange)
+$awardExp -= $(if ($expSecond.Result -eq 0) { 1 } else { 0 })
+$awardExp = [Math]::Max($awardExp, 1)
+if ($halvedExp -ne [int] $replay.expected.awardCalculation.halved -or
+    $expFirst.Result -ne [int] $replay.expected.awardCalculation.first -or
+    $expSecond.Result -ne [int] $replay.expected.awardCalculation.second -or
+    $awardExp -ne [int] $replay.expected.awardCalculation.final -or
+    ([int] $replay.setup.actorInitialExp + $awardExp) -ne [int] $replay.expected.award.actorExpAfter) {
+    throw 'Static battle-scene replay model mismatch.'
+}
+
 $observedJson = (& (Join-Path $PSScriptRoot 'Observe-H3Battle01TurnOrder.ps1') -RomPath $RomPath -Scenario damage -TimeoutSeconds $TimeoutSeconds) -join "`n"
 $observed = $observedJson | ConvertFrom-Json
 if ($observed.system -ne 'GEN' -or $observed.core -ne [string] $fixture.emulator.core -or $observed.scenario -ne 'damage' -or
@@ -80,13 +99,26 @@ foreach ($field in @('before', 'after', 'targetDies')) {
 foreach ($field in @('afterDamage', 'final')) {
     if ([int] $observed.exp.$field -ne [int] $application.expected.exp.$field) { throw "H3 damage-EXP mismatch: $field." }
 }
+if ([int] $observed.hp.restored -ne [int] $replay.expected.restoredHp) { throw 'H3 HP restoration mismatch.' }
+if ([int] $observed.awardCalculation.seed -ne [int] $replay.setup.startingSeed) { throw 'H3 final EXP seed boundary mismatch.' }
+foreach ($field in @('halved', 'first', 'second', 'final')) {
+    if ([int] $observed.awardCalculation.$field -ne [int] $replay.expected.awardCalculation.$field) { throw "H3 final EXP calculation mismatch: $field." }
+}
+foreach ($field in @('combatant', 'hpChange', 'hpAfter')) {
+    if ([int] $observed.reaction.$field -ne [int] $replay.expected.reaction.$field) { throw "H3 persistent HP replay mismatch: $field." }
+}
+foreach ($field in @('commandExp', 'actorExpBefore', 'actorExpAfter')) {
+    if ([int] $observed.award.$field -ne [int] $replay.expected.award.$field) { throw "H3 persistent EXP replay mismatch: $field." }
+}
 [pscustomobject] @{
     Fixture = [string] $fixture.id; Engine = "BizHawk $($fixture.emulator.version) / $($fixture.emulator.core)"
     ApplicationFixture = [string] $application.id
+    ReplayFixture = [string] $replay.id
     Actor = [int] $observed.actor; Target = [int] $observed.target; BaseDamage = [int] $observed.base
     LandEffect = [int] $observed.landEffect; ReducedDamage = [int] $observed.reduced
     ArcherBonus = [bool] $observed.archerBonus; BaseResult = [int] $observed.result
     CriticalDamage = [int] $observed.critical.after; VarianceDamage = [int] $observed.variance.final
-    TargetHp = "$( [int] $observed.hp.before )->$( [int] $observed.hp.after )"; ExpAccumulator = [int] $observed.exp.final
+    TargetHp = "$( [int] $observed.hp.before )->$( [int] $observed.hp.after )"; PersistentHp = [int] $observed.reaction.hpAfter
+    ExpAccumulator = [int] $observed.exp.final; ExpAwarded = [int] $observed.award.actorExpAfter
     Status = 'PASS'
 } | Format-List

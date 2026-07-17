@@ -31,6 +31,7 @@ local queue = {}
 local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C" }
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
 local damage = nil
+local damage_playback = false
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -275,19 +276,83 @@ event.on_bus_exec(function()
     local a2 = emu.getregister("M68K A2")
     damage.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
     damage.exp_final = memory.read_u16_be(0xFFB62C, "M68K BUS")
+    damage_playback = true
+    status("milestone:damage-script-complete")
+end, 0xAD92, "sf2-damage-application", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    damage.restored_hp = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+end, 0xA3E6, "sf2-damage-hp-restored", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    damage.award_calculation = {
+        seed = memory.read_u16_be(0xFFDEA4, "M68K BUS"),
+        halved = emu.getregister("M68K D1") & 0xFFFF
+    }
+end, 0xA81E, "sf2-exp-halved", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.award_calculation ~= nil then
+        damage.award_calculation.first = emu.getregister("M68K D0") & 0xFFFF
+    end
+end, 0xA826, "sf2-exp-first-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.award_calculation ~= nil then
+        damage.award_calculation.second = emu.getregister("M68K D0") & 0xFFFF
+    end
+end, 0xA834, "sf2-exp-second-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.award_calculation ~= nil then
+        damage.award_calculation.final = emu.getregister("M68K D1") & 0xFFFF
+    end
+end, 0xA840, "sf2-exp-final", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    local a6 = emu.getregister("M68K A6")
+    damage.reaction = {
+        combatant = memory.read_u16_be(0xFFB3CE, "M68K BUS"),
+        hp_change = memory.read_s16_be(a6 & 0xFFFFFF, "M68K BUS")
+    }
+end, 0x18F4E, "sf2-damage-reaction-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil or damage.reaction == nil then return end
+    damage.reaction.hp_after = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+end, 0x18F7E, "sf2-damage-reaction-applied", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    local a6 = emu.getregister("M68K A6")
+    damage.award = {
+        command_exp = memory.read_u16_be(a6 & 0xFFFFFF, "M68K BUS"),
+        actor_exp_before = memory.read_u8(0xFFE800 + 48, "M68K BUS")
+    }
+end, 0x190DC, "sf2-exp-command-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil or damage.award == nil then return end
+    damage.award.actor_exp_after = memory.read_u8(0xFFE800 + 48, "M68K BUS")
     local output = assert(io.open(output_path, "w"))
     output:write(string.format(
-        '{"system":"%s","core":"Genesis Plus GX","scenario":"damage","battle":%d,"actor":%d,"target":%d,"base":%d,"landEffect":%d,"multiplier":%d,"reduced":%d,"archerBonus":%s,"result":%d,"critical":{"seed":%d,"prowess":%d,"range":%d,"roll":%d,"before":%d,"after":%d},"inflictEntry":%d,"variance":{"range":%d,"first":%d,"afterFirst":%d,"second":%d,"final":%d},"hp":{"before":%d,"after":%d,"targetDies":%s},"exp":{"afterDamage":%d,"final":%d}}\n',
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"damage","battle":%d,"actor":%d,"target":%d,"base":%d,"landEffect":%d,"multiplier":%d,"reduced":%d,"archerBonus":%s,"result":%d,"critical":{"seed":%d,"prowess":%d,"range":%d,"roll":%d,"before":%d,"after":%d},"inflictEntry":%d,"variance":{"range":%d,"first":%d,"afterFirst":%d,"second":%d,"final":%d},"hp":{"before":%d,"after":%d,"targetDies":%s,"restored":%d},"exp":{"afterDamage":%d,"final":%d},"awardCalculation":{"seed":%d,"halved":%d,"first":%d,"second":%d,"final":%d},"reaction":{"combatant":%d,"hpChange":%d,"hpAfter":%d},"award":{"commandExp":%d,"actorExpBefore":%d,"actorExpAfter":%d}}\n',
         emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), damage.actor, damage.target, damage.base,
         damage.land_effect, damage.multiplier, damage.reduced, tostring(damage.bonus), damage.result,
         damage.critical.seed, damage.critical.prowess, damage.critical.range, damage.critical.roll,
         damage.critical.before, damage.critical.after, damage.inflict_entry,
         damage.variance.range, damage.variance.first, damage.variance.after_first, damage.variance.second, damage.variance.final,
-        damage.hp_before, damage.hp_after, tostring(damage.target_dies), damage.exp_after_damage, damage.exp_final
+        damage.hp_before, damage.hp_after, tostring(damage.target_dies), damage.restored_hp,
+        damage.exp_after_damage, damage.exp_final, damage.award_calculation.seed, damage.award_calculation.halved, damage.award_calculation.first,
+        damage.award_calculation.second, damage.award_calculation.final, damage.reaction.combatant, damage.reaction.hp_change,
+        damage.reaction.hp_after, damage.award.command_exp, damage.award.actor_exp_before, damage.award.actor_exp_after
     ))
     output:close()
     client.exitCode(0)
-end, 0xAD92, "sf2-damage-application", "M68K BUS")
+end, 0x190F8, "sf2-exp-command-applied", "M68K BUS")
 
 local frames = 0
 while true do
@@ -301,9 +366,11 @@ while true do
         button = table.remove(queue, 1)
     elseif stage == "ui" and memory.read_u8(0xFFF712, "M68K BUS") == 1 then
         button = "C"
+    elseif stage == "battle" and damage_playback and frames % 12 < 4 then
+        button = "C"
     end
     set_button(button)
-    joypad.set({ Start = (stage == "ui" and memory.read_u8(0xFFF712, "M68K BUS") == 1) }, 2)
+    joypad.set({ Start = ((stage == "ui" and memory.read_u8(0xFFF712, "M68K BUS") == 1) or damage_playback) }, 2)
     emu.frameadvance()
     if frames % 600 == 0 then
         status(string.format("frame=%d,stage=%s,pc=%X,pointer=%X,debug=%d,prompts=%d,queue=%d,battle=%d", frames, stage,
