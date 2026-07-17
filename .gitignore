@@ -1,0 +1,40 @@
+# Private research inputs and all generated work
+/local/
+/artifacts/
+/reports/generated/
+
+# ROM images and patches (defense in depth outside local/)
+*.bin
+*.gen
+*.smd
+*.rom
+*.ips
+*.bps
+*.ups
+*.xdelta
+*.xdelta3
+
+# Emulator saves, states, movies, and traces
+*.srm
+*.sav
+*.gs0
+*.gsx
+*.state
+*.state.*
+*.gmv
+*.bk2
+*.trace
+
+# Reverse-engineering/build outputs
+*.lst
+*.sym
+*.log
+*.map
+*.bak
+
+# OS/editor noise
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.tmp

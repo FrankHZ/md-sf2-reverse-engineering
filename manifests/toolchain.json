@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "sf2disasm": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "branchRole": "master is the original-game bit-perfect baseline",
+    "branch": "master",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "licenseStatus": "no license, notice, or copying file found at the pinned commit; local research use only",
+    "localPath": "local/upstream/SF2DISASM",
+    "buildTools": [
+      {
+        "path": "tools/splitrom.exe",
+        "sizeBytes": 6144,
+        "sha256": "DD56EB2EC13336FB148D1BB63BBDD37E2D845CA3FB44F4CB29108582D20D1555"
+      },
+      {
+        "path": "tools/asw/asw.exe",
+        "sizeBytes": 1322831,
+        "sha256": "4F0B9989CB865AA709FBA6C91FF2E702A3C5FEBC677A8378C29AD46C93F94A6F"
+      },
+      {
+        "path": "tools/asw/p2bin.exe",
+        "sizeBytes": 64623,
+        "sha256": "3B644A930093690858A6A86D16F6E520E3A21E1C2A7A4B40421991FEE53D0F97"
+      },
+      {
+        "path": "tools/ASM68K.EXE",
+        "sizeBytes": 123392,
+        "sha256": "47FCA1EE60707041B844EF51AAC40A2E675C9EE176CD4BACB773476C35ACDCF6"
+      },
+      {
+        "path": "tools/fixheader.exe",
+        "sizeBytes": 12288,
+        "sha256": "9EE5E01EA7DA6681A11A6C99B7640CA4A19F75658AD14E5329CEF0B21DA0FD38"
+      }
+    ]
+  },
+  "java": {
+    "distribution": "Eclipse Temurin",
+    "version": "17.0.19+10",
+    "release": "jdk-17.0.19+10",
+    "archiveName": "OpenJDK17U-jdk_x64_windows_hotspot_17.0.19_10.zip",
+    "archiveUrl": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.19%2B10/OpenJDK17U-jdk_x64_windows_hotspot_17.0.19_10.zip",
+    "archiveSizeBytes": 190807860,
+    "archiveSha256": "B5B235C48ADF6A081874B812C630B9F4B5F637B7A5ED18B9174D08A41EC4C235",
+    "localJavaPath": "local/toolchains/jdk-17.0.19+10/jdk-17.0.19+10/bin/java.exe",
+    "purpose": "SF2DISASM Java editors and future source builds; the vanilla ROM rebuild itself does not require Java"
+  }
+}

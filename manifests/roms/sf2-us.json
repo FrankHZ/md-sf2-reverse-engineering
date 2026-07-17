@@ -1,0 +1,24 @@
+{
+  "$schema": "../../schemas/rom-manifest.schema.json",
+  "schemaVersion": 1,
+  "id": "sf2-us-retail",
+  "description": "Shining Force II retail USA ROM baseline for local research",
+  "sizeBytes": 2097152,
+  "hashes": {
+    "sha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+    "sha1": "22DEFC2E8E6C1DBB20421B906796538725B3D893",
+    "md5": "6473B1505334EF5620D13191C18251FE"
+  },
+  "header": {
+    "console": "SEGA GENESIS",
+    "domesticTitle": "SHINING FORCE 2",
+    "overseasTitle": "SHINING FORCE 2",
+    "serial": "GM MK-1315 -00",
+    "checksum": "8921",
+    "regions": "U"
+  },
+  "references": [
+    "https://tasvideos.org/615G",
+    "https://retroachievements.org/game/75/hashes"
+  ]
+}

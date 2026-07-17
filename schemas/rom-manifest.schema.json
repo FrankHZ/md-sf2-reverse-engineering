@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/rom-manifest.schema.json",
+  "title": "Mega Drive ROM baseline manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "description",
+    "sizeBytes",
+    "hashes",
+    "header",
+    "references"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sizeBytes": {
+      "type": "integer",
+      "minimum": 512
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "sha1", "md5"],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "sha1": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{40}$"
+        },
+        "md5": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{32}$"
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "console",
+        "domesticTitle",
+        "overseasTitle",
+        "serial",
+        "checksum",
+        "regions"
+      ],
+      "properties": {
+        "console": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domesticTitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "overseasTitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "serial": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{4}$"
+        },
+        "regions": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    }
+  }
+}
