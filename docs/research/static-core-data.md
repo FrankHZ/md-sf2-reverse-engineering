@@ -126,12 +126,13 @@ still require code-path or runtime evidence before they become complete gameplay
   are preserved; their complete runtime semantics are not established by this slice.
 - The unused/reachable status of ally slots 30–31 is unknown.
 - The runtime interpretation of spell radius 3 is unknown.
-- Growth is owned by [`ally-growth.md`](./ally-growth.md), and promotions/enemy definitions by
-  [`enemy-promotions.md`](./enemy-promotions.md). Shops and map/battle data remain outside this
-  contract.
+- Growth is owned by [`ally-growth.md`](./ally-growth.md), promotions/enemy definitions by
+  [`enemy-promotions.md`](./enemy-promotions.md), and the first placement/AI-region contract by
+  [`battle01-placement.md`](./battle01-placement.md). Shops and remaining map/battle data remain
+  outside this contract.
 
 ## Next Evidence Slice
 
-Continue from the completed base-RNG H3 into action order, damage, and the exceptional
-`LASER radius = 3` record. The next static-data expansion should cover one battle map without
-weakening the existing dual-source parity rail.
+Continue from the completed RNG/stat-gain H3 and Battle 01 placement contract into combatant
+initialization, action order, damage, and the exceptional `LASER radius = 3` record. The next static
+expansion should decode Battle 01 terrain and its map link without weakening dual-source parity.

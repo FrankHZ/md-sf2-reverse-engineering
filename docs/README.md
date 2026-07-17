@@ -16,6 +16,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   H3 动态 fixture，以及行动顺序和物理伤害的首轮静态调用链。
 - [`enemy-promotions.md`](./research/enemy-promotions.md)：五段转职映射、103 个敌人名称和
   56-byte 敌人定义的 source/ROM 双路径合同，以及教堂与敌人初始化的静态消费者。
+- [`battle01-placement.md`](./research/battle01-placement.md)：第一场剧情战斗的 9 个实体记录、
+  起始坐标、AI command-set/region 引用和三个 region polygon。
 
 ## Design
 

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/battle01-data.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "provenance", "battle", "romRange", "counts", "entities", "aiRegions", "aiPoints"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "provenance": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit", "sourcePath", "sourceSha256"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sourcePath": { "const": "data/battles/spritesets/spriteset01.asm" }, "sourceSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+      }
+    },
+    "battle": {
+      "type": "object", "additionalProperties": false, "required": ["id", "code"],
+      "properties": { "id": { "const": 1 }, "code": { "const": "INSIDE_ANCIENT_TOWER" } }
+    },
+    "romRange": { "$ref": "#/$defs/range" }, "counts": { "$ref": "#/$defs/counts" },
+    "entities": { "type": "array", "minItems": 9, "maxItems": 9, "items": { "$ref": "#/$defs/entity" } },
+    "aiRegions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/region" } },
+    "aiPoints": { "type": "array", "maxItems": 0, "items": { "$ref": "#/$defs/point" } }
+  },
+  "$defs": {
+    "range": {
+      "type": "object", "additionalProperties": false, "required": ["start", "endExclusive", "lengthBytes"],
+      "properties": { "start": { "const": 1782498 }, "endExclusive": { "const": 1782646 }, "lengthBytes": { "const": 148 } }
+    },
+    "counts": {
+      "type": "object", "additionalProperties": false, "required": ["allies", "enemies", "aiRegions", "aiPoints"],
+      "properties": { "allies": { "const": 3 }, "enemies": { "const": 6 }, "aiRegions": { "const": 3 }, "aiPoints": { "const": 0 } }
+    },
+    "point": {
+      "type": "object", "additionalProperties": false, "required": ["x", "y"],
+      "properties": { "x": { "type": "integer", "minimum": 0, "maximum": 255 }, "y": { "type": "integer", "minimum": 0, "maximum": 255 } }
+    },
+    "behavior": {
+      "type": "object", "additionalProperties": false,
+      "required": ["primaryOrderExpression", "primaryRegion", "secondaryOrderExpression", "secondaryRegion", "filler", "spawnExpression"],
+      "properties": {
+        "primaryOrderExpression": { "type": "string", "minLength": 1 }, "primaryRegion": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "secondaryOrderExpression": { "type": "string", "minLength": 1 }, "secondaryRegion": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "filler": { "type": "integer", "minimum": 0, "maximum": 255 }, "spawnExpression": { "type": "string", "minLength": 1 }
+      }
+    },
+    "entity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "identityExpression", "x", "y", "aiCommandsetExpression", "itemExpression", "behavior"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 8 }, "kind": { "enum": ["ally", "enemy"] },
+        "identityExpression": { "type": "string", "minLength": 1 }, "x": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "y": { "type": "integer", "minimum": 0, "maximum": 255 }, "aiCommandsetExpression": { "type": "string", "minLength": 1 },
+        "itemExpression": { "type": "string", "minLength": 1 }, "behavior": { "$ref": "#/$defs/behavior" }
+      }
+    },
+    "region": {
+      "type": "object", "additionalProperties": false, "required": ["id", "vertexCount", "unknown", "vertices", "trailingBytes"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 2 }, "vertexCount": { "const": 4 },
+        "unknown": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "vertices": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/$defs/point" } },
+        "trailingBytes": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0, "maximum": 255 } }
+      }
+    }
+  }
+}

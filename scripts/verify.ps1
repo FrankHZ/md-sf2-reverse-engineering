@@ -30,6 +30,8 @@ if (-not $SkipExtraction) {
     & (Join-Path $PSScriptRoot 'Test-GrowthExtraction.ps1') -UpstreamPath $UpstreamPath
     Write-Output '=== H2: promotions and enemy definitions ==='
     & (Join-Path $PSScriptRoot 'Test-EnemyPromotionExtraction.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
+    Write-Output '=== H2: battle 01 placement and AI regions ==='
+    & (Join-Path $PSScriptRoot 'Test-Battle01Extraction.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
 }
 
 if (-not $SkipRuntime) {

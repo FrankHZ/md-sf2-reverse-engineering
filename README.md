@@ -172,13 +172,14 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
-当前 H2 已覆盖 11 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
+当前 H2 已覆盖 12 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
 5 条成长曲线、59 个职业成长记录和 122 个学法术条目，以及 5 段转职表、103 个敌人名称和
 103 个 56-byte 敌人定义。新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
 原版名称清单。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
-最低成长补偿分支。
+最低成长补偿分支。第一场剧情战斗另有 9 个 placement/AI 实体和 3 个 region polygon 的独立
+ROM decode，148 个结构值零差异。
 
 ### Phase 3 — Game Design Reconstruction
 
@@ -206,7 +207,7 @@ fixture 覆盖和对现代重制的合同影响。
 
 下一块继续扩展 **Phase 2 的运行时证据**：把已经定位的成长计算、行动顺序与伤害调用链变成
 可控场景，优先覆盖升级随机增益/保底、AGI 127/128 与第二回合、地形减伤和弓手对飞行单位
-加成；同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。静态侧下一
-个端到端扩展是一张战斗地图及其敌人 placement/AI 引用。
+加成；同时保留 TORT effective-level bug 与 `LASER radius = 3` 的显式行为验证队列。静态侧沿
+已完成的 Battle 01 placement/AI 合同继续解 terrain、map link 和胜负条件。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

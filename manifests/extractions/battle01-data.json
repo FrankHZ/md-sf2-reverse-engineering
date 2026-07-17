@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle01-spriteset-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "sourceOutputPath": "local/derived/battle01-data.json",
+  "sourceOutputSha256": "32EEAE9AFB01DC38A1BAA99EE2E0B4C0B48F8A676F69771A5F5C52A2FC7E4C60",
+  "romOutputPath": "local/derived/rom-battle01-data.json",
+  "romOutputSha256": "D86F7CCAA3A0170D22A093519224512D503EDD73C71E394C99562550E73BD7A1",
+  "romRange": { "start": 1782498, "endExclusive": 1782646, "lengthBytes": 148 },
+  "counts": { "allies": 3, "enemies": 6, "aiRegions": 3, "aiPoints": 0 },
+  "entityRecordSize": 12
+}

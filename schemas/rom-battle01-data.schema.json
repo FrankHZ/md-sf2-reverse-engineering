@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/rom-battle01-data.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "provenance", "battleId", "romRange", "counts", "entities", "aiRegions", "aiPoints"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "provenance": {
+      "type": "object", "additionalProperties": false, "required": ["romManifestId", "romSha256"],
+      "properties": { "romManifestId": { "const": "sf2-us-retail" }, "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" } }
+    },
+    "battleId": { "const": 1 },
+    "romRange": { "$ref": "#/$defs/range" },
+    "counts": { "$ref": "#/$defs/counts" },
+    "entities": { "type": "array", "minItems": 9, "maxItems": 9, "items": { "$ref": "#/$defs/entity" } },
+    "aiRegions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/region" } },
+    "aiPoints": { "type": "array", "maxItems": 0, "items": { "$ref": "#/$defs/point" } }
+  },
+  "$defs": {
+    "range": {
+      "type": "object", "additionalProperties": false, "required": ["start", "endExclusive", "lengthBytes"],
+      "properties": { "start": { "const": 1782498 }, "endExclusive": { "const": 1782646 }, "lengthBytes": { "const": 148 } }
+    },
+    "counts": {
+      "type": "object", "additionalProperties": false, "required": ["allies", "enemies", "aiRegions", "aiPoints"],
+      "properties": { "allies": { "const": 3 }, "enemies": { "const": 6 }, "aiRegions": { "const": 3 }, "aiPoints": { "const": 0 } }
+    },
+    "behavior": {
+      "type": "object", "additionalProperties": false,
+      "required": ["primaryOrder", "primaryRegion", "secondaryOrder", "secondaryRegion", "filler", "spawn"],
+      "properties": {
+        "primaryOrder": { "type": "integer", "minimum": 0, "maximum": 255 }, "primaryRegion": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "secondaryOrder": { "type": "integer", "minimum": 0, "maximum": 255 }, "secondaryRegion": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "filler": { "type": "integer", "minimum": 0, "maximum": 255 }, "spawn": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "entity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "offset", "kind", "identity", "x", "y", "aiCommandset", "item", "behavior"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 8 }, "offset": { "type": "integer", "minimum": 1782498 },
+        "kind": { "enum": ["ally", "enemy"] }, "identity": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "x": { "type": "integer", "minimum": 0, "maximum": 255 }, "y": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "aiCommandset": { "type": "integer", "minimum": 0, "maximum": 255 }, "item": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "behavior": { "$ref": "#/$defs/behavior" }
+      }
+    },
+    "point": {
+      "type": "object", "additionalProperties": false, "required": ["x", "y"],
+      "properties": { "x": { "type": "integer", "minimum": 0, "maximum": 255 }, "y": { "type": "integer", "minimum": 0, "maximum": 255 } }
+    },
+    "region": {
+      "type": "object", "additionalProperties": false, "required": ["id", "offset", "vertexCount", "unknown", "vertices", "trailingBytes"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 2 }, "offset": { "type": "integer", "minimum": 1782498 },
+        "vertexCount": { "const": 4 }, "unknown": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "vertices": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/$defs/point" } },
+        "trailingBytes": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0, "maximum": 255 } }
+      }
+    }
+  }
+}
