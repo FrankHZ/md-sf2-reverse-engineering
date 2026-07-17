@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-dodge-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "function", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-successful-airborne-dodge-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 }, "scenario": { "const": "dodge" },
+    "function": { "type": "object", "additionalProperties": false, "required": ["entryAddress", "rngAddress", "returnAddress", "followupAddress"], "properties": { "entryAddress": { "const": 43772 }, "rngAddress": { "const": 43900 }, "returnAddress": { "const": 43964 }, "followupAddress": { "const": 45070 } } },
+    "setup": { "type": "object", "additionalProperties": false, "required": ["actor", "target", "targetMovetype", "actorMovetype", "dodgeSeed", "followupSeed", "hp"], "properties": { "actor": { "const": 0 }, "target": { "const": 128 }, "targetMovetype": { "const": 6 }, "actorMovetype": { "const": 0 }, "dodgeSeed": { "const": 0 }, "followupSeed": { "const": 65535 }, "hp": { "const": 100 } } },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["range", "roll", "dodge", "calculateDamageCalls", "doubleRoll", "counterRoll", "double", "counter", "actorHp", "targetHp"],
+      "properties": { "range": { "const": 8 }, "roll": { "const": 0 }, "dodge": { "const": true }, "calculateDamageCalls": { "const": 0 }, "doubleRoll": { "const": 31 }, "counterRoll": { "const": 31 }, "double": { "const": false }, "counter": { "const": false }, "actorHp": { "const": 100 }, "targetHp": { "const": 100 } }
+    }
+  }
+}

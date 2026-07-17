@@ -51,6 +51,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3PhysicalDamageFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: dodge, double attack, counter, and counter half-damage ==='
     & (Join-Path $PSScriptRoot 'Test-H3AttackChainFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: successful airborne dodge and no-damage path ==='
+    & (Join-Path $PSScriptRoot 'Test-H3DodgeFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='

@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -34,6 +34,7 @@ local damage = nil
 local damage_playback = false
 local chain = nil
 local chain_playback = false
+local dodge_case = nil
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -168,8 +169,86 @@ event.on_bus_exec(function()
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
         memory.write_u8(0xFF5F00 + 18 * 48 + 8, 1, "M68K BUS")
         chain = { attacks = {}, reactions = {}, decision = nil, decision_active = false }
+    elseif scenario == "dodge" then
+        local function entry(combatant)
+            local slot = combatant
+            if combatant >= 128 then slot = combatant - 96 end
+            return 0xFFE800 + slot * 56
+        end
+        memory.write_u16_be(entry(0) + 12, 100, "M68K BUS")
+        memory.write_u16_be(entry(0) + 14, 100, "M68K BUS")
+        memory.write_u8(entry(0) + 19, 50, "M68K BUS")
+        memory.write_u8(entry(0) + 31, 8, "M68K BUS")
+        memory.write_u8(entry(0) + 49, 0x00, "M68K BUS")
+        memory.write_u16_be(entry(0) + 52, 4, "M68K BUS")
+        memory.write_u16_be(entry(128) + 12, 100, "M68K BUS")
+        memory.write_u16_be(entry(128) + 14, 100, "M68K BUS")
+        memory.write_u8(entry(128) + 21, 20, "M68K BUS")
+        memory.write_u8(entry(128) + 31, 8, "M68K BUS")
+        memory.write_u8(entry(128) + 46, 8, "M68K BUS")
+        memory.write_u8(entry(128) + 47, 17, "M68K BUS")
+        memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
+        dodge_case = { calculate_calls = 0 }
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    local a4 = emu.getregister("M68K A4"); local a5 = emu.getregister("M68K A5")
+    dodge_case.actor = memory.read_u8(a4 & 0xFFFFFF, "M68K BUS")
+    dodge_case.target = memory.read_u8(a5 & 0xFFFFFF, "M68K BUS")
+end, 0xAAFC, "sf2-dodge-case-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    memory.write_u16_be(0xFFDEA4, 0, "M68K BUS")
+    dodge_case.range = emu.getregister("M68K D2") & 0xFFFF
+end, 0xAB7C, "sf2-dodge-case-seed", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    dodge_case.roll = emu.getregister("M68K D0") & 0xFFFF
+end, 0xAB82, "sf2-dodge-case-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    dodge_case.calculate_calls = dodge_case.calculate_calls + 1
+end, 0xABBE, "sf2-dodge-case-unexpected-damage", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    dodge_case.flag = memory.read_u8((a2 - 5) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xABBC, "sf2-dodge-case-return", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
+end, 0xB00E, "sf2-dodge-followup-seed", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario == "dodge" and dodge_case ~= nil then dodge_case.double_roll = emu.getregister("M68K D0") & 0xFFFF end
+end, 0xB03C, "sf2-dodge-followup-double", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario == "dodge" and dodge_case ~= nil then dodge_case.counter_roll = emu.getregister("M68K D0") & 0xFFFF end
+end, 0xB074, "sf2-dodge-followup-counter", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "dodge" or dodge_case == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    dodge_case.double = memory.read_u8((a2 - 13) & 0xFFFFFF, "M68K BUS") ~= 0
+    dodge_case.counter = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"dodge","battle":%d,"actor":%d,"target":%d,"range":%d,"roll":%d,"dodge":%s,"calculateDamageCalls":%d,"doubleRoll":%d,"counterRoll":%d,"double":%s,"counter":%s,"actorHp":%d,"targetHp":%d}\n',
+        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), dodge_case.actor, dodge_case.target,
+        dodge_case.range, dodge_case.roll, tostring(dodge_case.flag), dodge_case.calculate_calls,
+        dodge_case.double_roll, dodge_case.counter_roll, tostring(dodge_case.double), tostring(dodge_case.counter),
+        memory.read_u16_be(0xFFE800 + 14, "M68K BUS"), memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    ))
+    output:close(); client.exitCode(0)
+end, 0xB07E, "sf2-dodge-case-observe", "M68K BUS")
 
 local function chain_attack()
     if chain == nil or #chain.attacks == 0 then return nil end
@@ -274,7 +353,7 @@ event.on_bus_exec(function()
 end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario == "damage" or scenario == "chain" then return end
+    if scenario == "damage" or scenario == "chain" or scenario == "dodge" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))

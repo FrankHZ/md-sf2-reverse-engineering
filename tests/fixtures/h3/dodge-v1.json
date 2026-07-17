@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-successful-airborne-dodge-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "dodge",
+  "function": { "entryAddress": 43772, "rngAddress": 43900, "returnAddress": 43964, "followupAddress": 45070 },
+  "setup": { "actor": 0, "target": 128, "targetMovetype": 6, "actorMovetype": 0, "dodgeSeed": 0, "followupSeed": 65535, "hp": 100 },
+  "expected": {
+    "range": 8, "roll": 0, "dodge": true, "calculateDamageCalls": 0,
+    "doubleRoll": 31, "counterRoll": 31, "double": false, "counter": false,
+    "actorHp": 100, "targetHp": 100
+  }
+}

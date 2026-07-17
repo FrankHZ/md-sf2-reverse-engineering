@@ -207,7 +207,7 @@ nonlethal at 200 HP. Bowie has ATT 50, DEF 30, ground movetype, and prowess `0x3
 ATT 40, DEF 20, hovering movetype, and prowess `0xC8`. Low critical nibbles are 8 (`NONE`). The
 double field in `0x38` and counter field in `0xC8` are both setting 3, selecting a 1/4 RNG range.
 
-At each dodge RNG boundary, seed `0xFFFF` produces nonzero rolls. Because the target is hovering and
+In the chain scenario, seed `0xFFFF` at each dodge RNG boundary produces nonzero rolls. Because the target is hovering and
 Bowie is not an archer, the first and second attacks use airborne-target dodge range 8 and roll 7.
 The counter targets a ground combatant and uses default range 32, rolling 31. These calls confirm the
 range selection and non-dodge path; they do not yet execute the successful dodge branch.
@@ -225,9 +225,16 @@ replays enemy reactions `-18, -18` and ally reaction `-5`, leaving persistent en
 The verifier independently models dodge ranges, all LCG transitions, land reduction, counter
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
-This scenario confirms one valid adjacent counter and one double attack. Successful dodge, failed
-double/counter validation (death, range, status, same-side, special enemy exclusions), and whether a
-second/counter critical can occur remain separate fixture cases.
+This scenario confirms one valid adjacent counter and one double attack. Failed double/counter
+validation (death, range, status, same-side, special enemy exclusions) and whether a second/counter
+critical can occur remain separate fixture cases.
+
+The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
+seed 0 at the range-8 dodge call. The original routine returns 0, writes the dodge stack flag, and
+branches around `battlesceneScript_CalculateDamage`; an execution counter at `0xABBE` remains zero.
+Follow-up double/counter settings both use range 32 with seed `0xFFFF`, producing rolls 31 and 31,
+so no later attack is scheduled. Both combatants remain at 100 HP. This locks the successful dodge
+control-flow contract independently of the earlier non-dodge observations.
 
 ## Unknown / Next Fixtures
 
@@ -236,8 +243,8 @@ second/counter critical can occur remain separate fixture cases.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add a successful-dodge case, failed double/counter validation cases, resistance, additional
-  non-critical variance seeds, and an EXP-caused level-up to the confirmed physical path.
+- Add failed double/counter validation cases, resistance, additional non-critical variance seeds,
+  and an EXP-caused level-up to the confirmed physical path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.
