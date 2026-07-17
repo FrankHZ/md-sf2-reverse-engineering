@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'damage')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -31,6 +31,7 @@ local queue = {}
 local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C" }
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
 local damage = nil
+local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
 end
@@ -67,9 +68,47 @@ event.on_bus_exec(function()
 end, 0x163BC, "sf2-flag-prompt", "M68K BUS")
 
 event.on_bus_exec(function()
+    if scenario ~= "activation" then return end
+    local function entry(combatant)
+        local slot = combatant
+        if combatant >= 128 then slot = combatant - 96 end
+        return 0xFFE800 + slot * 56
+    end
+    memory.write_u8(entry(0) + 46, 8, "M68K BUS")
+    memory.write_u8(entry(0) + 47, 12, "M68K BUS")
+    status("milestone:activation-boundary-setup")
+end, 0x2550C, "sf2-activation-boundary-setup", "M68K BUS")
+
+local function capture_activation()
+    local function entry(combatant)
+        local slot = combatant
+        if combatant >= 128 then slot = combatant - 96 end
+        return 0xFFE800 + slot * 56
+    end
+    local function flag_set(flag)
+        local byte = memory.read_u8(0xFFF686 + math.floor(flag / 8), "M68K BUS")
+        local mask = 0x80 >> (flag % 8)
+        return (byte & mask) ~= 0
+    end
+    local snapshot = {
+        newly_triggered = memory.read_u16_be(0xFFB20C, "M68K BUS"),
+        region_flags = { flag_set(90), flag_set(91), flag_set(92) },
+        enemies = {}
+    }
+    for combatant = 128, 133 do
+        snapshot.enemies[#snapshot.enemies + 1] = {
+            combatant = combatant,
+            bitfield = memory.read_u16_be(entry(combatant) + 52, "M68K BUS")
+        }
+    end
+    return snapshot
+end
+
+event.on_bus_exec(function()
     stage = "battle"
     status("milestone:turn-order-entry")
     print("milestone:turn-order-entry")
+    activation = capture_activation()
     memory.write_u16_be(0xFFDEA4, seed, "M68K BUS")
     if scenario == "boundaries" then
         local function entry(combatant)
@@ -115,7 +154,18 @@ event.on_bus_exec(function()
             output:write(string.format('{"combatant":%d,"score":%d}', combatant, score))
         end
     end
-    output:write("]}\n")
+    output:write('],"activation":{"newlyTriggered":' .. activation.newly_triggered .. ',"regionFlags":[')
+    for index = 1, #activation.region_flags do
+        if index > 1 then output:write(",") end
+        output:write(tostring(activation.region_flags[index]))
+    end
+    output:write('],"enemies":[')
+    for index = 1, #activation.enemies do
+        if index > 1 then output:write(",") end
+        local enemy = activation.enemies[index]
+        output:write(string.format('{"combatant":%d,"bitfield":%d}', enemy.combatant, enemy.bitfield))
+    end
+    output:write("]}}\n")
     output:close()
     client.exitCode(0)
 end, 0x2559E, "sf2-turn-order-observe", "M68K BUS")

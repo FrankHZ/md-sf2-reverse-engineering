@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle01-region-activation-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "activation",
+  "function": { "entryAddress": 152844, "observeAddress": 152900 },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "positionXOffset": 46,
+    "positionYOffset": 47,
+    "activationBitfieldOffset": 52,
+    "gameFlagsAddress": 16774790,
+    "battleRegionFlagStart": 90,
+    "newlyTriggeredRegionsAddress": 16757260
+  },
+  "boundarySetup": {
+    "combatant": 0,
+    "initial": { "x": 8, "y": 18 },
+    "controlled": { "x": 8, "y": 12 },
+    "note": "The controlled point lies on region 2's horizontal edge and inside regions 0 and 1."
+  },
+  "expected": {
+    "initial": {
+      "newlyTriggered": 7,
+      "regionFlags": [false, false, false],
+      "enemies": [
+        { "combatant": 128, "primaryRegion": 2, "bitfield": 8288 },
+        { "combatant": 129, "primaryRegion": 2, "bitfield": 8288 },
+        { "combatant": 130, "primaryRegion": 2, "bitfield": 8288 },
+        { "combatant": 131, "primaryRegion": 1, "bitfield": 8288 },
+        { "combatant": 132, "primaryRegion": 1, "bitfield": 8304 },
+        { "combatant": 133, "primaryRegion": 0, "bitfield": 8304 }
+      ]
+    },
+    "controlled": {
+      "newlyTriggered": 7,
+      "regionFlags": [true, true, true],
+      "enemies": [
+        { "combatant": 128, "primaryRegion": 2, "bitfield": 8289 },
+        { "combatant": 129, "primaryRegion": 2, "bitfield": 8289 },
+        { "combatant": 130, "primaryRegion": 2, "bitfield": 8289 },
+        { "combatant": 131, "primaryRegion": 1, "bitfield": 8289 },
+        { "combatant": 132, "primaryRegion": 1, "bitfield": 8305 },
+        { "combatant": 133, "primaryRegion": 0, "bitfield": 8305 }
+      ]
+    }
+  }
+}

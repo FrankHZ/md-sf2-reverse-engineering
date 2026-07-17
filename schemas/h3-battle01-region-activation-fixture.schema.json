@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-battle01-region-activation-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "function", "ram", "boundarySetup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle01-region-activation-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 },
+    "scenario": { "const": "activation" },
+    "function": {
+      "type": "object", "additionalProperties": false, "required": ["entryAddress", "observeAddress"],
+      "properties": { "entryAddress": { "const": 152844 }, "observeAddress": { "const": 152900 } }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "positionXOffset", "positionYOffset", "activationBitfieldOffset", "gameFlagsAddress", "battleRegionFlagStart", "newlyTriggeredRegionsAddress"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 }, "combatantEntrySize": { "const": 56 },
+        "positionXOffset": { "const": 46 }, "positionYOffset": { "const": 47 }, "activationBitfieldOffset": { "const": 52 },
+        "gameFlagsAddress": { "const": 16774790 }, "battleRegionFlagStart": { "const": 90 },
+        "newlyTriggeredRegionsAddress": { "const": 16757260 }
+      }
+    },
+    "boundarySetup": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "initial", "controlled", "note"],
+      "properties": {
+        "combatant": { "const": 0 }, "initial": { "$ref": "#/definitions/point" },
+        "controlled": { "$ref": "#/definitions/point" }, "note": { "type": "string", "minLength": 20 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["initial", "controlled"],
+      "properties": { "initial": { "$ref": "#/definitions/snapshot" }, "controlled": { "$ref": "#/definitions/snapshot" } }
+    }
+  },
+  "definitions": {
+    "point": {
+      "type": "object", "additionalProperties": false, "required": ["x", "y"],
+      "properties": { "x": { "type": "integer", "minimum": 0, "maximum": 255 }, "y": { "type": "integer", "minimum": 0, "maximum": 255 } }
+    },
+    "enemy": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "primaryRegion", "bitfield"],
+      "properties": {
+        "combatant": { "type": "integer", "minimum": 128, "maximum": 133 },
+        "primaryRegion": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "bitfield": { "type": "integer", "minimum": 0, "maximum": 65535 }
+      }
+    },
+    "snapshot": {
+      "type": "object", "additionalProperties": false, "required": ["newlyTriggered", "regionFlags", "enemies"],
+      "properties": {
+        "newlyTriggered": { "const": 7 },
+        "regionFlags": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "boolean" } },
+        "enemies": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "#/definitions/enemy" } }
+      }
+    }
+  }
+}

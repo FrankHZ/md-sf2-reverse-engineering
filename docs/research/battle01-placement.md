@@ -1,6 +1,6 @@
 # Battle 01 Static Scene Contract
 
-- Status: **Confirmed static scene contract and first-turn initialization; region activation pending H3**
+- Status: **Confirmed static scene contract, first-turn initialization, and region activation**
 - Evidence date: 2026-07-17
 - Battle: ID 1, `INSIDE_ANCIENT_TOWER`
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -13,6 +13,7 @@
 pwsh ./scripts/Test-Battle01Extraction.ps1
 pwsh ./scripts/Test-Battle01SceneExtraction.ps1
 pwsh ./scripts/Test-H3Battle01TurnOrderFixture.ps1
+pwsh ./scripts/Test-H3Battle01RegionActivationFixture.ps1
 ```
 
 The pinned assembly source and an independent ROM decoder produce deterministic schema-valid
@@ -88,9 +89,9 @@ The three confirmed quadrilaterals are retained as ordered vertex lists:
 2. `(0,0) → (0,7) → (15,19) → (15,0)`
 3. `(0,0) → (0,12) → (15,12) → (15,0)`
 
-The storage contract deliberately calls these ordered polygons and activation-region references. It
-does not yet claim which boundary rule is used, when a combatant activates, how overlaps resolve, or
-whether the two trailing bytes participate in runtime logic.
+The runtime path splits a quadrilateral into triangles `(1,2,4)` and `(3,2,4)`. It tests each living,
+placed ally and treats a point on an edge as inside. If any ally is inside, the corresponding global
+battle-region flag is set. The two source-unlabeled trailing bytes are not read by this predicate.
 
 ## Victory/Defeat and First Turn
 
@@ -107,11 +108,31 @@ initializes combatants, the harness fixes only `RANDOM_SEED` to `0x1234` at
 Gizmos are live participants. Exact randomized scores are committed in
 `tests/fixtures/h3/battle01-turn-order-v1.json`.
 
-The companion boundary fixture reuses the same initialized scene and confirms the generic filters:
+The companion turn-order boundary fixture reuses the same initialized scene and confirms the generic filters:
 a dead placed ally and a living unplaced enemy are omitted, while AGI 128 adds a second turn. It also
 locks the original signed-byte sort behavior at AGI 127/128; see
 [`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md).
 
-Cutscene command semantics, AI command-set programs, region boundary/overlap behavior, map graphics,
-and terrain-to-map-block rendering remain outside this contract. The next Battle 01 runtime fixture
-should cross one activation-region boundary and observe the affected enemy state.
+## Region Activation Runtime
+
+`ActivateEnemies` at `0x2550C` evaluates the three region polygons before the first turn-order pass.
+The baseline H3 snapshot at `0x25544` confirms that allies `(8,18)`, `(9,18)`, and `(7,18)` trigger
+none of them. The three global flags remain clear and enemy 128–133 activation bitfields remain,
+in order, `0x2060`, `0x2060`, `0x2060`, `0x2060`, `0x2070`, and `0x2070`. The separate
+`NEWLY_TRIGGERED_BATTLE_REGIONS` scan bitfield is `0b111`: it records that each polygon was tested,
+not that each polygon triggered.
+
+The controlled fixture changes only Bowie’s initialized X/Y immediately before `ActivateEnemies`,
+from `(8,18)` to `(8,12)`. That point is on region 2’s horizontal edge and inside regions 0 and 1.
+The original ROM sets all three battle-region flags, and the six enemy bitfields become `0x2061`
+for enemies 128–131 and `0x2071` for 132–133. Thus activation preserves every existing AI field and
+sets only bit 0 (`PRIMARY_ACTIVE`) for enemies whose primary region is active. A project-owned
+cross-product model independently evaluates the same two positions and source-extracted polygons
+before BizHawk launches.
+
+All six secondary region values are 15 (`NONE`), so this fixture does not yet exercise secondary
+activation or the resulting secondary-active bit. It also covers first-round evaluation only; later
+round clearing of the scan bitfield and region cutscene timing remain open.
+
+Cutscene command semantics, AI command-set programs, secondary-region activation, later-round region
+state, map graphics, and terrain-to-map-block rendering remain outside this contract.
