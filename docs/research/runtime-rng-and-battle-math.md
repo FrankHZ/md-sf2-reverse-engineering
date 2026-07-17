@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and physical base damage**
+- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and physical damage application**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -18,6 +18,7 @@ the locked ROM instruction bytes.
 | level up | `LevelUp` | `0x9484` | `code/common/stats/levelup.asm` |
 | physical damage | `battlesceneScript_CalculateDamage` | `0xABBE..0xAC4E` | `code/gameflow/battle/battleactions/calculatedamage.asm` |
 | critical hit | `battlesceneScript_DetermineCriticalHit` | `0xAC4E..0xACCA` | `code/gameflow/battle/battleactions/determinecriticalhit.asm` |
+| damage application | `battlesceneScript_InflictDamage` | `0xACEA..0xAE32` | `code/gameflow/battle/battleactions/inflictdamage.asm` |
 | turn order | `GenerateBattleTurnOrder` | `0x25544` | `code/gameflow/battle/battleloop/turnorderfunctions.asm` |
 | turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
 
@@ -146,7 +147,8 @@ target's land-effect setting with integer truncation:
 If the target movement type is flying or hovering and the attacker movement type is brass gunner,
 archer, centaur archer, or stealth archer, it then adds `floor(damage / 4)`. Critical, double,
 counter, dodge, resistance, status, and the final random damage spread occur in surrounding battle
-action routines and are not implied by this base-damage function alone.
+action routines and are not implied by this base-damage function alone; the companion application
+fixture observes the next two routines separately.
 
 The physical-damage H3 fixture reuses the reset-to-Battle-Test harness. Immediately before the
 first turn it sets Bowie to the original AI-controlled state, gives him archer movetype and ATT 99,
@@ -154,17 +156,33 @@ and places a hovering Gizmo with DEF 20 on adjacent grass. The original AI then 
 attack and naturally calls `battlesceneScript_CalculateDamage`; the harness does not jump to the
 routine or write CPU registers.
 
-Callbacks confirm the complete integer path: base damage `99 - 20 = 79`; hovering-on-grass land
+Callbacks confirm the base-function integer path: base damage `99 - 20 = 79`; hovering-on-grass land
 effect setting 2 selects multiplier 205; `floor(79 * 205 / 256) = 63`; the archer branch adds
 `floor(63 / 4) = 15`; the routine returns 78. A static model recomputes those values before emulator
 launch, while runtime callbacks separately prove the land-effect and archer branches executed.
+
+The same natural attack now continues through critical and `InflictDamage`. The harness sets Bowie's
+current prowess low nibble to definition 0 (1/32 chance, +50% damage) and writes seed 0 only at
+`battlesceneScript_DetermineCriticalHit` entry. The original RNG returns 0, so 78 becomes
+`78 + floor(78/2) = 117`. Damage variance then uses range
+`floor(117/8) + 1 = 15`; the two following original RNG calls both return 0, leaving final damage 117.
+
+The target begins with max/current HP 100. `DecreaseCurrentHp` clamps it to zero, sets the stack-frame
+death flag, and writes a signed -117 reaction command. Equal actor/target levels select a 50-point
+kill value. Damage EXP computes `floor(50 * 117 / 100) = 58` and immediately reaches the per-action
+cap of 49; adding kill EXP remains capped at 49. The committed application fixture and independent
+PowerShell model lock every intermediate value and the relevant instruction addresses.
 
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 ```
 
-This fixture ends at the base-damage return. It does not claim the later random spread, critical,
-double, counter, dodge, resistance, HP application, EXP, or death-message behavior.
+The application observation ends at `0xAD92` while the game is constructing the battle-scene command
+list. At this stage current HP has been reduced and the EXP accumulator is final, but
+`battlesceneScript_End` subsequently restores its saved HP snapshot before the command interpreter
+replays the signed reaction. The fixture therefore does not yet claim persistent post-animation HP,
+Battle 01's halved and ±1 randomized EXP award, dialogue/death animation, double, counter, dodge,
+resistance, or status behavior.
 
 ## Unknown / Next Fixtures
 
@@ -173,8 +191,8 @@ double, counter, dodge, resistance, HP application, EXP, or death-message behavi
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Extend the now-confirmed base-damage, land-effect, and archer-bonus path through random spread,
-  critical/double/counter logic, HP application, and damage EXP.
+- Extend the now-confirmed physical path through battle-scene reaction replay and final EXP award;
+  add explicit dodge, double, counter, resistance, and non-critical variance cases.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

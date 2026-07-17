@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-physical-damage-application-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "scenario": "damage",
+  "observationBoundary": "Battle-scene script construction before current HP is restored and reaction commands are replayed.",
+  "function": {
+    "criticalEntryAddress": 44110,
+    "criticalRollAddress": 44156,
+    "inflictDamageEntryAddress": 44266,
+    "varianceFirstAddress": 44364,
+    "varianceSecondAddress": 44370,
+    "damageExpReturnAddress": 44382,
+    "hpApplyAddress": 44414,
+    "observeAddress": 44434
+  },
+  "setup": {
+    "actor": 0,
+    "target": 128,
+    "actorLevel": 1,
+    "targetLevel": 1,
+    "targetMaxHp": 100,
+    "targetCurrentHp": 100,
+    "criticalProwess": 0,
+    "criticalChanceRange": 32,
+    "criticalDamageShift": 1,
+    "criticalSeed": 0,
+    "perActionExpCap": 49
+  },
+  "expected": {
+    "baseFunctionResult": 78,
+    "critical": { "roll": 0, "before": 78, "after": 117 },
+    "variance": { "range": 15, "first": 0, "afterFirst": 117, "second": 0, "final": 117 },
+    "hp": { "before": 100, "after": 0, "targetDies": true },
+    "exp": { "killValue": 50, "afterDamage": 49, "final": 49 }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-physical-damage-application-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "observationBoundary", "function", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-physical-damage-application-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 }, "scenario": { "const": "damage" },
+    "observationBoundary": { "type": "string", "minLength": 60 },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["criticalEntryAddress", "criticalRollAddress", "inflictDamageEntryAddress", "varianceFirstAddress", "varianceSecondAddress", "damageExpReturnAddress", "hpApplyAddress", "observeAddress"],
+      "properties": {
+        "criticalEntryAddress": { "const": 44110 }, "criticalRollAddress": { "const": 44156 },
+        "inflictDamageEntryAddress": { "const": 44266 }, "varianceFirstAddress": { "const": 44364 },
+        "varianceSecondAddress": { "const": 44370 }, "damageExpReturnAddress": { "const": 44382 },
+        "hpApplyAddress": { "const": 44414 }, "observeAddress": { "const": 44434 }
+      }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "target", "actorLevel", "targetLevel", "targetMaxHp", "targetCurrentHp", "criticalProwess", "criticalChanceRange", "criticalDamageShift", "criticalSeed", "perActionExpCap"],
+      "properties": {
+        "actor": { "const": 0 }, "target": { "const": 128 }, "actorLevel": { "const": 1 }, "targetLevel": { "const": 1 },
+        "targetMaxHp": { "const": 100 }, "targetCurrentHp": { "const": 100 }, "criticalProwess": { "const": 0 },
+        "criticalChanceRange": { "const": 32 }, "criticalDamageShift": { "const": 1 }, "criticalSeed": { "const": 0 },
+        "perActionExpCap": { "const": 49 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["baseFunctionResult", "critical", "variance", "hp", "exp"],
+      "properties": {
+        "baseFunctionResult": { "const": 78 },
+        "critical": { "$ref": "#/definitions/critical" }, "variance": { "$ref": "#/definitions/variance" },
+        "hp": { "$ref": "#/definitions/hp" }, "exp": { "$ref": "#/definitions/exp" }
+      }
+    }
+  },
+  "definitions": {
+    "critical": {
+      "type": "object", "additionalProperties": false, "required": ["roll", "before", "after"],
+      "properties": { "roll": { "const": 0 }, "before": { "const": 78 }, "after": { "const": 117 } }
+    },
+    "variance": {
+      "type": "object", "additionalProperties": false, "required": ["range", "first", "afterFirst", "second", "final"],
+      "properties": { "range": { "const": 15 }, "first": { "const": 0 }, "afterFirst": { "const": 117 }, "second": { "const": 0 }, "final": { "const": 117 } }
+    },
+    "hp": {
+      "type": "object", "additionalProperties": false, "required": ["before", "after", "targetDies"],
+      "properties": { "before": { "const": 100 }, "after": { "const": 0 }, "targetDies": { "const": true } }
+    },
+    "exp": {
+      "type": "object", "additionalProperties": false, "required": ["killValue", "afterDamage", "final"],
+      "properties": { "killValue": { "const": 50 }, "afterDamage": { "const": 49 }, "final": { "const": 49 } }
+    }
+  }
+}

@@ -127,8 +127,13 @@ event.on_bus_exec(function()
             return 0xFFE800 + slot * 56
         end
         memory.write_u8(entry(0) + 19, 99, "M68K BUS")
+        memory.write_u8(entry(0) + 10, 0, "M68K BUS")
+        memory.write_u8(entry(0) + 11, 1, "M68K BUS")
+        memory.write_u8(entry(0) + 31, 0, "M68K BUS")
+        memory.write_u8(entry(0) + 48, 0, "M68K BUS")
         memory.write_u8(entry(0) + 49, 0x80, "M68K BUS")
         memory.write_u16_be(entry(0) + 52, 4, "M68K BUS")
+        memory.write_u8(entry(128) + 11, 1, "M68K BUS")
         memory.write_u16_be(entry(128) + 12, 100, "M68K BUS")
         memory.write_u16_be(entry(128) + 14, 100, "M68K BUS")
         memory.write_u8(entry(128) + 21, 20, "M68K BUS")
@@ -202,15 +207,87 @@ end, 0xAC46, "sf2-damage-archer-bonus", "M68K BUS")
 event.on_bus_exec(function()
     if scenario ~= "damage" or damage == nil then return end
     damage.result = emu.getregister("M68K D6") & 0xFFFF
+end, 0xAC4C, "sf2-damage-return", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    memory.write_u16_be(0xFFDEA4, 0, "M68K BUS")
+    damage.critical = {
+        seed = 0,
+        prowess = memory.read_u8(0xFFE800 + 31, "M68K BUS"),
+        before = emu.getregister("M68K D6") & 0xFFFF
+    }
+end, 0xAC4E, "sf2-critical-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.critical ~= nil then damage.critical.range = emu.getregister("M68K D0") & 0xFFFF end
+end, 0xAC78, "sf2-critical-range", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.critical ~= nil then damage.critical.roll = emu.getregister("M68K D0") & 0xFFFF end
+end, 0xAC7C, "sf2-critical-roll", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.critical ~= nil then damage.critical.after = emu.getregister("M68K D6") & 0xFFFF end
+end, 0xAC8C, "sf2-critical-damage", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    damage.inflict_entry = emu.getregister("M68K D6") & 0xFFFF
+end, 0xACEA, "sf2-inflict-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage == nil then return end
+    damage.variance = { range = emu.getregister("M68K D0") & 0xFFFF, before = emu.getregister("M68K D6") & 0xFFFF }
+end, 0xAD46, "sf2-variance-range", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.variance ~= nil then
+        damage.variance.first = emu.getregister("M68K D0") & 0xFFFF
+        damage.variance.after_first = emu.getregister("M68K D6") & 0xFFFF
+    end
+end, 0xAD4C, "sf2-variance-first", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.variance ~= nil then damage.variance.second = emu.getregister("M68K D0") & 0xFFFF end
+end, 0xAD52, "sf2-variance-second", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil and damage.variance ~= nil then damage.variance.final = emu.getregister("M68K D6") & 0xFFFF end
+end, 0xAD58, "sf2-variance-final", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage ~= nil then damage.exp_after_damage = memory.read_u16_be(0xFFB62C, "M68K BUS") end
+end, 0xAD5E, "sf2-damage-exp", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage == nil then return end
+    damage.hp_before = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+end, 0xAD74, "sf2-hp-before", "M68K BUS")
+
+event.on_bus_exec(function()
+    if damage == nil then return end
+    damage.hp_after = memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+end, 0xAD7E, "sf2-hp-after", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "damage" or damage == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    damage.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
+    damage.exp_final = memory.read_u16_be(0xFFB62C, "M68K BUS")
     local output = assert(io.open(output_path, "w"))
     output:write(string.format(
-        '{"system":"%s","core":"Genesis Plus GX","scenario":"damage","battle":%d,"actor":%d,"target":%d,"base":%d,"landEffect":%d,"multiplier":%d,"reduced":%d,"archerBonus":%s,"result":%d}\n',
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"damage","battle":%d,"actor":%d,"target":%d,"base":%d,"landEffect":%d,"multiplier":%d,"reduced":%d,"archerBonus":%s,"result":%d,"critical":{"seed":%d,"prowess":%d,"range":%d,"roll":%d,"before":%d,"after":%d},"inflictEntry":%d,"variance":{"range":%d,"first":%d,"afterFirst":%d,"second":%d,"final":%d},"hp":{"before":%d,"after":%d,"targetDies":%s},"exp":{"afterDamage":%d,"final":%d}}\n',
         emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), damage.actor, damage.target, damage.base,
-        damage.land_effect, damage.multiplier, damage.reduced, tostring(damage.bonus), damage.result
+        damage.land_effect, damage.multiplier, damage.reduced, tostring(damage.bonus), damage.result,
+        damage.critical.seed, damage.critical.prowess, damage.critical.range, damage.critical.roll,
+        damage.critical.before, damage.critical.after, damage.inflict_entry,
+        damage.variance.range, damage.variance.first, damage.variance.after_first, damage.variance.second, damage.variance.final,
+        damage.hp_before, damage.hp_after, tostring(damage.target_dies), damage.exp_after_damage, damage.exp_final
     ))
     output:close()
     client.exitCode(0)
-end, 0xAC4C, "sf2-damage-return", "M68K BUS")
+end, 0xAD92, "sf2-damage-application", "M68K BUS")
 
 local frames = 0
 while true do
