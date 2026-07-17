@@ -186,7 +186,7 @@ dead/unplaced 过滤与 signed-byte 稳定排序。区域激活 H3 进一步确�
 移到 `(8,12)`（region 2 的边界）会同时触发三个 polygon，并只给对应六个 Gizmo 的原始 AI
 bitfield 增加 primary-active 位。AI 驱动的自然攻击另确认 30% 地形减伤和弓手对 hovering
 目标的 25% 加成顺序及整数截断，并继续覆盖 dodge、受控 critical、两次向下 spread、double/counter、
-死亡目标清除后续 double/counter、距离与睡眠状态清除反击、HP 零下限、击杀判定、单行动 49 EXP 累加上限、
+死亡目标清除后续 double/counter、距离及睡眠/眩晕状态清除反击、HP 零下限、击杀判定、单行动 49 EXP 累加上限、
 reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实际入账。
 
 ### Phase 3 — Game Design Reconstruction

@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range', 'counter-sleep', 'counter-stun')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -37,7 +37,7 @@ local chain_playback = false
 local dodge_case = nil
 local lethal_validation = nil
 local range_validation = nil
-local sleep_validation = nil
+local status_validation = nil
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -215,7 +215,7 @@ event.on_bus_exec(function()
         memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
         if lethal_validation == nil then lethal_validation = { damage_calls = 0 } end
-    elseif scenario == "counter-range" or scenario == "counter-sleep" then
+    elseif scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" then
         local function entry(combatant)
             local slot = combatant
             if combatant >= 128 then slot = combatant - 96 end
@@ -239,8 +239,10 @@ event.on_bus_exec(function()
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
         if scenario == "counter-range" and range_validation == nil then
             range_validation = { damage_calls = 0 }
-        elseif scenario == "counter-sleep" and sleep_validation == nil then
-            sleep_validation = { damage_calls = 0 }
+        elseif (scenario == "counter-sleep" or scenario == "counter-stun") and status_validation == nil then
+            local status_value = 0x00C0
+            if scenario == "counter-stun" then status_value = 0x0001 end
+            status_validation = { damage_calls = 0, status_value = status_value }
         end
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
@@ -255,7 +257,7 @@ end, 0xAAFC, "sf2-dodge-case-entry", "M68K BUS")
 event.on_bus_exec(function()
     if (scenario == "lethal" and lethal_validation ~= nil) or
        (scenario == "counter-range" and range_validation ~= nil) or
-       (scenario == "counter-sleep" and sleep_validation ~= nil) then
+       ((scenario == "counter-sleep" or scenario == "counter-stun") and status_validation ~= nil) then
         memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
         return
     end
@@ -392,35 +394,35 @@ event.on_bus_exec(function()
 end, 0xA54C, "sf2-range-counter-validation-return", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario ~= "counter-sleep" or sleep_validation == nil then return end
+    if (scenario ~= "counter-sleep" and scenario ~= "counter-stun") or status_validation == nil then return end
     local a2 = emu.getregister("M68K A2")
     memory.write_u8((a2 - 13) & 0xFFFFFF, 0, "M68K BUS")
     memory.write_u8((a2 - 12) & 0xFFFFFF, 0xFF, "M68K BUS")
-    sleep_validation.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
-end, 0xA45E, "sf2-sleep-double-validation-entry", "M68K BUS")
+    status_validation.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA45E, "sf2-status-double-validation-entry", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario ~= "counter-sleep" or sleep_validation == nil then return end
+    if (scenario ~= "counter-sleep" and scenario ~= "counter-stun") or status_validation == nil then return end
     local a2 = emu.getregister("M68K A2")
     local target_entry = 0xFFE800 + 32 * 56
-    memory.write_u16_be(target_entry + 44, 0x00C0, "M68K BUS")
-    sleep_validation.status = memory.read_u16_be(target_entry + 44, "M68K BUS")
-    sleep_validation.counter_before = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
-end, 0xA49C, "sf2-sleep-counter-validation-entry", "M68K BUS")
+    memory.write_u16_be(target_entry + 44, status_validation.status_value, "M68K BUS")
+    status_validation.status = memory.read_u16_be(target_entry + 44, "M68K BUS")
+    status_validation.counter_before = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA49C, "sf2-status-counter-validation-entry", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario ~= "counter-sleep" or sleep_validation == nil then return end
+    if (scenario ~= "counter-sleep" and scenario ~= "counter-stun") or status_validation == nil then return end
     local a2 = emu.getregister("M68K A2")
-    sleep_validation.counter_after = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    status_validation.counter_after = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
     local output = assert(io.open(output_path, "w"))
     output:write(string.format(
-        '{"system":"%s","core":"Genesis Plus GX","scenario":"counter-sleep","battle":%d,"targetDies":%s,"status":%d,"counterBefore":%s,"counterAfter":%s,"damageCalls":%d,"targetHp":%d}\n',
-        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), tostring(sleep_validation.target_dies),
-        sleep_validation.status, tostring(sleep_validation.counter_before), tostring(sleep_validation.counter_after),
-        sleep_validation.damage_calls, memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"%s","battle":%d,"targetDies":%s,"status":%d,"counterBefore":%s,"counterAfter":%s,"damageCalls":%d,"targetHp":%d}\n',
+        emu.getsystemid(), scenario, memory.read_u8(0xFFF712, "M68K BUS"), tostring(status_validation.target_dies),
+        status_validation.status, tostring(status_validation.counter_before), tostring(status_validation.counter_after),
+        status_validation.damage_calls, memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
     ))
     output:close(); client.exitCode(0)
-end, 0xA54C, "sf2-sleep-counter-validation-return", "M68K BUS")
+end, 0xA54C, "sf2-status-counter-validation-return", "M68K BUS")
 
 local function chain_attack()
     if chain == nil or #chain.attacks == 0 then return nil end
@@ -526,7 +528,7 @@ end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
 
 event.on_bus_exec(function()
     if scenario == "damage" or scenario == "chain" or scenario == "dodge" or scenario == "lethal" or
-       scenario == "counter-range" or scenario == "counter-sleep" then return end
+       scenario == "counter-range" or scenario == "counter-sleep" or scenario == "counter-stun" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -565,8 +567,8 @@ event.on_bus_exec(function()
         range_validation.damage_calls = range_validation.damage_calls + 1
         return
     end
-    if scenario == "counter-sleep" and sleep_validation ~= nil then
-        sleep_validation.damage_calls = sleep_validation.damage_calls + 1
+    if (scenario == "counter-sleep" or scenario == "counter-stun") and status_validation ~= nil then
+        status_validation.damage_calls = status_validation.damage_calls + 1
         return
     end
     if scenario ~= "damage" then return end

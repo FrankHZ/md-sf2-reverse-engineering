@@ -199,11 +199,16 @@ counter toggle. Immediately before validation, it writes status word `0x00C0` at
 `battlesceneScript_ValidateCounterAttack` clears the counter at `0xA538`; only the first damage
 calculation executes. This isolates the sleeping-target rejection from range and death checks.
 
+The counter-stun companion instead writes status word `0x0001`. It passes the original sleep mask,
+then the second `GetStatusEffects` call returns `STATUSEFFECT_STUN`; the same clear path rejects the
+otherwise eligible live adjacent counter with one total damage calculation.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
 pwsh ./scripts/Test-H3CounterRangeFixture.ps1
 pwsh ./scripts/Test-H3CounterSleepFixture.ps1
+pwsh ./scripts/Test-H3CounterStunFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -250,7 +255,7 @@ The verifier independently models dodge ranges, all LCG transitions, land reduct
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
 This scenario confirms one valid adjacent counter and one double attack. Remaining failed
-double/counter validation (stun, same-side, special enemy exclusions) and whether a second/counter
+double/counter validation (same-side and special enemy exclusions) and whether a second/counter
 critical can occur remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets
