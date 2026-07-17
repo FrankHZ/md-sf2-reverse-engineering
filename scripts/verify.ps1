@@ -2,7 +2,8 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [string] $UpstreamPath = (Join-Path $PSScriptRoot '..\local\upstream\SF2DISASM'),
-    [switch] $SkipRebuild
+    [switch] $SkipRebuild,
+    [switch] $SkipExtraction
 )
 
 Set-StrictMode -Version Latest
@@ -19,4 +20,9 @@ if (-not $SkipRebuild) {
     & (Join-Path $PSScriptRoot 'Invoke-Sf2Rebuild.ps1') -RomPath $RomPath -UpstreamPath $UpstreamPath
 }
 
-Write-Output '=== Phase 1 verification: PASS ==='
+if (-not $SkipExtraction) {
+    Write-Output '=== H2: deterministic static-data extraction ==='
+    & (Join-Path $PSScriptRoot 'Test-StaticExtraction.ps1') -UpstreamPath $UpstreamPath
+}
+
+Write-Output '=== Repository verification: PASS ==='

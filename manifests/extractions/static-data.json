@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-static-core-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "outputPath": "local/derived/static-data.json",
+  "outputSha256": "BCEB7EE6EC4AEF592A27EC1053CFBE547D45D8171CE6510343C80CC94D04235A",
+  "counts": {
+    "allySlots": 32,
+    "namedAllies": 30,
+    "classes": 32,
+    "items": 128,
+    "spellNames": 44,
+    "spellDefinitions": 89
+  },
+  "fixedRecordSizes": {
+    "allyStartDefinitions": 6,
+    "classDefinitions": 5,
+    "itemDefinitions": 16,
+    "spellDefinitions": 8
+  }
+}

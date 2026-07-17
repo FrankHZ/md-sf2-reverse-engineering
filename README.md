@@ -3,9 +3,10 @@
 这是一个从原版 Mega Drive/Genesis ROM 出发，系统拆解 **Shining Force II**，形成可验证的
 逆向研究、游戏设计文档和结构化数据，并最终在现代引擎中重建其玩法的长期工程。
 
-项目已完成 **Phase 1：可复现原版基线**，正在进入 **Phase 2：发现与数据合同**。本地环境
-已经固定 ROM 身份、社区反汇编提交和工具 hash，并能非交互地重建出逐字节一致的原版 ROM；
-尚未下载外部补丁、选择现代引擎或开始重制实现。
+项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
+已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
+并已完成角色槽位、职业、物品和法术的首个确定性 H2 导出；尚未下载外部补丁、选择现代引擎
+或开始重制实现。
 
 ## 我们要交付什么
 
@@ -107,7 +108,7 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 pwsh ./scripts/verify.ps1
 ```
 
-Phase 1 已实现这个入口。当前 H0、toolchain provenance 与 H1 均通过；后续在同一入口继续补齐：
+统一入口已经覆盖 H0、toolchain provenance、H1 与首个 H2；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -119,7 +120,9 @@ Phase 1 已实现这个入口。当前 H0、toolchain provenance 与 H1 均通�
 | H5 发布边界 | 扫描产物与 staged files | 不包含 ROM、抽取资源或不明许可证代码 |
 
 当前重建证据、命令和限制见
-[`docs/research/reproducible-original.md`](./docs/research/reproducible-original.md)。首次配置本地环境：
+[`docs/research/reproducible-original.md`](./docs/research/reproducible-original.md)，静态数据的范围、
+合同和已发现漂移见 [`docs/research/static-core-data.md`](./docs/research/static-core-data.md)。首次配置
+本地环境：
 
 ```powershell
 pwsh ./scripts/Initialize-LocalResearch.ps1 -RomPath <合法持有的美版 ROM 路径>
@@ -167,6 +170,10 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
+首个静态数据切片已完成：8 个 ROM table range、9 个上游源文件、角色/职业/物品/法术 enum
+交叉引用、canonical JSON、JSON Schema、固定输出 hash 和重复导出一致性均进入 H2。抽取内容只
+写入 ignored 的 `local/derived/`，仓库不保存原版名称清单。
+
 ### Phase 3 — Game Design Reconstruction
 
 - 按研究地图补齐系统文档；
@@ -191,8 +198,8 @@ fixture 覆盖和对现代重制的合同影响。
 
 ## 下一步
 
-下一块是 **Phase 2 的首个纵向切片**：建立上游 symbol/ROM range 索引，选择角色、职业、物品、
-法术四组高关联静态数据，先把“汇编定义 → canonical JSON → schema → 交叉引用报告”打通；同时
-为战斗行动顺序、伤害和随机数建立待验证问题清单。切片通过 H2 后，再扩展地图与行为回放。
+下一块是 **Phase 2 的第二个纵向切片**：从 ROM 原始 bytes 独立解码已知固定宽度表，与当前
+ASM-source 导出做双向差分；随后加入角色成长/法术学习表，并开始整理随机数、行动顺序、伤害
+和 `LASER radius = 3` 的行为验证队列。这样在扩展地图前，静态合同不会只依赖上游宏语义。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

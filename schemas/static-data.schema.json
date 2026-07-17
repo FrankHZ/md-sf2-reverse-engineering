@@ -1,0 +1,327 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/static-data.schema.json",
+  "title": "Shining Force II static core extraction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "provenance",
+    "romRangeConvention",
+    "romRanges",
+    "allies",
+    "classes",
+    "items",
+    "spellNames",
+    "spellDefinitions"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "sources"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "format": "uri"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "romRangeConvention": {
+      "const": "[start, endExclusive)"
+    },
+    "romRanges": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allyNames",
+        "allyStartDefinitions",
+        "classNames",
+        "classDefinitions",
+        "itemNames",
+        "itemDefinitions",
+        "spellNames",
+        "spellDefinitions"
+      ],
+      "properties": {
+        "allyNames": { "$ref": "#/$defs/romRange" },
+        "allyStartDefinitions": { "$ref": "#/$defs/romRange" },
+        "classNames": { "$ref": "#/$defs/romRange" },
+        "classDefinitions": { "$ref": "#/$defs/romRange" },
+        "itemNames": { "$ref": "#/$defs/romRange" },
+        "itemDefinitions": { "$ref": "#/$defs/romRange" },
+        "spellNames": { "$ref": "#/$defs/romRange" },
+        "spellDefinitions": { "$ref": "#/$defs/romRange" }
+      }
+    },
+    "allies": {
+      "type": "array",
+      "minItems": 32,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/ally"
+      }
+    },
+    "classes": {
+      "type": "array",
+      "minItems": 32,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/class"
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 128,
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "spellNames": {
+      "type": "array",
+      "minItems": 44,
+      "maxItems": 44,
+      "items": {
+        "$ref": "#/$defs/spellName"
+      }
+    },
+    "spellDefinitions": {
+      "type": "array",
+      "minItems": 89,
+      "maxItems": 89,
+      "items": {
+        "$ref": "#/$defs/spellDefinition"
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        }
+      }
+    },
+    "romRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "description",
+        "start",
+        "endExclusive",
+        "lengthBytes",
+        "recordCount",
+        "recordSizeBytes"
+      ],
+      "properties": {
+        "sourcePath": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "start": { "type": "integer", "minimum": 0 },
+        "endExclusive": { "type": "integer", "minimum": 1 },
+        "lengthBytes": { "type": "integer", "minimum": 1 },
+        "recordCount": { "type": "integer", "minimum": 1 },
+        "recordSizeBytes": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      }
+    },
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer", "minimum": 0 },
+        "max": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "allyItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expression", "item", "equipped"],
+      "properties": {
+        "expression": { "type": "string", "minLength": 1 },
+        "item": { "type": "string", "minLength": 1 },
+        "equipped": { "type": "boolean" }
+      }
+    },
+    "ally": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "code",
+        "displayName",
+        "nameExpression",
+        "startClass",
+        "startLevel",
+        "startItems"
+      ],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 31 },
+        "code": { "type": ["string", "null"] },
+        "displayName": { "type": ["string", "null"] },
+        "nameExpression": { "type": ["string", "null"] },
+        "startClass": { "type": "string", "minLength": 1 },
+        "startLevel": { "type": "integer", "minimum": 1, "maximum": 255 },
+        "startItems": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/allyItem" }
+        }
+      }
+    },
+    "class": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "code",
+        "nameExpression",
+        "movement",
+        "resistanceExpression",
+        "resistanceTokens",
+        "movementType",
+        "prowessExpression",
+        "prowessTokens"
+      ],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 31 },
+        "code": { "type": "string", "minLength": 1 },
+        "nameExpression": { "type": "string", "minLength": 1 },
+        "movement": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "resistanceExpression": { "type": "string", "minLength": 1 },
+        "resistanceTokens": { "$ref": "#/$defs/stringArray" },
+        "movementType": { "type": "string", "minLength": 1 },
+        "prowessExpression": { "type": "string", "minLength": 1 },
+        "prowessTokens": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "parameter"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "parameter": { "type": "integer" }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "code",
+        "displayName",
+        "nameExpression",
+        "equipFlagsExpression",
+        "equipFlagTokens",
+        "range",
+        "price",
+        "itemTypeExpression",
+        "itemTypeTokens",
+        "useSpellExpression",
+        "useSpell",
+        "useSpellLevel",
+        "equipEffects"
+      ],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 127 },
+        "code": { "type": "string", "minLength": 1 },
+        "displayName": { "type": "string", "minLength": 1 },
+        "nameExpression": { "type": "string", "minLength": 1 },
+        "equipFlagsExpression": { "type": "string", "minLength": 1 },
+        "equipFlagTokens": { "$ref": "#/$defs/stringArray" },
+        "range": { "$ref": "#/$defs/range" },
+        "price": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "itemTypeExpression": { "type": "string", "minLength": 1 },
+        "itemTypeTokens": { "$ref": "#/$defs/stringArray" },
+        "useSpellExpression": { "type": "string", "minLength": 1 },
+        "useSpell": { "type": "string", "minLength": 1 },
+        "useSpellLevel": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "equipEffects": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/effect" }
+        }
+      }
+    },
+    "spellName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "code", "displayName", "expression"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 43 },
+        "code": { "type": "string", "minLength": 1 },
+        "displayName": { "type": "string", "minLength": 1 },
+        "expression": { "type": "string", "minLength": 1 }
+      }
+    },
+    "spellDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "displayName",
+        "entryExpression",
+        "spell",
+        "level",
+        "mpCost",
+        "animationExpression",
+        "animationTokens",
+        "propertiesExpression",
+        "propertyTokens",
+        "range",
+        "radius",
+        "power"
+      ],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0, "maximum": 88 },
+        "displayName": { "type": "string", "minLength": 1 },
+        "entryExpression": { "type": "string", "minLength": 1 },
+        "spell": { "type": "string", "minLength": 1 },
+        "level": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "mpCost": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "animationExpression": { "type": "string", "minLength": 1 },
+        "animationTokens": { "$ref": "#/$defs/stringArray" },
+        "propertiesExpression": { "type": "string", "minLength": 1 },
+        "propertyTokens": { "$ref": "#/$defs/stringArray" },
+        "range": { "$ref": "#/$defs/range" },
+        "radius": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "power": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
