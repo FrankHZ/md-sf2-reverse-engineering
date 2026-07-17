@@ -58,6 +58,8 @@ if (-not $SkipRuntime) {
     & (Join-Path $PSScriptRoot 'Test-H3DodgeFixture.ps1') -RomPath $RomPath
     Write-Output '=== H3: lethal target rejects double and counter follow-ups ==='
     & (Join-Path $PSScriptRoot 'Test-H3LethalFollowupFixture.ps1') -RomPath $RomPath
+    Write-Output '=== H3: out-of-range target rejects counter follow-up ==='
+    & (Join-Path $PSScriptRoot 'Test-H3CounterRangeFixture.ps1') -RomPath $RomPath
 }
 
 Write-Output '=== Repository verification: PASS ==='

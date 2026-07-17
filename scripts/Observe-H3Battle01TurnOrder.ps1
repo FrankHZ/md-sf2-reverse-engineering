@@ -2,7 +2,7 @@
 param(
     [string] $RomPath = (Join-Path $PSScriptRoot '..\local\roms\sf2-us.bin'),
     [int] $Seed = 0x1234,
-    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal')] [string] $Scenario = 'baseline',
+    [ValidateSet('baseline', 'boundaries', 'activation', 'damage', 'chain', 'dodge', 'lethal', 'counter-range')] [string] $Scenario = 'baseline',
     [int] $TimeoutSeconds = 45
 )
 
@@ -36,6 +36,7 @@ local chain = nil
 local chain_playback = false
 local dodge_case = nil
 local lethal_validation = nil
+local range_validation = nil
 local activation = nil
 local function status(value)
     local file = assert(io.open(status_path, "w")); file:write(value .. "\n"); file:close()
@@ -213,6 +214,29 @@ event.on_bus_exec(function()
         memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
         memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
         if lethal_validation == nil then lethal_validation = { damage_calls = 0 } end
+    elseif scenario == "counter-range" then
+        local function entry(combatant)
+            local slot = combatant
+            if combatant >= 128 then slot = combatant - 96 end
+            return 0xFFE800 + slot * 56
+        end
+        memory.write_u16_be(entry(0) + 12, 200, "M68K BUS")
+        memory.write_u16_be(entry(0) + 14, 200, "M68K BUS")
+        memory.write_u8(entry(0) + 19, 50, "M68K BUS")
+        memory.write_u8(entry(0) + 21, 30, "M68K BUS")
+        memory.write_u8(entry(0) + 31, 0x38, "M68K BUS")
+        memory.write_u8(entry(0) + 49, 0x00, "M68K BUS")
+        memory.write_u16_be(entry(0) + 52, 4, "M68K BUS")
+        memory.write_u16_be(entry(128) + 12, 200, "M68K BUS")
+        memory.write_u16_be(entry(128) + 14, 200, "M68K BUS")
+        memory.write_u8(entry(128) + 19, 40, "M68K BUS")
+        memory.write_u8(entry(128) + 21, 20, "M68K BUS")
+        memory.write_u8(entry(128) + 31, 0xC8, "M68K BUS")
+        memory.write_u8(entry(128) + 46, 8, "M68K BUS")
+        memory.write_u8(entry(128) + 47, 17, "M68K BUS")
+        memory.write_u8(entry(128) + 49, 0x60, "M68K BUS")
+        memory.write_u8(0xFF5F00 + 17 * 48 + 8, 3, "M68K BUS")
+        if range_validation == nil then range_validation = { damage_calls = 0 } end
     end
 end, 0x25544, "sf2-turn-order-entry", "M68K BUS")
 
@@ -224,7 +248,8 @@ event.on_bus_exec(function()
 end, 0xAAFC, "sf2-dodge-case-entry", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario == "lethal" and lethal_validation ~= nil then
+    if (scenario == "lethal" and lethal_validation ~= nil) or
+       (scenario == "counter-range" and range_validation ~= nil) then
         memory.write_u16_be(0xFFDEA4, 0xFFFF, "M68K BUS")
         return
     end
@@ -322,6 +347,43 @@ event.on_bus_exec(function()
     ))
     output:close(); client.exitCode(0)
 end, 0xA54C, "sf2-lethal-counter-validation-return", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-range" or range_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    memory.write_u8((a2 - 13) & 0xFFFFFF, 0, "M68K BUS")
+    memory.write_u8((a2 - 12) & 0xFFFFFF, 0xFF, "M68K BUS")
+    range_validation.target_dies = memory.read_u8((a2 - 4) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA45E, "sf2-range-double-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-range" or range_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    local actor_entry = 0xFFE800
+    local target_entry = 0xFFE800 + 32 * 56
+    memory.write_u8(actor_entry + 46, 0, "M68K BUS")
+    memory.write_u8(actor_entry + 47, 0, "M68K BUS")
+    local actor_x = memory.read_u8(actor_entry + 46, "M68K BUS")
+    local actor_y = memory.read_u8(actor_entry + 47, "M68K BUS")
+    local target_x = memory.read_u8(target_entry + 46, "M68K BUS")
+    local target_y = memory.read_u8(target_entry + 47, "M68K BUS")
+    range_validation.distance = math.abs(actor_x - target_x) + math.abs(actor_y - target_y)
+    range_validation.counter_before = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+end, 0xA49C, "sf2-range-counter-validation-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if scenario ~= "counter-range" or range_validation == nil then return end
+    local a2 = emu.getregister("M68K A2")
+    range_validation.counter_after = memory.read_u8((a2 - 12) & 0xFFFFFF, "M68K BUS") ~= 0
+    local output = assert(io.open(output_path, "w"))
+    output:write(string.format(
+        '{"system":"%s","core":"Genesis Plus GX","scenario":"counter-range","battle":%d,"targetDies":%s,"distance":%d,"counterBefore":%s,"counterAfter":%s,"damageCalls":%d,"targetHp":%d}\n',
+        emu.getsystemid(), memory.read_u8(0xFFF712, "M68K BUS"), tostring(range_validation.target_dies),
+        range_validation.distance, tostring(range_validation.counter_before), tostring(range_validation.counter_after),
+        range_validation.damage_calls, memory.read_u16_be(0xFFE800 + 32 * 56 + 14, "M68K BUS")
+    ))
+    output:close(); client.exitCode(0)
+end, 0xA54C, "sf2-range-counter-validation-return", "M68K BUS")
 
 local function chain_attack()
     if chain == nil or #chain.attacks == 0 then return nil end
@@ -426,7 +488,7 @@ event.on_bus_exec(function()
 end, 0xB07E, "sf2-chain-decision-return", "M68K BUS")
 
 event.on_bus_exec(function()
-    if scenario == "damage" or scenario == "chain" or scenario == "dodge" or scenario == "lethal" then return end
+    if scenario == "damage" or scenario == "chain" or scenario == "dodge" or scenario == "lethal" or scenario == "counter-range" then return end
     local output = assert(io.open(output_path, "w"))
     output:write(string.format('{"system":"%s","core":"Genesis Plus GX","scenario":"%s","seed":%d,"battle":%d,"entries":[',
         emu.getsystemid(), scenario, seed, memory.read_u8(0xFFF712, "M68K BUS")))
@@ -459,6 +521,10 @@ end, 0x2559E, "sf2-turn-order-observe", "M68K BUS")
 event.on_bus_exec(function()
     if scenario == "lethal" and lethal_validation ~= nil then
         lethal_validation.damage_calls = lethal_validation.damage_calls + 1
+        return
+    end
+    if scenario == "counter-range" and range_validation ~= nil then
+        range_validation.damage_calls = range_validation.damage_calls + 1
         return
     end
     if scenario ~= "damage" then return end

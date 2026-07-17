@@ -186,9 +186,17 @@ confirmed prowess/RNG decision. With `targetDies` already true,
 `battlesceneScript_ValidateCounterAttack` clears counter at `0xA538`. Both are true at entry and
 false at return; only the lethal first damage calculation executes.
 
+The counter-range companion keeps the target alive at 182 HP after the same 18-point first hit,
+disables double, and supplies a true counter toggle. Immediately before the original counter
+validator runs, it moves Bowie from the adjacent tile to `(0,0)` while the Gizmo remains at `(8,17)`.
+The observed Manhattan distance is 25. With the ordinary opposing-side, conscious Gizmo and no
+special-enemy exclusion changed, `battlesceneScript_ValidateCounterAttack` clears the counter at
+`0xA538`; no second damage calculation executes. This isolates the out-of-range rejection branch.
+
 ```powershell
 pwsh ./scripts/Test-H3PhysicalDamageFixture.ps1
 pwsh ./scripts/Test-H3LethalFollowupFixture.ps1
+pwsh ./scripts/Test-H3CounterRangeFixture.ps1
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -235,7 +243,7 @@ The verifier independently models dodge ranges, all LCG transitions, land reduct
 halving, spread, temporary HP, restoration, and ordered reaction replay before launching BizHawk.
 
 This scenario confirms one valid adjacent counter and one double attack. Remaining failed
-double/counter validation (range, status, same-side, special enemy exclusions) and whether a second/counter
+double/counter validation (status, same-side, special enemy exclusions) and whether a second/counter
 critical can occur remain separate fixture cases.
 
 The companion successful-dodge fixture keeps the same non-archer-versus-hovering geometry but sets

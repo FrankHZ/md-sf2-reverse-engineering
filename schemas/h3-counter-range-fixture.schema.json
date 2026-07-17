@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-counter-range-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "scenario", "function", "setup", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-counter-range-validation-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 },
+    "scenario": { "const": "counter-range" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["calculateDamageEntryAddress", "validateDoubleEntryAddress", "validateCounterEntryAddress", "validateCounterReturnAddress"],
+      "properties": {
+        "calculateDamageEntryAddress": { "const": 43966 },
+        "validateDoubleEntryAddress": { "const": 42078 },
+        "validateCounterEntryAddress": { "const": 42140 },
+        "validateCounterReturnAddress": { "const": 42316 }
+      }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "target", "targetLandEffect", "dodgeSeed", "forcedValidationToggles", "validationPositions"],
+      "properties": {
+        "actor": { "$ref": "#/definitions/actor" },
+        "target": { "$ref": "#/definitions/target" },
+        "targetLandEffect": { "const": 2 },
+        "dodgeSeed": { "const": 65535 },
+        "forcedValidationToggles": {
+          "type": "object", "additionalProperties": false, "required": ["double", "counter"],
+          "properties": { "double": { "const": false }, "counter": { "const": true } }
+        },
+        "validationPositions": {
+          "type": "object", "additionalProperties": false, "required": ["actorX", "actorY", "targetX", "targetY"],
+          "properties": { "actorX": { "const": 0 }, "actorY": { "const": 0 }, "targetX": { "const": 8 }, "targetY": { "const": 17 } }
+        }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["firstDamage", "targetDies", "distance", "counterBefore", "counterAfter", "damageCalls", "targetHp"],
+      "properties": {
+        "firstDamage": { "const": 18 },
+        "targetDies": { "const": false },
+        "distance": { "const": 25 },
+        "counterBefore": { "const": true },
+        "counterAfter": { "const": false },
+        "damageCalls": { "const": 1 },
+        "targetHp": { "const": 182 }
+      }
+    }
+  },
+  "definitions": {
+    "actor": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "hp", "attack", "defense", "movetype", "prowess"],
+      "properties": { "combatant": { "const": 0 }, "hp": { "const": 200 }, "attack": { "const": 50 }, "defense": { "const": 30 }, "movetype": { "const": 0 }, "prowess": { "const": 56 } }
+    },
+    "target": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "hp", "attack", "defense", "movetype", "prowess"],
+      "properties": { "combatant": { "const": 128 }, "hp": { "const": 200 }, "attack": { "const": 40 }, "defense": { "const": 20 }, "movetype": { "const": 6 }, "prowess": { "const": 200 } }
+    }
+  }
+}
