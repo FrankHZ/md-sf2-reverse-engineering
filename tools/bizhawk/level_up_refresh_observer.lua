@@ -126,7 +126,7 @@ event.on_bus_exec(function()
     if active == nil then return end
     active.after = snapshot(active.ally)
     write_result_and_exit()
-end, config["function"].returnAddress, "sf2-level-refresh-return", "M68K BUS")
+end, config["function"].updateStatsReturnAddress, "sf2-level-refresh-update-return", "M68K BUS")
 
 local frames = 0
 while true do

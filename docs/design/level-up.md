@@ -14,9 +14,9 @@
   controlled natural `LevelUp` calls covering post-projection growth, both class caps, both
   immediately preceding levels, promoted effective levels, inherited spell lists, cross-ally
   class-block scanning, the final missing-class sentinel, and a successful spell upgrade.
-- `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` owns two controlled
-  Slade/THIF level 39→40 calls through `UpdateCombatantStats`, including current/base stat
-  separation, stacked status effects, a Short Knife, and a Thieve's Dagger.
+- `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` owns five controlled
+  Slade refresh calls through `UpdateCombatantStats`, including current/base separation, full and
+  partial status counters, ordinary/cursed equipment, and a NINJ prowess-mask case.
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path through the HEAL 3 prowess
   special case in `InitializeAllyStats`.
@@ -92,7 +92,7 @@ The refresh fixture starts Slade/THIF at level 39 with projected base stats
 `[HP 42, MP 0, ATT 45, DEF 38, AGI 38]`, current HP 7, deliberately stale current
 ATT/DEF/AGI/MOV/resistance/prowess values, and an equipped Short Knife. Seed `0x1234` produces base
 gains `[2,0,2,1,2]` and level 40. The call site at `0x95BA` enters `UpdateCombatantStats` at
-`0x89CE`; both points and the final `LevelUp` return are observed.
+`0x89CE`; the call, function entry, and its `0x8A24` return are observed.
 
 The original leaves current HP/MP unchanged while increasing maximum HP/MP and base ATT/DEF/AGI.
 `UpdateCombatantStats` then resets current ATT/DEF/AGI/MOV/resistance/prowess from the new base and
@@ -106,6 +106,20 @@ and loses 14; AGI 40 gains and loses 15, then STUN subtracts 5; MOV 7 loses 1. E
 after status, so the dagger adds ATT 17 and AGI 5 last. Final current values are ATT 81, DEF 39,
 AGI 40, and MOV 6, while the `0xFC01` status word is preserved. This confirms ordering and per-step
 flooring for the observed maximum-counter combination, not every possible counter value.
+
+The partial-counter case uses ATTACK `1/8`, BOOST `2/8`, and SLOW `1/8`. From refreshed bases
+ATT/DEF/AGI `47/39/40`, separate floor operations produce current `52/44/45`; the two-bit fields are
+therefore magnitudes rather than present/absent flags.
+
+The cursed case equips a Black Ring and Short Knife together. ATT +10 and +5 produce current ATT
+62, then the Black Ring causes CURSE (`0x0004`) to be present in the final status word. Curse is
+thus derived again from currently equipped item definitions during refresh.
+
+The fifth case puts Slade/NINJ at level 98 with a Ninja Katana. Level 99 gains are `[2,2,1,2,2]`;
+the katana adds ATT 39 and increments double-attack prowess. NINJ base prowess `0x94` contains
+critical 1/8, double 1/16, and counter 1/8, but `INCREASE_DOUBLE` keeps only the critical nibble
+before inserting double 1/8. Current prowess becomes `0x24`, unintentionally resetting counter to
+1/32. This is a confirmed original equipment bug, not an automatic remake default.
 
 A remake should model maximum/current resources and base/derived combat stats as separate fields.
 Level-up must not heal by merely copying new maxima into current HP/MP, and equipment effects must be
@@ -149,8 +163,8 @@ record that choice explicitly before H4 treats either behavior as normative.
 
 **Unknown** runtime boundaries still requiring dedicated fixtures:
 
-- status-effect rounding for one- and two-counter values, plus low-stat underflow/saturation edges;
-- refresh behavior for cursed equipment and prowess-changing equip effects;
+- low-stat underflow and ATT/DEF/AGI/MOV cap-saturation edges;
+- enemy curse suppression and the remaining critical/counter/set prowess equip-effect functions;
 - the latent HEAL 3 behavior with a synthetic nonzero counter setting.
 
 The future remake growth module should consume the same five fixtures first, then extend them rather

@@ -62,13 +62,17 @@ parses the class bases and item effect from the pinned source before observing t
 A second run combines full ATTACK/BOOST/SLOW counters and STUN with a Thieve's Dagger. The original
 applies status deltas from refreshed base stats, applies STUN's AGI/MOV penalties, then applies the
 dagger's ATT +17 and AGI +5 effects, yielding current ATT/DEF/AGI/MOV `81/39/40/6`.
+Three further runs confirm partial ATTACK/BOOST/SLOW counter magnitudes and separate floor rounding;
+Black Ring + Short Knife ATT stacking followed by CURSE insertion; and Ninja Katana's
+`INCREASE_DOUBLE` bug changing NINJ prowess `0x94→0x24`, which raises double chance but clears
+counter 1/8 to 1/32.
 
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed fixtures with partial status counters, underflow edges, cursed
-and prowess-changing equipment, plus synthetic nonzero-counter input to the HEAL 3 branch. The existing stat-gain,
+Extend the committed emulator-backed fixtures with underflow/cap edges, enemy curse handling, the
+remaining prowess-effect functions, plus synthetic nonzero-counter input to the HEAL 3 branch. The existing stat-gain,
 complete-caller, boundary, and refresh fixtures are the first implementation-neutral inputs for a
 later remake growth module; see [`../design/level-up.md`](../design/level-up.md).

@@ -14,12 +14,12 @@
     },
     "function": {
       "type": "object", "additionalProperties": false,
-      "required": ["entryAddress", "updateStatsCallAddress", "updateStatsEntryAddress", "returnAddress"],
+      "required": ["entryAddress", "updateStatsCallAddress", "updateStatsEntryAddress", "updateStatsReturnAddress"],
       "properties": {
         "entryAddress": { "const": 38020 },
         "updateStatsCallAddress": { "const": 38330 },
         "updateStatsEntryAddress": { "const": 35278 },
-        "returnAddress": { "const": 38340 }
+        "updateStatsReturnAddress": { "const": 35364 }
       }
     },
     "ram": {
@@ -32,7 +32,7 @@
       }
     },
     "cases": {
-      "type": "array", "minItems": 2, "maxItems": 2,
+      "type": "array", "minItems": 5, "maxItems": 5,
       "items": { "$ref": "#/$defs/refreshCase" }
     }
   },
@@ -41,10 +41,10 @@
       "type": "object", "additionalProperties": false,
       "required": ["id", "ally", "allyCode", "classCode", "seed", "input", "after", "updateStatsCallObserved", "updateStatsEntryObserved"],
       "properties": {
-        "id": { "enum": ["slade-thif-level39-equipped-refresh", "slade-thif-status-and-agility-refresh"] },
+        "id": { "enum": ["slade-thif-level39-equipped-refresh", "slade-thif-status-and-agility-refresh", "slade-thif-partial-status-refresh", "slade-thif-cursed-ring-refresh", "slade-ninj-prowess-mask-refresh"] },
         "ally": { "const": 5 },
         "allyCode": { "const": "SLADE" },
-        "classCode": { "const": "THIF" },
+        "classCode": { "enum": ["NINJ", "THIF"] },
         "seed": { "const": 4660 },
         "input": { "$ref": "#/$defs/combatant" },
         "after": { "$ref": "#/$defs/combatant" },

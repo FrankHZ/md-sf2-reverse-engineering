@@ -444,7 +444,6 @@
           "bindings": [
             { "addressId": "entry", "fixtureField": "function.entryAddress" },
             { "addressId": "update-stats-call", "fixtureField": "function.updateStatsCallAddress" },
-            { "addressId": "return", "fixtureField": "function.returnAddress" },
             { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
             { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
           ]
@@ -460,12 +459,14 @@
       "symbol": "UpdateCombatantStats",
       "sourcePath": "code/common/stats/updatecombatantstats.asm",
       "addresses": [
-        { "id": "entry", "space": "rom", "kind": "symbol", "value": 35278 }
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 35278 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 35364 }
       ],
       "evidence": [{
         "level": "H3", "fixture": "tests/fixtures/h3/level-up-refresh-v1.json", "fixtureId": "sf2-level-up-refresh-v1", "verifier": "src/sf2tool/h3/growth.py",
         "bindings": [
-          { "addressId": "entry", "fixtureField": "function.updateStatsEntryAddress" }
+          { "addressId": "entry", "fixtureField": "function.updateStatsEntryAddress" },
+          { "addressId": "return", "fixtureField": "function.updateStatsReturnAddress" }
         ]
       }],
       "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"],

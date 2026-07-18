@@ -141,7 +141,7 @@ def _parse_class_bases(disasm: Path, equates: dict[str, int]) -> list[dict[str, 
 
 def _parse_item_equip_effects(
     disasm: Path, item: int, equates: dict[str, int]
-) -> list[tuple[str, int]]:
+) -> tuple[list[tuple[str, int]], bool]:
     text = (disasm / "data/stats/items/itemdefs.asm").read_text(encoding="utf-8")
     marker = re.search(rf"^\s*;\s*{item}:\s+.+$", text, re.MULTILINE)
     if marker is None:
@@ -152,6 +152,9 @@ def _parse_item_equip_effects(
     effects = re.search(r"^\s*equipEffects\s+(.+)$", block, re.MULTILINE)
     if effects is None:
         raise ValueError(f"missing equip effects for item {item}")
+    item_type = re.search(r"^\s*itemType\s+([A-Z0-9_|]+)", block, re.MULTILINE)
+    if item_type is None:
+        raise ValueError(f"missing item type for item {item}")
     effect_text = block[effects.start() :]
     pairs = re.findall(r"([A-Z_]+)\s*,\s*(\d+)", effect_text)
     if len(pairs) != 3:
@@ -159,7 +162,10 @@ def _parse_item_equip_effects(
     for code, _ in pairs:
         if f"EQUIPEFFECT_{code}" not in equates:
             raise ValueError(f"unknown equip effect {code} for item {item}")
-    return [(code, int(value)) for code, value in pairs]
+    return (
+        [(code, int(value)) for code, value in pairs],
+        "CURSED" in item_type.group(1).split("|"),
+    )
 
 
 def _parse_stats_block(disasm: Path, ally: int, class_code: str) -> dict[str, Any]:
@@ -743,7 +749,7 @@ def _model_refresh_case(
         item = item_entry & item_mask
         if item == equates["ITEM_NOTHING"] or item_entry & equipped_bit == 0:
             continue
-        effects = _parse_item_equip_effects(disasm, item, equates)
+        effects, cursed = _parse_item_equip_effects(disasm, item, equates)
         for effect, value in effects:
             if effect == "NONE":
                 continue
@@ -757,10 +763,55 @@ def _model_refresh_case(
                 "DECREASE_AGI": "currentAgility",
                 "DECREASE_MOV": "currentMove",
             }.get(effect)
-            if field is None:
+            if field is not None:
+                delta = -value if effect.startswith("DECREASE_") else value
+                cap = {
+                    "currentAttack": equates["CHAR_STATCAP_ATT"],
+                    "currentDefense": equates["CHAR_STATCAP_DEF"],
+                    "currentAgility": equates["CHAR_STATCAP_AGI_CURRENT"],
+                    "currentMove": equates["CHAR_STATCAP_MOV"],
+                }[field]
+                after[field] = max(0, min(cap, after[field] + delta))
+                continue
+
+            prowess = after["currentProwess"]
+            critical_mask = equates["PROWESS_MASK_CRITICAL"]
+            double_mask = equates["PROWESS_MASK_DOUBLE"]
+            counter_mask = equates["PROWESS_MASK_COUNTER"]
+            lower_mask = equates["PROWESS_MASK_LOWER_DOUBLE_OR_COUNTER"]
+            double_shift = equates["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"]
+            counter_shift = equates["PROWESS_LOWER_COUNTER_SHIFT_COUNT"]
+            if effect == "INCREASE_CRITICAL":
+                critical = prowess & critical_mask
+                if critical < equates["PROWESS_CRITICAL_NONE"]:
+                    critical = min(7, critical + value)
+                after["currentProwess"] = prowess & (double_mask | counter_mask) | critical
+            elif effect == "INCREASE_DOUBLE":
+                double = min(3, ((prowess >> double_shift) & lower_mask) + value)
+                after["currentProwess"] = prowess & critical_mask | double << double_shift
+            elif effect == "INCREASE_COUNTER":
+                counter = min(3, ((prowess >> counter_shift) & lower_mask) + value)
+                after["currentProwess"] = (
+                    prowess & (critical_mask | double_mask) | counter << counter_shift
+                )
+            elif effect == "SET_CRITICAL":
+                after["currentProwess"] = (
+                    prowess & (double_mask | counter_mask) | value & critical_mask
+                )
+            elif effect == "SET_DOUBLE":
+                after["currentProwess"] = (
+                    prowess & (critical_mask | counter_mask)
+                    | (value & lower_mask) << double_shift
+                )
+            elif effect == "SET_COUNTER":
+                after["currentProwess"] = (
+                    prowess & (critical_mask | double_mask)
+                    | (value & lower_mask) << counter_shift
+                )
+            else:
                 raise ValueError(f"unmodeled level-up refresh equip effect: {effect}")
-            delta = -value if effect.startswith("DECREASE_") else value
-            after[field] = max(0, min(255, after[field] + delta))
+        if cursed:
+            after["status"] |= equates["STATUSEFFECT_CURSE"]
 
     return {
         "after": after,

@@ -142,7 +142,8 @@ preserves state/seed, and writes the no-level payload. This separates the actual
 the initially plausible but incorrect assumption that a missing local class exits immediately.
 
 A fourth growth fixture controls Slade's complete THIF combatant entry at level 39 and follows the
-original call at `0x95BA` into `UpdateCombatantStats` at `0x89CE`. Seed `0x1234` gives level 40 and
+original call at `0x95BA` into `UpdateCombatantStats` at `0x89CE`, observing its return at `0x8A24`.
+Seed `0x1234` gives level 40 and
 base gains `[2,0,2,1,2]`. Current HP remains 7 while max HP changes 42→44; stale current derived
 values are reset from base/class values, then the equipped Short Knife's source-defined +5 ATT is
 reapplied, producing base/current ATT 47/52. DEF, AGI, MOV, resistance, and prowess likewise refresh
@@ -155,6 +156,13 @@ equipped Thieve's Dagger. The original computes the three status fractions indep
 stats with floor division, applies STUN next, and equipment last. The observed current result is
 ATT/DEF/AGI/MOV `81/39/40/6`: BOOST and SLOW cancel at equal counters, STUN's AGI -5 is restored by
 the dagger's AGI +5, and the dagger's ATT +17 follows ATTACK's floor(47×3/8)=17 bonus.
+
+Three more independent runs close adjacent branches. ATTACK `1/8`, BOOST `2/8`, and SLOW `1/8`
+produce current ATT/DEF/AGI `52/44/45` from bases `47/39/40`, proving counter magnitudes and separate
+flooring. Equipped Black Ring + Short Knife stack ATT +10/+5, then the cursed definition adds status
+`0x0004`. Finally, Slade/NINJ at 98→99 with Ninja Katana gains `[2,2,1,2,2]`, reaches current ATT 93,
+and changes prowess `0x94→0x24`: `INCREASE_DOUBLE` raises double from 1/16 to 1/8 but its original
+mask also clears NINJ's counter 1/8 bits to the 1/32 encoding.
 
 The companion initialization-prowess fixture observes Karna's unmodified new-game call. Her PRST
 start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell scan. At `0x967A`
