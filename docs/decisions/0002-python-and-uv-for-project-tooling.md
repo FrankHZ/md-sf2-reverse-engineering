@@ -54,7 +54,9 @@ fixture, lower the ceiling, and delete the superseded script.
 BizHawk observers are tracked Lua templates controlled by Python, not Python string rewrites. The
 completed migrations are the base/debug-aware RNG and stat-gain/complete-level-up rails under
 `src/sf2tool/h3/`, with tracked observers under `tools/bizhawk/`. Lua remains appropriate inside
-BizHawk; host orchestration and validation belong in Python.
+BizHawk; host orchestration and validation belong in Python. Before Python opens EmuHawk, it compiles
+both the tracked observer and generated configuration with BizHawk's pinned `lua54.dll`; syntax
+failures therefore stop at the command line instead of surfacing in the interactive Lua Console.
 
 ## Consequences
 

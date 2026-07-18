@@ -3,7 +3,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
+
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import verify_index
 from sf2tool.rom import mega_drive_checksum
 
@@ -46,3 +49,21 @@ def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:
             if pattern.search(line):
                 failures.append(f"{path.name}:{line_number}: {line.strip()}")
     assert not failures, "Lua reserved word used after '.':\n" + "\n".join(failures)
+
+
+def test_bizhawk_lua_preflight_compiles_observers_and_rejects_syntax_errors(
+    tmp_path: Path,
+) -> None:
+    try:
+        _, executable = bizhawk_contract()
+    except FileNotFoundError:
+        pytest.skip("local BizHawk toolchain is not installed")
+
+    root = Path(__file__).resolve().parents[2]
+    for path in sorted((root / "tools" / "bizhawk").glob("*.lua")):
+        validate_lua_syntax(path, executable)
+
+    invalid = tmp_path / "reserved-field.lua"
+    invalid.write_text("local config = {}\nreturn config.function\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"expected near 'function'"):
+        validate_lua_syntax(invalid, executable)
