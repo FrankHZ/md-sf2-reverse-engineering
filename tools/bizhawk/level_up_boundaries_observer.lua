@@ -8,6 +8,10 @@ local function reg(name)
     return emu.getregister("M68K " .. name) & 0xFFFF
 end
 
+local function reg32(name)
+    return emu.getregister("M68K " .. name) & 0xFFFFFFFF
+end
+
 local function status(value)
     local file = assert(io.open(config.statusPath, "w")); file:write(value .. "\n"); file:close()
 end
@@ -83,8 +87,9 @@ local function write_results_and_exit()
             result.id, result.ally, result.seed))
         write_snapshot(output, result.before)
         output:write(',"after":'); write_snapshot(output, result.after)
-        output:write(string.format(',"capExit":%s,"extraLevelBranch":%s,"levelBeforeExtra":%d,' ..
+        output:write(string.format(',"capExit":%s,"missingClassExit":%s,"matchedStatsAddress":%d,"extraLevelBranch":%s,"levelBeforeExtra":%d,' ..
             '"effectiveLevel":%d,"observedSeed":%d,"arguments":[', tostring(result.cap_exit),
+            tostring(result.missing_class_exit), result.matched_stats_address,
             tostring(result.extra_level_branch), result.level_before_extra or -1,
             result.effective_level, result.observed_seed))
         for argument_index, value in ipairs(result.arguments) do
@@ -105,11 +110,26 @@ event.on_bus_exec(function()
     write_input(ally, case.input)
     active = {
         id = case.id, ally = ally, seed = case.seed, before = snapshot(ally), cap_exit = false,
+        missing_class_exit = false, matched_stats_address = -1,
         extra_level_branch = false, effective_level = -1
     }
     memory.write_u16_be(config.ram.seedAddress, case.seed, "M68K BUS")
     seen[ally] = true
 end, config["function"].entryAddress, "sf2-level-boundary-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active == nil then return end
+    local marker = memory.read_u8(reg32("A0"), "M68K BUS")
+    if marker >= 0x80 then active.missing_class_exit = true end
+end, config["function"].missingClassCheckAddress, "sf2-level-boundary-class-sentinel", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active == nil then return end
+    local candidate = reg32("A0") - 1
+    if memory.read_u8(candidate, "M68K BUS") == active.before.class then
+        active.matched_stats_address = candidate
+    end
+end, config["function"].classMatchAddress, "sf2-level-boundary-class-match", "M68K BUS")
 
 event.on_bus_exec(function()
     if active ~= nil then active.cap_exit = true end

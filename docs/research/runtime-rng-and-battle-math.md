@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for base/debug-aware RNG, stat gain/level up, turn order, and the physical attack chain**
+- Status: **Confirmed runtime fixtures for RNG, level up/stat refresh, turn order, and the physical attack chain**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -15,6 +15,7 @@ the locked ROM instruction bytes.
 | --- | --- | --- | --- |
 | RNG | `GenerateRandomNumber` | `0x1600..0x1628` | `code/common/tech/randomnumbergenerator.asm` |
 | debug-aware RNG | `GenerateRandomOrDebugNumber` | `0x1674..0x16BE` | same file |
+| derived-stat refresh | `UpdateCombatantStats` | `0x89CE..0x8A26` | `code/common/stats/updatecombatantstats.asm` |
 | level up | `LevelUp` | `0x9484` | `code/common/stats/levelup.asm` |
 | physical damage | `battlesceneScript_CalculateDamage` | `0xABBE..0xAC4E` | `code/gameflow/battle/battleactions/calculatedamage.asm` |
 | critical hit | `battlesceneScript_DetermineCriticalHit` | `0xAC4E..0xACCA` | `code/gameflow/battle/battleactions/determinecriticalhit.asm` |
@@ -119,17 +120,35 @@ side effect. Its applied gains are HP/MP/ATT/DEF/AGI `[1,0,1,1,1]`, producing pa
 `[2,1,0,1,1,1,255]`. The remake decision boundary is specified in
 [`../design/level-up.md`](../design/level-up.md).
 
-A third growth fixture observes four more natural startup `LevelUp` calls. At entry it controls the
+A third growth fixture observes seven more natural startup `LevelUp` calls. At entry it controls the
 selected combatant's class, level, base stats, spells, and seed, without changing the PC or CPU
-registers. Its independent model parses the same pinned curves, equates, ally stats blocks, and
-inherited spell lists before BizHawk runs.
+registers. Its independent model parses the same pinned curves, equates, every ally stats block in
+ROM order, and inherited spell lists before BizHawk runs. Callbacks at `0x94B2` and `0x94B8` record
+negative sentinels and exact matching class-block addresses.
 
 Randolf/GLDT confirms the post-projection path: from level 30 and stored projected stats
 `[89,0,53,104,52]`, seed `0x1234` produces gains `[2,0,2,1,2]`, level 31, and final seed `0x621C`.
+Gyan/GLDT confirms the same gains at level 98→99, immediately before the promoted cap.
 Slade/THIF at base level 40 and Chaz/WIZ at promoted level 99 both exit at `0x94C6`, preserve the
 input seed/state, and write the no-level payload `[255,0,0,0,0,0,255]`. Kazin/WIZ confirms the
 promoted effective level 22 and `$FE` inheritance of his first stats block's spell list: BLAZE 1
 (`0x0B`) upgrades to BLAZE 3 (`0x8B`), with payload `[2,2,1,0,1,3,139]`.
+
+Peter forced to WIZ demonstrates that the class scan has no per-ally bound: after Peter's PHNK/PHNX
+records fail to match, it continues through contiguous ally data and finds Tyrin's WIZ block at
+`0x1EE653`. Its `$FE` control redirects spell lookup to Peter's first block, whose list is empty.
+Claude forced to SDMN has no later matching block; the scan reaches the final negative sentinel,
+preserves state/seed, and writes the no-level payload. This separates the actual sentinel exit from
+the initially plausible but incorrect assumption that a missing local class exits immediately.
+
+A fourth growth fixture controls Slade's complete THIF combatant entry at level 39 and follows the
+original call at `0x95BA` into `UpdateCombatantStats` at `0x89CE`. Seed `0x1234` gives level 40 and
+base gains `[2,0,2,1,2]`. Current HP remains 7 while max HP changes 42→44; stale current derived
+values are reset from base/class values, then the equipped Short Knife's source-defined +5 ATT is
+reapplied, producing base/current ATT 47/52. DEF, AGI, MOV, resistance, and prowess likewise refresh
+to 39, 40, 7, 0, and `0x13`; items, spells, status, and EXP remain unchanged. `LEVELUP_ARGUMENTS`
+is intentionally not asserted by this fixture because surrounding startup initialization shares
+that scratch area; the complete-caller and boundary fixtures already own its in-call payload.
 
 The companion initialization-prowess fixture observes Karna's unmodified new-game call. Her PRST
 start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell scan. At `0x967A`

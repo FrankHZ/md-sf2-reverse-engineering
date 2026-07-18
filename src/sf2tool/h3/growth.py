@@ -15,11 +15,14 @@ LEVEL_FIXTURE = repo_path("tests/fixtures/h3/level-up-v1.json")
 LEVEL_SCHEMA = repo_path("schemas/h3-level-up-fixture.schema.json")
 BOUNDARY_FIXTURE = repo_path("tests/fixtures/h3/level-up-boundaries-v1.json")
 BOUNDARY_SCHEMA = repo_path("schemas/h3-level-up-boundaries-fixture.schema.json")
+REFRESH_FIXTURE = repo_path("tests/fixtures/h3/level-up-refresh-v1.json")
+REFRESH_SCHEMA = repo_path("schemas/h3-level-up-refresh-fixture.schema.json")
 PROWESS_FIXTURE = repo_path("tests/fixtures/h3/ally-initialization-prowess-v1.json")
 PROWESS_SCHEMA = repo_path("schemas/h3-ally-initialization-prowess-fixture.schema.json")
 STAT_OBSERVER = repo_path("tools/bizhawk/stat_gain_observer.lua")
 LEVEL_OBSERVER = repo_path("tools/bizhawk/level_up_observer.lua")
 BOUNDARY_OBSERVER = repo_path("tools/bizhawk/level_up_boundaries_observer.lua")
+REFRESH_OBSERVER = repo_path("tools/bizhawk/level_up_refresh_observer.lua")
 PROWESS_OBSERVER = repo_path("tools/bizhawk/ally_initialization_prowess_observer.lua")
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 
@@ -109,6 +112,56 @@ def _parse_class_prowess(disasm: Path, equates: dict[str, int]) -> list[int]:
     return values
 
 
+def _parse_class_bases(disasm: Path, equates: dict[str, int]) -> list[dict[str, int]]:
+    text = (disasm / "data/stats/allies/classes/classdefs.asm").read_text(encoding="utf-8")
+    pattern = re.compile(
+        r"^\s*mov\s+(\d+).*?^\s*resistance\s+([A-Z0-9_|]+).*?"
+        r"^\s*movetype\s+[A-Z0-9_]+.*?^\s*prowess\s+([A-Z0-9_|]+)",
+        re.MULTILINE | re.DOTALL,
+    )
+    bases = []
+    for move, resistance, prowess in pattern.findall(text):
+        resistance_value = 0
+        for token in resistance.split("|"):
+            resistance_value |= equates[f"RESISTANCE_{token}"]
+        prowess_value = 0
+        for token in prowess.split("|"):
+            prowess_value |= equates[f"PROWESS_{token}"]
+        bases.append(
+            {
+                "move": int(move),
+                "resistance": resistance_value,
+                "prowess": prowess_value,
+            }
+        )
+    if len(bases) != 32:
+        raise ValueError("unexpected class-base definition count in pinned source")
+    return bases
+
+
+def _parse_item_equip_effects(
+    disasm: Path, item: int, equates: dict[str, int]
+) -> list[tuple[str, int]]:
+    text = (disasm / "data/stats/items/itemdefs.asm").read_text(encoding="utf-8")
+    marker = re.search(rf"^\s*;\s*{item}:\s+.+$", text, re.MULTILINE)
+    if marker is None:
+        raise ValueError(f"missing item definition {item}")
+    following = text[marker.end() :]
+    next_item = re.search(r"^\s*;\s*\d+:\s+.+$", following, re.MULTILINE)
+    block = following[: next_item.start()] if next_item else following
+    effects = re.search(r"^\s*equipEffects\s+(.+)$", block, re.MULTILINE)
+    if effects is None:
+        raise ValueError(f"missing equip effects for item {item}")
+    effect_text = block[effects.start() :]
+    pairs = re.findall(r"([A-Z_]+)\s*,\s*(\d+)", effect_text)
+    if len(pairs) != 3:
+        raise ValueError(f"unexpected equip-effect count for item {item}")
+    for code, _ in pairs:
+        if f"EQUIPEFFECT_{code}" not in equates:
+            raise ValueError(f"unknown equip effect {code} for item {item}")
+    return [(code, int(value)) for code, value in pairs]
+
+
 def _parse_stats_block(disasm: Path, ally: int, class_code: str) -> dict[str, Any]:
     path = disasm / f"data/stats/allies/stats/allystats{ally:02d}.asm"
     text = path.read_text(encoding="utf-8")
@@ -149,7 +202,50 @@ def _parse_stats_block(disasm: Path, ally: int, class_code: str) -> dict[str, An
         {"level": int(level), "expression": expression}
         for level, expression in re.findall(spell_pattern, spell_block)
     ]
-    return {"stats": stats, "spells": spells}
+    return {
+        "stats": stats,
+        "spells": spells,
+        "inheritsFirstSpellList": "useFirstSpellList" in block,
+    }
+
+
+def _stats_blocks_in_rom_order(disasm: Path) -> list[dict[str, Any]]:
+    blocks = []
+    for ally in range(30):
+        path = disasm / f"data/stats/allies/stats/allystats{ally:02d}.asm"
+        text = path.read_text(encoding="utf-8")
+        range_match = re.search(r"; 0x([0-9A-F]+)\.\.0x([0-9A-F]+)", text)
+        if range_match is None:
+            raise ValueError(f"missing ROM range for ally stats {ally}")
+        address = int(range_match.group(1), 16)
+        end = int(range_match.group(2), 16)
+        class_codes = re.findall(r"(?:^|:)\s*forClass\s+([A-Z0-9_]+)\s*$", text, re.MULTILINE)
+        for class_code in class_codes:
+            block = _parse_stats_block(disasm, ally, class_code)
+            blocks.append(
+                {
+                    "ownerAlly": ally,
+                    "classCode": class_code,
+                    "address": address,
+                    "block": block,
+                }
+            )
+            spell_bytes = 1 if block["inheritsFirstSpellList"] else len(block["spells"]) * 2 + 1
+            address += 16 + spell_bytes
+        if address != end:
+            raise ValueError(f"ally stats encoded-size drift for ally {ally}")
+    return blocks
+
+
+def _resolve_stats_block(disasm: Path, ally: int, class_code: str) -> dict[str, Any] | None:
+    return next(
+        (
+            entry
+            for entry in _stats_blocks_in_rom_order(disasm)
+            if entry["ownerAlly"] >= ally and entry["classCode"] == class_code
+        ),
+        None,
+    )
 
 
 def _rng_step(seed: int, range_: int = 128) -> tuple[int, int]:
@@ -366,14 +462,46 @@ def _model_boundary_case(
     ally = case["ally"]
     if ally_codes[ally] != case["allyCode"]:
         raise ValueError(f"level-up boundary ally identity drift: {case['id']}")
-    block = _parse_stats_block(disasm, ally, case["classCode"])
     class_id = equates[f"CLASS_{case['classCode']}"]
     values = case["input"]
     if values["class"] != class_id:
         raise ValueError(f"level-up boundary class identity drift: {case['id']}")
-    for stat, growth in block["stats"].items():
-        if values[stat] != growth[case["inputBasis"]]:
-            raise ValueError(f"level-up boundary {stat} basis drift: {case['id']}")
+    resolved = _resolve_stats_block(disasm, ally, case["classCode"])
+    if resolved is None:
+        if case["inputBasis"] != "custom":
+            raise ValueError(f"level-up boundary unexpectedly lacks class block: {case['id']}")
+        return {
+            "after": values,
+            "capExit": True,
+            "missingClassExit": True,
+            "matchedStatsAddress": -1,
+            "extraLevelBranch": False,
+            "levelBeforeExtra": -1,
+            "effectiveLevel": -1,
+            "expectedSeed": case["seed"],
+            "arguments": [255, 0, 0, 0, 0, 0, 255],
+        }
+    owner_ally = resolved["ownerAlly"]
+    block = resolved["block"]
+    if case["inputBasis"] == "custom":
+        if owner_ally == ally:
+            raise ValueError(
+                f"level-up boundary custom input has a local class block: {case['id']}"
+            )
+    else:
+        if owner_ally != ally:
+            raise ValueError(f"level-up boundary unexpectedly borrowed class block: {case['id']}")
+        for stat, growth in block["stats"].items():
+            if values[stat] != growth[case["inputBasis"]]:
+                raise ValueError(f"level-up boundary {stat} basis drift: {case['id']}")
+
+    spell_block = block
+    if block["inheritsFirstSpellList"] and owner_ally != ally:
+        spell_block = next(
+            entry["block"]
+            for entry in _stats_blocks_in_rom_order(disasm)
+            if entry["ownerAlly"] == ally
+        )
 
     promoted = class_id >= equates["CHAR_CLASS_FIRSTPROMOTED"]
     cap = equates["CHAR_LEVELCAP_PROMOTED"] if promoted else equates["CHAR_LEVELCAP_BASE"]
@@ -381,6 +509,8 @@ def _model_boundary_case(
         return {
             "after": values,
             "capExit": True,
+            "missingClassExit": False,
+            "matchedStatsAddress": resolved["address"],
             "extraLevelBranch": False,
             "levelBeforeExtra": -1,
             "effectiveLevel": -1,
@@ -422,7 +552,7 @@ def _model_boundary_case(
     learned = next(
         (
             _encode_spell(spell["expression"], equates)
-            for spell in block["spells"]
+            for spell in spell_block["spells"]
             if spell["level"] == effective
         ),
         255,
@@ -443,6 +573,8 @@ def _model_boundary_case(
     return {
         "after": after,
         "capExit": False,
+        "missingClassExit": False,
+        "matchedStatsAddress": resolved["address"],
         "extraLevelBranch": bug_branch,
         "levelBeforeExtra": after["level"] if bug_branch else -1,
         "effectiveLevel": effective,
@@ -459,6 +591,8 @@ def _verify_boundary_models(
     fields = (
         "after",
         "capExit",
+        "missingClassExit",
+        "matchedStatsAddress",
         "extraLevelBranch",
         "levelBeforeExtra",
         "effectiveLevel",
@@ -482,7 +616,11 @@ def _verify_boundary_observation(fixture: dict[str, Any], observed: dict[str, An
         raise ValueError("unexpected level-up boundary execution system/core")
     if len(observed.get("results", [])) != len(fixture["cases"]):
         raise ValueError("level-up boundary observation count mismatch")
-    for expected, actual in zip(fixture["cases"], observed["results"], strict=True):
+    actual_by_id = {result["id"]: result for result in observed["results"]}
+    if len(actual_by_id) != len(observed["results"]):
+        raise ValueError("duplicate level-up boundary observation ID")
+    for expected in fixture["cases"]:
+        actual = actual_by_id.get(expected["id"])
         normalized = {
             "id": expected["id"],
             "ally": expected["ally"],
@@ -490,6 +628,8 @@ def _verify_boundary_observation(fixture: dict[str, Any], observed: dict[str, An
             "before": expected["input"],
             "after": expected["after"],
             "capExit": expected["capExit"],
+            "missingClassExit": expected["missingClassExit"],
+            "matchedStatsAddress": expected["matchedStatsAddress"],
             "extraLevelBranch": expected["extraLevelBranch"],
             "levelBeforeExtra": expected["levelBeforeExtra"],
             "effectiveLevel": expected["effectiveLevel"],
@@ -498,6 +638,138 @@ def _verify_boundary_observation(fixture: dict[str, Any], observed: dict[str, An
         }
         if actual != normalized:
             raise ValueError(f"level-up boundary runtime mismatch: {expected['id']}")
+
+
+def _model_refresh_case(
+    fixture: dict[str, Any],
+    *,
+    disasm: Path,
+    curves: dict[int, dict[int, tuple[int, int]]],
+) -> dict[str, Any]:
+    case = fixture["case"]
+    ally = case["ally"]
+    equates = _parse_equates(disasm)
+    ally_codes = _parse_ally_codes(disasm)
+    if ally_codes[ally] != case["allyCode"]:
+        raise ValueError("level-up refresh ally identity drift")
+    class_code = case["classCode"]
+    class_id = equates[f"CLASS_{class_code}"]
+    before = case["input"]
+    if before["class"] != class_id:
+        raise ValueError("level-up refresh class identity drift")
+
+    block = _parse_stats_block(disasm, ally, class_code)
+    source_fields = {
+        "hp": "maxHp",
+        "mp": "maxMp",
+        "attack": "baseAttack",
+        "defense": "baseDefense",
+        "agility": "baseAgility",
+    }
+    for stat, field in source_fields.items():
+        if before[field] != block["stats"][stat]["projected"]:
+            raise ValueError(f"level-up refresh {field} source basis drift")
+
+    class_bases = _parse_class_bases(disasm, equates)[class_id]
+    if (
+        before["baseMove"],
+        before["baseResistance"],
+        before["baseProwess"],
+    ) != (
+        class_bases["move"],
+        class_bases["resistance"],
+        class_bases["prowess"],
+    ):
+        raise ValueError("level-up refresh class-base source drift")
+
+    after = {**before, "items": list(before["items"]), "spells": list(before["spells"])}
+    after["level"] += 1
+    seed = case["seed"]
+    gains: list[int] = []
+    for stat, field in source_fields.items():
+        growth = block["stats"][stat]
+        if growth["curve"] == 0:
+            gain = 0
+        else:
+            seed, first = _rng_step(seed)
+            seed, second = _rng_step(seed)
+            gain, _ = _calculate_gain(
+                current=before[field],
+                start=growth["start"],
+                projected=growth["projected"],
+                curve=growth["curve"],
+                level=before["level"],
+                first=first,
+                second=second,
+                curves=curves,
+            )
+        gains.append(gain)
+        after[field] += gain
+
+    after["currentAttack"] = after["baseAttack"]
+    after["currentDefense"] = after["baseDefense"]
+    after["currentAgility"] = after["baseAgility"]
+    after["currentMove"] = after["baseMove"]
+    after["currentResistance"] = after["baseResistance"]
+    after["currentProwess"] = after["baseProwess"]
+    if before["status"] != 0:
+        raise ValueError("level-up refresh model requires a status-free fixture")
+
+    item_mask = equates["ITEMENTRY_MASK_INDEX"]
+    equipped_bit = equates["ITEM_EQUIPPED"]
+    for item_entry in before["items"]:
+        item = item_entry & item_mask
+        if item == equates["ITEM_NOTHING"] or item_entry & equipped_bit == 0:
+            continue
+        effects = _parse_item_equip_effects(disasm, item, equates)
+        for effect, value in effects:
+            if effect == "NONE":
+                continue
+            field = {
+                "INCREASE_ATT": "currentAttack",
+                "INCREASE_DEF": "currentDefense",
+                "INCREASE_AGI": "currentAgility",
+                "INCREASE_MOV": "currentMove",
+                "DECREASE_ATT": "currentAttack",
+                "DECREASE_DEF": "currentDefense",
+                "DECREASE_AGI": "currentAgility",
+                "DECREASE_MOV": "currentMove",
+            }.get(effect)
+            if field is None:
+                raise ValueError(f"unmodeled level-up refresh equip effect: {effect}")
+            delta = -value if effect.startswith("DECREASE_") else value
+            after[field] = max(0, min(255, after[field] + delta))
+
+    return {
+        "after": after,
+        "updateStatsCallObserved": True,
+        "updateStatsEntryObserved": True,
+    }
+
+
+def _verify_refresh_model(
+    fixture: dict[str, Any], *, disasm: Path, curves: dict[int, dict[int, tuple[int, int]]]
+) -> None:
+    model = _model_refresh_case(fixture, disasm=disasm, curves=curves)
+    if any(fixture["case"][field] != value for field, value in model.items()):
+        raise ValueError("level-up refresh golden disagrees with source model")
+
+
+def _verify_refresh_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> None:
+    if observed.get("system") != "GEN" or observed.get("core") != fixture["emulator"]["core"]:
+        raise ValueError("unexpected level-up refresh execution system/core")
+    case = fixture["case"]
+    expected = {
+        "id": case["id"],
+        "ally": case["ally"],
+        "seed": case["seed"],
+        "before": case["input"],
+        "after": case["after"],
+        "updateStatsCallObserved": case["updateStatsCallObserved"],
+        "updateStatsEntryObserved": case["updateStatsEntryObserved"],
+    }
+    if observed.get("result") != expected:
+        raise ValueError("level-up refresh runtime mismatch")
 
 
 def _verify_prowess_model(fixture: dict[str, Any], *, disasm: Path) -> None:
@@ -564,20 +836,24 @@ def verify_growth(
     stat = load_json(STAT_FIXTURE)
     level = load_json(LEVEL_FIXTURE)
     boundary = load_json(BOUNDARY_FIXTURE)
+    refresh = load_json(REFRESH_FIXTURE)
     prowess = load_json(PROWESS_FIXTURE)
     validate_json(stat, STAT_SCHEMA, owner=str(STAT_FIXTURE))
     validate_json(level, LEVEL_SCHEMA, owner=str(LEVEL_FIXTURE))
     validate_json(boundary, BOUNDARY_SCHEMA, owner=str(BOUNDARY_FIXTURE))
+    validate_json(refresh, REFRESH_SCHEMA, owner=str(REFRESH_FIXTURE))
     validate_json(prowess, PROWESS_SCHEMA, owner=str(PROWESS_FIXTURE))
     verify_runtime_contract(stat, rom_path)
     verify_runtime_contract(level, rom_path)
     verify_runtime_contract(boundary, rom_path)
+    verify_runtime_contract(refresh, rom_path)
     verify_runtime_contract(prowess, rom_path)
     disasm = _verify_upstream(upstream_path)
     curves = _parse_growth_curves(disasm)
     _verify_stat_models(stat, curves)
     _verify_level_models(level, disasm=disasm, curves=curves)
     _verify_boundary_models(boundary, disasm=disasm, curves=curves)
+    _verify_refresh_model(refresh, disasm=disasm, curves=curves)
     _verify_prowess_model(prowess, disasm=disasm)
 
     stat_observed = run_observer(
@@ -629,6 +905,23 @@ def verify_growth(
         timeout_seconds=timeout_seconds,
     )
     _verify_boundary_observation(boundary, boundary_observed)
+    refresh_observed = run_observer(
+        rom_path=rom_path,
+        observer_path=REFRESH_OBSERVER,
+        config={
+            "function": refresh["function"],
+            "ram": refresh["ram"],
+            "case": {
+                "id": refresh["case"]["id"],
+                "ally": refresh["case"]["ally"],
+                "seed": refresh["case"]["seed"],
+                "input": refresh["case"]["input"],
+            },
+        },
+        output_name="level-up-refresh",
+        timeout_seconds=timeout_seconds,
+    )
+    _verify_refresh_observation(refresh, refresh_observed)
     prowess_observed = run_observer(
         rom_path=rom_path,
         observer_path=PROWESS_OBSERVER,
@@ -652,6 +945,8 @@ def verify_growth(
         "LevelUpCases": len(level["cases"]),
         "BoundaryFixture": boundary["id"],
         "BoundaryCases": len(boundary["cases"]),
+        "RefreshFixture": refresh["id"],
+        "RefreshCases": 1,
         "ProwessFixture": prowess["id"],
         "ProwessCases": 1,
         "TortBoundaryConfirmed": True,

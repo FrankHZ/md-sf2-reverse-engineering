@@ -196,9 +196,11 @@ fixture 覆盖和对现代重制的合同影响。
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在
 `InitializeAllyStats` 和 `LevelUp` 两处被误加 20 effective levels、但本场景无学法术副作用的原版缺陷。
-新增四个自然 `LevelUp` 调用确认 level 30 后改用固定 1.5 基础增益、基础职业 40/转职职业 99
-上限退出，以及 WIZ 的 `level + 20` 阈值和 `$FE` 继承首职业法术表会把 Kazin 的 BLAZE 1
-升级为 BLAZE 3。另一个完全不改状态的启动观察确认 Karna 在 HEAL 3 预扫描时会把 PRST
+新增七个自然 `LevelUp` 调用确认 level 30 后改用固定 1.5 基础增益、基础职业 40/转职职业 99
+上限及其前一级、WIZ 的 `level + 20` 阈值和 `$FE` 继承首职业法术表会把 Kazin 的 BLAZE 1
+升级为 BLAZE 3；同时确认缺失本地职业块时会跨角色继续扫描（Peter/WIZ 借用 Tyrin/WIZ），
+直到 Claude/SDMN 的末尾哨兵才真正退出。完整 Slade 39→40 fixture 进一步确认升级不回复当前
+HP/MP，派生属性会从 base/class 重建并重新应用 Short Knife 的 +5 ATT。另一个完全不改状态的启动观察确认 Karna 在 HEAL 3 预扫描时会把 PRST
 基础 prowess 从 `0x03` 改为 `0x13`，随后再由普通升级回放学会法术。
 第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
 全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然

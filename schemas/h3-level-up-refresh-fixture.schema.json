@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-level-up-refresh-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "case"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-level-up-refresh-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "type": "string" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "updateStatsCallAddress", "updateStatsEntryAddress", "returnAddress"],
+      "properties": {
+        "entryAddress": { "const": 38020 },
+        "updateStatsCallAddress": { "const": 38330 },
+        "updateStatsEntryAddress": { "const": 35278 },
+        "returnAddress": { "const": 38340 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "seedAddress"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 },
+        "combatantEntrySize": { "const": 56 },
+        "seedAddress": { "const": 16768676 }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "ally", "allyCode", "classCode", "seed", "input", "after", "updateStatsCallObserved", "updateStatsEntryObserved"],
+      "properties": {
+        "id": { "const": "slade-thif-level39-equipped-refresh" },
+        "ally": { "const": 5 },
+        "allyCode": { "const": "SLADE" },
+        "classCode": { "const": "THIF" },
+        "seed": { "const": 4660 },
+        "input": { "$ref": "#/$defs/combatant" },
+        "after": { "$ref": "#/$defs/combatant" },
+        "updateStatsCallObserved": { "const": true },
+        "updateStatsEntryObserved": { "const": true }
+      }
+    }
+  },
+  "$defs": {
+    "combatant": {
+      "type": "object", "additionalProperties": false,
+      "required": ["class", "level", "maxHp", "currentHp", "maxMp", "currentMp", "baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "baseMove", "currentMove", "baseResistance", "currentResistance", "baseProwess", "currentProwess", "items", "spells", "status", "exp"],
+      "properties": {
+        "class": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "level": { "type": "integer", "minimum": 1, "maximum": 255 },
+        "maxHp": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "currentHp": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "maxMp": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "currentMp": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseAttack": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "currentAttack": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseDefense": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "currentDefense": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseAgility": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "currentAgility": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseMove": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "currentMove": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseResistance": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "currentResistance": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "baseProwess": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "currentProwess": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "items": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0, "maximum": 65535 } },
+        "spells": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "status": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "exp": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    }
+  }
+}

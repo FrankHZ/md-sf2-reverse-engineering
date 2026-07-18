@@ -34,7 +34,10 @@ spell definition table.
 
 The pointer table at `0x1EE270..0x1EE2F0` has 32 entries. Entries 0–29 point to their corresponding
 ally stats, while entries 30 and 31 both point to `AllyStats29` (Claude). This is distinct from the
-two trailing start-definition records, whose runtime reachability remains unknown.
+two trailing start-definition records, whose runtime reachability remains unknown. `LevelUp` starts
+at the selected pointer but does not enforce an ally-local end address while seeking a class ID: a
+missing local class can therefore borrow a later ally's matching block before a negative sentinel
+terminates the scan.
 
 ## Semantics Boundary
 
@@ -44,17 +47,25 @@ minimum-stat pity increment are now covered by controlled H3 observations in
 [`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md). The complete caller fixture
 additionally confirms first-level stat application, the seven-byte level-up result payload, and both
 TORT effective-level defect sites. A second complete-caller fixture confirms level-30
-post-projection growth, base/promoted cap exits, a promoted `level + 20` effective threshold, `$FE`
-spell-list inheritance, and successful BLAZE 1→3 replacement. A mutation-free startup observer also
+post-projection growth, base/promoted cap exits and their level 39→40 / 98→99 predecessors, a promoted
+`level + 20` effective threshold, `$FE` spell-list inheritance, and successful BLAZE 1→3 replacement.
+It also confirms that Peter/WIZ scans forward into Tyrin's WIZ block at `0x1EE653`, while Claude/SDMN
+reaches the final sentinel and takes the genuine missing-class exit. A mutation-free startup observer
 confirms Karna's HEAL 3 initialization special case changes PRST base prowess from `0x03` to `0x13`
 before the ordinary level-up replay learns the spell.
+
+A complete-combatant fixture follows Slade/THIF from level 39 to 40 through the call to
+`UpdateCombatantStats`. Current HP/MP remain unchanged when maxima grow. Current ATT/DEF/AGI/MOV,
+resistance, and prowess are rebuilt from base/class values, then equipped effects are reapplied; the
+Short Knife adds 5 ATT to the refreshed base 47, producing current ATT 52. The fixture independently
+parses the class bases and item effect from the pinned source before observing the original ROM.
 
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed fixtures to the level immediately before each cap, a missing
-class block, synthetic nonzero-counter input to the HEAL 3 branch, and current/maximum stat refresh
-behavior. The existing stat-gain and complete-caller fixtures are the first implementation-neutral
-inputs for a later remake growth module; see [`../design/level-up.md`](../design/level-up.md).
+Extend the committed emulator-backed fixtures with status-effect and non-attack/cursed equipment
+refresh cases, plus synthetic nonzero-counter input to the HEAL 3 branch. The existing stat-gain,
+complete-caller, boundary, and refresh fixtures are the first implementation-neutral inputs for a
+later remake growth module; see [`../design/level-up.md`](../design/level-up.md).
