@@ -67,11 +67,15 @@ local function write_result_and_exit()
         #records, resistance_calls, division_calls, construction_actor_mp))
     for index, record in ipairs(records) do
         if index > 1 then output:write(",") end
+        output:write(string.format('{"combatant":%d', record.combatant))
+        if record.divisionSpell ~= nil then
+            output:write(string.format(',"divisionSpell":%d', record.divisionSpell))
+        end
         output:write(string.format(
-            '{"combatant":%d,"setting":%d,"casterClass":%d,"preDivisionPower":%d,"adjustedPower":%d,"quarterPower":%d,' ..
+            ',"setting":%d,"casterClass":%d,"preDivisionPower":%d,"adjustedPower":%d,"quarterPower":%d,' ..
             '"postResistance":%d,"criticalRoll":%d,"criticalFlag":%d,"preVariance":%d,"varianceRange":%d,' ..
             '"varianceRolls":[%d,%d],"finalDamage":%d,"accumulatedExp":%d,"temporaryHp":%d,"restoredHp":%d}',
-            record.combatant, record.setting, record.casterClass, record.preDivisionPower,
+            record.setting, record.casterClass, record.preDivisionPower,
             record.adjustedPower, record.quarterPower,
             record.postResistance, record.criticalRoll, record.criticalFlag,
             record.preVariance, record.varianceRange,
@@ -197,6 +201,9 @@ event.on_bus_exec(function()
     end
     assert(target_case ~= nil, "spell target is absent from fixture cases")
     memory.write_u8(entry(config.case.actor) + 10, target_case.casterClass, "M68K BUS")
+    if target_case.divisionSpell ~= nil then
+        memory.write_u16_be(config.ram.battleSceneSpellIndexAddress, target_case.divisionSpell, "M68K BUS")
+    end
     active = {
         combatant = combatant,
         setting = word_register("M68K D2"),
@@ -216,6 +223,7 @@ end, config["function"].adjustedPowerAddress, "sf2-spell-adjusted", "M68K BUS")
 event.on_bus_exec(function()
     if active == nil then return end
     division_calls = division_calls + 1
+    active.divisionSpell = memory.read_u16_be(config.ram.battleSceneSpellIndexAddress, "M68K BUS")
     active.preDivisionPower = word_register("M68K D6")
 end, config["function"].divisionEntryAddress, "sf2-spell-division", "M68K BUS")
 
@@ -250,6 +258,9 @@ event.on_bus_exec(function()
     if active == nil then return end
     active.finalDamage = word_register("M68K D6")
     active.temporaryHp = memory.read_u16_be(entry(active.combatant) + 14, "M68K BUS")
+    if active.divisionSpell ~= nil then
+        memory.write_u16_be(config.ram.battleSceneSpellIndexAddress, config.case.baseSpell, "M68K BUS")
+    end
     records[#records + 1] = active
     active = nil
     status("milestone:damage:" .. #records)

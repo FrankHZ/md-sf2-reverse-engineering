@@ -46,12 +46,13 @@ to the first promoted class value 12. The original `AdjustSpellPower` multiplies
 shifts right by 2, producing `floor(10 * 5 / 4) = 12`. This owns the class-threshold arithmetic;
 it does not claim a naturally promoted caster performed the complete BLAZE action.
 
-**Confirmed for DAO 1:** a promoted caster applies the same adjustment first, changing power
-`18 -> floor(18 * 5 / 4) = 22`. Because DAO is one of four hard-coded invocation spell indexes,
-each target calculation then performs unsigned integer division by the current target-list length.
-With four targets, each call changes `22 -> floor(22 / 4) = 5`. The division happens per target but
-does not consume or shrink the list; all four receive base damage 5. APOLLO, NEPTUN, and ATLAS share
-the static branch but do not yet have separate runtime fixtures.
+**Confirmed for all four invocation indexes at the calculation seam:** a promoted DAO caster first
+changes power `18 -> floor(18 * 5 / 4) = 22`. Before each target's `AdjustSpellPower` call, the
+fixture supplies DAO, APOLLO, NEPTUN, or ATLAS as the scene spell index. Every index reaches the
+same unsigned division by current target-list length and changes `22 -> floor(22 / 4) = 5`. The
+division happens per target but does not consume or shrink the list. This confirms the four
+hard-coded comparator branches; because the enclosing cast remains DAO, it does not establish the
+other spells' complete natural dispatch, critical chance, or animation path.
 
 ### 2. Apply the element resistance with integer truncation
 
@@ -357,7 +358,7 @@ naturally carried state remains outside these cases.
 | Fixture ID | File | Required parity |
 | --- | --- | --- |
 | `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; per-target and awarded EXP; temporary/restored/persistent HP; MP/EXP replay |
-| `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
+| `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; DAO/APOLLO/NEPTUN/ATLAS comparator hits; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
@@ -381,7 +382,8 @@ expected-deviation fixture.
 
 ## Unknown / Expansion Gates
 
-- **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
+- **Unknown at runtime:** natural full APOLLO/NEPTUN/ATLAS casts and a naturally promoted full BLAZE
+  action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
 - **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/

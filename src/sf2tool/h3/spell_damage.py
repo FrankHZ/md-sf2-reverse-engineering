@@ -70,6 +70,9 @@ def _verify_summon_source_contract(disasm: Path, case: dict[str, Any]) -> None:
     ).read_text(encoding="utf-8")
     required_fragments = (
         "cmpi.w  #SPELL_DAO,d1",
+        "cmpi.w  #SPELL_APOLLO,d1",
+        "cmpi.w  #SPELL_NEPTUN,d1",
+        "cmpi.w  #SPELL_ATLAS,d1",
         "mulu.w  #5,d6",
         "divu.w  d0,d6",
     )
@@ -86,11 +89,8 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
         pre_division = case["spellPower"]
         if target["casterClass"] >= 12:
             pre_division = (pre_division * 5) >> 2
-        adjusted = (
-            pre_division // len(case["targets"])
-            if case["divideByTargetCount"]
-            else pre_division
-        )
+        divide = target.get("divisionSpell") in case.get("divisionSpellIndexes", [])
+        adjusted = pre_division // len(case["targets"]) if divide else pre_division
         quarter = adjusted >> 2
         setting = target["setting"]
         if setting == 1:
@@ -121,6 +121,11 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
         records.append(
             {
                 "combatant": target["combatant"],
+                **(
+                    {"divisionSpell": target["divisionSpell"]}
+                    if "divisionSpell" in target
+                    else {}
+                ),
                 "setting": setting,
                 "casterClass": target["casterClass"],
                 "preDivisionPower": pre_division,
@@ -157,8 +162,9 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     return {
         "construction": {
             "resistanceCalls": len(case["targets"]),
-            "divisionCalls": (
-                len(case["targets"]) if case["divideByTargetCount"] else 0
+            "divisionCalls": sum(
+                target.get("divisionSpell") in case.get("divisionSpellIndexes", [])
+                for target in case["targets"]
             ),
             "actorMp": case["initialMp"],
             "records": records,
@@ -292,7 +298,7 @@ def verify_spell_summon(
         observer_path=OBSERVER,
         config={
             "function": {**shared["function"], **fixture["function"]},
-            "ram": shared["ram"],
+            "ram": {**shared["ram"], **fixture["ram"]},
             "harness": shared["harness"],
             "case": fixture["case"],
         },
@@ -305,8 +311,9 @@ def verify_spell_summon(
         "Fixture": fixture["id"],
         "Engine": f"BizHawk {fixture['emulator']['version']} / {fixture['emulator']['core']}",
         "Battle": fixture["battleId"],
-        "Spell": "DAO 1",
+        "Spell": "DAO/APOLLO/NEPTUN/ATLAS division",
         "Targets": len(records),
+        "BranchSpellIndexes": [record["divisionSpell"] for record in records],
         "Power": f"{records[0]['preDivisionPower']}->{records[0]['adjustedPower']}",
         "DivisionCalls": fixture["expected"]["construction"]["divisionCalls"],
         "PersistentHp": fixture["expected"]["replay"]["finalTargetHp"],

@@ -461,17 +461,21 @@ uv run sf2 h3 spell-damage
 The tracked contract is `tests/fixtures/h3/spell-damage-resistance-v1.json`; generated configuration
 and observations remain under ignored `local/derived/h3/`.
 
-## Confirmed: DAO Target-Count Power Division
+## Confirmed: Invocation Spell Target-Count Division Branch Matrix
 
 The companion DAO fixture reuses the same tracked Battle Test choreography and observer but owns a
 separate case/golden. It replaces the scheduled action with DAO 1 (base spell 29), supplies four
 neutral-resistance targets, and keeps the caster at promoted class value 12 for all calls. The
-pinned spell definition supplies power 18 and MP cost 8.
+pinned spell definition supplies power 18 and MP cost 8. At each `CalculateSpellDamage` entry,
+before `AdjustSpellPower` reads `BATTLESCENE_SPELL_INDEX`, the observer supplies one of the four
+hard-coded invocation indexes: DAO 29, APOLLO 30, NEPTUN 31, and ATLAS 32. It restores DAO after
+each target so the surrounding action remains coherent.
 
 At `AdjustSpellPower`, the original promoted branch executes before the invocation check:
-`floor(18*5/4)=22`. Each of the four calls then reaches `0xBBA0`, reads
-`TARGETS_LIST_LENGTH=4`, and executes `divu`, producing 5. The observer records four division-entry
-hits and four adjusted-power returns of 5. Seed `0x1234` makes each BLAST-family critical roll 29;
+`floor(18*5/4)=22`. All four spell-index comparisons independently reach `0xBBA0`, read
+`TARGETS_LIST_LENGTH=4`, and execute `divu`, producing 5. The observer records four division-entry
+hits associated with indexes `29/30/31/32` and four adjusted-power returns of 5. Because the actual
+cast remains DAO, seed `0x1234` makes each BLAST-family critical roll 29;
 range-1 variance returns zero twice, so each target temporarily reaches 95 HP, restores to 100, and
 then persistently replays to 95. The ally reaction applies DAO's MP cost as `20 -> 12`.
 
@@ -481,9 +485,10 @@ halving and unchanged randomization, the original minimum clamps the command to 
 Bowie EXP `0 -> 1`. This independently covers the zero-accumulator/minimum-one boundary in the same
 shared observer boot.
 
-This confirms the exact promoted-before-division order and integer truncation for DAO with four
-targets. APOLLO, NEPTUN, and ATLAS are statically routed through the same branch but remain untested
-at runtime. Reproduce with:
+This confirms the exact promoted-before-division order, integer truncation, and runtime reachability
+of all four invocation-index divider branches. The per-target spell-index seam intentionally does
+not claim complete natural APOLLO, NEPTUN, or ATLAS dispatch/critical/animation paths. Reproduce
+with:
 
 ```powershell
 uv run sf2 h3 spell-summon
@@ -836,7 +841,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
-- Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
+- Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
   reapplication, and other status spells, SPOIT enemy-caster behavior, and other non-damage spell

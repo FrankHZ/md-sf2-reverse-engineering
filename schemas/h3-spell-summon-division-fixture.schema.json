@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/h3-spell-summon-division-fixture.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "case", "expected"],
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "case", "expected"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-spell-summon-division-v1" },
@@ -13,29 +13,30 @@
     "observationBoundary": { "type": "string", "minLength": 1 },
     "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
     "function": { "type": "object", "additionalProperties": false, "required": ["divisionEntryAddress"], "properties": { "divisionEntryAddress": { "const": 48032 } } },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["battleSceneSpellIndexAddress"], "properties": { "battleSceneSpellIndexAddress": { "const": 16758328 } } },
     "case": { "$ref": "#/definitions/case" },
     "expected": { "$ref": "#/definitions/expected" }
   },
   "definitions": {
     "case": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "actor", "actorClass", "initialMp", "actorInitialExp", "actionType", "actionSpell", "baseSpell", "spellPower", "spellMpCost", "criticalRange", "divideByTargetCount", "targets"],
+      "required": ["id", "actor", "actorClass", "initialMp", "actorInitialExp", "actionType", "actionSpell", "baseSpell", "spellPower", "spellMpCost", "criticalRange", "divisionSpellIndexes", "targets"],
       "properties": {
         "id": { "const": "promoted-dao1-four-target-division" }, "actor": { "const": 0 }, "actorClass": { "const": 12 }, "initialMp": { "const": 20 }, "actorInitialExp": { "const": 0 },
         "actionType": { "const": 1 }, "actionSpell": { "const": 29 }, "baseSpell": { "const": 29 }, "spellPower": { "const": 18 }, "spellMpCost": { "const": 8 },
-        "criticalRange": { "const": 32 }, "divideByTargetCount": { "const": true },
+        "criticalRange": { "const": 32 }, "divisionSpellIndexes": { "const": [29, 30, 31, 32] },
         "targets": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/target" } }
       }
     },
     "target": {
-      "type": "object", "additionalProperties": false, "required": ["combatant", "resistanceWord", "setting", "casterClass", "seed"],
-      "properties": { "combatant": { "type": "integer" }, "resistanceWord": { "const": 0 }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "seed": { "const": 4660 } }
+      "type": "object", "additionalProperties": false, "required": ["combatant", "divisionSpell", "resistanceWord", "setting", "casterClass", "seed"],
+      "properties": { "combatant": { "type": "integer" }, "divisionSpell": { "enum": [29, 30, 31, 32] }, "resistanceWord": { "const": 0 }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "seed": { "const": 4660 } }
     },
     "record": {
       "type": "object", "additionalProperties": false,
-      "required": ["combatant", "setting", "casterClass", "preDivisionPower", "adjustedPower", "quarterPower", "postResistance", "criticalRoll", "criticalFlag", "preVariance", "varianceRange", "varianceRolls", "finalDamage", "accumulatedExp", "temporaryHp", "restoredHp"],
+      "required": ["combatant", "divisionSpell", "setting", "casterClass", "preDivisionPower", "adjustedPower", "quarterPower", "postResistance", "criticalRoll", "criticalFlag", "preVariance", "varianceRange", "varianceRolls", "finalDamage", "accumulatedExp", "temporaryHp", "restoredHp"],
       "properties": {
-        "combatant": { "type": "integer" }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "preDivisionPower": { "const": 22 }, "adjustedPower": { "const": 5 },
+        "combatant": { "type": "integer" }, "divisionSpell": { "enum": [29, 30, 31, 32] }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "preDivisionPower": { "const": 22 }, "adjustedPower": { "const": 5 },
         "quarterPower": { "const": 1 }, "postResistance": { "const": 5 }, "criticalRoll": { "const": 29 }, "criticalFlag": { "const": 0 }, "preVariance": { "const": 5 },
         "varianceRange": { "const": 1 }, "varianceRolls": { "type": "array", "const": [0, 0] }, "finalDamage": { "const": 5 }, "accumulatedExp": { "const": 0 }, "temporaryHp": { "const": 95 }, "restoredHp": { "const": 100 }
       }

@@ -817,16 +817,23 @@
       "sourcePath": "code/gameflow/battle/battleactions/calculatespelldamage.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 47958 },
-        { "id": "division-entry", "space": "rom", "kind": "observation", "value": 48032 }
+        { "id": "division-entry", "space": "rom", "kind": "observation", "value": 48032 },
+        { "id": "spell-index", "space": "ram", "kind": "state", "value": 16758328, "symbol": "BATTLESCENE_SPELL_INDEX" }
       ],
       "evidence": [
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
-          "bindings": [{ "addressId": "division-entry", "fixtureField": "function.divisionEntryAddress" }]
+          "bindings": [
+            { "addressId": "division-entry", "fixtureField": "function.divisionEntryAddress" },
+            { "addressId": "spell-index", "fixtureField": "ram.battleSceneSpellIndexAddress" }
+          ]
         },
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-summon-division-v1.json", "fixtureId": "sf2-spell-summon-division-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
-          "bindings": [{ "addressId": "division-entry", "fixtureField": "function.divisionEntryAddress" }]
+          "bindings": [
+            { "addressId": "division-entry", "fixtureField": "function.divisionEntryAddress" },
+            { "addressId": "spell-index", "fixtureField": "ram.battleSceneSpellIndexAddress" }
+          ]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
