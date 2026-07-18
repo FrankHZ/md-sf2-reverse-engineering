@@ -20,8 +20,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["H2Fixtures"] == 2
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 51
-    assert result["AddressBindings"] == 404
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 52
+    assert result["AddressBindings"] == 407
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -100,6 +100,12 @@ def test_enemy_drops_has_a_dedicated_narrow_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "enemy-drops"])
     assert args.h3_command == "enemy-drops"
     assert args.timeout_seconds == 75
+
+
+def test_muddle_action_guard_has_a_dedicated_narrow_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "muddle-action-guard"])
+    assert args.h3_command == "muddle-action-guard"
+    assert args.timeout_seconds == 120
 
 
 def test_legacy_powershell_surface_does_not_expand() -> None:

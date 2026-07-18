@@ -1262,6 +1262,28 @@
       "designContracts": ["docs/design/combat-resolution.md"]
     },
     {
+      "id": "battle.ai.muddle-action-guard",
+      "subsystem": "battle.ai",
+      "status": "confirmed",
+      "symbol": "DetermineMuddledBattleaction",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/determinemuddledbattleaction.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 49786 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 49862 },
+        { "id": "auto-battle-toggle", "space": "ram", "kind": "state", "value": 16756907, "symbol": "AUTO_BATTLE_TOGGLE" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/muddle-action-guard-v1.json", "fixtureId": "sf2-muddle-action-guard-allies-v1", "verifier": "src/sf2tool/h3/muddle_action_guard.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "return", "fixtureField": "function.returnAddress" },
+          { "addressId": "auto-battle-toggle", "fixtureField": "ram.autoBattleToggleAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
       "id": "battle.status.after-turn-expiry",
       "subsystem": "battle.status",
       "status": "confirmed",

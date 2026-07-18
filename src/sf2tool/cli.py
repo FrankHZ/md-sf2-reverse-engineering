@@ -22,6 +22,7 @@ from sf2tool.h3.growth import (
     verify_level_up_refresh,
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
+from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.spell_attack import verify_spell_attack
@@ -206,6 +207,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_muddle_confusion)
     h3_muddle_confusion.add_argument("--timeout-seconds", type=int, default=75)
+    h3_muddle_action_guard = h3_commands.add_parser(
+        "muddle-action-guard",
+        help="verify muddled ally protected-target and self-target action guards",
+    )
+    _add_local_paths(h3_muddle_action_guard)
+    h3_muddle_action_guard.add_argument("--timeout-seconds", type=int, default=120)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -443,6 +450,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "muddle-confusion":
         print_record(
             verify_muddle_confusion(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "muddle-action-guard":
+        print_record(
+            verify_muddle_action_guard(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
