@@ -2,7 +2,7 @@
 
 - Contract version: `0.1`
 - Scope: normal physical attacks, successful dodge, critical damage, double attack, counterattack,
-  HP reaction replay, and Battle 01 EXP award
+  HP reaction replay, kill EXP levels, and Battle 01 EXP award
 - Evidence state: **Confirmed subset**; incomplete systems stay **Unknown** and are not defaulted here
 - Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
 
@@ -193,8 +193,15 @@ source-modeled Bowie/SDMN level-1 case reaches level 2 with gains HP/MP/ATT/DEF/
 The final snapshot is taken when `bsc0F_giveExp` returns, after the level-up result payload has been
 consumed by the battle-scene path.
 
-The complete level-difference table, other battle modifiers, random +1/-1 outcomes, EXP cap and
-multiple-threshold edges, and gold are outside this contract version.
+**Confirmed for the kill-EXP matrix:** `battlesceneScript_GetKillExp` compares the actor's effective
+level with the target's stored level. Differences below 3 and exactly 2 both return 50 EXP; exact
+differences 3/4/5/6 return 40/30/20/10, and 7 or greater returns zero. Promoted actor classes add 20
+to their stored level before subtraction, so HERO level 1 against level 18 follows difference 3 and
+returns 40. Each matrix row begins from the same natural Battle 01 physical attack; an in-memory
+core-state replay only avoids repeating the boot/UI path.
+
+Other battle modifiers, random +1/-1 outcomes, EXP cap and multiple-threshold edges, and the full
+gold table remain outside this contract version.
 
 ## Reference Adapter Shape
 
@@ -230,6 +237,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-physical-damage-application-v1` | `tests/fixtures/h3/physical-damage-application-v1.json` | Critical, spread, HP clamp, EXP accumulator |
 | `sf2-battle-scene-replay-v1` | `tests/fixtures/h3/battle-scene-replay-v1.json` | Snapshot restore, EXP modification, persistent replay |
 | `sf2-battle-exp-level-up-v1` | `tests/fixtures/h3/battle-exp-level-up-v1.json` | 99 + 24 threshold, one LevelUp call, payload, persistent level/stats/EXP |
+| `sf2-kill-exp-level-difference-v1` | `tests/fixtures/h3/kill-exp-level-difference-v1.json` | Effective-level subtraction; 50/40/30/20/10/0 brackets; promoted +20 offset |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
@@ -261,7 +269,7 @@ complete:
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
-- full EXP/gold tables, random EXP adjustment branches, and EXP cap/multiple-threshold edges;
+- remaining EXP/gold tables, random EXP adjustment branches, and EXP cap/multiple-threshold edges;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
 Each expansion must add or extend H3 evidence first, update this contract, and then become an H4

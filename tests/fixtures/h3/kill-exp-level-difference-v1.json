@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-kill-exp-level-difference-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "First natural battlesceneScript_GetKillExp call during a Battle 01 physical attack; only actor class/level and target level are controlled.",
+  "function": {
+    "entryAddress": 43368,
+    "returnAddress": 43466
+  },
+  "ram": {
+    "combatantDataAddress": 16771072
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900,
+      "criticalEntryAddress": 44110
+    },
+    "ram": {
+      "combatantEntrySize": 56,
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "seedAddress": 16768676,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "cases": [
+    { "id": "unpromoted-diff-negative", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 1, "effectiveActorLevel": 1, "targetLevel": 10, "levelDifference": -9, "killExp": 50 },
+    { "id": "unpromoted-diff-two", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 8, "levelDifference": 2, "killExp": 50 },
+    { "id": "unpromoted-diff-three", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 7, "levelDifference": 3, "killExp": 40 },
+    { "id": "unpromoted-diff-four", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 6, "levelDifference": 4, "killExp": 30 },
+    { "id": "unpromoted-diff-five", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 5, "levelDifference": 5, "killExp": 20 },
+    { "id": "unpromoted-diff-six", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 4, "levelDifference": 6, "killExp": 10 },
+    { "id": "unpromoted-diff-seven", "actor": 0, "target": 128, "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 3, "levelDifference": 7, "killExp": 0 },
+    { "id": "promoted-raw-one-diff-three", "actor": 0, "target": 128, "classCode": "HERO", "class": 12, "actorLevel": 1, "effectiveActorLevel": 21, "targetLevel": 18, "levelDifference": 3, "killExp": 40 }
+  ]
+}

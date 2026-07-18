@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-kill-exp-level-difference-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "function", "ram", "harness", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-kill-exp-level-difference-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "function": {
+      "type": "object", "additionalProperties": false, "required": ["entryAddress", "returnAddress"],
+      "properties": { "entryAddress": { "const": 43368 }, "returnAddress": { "const": 43466 } }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false, "required": ["combatantDataAddress"],
+      "properties": { "combatantDataAddress": { "const": 16771072 } }
+    },
+    "harness": {
+      "type": "object", "additionalProperties": false, "required": ["function", "ram"],
+      "properties": {
+        "function": {
+          "type": "object", "additionalProperties": false,
+          "required": ["battleTestAddress", "numberPromptAddress", "flagPromptAddress", "turnOrderEntryAddress", "criticalEntryAddress"],
+          "properties": {
+            "battleTestAddress": { "const": 30364 }, "numberPromptAddress": { "const": 90754 },
+            "flagPromptAddress": { "const": 91068 }, "turnOrderEntryAddress": { "const": 152900 },
+            "criticalEntryAddress": { "const": 44110 }
+          }
+        },
+        "ram": {
+          "type": "object", "additionalProperties": false,
+          "required": ["combatantEntrySize", "currentBattleAddress", "terrainDataAddress", "seedAddress", "cheatPointerAddress", "debugModeAddress"],
+          "properties": {
+            "combatantEntrySize": { "const": 56 }, "currentBattleAddress": { "const": 16774930 },
+            "terrainDataAddress": { "const": 16736000 }, "seedAddress": { "const": 16768676 },
+            "cheatPointerAddress": { "const": 16757152 }, "debugModeAddress": { "const": 16756905 }
+          }
+        }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 8, "maxItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "actor", "target", "classCode", "class", "actorLevel", "effectiveActorLevel", "targetLevel", "levelDifference", "killExp"],
+        "properties": {
+          "id": { "enum": ["unpromoted-diff-negative", "unpromoted-diff-two", "unpromoted-diff-three", "unpromoted-diff-four", "unpromoted-diff-five", "unpromoted-diff-six", "unpromoted-diff-seven", "promoted-raw-one-diff-three"] },
+          "actor": { "const": 0 }, "target": { "const": 128 },
+          "classCode": { "enum": ["SDMN", "HERO"] }, "class": { "enum": [0, 12] },
+          "actorLevel": { "type": "integer", "minimum": 1, "maximum": 99 },
+          "effectiveActorLevel": { "type": "integer", "minimum": 1, "maximum": 119 },
+          "targetLevel": { "type": "integer", "minimum": 1, "maximum": 99 },
+          "levelDifference": { "type": "integer", "minimum": -98, "maximum": 118 },
+          "killExp": { "enum": [0, 10, 20, 30, 40, 50] }
+        }
+      }
+    }
+  }
+}

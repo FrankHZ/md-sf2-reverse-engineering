@@ -8,6 +8,7 @@ from pathlib import Path
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
+from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.rng import verify_rng
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_record
@@ -188,6 +189,8 @@ def verify(
         print_record(verify_growth(rom_path, upstream_path))
         _heading("H3: natural battle EXP threshold and persistent level-up behavior")
         print_record(verify_battle_exp_level_up(rom_path, upstream_path))
+        _heading("H3: kill EXP level-difference and promoted-level matrix")
+        print_record(verify_kill_exp_level_differences(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
     _heading("Repository verification: PASS")

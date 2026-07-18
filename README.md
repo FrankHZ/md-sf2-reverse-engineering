@@ -7,7 +7,7 @@
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
 H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
-职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、行动顺序、区域激活、物理伤害计算链和
+职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、完整击杀 EXP 等级差矩阵、行动顺序、区域激活、物理伤害计算链和
 BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门及四种临时状态的回合后过期/继续/属性刷新的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
@@ -122,7 +122,7 @@ uv run sf2 verify --full
 里程碑、准备合并/发布、共享 harness 或兼容层发生变化，以及明确要求全量 parity 时运行。
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/等级上限/法术继承边界、属性夹断、战斗 EXP 自然升级、行动顺序、区域激活、物理伤害计算链、攻击法术伤害/EXP、HEAL 1、SLEEP 1、DESOUL、SPOIT、BOOST 1、SLOW 1、DISPEL 1、SILENCE 施法门及回合后状态过期/继续 H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/等级上限/法术继承边界、属性夹断、战斗 EXP 自然升级、击杀 EXP 等级差、行动顺序、区域激活、物理伤害计算链、攻击法术伤害/EXP、HEAL 1、SLEEP 1、DESOUL、SPOIT、BOOST 1、SLOW 1、DISPEL 1、SILENCE 施法门及回合后状态过期/继续 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -228,7 +228,8 @@ primary/secondary active 两位。AI 驱动的自然攻击另确认 30% 地形�
 死亡目标清除后续 double/counter，完整覆盖 double validator，并确认距离、睡眠/眩晕状态、同阵营标志及五种特殊敌人的方向性反击排除、HP 零下限、击杀判定、单行动 49 EXP 累加上限、
 reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实际入账。连接夹具进一步从
 99 EXP 出发确认 `99 -> 123 -> 23`、一次自然 Bowie/SDMN 升级、`[2,2,0,1,1,1,255]` 结果载荷，
-以及不回复当前 HP/MP、刷新派生属性后的最终持久状态。
+以及不回复当前 HP/MP、刷新派生属性后的最终持久状态。独立矩阵还确认有效等级差 `<3/3/4/5/6/>=7`
+对应击杀值 `50/40/30/20/10/0`，且晋职职业先把存储等级加 20。
 
 ### Phase 3 — Game Design Reconstruction
 

@@ -20,6 +20,7 @@ the locked ROM instruction bytes.
 | physical damage | `battlesceneScript_CalculateDamage` | `0xABBE..0xAC4E` | `code/gameflow/battle/battleactions/calculatedamage.asm` |
 | critical hit | `battlesceneScript_DetermineCriticalHit` | `0xAC4E..0xACCA` | `code/gameflow/battle/battleactions/determinecriticalhit.asm` |
 | damage application | `battlesceneScript_InflictDamage` | `0xACEA..0xAE32` | `code/gameflow/battle/battleactions/inflictdamage.asm` |
+| kill EXP | `battlesceneScript_GetKillExp` | `0xA968..0xA9CC` | `code/gameflow/battle/battleactions/earnexp.asm` |
 | final EXP | `battlesceneScript_GiveExpAndGold` | `0xA7F8..0xA870` | `code/gameflow/battle/battleactions/giveexpandgold.asm` |
 | enemy reaction | `bsc0A_executeEnemyReaction` | `0x18F4E..0x190A4` | `code/gameflow/battle/battlescenes/battlesceneengine_0.asm` |
 | EXP replay | `bsc0F_giveExp` | `0x190DC..0x191E0` | same file |
@@ -400,6 +401,35 @@ internal LevelUp scratch boundary.
 LCG, Bowie growth block, five growth curves, and empty-equipment refresh. It confirms this one
 99 + 24 transition and its side effects; dialogue/death-animation timing, other EXP adjustments,
 multiple-threshold/cap edges, and status behavior remain outside it.
+
+## Confirmed: Kill EXP Level-Difference Matrix
+
+`battlesceneScript_GetKillExp` at `0xA968` reads target level, then actor class and level. If the
+actor class is at least `CHAR_CLASS_FIRSTPROMOTED` (12), it adds
+`CHAR_CLASS_EXTRALEVEL` (20) to the actor level before subtracting the target level. The complete
+observed return table is:
+
+| Effective actor level - target level | Kill EXP |
+| --- | --- |
+| `< 3` | 50 |
+| `3` | 40 |
+| `4` | 30 |
+| `5` | 20 |
+| `6` | 10 |
+| `>= 7` | 0 |
+
+The fixture covers differences `-9, 2, 3, 4, 5, 6, 7` with SDMN plus HERO stored level 1 against
+target level 18. The HERO case becomes effective level 21, independently confirming the promotion
+offset before it lands in the difference-3/40-EXP bracket. Every row enters through the first
+natural `battlesceneScript_GetKillExp` call made by a Battle 01 physical attack; the observer does
+not jump the PC or write CPU registers. It saves an in-memory emulator core state before the attack
+and replays that state for the remaining rows, keeping one natural call per row while avoiding eight
+full Battle Test startups.
+
+The executable contract is `tests/fixtures/h3/kill-exp-level-difference-v1.json`; reproduce it with
+`uv run sf2 h3 kill-exp`. This matrix owns the kill-value function only. Damage-proportional EXP,
+per-action accumulation, battle halving, final randomization, command replay, and persistent level-up
+remain owned by their connected fixtures.
 
 ## Confirmed: Double Attack and Counter Chain
 
@@ -879,7 +909,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
-  seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
+  seeds, and remaining EXP randomization/cap branches to the confirmed physical path.
 - Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and

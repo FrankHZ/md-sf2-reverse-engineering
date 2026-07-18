@@ -200,6 +200,28 @@
       "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.exp.get-kill-exp",
+      "subsystem": "battle.exp",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_GetKillExp",
+      "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43368 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 43466 },
+        { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072, "symbol": "COMBATANT_DATA" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/kill-exp-level-difference-v1.json", "fixtureId": "sf2-kill-exp-level-difference-v1", "verifier": "src/sf2tool/h3/kill_exp.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "return", "fixtureField": "function.returnAddress" },
+          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
       "id": "battle.followup.validate-counter",
       "subsystem": "battle.followup",
       "status": "confirmed",

@@ -19,8 +19,8 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 38
-    assert result["AddressBindings"] == 277
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 39
+    assert result["AddressBindings"] == 280
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -57,6 +57,12 @@ def test_growth_refresh_has_a_dedicated_narrow_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "growth-refresh"])
     assert args.h3_command == "growth-refresh"
     assert args.timeout_seconds == 60
+
+
+def test_kill_exp_has_a_dedicated_narrow_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "kill-exp"])
+    assert args.h3_command == "kill-exp"
+    assert args.timeout_seconds == 75
 
 
 def test_legacy_powershell_surface_does_not_expand() -> None:
