@@ -102,14 +102,14 @@ No system PATH or system Java installation is changed.
 - Whether the Java editors produce deterministic or semantically correct exports; no editor JAR was
   executed in Phase 1.
 - Runtime parity across emulators or real hardware. H3 currently locks one BizHawk/Genesis Plus GX
-  path with RNG and stat-gain fixtures; it is not cross-emulator or hardware validation.
+  path with RNG, stat-gain, and complete level-up fixtures; it is not cross-emulator or hardware validation.
 - Licensing permission to redistribute upstream disassembly code, executable tools, extracted game
   content, or rebuilt ROMs.
 - Any modern-engine design choice. H1 only establishes the original evidence baseline.
 
 ## Next Research Contract
 
-Phase 2 continues from the static core-data contracts and RNG/stat-gain H3 fixtures into complete
-level-up, turn-order, and damage behavior fixtures. Findings should cite pinned assembly symbols and
+Phase 2 continues from the static core-data contracts and RNG/growth H3 fixtures into boundary,
+turn-order, and damage behavior fixtures. Findings should cite pinned assembly symbols and
 ROM ranges, while uncertain mechanics move into the explicit behavioral-test queue rather than the
 data model.

@@ -7,6 +7,7 @@ from typing import Any
 
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
+from sf2tool.rom import inspect_rom
 
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 DERIVED_ROOT = repo_path("local/derived/h3")
@@ -38,6 +39,22 @@ def bizhawk_contract(manifest_path: Path = TOOLCHAIN_MANIFEST) -> tuple[dict[str
     contract = manifest["bizhawk"]
     executable = repo_path(contract["localExecutablePath"]).resolve(strict=True)
     return contract, executable
+
+
+def verify_runtime_contract(fixture: dict[str, Any], rom_path: Path) -> None:
+    actual_hash = inspect_rom(rom_path.resolve(strict=True))["sha256"]
+    if actual_hash != fixture["romSha256"]:
+        raise ValueError(
+            f"H3 fixture ROM mismatch: expected {fixture['romSha256']}, got {actual_hash}"
+        )
+    bizhawk, _ = bizhawk_contract()
+    emulator = fixture["emulator"]
+    if (
+        emulator["name"] != "BizHawk"
+        or emulator["version"] != bizhawk["release"]
+        or emulator["core"] != bizhawk["core"]
+    ):
+        raise ValueError("H3 fixture execution-engine contract mismatch")
 
 
 def run_observer(
@@ -103,5 +120,8 @@ def run_observer(
             f"STDOUT:\n{stdout}\nSTDERR:\n{stderr}"
         )
     if not output_path.is_file():
-        raise RuntimeError("BizHawk observer exited without writing its observation file")
+        raise RuntimeError(
+            "BizHawk observer exited without writing its observation file.\n"
+            f"STDOUT:\n{stdout[-4000:]}\nSTDERR:\n{stderr[-4000:]}"
+        )
     return load_json(output_path)

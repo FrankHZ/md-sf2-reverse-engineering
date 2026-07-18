@@ -3,32 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from sf2tool.h3.bizhawk import bizhawk_contract, run_observer
+from sf2tool.h3.bizhawk import run_observer, verify_runtime_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
-from sf2tool.rom import inspect_rom
 
 BASE_FIXTURE = repo_path("tests/fixtures/h3/rng-v1.json")
 BASE_SCHEMA = repo_path("schemas/h3-rng-fixture.schema.json")
 DEBUG_FIXTURE = repo_path("tests/fixtures/h3/debug-rng-v1.json")
 DEBUG_SCHEMA = repo_path("schemas/h3-debug-rng-fixture.schema.json")
 OBSERVER = repo_path("tools/bizhawk/rng_observer.lua")
-
-
-def _verify_contract(fixture: dict[str, Any], rom_path: Path) -> None:
-    actual_hash = inspect_rom(rom_path.resolve(strict=True))["sha256"]
-    if actual_hash != fixture["romSha256"]:
-        raise ValueError(
-            f"H3 RNG fixture ROM mismatch: expected {fixture['romSha256']}, got {actual_hash}"
-        )
-    bizhawk, _ = bizhawk_contract()
-    emulator = fixture["emulator"]
-    if (
-        emulator["name"] != "BizHawk"
-        or emulator["version"] != bizhawk["release"]
-        or emulator["core"] != bizhawk["core"]
-    ):
-        raise ValueError("H3 RNG fixture execution-engine contract mismatch")
 
 
 def _assert_observation(
@@ -169,8 +152,8 @@ def verify_rng(rom_path: Path, *, timeout_seconds: int = 60) -> dict[str, Any]:
     validate_json(base, BASE_SCHEMA, owner=str(BASE_FIXTURE))
     validate_json(debug, DEBUG_SCHEMA, owner=str(DEBUG_FIXTURE))
     _verify_expected_models(base, debug)
-    _verify_contract(base, rom_path)
-    _verify_contract(debug, rom_path)
+    verify_runtime_contract(base, rom_path)
+    verify_runtime_contract(debug, rom_path)
     base_observed = run_observer(
         rom_path=rom_path,
         observer_path=OBSERVER,

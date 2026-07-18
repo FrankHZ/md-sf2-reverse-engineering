@@ -345,7 +345,7 @@
         { "id": "growth-return", "space": "rom", "kind": "observation", "value": 38708 }
       ],
       "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "scripts/Test-H3StatGainFixture.ps1",
+        "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "src/sf2tool/h3/growth.py",
         "bindings": [
           { "addressId": "entry", "fixtureField": "function.entryAddress" },
           { "addressId": "none-return", "fixtureField": "function.noneReturnAddress" },
@@ -353,7 +353,60 @@
           { "addressId": "growth-return", "fixtureField": "function.growthReturnAddress" }
         ]
       }],
-      "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"]
+      "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/level-up.md"]
+    },
+    {
+      "id": "growth.initialize-ally-stats",
+      "subsystem": "growth.level-up",
+      "status": "confirmed",
+      "symbol": "InitializeAllyStats",
+      "sourcePath": "code/common/stats/levelup.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 38342 },
+        { "id": "extra-level", "space": "rom", "kind": "observation", "value": 38440 },
+        { "id": "stats-scan", "space": "rom", "kind": "observation", "value": 38444 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/level-up-v1.json", "fixtureId": "sf2-level-up-tort-boundary-v1", "verifier": "src/sf2tool/h3/growth.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.initializeEntryAddress" },
+          { "addressId": "extra-level", "fixtureField": "function.initializeExtraLevelAddress" },
+          { "addressId": "stats-scan", "fixtureField": "function.initializeStatsScanAddress" }
+        ]
+      }],
+      "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/level-up.md"]
+    },
+    {
+      "id": "growth.level-up",
+      "subsystem": "growth.level-up",
+      "status": "confirmed",
+      "symbol": "LevelUp",
+      "sourcePath": "code/common/stats/levelup.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 38020 },
+        { "id": "extra-level", "space": "rom", "kind": "observation", "value": 38266 },
+        { "id": "spell-scan", "space": "rom", "kind": "observation", "value": 38270 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 38340 },
+        { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072, "symbol": "COMBATANT_DATA" },
+        { "id": "level-up-arguments", "space": "ram", "kind": "state", "value": 16756610, "symbol": "LEVELUP_ARGUMENTS" },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/level-up-v1.json", "fixtureId": "sf2-level-up-tort-boundary-v1", "verifier": "src/sf2tool/h3/growth.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.levelUpEntryAddress" },
+          { "addressId": "extra-level", "fixtureField": "function.levelUpExtraLevelAddress" },
+          { "addressId": "spell-scan", "fixtureField": "function.levelUpSpellScanAddress" },
+          { "addressId": "return", "fixtureField": "function.levelUpReturnAddress" },
+          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+          { "addressId": "level-up-arguments", "fixtureField": "ram.levelUpArgumentsAddress" },
+          { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+        ]
+      }],
+      "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/level-up.md"]
     },
     {
       "id": "rng.generate-random-number",
@@ -368,7 +421,7 @@
       ],
       "evidence": [
         { "level": "H3", "fixture": "tests/fixtures/h3/rng-v1.json", "fixtureId": "sf2-rng-generate-random-number-v1", "verifier": "src/sf2tool/h3/rng.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] },
-        { "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "scripts/Test-H3StatGainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.rngEntryAddress" }, { "addressId": "observe", "fixtureField": "function.rngObserveAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] }
+        { "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "src/sf2tool/h3/growth.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.rngEntryAddress" }, { "addressId": "observe", "fixtureField": "function.rngObserveAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"]
     },

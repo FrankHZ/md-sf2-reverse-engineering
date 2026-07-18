@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_record
@@ -42,9 +43,6 @@ H2_STAGES = (
 )
 
 H3_STAGES = (
-    LegacyStage(
-        "H3: original stat-gain runtime behavior", "Test-H3StatGainFixture.ps1", True, True
-    ),
     LegacyStage(
         "H3: battle 01 initialization and turn order",
         "Test-H3Battle01TurnOrderFixture.ps1",
@@ -166,6 +164,8 @@ def verify(
     if not skip_runtime:
         _heading("H3: original base and debug-aware RNG runtime behavior")
         print_record(verify_rng(rom_path))
+        _heading("H3: original stat-gain and complete level-up runtime behavior")
+        print_record(verify_growth(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
     _heading("Repository verification: PASS")

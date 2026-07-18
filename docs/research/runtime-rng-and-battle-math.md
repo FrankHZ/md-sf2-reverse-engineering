@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for base/debug-aware RNG, stat gain, turn order, and the physical attack chain**
+- Status: **Confirmed runtime fixtures for base/debug-aware RNG, stat gain/level up, turn order, and the physical attack chain**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -101,14 +101,23 @@ the confirmed RNG formula; the runtime golden is therefore tied to both ROM exec
 data contract.
 
 ```powershell
-pwsh ./scripts/Test-H3StatGainFixture.ps1
+uv run sf2 h3 growth
 ```
 
-The source also documents a concrete original bug at two class comparisons in `LevelUp`: TORT equals
-`CHAR_CLASS_LASTNONPROMOTED`, but the `blt` branch treats it as promoted and adds the 20-level promoted
-offset. This is confirmed as executable source/ROM logic, but its player-visible scenarios are not
-yet covered by H3. The fixture validates `CalculateStatGain`, not the complete `LevelUp` side effects.
-A remake must not silently choose preserve/fix behavior before a design decision.
+The companion complete-caller fixture observes natural startup execution for Kazin/MAGE and
+Kiwi/TORT. It controls only `RANDOM_SEED` at each selected `LevelUp` entry, then records the initial
+stats, five applied gains, final seed, level, and seven-byte `LEVELUP_ARGUMENTS` payload. A Python
+model independently parses the pinned growth curves, ally start definitions, class equates, and both
+ally stats blocks before BizHawk runs.
+
+Kazin is the base-class control: initialization effective level remains 4 and the first level-up
+spell threshold remains 2. Kiwi confirms the original defect at both class comparisons. TORT equals
+`CHAR_CLASS_LASTNONPROMOTED` (11), but the `blt` skips only classes below 11, so initialization changes
+effective level 7 → 27 at `0x9628` and the first level-up changes 2 → 22 at `0x957A`. Kiwi has no TORT
+spell list, so this scenario proves the internal threshold defect without claiming a learned-spell
+side effect. Its applied gains are HP/MP/ATT/DEF/AGI `[1,0,1,1,1]`, producing payload
+`[2,1,0,1,1,1,255]`. The remake decision boundary is specified in
+[`../design/level-up.md`](../design/level-up.md).
 
 ## Confirmed Statically and at Runtime: Turn-Order Score
 
@@ -322,8 +331,8 @@ control-flow contract independently of the earlier non-dodge observations.
 
 ## Unknown / Next Fixtures
 
-- Extend stat-gain runtime coverage through projection level 30 and promoted effective levels; cover
-  the TORT effective-level bug through the complete `LevelUp` caller.
+- Extend stat-gain runtime coverage through projection level 30, caps, promoted effective levels,
+  and successful learned-spell updates.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

@@ -133,6 +133,6 @@ still require code-path or runtime evidence before they become complete gameplay
 
 ## Next Evidence Slice
 
-Continue from the completed RNG/stat-gain H3 and Battle 01 placement contract into combatant
+Continue from the completed RNG/growth H3 and Battle 01 placement contract into combatant
 initialization, action order, damage, and the exceptional `LASER radius = 3` record. The next static
 expansion should decode Battle 01 terrain and its map link without weakening dual-source parity.

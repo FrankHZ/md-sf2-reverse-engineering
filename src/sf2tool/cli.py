@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
@@ -80,6 +81,11 @@ def build_parser() -> argparse.ArgumentParser:
     h3_rng = h3_commands.add_parser("rng", help="verify base and debug-aware RNG behavior")
     h3_rng.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
     h3_rng.add_argument("--timeout-seconds", type=int, default=60)
+    h3_growth = h3_commands.add_parser(
+        "growth", help="verify stat-gain and complete level-up behavior"
+    )
+    _add_local_paths(h3_growth)
+    h3_growth.add_argument("--timeout-seconds", type=int, default=60)
     return parser
 
 
@@ -118,6 +124,14 @@ def dispatch(args: argparse.Namespace) -> None:
         print_record(verify_design_contracts())
     elif args.command == "h3" and args.h3_command == "rng":
         print_record(verify_rng(args.rom_path, timeout_seconds=args.timeout_seconds))
+    elif args.command == "h3" and args.h3_command == "growth":
+        print_record(
+            verify_growth(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
     else:
         raise AssertionError(f"unhandled command: {args.command}")
 

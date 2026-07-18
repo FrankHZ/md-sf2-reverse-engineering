@@ -1,6 +1,6 @@
 # Ally Growth and Spell Learning Contract
 
-- Status: **Confirmed** static contract with initial stat-gain H3 coverage
+- Status: **Confirmed** static contract with stat-gain and complete level-up H3 coverage
 - Evidence date: 2026-07-17
 - Scope: stat-growth curves, per-class ally projections, and learned-spell lists
 
@@ -41,15 +41,16 @@ two trailing start-definition records, whose runtime reachability remains unknow
 **Confirmed** here means the stored curves, projections, list inheritance, and references reproduce
 the pinned source contract. Random variance, expected-minimum rounding, the curve-None path, and one
 minimum-stat pity increment are now covered by controlled H3 observations in
-[`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md). Complete level-up side effects,
-projection-level boundaries, promotion handling, caps, and the documented TORT edge case still need
-additional scenarios.
+[`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md). The complete caller fixture
+additionally confirms first-level stat application, the seven-byte level-up result payload, and both
+TORT effective-level defect sites. Projection-level boundaries, promotion handling, caps, and
+successful spell acquisition still need additional scenarios.
 
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed stat-gain fixture to the projection-level and promotion
-boundaries, then drive the complete `LevelUp` caller for the TORT edge case. The existing fixture is
-already suitable as the first implementation-neutral input for a later remake growth module.
+Extend the committed emulator-backed fixtures to projection-level, promotion, cap, and learned-spell
+boundaries. The existing stat-gain and complete-caller fixtures are the first implementation-neutral
+inputs for a later remake growth module; see [`../design/level-up.md`](../design/level-up.md).

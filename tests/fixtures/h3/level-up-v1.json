@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-level-up-tort-boundary-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": {
+    "initializeEntryAddress": 38342,
+    "initializeExtraLevelAddress": 38440,
+    "initializeStatsScanAddress": 38444,
+    "levelUpEntryAddress": 38020,
+    "levelUpExtraLevelAddress": 38266,
+    "levelUpSpellScanAddress": 38270,
+    "levelUpReturnAddress": 38340
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "levelUpArgumentsAddress": 16756610,
+    "seedAddress": 16768676
+  },
+  "cases": [
+    {
+      "id": "kazin-base-control", "ally": 4, "allyCode": "KAZIN", "classCode": "MAGE", "seed": 4660,
+      "initialization": { "startLevel": 4, "extraLevelBranch": false, "levelBeforeExtra": -1, "effectiveLevel": 4 },
+      "before": { "class": 3, "level": 1, "hp": 10, "mp": 7, "attack": 4, "defense": 4, "agility": 6, "exp": 0 },
+      "after": { "class": 3, "level": 2, "hp": 11, "mp": 9, "attack": 4, "defense": 5, "agility": 7, "exp": 0 },
+      "levelUpExtraBranch": false, "levelBeforeExtra": -1, "effectiveLevel": 2,
+      "expectedSeed": 50398, "arguments": [2, 1, 2, 0, 1, 1, 255]
+    },
+    {
+      "id": "kiwi-tort-boundary", "ally": 6, "allyCode": "KIWI", "classCode": "TORT", "seed": 4660,
+      "initialization": { "startLevel": 7, "extraLevelBranch": true, "levelBeforeExtra": 7, "effectiveLevel": 27 },
+      "before": { "class": 11, "level": 1, "hp": 5, "mp": 0, "attack": 7, "defense": 15, "agility": 4, "exp": 0 },
+      "after": { "class": 11, "level": 2, "hp": 6, "mp": 0, "attack": 8, "defense": 16, "agility": 5, "exp": 0 },
+      "levelUpExtraBranch": true, "levelBeforeExtra": 2, "effectiveLevel": 22,
+      "expectedSeed": 25116, "arguments": [2, 1, 0, 1, 1, 1, 255]
+    }
+  ]
+}
