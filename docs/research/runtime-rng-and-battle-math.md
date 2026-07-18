@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for RNG, stat gain, turn order, and the physical attack chain**
+- Status: **Confirmed runtime fixtures for base/debug-aware RNG, stat gain, turn order, and the physical attack chain**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -27,7 +27,8 @@ the locked ROM instruction bytes.
 | turn order | `GenerateBattleTurnOrder` | `0x25544` | `code/gameflow/battle/battleloop/turnorderfunctions.asm` |
 | turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
 
-Relevant RAM symbols are `RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
+Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
+`RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
 `LEVELUP_ARGUMENTS=$FFAF82`, `BATTLE_TURN_ORDER=$FFF71A`, and
 `CURRENT_BATTLE_TURN=$FFF79A` in `disasm/sf2const.asm`.
 
@@ -53,10 +54,32 @@ restored D6. Seven boundary/representative seeds pass the committed fixture
 Reproduce with:
 
 ```powershell
-pwsh ./scripts/Test-H3RngFixture.ps1
+uv run sf2 h3 rng
 ```
 
-Generated Lua and observations are private/derived and remain under `local/derived/h3/`.
+Generated configuration and observations are private/derived and remain under `local/derived/h3/`;
+the reusable observer is tracked at `tools/bizhawk/rng_observer.lua`.
+
+## Confirmed: Debug-Aware RNG Override
+
+`GenerateRandomOrDebugNumber` accepts the range in D0.w and returns the result in D0.w while
+preserving D6 and D7. With `DEBUG_MODE_TOGGLE` disabled, controller directions are ignored and the
+routine falls through to `GenerateRandomNumber`. With debug enabled, the first matching direction
+returns a fixed value without consuming `RANDOM_SEED`: Right → 0, Up → 1, Left → 2, Down → 3. The
+branch order gives Right highest priority when multiple direction bits are set. Debug enabled with
+no direction also falls through to the normal RNG.
+
+The companion H3 fixture enters the original Battle Test from reset using controller input and
+observes seven natural battle-action calls at entry `0x1674`, fallback `0x16B2`, and restored return
+boundary `0x16BC`. It covers all four direction results, all-directions priority, debug/no-direction
+fallback, and debug-disabled/direction fallback. For seed `0x1234`, both fallback cases advance the
+seed to `0xECAB`; their natural range 32 produces 29. Direction overrides leave the seed unchanged,
+and every case preserves the caller's full D6/D7 values. The executable contract is
+`tests/fixtures/h3/debug-rng-v1.json`.
+
+This is original debug tooling, not a player-facing combat rule or an automatic remake requirement.
+It remains valuable harness evidence because many battle-action callers use the wrapper and because
+the override explains controller-dependent results observed in the built-in Battle Test.
 
 ## Confirmed Statically and at Runtime: Stat-Gain Randomization
 

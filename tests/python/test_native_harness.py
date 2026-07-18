@@ -14,8 +14,8 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 19
-    assert result["AddressBindings"] == 90
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 20
+    assert result["AddressBindings"] == 96
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -28,5 +28,5 @@ def test_legacy_powershell_surface_does_not_expand() -> None:
     root = Path(__file__).resolve().parents[2]
     scripts = sorted((root / "scripts").rglob("*.ps1"))
     lines = sum(len(path.read_text(encoding="utf-8").splitlines()) for path in scripts)
-    assert len(scripts) <= 38
-    assert lines <= 5208
+    assert len(scripts) <= 37
+    assert lines <= 5045

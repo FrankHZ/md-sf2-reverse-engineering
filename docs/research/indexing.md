@@ -39,7 +39,7 @@ JSON Schema cannot express:
 
 1. the upstream repository and commit equal `manifests/toolchain.json`;
 2. every record has one unique ID, one ROM symbol address, and unique local address IDs;
-3. every referenced fixture, verifier, research document, and design contract exists;
+3. every referenced fixture, Python/legacy verifier, research document, and design contract exists;
 4. fixture IDs and ROM hashes agree with the index;
 5. every indexed binding equals the concrete ROM/RAM address stored in its fixture;
 6. every `*Address` field under every current H3 fixture's `function` or `ram` object is bound;

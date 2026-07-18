@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-debug-rng-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "inputMasks", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-rng-debug-override-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": {
+        "name": { "const": "BizHawk" }, "version": { "type": "string" }, "core": { "const": "Genesis Plus GX" }
+      }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "rngFallbackAddress", "returnAddress", "rangeRegister", "resultRegister"],
+      "properties": {
+        "entryAddress": { "const": 5748 },
+        "rngFallbackAddress": { "const": 5810 },
+        "returnAddress": { "const": 5820 },
+        "rangeRegister": { "const": "M68K D0" },
+        "resultRegister": { "const": "M68K D0" }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["debugModeToggleAddress", "playerOneInputAddress", "seedAddress"],
+      "properties": {
+        "debugModeToggleAddress": { "const": 16756905 },
+        "playerOneInputAddress": { "const": 16768663 },
+        "seedAddress": { "const": 16768676 }
+      }
+    },
+    "inputMasks": {
+      "type": "object", "additionalProperties": false, "required": ["right", "up", "left", "down"],
+      "properties": {
+        "right": { "const": 8 }, "up": { "const": 1 }, "left": { "const": 4 }, "down": { "const": 2 }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 7, "maxItems": 7,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "seed", "range", "debugEnabled", "inputMask", "expectedSeed", "expectedValue", "rngConsumed"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+          "seed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "range": { "type": "integer", "minimum": 1, "maximum": 65535 },
+          "debugEnabled": { "type": "boolean" },
+          "inputMask": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "expectedSeed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "expectedValue": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "rngConsumed": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

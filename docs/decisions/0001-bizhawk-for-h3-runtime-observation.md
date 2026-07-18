@@ -10,8 +10,8 @@ Use pinned **BizHawk 2.11.1** with its **Genesis Plus GX** core for the first H3
 release archive and extracted application under ignored `local/toolchains/`; verify their size and
 SHA-256 through `manifests/toolchain.json`; do not redistribute the binary bundle.
 
-The first fixture uses Lua bus-execution callbacks against natural game execution. It may write a
-controlled RAM input when the original function is entered and read registers/RAM at a later
+The fixtures use tracked Lua bus-execution callbacks against natural game execution. They may write
+a controlled RAM input when the original function is entered and read registers/RAM at a later
 instruction boundary. It must not assume that `emu.setregister` works for this core.
 
 BizHawk's [official repository](https://github.com/TASEmulators/BizHawk) documents command-line Lua,
@@ -31,9 +31,11 @@ input/movie-based scenarios while preserving the ROM's real system environment.
 
 **Confirmed locally:** `emu.getregister` reports Genesis 68000 registers, `event.on_bus_exec` fires in
 the `M68K BUS` scope, and big-endian bus RAM reads/writes work. In contrast, attempts to set D6, A7,
-or PC with `emu.setregister` returned without error but did not change Genesis Plus GX state. The H3
-RNG fixture therefore waits for the game's natural calls, verifies their natural D6 range, writes
-only `RANDOM_SEED`, and observes the unmodified ROM routine's result.
+or PC with `emu.setregister` returned without error but did not change Genesis Plus GX state. The
+base H3 RNG fixture therefore waits for the game's natural calls, verifies their natural D6 range,
+writes only `RANDOM_SEED`, and observes the unmodified ROM routine's result. The companion
+debug-aware fixture enters the original Battle Test with controller input and controls only the
+documented debug toggle, player-input byte, and seed at natural wrapper calls.
 
 The generic API's existence is not evidence that every core implements register mutation. Any future
 fixture that needs arbitrary register/PC injection must first prove that capability or choose another
@@ -52,9 +54,9 @@ execution engine.
 
 - `uv run sf2 init --rom-path <ROM path>` obtains only the official pinned BizHawk release through
   the migration adapter and verifies it before use.
-- Root `uv run sf2 verify` runs the RNG fixture by default and offers `--skip-runtime` for
-  deliberately static-only work. The underlying H3 rail remains in the frozen PowerShell layer
-  until its Lua observer is extracted and the host orchestration is migrated.
+- Root `uv run sf2 verify` runs both RNG fixtures by default and offers `--skip-runtime` for
+  deliberately static-only work. `uv run sf2 h3 rng` is the narrow Python-owned rail; its tracked
+  Lua observer emits only controlled state facts.
 - Emulator-generated configs, Lua scripts, observations, states, traces, and movies remain ignored.
 - The EmuHawk repository is MIT, but a release bundle contains separately licensed components. The
   manifest records that boundary and the project does not redistribute the bundle.

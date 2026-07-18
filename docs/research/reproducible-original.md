@@ -49,8 +49,9 @@ is useful hygiene, not a proof that old unsigned binaries are safe.
 
 ## Reproduction Pipeline
 
-`sf2tool.harness` performs the following rails. During the accepted Python migration, it invokes the
-proven H1-H3 PowerShell implementations through one frozen compatibility adapter:
+`sf2tool.harness` performs the following rails. During the accepted Python migration, maintained
+rails run natively and the remaining proven H1-H3 PowerShell implementations are isolated behind
+one frozen compatibility adapter:
 
 1. Validate the ROM manifest against its JSON Schema.
 2. Recompute file hashes, parse the Mega Drive header, and independently recompute the checksum from

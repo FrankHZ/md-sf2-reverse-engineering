@@ -12,7 +12,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`static-core-data.md`](./research/static-core-data.md)：角色槽位、职业、物品、法术的 ROM
   ranges、ROM byte packing、双路径 parity 和待验证语义。
 - [`ally-growth.md`](./research/ally-growth.md)：成长曲线、职业成长投影、法术学习与继承控制码。
-- [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)：RNG、成长计算与
+- [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)：基础/调试覆盖 RNG、成长计算与
   Battle 01 行动顺序、AGI 127/128 边界、区域激活，以及物理伤害从地形/弓手加成到
   dodge、critical、spread、double/counter、死亡/距离/状态/阵营/特殊敌人后续校验及完整 double validator、HP/EXP 构造与持久回放的 H3 动态 fixture。
 - [`enemy-promotions.md`](./research/enemy-promotions.md)：五段转职映射、103 个敌人名称和

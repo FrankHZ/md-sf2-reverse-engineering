@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h3.rng import verify_rng
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
@@ -73,6 +74,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     design_parser = commands.add_parser("design-contracts")
     design_parser.add_subparsers(dest="design_command", required=True).add_parser("test")
+
+    h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
+    h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
+    h3_rng = h3_commands.add_parser("rng", help="verify base and debug-aware RNG behavior")
+    h3_rng.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    h3_rng.add_argument("--timeout-seconds", type=int, default=60)
     return parser
 
 
@@ -109,6 +116,8 @@ def dispatch(args: argparse.Namespace) -> None:
                 _print_rows(result)
     elif args.command == "design-contracts":
         print_record(verify_design_contracts())
+    elif args.command == "h3" and args.h3_command == "rng":
+        print_record(verify_rng(args.rom_path, timeout_seconds=args.timeout_seconds))
     else:
         raise AssertionError(f"unhandled command: {args.command}")
 

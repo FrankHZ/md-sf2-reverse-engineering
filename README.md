@@ -6,7 +6,7 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
-H2、成长曲线与法术学习合同，以及 RNG/成长计算/行动顺序/区域激活/物理伤害计算链整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算、行动顺序、区域激活和物理伤害计算链整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。首份实现无关的物理战斗结算合同已经落地，并直接绑定现有 H3 fixture，供未来 H4
 复用。
 
@@ -115,7 +115,7 @@ uv run sf2 verify
 ```
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的 RNG、成长计算、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -145,7 +145,7 @@ uv run sf2 verify
 [`docs/research/indexing.md`](./docs/research/indexing.md)。
 
 项目维护语言已经切换为 Python 3.12+，依赖和命令统一通过 `uv`。既有 H1-H3 PowerShell rails
-在迁移期间只能由 `sf2tool.legacy` 调用，并被 38 文件/5,208 行的不可增长测试冻结；新增工具不得
+在迁移期间只能由 `sf2tool.legacy` 调用，并被 37 文件/5,045 行的不可增长测试冻结；新增工具不得
 再写 PowerShell。迁移原则见
 [`docs/decisions/0002-python-and-uv-for-project-tooling.md`](./docs/decisions/0002-python-and-uv-for-project-tooling.md)。
 

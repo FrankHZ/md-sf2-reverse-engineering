@@ -367,9 +367,36 @@
         { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
       ],
       "evidence": [
-        { "level": "H3", "fixture": "tests/fixtures/h3/rng-v1.json", "fixtureId": "sf2-rng-generate-random-number-v1", "verifier": "scripts/Test-H3RngFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/rng-v1.json", "fixtureId": "sf2-rng-generate-random-number-v1", "verifier": "src/sf2tool/h3/rng.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] },
         { "level": "H3", "fixture": "tests/fixtures/h3/stat-gain-v1.json", "fixtureId": "sf2-calculate-stat-gain-startup-v1", "verifier": "scripts/Test-H3StatGainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.rngEntryAddress" }, { "addressId": "observe", "fixtureField": "function.rngObserveAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }] }
       ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"]
+    },
+    {
+      "id": "rng.generate-random-or-debug-number",
+      "subsystem": "rng",
+      "status": "confirmed",
+      "symbol": "GenerateRandomOrDebugNumber",
+      "sourcePath": "code/common/tech/randomnumbergenerator.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 5748 },
+        { "id": "rng-fallback", "space": "rom", "kind": "observation", "value": 5810 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 5820 },
+        { "id": "debug-mode-toggle", "space": "ram", "kind": "state", "value": 16756905, "symbol": "DEBUG_MODE_TOGGLE" },
+        { "id": "player-one-input", "space": "ram", "kind": "state", "value": 16768663, "symbol": "PLAYER_1_INPUT" },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/debug-rng-v1.json", "fixtureId": "sf2-rng-debug-override-v1", "verifier": "src/sf2tool/h3/rng.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "rng-fallback", "fixtureField": "function.rngFallbackAddress" },
+          { "addressId": "return", "fixtureField": "function.returnAddress" },
+          { "addressId": "debug-mode-toggle", "fixtureField": "ram.debugModeToggleAddress" },
+          { "addressId": "player-one-input", "fixtureField": "ram.playerOneInputAddress" },
+          { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+        ]
+      }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"]
     }
   ]

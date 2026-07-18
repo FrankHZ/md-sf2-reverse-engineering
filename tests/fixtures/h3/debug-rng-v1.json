@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-rng-debug-override-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "function": {
+    "entryAddress": 5748,
+    "rngFallbackAddress": 5810,
+    "returnAddress": 5820,
+    "rangeRegister": "M68K D0",
+    "resultRegister": "M68K D0"
+  },
+  "ram": {
+    "debugModeToggleAddress": 16756905,
+    "playerOneInputAddress": 16768663,
+    "seedAddress": 16768676
+  },
+  "inputMasks": { "right": 8, "up": 1, "left": 4, "down": 2 },
+  "cases": [
+    { "id": "debug-down", "seed": 4660, "range": 32, "debugEnabled": true, "inputMask": 2, "expectedSeed": 4660, "expectedValue": 3, "rngConsumed": false },
+    { "id": "debug-left", "seed": 4660, "range": 32, "debugEnabled": true, "inputMask": 4, "expectedSeed": 4660, "expectedValue": 2, "rngConsumed": false },
+    { "id": "debug-up", "seed": 4660, "range": 10, "debugEnabled": true, "inputMask": 1, "expectedSeed": 4660, "expectedValue": 1, "rngConsumed": false },
+    { "id": "debug-all-priority", "seed": 4660, "range": 10, "debugEnabled": true, "inputMask": 15, "expectedSeed": 4660, "expectedValue": 0, "rngConsumed": false },
+    { "id": "debug-no-direction", "seed": 4660, "range": 32, "debugEnabled": true, "inputMask": 0, "expectedSeed": 60587, "expectedValue": 29, "rngConsumed": true },
+    { "id": "disabled-ignores-right", "seed": 4660, "range": 32, "debugEnabled": false, "inputMask": 8, "expectedSeed": 60587, "expectedValue": 29, "rngConsumed": true },
+    { "id": "debug-right", "seed": 4660, "range": 16, "debugEnabled": true, "inputMask": 8, "expectedSeed": 4660, "expectedValue": 0, "rngConsumed": false }
+  ]
+}

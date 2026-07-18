@@ -118,7 +118,8 @@ The root verification entry point is `uv run sf2 verify`. Keep it non-interactiv
 and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
 promotion/enemy and Battle 01 scene extraction, plus BizHawk
-RNG/stat-gain/turn-order/region-activation/physical-attack-chain/dodge/follow-up-validation behavior
+base/debug-aware RNG, stat-gain, turn-order, region-activation, physical-attack-chain, dodge, and
+follow-up-validation behavior
 fixtures; extend the same entry
 point as later rails become available:
 

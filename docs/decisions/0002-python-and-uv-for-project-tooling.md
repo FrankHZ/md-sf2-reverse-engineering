@@ -47,13 +47,14 @@ The first migration moves these owners into `src/sf2tool/`:
 The proven H1 build, H2 extractors, and H3 BizHawk observers remain temporarily executable through
 the single `sf2tool.legacy.run_powershell` adapter. This is compatibility isolation, not a second
 implementation strategy. No new PowerShell file or aggregate PowerShell line growth is accepted;
-`tests/python/test_native_harness.py` enforces the initial post-migration ceiling of 38 files and
-5,208 lines. Each later migration must port a complete rail, compare its outputs with the existing
-fixture, and delete the superseded script.
+`tests/python/test_native_harness.py` enforces the current post-RNG-migration ceiling of 37 files and
+5,045 lines. Each later migration must port a complete rail, compare its outputs with the existing
+fixture, lower the ceiling, and delete the superseded script.
 
-The large embedded BizHawk Lua observer should become a tracked Lua template controlled by Python,
-not a Python string rewrite. Lua remains appropriate inside BizHawk; the host orchestration and
-validation move to Python.
+BizHawk observers are tracked Lua templates controlled by Python, not Python string rewrites. The
+first completed migration is the base/debug-aware RNG rail in `src/sf2tool/h3/rng.py` with
+`tools/bizhawk/rng_observer.lua`. Lua remains appropriate inside BizHawk; host orchestration and
+validation belong in Python.
 
 ## Consequences
 
