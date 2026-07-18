@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-boost1-fresh-and-recast-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 BOOST 1 action against a fresh ally and an ally already carrying one BOOST counter, through status mutation, reapplication effectiveness, status EXP, same-side award randomization, command replay, and derived DEF/AGI refresh. Common Battle Test and replay addresses are inherited from named fixtures.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "sharedStatusFixture": "tests/fixtures/h3/spell-status-sleep-v1.json",
+  "sharedHealingFixture": "tests/fixtures/h3/spell-healing-v1.json",
+  "function": {
+    "boostEffectEntryAddress": 45692,
+    "boostStatusSetAddress": 45712,
+    "boostReactionAddress": 45730,
+    "boostAgiBonusAddress": 45784,
+    "boostDefBonusAddress": 45816,
+    "boostEffectReturnAddress": 45836,
+    "allyStatsAppliedAddress": 101898
+  },
+  "case": {
+    "id": "bowie-boost1-fresh-and-one-counter-allies",
+    "actor": 0,
+    "actorClass": 0,
+    "actorInitialMp": 20,
+    "actorInitialExp": 0,
+    "actionType": 1,
+    "actionSpell": 3,
+    "spellMpCost": 2,
+    "seed": 4660,
+    "statusMask": 12288,
+    "statusCounterUnit": 4096,
+    "recastThreshold": 8,
+    "targetSameSide": true,
+    "schedulingTarget": 128,
+    "targets": [
+      { "combatant": 0, "baseDef": 41, "baseAgi": 23, "initialStatus": 0, "initialCurrentDef": 41, "initialCurrentAgi": 23 },
+      { "combatant": 1, "baseDef": 40, "baseAgi": 24, "initialStatus": 4096, "initialCurrentDef": 45, "initialCurrentAgi": 27 }
+    ]
+  },
+  "expected": {
+    "construction": {
+      "actorMp": 20,
+      "records": [
+        { "combatant": 0, "initialStatus": 0, "setStatus": 12288, "reapplication": false, "threshold": 0, "roll": -1, "success": true, "reactionStatus": 12288, "accumulatedExp": 5, "agiBonus": 8, "defBonus": 15, "statusAfterConstruction": 12288, "currentDefAfterConstruction": 41, "currentAgiAfterConstruction": 23 },
+        { "combatant": 1, "initialStatus": 4096, "setStatus": 12288, "reapplication": true, "threshold": 8, "roll": 7, "success": false, "reactionStatus": 0, "accumulatedExp": 5, "agiBonus": 0, "defBonus": 0, "statusAfterConstruction": 12288, "currentDefAfterConstruction": 45, "currentAgiAfterConstruction": 27 }
+      ],
+      "targetSameSide": true,
+      "award": { "seed": 60587, "halved": 5, "firstRoll": 0, "secondRoll": 3, "commandExp": 6 }
+    },
+    "replay": {
+      "reactionOrder": ["ally:-2:0", "ally:0:12288"],
+      "allyReactions": [
+        { "combatant": 0, "mpChange": -2, "statusCommand": 0, "mpBefore": 20, "mpAfter": 18, "statusBefore": 12288, "statusAfter": 0, "defBefore": 41, "defAfter": 41, "agiBefore": 23, "agiAfter": 23 },
+        { "combatant": 0, "mpChange": 0, "statusCommand": 12288, "mpBefore": 18, "mpAfter": 18, "statusBefore": 0, "statusAfter": 12288, "defBefore": 41, "defAfter": 56, "agiBefore": 23, "agiAfter": 31 }
+      ],
+      "expReaction": { "commandExp": 6, "expBefore": 0, "expAfter": 6 },
+      "finalActorMp": 18,
+      "finalActorExp": 6,
+      "finalTargets": [
+        { "combatant": 0, "status": 12288, "currentDef": 56, "currentAgi": 31 },
+        { "combatant": 1, "status": 12288, "currentDef": 45, "currentAgi": 27 }
+      ]
+    }
+  }
+}

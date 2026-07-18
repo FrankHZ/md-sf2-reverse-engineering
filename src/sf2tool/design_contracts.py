@@ -49,6 +49,7 @@ CONTRACTS = {
         ),
         "tests/fixtures/h3/spell-desoul-v1.json": "sf2-desoul-instant-death-v1",
         "tests/fixtures/h3/spell-mp-absorb-v1.json": "sf2-spoit-mp-absorb-v1",
+        "tests/fixtures/h3/spell-boost-v1.json": "sf2-boost1-fresh-and-recast-v1",
     },
 }
 

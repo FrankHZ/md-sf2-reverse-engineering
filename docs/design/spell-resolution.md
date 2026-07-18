@@ -9,8 +9,8 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one SLEEP 1 status-resistance matrix, one DESOUL 1 success case, and one
-SPOIT MP-absorption case. It must not be generalized to adjacent branches until those paths have
-their own H3 evidence.
+SPOIT MP-absorption case, plus BOOST 1 fresh/recast behavior. It must not be generalized to
+adjacent branches until those paths have their own H3 evidence.
 
 ## Required Inputs
 
@@ -206,6 +206,36 @@ This confirms one clamped ally-caster/enemy-target case, including the otherwise
 zero-delta command. An unclamped transfer, empty target, caster max-MP clamp, enemy caster, and
 other drain effects remain outside the case.
 
+## Confirmed BOOST 1 Fresh Application and Recast Quirk
+
+BOOST owns the two-bit mask `0x3000`; the counter unit is `0x1000`, so a fresh application writes
+counter value 3. The after-turn source subtracts one unit when it processes BOOST, but this fixture
+does not yet replay three complete turn expirations.
+
+For a fresh ally, the effect writes `0x3000` during construction, emits one status reaction, and
+adds 5 status-effect EXP. Its displayed and replayed stat bonuses are integer floors of three
+eighths of the base values. With base DEF 41 and AGI 23, the bonuses are 15 and 8. Construction
+does not call `UpdateCombatantStats`, so status is already `0x3000` while current DEF/AGI remain
+41/23 until command playback.
+
+Reapplication has a non-obvious original-fidelity order. Against an ally already at `0x1000`, the
+effect first ORs the stored status to `0x3000`, then notices the old nonzero BOOST field and calls
+effectiveness with threshold 8. Controlled roll 7 fails and the shared failure routine unwinds the
+BOOST caller. No reaction, stat messages, or additional EXP are emitted, but the earlier status
+write is not reverted. The ally therefore ends with counter 3 while current DEF/AGI remain at the
+old one-eighth values 45/27. They become consistent only when another path later calls the shared
+stat refresh.
+
+The fresh target is also the caster, exposing command order. Construction leaves caster MP 20 and
+status `0x3000`. Playback first applies the pre-effect cost command `(MP -2, status 0)`, clearing
+BOOST and refreshing base DEF/AGI, then applies `(MP 0, status 0x3000)`, producing persistent
+DEF/AGI 56/31. Only the fresh target contributes 5 EXP. Because the targets are allies, Battle 01
+does not halve it; post-failure seed `0xECAB` yields award rolls 0 and 3 and a 6-EXP command.
+
+A remake fidelity mode must preserve this mutation/reaction ordering. A modernization may make a
+failed recast a true no-op or recompute stats immediately, but that is an explicit behavioral
+deviation rather than a cleanup that can be hidden inside the resolver.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
@@ -216,6 +246,7 @@ other drain effects remain outside the case.
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent MP/EXP replay |
+| `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` counter; 3/8 DEF/AGI floor; same-side status EXP; cost/status replay; failed recast status-write/stat-refresh mismatch |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -233,8 +264,8 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** remaining healing branches, non-SLEEP/DESOUL status spells, unclamped/empty/full-caster
-  SPOIT and other drain branches, DESOUL failure/multi-target branches, breath attacks, and special
-  spell-effect dispatch.
+- **Unknown:** remaining healing branches, non-SLEEP/DESOUL/BOOST status spells, BOOST 2 and runtime
+  expiration, unclamped/empty/full-caster SPOIT and other drain branches, DESOUL failure/multi-target
+  branches, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.

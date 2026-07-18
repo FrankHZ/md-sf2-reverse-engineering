@@ -314,6 +314,7 @@
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 101822 },
         { "id": "applied", "space": "rom", "kind": "observation", "value": 101884 },
+        { "id": "stats-applied", "space": "rom", "kind": "observation", "value": 101898 },
         { "id": "battle-scene-ally", "space": "ram", "kind": "state", "value": 16757716, "symbol": "BATTLESCENE_ALLY" }
       ],
       "evidence": [{
@@ -323,6 +324,9 @@
           { "addressId": "applied", "fixtureField": "function.allyReactionAppliedAddress" },
           { "addressId": "battle-scene-ally", "fixtureField": "ram.battleSceneAllyAddress" }
         ]
+      }, {
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-boost-v1.json", "fixtureId": "sf2-boost1-fresh-and-recast-v1", "verifier": "src/sf2tool/h3/spell_boost.py",
+        "bindings": [{ "addressId": "stats-applied", "fixtureField": "function.allyStatsAppliedAddress" }]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/spell-resolution.md"]
@@ -446,6 +450,34 @@
         "bindings": [
           { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
           { "addressId": "applied", "fixtureField": "function.healingExpAppliedAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-boost.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Boost",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 45692 },
+        { "id": "status-set", "space": "rom", "kind": "observation", "value": 45712 },
+        { "id": "reaction", "space": "rom", "kind": "observation", "value": 45730 },
+        { "id": "agi-bonus", "space": "rom", "kind": "observation", "value": 45784 },
+        { "id": "def-bonus", "space": "rom", "kind": "observation", "value": 45816 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 45836 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-boost-v1.json", "fixtureId": "sf2-boost1-fresh-and-recast-v1", "verifier": "src/sf2tool/h3/spell_boost.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.boostEffectEntryAddress" },
+          { "addressId": "status-set", "fixtureField": "function.boostStatusSetAddress" },
+          { "addressId": "reaction", "fixtureField": "function.boostReactionAddress" },
+          { "addressId": "agi-bonus", "fixtureField": "function.boostAgiBonusAddress" },
+          { "addressId": "def-bonus", "fixtureField": "function.boostDefBonusAddress" },
+          { "addressId": "return", "fixtureField": "function.boostEffectReturnAddress" }
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],

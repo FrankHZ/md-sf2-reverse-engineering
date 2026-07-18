@@ -605,6 +605,49 @@ Tracked artifacts are `tests/fixtures/h3/spell-mp-absorb-v1.json`,
 `tools/bizhawk/spell_mp_absorb_observer.lua`. This case does not establish unclamped transfer,
 zero-MP target behavior, caster max-MP capping, enemy-caster behavior, or other drain effects.
 
+## Confirmed: BOOST 1 Fresh Application and Failed-Recast Mutation
+
+The BOOST fixture supplies two ally targets at the pre-initialization seam. Bowie starts with no
+status, base/current DEF 41 and AGI 23. Ally 1 starts with BOOST counter one (`0x1000`) and current
+DEF/AGI 45/27, matching one-eighth bonuses over bases 40/24. The pinned BOOST 1 definition costs 2
+MP. `sf2enums.asm` defines the complete BOOST field as `0x3000` and one counter unit as `0x1000`.
+
+At the first genuine `spellEffect_Boost` entry `0xB27C`, the original reads status 0, ORs it with
+`0x3000`, and reaches the post-`SetStatusEffects` checkpoint `0xB290`. Because the old BOOST field
+was zero, it skips effectiveness, writes an ally reaction at `0xB2A2`, and adds 5 EXP. Runtime
+values at `0xB2D8` and `0xB2F8` confirm displayed bonuses
+`floor(23*3/8)=8` AGI and `floor(41*3/8)=15` DEF. No stat refresh occurs during construction:
+Bowie already carries status `0x3000` but current DEF/AGI remain 41/23.
+
+The second call starts from status `0x1000`. It also writes `0x3000` before checking the old field,
+then passes threshold 8 to `battlesceneScript_DetermineSpellEffectiveness`. Seed `0x1234` produces
+range-8 roll 7, so the failure routine emits the no-effect command and pops both its own return and
+the BOOST caller's return. It emits no BOOST reaction, bonus messages, or additional EXP. The
+earlier status write is not rolled back: ally 1 ends construction at `0x3000`, while current
+DEF/AGI remain the one-counter values 45/27. This is a confirmed state/derived-stat mismatch, not
+an inference from control flow.
+
+The same-side award branch does not apply Battle 01 halving to the one successful target's 5 EXP.
+The failed-recast seed `0xECAB` produces award rolls 0 and 3, emitting 6 EXP. Command playback first
+processes the caster-cost reaction captured before the effect: `(MP -2, status 0)` changes MP
+20→18, clears the construction-time BOOST, and refreshes base stats. The following fresh-target
+reaction `(MP 0, status 0x3000)` reaches the post-stat-refresh checkpoint `0x18E0A` and changes
+current DEF/AGI 41/23→56/31. Ally 1 has no reaction and remains status `0x3000`, DEF/AGI 45/27.
+Bowie EXP changes 0→6.
+
+The after-turn source subtracts `STATUSEFFECTCOUNTER_BOOST` (`0x1000`) from the field, establishing
+the stored three-step counter representation. Runtime expiry timing, BOOST 2 geometry, equipment
+interaction, stat caps, and the later refresh that resolves the failed-recast mismatch remain
+separate cases. Reproduce this slice with:
+
+```powershell
+uv run sf2 h3 spell-boost
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-boost-v1.json`,
+`schemas/h3-spell-boost-fixture.schema.json`, `src/sf2tool/h3/spell_boost.py`, and
+`tools/bizhawk/spell_boost_observer.lua`.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -615,8 +658,8 @@ zero-MP target behavior, caster max-MP capping, enemy-caster behavior, or other 
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, other status spells, SPOIT boundary cases, and other
-  non-damage spell families.
+  DESOUL failure/multi-target cases, BOOST expiry/BOOST 2, other status spells, SPOIT boundary
+  cases, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

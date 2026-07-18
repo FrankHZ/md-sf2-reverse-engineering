@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-boost-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "sharedStatusFixture", "sharedHealingFixture", "function", "case", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-boost1-fresh-and-recast-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "sharedStatusFixture": { "const": "tests/fixtures/h3/spell-status-sleep-v1.json" },
+    "sharedHealingFixture": { "const": "tests/fixtures/h3/spell-healing-v1.json" },
+    "function": { "$ref": "#/definitions/function" },
+    "case": { "$ref": "#/definitions/case" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["boostEffectEntryAddress", "boostStatusSetAddress", "boostReactionAddress", "boostAgiBonusAddress", "boostDefBonusAddress", "boostEffectReturnAddress", "allyStatsAppliedAddress"],
+      "properties": { "boostEffectEntryAddress": { "const": 45692 }, "boostStatusSetAddress": { "const": 45712 }, "boostReactionAddress": { "const": 45730 }, "boostAgiBonusAddress": { "const": 45784 }, "boostDefBonusAddress": { "const": 45816 }, "boostEffectReturnAddress": { "const": 45836 }, "allyStatsAppliedAddress": { "const": 101898 } }
+    },
+    "target": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "baseDef", "baseAgi", "initialStatus", "initialCurrentDef", "initialCurrentAgi"],
+      "properties": { "combatant": { "type": "integer", "minimum": 0, "maximum": 1 }, "baseDef": { "type": "integer", "minimum": 0, "maximum": 255 }, "baseAgi": { "type": "integer", "minimum": 0, "maximum": 255 }, "initialStatus": { "type": "integer", "minimum": 0, "maximum": 65535 }, "initialCurrentDef": { "type": "integer", "minimum": 0, "maximum": 255 }, "initialCurrentAgi": { "type": "integer", "minimum": 0, "maximum": 255 } }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actor", "actorClass", "actorInitialMp", "actorInitialExp", "actionType", "actionSpell", "spellMpCost", "seed", "statusMask", "statusCounterUnit", "recastThreshold", "targetSameSide", "schedulingTarget", "targets"],
+      "properties": {
+        "id": { "const": "bowie-boost1-fresh-and-one-counter-allies" }, "actor": { "const": 0 }, "actorClass": { "const": 0 }, "actorInitialMp": { "const": 20 }, "actorInitialExp": { "const": 0 }, "actionType": { "const": 1 }, "actionSpell": { "const": 3 }, "spellMpCost": { "const": 2 }, "seed": { "const": 4660 }, "statusMask": { "const": 12288 }, "statusCounterUnit": { "const": 4096 }, "recastThreshold": { "const": 8 }, "targetSameSide": { "const": true }, "schedulingTarget": { "const": 128 },
+        "targets": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/target" } }
+      }
+    },
+    "award": { "type": "object", "additionalProperties": false, "required": ["seed", "halved", "firstRoll", "secondRoll", "commandExp"], "properties": { "seed": { "const": 60587 }, "halved": { "const": 5 }, "firstRoll": { "const": 0 }, "secondRoll": { "const": 3 }, "commandExp": { "const": 6 } } },
+    "record": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "initialStatus", "setStatus", "reapplication", "threshold", "roll", "success", "reactionStatus", "accumulatedExp", "agiBonus", "defBonus", "statusAfterConstruction", "currentDefAfterConstruction", "currentAgiAfterConstruction"],
+      "properties": { "combatant": { "type": "integer" }, "initialStatus": { "type": "integer" }, "setStatus": { "type": "integer" }, "reapplication": { "type": "boolean" }, "threshold": { "type": "integer" }, "roll": { "type": "integer" }, "success": { "type": "boolean" }, "reactionStatus": { "type": "integer" }, "accumulatedExp": { "type": "integer" }, "agiBonus": { "type": "integer" }, "defBonus": { "type": "integer" }, "statusAfterConstruction": { "type": "integer" }, "currentDefAfterConstruction": { "type": "integer" }, "currentAgiAfterConstruction": { "type": "integer" } }
+    },
+    "allyReaction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "mpChange", "statusCommand", "mpBefore", "mpAfter", "statusBefore", "statusAfter", "defBefore", "defAfter", "agiBefore", "agiAfter"],
+      "properties": { "combatant": { "type": "integer" }, "mpChange": { "type": "integer" }, "statusCommand": { "type": "integer" }, "mpBefore": { "type": "integer" }, "mpAfter": { "type": "integer" }, "statusBefore": { "type": "integer" }, "statusAfter": { "type": "integer" }, "defBefore": { "type": "integer" }, "defAfter": { "type": "integer" }, "agiBefore": { "type": "integer" }, "agiAfter": { "type": "integer" } }
+    },
+    "expReaction": { "type": "object", "additionalProperties": false, "required": ["commandExp", "expBefore", "expAfter"], "properties": { "commandExp": { "const": 6 }, "expBefore": { "const": 0 }, "expAfter": { "const": 6 } } },
+    "finalTarget": { "type": "object", "additionalProperties": false, "required": ["combatant", "status", "currentDef", "currentAgi"], "properties": { "combatant": { "type": "integer" }, "status": { "const": 12288 }, "currentDef": { "type": "integer" }, "currentAgi": { "type": "integer" } } },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["construction", "replay"],
+      "properties": {
+        "construction": { "type": "object", "additionalProperties": false, "required": ["actorMp", "records", "targetSameSide", "award"], "properties": { "actorMp": { "const": 20 }, "records": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/record" } }, "targetSameSide": { "const": true }, "award": { "$ref": "#/definitions/award" } } },
+        "replay": { "type": "object", "additionalProperties": false, "required": ["reactionOrder", "allyReactions", "expReaction", "finalActorMp", "finalActorExp", "finalTargets"], "properties": { "reactionOrder": { "const": ["ally:-2:0", "ally:0:12288"] }, "allyReactions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/allyReaction" } }, "expReaction": { "$ref": "#/definitions/expReaction" }, "finalActorMp": { "const": 18 }, "finalActorExp": { "const": 6 }, "finalTargets": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/finalTarget" } } } }
+      }
+    }
+  }
+}

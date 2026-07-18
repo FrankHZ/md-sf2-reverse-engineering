@@ -10,6 +10,7 @@ from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
+from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
 from sf2tool.h3.spell_healing import verify_spell_healing
@@ -132,6 +133,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_mp)
     h3_spell_mp.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_boost = h3_commands.add_parser(
+        "spell-boost", help="verify BOOST 1 fresh application, recast, stats, and replay"
+    )
+    _add_local_paths(h3_spell_boost)
+    h3_spell_boost.add_argument("--timeout-seconds", type=int, default=90)
     return parser
 
 
@@ -230,6 +236,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-mp":
         print_record(
             verify_spell_mp_absorb(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-boost":
+        print_record(
+            verify_spell_boost(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
