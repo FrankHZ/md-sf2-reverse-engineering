@@ -801,6 +801,39 @@ Reproduce with `uv run sf2 h3 spell-aura`. Tracked artifacts are
 naturally knows AURA; target population, sorting, healing, and EXP accumulation after that seam are
 original execution.
 
+## Confirmed: DETOX Level Masks, Ineffective Branch, and Curse Unequip
+
+The DETOX fixture replays four levels plus one ineffective control against an ally carrying
+`0x30C7`: three BOOST counters, three SLEEP counters, CURSE, POISON, and STUN. The target also has
+an equipped BLACK RING (`0x0098`, item 24 plus the equipped bit), allowing the final stat refresh
+to preserve CURSE unless DETOX explicitly removes it.
+
+The internal spell-level value is zero-based. Runtime produces these exact masks and one status EXP
+award per effective target:
+
+| DETOX level | Internal level | Cleared bits | Cure flags | Result | EXP |
+| --- | ---: | --- | ---: | ---: | ---: |
+| 1 | 0 | POISON | 1 | `0x30C5` | 5 |
+| 2 | 1 | POISON, STUN | 3 | `0x30C4` | 5 |
+| 3 | 2 | POISON, STUN, CURSE | 7 | `0x30C0` | 5 |
+| 4 | 3 | POISON, STUN, CURSE | 7 | `0x30C0` | 5 |
+
+Levels 3 and 4 both reach `UnequipAllItemsIfNotCursed`; BLACK RING changes from equipped entry 152
+to ordinary item entry 24 before the final `SetStatusEffects` and `UpdateCombatantStats`. Levels 1
+and 2 retain the equipped ring and their remaining CURSE bit. BOOST and SLEEP are untouched at all
+levels.
+
+The control starts at `0x30C5` and casts DETOX 1, whose only eligible bit, POISON, is absent. Cure
+flags stay zero, no reaction or status EXP is emitted, and threshold 8 enters the shared
+effectiveness failure unwind. Status and item remain `0x30C5` and 152. This confirms that DETOX does
+not award EXP merely for casting or for leaving higher-level curable ailments in place.
+
+Reproduce with `uv run sf2 h3 spell-detox`. Tracked artifacts are
+`tests/fixtures/h3/spell-detox-v1.json`, `schemas/h3-spell-detox-fixture.schema.json`,
+`src/sf2tool/h3/spell_detox.py`, and `tools/bizhawk/spell_detox_observer.lua`. The fixture supplies
+one target and stops at the effect return or shared failure unwind; natural target geometry and
+persistent command playback are outside this boundary.
+
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
 The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy

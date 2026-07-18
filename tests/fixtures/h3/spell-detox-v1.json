@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-detox-level-status-matrix-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Five self-targeted DETOX actions replayed from one pre-action Battle 01 core state. The fixture supplies one target at the standard pre-initialization seam, then observes the original DETOX level branches, status reaction construction, status EXP, cursed-item unequip, SetStatusEffects, and UpdateCombatantStats through the effect return. It does not claim a natural Bowie DETOX cast or persistent command playback.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-healing-v1.json",
+  "function": {
+    "detoxEffectEntryAddress": 45460,
+    "cureStunAddress": 45504,
+    "curePoisonAddress": 45514,
+    "cureResultAddress": 45524,
+    "reactionAddress": 45536,
+    "statusExpAppliedAddress": 43272,
+    "unequipCursedAddress": 45662,
+    "ineffectiveAddress": 45670,
+    "effectivenessFailureAddress": 47820,
+    "updateStatusAddress": 45676,
+    "detoxEffectReturnAddress": 45690
+  },
+  "ram": { "battleSceneExpAddress": 16758316 },
+  "setup": {
+    "actor": 0,
+    "schedulingTarget": 128,
+    "actionType": 1,
+    "target": 1,
+    "initialStatus": 12487,
+    "ineffectiveInitialStatus": 12485,
+    "equippedCursedItem": 152,
+    "unequippedCursedItem": 24,
+    "emptyItem": 127
+  },
+  "cases": [
+    { "id": "detox1-poison-only", "actionSpell": 2, "level": 1, "internalLevel": 0, "initialStatus": 12487, "curedFlags": 1, "resultStatus": 12485, "effective": true, "reaction": true, "exp": 5, "curseUnequipped": false, "finalItem": 152 },
+    { "id": "detox2-poison-stun", "actionSpell": 66, "level": 2, "internalLevel": 1, "initialStatus": 12487, "curedFlags": 3, "resultStatus": 12484, "effective": true, "reaction": true, "exp": 5, "curseUnequipped": false, "finalItem": 152 },
+    { "id": "detox3-poison-stun-curse", "actionSpell": 130, "level": 3, "internalLevel": 2, "initialStatus": 12487, "curedFlags": 7, "resultStatus": 12480, "effective": true, "reaction": true, "exp": 5, "curseUnequipped": true, "finalItem": 24 },
+    { "id": "detox4-poison-stun-curse", "actionSpell": 194, "level": 4, "internalLevel": 3, "initialStatus": 12487, "curedFlags": 7, "resultStatus": 12480, "effective": true, "reaction": true, "exp": 5, "curseUnequipped": true, "finalItem": 24 },
+    { "id": "detox1-no-poison-ineffective", "actionSpell": 2, "level": 1, "internalLevel": 0, "initialStatus": 12485, "curedFlags": 0, "resultStatus": 12485, "effective": false, "reaction": false, "exp": 0, "curseUnequipped": false, "finalItem": 152 }
+  ]
+}

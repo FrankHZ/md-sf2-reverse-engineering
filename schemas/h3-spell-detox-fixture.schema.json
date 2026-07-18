@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-detox-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "setup", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-detox-level-status-matrix-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-healing-v1.json" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["detoxEffectEntryAddress", "cureStunAddress", "curePoisonAddress", "cureResultAddress", "reactionAddress", "statusExpAppliedAddress", "unequipCursedAddress", "ineffectiveAddress", "effectivenessFailureAddress", "updateStatusAddress", "detoxEffectReturnAddress"],
+      "properties": {
+        "detoxEffectEntryAddress": { "const": 45460 }, "cureStunAddress": { "const": 45504 }, "curePoisonAddress": { "const": 45514 }, "cureResultAddress": { "const": 45524 },
+        "reactionAddress": { "const": 45536 }, "statusExpAppliedAddress": { "const": 43272 }, "unequipCursedAddress": { "const": 45662 }, "ineffectiveAddress": { "const": 45670 }, "effectivenessFailureAddress": { "const": 47820 },
+        "updateStatusAddress": { "const": 45676 }, "detoxEffectReturnAddress": { "const": 45690 }
+      }
+    },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["battleSceneExpAddress"], "properties": { "battleSceneExpAddress": { "const": 16758316 } } },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "schedulingTarget", "actionType", "target", "initialStatus", "ineffectiveInitialStatus", "equippedCursedItem", "unequippedCursedItem", "emptyItem"],
+      "properties": {
+        "actor": { "const": 0 }, "schedulingTarget": { "const": 128 }, "actionType": { "const": 1 }, "target": { "const": 1 },
+        "initialStatus": { "const": 12487 }, "ineffectiveInitialStatus": { "const": 12485 }, "equippedCursedItem": { "const": 152 }, "unequippedCursedItem": { "const": 24 }, "emptyItem": { "const": 127 }
+      }
+    },
+    "cases": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/definitions/case" } }
+  },
+  "definitions": {
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actionSpell", "level", "internalLevel", "initialStatus", "curedFlags", "resultStatus", "effective", "reaction", "exp", "curseUnequipped", "finalItem"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }, "actionSpell": { "enum": [2, 66, 130, 194] }, "level": { "enum": [1, 2, 3, 4] }, "internalLevel": { "enum": [0, 1, 2, 3] },
+        "initialStatus": { "enum": [12485, 12487] }, "curedFlags": { "enum": [0, 1, 3, 7] }, "resultStatus": { "enum": [12480, 12484, 12485] },
+        "effective": { "type": "boolean" }, "reaction": { "type": "boolean" }, "exp": { "enum": [0, 5] }, "curseUnequipped": { "type": "boolean" }, "finalItem": { "enum": [24, 152] }
+      }
+    }
+  }
+}

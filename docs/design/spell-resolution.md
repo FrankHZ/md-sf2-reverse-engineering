@@ -9,8 +9,8 @@
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
-HEAL 1 self-recovery case, one AURA target-geometry matrix, one SLEEP 1 status-resistance matrix,
-one DESOUL 1 success case, and one
+HEAL 1 self-recovery case, one AURA target-geometry matrix, one DETOX level matrix, one SLEEP 1
+status-resistance matrix, one DESOUL 1 success case, and one
 SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, a DISPEL 1
 spell-count/resistance/recast case, SILENCE gating of marked versus unmarked spell actions, and one
 combined after-turn expiry case. It must not be generalized to adjacent branches until those paths
@@ -213,6 +213,28 @@ accumulator sequences are `0->10->20` for AURA 1, `0->10->20->25` for AURA 2, an
 `0->10->20->25->25->25` for AURA 4. The AURA 4 power-255 sentinel is evaluated independently per
 target and recovers that target's full missing HP. A remake adapter must expose the ordered target
 and contribution trace, not only the final capped total.
+
+## Confirmed DETOX Status-Clearing Subset
+
+Resolve DETOX from the zero-based level encoded in the action spell entry. Preserve every unrelated
+status bit and apply these cumulative clear masks:
+
+```text
+internal level 0: clear POISON
+internal level 1: clear STUN, then POISON
+internal level 2 or 3: clear CURSE, then STUN, then POISON
+```
+
+Track a three-bit cure result in the same order: POISON=`1`, STUN=`2`, CURSE=`4`. If the result is
+nonzero, emit one status reaction carrying the complete remaining status word and add 5 status EXP
+once for that target, regardless of how many bits were removed. Emit the matching removal messages
+in poison, stun, curse order. When CURSE was removed, clear the equipped bit from every equipped
+cursed item before the final status/stat refresh.
+
+If the cure result is zero, run the shared threshold-8 ineffective path, emit no status reaction,
+and add no EXP. A lower-level DETOX does not become effective merely because the target has STUN or
+CURSE that this level cannot clear. Preserve unrelated counters such as BOOST and SLEEP in both
+effective and ineffective cases.
 
 ## Confirmed SLEEP 1 Status-Resistance Matrix
 
@@ -428,6 +450,7 @@ naturally carried state remains outside these cases.
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-healing-exp-boundaries-v1` | `tests/fixtures/h3/spell-healing-exp-boundaries-v1.json` | PRST/VICR/MMNK whitelist; ally/enemy/max-HP-zero guards; promoted ordinary power; power-255 full recovery; proportional/minimum EXP and cumulative 25 cap |
 | `sf2-aura-target-geometry-v1` | `tests/fixtures/h3/spell-aura-targets-v1.json` | inclusive Manhattan radii 1/2; target-index sorting; AURA 4 all living placed allies; dead/unplaced exclusion; ordered recovery and cumulative healing EXP cap |
+| `sf2-detox-level-status-matrix-v1` | `tests/fixtures/h3/spell-detox-v1.json` | zero-based level masks; poison/stun/curse cure flags; unrelated-status preservation; one 5-EXP award per effective target; threshold-8 no-effect unwind; cursed-item unequip |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
@@ -454,7 +477,7 @@ expected-deviation fixture.
   action.
 - **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
   miss itself is confirmed at its original entry seam.
-- **Unknown:** status spells beyond the confirmed SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
+- **Unknown:** status spells beyond the confirmed DETOX/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
   BOOST/SLOW 2,
   reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.

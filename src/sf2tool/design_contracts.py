@@ -73,6 +73,9 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-aura-targets-v1.json": (
             "sf2-aura-target-geometry-v1"
         ),
+        "tests/fixtures/h3/spell-detox-v1.json": (
+            "sf2-detox-level-status-matrix-v1"
+        ),
         "tests/fixtures/h3/spell-status-sleep-v1.json": (
             "sf2-sleep-resistance-matrix-v1"
         ),

@@ -682,6 +682,46 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.spell-detox.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Detox",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 45460 },
+        { "id": "cure-stun", "space": "rom", "kind": "observation", "value": 45504 },
+        { "id": "cure-poison", "space": "rom", "kind": "observation", "value": 45514 },
+        { "id": "cure-result", "space": "rom", "kind": "observation", "value": 45524 },
+        { "id": "reaction", "space": "rom", "kind": "observation", "value": 45536 },
+        { "id": "status-exp", "space": "rom", "kind": "observation", "value": 43272 },
+        { "id": "unequip-cursed", "space": "rom", "kind": "observation", "value": 45662 },
+        { "id": "ineffective", "space": "rom", "kind": "observation", "value": 45670 },
+        { "id": "effectiveness-failure", "space": "rom", "kind": "observation", "value": 47820 },
+        { "id": "update-status", "space": "rom", "kind": "observation", "value": 45676 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 45690 },
+        { "id": "battle-scene-exp", "space": "ram", "kind": "state", "value": 16758316, "symbol": "BATTLESCENE_EXP" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-detox-v1.json", "fixtureId": "sf2-detox-level-status-matrix-v1", "verifier": "src/sf2tool/h3/spell_detox.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.detoxEffectEntryAddress" },
+          { "addressId": "cure-stun", "fixtureField": "function.cureStunAddress" },
+          { "addressId": "cure-poison", "fixtureField": "function.curePoisonAddress" },
+          { "addressId": "cure-result", "fixtureField": "function.cureResultAddress" },
+          { "addressId": "reaction", "fixtureField": "function.reactionAddress" },
+          { "addressId": "status-exp", "fixtureField": "function.statusExpAppliedAddress" },
+          { "addressId": "unequip-cursed", "fixtureField": "function.unequipCursedAddress" },
+          { "addressId": "ineffective", "fixtureField": "function.ineffectiveAddress" },
+          { "addressId": "effectiveness-failure", "fixtureField": "function.effectivenessFailureAddress" },
+          { "addressId": "update-status", "fixtureField": "function.updateStatusAddress" },
+          { "addressId": "return", "fixtureField": "function.detoxEffectReturnAddress" },
+          { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.spell-boost.resolve",
       "subsystem": "battle.spell",
       "status": "confirmed",

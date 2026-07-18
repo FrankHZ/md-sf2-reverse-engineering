@@ -26,6 +26,7 @@ from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
+from sf2tool.h3.spell_detox import verify_spell_detox
 from sf2tool.h3.spell_dispel import verify_spell_dispel
 from sf2tool.h3.spell_exp import verify_spell_damage_exp
 from sf2tool.h3.spell_healing import (
@@ -227,6 +228,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_aura)
     h3_spell_aura.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_detox = h3_commands.add_parser(
+        "spell-detox", help="verify DETOX level masks, ineffective branch, and curse unequip"
+    )
+    _add_local_paths(h3_spell_detox)
+    h3_spell_detox.add_argument("--timeout-seconds", type=int, default=90)
     h3_spell_status = h3_commands.add_parser(
         "spell-status", help="verify SLEEP 1 across all four status-resistance settings"
     )
@@ -454,6 +460,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-aura":
         print_record(
             verify_spell_aura(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-detox":
+        print_record(
+            verify_spell_detox(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
