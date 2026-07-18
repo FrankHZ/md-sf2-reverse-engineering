@@ -12,6 +12,12 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
+截至 2026-07-18，研究索引有 55 条 confirmed finding、52 个 H3 fixture 和 411 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 29 个文件，即
+**7.49% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
+复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
+
 ## 我们要交付什么
 
 最终目标不是“能把 ROM 拆开看看”，而是形成一条可持续生产新 deliverable 的流水线：
@@ -190,7 +196,8 @@ fixture 覆盖和对现代重制的合同影响。
 ### Phase 2 — Discovery & Contracts（当前）
 
 - 建立 ROM/RAM/symbol 索引和研究文档模板（当前 H3 关系索引已落地，后续随 H2/H3 扩展）；
-- 先打通角色/职业/物品/法术与一张战斗地图的端到端提取；
+- 按子系统先做完整静态 inventory/解析，再把静态无法判定的问题合并成 BizHawk 矩阵；
+- 继续扩展角色/职业/物品/法术与战斗地图的端到端提取；
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
@@ -266,8 +273,10 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 
 ## 下一步
 
-下一块继续扩展 **Phase 2 的运行时证据**：补齐非 critical 的其他 spread seed、状态/抗性分支、
-后续回合 region 状态与自然 muddle/same-side/special-enemy action reachability。
+下一块按新的批处理节奏审计完整 **`battle.ai` 静态源码面**：统一整理 action selection、
+attack/spell/item filtering、target scoring、confusion 分支和状态读写，形成结构化模型及运行时问题
+队列。只有静态无法闭合的 caller context、持久状态、RNG/overflow 等问题才进入随后的一次或少量
+BizHawk 矩阵，不再为每个分支单独启动模拟器。
 同时保留升级前一等级、缺失职业块和当前/最大属性刷新，以及
 `LASER radius = 3` 的显式行为验证队列。
 

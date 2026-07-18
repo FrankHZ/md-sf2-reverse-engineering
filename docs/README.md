@@ -22,6 +22,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
   合同索引、校验规则和新增发现的落地流程。
+- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、7.49% 可执行代码文件
+  reach 的严格边界，以及静态优先、集中运行 H3 的子系统批处理节奏。
 
 ## Design
 
@@ -47,6 +49,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   固定 BizHawk 2.11.1，并记录 Genesis Plus GX 寄存器写入的实测边界。
 - [`0002-python-and-uv-for-project-tooling.md`](./decisions/0002-python-and-uv-for-project-tooling.md)：
   Python/uv 工具链、稳定 CLI，以及现有 PowerShell rails 的冻结迁移边界。
+- [`0003-static-first-batched-runtime-research.md`](./decisions/0003-static-first-batched-runtime-research.md)：
+  Phase 2 先整批静态审计，再把不可静态判定的问题集中到单次 BizHawk 矩阵。
 
 ## Evidence Vocabulary
 
