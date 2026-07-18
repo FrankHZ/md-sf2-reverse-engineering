@@ -68,6 +68,15 @@ local function deals_amount(item)
     return packed & 0xF
 end
 
+local function set_deals_amount(item, amount)
+    local address = config.ram.dealsItemsAddress + math.floor(item / 2)
+    if item % 2 == 0 then
+        memory.write_u8(address, amount << 4, "M68K BUS")
+    else
+        memory.write_u8(address, amount, "M68K BUS")
+    end
+end
+
 local function json_boolean(value)
     if value then return "true" end
     return "false"
@@ -176,6 +185,7 @@ event.on_bus_exec(function()
     for offset = 0, 63 do
         memory.write_u8(config.ram.dealsItemsAddress + offset, 0, "M68K BUS")
     end
+    set_deals_amount(current_case.item, current_case.initialDealsAmount)
     if current_case.initialFlag then set_flag(current_case.flag) end
     memory.write_u16_be(config.ram.seedAddress, current_case.seed, "M68K BUS")
     memory.write_u16_be(entry(config.actor) + 14, current_case.actorHp, "M68K BUS")

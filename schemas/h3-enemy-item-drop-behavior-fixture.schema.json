@@ -14,19 +14,19 @@
     "harness": { "type": "object", "additionalProperties": false, "required": ["function", "ram"], "properties": { "function": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 0 } }, "ram": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 0 } } } },
     "actor": { "const": 0 },
     "emptyItem": { "const": 127 },
-    "cases": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "$ref": "#/definitions/case" } }
+    "cases": { "type": "array", "minItems": 10, "maxItems": 10, "items": { "$ref": "#/definitions/case" } }
   },
   "definitions": {
     "items": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0, "maximum": 32767 } },
     "case": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "battle", "target", "item", "flag", "initialFlag", "seed", "actorHp", "actorItems", "roll", "finalFlag", "finalTargetItem", "finalActorItems", "finalDealsAmount"],
+      "required": ["id", "battle", "target", "item", "flag", "initialFlag", "seed", "actorHp", "actorItems", "initialDealsAmount", "roll", "finalFlag", "finalTargetItem", "finalActorItems", "finalDealsAmount"],
       "properties": {
         "id": { "type": "string", "minLength": 1 }, "battle": { "type": "integer", "minimum": 0, "maximum": 255 },
         "target": { "type": "integer", "minimum": 128, "maximum": 159 }, "item": { "type": "integer", "minimum": 0, "maximum": 127 },
         "flag": { "type": "integer", "minimum": 0, "maximum": 31 }, "initialFlag": { "type": "boolean" },
         "seed": { "type": "integer", "minimum": 0, "maximum": 65535 }, "roll": { "type": ["integer", "null"], "minimum": 0, "maximum": 31 },
-        "actorHp": { "type": "integer", "minimum": 0, "maximum": 65535 }, "actorItems": { "$ref": "#/definitions/items" },
+        "actorHp": { "type": "integer", "minimum": 0, "maximum": 65535 }, "actorItems": { "$ref": "#/definitions/items" }, "initialDealsAmount": { "type": "integer", "minimum": 0, "maximum": 15 },
         "finalFlag": { "type": "boolean" }, "finalTargetItem": { "type": "integer", "minimum": 0, "maximum": 127 },
         "finalActorItems": { "$ref": "#/definitions/items" }, "finalDealsAmount": { "type": "integer", "minimum": 0, "maximum": 15 }
       }

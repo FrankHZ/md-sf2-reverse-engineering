@@ -79,8 +79,8 @@ sets flag 3 and transfers the item without reaching the drop-RNG checkpoint.
 Recipient-failure replays confirm removal precedes routing. With either a full inventory or a dead
 actor, Taros Sword is removed from the enemy and its packed deals count changes from 0 to 1. Under
 the same two recipient conditions, Short Rod is removed but enters neither actor inventory nor
-deals because its item definition is not rare. Pre-populated and saturated deals counts remain a
-runtime Unknown.
+deals because its item definition is not rare. A Taros Sword deals count of 14 increments to 15;
+an initial count of 15 remains saturated at the four-bit maximum.
 
 ## Confirmed: Promotion Table and Church Mapping
 

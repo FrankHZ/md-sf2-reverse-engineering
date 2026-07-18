@@ -70,11 +70,11 @@ def _verify_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
         drops = (not random_drop or roll == 0) and not case["initialFlag"]
         actor_items = list(case["actorItems"])
         can_receive = case["actorHp"] != 0 and fixture["emptyItem"] in actor_items
-        deals_amount = 0
+        deals_amount = case["initialDealsAmount"]
         if drops and can_receive:
             actor_items[actor_items.index(fixture["emptyItem"])] = case["item"]
         elif drops and deals_eligible:
-            deals_amount = 1
+            deals_amount = min(deals_amount + 1, 15)
         expected = {
             "roll": roll,
             "finalFlag": case["initialFlag"] or drops,

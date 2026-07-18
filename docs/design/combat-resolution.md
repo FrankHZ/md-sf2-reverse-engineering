@@ -238,6 +238,10 @@ dead actor, removal still occurs: Taros Sword increments its packed deals count,
 Short Rod is discarded. Original-fidelity code must preserve this ordering: lookup/possession,
 rare RNG when applicable, test-and-set flag, removal, then recipient routing.
 
+**Confirmed for deals saturation:** each item count occupies one four-bit nibble. A failed Taros
+Sword delivery increments count 14 to 15; an existing 15 remains 15. Compatibility code must clamp
+per item rather than carry into the adjacent packed nibble.
+
 Other battle modifiers, the containing EXP command path at a class level cap, gold subtraction,
 and non-battle gold callers remain outside this contract version.
 
@@ -281,7 +285,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-enemy-gold-v1` | `tests/fixtures/h2/enemy-gold-v1.json` | 103 used word entries; 69-word unused tail boundary; source/ROM parity |
 | `sf2-enemy-item-drops-v1` | `tests/fixtures/h2/enemy-item-drops-v1.json` | 30 four-byte records; flags 0-29; three RNG(32) items; `0xFFFF` terminator |
 | `sf2-gold-boundaries-v1` | `tests/fixtures/h3/gold-boundaries-v1.json` | Ordinary/exact/above-cap addition; 32-bit carry; 9,999,999 cap |
-| `sf2-enemy-item-drop-behavior-v1` | `tests/fixtures/h3/enemy-item-drop-behavior-v1.json` | Rare fail/success; repeated flag; guaranteed transfer; full/dead recipient rare-deals vs non-rare discard |
+| `sf2-enemy-item-drop-behavior-v1` | `tests/fixtures/h3/enemy-item-drop-behavior-v1.json` | Rare fail/success; repeated flag; guaranteed transfer; full/dead recipient routing; deals 14/15 saturation |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
@@ -314,7 +318,6 @@ complete:
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
 - remaining EXP modifiers, the containing EXP command at class level caps, and gold subtraction/non-battle callers;
-- pre-populated and saturated deals-count behavior;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
 Each expansion must add or extend H3 evidence first, update this contract, and then become an H4
