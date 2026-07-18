@@ -51,6 +51,15 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-mp-absorb-v1.json": "sf2-spoit-mp-absorb-v1",
         "tests/fixtures/h3/spell-boost-v1.json": "sf2-boost1-fresh-and-recast-v1",
         "tests/fixtures/h3/spell-slow-v1.json": "sf2-slow1-status-resistance-v1",
+        "tests/fixtures/h3/spell-dispel-v1.json": (
+            "sf2-dispel1-spell-gate-and-recast-v1"
+        ),
+        "tests/fixtures/h3/spell-silence-gate-v1.json": (
+            "sf2-silenced-caster-blocks-blaze1-v1"
+        ),
+        "tests/fixtures/h3/after-turn-status-expiry-v1.json": (
+            "sf2-after-turn-one-counter-expiry-v1"
+        ),
     },
 }
 

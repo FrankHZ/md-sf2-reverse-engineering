@@ -822,6 +822,52 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.status.after-turn-expiry",
+      "subsystem": "battle.status",
+      "status": "confirmed",
+      "symbol": "ProcessAfterTurnEffects",
+      "sourcePath": "code/gameflow/battle/battleloop/processafterturneffects.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 148034 },
+        { "id": "silence-rng", "space": "rom", "kind": "observation", "value": 148252 },
+        { "id": "silence-rng-return", "space": "rom", "kind": "observation", "value": 148256 },
+        { "id": "silence-branch", "space": "rom", "kind": "observation", "value": 148260 },
+        { "id": "silence-message", "space": "rom", "kind": "observation", "value": 148272 },
+        { "id": "silence-decrement", "space": "rom", "kind": "observation", "value": 148280 },
+        { "id": "after-silence", "space": "rom", "kind": "observation", "value": 148292 },
+        { "id": "slow-message", "space": "rom", "kind": "observation", "value": 148322 },
+        { "id": "after-slow", "space": "rom", "kind": "observation", "value": 148334 },
+        { "id": "attack-message", "space": "rom", "kind": "observation", "value": 148364 },
+        { "id": "after-attack", "space": "rom", "kind": "observation", "value": 148376 },
+        { "id": "boost-message", "space": "rom", "kind": "observation", "value": 148406 },
+        { "id": "after-boost", "space": "rom", "kind": "observation", "value": 148418 },
+        { "id": "update-stats", "space": "rom", "kind": "observation", "value": 148604 },
+        { "id": "stats-applied", "space": "rom", "kind": "observation", "value": 148610 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/after-turn-status-expiry-v1.json", "fixtureId": "sf2-after-turn-one-counter-expiry-v1", "verifier": "src/sf2tool/h3/after_turn.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "silence-rng", "fixtureField": "function.silenceRngAddress" },
+          { "addressId": "silence-rng-return", "fixtureField": "function.silenceRngReturnAddress" },
+          { "addressId": "silence-branch", "fixtureField": "function.silenceBranchAddress" },
+          { "addressId": "silence-message", "fixtureField": "function.silenceMessageAddress" },
+          { "addressId": "silence-decrement", "fixtureField": "function.silenceDecrementAddress" },
+          { "addressId": "after-silence", "fixtureField": "function.afterSilenceAddress" },
+          { "addressId": "slow-message", "fixtureField": "function.slowMessageAddress" },
+          { "addressId": "after-slow", "fixtureField": "function.afterSlowAddress" },
+          { "addressId": "attack-message", "fixtureField": "function.attackMessageAddress" },
+          { "addressId": "after-attack", "fixtureField": "function.afterAttackAddress" },
+          { "addressId": "boost-message", "fixtureField": "function.boostMessageAddress" },
+          { "addressId": "after-boost", "fixtureField": "function.afterBoostAddress" },
+          { "addressId": "update-stats", "fixtureField": "function.updateStatsAddress" },
+          { "addressId": "stats-applied", "fixtureField": "function.statsAppliedAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.turn-order.generate",
       "subsystem": "battle.turn-order",
       "status": "confirmed",
