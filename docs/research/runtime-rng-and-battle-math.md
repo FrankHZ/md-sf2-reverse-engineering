@@ -1,6 +1,6 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for RNG, level up/stat refresh, turn order, and the physical attack chain**
+- Status: **Confirmed runtime fixtures for RNG, level up/stat refresh, turn order, physical attacks, and the first spell-damage matrix**
 - Evidence date: 2026-07-17
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -27,6 +27,8 @@ the locked ROM instruction bytes.
 | double/counter | `battlesceneScript_DetermineDoubleAndCounter` | `0xB00E..0xB080` | `code/gameflow/battle/battleactions/determinedoubleandcounter.asm` |
 | turn order | `GenerateBattleTurnOrder` | `0x25544` | `code/gameflow/battle/battleloop/turnorderfunctions.asm` |
 | turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
+| spell resistance | `GetResistanceToSpell` | `0xC22A..0xC24E` | `code/gameflow/battle/battleactions/getresistancetospell.asm` |
+| spell damage | `battlesceneScript_CalculateSpellDamage` | `0xBB02..0xBB56` | `code/gameflow/battle/battleactions/calculatespelldamage.asm` |
 
 Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
 `RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
@@ -355,7 +357,7 @@ internal LevelUp scratch boundary.
 `tests/fixtures/h3/battle-exp-level-up-v1.json` is independently modeled from the pinned EXP routine,
 LCG, Bowie growth block, five growth curves, and empty-equipment refresh. It confirms this one
 99 + 24 transition and its side effects; dialogue/death-animation timing, other EXP adjustments,
-multiple-threshold/cap edges, resistance, and status behavior remain outside it.
+multiple-threshold/cap edges, and status behavior remain outside it.
 
 ## Confirmed: Double Attack and Counter Chain
 
@@ -393,14 +395,61 @@ Follow-up double/counter settings both use range 32 with seed `0xFFFF`, producin
 so no later attack is scheduled. Both combatants remain at 100 HP. This locks the successful dodge
 control-flow contract independently of the earlier non-dodge observations.
 
+## Confirmed: BLAZE 2 Fire-Resistance Matrix
+
+The first spell-damage fixture uses Battle 01's original battle-action engine rather than jumping
+to the calculation routine. At `WriteBattlesceneScript` entry `0x9B92`, it replaces Bowie's already
+scheduled AI attack with action type 1 and spell entry `BLAZE|LV2` (`0x4B`). The original property
+initializer decodes base spell 11 and the original cast dispatcher calls `GetResistanceToSpell` and
+`battlesceneScript_CalculateSpellDamage` once per target.
+
+To cover all resistance branches in one emulator boot, the harness supplies the ordered target list
+`[128,129,130,131]` immediately after the original target-selection call and before
+`battlesceneScript_InitializeBattlesceneProperties` at `0x9F28`. It gives those targets current FIRE
+resistance words `0x0000`, `0x0040`, `0x0080`, and `0x00C0`. This is a controlled resolution seam:
+the fixture confirms resistance extraction and subsequent action behavior, but does not claim that
+this four-target geometry was naturally selected.
+
+The pinned BLAZE 2 definition supplies power 10. Bowie remains unpromoted SDMN, so
+`AdjustSpellPower` returns 10 at `0xBB16`; `floor(10/4)` is 2. Runtime observations at `0xBB32`
+confirm the four setting results:
+
+| FIRE setting | Operation | Damage before critical |
+| --- | --- | --- |
+| neutral 0 | unchanged | 10 |
+| minor 1 | `10 - 2` | 8 |
+| major 2 | `floor(10/2)` | 5 |
+| weakness 3 | `10 + 2` | 12 |
+
+Each target resets `RANDOM_SEED` to `0x1234` at the genuine spell-damage entry. BLAZE's original
+`GenerateRandomOrDebugNumber(32)` returns 29, so no spell critical occurs. The shared
+`InflictDamage` path then derives spread ranges `[2,2,1,2]`; both original variance rolls are zero
+in every case, preserving final damages `[10,8,5,12]`. Temporary HP becomes `[90,92,95,88]`.
+After all four reactions have been generated, `battlesceneScript_End` restores all four HP snapshots
+to 100 before `0x9DCE`. The fixture exits there, before battle-scene command playback, so Bowie's MP
+is still 20; persistent HP/MP replay is explicitly not claimed yet.
+
+The Python verifier independently checks the pinned BLAZE 2 power/cost, FIRE element, resistance
+arithmetic, LCG calls, spread, temporary HP, and restored HP before launching BizHawk. Reproduce the
+single-boot matrix with:
+
+```powershell
+uv run sf2 h3 spell-damage
+```
+
+The tracked contract is `tests/fixtures/h3/spell-damage-resistance-v1.json`; generated configuration
+and observations remain under ignored `local/derived/h3/`.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add natural muddled/same-side/special-enemy action reachability, resistance, additional non-critical
-  variance seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
+- Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
+  seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
+- Add promoted spell-power adjustment, summon target-count division, successful spell critical,
+  persistent spell reaction/MP replay, and non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

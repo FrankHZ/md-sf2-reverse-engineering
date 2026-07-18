@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-spell-damage-resistance-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One Battle 01 BLAZE 2 action through original target resistance lookup, spell-power adjustment, critical roll, variance, temporary HP application, and battle-scene snapshot restoration. The harness supplies a four-target list and one resistance setting per target at the pre-initialization seam.",
+  "function": {
+    "writeBattleSceneScriptAddress": 39826,
+    "initializePropertiesAddress": 40744,
+    "getResistanceAddress": 49706,
+    "calculateSpellDamageAddress": 47874,
+    "adjustedPowerAddress": 47894,
+    "postResistanceAddress": 47922,
+    "preVarianceAddress": 47942,
+    "varianceFirstRollAddress": 44362,
+    "varianceSecondRollAddress": 44370,
+    "damageAppliedAddress": 44434,
+    "battleSceneEndReturnAddress": 40398
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "currentBattleActionAddress": 16758318,
+    "battleSceneSpellIndexAddress": 16758328,
+    "targetsListLengthAddress": 16758334,
+    "targetsListAddress": 16758354,
+    "seedAddress": 16768676
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900
+    },
+    "ram": {
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "case": {
+    "id": "bowie-blaze2-four-fire-resistance-settings",
+    "actor": 0,
+    "actorClass": 0,
+    "initialMp": 20,
+    "actionType": 1,
+    "actionSpell": 75,
+    "baseSpell": 11,
+    "spellPower": 10,
+    "spellMpCost": 6,
+    "criticalRange": 32,
+    "seed": 4660,
+    "targets": [
+      { "combatant": 128, "resistanceWord": 0, "setting": 0 },
+      { "combatant": 129, "resistanceWord": 64, "setting": 1 },
+      { "combatant": 130, "resistanceWord": 128, "setting": 2 },
+      { "combatant": 131, "resistanceWord": 192, "setting": 3 }
+    ]
+  },
+  "expected": {
+    "resistanceCalls": 4,
+    "actorMpAfterConstruction": 20,
+    "records": [
+      { "combatant": 128, "setting": 0, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "temporaryHp": 90, "restoredHp": 100 },
+      { "combatant": 129, "setting": 1, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "temporaryHp": 92, "restoredHp": 100 },
+      { "combatant": 130, "setting": 2, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
+      { "combatant": 131, "setting": 3, "adjustedPower": 10, "quarterPower": 2, "postResistance": 12, "criticalRoll": 29, "preVariance": 12, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 12, "temporaryHp": 88, "restoredHp": 100 }
+    ]
+  }
+}

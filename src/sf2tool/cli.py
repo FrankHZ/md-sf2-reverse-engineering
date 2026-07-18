@@ -10,6 +10,7 @@ from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
+from sf2tool.h3.spell_damage import verify_spell_damage
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
@@ -97,6 +98,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_battle_exp)
     h3_battle_exp.add_argument("--timeout-seconds", type=int, default=75)
+    h3_spell_damage = h3_commands.add_parser(
+        "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
+    )
+    _add_local_paths(h3_spell_damage)
+    h3_spell_damage.add_argument("--timeout-seconds", type=int, default=75)
     return parser
 
 
@@ -147,6 +153,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "battle-exp":
         print_record(
             verify_battle_exp_level_up(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-damage":
+        print_record(
+            verify_spell_damage(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

@@ -36,6 +36,11 @@ CONTRACTS = {
         "tests/fixtures/h3/ally-initialization-prowess-v1.json": "sf2-karna-heal3-prowess-v1",
         "tests/fixtures/h3/battle-exp-level-up-v1.json": "sf2-battle-exp-level-up-v1",
     },
+    "docs/design/spell-resolution.md": {
+        "tests/fixtures/h3/spell-damage-resistance-v1.json": (
+            "sf2-spell-damage-resistance-v1"
+        ),
+    },
 }
 
 

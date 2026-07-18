@@ -332,6 +332,72 @@
       "designContracts": ["docs/design/combat-resolution.md"]
     },
     {
+      "id": "battle.spell-resistance.lookup",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "GetResistanceToSpell",
+      "sourcePath": "code/gameflow/battle/battleactions/getresistancetospell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 49706 },
+        { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072, "symbol": "COMBATANT_DATA" },
+        { "id": "spell-index", "space": "ram", "kind": "state", "value": 16758328, "symbol": "BATTLESCENE_SPELL_INDEX" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.getResistanceAddress" },
+          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+          { "addressId": "spell-index", "fixtureField": "ram.battleSceneSpellIndexAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-damage.calculate",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_CalculateSpellDamage",
+      "sourcePath": "code/gameflow/battle/battleactions/calculatespelldamage.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 47874 },
+        { "id": "adjusted-power", "space": "rom", "kind": "observation", "value": 47894 },
+        { "id": "post-resistance", "space": "rom", "kind": "observation", "value": 47922 },
+        { "id": "pre-variance", "space": "rom", "kind": "observation", "value": 47942 },
+        { "id": "variance-first-roll", "space": "rom", "kind": "observation", "value": 44362 },
+        { "id": "variance-second-roll", "space": "rom", "kind": "observation", "value": 44370 },
+        { "id": "damage-applied", "space": "rom", "kind": "observation", "value": 44434 },
+        { "id": "write-script", "space": "rom", "kind": "observation", "value": 39826 },
+        { "id": "initialize-properties", "space": "rom", "kind": "observation", "value": 40744 },
+        { "id": "scene-end-return", "space": "rom", "kind": "observation", "value": 40398 },
+        { "id": "current-action", "space": "ram", "kind": "state", "value": 16758318, "symbol": "CURRENT_BATTLEACTION" },
+        { "id": "targets-length", "space": "ram", "kind": "state", "value": 16758334, "symbol": "TARGETS_LIST_LENGTH" },
+        { "id": "targets-list", "space": "ram", "kind": "state", "value": 16758354, "symbol": "TARGETS_LIST" },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.calculateSpellDamageAddress" },
+          { "addressId": "adjusted-power", "fixtureField": "function.adjustedPowerAddress" },
+          { "addressId": "post-resistance", "fixtureField": "function.postResistanceAddress" },
+          { "addressId": "pre-variance", "fixtureField": "function.preVarianceAddress" },
+          { "addressId": "variance-first-roll", "fixtureField": "function.varianceFirstRollAddress" },
+          { "addressId": "variance-second-roll", "fixtureField": "function.varianceSecondRollAddress" },
+          { "addressId": "damage-applied", "fixtureField": "function.damageAppliedAddress" },
+          { "addressId": "write-script", "fixtureField": "function.writeBattleSceneScriptAddress" },
+          { "addressId": "initialize-properties", "fixtureField": "function.initializePropertiesAddress" },
+          { "addressId": "scene-end-return", "fixtureField": "function.battleSceneEndReturnAddress" },
+          { "addressId": "current-action", "fixtureField": "ram.currentBattleActionAddress" },
+          { "addressId": "targets-length", "fixtureField": "ram.targetsListLengthAddress" },
+          { "addressId": "targets-list", "fixtureField": "ram.targetsListAddress" },
+          { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.turn-order.generate",
       "subsystem": "battle.turn-order",
       "status": "confirmed",
