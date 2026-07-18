@@ -113,12 +113,12 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 
 ```powershell
 uv sync --locked
-uv run sf2 verify --quick
 uv run sf2 verify
+uv run sf2 verify --full
 ```
 
-日常提交默认只跑 `--quick`（Ruff、pytest、设计合同、研究索引、ROM 身份和工具链来源）以及本次
-改动直接拥有的窄 rail，例如 `uv run sf2 h3 battle-exp`。十分钟以上的完整 `verify` 只在阶段
+日常提交默认只跑 `verify`（Ruff、pytest、设计合同、研究索引、ROM 身份和工具链来源）以及本次
+改动直接拥有的窄 rail，例如 `uv run sf2 h3 battle-exp`。十分钟以上的 `verify --full` 只在阶段
 里程碑、准备合并/发布、共享 harness 或兼容层发生变化，以及明确要求全量 parity 时运行。
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
@@ -140,7 +140,7 @@ uv run sf2 verify
 
 ```powershell
 uv run sf2 init --rom-path <合法持有的美版 ROM 路径>
-uv run sf2 verify
+uv run sf2 verify --full
 ```
 
 每条重要设计结论都应能回到 H1-H3 的证据；每个重制系统都应能被 H4 独立测试。截图和人工

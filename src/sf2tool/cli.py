@@ -51,20 +51,34 @@ def _print_rows(rows: list[dict[str, Any]]) -> None:
         print("  ".join(f"{str(row[column]):<{widths[column]}}" for column in columns))
 
 
+def full_verify_requested(args: argparse.Namespace) -> bool:
+    if args.quick:
+        return False
+    return args.full or args.skip_rebuild or args.skip_extraction or args.skip_runtime
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sf2", description="Shining Force II research harness")
     commands = parser.add_subparsers(dest="command", required=True)
 
     verify_parser = commands.add_parser("verify", help="run the repository verification rails")
     _add_local_paths(verify_parser)
-    verify_parser.add_argument("--skip-rebuild", action="store_true")
-    verify_parser.add_argument("--skip-extraction", action="store_true")
-    verify_parser.add_argument("--skip-runtime", action="store_true")
     verify_parser.add_argument(
-        "--quick",
-        action="store_true",
-        help="run commit-level Python, contract, index, ROM, and toolchain gates only",
+        "--skip-rebuild", action="store_true", help="full profile: omit the H1 rebuild"
     )
+    verify_parser.add_argument(
+        "--skip-extraction", action="store_true", help="full profile: omit H2 extraction rails"
+    )
+    verify_parser.add_argument(
+        "--skip-runtime", action="store_true", help="full profile: omit H3 runtime rails"
+    )
+    verify_profile = verify_parser.add_mutually_exclusive_group()
+    verify_profile.add_argument(
+        "--full",
+        action="store_true",
+        help="enable the milestone profile with H1, H2, and H3 rails",
+    )
+    verify_profile.add_argument("--quick", action="store_true", help=argparse.SUPPRESS)
 
     init_parser = commands.add_parser("init", help="initialize ignored local research inputs")
     init_parser.add_argument("--rom-path", type=_path, required=True)
@@ -155,7 +169,7 @@ def dispatch(args: argparse.Namespace) -> None:
             skip_rebuild=args.skip_rebuild,
             skip_extraction=args.skip_extraction,
             skip_runtime=args.skip_runtime,
-            quick=args.quick,
+            full=full_verify_requested(args),
         )
     elif args.command == "init":
         run_powershell("Initialize-LocalResearch.ps1", ("-RomPath", args.rom_path))

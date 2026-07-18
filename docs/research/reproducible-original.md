@@ -9,7 +9,7 @@
 Phase 1 can reproduce the original input ROM byte for byte with one non-interactive command:
 
 ```powershell
-uv run sf2 verify
+uv run sf2 verify --full
 ```
 
 The verified input and output are both 2,097,152 bytes and both have SHA-256:
@@ -78,7 +78,7 @@ tools when Microsoft Defender is available:
 
 ```powershell
 uv run sf2 init --rom-path <ROM path>
-uv run sf2 verify
+uv run sf2 verify --full
 ```
 
 No system PATH or system Java installation is changed.

@@ -54,9 +54,9 @@ execution engine.
 
 - `uv run sf2 init --rom-path <ROM path>` obtains only the official pinned BizHawk release through
   the migration adapter and verifies it before use.
-- Root `uv run sf2 verify` runs both RNG fixtures by default and offers `--skip-runtime` for
-  deliberately static-only work. `uv run sf2 h3 rng` is the narrow Python-owned rail; its tracked
-  Lua observer emits only controlled state facts.
+- Root `uv run sf2 verify --full` runs both RNG fixtures and offers `--skip-runtime` for deliberately
+  static-only milestone work. Default `uv run sf2 verify` stays on the commit gate. `uv run sf2 h3
+  rng` is the narrow Python-owned rail; its tracked Lua observer emits only controlled state facts.
 - Emulator-generated configs, Lua scripts, observations, states, traces, and movies remain ignored.
 - The EmuHawk repository is MIT, but a release bundle contains separately licensed components. The
   manifest records that boundary and the project does not redistribute the bundle.

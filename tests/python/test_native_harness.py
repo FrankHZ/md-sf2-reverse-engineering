@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from sf2tool.cli import build_parser
+from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import verify_index
@@ -29,10 +29,28 @@ def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
     assert mega_drive_checksum(bytes(data)) == "6834"
 
 
-def test_verify_quick_is_an_explicit_commit_level_profile() -> None:
+def test_verify_defaults_to_commit_profile_and_full_is_explicit() -> None:
+    commit_args = build_parser().parse_args(["verify"])
+    assert commit_args.command == "verify"
+    assert commit_args.full is False
+
+    full_args = build_parser().parse_args(["verify", "--full"])
+    assert full_args.full is True
+
+
+def test_verify_quick_remains_a_hidden_compatibility_alias() -> None:
     args = build_parser().parse_args(["verify", "--quick"])
-    assert args.command == "verify"
     assert args.quick is True
+    assert args.full is False
+    assert full_verify_requested(args) is False
+
+
+def test_legacy_skip_flags_still_select_the_full_profile() -> None:
+    args = build_parser().parse_args(["verify", "--skip-runtime"])
+    assert full_verify_requested(args) is True
+
+    quick_args = build_parser().parse_args(["verify", "--quick", "--skip-runtime"])
+    assert full_verify_requested(quick_args) is False
 
 
 def test_legacy_powershell_surface_does_not_expand() -> None:

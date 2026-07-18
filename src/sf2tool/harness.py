@@ -156,7 +156,7 @@ def verify(
     skip_rebuild: bool = False,
     skip_extraction: bool = False,
     skip_runtime: bool = False,
-    quick: bool = False,
+    full: bool = False,
 ) -> None:
     _heading("Python: static and unit gates")
     _run_python_gates()
@@ -168,8 +168,8 @@ def verify(
     print_record(verify_rom(rom_path))
     _heading("Toolchain provenance")
     print_record(verify_toolchain(upstream_path))
-    if quick:
-        _heading("Repository quick verification: PASS")
+    if not full:
+        _heading("Repository commit verification: PASS")
         return
 
     if not skip_rebuild:

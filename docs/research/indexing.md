@@ -46,8 +46,9 @@ JSON Schema cannot express:
 7. when the ignored upstream checkout exists, source files and symbol labels are checked;
 8. when the H1 listing exists, each symbol address is compared with the assembled listing.
 
-The root `uv run sf2 verify` runs this check before the ROM and extraction/runtime rails. A
-fresh checkout can validate tracked relationships without private inputs; source and listing checks
+The default commit gate `uv run sf2 verify` runs this check before ROM/toolchain provenance; the
+milestone gate `uv run sf2 verify --full` continues into extraction and runtime rails. A fresh
+checkout can validate tracked relationships without private inputs; source and listing checks
 activate automatically when their local evidence exists.
 
 ## Adding a Finding

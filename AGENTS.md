@@ -134,10 +134,10 @@ point as later rails become available:
 5. **Remake parity**: run the same implementation-neutral fixtures against remake
    systems and report intentional deviations separately.
 
-Use `uv run sf2 verify --quick` as the normal commit gate. It owns Ruff, pytest, design-contract
+Use `uv run sf2 verify` as the normal commit gate. It owns Ruff, pytest, design-contract
 traceability, the research index, ROM identity, and toolchain provenance. Pair it with only the
 narrow H2/H3 command that owns the changed slice (for example, `uv run sf2 h3 battle-exp`). Do not
-run the 10+ minute full `uv run sf2 verify` after every ordinary commit. Reserve the full gate for
+run the 10+ minute `uv run sf2 verify --full` after every ordinary commit. Reserve the full gate for
 phase milestones, release/merge readiness, changes to shared harness orchestration or legacy rails,
 and explicit full-parity requests.
 
@@ -178,6 +178,6 @@ JSON between runtimes.
 
 A slice is done when its outputs are reproducible, provenance is recorded,
 relevant docs and contracts agree, generated/private artifacts remain untracked,
-`uv run sf2 verify --quick` and the owning narrow verification command pass. If
+`uv run sf2 verify` and the owning narrow verification command pass. If
 verification cannot run, report the exact missing dependency or evidence instead
 of substituting confidence.

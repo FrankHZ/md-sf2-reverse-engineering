@@ -63,10 +63,11 @@ failures therefore stop at the command line instead of surfacing in the interact
 - New project tooling and tests go under `src/sf2tool/` and `tests/python/`.
 - Root verification, index queries, and ROM checks no longer expose PowerShell commands.
 - `uv run ruff check src tests/python` and `uv run pytest` are required narrow gates.
-- `uv run sf2 verify --quick` is the ordinary commit profile: it runs those Python gates plus
+- `uv run sf2 verify` is the default ordinary-commit profile: it runs those Python gates plus
   design/index, ROM identity, and toolchain provenance. A changed runtime/extractor slice adds only
-  its owning narrow command. Full `uv run sf2 verify` is a milestone/release/shared-harness gate,
-  not an every-commit default.
+  its owning narrow command. `uv run sf2 verify --full` is the explicit
+  milestone/release/shared-harness gate, not an every-commit default. The old `--quick` spelling is
+  accepted as a hidden compatibility alias for the default profile.
 - A fresh environment can validate tracked Python contracts without a ROM; full H0-H3 still needs
   the ignored local evidence and, during migration, PowerShell 7 for legacy rails.
 - The compatibility layer may be removed only after its final caller is migrated.
