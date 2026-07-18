@@ -122,7 +122,7 @@ uv run sf2 verify --full
 里程碑、准备合并/发布、共享 harness 或兼容层发生变化，以及明确要求全量 parity 时运行。
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/上限/法术继承边界、战斗 EXP 自然升级、行动顺序、区域激活、物理伤害计算链、攻击法术伤害/EXP、HEAL 1、SLEEP 1、DESOUL、SPOIT、BOOST 1、SLOW 1、DISPEL 1、SILENCE 施法门及回合后状态过期/继续 H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/等级上限/法术继承边界、属性夹断、战斗 EXP 自然升级、行动顺序、区域激活、物理伤害计算链、攻击法术伤害/EXP、HEAL 1、SLEEP 1、DESOUL、SPOIT、BOOST 1、SLOW 1、DISPEL 1、SILENCE 施法门及回合后状态过期/继续 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -213,6 +213,8 @@ counter 1/8 错清为 1/32。独立启动观察确认 Karna 在 HEAL 3 预扫描
 从 `0x03` 改为 `0x13`，随后再由普通升级回放学会法术；同一分支的合成 `0x43→0x53` 用例确认
 counter 1/16 保留而 double 从 1/32 提升到 1/16。完整 16 组高半字节矩阵进一步确认原版把
 double/counter 合并当作一个数值加一：`0x73→0x73` 封顶，`0xF3→0x03` 则发生 byte wrap 并清空两者。
+同一成长子系统的单启动 clamp fixture 又覆盖 8 个 wrapper 边界：ATT/DEF/AGI/MOV 的五个上限
+饱和，以及 DEF/AGI/MOV 三个减法下溢归零；带 bit 7 的 base AGI `0xE3→0xE4` 同时确认标志位保留。
 第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
 全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然
 初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo，边界 H3 另确认 AGI 127/128、第二行动、

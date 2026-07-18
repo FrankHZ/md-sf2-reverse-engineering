@@ -20,6 +20,7 @@ from sf2tool.h3.spell_mp import verify_spell_mp_absorb
 from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
+from sf2tool.h3.stat_clamps import verify_stat_clamp_boundaries
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
@@ -121,6 +122,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_growth_prowess)
     h3_growth_prowess.add_argument("--timeout-seconds", type=int, default=60)
+    h3_stat_clamps = h3_commands.add_parser(
+        "stat-clamps", help="verify stat cap and byte-underflow clamp boundaries"
+    )
+    _add_local_paths(h3_stat_clamps)
+    h3_stat_clamps.add_argument("--timeout-seconds", type=int, default=60)
     h3_battle_exp = h3_commands.add_parser(
         "battle-exp", help="verify natural battle EXP-to-level-up behavior"
     )
@@ -232,6 +238,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "growth-prowess":
         print_record(
             verify_initialization_prowess(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "stat-clamps":
+        print_record(
+            verify_stat_clamp_boundaries(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-stat-clamp-boundaries-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": {
+    "levelUpEntryAddress": 38020,
+    "updateStatsEntryAddress": 35278,
+    "updateStatsReturnAddress": 35364,
+    "increaseAndClampByteAddress": 37650,
+    "increaseAndClamp7BitsAddress": 37684,
+    "decreaseAndClampByteAddress": 37740,
+    "increaseBaseAttEntryAddress": 34732,
+    "increaseBaseAttReturnAddress": 34752,
+    "increaseBaseDefEntryAddress": 34776,
+    "increaseBaseDefReturnAddress": 34796,
+    "increaseBaseAgiEntryAddress": 34820,
+    "increaseBaseAgiReturnAddress": 34838,
+    "increaseCurrentMovEntryAddress": 34882,
+    "increaseCurrentMovReturnAddress": 34902,
+    "increaseCurrentAttEntryAddress": 34754,
+    "increaseCurrentAttReturnAddress": 34774,
+    "decreaseCurrentDefEntryAddress": 35074,
+    "decreaseCurrentDefReturnAddress": 35094,
+    "decreaseCurrentMovEntryAddress": 35162,
+    "decreaseCurrentMovReturnAddress": 35182,
+    "decreaseCurrentAgiEntryAddress": 35118,
+    "decreaseCurrentAgiReturnAddress": 35138
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "seedAddress": 16768676
+  },
+  "case": {
+    "id": "slade-thif-level39-stat-clamps",
+    "ally": 5,
+    "allyCode": "SLADE",
+    "classCode": "THIF",
+    "seed": 4660,
+    "input": {
+      "class": 10,
+      "level": 39,
+      "maxHp": 42,
+      "maxMp": 0,
+      "baseAttack": 45,
+      "baseDefense": 38,
+      "baseAgility": 38,
+      "baseMove": 7,
+      "items": [150, 172, 212, 229],
+      "status": 0
+    },
+    "operations": [
+      {
+        "id": "base-attack-cap", "source": "level-up:attack", "kind": "increase-byte",
+        "entryKey": "increaseBaseAtt", "fieldOffset": 18,
+        "before": 199, "amount": 2, "cap": 200, "after": 200
+      },
+      {
+        "id": "base-defense-cap", "source": "level-up:defense", "kind": "increase-byte",
+        "entryKey": "increaseBaseDef", "fieldOffset": 20,
+        "before": 199, "amount": 1, "cap": 200, "after": 200
+      },
+      {
+        "id": "base-agility-cap-preserves-turn-flag", "source": "level-up:agility", "kind": "increase-7bits",
+        "entryKey": "increaseBaseAgi", "fieldOffset": 22,
+        "before": 227, "amount": 2, "cap": 100, "after": 228
+      },
+      {
+        "id": "current-move-cap", "source": "item:INCREASE_MOV", "kind": "increase-byte",
+        "entryKey": "increaseCurrentMov", "fieldOffset": 25,
+        "before": 199, "amount": 2, "cap": 200, "after": 200
+      },
+      {
+        "id": "current-attack-cap", "source": "item:INCREASE_ATT", "kind": "increase-byte",
+        "entryKey": "increaseCurrentAtt", "fieldOffset": 19,
+        "before": 199, "amount": 50, "cap": 200, "after": 200
+      },
+      {
+        "id": "current-defense-underflow", "source": "item:DECREASE_DEF", "kind": "decrease-byte",
+        "entryKey": "decreaseCurrentDef", "fieldOffset": 21,
+        "before": 3, "amount": 5, "cap": 200, "after": 0
+      },
+      {
+        "id": "current-move-underflow", "source": "item:DECREASE_MOV", "kind": "decrease-byte",
+        "entryKey": "decreaseCurrentMov", "fieldOffset": 25,
+        "before": 1, "amount": 2, "cap": 200, "after": 0
+      },
+      {
+        "id": "current-agility-underflow", "source": "item:DECREASE_AGI", "kind": "decrease-byte",
+        "entryKey": "decreaseCurrentAgi", "fieldOffset": 23,
+        "before": 5, "amount": 10, "cap": 200, "after": 0
+      }
+    ],
+    "helpersObserved": { "increaseByte": true, "increase7Bits": true, "decreaseByte": true },
+    "after": {
+      "level": 40,
+      "baseAttack": 200,
+      "currentAttack": 200,
+      "baseDefense": 200,
+      "currentDefense": 0,
+      "baseAgility": 228,
+      "currentAgility": 0,
+      "baseMove": 7,
+      "currentMove": 0,
+      "status": 4
+    }
+  }
+}

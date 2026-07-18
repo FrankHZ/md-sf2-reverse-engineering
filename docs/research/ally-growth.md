@@ -71,13 +71,19 @@ Black Ring + Short Knife ATT stacking followed by CURSE insertion; and Ninja Kat
 `INCREASE_DOUBLE` bug changing NINJ prowess `0x94→0x24`, which raises double chance but clears
 counter 1/8 to 1/32.
 
+The stat-clamp fixture reuses one natural Slade/THIF 39→40 call while replacing only the destination
+byte at eight wrapper entries. Five increases saturate base/current ATT, base DEF, flagged base AGI,
+and current MOV at their source-defined caps. Three decreases clamp current DEF/AGI/MOV to zero
+instead of wrapping. The source oracle independently derives the natural growth amounts, equipped
+item effects, field caps, and helper arithmetic before the ROM observation.
+
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed fixtures with underflow/cap edges, enemy curse handling, the
-remaining prowess-effect functions. The existing stat-gain, complete-caller, boundary, refresh,
-and initialization-prowess fixtures are the first
+Extend the committed emulator-backed fixtures with current-ATT decrease and word/long clamp edges,
+enemy curse handling, and the remaining prowess-effect functions. The existing stat-gain,
+complete-caller, boundary, refresh, initialization-prowess, and stat-clamp fixtures are the first
 implementation-neutral inputs for a later remake growth module; see
 [`../design/level-up.md`](../design/level-up.md).

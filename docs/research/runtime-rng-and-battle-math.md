@@ -169,6 +169,21 @@ flooring. Equipped Black Ring + Short Knife stack ATT +10/+5, then the cursed de
 and changes prowess `0x94→0x24`: `INCREASE_DOUBLE` raises double from 1/16 to 1/8 but its original
 mask also clears NINJ's counter 1/8 bits to the 1/32 encoding.
 
+## Confirmed at Runtime: Stat Clamp Boundaries
+
+The `sf2-stat-clamp-boundaries-v1` fixture follows a natural Slade/THIF level 39→40 call and uses the
+wrapper-entry seam to supply boundary destination bytes. The natural ATT/DEF/AGI gains remain
+source-modeled `2/1/2`; only the byte being updated is replaced. `IncreaseAndClampByte` saturates
+base ATT `199+2` and base DEF `199+1` at 200. `IncreaseAndClamp7Bits` turns flagged base AGI
+`0xE3` into `0xE4`: low AGI clamps from 99+2 to 100 while bit 7 survives.
+
+During the same `UpdateCombatantStats`, four equipped source records reach the item wrappers.
+Current MOV `199+2` and ATT `199+50` saturate at 200. Current DEF `3-5`, MOV `1-2`, and AGI `5-10`
+each become zero through `DecreaseAndClampByte`; none wrap into the unsigned high range. The
+observer injects before every matching wrapper entry and records the first complete transition,
+while separate hooks confirm all three generic helpers execute. This controlled seam proves helper
+semantics and wrapper caps, not natural reachability of the synthetic values.
+
 The companion initialization-prowess fixture observes Karna's unmodified new-game call. Her PRST
 start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell scan. At `0x967A`
 the original takes the dedicated HEAL 3 branch; after `SetBaseProwess`, the callback at `0x969E`
@@ -842,7 +857,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 
 ## Unknown / Next Fixtures
 
-- Add remaining stat-cap/underflow edges.
+- Add current-ATT decrease, byte-overflow, and word/long clamp-helper edges.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

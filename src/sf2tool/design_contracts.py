@@ -34,6 +34,7 @@ CONTRACTS = {
         "tests/fixtures/h3/level-up-boundaries-v1.json": "sf2-level-up-boundaries-v1",
         "tests/fixtures/h3/level-up-refresh-v1.json": "sf2-level-up-refresh-v1",
         "tests/fixtures/h3/ally-initialization-prowess-v1.json": "sf2-karna-heal3-prowess-v1",
+        "tests/fixtures/h3/stat-clamp-boundaries-v1.json": "sf2-stat-clamp-boundaries-v1",
         "tests/fixtures/h3/battle-exp-level-up-v1.json": "sf2-battle-exp-level-up-v1",
     },
     "docs/design/spell-resolution.md": {

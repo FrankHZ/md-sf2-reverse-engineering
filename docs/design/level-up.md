@@ -20,6 +20,9 @@
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path plus fifteen controlled inputs
   that cover the full HEAL 3 double/counter high-nibble matrix in `InitializeAllyStats`.
+- `tests/fixtures/h3/stat-clamp-boundaries-v1.json` / `sf2-stat-clamp-boundaries-v1` owns eight
+  controlled wrapper calls during one natural Slade level-up, covering five cap saturations and
+  three byte-underflow clamps.
 - `tests/fixtures/h3/battle-exp-level-up-v1.json` / `sf2-battle-exp-level-up-v1` owns the connected
   natural Battle 01 path from a 24-point EXP command through the 100-point threshold, one
   source-modeled Bowie/SDMN `LevelUp`, and final persistent combatant state.
@@ -128,6 +131,25 @@ A remake should model maximum/current resources and base/derived combat stats as
 Level-up must not heal by merely copying new maxima into current HP/MP, and equipment effects must be
 recomputed from the new base rather than incrementally stacked onto stale derived values.
 
+## Confirmed Stat Clamp Boundaries
+
+One Slade/THIF 39→40 call supplies natural gains ATT +2, DEF +1, and AGI +2. At the corresponding
+wrapper entries, the clamp fixture replaces only the destination byte. Base ATT `199+2` and DEF
+`199+1` both saturate at 200. Base AGI starts at `0xE3`: the original separates bit 7, clamps the
+low seven bits `99+2` to the base-AGI cap 100, then restores the flag, producing `0xE4`.
+
+The same refresh equips source-defined items to reach the current-stat wrappers. Running Ring makes
+MOV `199+2→200`, and Evil Axe makes ATT `199+50→200`. Controlled low inputs confirm unsigned
+subtraction clamps rather than wrapping: Evil Axe DEF `3-5→0`, Evil Lance MOV `1-2→0`, and Demon
+Rod AGI `5-10→0`. The observer reapplies each controlled input before every matching wrapper entry,
+then confirms the original `IncreaseAndClampByte`, `IncreaseAndClamp7Bits`, and
+`DecreaseAndClampByte` helpers were all reached. These are validation-seam facts, not claims that
+such extreme values occur naturally in an unmodified campaign.
+
+A fidelity implementation must preserve the AGI flag separately during base-AGI saturation and use
+the source-defined per-field caps. It must not rely on host-language overflow behavior for decrease
+operations.
+
 ## Confirmed Battle Award Entry
 
 The connected battle fixture starts Bowie/SDMN level 1 at 99 EXP with source-modeled base stats and
@@ -186,8 +208,8 @@ record that choice explicitly before H4 treats either behavior as normative.
 
 **Unknown** runtime boundaries still requiring dedicated fixtures:
 
-- low-stat underflow and ATT/DEF/AGI/MOV cap-saturation edges;
+- current-ATT decrease underflow, byte-overflow inputs, and word/long clamp-helper boundaries;
 - enemy curse suppression and the remaining critical/counter/set prowess equip-effect functions;
 
-The future remake growth module should consume the same six fixtures first, then extend them rather
+The future remake growth module should consume the same seven fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.

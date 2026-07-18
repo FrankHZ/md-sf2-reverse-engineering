@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-stat-clamp-boundaries-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "case"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-stat-clamp-boundaries-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "core"],
+      "properties": {
+        "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" }
+      }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["levelUpEntryAddress", "updateStatsEntryAddress", "updateStatsReturnAddress", "increaseAndClampByteAddress", "increaseAndClamp7BitsAddress", "decreaseAndClampByteAddress", "increaseBaseAttEntryAddress", "increaseBaseAttReturnAddress", "increaseBaseDefEntryAddress", "increaseBaseDefReturnAddress", "increaseBaseAgiEntryAddress", "increaseBaseAgiReturnAddress", "increaseCurrentMovEntryAddress", "increaseCurrentMovReturnAddress", "increaseCurrentAttEntryAddress", "increaseCurrentAttReturnAddress", "decreaseCurrentDefEntryAddress", "decreaseCurrentDefReturnAddress", "decreaseCurrentMovEntryAddress", "decreaseCurrentMovReturnAddress", "decreaseCurrentAgiEntryAddress", "decreaseCurrentAgiReturnAddress"],
+      "properties": {
+        "levelUpEntryAddress": { "const": 38020 },
+        "updateStatsEntryAddress": { "const": 35278 },
+        "updateStatsReturnAddress": { "const": 35364 },
+        "increaseAndClampByteAddress": { "const": 37650 },
+        "increaseAndClamp7BitsAddress": { "const": 37684 },
+        "decreaseAndClampByteAddress": { "const": 37740 },
+        "increaseBaseAttEntryAddress": { "const": 34732 }, "increaseBaseAttReturnAddress": { "const": 34752 },
+        "increaseBaseDefEntryAddress": { "const": 34776 }, "increaseBaseDefReturnAddress": { "const": 34796 },
+        "increaseBaseAgiEntryAddress": { "const": 34820 }, "increaseBaseAgiReturnAddress": { "const": 34838 },
+        "increaseCurrentMovEntryAddress": { "const": 34882 }, "increaseCurrentMovReturnAddress": { "const": 34902 },
+        "increaseCurrentAttEntryAddress": { "const": 34754 }, "increaseCurrentAttReturnAddress": { "const": 34774 },
+        "decreaseCurrentDefEntryAddress": { "const": 35074 }, "decreaseCurrentDefReturnAddress": { "const": 35094 },
+        "decreaseCurrentMovEntryAddress": { "const": 35162 }, "decreaseCurrentMovReturnAddress": { "const": 35182 },
+        "decreaseCurrentAgiEntryAddress": { "const": 35118 }, "decreaseCurrentAgiReturnAddress": { "const": 35138 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "seedAddress"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 },
+        "combatantEntrySize": { "const": 56 },
+        "seedAddress": { "const": 16768676 }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "ally", "allyCode", "classCode", "seed", "input", "operations", "helpersObserved", "after"],
+      "properties": {
+        "id": { "const": "slade-thif-level39-stat-clamps" },
+        "ally": { "const": 5 }, "allyCode": { "const": "SLADE" }, "classCode": { "const": "THIF" },
+        "seed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "input": {
+          "type": "object", "additionalProperties": false,
+          "required": ["class", "level", "maxHp", "maxMp", "baseAttack", "baseDefense", "baseAgility", "baseMove", "items", "status"],
+          "properties": {
+            "class": { "const": 10 }, "level": { "const": 39 }, "maxHp": { "const": 42 }, "maxMp": { "const": 0 },
+            "baseAttack": { "const": 45 }, "baseDefense": { "const": 38 }, "baseAgility": { "const": 38 }, "baseMove": { "const": 7 },
+            "items": { "const": [150, 172, 212, 229] }, "status": { "const": 0 }
+          }
+        },
+        "operations": {
+          "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "source", "kind", "entryKey", "fieldOffset", "before", "amount", "cap", "after"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 }, "source": { "type": "string", "minLength": 1 },
+              "kind": { "enum": ["increase-byte", "increase-7bits", "decrease-byte"] },
+              "entryKey": { "enum": ["increaseBaseAtt", "increaseBaseDef", "increaseBaseAgi", "increaseCurrentMov", "increaseCurrentAtt", "decreaseCurrentDef", "decreaseCurrentMov", "decreaseCurrentAgi"] },
+              "fieldOffset": { "type": "integer", "minimum": 0, "maximum": 55 },
+              "before": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "amount": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "cap": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "after": { "type": "integer", "minimum": 0, "maximum": 255 }
+            }
+          }
+        },
+        "helpersObserved": {
+          "type": "object", "additionalProperties": false,
+          "required": ["increaseByte", "increase7Bits", "decreaseByte"],
+          "properties": {
+            "increaseByte": { "const": true }, "increase7Bits": { "const": true }, "decreaseByte": { "const": true }
+          }
+        },
+        "after": {
+          "type": "object", "additionalProperties": false,
+          "required": ["level", "baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "baseMove", "currentMove", "status"],
+          "properties": {
+            "level": { "const": 40 }, "baseAttack": { "const": 200 }, "currentAttack": { "const": 200 },
+            "baseDefense": { "const": 200 }, "currentDefense": { "const": 0 },
+            "baseAgility": { "const": 228 }, "currentAgility": { "const": 0 },
+            "baseMove": { "const": 7 }, "currentMove": { "const": 0 }, "status": { "const": 4 }
+          }
+        }
+      }
+    }
+  }
+}
