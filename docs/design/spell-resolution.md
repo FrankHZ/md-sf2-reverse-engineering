@@ -175,22 +175,26 @@ caster EXP `0 -> 8`.
 This confirms SLEEP 1 only. Other status spells may alter the base threshold, pre-existing status,
 reaction payload, message, or EXP/kill behavior and require their own cases.
 
-## Confirmed DESOUL 1 Instant-Death Subset
+## Confirmed DESOUL 1 Resistance and Multi-Target Rewards
 
-DESOUL 1 reuses the STATUS effectiveness rule. Against setting 0, threshold 5 and controlled
-range-8 roll 7 succeed. The effect emits enemy HP change `0x8000`, adds kill rewards, and sets the
-scene's `targetDies` flag to `0xFF`; target HP remains 100 during construction.
+DESOUL 1 reuses the STATUS effectiveness rule. With controlled range-8 roll 7, settings 0-3 produce
+thresholds `5/6/7/8` and outcomes `success/success/success/failure`. Every success emits HP change
+`0x8000`, adds kill rewards, and sets the per-target `targetDies` flag to `0xFF`. The target loop
+clears that flag before the next effect. Failure unwinds without a reaction, reward, or persistent
+mutation; consumers must not synthesize a zero-damage reaction for it.
 
-The controlled target is enemy definition 0 (OOZE), level 1, max/current HP 100, and worth 10 gold.
-Against level-1 unpromoted Bowie, `GetKillExp` returns 50, which the shared per-action cap truncates
-to 49. Battle 01 halves this to 24. From effectiveness seed `0xECAB`, award rolls 0 and 3 add one
-without subtracting, producing a 25-EXP command. Gold is not randomized or halved.
+The four controlled targets are enemy definition 0 (OOZE), level 1, max/current HP 100, and worth
+10 gold each. Against level-1 unpromoted Bowie, each successful kill calculates 50 EXP. The shared
+per-action cap stores 49 on the first and remains 49 after the next two, while gold accumulates
+`10 -> 20 -> 30`. Battle 01 halves EXP to 24; award rolls 0 and 3 produce a 25-EXP command. Gold is
+neither randomized nor halved.
 
-Replay applies caster MP `20 -> 12`, interprets signed HP change `-32768` as the death sentinel and
-sets target HP `100 -> 0`, applies EXP `0 -> 25`, and increases force gold `0 -> 10`. This confirms
-one successful enemy instant death, kill cap, reward lookup, and persistent replay. DESOUL failure,
-DESOUL 2 multi-target behavior, ally/enemy-caster reward skips, boss immunity, and battle-victory
-side effects remain outside the case.
+Replay applies commands in order
+`ally:-8 -> enemy:-32768 -> enemy:-32768 -> enemy:-32768`, changes caster MP `20 -> 12`, leaves
+target HP `0/0/0/100`, applies EXP `0 -> 25`, and increases force gold `0 -> 30`. This confirms
+DESOUL failure, multi-target resolution ordering, per-action EXP saturation, cumulative gold, and
+persistent replay. DESOUL 2 natural geometry, ally/enemy-caster reward skips, boss immunity, and
+battle-victory side effects remain outside the case.
 
 ## Confirmed SPOIT MP-Absorption Boundary Matrix
 
@@ -356,7 +360,7 @@ naturally carried state remains outside these cases.
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
-| `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
+| `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
 | `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` counter; 3/8 DEF/AGI floor; same-side status EXP; cost/status replay; failed recast status-write/stat-refresh mismatch |
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
@@ -383,6 +387,6 @@ expected-deviation fixture.
 - **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/
   SLOW/DISPEL subsets, BOOST/SLOW 2,
   reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
-  DESOUL failure/multi-target branches, breath attacks, and special spell-effect dispatch.
+  DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.

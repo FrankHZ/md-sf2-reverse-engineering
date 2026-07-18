@@ -35,41 +35,69 @@ def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
         "executeEnemyReaction #$8000,#0,d1,#1",
         "bsr.w   battlesceneScript_AddExpAndGoldForKill",
         "move.b  #-1,targetDies(a2)",
+        "cmp.w   d2,d0",
+        "bcc.s   @Success",
+        "move.b  #-1,dodge(a2)",
     )
     if any(fragment not in cast for fragment in required):
         raise ValueError("DESOUL source contract drifted")
     if "bsr.w   battlesceneScript_GetKillExp" not in earn or "table_EnemyGold" not in earn:
         raise ValueError("DESOUL reward source contract drifted")
     first_gold = re.search(r"table_EnemyGold:dc\.w\s+(\d+)", gold)
-    if not first_gold or int(first_gold.group(1)) != case["targetGold"]:
+    target_gold = {target["gold"] for target in case["targets"]}
+    if (
+        not first_gold
+        or len(target_gold) != 1
+        or int(first_gold.group(1)) != target_gold.pop()
+    ):
         raise ValueError("enemy index 0 gold disagrees with the fixture")
 
 
 def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     case = fixture["case"]
-    threshold = case["baseThreshold"] + case["targetSetting"]
-    seed, roll = _rng_step(case["seed"], 8)
-    success = roll >= threshold
-    if not success:
-        raise ValueError("DESOUL success fixture seed no longer succeeds")
-    accumulated_exp = 49
+    records = []
+    accumulated_exp = 0
+    accumulated_gold = 0
+    award_seed = None
+    for target in case["targets"]:
+        threshold = case["baseThreshold"] + target["setting"]
+        seed, roll = _rng_step(case["seed"], 8)
+        award_seed = seed
+        success = roll >= threshold
+        if success:
+            accumulated_exp = 49
+            accumulated_gold += target["gold"]
+        records.append(
+            {
+                "combatant": target["combatant"],
+                "setting": target["setting"],
+                "threshold": threshold,
+                "roll": roll,
+                "success": success,
+                "reactionEmitted": success,
+                "accumulatedExp": accumulated_exp,
+                "accumulatedGold": accumulated_gold,
+                "targetDiesFlag": 255 if success else 0,
+                "targetHp": target["initialHp"],
+            }
+        )
     halved = accumulated_exp // 2 if fixture["battleId"] == 1 else accumulated_exp
-    award_seed = seed
+    assert award_seed is not None
+    seed = award_seed
     seed, first_roll = _rng_step(seed, 16)
     command_exp = halved + int(first_roll == 0)
     _, second_roll = _rng_step(seed, 16)
     command_exp = max(command_exp - int(second_roll == 0), 1)
+    successful = [
+        (target, record)
+        for target, record in zip(case["targets"], records, strict=True)
+        if record["success"]
+    ]
     return {
         "construction": {
-            "setting": case["targetSetting"],
-            "threshold": threshold,
-            "roll": roll,
-            "success": True,
-            "instantDeathCommand": 0x8000,
+            "records": records,
             "accumulatedExp": accumulated_exp,
-            "accumulatedGold": case["targetGold"],
-            "targetDiesFlag": 255,
-            "targetHp": case["targetInitialHp"],
+            "accumulatedGold": accumulated_gold,
             "actorMp": case["initialMp"],
             "award": {
                 "seed": award_seed,
@@ -77,34 +105,44 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
                 "firstRoll": first_roll,
                 "secondRoll": second_roll,
                 "commandExp": command_exp,
-                "commandGold": case["targetGold"],
+                "commandGold": accumulated_gold,
             },
         },
         "replay": {
+            "reactionOrder": [f"ally:{-case['spellMpCost']}"]
+            + ["enemy:-32768" for _target, _record in successful],
             "allyReaction": {
+                "combatant": case["actor"],
                 "mpChange": -case["spellMpCost"],
                 "mpBefore": case["initialMp"],
                 "mpAfter": case["initialMp"] - case["spellMpCost"],
             },
-            "enemyReaction": {
-                "hpChange": -0x8000,
-                "hpBefore": case["targetInitialHp"],
-                "hpAfter": 0,
-            },
+            "enemyReactions": [
+                {
+                    "combatant": target["combatant"],
+                    "hpChange": -0x8000,
+                    "hpBefore": target["initialHp"],
+                    "hpAfter": 0,
+                }
+                for target, _record in successful
+            ],
             "expReaction": {
                 "commandExp": command_exp,
                 "expBefore": case["actorInitialExp"],
                 "expAfter": case["actorInitialExp"] + command_exp,
             },
             "goldReaction": {
-                "commandGold": case["targetGold"],
+                "commandGold": accumulated_gold,
                 "goldBefore": 0,
-                "goldAfter": case["targetGold"],
+                "goldAfter": accumulated_gold,
             },
             "finalActorMp": case["initialMp"] - case["spellMpCost"],
             "finalActorExp": case["actorInitialExp"] + command_exp,
-            "finalTargetHp": 0,
-            "finalGold": case["targetGold"],
+            "finalTargetHp": [
+                0 if record["success"] else target["initialHp"]
+                for target, record in zip(case["targets"], records, strict=True)
+            ],
+            "finalGold": accumulated_gold,
         },
     }
 
@@ -138,7 +176,11 @@ def verify_spell_desoul(
         "core": fixture["emulator"]["core"],
         "id": fixture["case"]["id"],
         "battle": fixture["battleId"],
-        "action": {"type": 1, "spell": 8, "target": 128},
+        "action": {
+            "type": 1,
+            "spell": 8,
+            "target": fixture["case"]["targets"][0]["combatant"],
+        },
         **fixture["expected"],
     }
     if observed != expected:
@@ -149,7 +191,12 @@ def verify_spell_desoul(
     return {
         "Fixture": fixture["id"],
         "Spell": "DESOUL 1",
-        "Roll": modeled["construction"]["roll"],
+        "Thresholds": [
+            record["threshold"] for record in modeled["construction"]["records"]
+        ],
+        "Success": [
+            record["success"] for record in modeled["construction"]["records"]
+        ],
         "KillExp": modeled["construction"]["accumulatedExp"],
         "CommandExp": modeled["construction"]["award"]["commandExp"],
         "Gold": modeled["replay"]["finalGold"],

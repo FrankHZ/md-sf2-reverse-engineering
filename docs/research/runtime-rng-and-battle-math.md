@@ -552,22 +552,27 @@ Tracked artifacts are `tests/fixtures/h3/spell-status-sleep-v1.json`,
 `schemas/h3-spell-status-sleep-fixture.schema.json`, `src/sf2tool/h3/spell_status.py`, and
 `tools/bizhawk/spell_status_observer.lua`.
 
-## Confirmed: DESOUL 1 Instant Death and Kill Rewards
+## Confirmed: DESOUL 1 Resistance, Failure, and Multi-Target Rewards
 
-The DESOUL fixture supplies one neutral-STATUS enemy target and resets seed `0x1234` at the genuine
-`spellEffect_Desoul` entry. Threshold 5 and range-8 roll 7 reach the shared success return. The
-effect writes enemy reaction HP word `0x8000`, then calls
-`battlesceneScript_AddExpAndGoldForKill` and sets stack-frame `targetDies` to `0xFF`.
+The DESOUL fixture supplies four enemy-definition-0 (OOZE) targets carrying STATUS settings 0-3.
+At each genuine `spellEffect_Desoul` entry it resets seed `0x1234`, isolating resistance thresholds
+from RNG variation. The common range-8 roll is 7; thresholds `5/6/7/8` therefore produce
+`success/success/success/failure`. Each success emits enemy HP word `0x8000`, calls
+`battlesceneScript_AddExpAndGoldForKill`, and sets the per-target stack-frame `targetDies` byte to
+`0xFF`. The outer target loop clears that byte before each target, so the failed setting-3 target
+observes zero and returns through the effectiveness unwind without a reaction or reward.
 
-The target is explicitly enemy definition 0 (OOZE), level 1, max/current HP 100. `GetKillExp`
-returns 50 for level-1 unpromoted Bowie versus level 1, and the per-action cap stores 49. The OOZE
-gold table entry adds 10 to `BATTLESCENE_GOLD`. Neither construction step changes persistent target
-HP or caster MP.
+All four targets are level 1 with max/current HP 100. Against unpromoted level-1 Bowie,
+`GetKillExp` returns 50; the first success reaches the per-action cap 49 and later successes leave it
+there. The OOZE gold entry adds 10 independently for each successful target, producing accumulator
+states `10/20/30/30`. Construction records three death commands but leaves all target HP at 100 and
+caster MP at 20.
 
-Battle 01 halves 49 to 24. Final effectiveness seed `0xECAB` produces award rolls 0 and 3, so the
-first adds one and the command carries 25 EXP; gold remains 10. Playback changes MP `20 -> 12`,
-interprets reaction word `0x8000` as signed `-32768` and reduces target HP `100 -> 0`, changes EXP
-`0 -> 25`, and changes `CURRENT_GOLD` `0 -> 10` through `IncreaseGold`.
+Battle 01 halves EXP `49 -> 24`. Final effectiveness seed `0xECAB` produces award rolls 0 and 3, so
+the first adds one and the command carries 25 EXP; gold remains 30. Replay order is
+`ally:-8 -> enemy:-32768 -> enemy:-32768 -> enemy:-32768`. It changes caster MP `20 -> 12`, reduces
+the first three target HP values to zero while leaving the failed target at 100, changes EXP
+`0 -> 25`, and changes `CURRENT_GOLD` `0 -> 30` through `IncreaseGold`.
 
 Reproduce the fixture with:
 
@@ -577,7 +582,8 @@ uv run sf2 h3 spell-desoul
 
 Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
 `schemas/h3-spell-desoul-fixture.schema.json`, `src/sf2tool/h3/spell_desoul.py`, and
-`tools/bizhawk/spell_desoul_observer.lua`.
+`tools/bizhawk/spell_desoul_observer.lua`. The supplied target list confirms multi-target resolution
+order but not DESOUL 2's natural geometry.
 
 ## Confirmed: SPOIT MP-Absorption Boundary Matrix and Replay Order
 
@@ -832,7 +838,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
+  DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
   reapplication, and other status spells, SPOIT enemy-caster behavior, and other non-damage spell
   families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for

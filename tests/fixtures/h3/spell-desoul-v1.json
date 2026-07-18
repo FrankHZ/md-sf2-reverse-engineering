@@ -4,11 +4,15 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "One controlled Battle 01 DESOUL 1 success against an enemy index 0 target through STATUS effectiveness, instant-death command construction, kill EXP/gold accumulation, Battle 01 award randomization, and persistent HP/MP/EXP/gold replay. Common Battle Test, effectiveness, and replay addresses are inherited from named fixtures.",
+  "observationBoundary": "One controlled Battle 01 DESOUL 1 action across all four STATUS resistance settings. The pre-initialization seam supplies four enemy-index-0 targets and the effect-entry seam resets the same seed for each target. The fixture observes three successes plus the setting-3 failure unwind, instant-death command presence/absence, per-action EXP capping, cumulative enemy gold, targetDies reset per target, and persistent HP/MP/EXP/gold replay. Common Battle Test, effectiveness, and replay addresses are inherited from named fixtures.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "sharedStatusFixture": "tests/fixtures/h3/spell-status-sleep-v1.json",
   "function": {
     "desoulEffectEntryAddress": 46358,
+    "effectivenessEntryAddress": 47768,
+    "effectivenessRollAddress": 47784,
+    "effectivenessFailureAddress": 47820,
+    "effectivenessSuccessAddress": 47826,
     "killExpGoldAppliedAddress": 43322,
     "targetDiesAppliedAddress": 46460
   },
@@ -17,7 +21,7 @@
     "currentGoldAddress": 16774656
   },
   "case": {
-    "id": "bowie-desoul1-neutral-ooze",
+    "id": "bowie-desoul1-four-status-resistance-settings",
     "actor": 0,
     "actorClass": 0,
     "actorLevel": 1,
@@ -28,38 +32,40 @@
     "spellMpCost": 8,
     "baseThreshold": 5,
     "seed": 4660,
-    "target": 128,
-    "targetLevel": 1,
-    "targetMaxHp": 100,
-    "targetInitialHp": 100,
-    "targetResistanceWord": 0,
-    "targetSetting": 0,
-    "targetEnemyIndex": 0,
-    "targetGold": 10
+    "targets": [
+      { "combatant": 128, "level": 1, "maxHp": 100, "initialHp": 100, "resistanceWord": 0, "setting": 0, "enemyIndex": 0, "gold": 10 },
+      { "combatant": 129, "level": 1, "maxHp": 100, "initialHp": 100, "resistanceWord": 16384, "setting": 1, "enemyIndex": 0, "gold": 10 },
+      { "combatant": 130, "level": 1, "maxHp": 100, "initialHp": 100, "resistanceWord": 32768, "setting": 2, "enemyIndex": 0, "gold": 10 },
+      { "combatant": 131, "level": 1, "maxHp": 100, "initialHp": 100, "resistanceWord": 49152, "setting": 3, "enemyIndex": 0, "gold": 10 }
+    ]
   },
   "expected": {
     "construction": {
-      "setting": 0,
-      "threshold": 5,
-      "roll": 7,
-      "success": true,
-      "instantDeathCommand": 32768,
+      "records": [
+        { "combatant": 128, "setting": 0, "threshold": 5, "roll": 7, "success": true, "reactionEmitted": true, "accumulatedExp": 49, "accumulatedGold": 10, "targetDiesFlag": 255, "targetHp": 100 },
+        { "combatant": 129, "setting": 1, "threshold": 6, "roll": 7, "success": true, "reactionEmitted": true, "accumulatedExp": 49, "accumulatedGold": 20, "targetDiesFlag": 255, "targetHp": 100 },
+        { "combatant": 130, "setting": 2, "threshold": 7, "roll": 7, "success": true, "reactionEmitted": true, "accumulatedExp": 49, "accumulatedGold": 30, "targetDiesFlag": 255, "targetHp": 100 },
+        { "combatant": 131, "setting": 3, "threshold": 8, "roll": 7, "success": false, "reactionEmitted": false, "accumulatedExp": 49, "accumulatedGold": 30, "targetDiesFlag": 0, "targetHp": 100 }
+      ],
       "accumulatedExp": 49,
-      "accumulatedGold": 10,
-      "targetDiesFlag": 255,
-      "targetHp": 100,
+      "accumulatedGold": 30,
       "actorMp": 20,
-      "award": { "seed": 60587, "halved": 24, "firstRoll": 0, "secondRoll": 3, "commandExp": 25, "commandGold": 10 }
+      "award": { "seed": 60587, "halved": 24, "firstRoll": 0, "secondRoll": 3, "commandExp": 25, "commandGold": 30 }
     },
     "replay": {
-      "allyReaction": { "mpChange": -8, "mpBefore": 20, "mpAfter": 12 },
-      "enemyReaction": { "hpChange": -32768, "hpBefore": 100, "hpAfter": 0 },
+      "reactionOrder": ["ally:-8", "enemy:-32768", "enemy:-32768", "enemy:-32768"],
+      "allyReaction": { "combatant": 0, "mpChange": -8, "mpBefore": 20, "mpAfter": 12 },
+      "enemyReactions": [
+        { "combatant": 128, "hpChange": -32768, "hpBefore": 100, "hpAfter": 0 },
+        { "combatant": 129, "hpChange": -32768, "hpBefore": 100, "hpAfter": 0 },
+        { "combatant": 130, "hpChange": -32768, "hpBefore": 100, "hpAfter": 0 }
+      ],
       "expReaction": { "commandExp": 25, "expBefore": 0, "expAfter": 25 },
-      "goldReaction": { "commandGold": 10, "goldBefore": 0, "goldAfter": 10 },
+      "goldReaction": { "commandGold": 30, "goldBefore": 0, "goldAfter": 30 },
       "finalActorMp": 12,
       "finalActorExp": 25,
-      "finalTargetHp": 0,
-      "finalGold": 10
+      "finalTargetHp": [0, 0, 0, 100],
+      "finalGold": 30
     }
   }
 }

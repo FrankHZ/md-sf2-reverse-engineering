@@ -717,6 +717,14 @@
           { "addressId": "failure", "fixtureField": "function.effectivenessFailureAddress" },
           { "addressId": "success", "fixtureField": "function.effectivenessSuccessAddress" }
         ]
+      }, {
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.effectivenessEntryAddress" },
+          { "addressId": "roll", "fixtureField": "function.effectivenessRollAddress" },
+          { "addressId": "failure", "fixtureField": "function.effectivenessFailureAddress" },
+          { "addressId": "success", "fixtureField": "function.effectivenessSuccessAddress" }
+        ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/spell-resolution.md"]
