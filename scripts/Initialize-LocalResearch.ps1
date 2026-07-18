@@ -110,4 +110,4 @@ Write-Warning ([string] $manifest.sf2disasm.licenseStatus)
 Write-Warning ([string] $manifest.bizhawk.licenseStatus)
 & (Join-Path $PSScriptRoot 'Test-Toolchain.ps1') -UpstreamPath $upstreamPath -JavaPath $javaPath
 
-Write-Output 'Local research environment is ready. Run: pwsh ./scripts/verify.ps1'
+Write-Output 'Local research environment is ready. Run: uv run sf2 verify'

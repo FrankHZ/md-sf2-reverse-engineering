@@ -32,6 +32,13 @@
 *.map
 *.bak
 
+# Python/uv local environments and caches
+/.venv/
+/.pytest_cache/
+/.ruff_cache/
+__pycache__/
+*.py[cod]
+
 # OS/editor noise
 Thumbs.db
 Desktop.ini

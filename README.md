@@ -93,9 +93,11 @@ docs/
   decisions/           引擎、格式和工具链等架构决策
 schemas/               规范化导出数据的 schema
 manifests/              ROM、工具链、提取布局与逆向研究关系索引
+src/sf2tool/            Python CLI、验证器、提取器与 harness 主实现
 tools/                 盘点、提取、转换、差分和报告工具
-scripts/verify.ps1     统一的非交互验证入口
+scripts/               迁移期间冻结的 H1-H3 PowerShell 兼容层
 tests/fixtures/        小型、可再分发的元数据与行为期望
+tests/python/          Python 单元与合同测试
 remake/                现代引擎工程（合同稳定后创建）
 local/                 被 Git 忽略的 ROM、补丁、上游 checkout 和生成物
 ```
@@ -105,10 +107,11 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 
 ## Harness：项目的主干
 
-最终统一入口为：
+依赖由 `uv` 和提交的 `uv.lock` 固定。首次同步及统一验证入口为：
 
 ```powershell
-pwsh ./scripts/verify.ps1
+uv sync --locked
+uv run sf2 verify
 ```
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
@@ -129,8 +132,8 @@ pwsh ./scripts/verify.ps1
 本地环境：
 
 ```powershell
-pwsh ./scripts/Initialize-LocalResearch.ps1 -RomPath <合法持有的美版 ROM 路径>
-pwsh ./scripts/verify.ps1
+uv run sf2 init --rom-path <合法持有的美版 ROM 路径>
+uv run sf2 verify
 ```
 
 每条重要设计结论都应能回到 H1-H3 的证据；每个重制系统都应能被 H4 独立测试。截图和人工
@@ -138,8 +141,13 @@ pwsh ./scripts/verify.ps1
 
 当前 H3 关系可通过 [`manifests/research-index.json`](./manifests/research-index.json) 查询。它把固定
 上游 symbol、ROM/RAM 地址、fixture/verifier、研究文档与已接受的设计合同连成机器可读记录，并由
-`pwsh ./scripts/Test-ResearchIndex.ps1` 检查全部 H3 fixture 的地址绑定；使用方法和边界见
+`uv run sf2 research-index test` 检查全部 H3 fixture 的地址绑定；使用方法和边界见
 [`docs/research/indexing.md`](./docs/research/indexing.md)。
+
+项目维护语言已经切换为 Python 3.12+，依赖和命令统一通过 `uv`。既有 H1-H3 PowerShell rails
+在迁移期间只能由 `sf2tool.legacy` 调用，并被 38 文件/5,208 行的不可增长测试冻结；新增工具不得
+再写 PowerShell。迁移原则见
+[`docs/decisions/0002-python-and-uv-for-project-tooling.md`](./docs/decisions/0002-python-and-uv-for-project-tooling.md)。
 
 ## 研究地图
 

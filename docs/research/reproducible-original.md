@@ -9,7 +9,7 @@
 Phase 1 can reproduce the original input ROM byte for byte with one non-interactive command:
 
 ```powershell
-pwsh ./scripts/verify.ps1
+uv run sf2 verify
 ```
 
 The verified input and output are both 2,097,152 bytes and both have SHA-256:
@@ -49,7 +49,8 @@ is useful hygiene, not a proof that old unsigned binaries are safe.
 
 ## Reproduction Pipeline
 
-`scripts/verify.ps1` performs the following rails:
+`sf2tool.harness` performs the following rails. During the accepted Python migration, it invokes the
+proven H1-H3 PowerShell implementations through one frozen compatibility adapter:
 
 1. Validate the ROM manifest against its JSON Schema.
 2. Recompute file hashes, parse the Mega Drive header, and independently recompute the checksum from
@@ -75,8 +76,8 @@ Temurin and BizHawk archives, verifies their size/hash, extracts them locally, a
 tools when Microsoft Defender is available:
 
 ```powershell
-pwsh ./scripts/Initialize-LocalResearch.ps1 -RomPath <ROM path>
-pwsh ./scripts/verify.ps1
+uv run sf2 init --rom-path <ROM path>
+uv run sf2 verify
 ```
 
 No system PATH or system Java installation is changed.

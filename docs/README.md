@@ -38,6 +38,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 
 - [`0001-bizhawk-for-h3-runtime-observation.md`](./decisions/0001-bizhawk-for-h3-runtime-observation.md)：
   固定 BizHawk 2.11.1，并记录 Genesis Plus GX 寄存器写入的实测边界。
+- [`0002-python-and-uv-for-project-tooling.md`](./decisions/0002-python-and-uv-for-project-tooling.md)：
+  Python/uv 工具链、稳定 CLI，以及现有 PowerShell rails 的冻结迁移边界。
 
 ## Evidence Vocabulary
 

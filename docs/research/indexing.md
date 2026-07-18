@@ -28,14 +28,14 @@ that every upstream assembly function, game subsystem, or H2 table is already co
 ## Validation Contract
 
 ```powershell
-pwsh ./scripts/Test-ResearchIndex.ps1
-pwsh ./scripts/Get-ResearchIndex.ps1 -Summary
-pwsh ./scripts/Get-ResearchIndex.ps1 -Query counter
-pwsh ./scripts/Get-ResearchIndex.ps1 -Fixture attack-chain
+uv run sf2 research-index test
+uv run sf2 research-index list --summary
+uv run sf2 research-index list --query counter
+uv run sf2 research-index list --fixture attack-chain
 ```
 
-`Test-ResearchIndex.ps1` validates the JSON schema and then enforces relationships that JSON Schema
-cannot express:
+`sf2tool.research_index.verify_index` validates the JSON schema and then enforces relationships that
+JSON Schema cannot express:
 
 1. the upstream repository and commit equal `manifests/toolchain.json`;
 2. every record has one unique ID, one ROM symbol address, and unique local address IDs;
@@ -46,7 +46,7 @@ cannot express:
 7. when the ignored upstream checkout exists, source files and symbol labels are checked;
 8. when the H1 listing exists, each symbol address is compared with the assembled listing.
 
-The root `pwsh ./scripts/verify.ps1` runs this check before the ROM and extraction/runtime rails. A
+The root `uv run sf2 verify` runs this check before the ROM and extraction/runtime rails. A
 fresh checkout can validate tracked relationships without private inputs; source and listing checks
 activate automatically when their local evidence exists.
 
@@ -59,7 +59,8 @@ When a new reverse-engineering slice introduces a runtime address:
 3. add an index record or evidence binding for each fixture ROM/RAM `*Address` field;
 4. cite the owning research document and any accepted design contract;
 5. retain `inferred` or `unknown` until the evidence satisfies the repository vocabulary;
-6. run the narrow verifier, `Test-ResearchIndex.ps1`, and the root verification entry point.
+6. run the narrow fixture verifier, `uv run sf2 research-index test`, and the root verification entry
+   point.
 
 Observation points inside a function use `kind: observation`. Named function entries use
 `kind: symbol`; stable runtime state uses `space: ram` and `kind: state`. An address appearing in

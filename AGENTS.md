@@ -29,7 +29,9 @@ When more documents exist, use these ownership boundaries:
 - `docs/design/`: implementation-neutral game design reconstructed from evidence.
 - `docs/decisions/`: durable architecture and tool decisions.
 - `schemas/`: canonical extracted-data contracts.
+- `src/sf2tool/`: maintained Python CLI, extractors, verifiers, and harness code.
 - `tools/`: repeatable inspection, extraction, conversion, and validation code.
+- `tests/python/`: project-owned Python unit and contract tests.
 - `tests/fixtures/`: small redistributable metadata and behavioral expectations.
 - `remake/`: modern-engine implementation after its contracts are accepted.
 
@@ -106,10 +108,14 @@ Review tool source and license before use. Prefer source builds or well-known
 package sources over opaque binaries. Download only the minimum needed for the
 active slice.
 
-## Harness Contract
+## Python and Harness Contract
 
-The root verification entry point is `pwsh ./scripts/verify.ps1`. Keep it
-non-interactive, deterministic, and safe to rerun. It currently implements design-contract
+Python 3.12+ is the maintained tooling language and `uv` owns dependency resolution, locking, and
+execution. Bootstrap with `uv sync --locked`; never install project dependencies into the system
+interpreter or maintain a parallel requirements file. Run Ruff and pytest through `uv run`.
+
+The root verification entry point is `uv run sf2 verify`. Keep it non-interactive, deterministic,
+and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
 promotion/enemy and Battle 01 scene extraction, plus BizHawk
 RNG/stat-gain/turn-order/region-activation/physical-attack-chain/dodge/follow-up-validation behavior
@@ -136,6 +142,11 @@ Every tool should support a read-only or output-directory workflow. Never patch
 the canonical input in place. Generated outputs go under an ignored local work
 root and must be reproducible from documented inputs.
 
+The remaining scripts under `scripts/*.ps1` are a temporary, frozen compatibility surface for the
+already-proven H1-H3 rails. Python invokes them only through `sf2tool.legacy`; do not add new
+PowerShell scripts or grow the aggregate PowerShell line budget. Migrate a complete rail to
+`src/sf2tool/`, verify parity, then delete its old script. Do not build new logic in the adapter.
+
 ## Change Discipline
 
 - Make narrow, reviewable changes with one clear owner and acceptance test.
@@ -150,9 +161,10 @@ root and must be reproducible from documented inputs.
 - Do not report a subsystem as documented until its unknowns and verification
   coverage are explicit.
 
-On Windows, use PowerShell-native commands, quote literal paths, capture
-`$LASTEXITCODE` immediately after native commands, and force UTF-8 when piping
-non-ASCII text through Python.
+On Windows, maintained Python code must launch native tools with `subprocess` argument lists and no
+shell. The frozen PowerShell layer retains the repository's existing native-command rules until
+each rail is migrated. Keep text files UTF-8 and pass paths directly instead of piping non-ASCII
+JSON between runtimes.
 
 ## Definition of Done
 

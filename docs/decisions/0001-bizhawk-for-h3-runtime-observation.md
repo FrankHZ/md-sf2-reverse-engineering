@@ -50,10 +50,11 @@ execution engine.
 
 ## Consequences
 
-- `pwsh ./scripts/Initialize-LocalResearch.ps1` obtains only the official pinned BizHawk release and
-  verifies it before use.
-- `pwsh ./scripts/Test-H3RngFixture.ps1` is the narrow H3 command; root verification runs it by
-  default and offers `-SkipRuntime` for deliberately static-only work.
+- `uv run sf2 init --rom-path <ROM path>` obtains only the official pinned BizHawk release through
+  the migration adapter and verifies it before use.
+- Root `uv run sf2 verify` runs the RNG fixture by default and offers `--skip-runtime` for
+  deliberately static-only work. The underlying H3 rail remains in the frozen PowerShell layer
+  until its Lua observer is extracted and the host orchestration is migrated.
 - Emulator-generated configs, Lua scripts, observations, states, traces, and movies remain ignored.
 - The EmuHawk repository is MIT, but a release bundle contains separately licensed components. The
   manifest records that boundary and the project does not redistribute the bundle.
