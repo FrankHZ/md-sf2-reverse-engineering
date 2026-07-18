@@ -57,8 +57,8 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-silence-gate-v1.json": (
             "sf2-silenced-caster-blocks-blaze1-v1"
         ),
-        "tests/fixtures/h3/after-turn-status-expiry-v1.json": (
-            "sf2-after-turn-one-counter-expiry-v1"
+        "tests/fixtures/h3/after-turn-status-lifecycle-v1.json": (
+            "sf2-after-turn-status-lifecycle-v1"
         ),
     },
 }

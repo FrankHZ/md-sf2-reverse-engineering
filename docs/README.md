@@ -14,7 +14,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`ally-growth.md`](./research/ally-growth.md)：成长曲线、职业成长投影、跨角色职业块扫描、法术学习与继承控制码，以及升级后的当前/派生属性刷新。
 - [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)：基础/调试覆盖 RNG、成长计算/完整升级、投影/等级上限/法术继承边界与
   Battle 01 行动顺序、AGI 127/128 边界、区域激活，以及物理伤害从地形/弓手加成到
-  dodge、critical、spread、double/counter、死亡/距离/状态/阵营/特殊敌人后续校验及完整 double validator、HP/EXP 构造、持久回放、99 EXP 自然升级、BLAZE 2 四档 FIRE 抗性矩阵、DAO 四目标 power division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 即死/kill reward、SPOIT MP 吸收、BOOST 1 首次/重施、DISPEL/SILENCE 消费链，以及回合后状态过期的 H3 动态 fixture。
+  dodge、critical、spread、double/counter、死亡/距离/状态/阵营/特殊敌人后续校验及完整 double validator、HP/EXP 构造、持久回放、99 EXP 自然升级、BLAZE 2 四档 FIRE 抗性矩阵、DAO 四目标 power division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 即死/kill reward、SPOIT MP 吸收、BOOST 1 首次/重施、DISPEL/SILENCE 消费链，以及回合后状态过期/继续的 H3 动态 fixture。
 - [`enemy-promotions.md`](./research/enemy-promotions.md)：五段转职映射、103 个敌人名称和
   56-byte 敌人定义的 source/ROM 双路径合同，以及教堂与敌人初始化的静态消费者。
 - [`battle01-placement.md`](./research/battle01-placement.md)：第一场剧情战斗的 map link、Stack

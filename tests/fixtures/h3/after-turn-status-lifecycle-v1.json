@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-after-turn-status-lifecycle-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Two natural Battle 01 ProcessAfterTurnEffects calls in one emulator session. After Bowie's controlled action, the first case supplies one counter each of SILENCE, SLOW, ATTACK, and BOOST and observes full expiry. A later Gizmo call supplies three counters each and observes SILENCE random continuation plus deterministic one-unit decrements. Both cases include a transient CURSE bit, empty equipment, ordered status writes, messages, and final UpdateCombatantStats normalization.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "entryAddress": 148034,
+    "silenceRngAddress": 148252,
+    "silenceRngReturnAddress": 148256,
+    "silenceBranchAddress": 148260,
+    "silenceMessageAddress": 148272,
+    "silenceDecrementAddress": 148280,
+    "afterSilenceAddress": 148292,
+    "slowMessageAddress": 148322,
+    "afterSlowAddress": 148334,
+    "attackMessageAddress": 148364,
+    "afterAttackAddress": 148376,
+    "boostMessageAddress": 148406,
+    "afterBoostAddress": 148418,
+    "updateStatsAddress": 148604,
+    "statsAppliedAddress": 148610
+  },
+  "action": { "actor": 0, "type": 1, "spell": 11, "target": 128 },
+  "constants": {
+    "unrelatedStatus": 4,
+    "itemEntries": [127, 127, 127, 127],
+    "silenceMask": 768,
+    "silenceCounterUnit": 256,
+    "slowMask": 3072,
+    "slowCounterUnit": 1024,
+    "attackMask": 49152,
+    "attackCounterUnit": 16384,
+    "boostMask": 12288,
+    "boostCounterUnit": 4096
+  },
+  "cases": [
+    {
+      "id": "bowie-four-one-counter-effects-expire",
+      "combatant": 0,
+      "seed": 4660,
+      "initialStatus": 21764,
+      "baseAttack": 40,
+      "initialCurrentAttack": 45,
+      "baseDefense": 40,
+      "initialCurrentDefense": 40,
+      "baseAgility": 24,
+      "initialCurrentAgility": 24
+    },
+    {
+      "id": "gizmo-four-three-counter-effects-decrement",
+      "combatant": 128,
+      "seed": 4660,
+      "initialStatus": 65284,
+      "baseAttack": 40,
+      "initialCurrentAttack": 55,
+      "baseDefense": 40,
+      "initialCurrentDefense": 40,
+      "baseAgility": 24,
+      "initialCurrentAgility": 24
+    }
+  ],
+  "expected": {
+    "records": [
+      {
+        "id": "bowie-four-one-counter-effects-expire",
+        "combatant": 0,
+        "rng": { "seed": 4660, "range": 256, "observedSeed": 60587, "rawRoll": 236, "maskedRoll": 0 },
+        "branches": { "silenceExpiredEntries": 1, "silenceDecrementEntries": 0, "updateStatsEntries": 1 },
+        "messages": { "silence": 1, "slow": 1, "attack": 1, "boost": 1 },
+        "status": { "initial": 21764, "afterSilence": 21508, "afterSlow": 20484, "afterAttack": 4100, "afterBoost": 4, "final": 0 },
+        "stats": { "initialAttack": 45, "initialDefense": 40, "initialAgility": 24, "finalAttack": 40, "finalDefense": 40, "finalAgility": 24 }
+      },
+      {
+        "id": "gizmo-four-three-counter-effects-decrement",
+        "combatant": 128,
+        "rng": { "seed": 4660, "range": 768, "observedSeed": 60587, "rawRoll": 710, "maskedRoll": 512 },
+        "branches": { "silenceExpiredEntries": 0, "silenceDecrementEntries": 1, "updateStatsEntries": 1 },
+        "messages": { "silence": 0, "slow": 0, "attack": 0, "boost": 0 },
+        "status": { "initial": 65284, "afterSilence": 65028, "afterSlow": 64004, "afterAttack": 47620, "afterBoost": 43524, "final": 43520 },
+        "stats": { "initialAttack": 55, "initialDefense": 40, "initialAgility": 24, "finalAttack": 50, "finalDefense": 40, "finalAgility": 24 }
+      }
+    ]
+  }
+}

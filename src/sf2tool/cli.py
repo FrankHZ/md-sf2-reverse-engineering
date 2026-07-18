@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
-from sf2tool.h3.after_turn import verify_after_turn_status_expiry
+from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
@@ -173,7 +173,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_local_paths(h3_spell_silence)
     h3_spell_silence.add_argument("--timeout-seconds", type=int, default=90)
     h3_after_turn = h3_commands.add_parser(
-        "after-turn", help="verify one-counter status expiry and final stat refresh"
+        "after-turn", help="verify status expiry, continuation, and final stat refresh"
     )
     _add_local_paths(h3_after_turn)
     h3_after_turn.add_argument("--timeout-seconds", type=int, default=90)
@@ -314,7 +314,7 @@ def dispatch(args: argparse.Namespace) -> None:
         )
     elif args.command == "h3" and args.h3_command == "after-turn":
         print_record(
-            verify_after_turn_status_expiry(
+            verify_after_turn_status_lifecycle(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

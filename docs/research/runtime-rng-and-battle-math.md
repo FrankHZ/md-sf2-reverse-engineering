@@ -639,10 +639,10 @@ current DEF/AGI 41/23→56/31. Ally 1 has no reaction and remains status `0x3000
 Bowie EXP changes 0→6.
 
 The after-turn source subtracts `STATUSEFFECTCOUNTER_BOOST` (`0x1000`) from the field, establishing
-the stored three-step counter representation. One-counter expiration and the final stat refresh are
-confirmed in the shared after-turn fixture below. Multi-counter duration, BOOST 2 geometry,
-equipment interaction, stat caps, and the refresh that resolves the failed-recast mismatch remain
-separate cases. Reproduce this slice with:
+the stored three-step counter representation. The shared fixture below confirms both `3 -> 2` and
+`1 -> 0`, including final stat refresh. Repeated full lifetime, BOOST 2 geometry, equipment
+interaction, stat caps, and the refresh that resolves the failed-recast mismatch remain separate
+cases. Reproduce this slice with:
 
 ```powershell
 uv run sf2 h3 spell-boost
@@ -683,9 +683,9 @@ award rolls 0 and 3, producing an 8-EXP command.
 Playback applies caster MP `20 -> 17`, then three enemy status commands in target order. The
 post-stat-refresh checkpoint `0x18FA0` confirms each successful target changes DEF/AGI
 41/23→26/15 while retaining `0x0C00`; target 131 remains 41/23 with status 0. The final EXP command
-changes Bowie 0→8. The shared after-turn fixture below confirms one-counter `0x0400 -> 0`
-expiration and final stat restoration. Multi-counter duration, reapplication, SLOW 2 geometry, and
-BOOST/SLOW interaction remain open.
+changes Bowie 0→8. The shared after-turn fixture below confirms `0x0C00 -> 0x0800` continuation,
+one-counter `0x0400 -> 0` expiration, and final stat restoration. Repeated full lifetime,
+reapplication, SLOW 2 geometry, and BOOST/SLOW interaction remain open.
 
 Reproduce with:
 
@@ -728,8 +728,9 @@ an 8-EXP command. Playback orders caster MP `20 -> 15`, enemy status commands fo
 128/129/130, then caster EXP `0 -> 8`; final statuses are `0x0300/0x0300/0x0300/0/0`.
 
 The after-turn source randomly tests SILENCE and subtracts one `0x0100` counter when its test
-continues the effect. The one-counter expiration branch is confirmed below; two/three-counter
-probabilities and continuation remain open. The cast-action consumer is confirmed separately.
+continues the effect. The fixture below confirms one-counter expiration and one three-counter
+continuation. Alternative two/three-counter outcomes and repeated full lifetime remain open. The
+cast-action consumer is confirmed separately.
 
 Reproduce with:
 
@@ -772,13 +773,16 @@ The blocking artifacts are `tests/fixtures/h3/spell-silence-gate-v1.json`,
 `schemas/h3-spell-silence-gate-fixture.schema.json`, `src/sf2tool/h3/spell_silence.py`, and
 `tools/bizhawk/spell_silence_gate_observer.lua`. The control remains owned by the SPOIT artifacts.
 
-## Confirmed: One-Counter After-Turn Expiry and Final Stat Normalization
+## Confirmed: One- and Three-Counter After-Turn Lifecycle
 
-After one controlled BLAZE action, Battle 01 naturally calls `ProcessAfterTurnEffects` at `0x24242`
-for Bowie. The fixture supplies status `0x5504`: one counter each of SILENCE (`0x0100`), SLOW
-(`0x0400`), BOOST (`0x1000`), and ATTACK (`0x4000`), plus the unrelated CURSE bit `0x0004`.
-Equipment slots are all `ITEM_NOTHING`. Base ATT/DEF/AGI are 40/40/24; current values start at
-45/40/24, matching one-counter ATTACK while one-counter BOOST and SLOW cancel on DEF/AGI.
+In one emulator session, Battle 01 naturally calls `ProcessAfterTurnEffects` at `0x24242` first for
+Bowie after a controlled BLAZE action and later for Gizmo 128. Both cases use empty equipment slots,
+base ATT/DEF/AGI 40/40/24, all four duration fields at the same counter setting, and the unrelated
+CURSE bit `0x0004`.
+
+The first call supplies status `0x5504`: one counter each of SILENCE (`0x0100`), SLOW (`0x0400`),
+BOOST (`0x1000`), and ATTACK (`0x4000`). Current values start at 45/40/24, matching one-counter
+ATTACK while one-counter BOOST and SLOW cancel on DEF/AGI.
 
 SILENCE is the only random branch in this combination. At `0x2431C`, the field value itself supplies
 range 256. Seed `0x1234` advances to `0xECAB` and produces raw roll 236; masking with `0x0300`
@@ -799,15 +803,32 @@ only re-adds it for an equipped cursed item. With four empty slots, the transien
 becomes final status `0x0000`. This is a confirmed refresh boundary, not generic proof that an
 unrelated status bit survives after-turn processing.
 
+The later Gizmo call supplies maximum three-counter status `0xFF04` and current stats 55/40/24.
+With SILENCE field/range 768, the same seed advances to `0xECAB` and returns raw roll 710. Masked
+result `0x0200` takes the decrement at `0x24338`, not the expiration message. SLOW, ATTACK, and
+BOOST also subtract one unit, so no expiry message is emitted anywhere in this call:
+
+| Completed field | Stored status |
+| --- | --- |
+| SILENCE | `0xFE04` |
+| SLOW | `0xFA04` |
+| ATTACK | `0xBA04` |
+| BOOST | `0xAA04` |
+
+The final refresh again removes unequipped CURSE, yielding `0xAA00`, and recomputes two-counter
+stats as ATT/DEF/AGI 50/40/24. Together the cases confirm one original `3 -> 2` continuation and
+one `1 -> 0` expiration for all four fields. They do not yet prove a repeated three-turn sequence
+or alternative SILENCE RNG outcomes at fields `0x0200`/`0x0300`.
+
 Reproduce with:
 
 ```powershell
 uv run sf2 h3 after-turn
 ```
 
-Tracked artifacts are `tests/fixtures/h3/after-turn-status-expiry-v1.json`,
-`schemas/h3-after-turn-status-expiry-fixture.schema.json`, `src/sf2tool/h3/after_turn.py`, and
-`tools/bizhawk/after_turn_status_expiry_observer.lua`.
+Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
+`schemas/h3-after-turn-status-lifecycle-fixture.schema.json`, `src/sf2tool/h3/after_turn.py`, and
+`tools/bizhawk/after_turn_status_lifecycle_observer.lua`.
 
 ## Unknown / Next Fixtures
 
@@ -819,8 +840,9 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-expiry-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, multi-counter SILENCE/SLOW/ATTACK/BOOST continuation and
-  expiration, BOOST/SLOW level-2 geometry and reapplication, and other status spells,
+  DESOUL failure/multi-target cases, repeated full status lifetimes and alternative SILENCE
+  continuation/expiration outcomes, BOOST/SLOW level-2 geometry and reapplication, and other status
+  spells,
   SPOIT boundary cases, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.

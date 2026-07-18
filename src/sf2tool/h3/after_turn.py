@@ -10,9 +10,9 @@ from sf2tool.h3.rng import _rng_step
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 
-FIXTURE = repo_path("tests/fixtures/h3/after-turn-status-expiry-v1.json")
-SCHEMA = repo_path("schemas/h3-after-turn-status-expiry-fixture.schema.json")
-OBSERVER = repo_path("tools/bizhawk/after_turn_status_expiry_observer.lua")
+FIXTURE = repo_path("tests/fixtures/h3/after-turn-status-lifecycle-v1.json")
+SCHEMA = repo_path("schemas/h3-after-turn-status-lifecycle-fixture.schema.json")
+OBSERVER = repo_path("tools/bizhawk/after_turn_status_lifecycle_observer.lua")
 
 
 def _equate(source: str, name: str) -> int:
@@ -27,19 +27,19 @@ def _equate(source: str, name: str) -> int:
     return int(value[1:], 16) if value.startswith("$") else int(value)
 
 
-def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
+def _verify_source_contract(disasm: Path, constants: dict[str, Any]) -> None:
     enums = (disasm / "sf2enums.asm").read_text(encoding="utf-8")
     expected_equates = {
-        "STATUSEFFECT_CURSE": case["unrelatedStatus"],
-        "ITEM_NOTHING": case["itemEntries"][0],
-        "STATUSEFFECT_SILENCE": case["silenceMask"],
-        "STATUSEFFECTCOUNTER_SILENCE": case["silenceCounterUnit"],
-        "STATUSEFFECT_SLOW": case["slowMask"],
-        "STATUSEFFECTCOUNTER_SLOW": case["slowCounterUnit"],
-        "STATUSEFFECT_ATTACK": case["attackMask"],
-        "STATUSEFFECTCOUNTER_ATTACK": case["attackCounterUnit"],
-        "STATUSEFFECT_BOOST": case["boostMask"],
-        "STATUSEFFECTCOUNTER_BOOST": case["boostCounterUnit"],
+        "STATUSEFFECT_CURSE": constants["unrelatedStatus"],
+        "ITEM_NOTHING": constants["itemEntries"][0],
+        "STATUSEFFECT_SILENCE": constants["silenceMask"],
+        "STATUSEFFECTCOUNTER_SILENCE": constants["silenceCounterUnit"],
+        "STATUSEFFECT_SLOW": constants["slowMask"],
+        "STATUSEFFECTCOUNTER_SLOW": constants["slowCounterUnit"],
+        "STATUSEFFECT_ATTACK": constants["attackMask"],
+        "STATUSEFFECTCOUNTER_ATTACK": constants["attackCounterUnit"],
+        "STATUSEFFECT_BOOST": constants["boostMask"],
+        "STATUSEFFECTCOUNTER_BOOST": constants["boostCounterUnit"],
     }
     for name, expected in expected_equates.items():
         if _equate(enums, name) != expected:
@@ -64,7 +64,7 @@ def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
         "jsr     j_UpdateCombatantStats",
     )
     if any(fragment not in source for fragment in fragments):
-        raise ValueError("after-turn status-expiry source contract drifted")
+        raise ValueError("after-turn status-lifecycle source contract drifted")
     stats_source = (
         disasm / "code/common/stats/updatecombatantstats.asm"
     ).read_text(encoding="utf-8")
@@ -77,58 +77,92 @@ def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
     )
     if any(fragment not in stats_source for fragment in stats_fragments):
         raise ValueError("after-turn final stat/status refresh source contract drifted")
-    if any(item != case["itemEntries"][0] for item in case["itemEntries"]):
+    if any(item != constants["itemEntries"][0] for item in constants["itemEntries"]):
         raise ValueError("after-turn fixture must provide four empty item slots")
 
 
-def _decrement_one(status: int, mask: int, unit: int) -> tuple[int, bool]:
+def _decrement_field(status: int, mask: int, unit: int) -> tuple[int, bool]:
     field = status & mask
-    if field != unit:
-        raise ValueError("after-turn expiry fixture must supply exactly one counter")
-    return (status & ~mask) | (field - unit), True
+    if field < unit or field % unit:
+        raise ValueError("after-turn fixture provides an invalid packed counter")
+    updated = field - unit
+    return (status & ~mask) | updated, updated == 0
 
 
-def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
-    case = fixture["case"]
-    composed = (
-        case["unrelatedStatus"]
-        | case["silenceCounterUnit"]
-        | case["slowCounterUnit"]
-        | case["attackCounterUnit"]
-        | case["boostCounterUnit"]
+def _expected_current_stats(
+    constants: dict[str, Any], case: dict[str, Any], status: int
+) -> tuple[int, int, int]:
+    attack_setting = (status & constants["attackMask"]) // constants["attackCounterUnit"]
+    boost_setting = (status & constants["boostMask"]) // constants["boostCounterUnit"]
+    slow_setting = (status & constants["slowMask"]) // constants["slowCounterUnit"]
+    attack = case["baseAttack"] + case["baseAttack"] * attack_setting // 8
+    defense = (
+        case["baseDefense"]
+        + case["baseDefense"] * boost_setting // 8
+        - case["baseDefense"] * slow_setting // 8
     )
-    if composed != case["initialStatus"]:
-        raise ValueError("after-turn initial status disagrees with its component fields")
+    agility = (
+        case["baseAgility"]
+        + case["baseAgility"] * boost_setting // 8
+        - case["baseAgility"] * slow_setting // 8
+    )
+    return attack, defense, agility
 
-    seed, raw_roll = _rng_step(case["seed"], case["silenceCounterUnit"])
-    masked_roll = raw_roll & case["silenceMask"]
-    if masked_roll != 0:
-        raise ValueError("after-turn SILENCE seed does not select expiration")
-    after_silence = case["initialStatus"] & ~case["silenceMask"]
-    after_slow, slow_expired = _decrement_one(
-        after_silence, case["slowMask"], case["slowCounterUnit"]
+
+def _model_case(constants: dict[str, Any], case: dict[str, Any]) -> dict[str, Any]:
+    initial_stats = _expected_current_stats(constants, case, case["initialStatus"])
+    provided_stats = (
+        case["initialCurrentAttack"],
+        case["initialCurrentDefense"],
+        case["initialCurrentAgility"],
     )
-    after_attack, attack_expired = _decrement_one(
-        after_slow, case["attackMask"], case["attackCounterUnit"]
+    if initial_stats != provided_stats:
+        raise ValueError(f"initial derived stats disagree with packed status: {case['id']}")
+
+    silence_field = case["initialStatus"] & constants["silenceMask"]
+    if not silence_field:
+        raise ValueError("after-turn lifecycle case lacks a SILENCE counter")
+    seed, raw_roll = _rng_step(case["seed"], silence_field)
+    masked_roll = raw_roll & constants["silenceMask"]
+    silence_expired = masked_roll == 0
+    if silence_expired:
+        after_silence = case["initialStatus"] & ~constants["silenceMask"]
+    else:
+        after_silence, _ = _decrement_field(
+            case["initialStatus"],
+            constants["silenceMask"],
+            constants["silenceCounterUnit"],
+        )
+    after_slow, slow_expired = _decrement_field(
+        after_silence, constants["slowMask"], constants["slowCounterUnit"]
     )
-    after_boost, boost_expired = _decrement_one(
-        after_attack, case["boostMask"], case["boostCounterUnit"]
+    after_attack, attack_expired = _decrement_field(
+        after_slow, constants["attackMask"], constants["attackCounterUnit"]
+    )
+    after_boost, boost_expired = _decrement_field(
+        after_attack, constants["boostMask"], constants["boostCounterUnit"]
+    )
+    normalized_status = after_boost & ~constants["unrelatedStatus"]
+    final_attack, final_defense, final_agility = _expected_current_stats(
+        constants, case, normalized_status
     )
     return {
+        "id": case["id"],
+        "combatant": case["combatant"],
         "rng": {
             "seed": case["seed"],
-            "range": case["silenceCounterUnit"],
+            "range": silence_field,
             "observedSeed": seed,
             "rawRoll": raw_roll,
             "maskedRoll": masked_roll,
         },
         "branches": {
-            "silenceExpiredEntries": 1,
-            "silenceDecrementEntries": 0,
+            "silenceExpiredEntries": int(silence_expired),
+            "silenceDecrementEntries": int(not silence_expired),
             "updateStatsEntries": 1,
         },
         "messages": {
-            "silence": 1,
+            "silence": int(silence_expired),
             "slow": int(slow_expired),
             "attack": int(attack_expired),
             "boost": int(boost_expired),
@@ -139,64 +173,71 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             "afterSlow": after_slow,
             "afterAttack": after_attack,
             "afterBoost": after_boost,
-            "final": after_boost & ~case["unrelatedStatus"],
+            "final": normalized_status,
         },
         "stats": {
             "initialAttack": case["initialCurrentAttack"],
             "initialDefense": case["initialCurrentDefense"],
             "initialAgility": case["initialCurrentAgility"],
-            "finalAttack": case["baseAttack"],
-            "finalDefense": case["baseDefense"],
-            "finalAgility": case["baseAgility"],
+            "finalAttack": final_attack,
+            "finalDefense": final_defense,
+            "finalAgility": final_agility,
         },
     }
 
 
-def verify_after_turn_status_expiry(
+def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
+    constants = fixture["constants"]
+    return {"records": [_model_case(constants, case) for case in fixture["cases"]]}
+
+
+def verify_after_turn_status_lifecycle(
     rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 90
 ) -> dict[str, Any]:
     fixture = load_json(FIXTURE)
-    validate_json(fixture, SCHEMA, owner="after-turn status-expiry fixture")
+    validate_json(fixture, SCHEMA, owner="after-turn status-lifecycle fixture")
     verify_runtime_contract(fixture, rom_path)
     harness = load_json(repo_path(fixture["sharedHarnessFixture"]))
-    _verify_source_contract(_verify_upstream(upstream_path), fixture["case"])
+    _verify_source_contract(_verify_upstream(upstream_path), fixture["constants"])
     modeled = _model_expected(fixture)
     if modeled != fixture["expected"]:
-        raise ValueError("after-turn status-expiry golden disagrees with source model")
+        raise ValueError("after-turn status-lifecycle golden disagrees with source model")
     observed = run_observer(
         rom_path=rom_path,
         observer_path=OBSERVER,
         config={
+            "fixtureId": fixture["id"],
             "function": {**harness["function"], **fixture["function"]},
             "ram": harness["ram"],
             "harness": harness["harness"],
-            "case": fixture["case"],
+            "action": fixture["action"],
+            "constants": fixture["constants"],
+            "cases": fixture["cases"],
         },
-        output_name="after-turn-status-expiry",
+        output_name="after-turn-status-lifecycle",
         timeout_seconds=timeout_seconds,
     )
     expected = {
         "system": "GEN",
         "core": fixture["emulator"]["core"],
-        "id": fixture["case"]["id"],
+        "id": fixture["id"],
         "battle": fixture["battleId"],
-        "combatant": fixture["case"]["combatant"],
         **fixture["expected"],
     }
     if observed != expected:
         raise ValueError(
-            "after-turn status-expiry runtime observation mismatch\n"
+            "after-turn status-lifecycle runtime observation mismatch\n"
             f"expected={expected!r}\nobserved={observed!r}"
         )
+    records = modeled["records"]
     return {
         "Fixture": fixture["id"],
-        "InitialStatus": f"0x{modeled['status']['initial']:04X}",
-        "FinalStatus": f"0x{modeled['status']['final']:04X}",
-        "ExpiryMessages": sum(modeled["messages"].values()),
-        "FinalStats": (
-            f"ATT={modeled['stats']['finalAttack']},"
-            f"DEF={modeled['stats']['finalDefense']},"
-            f"AGI={modeled['stats']['finalAgility']}"
+        "Cases": len(records),
+        "Expiry": f"0x{records[0]['status']['initial']:04X}->0x{records[0]['status']['final']:04X}",
+        "Continuation": (
+            f"0x{records[1]['status']['initial']:04X}"
+            f"->0x{records[1]['status']['final']:04X}"
         ),
+        "Messages": sum(sum(record["messages"].values()) for record in records),
         "Status": "PASS",
     }

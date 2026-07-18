@@ -845,7 +845,7 @@
         { "id": "stats-applied", "space": "rom", "kind": "observation", "value": 148610 }
       ],
       "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/after-turn-status-expiry-v1.json", "fixtureId": "sf2-after-turn-one-counter-expiry-v1", "verifier": "src/sf2tool/h3/after_turn.py",
+        "level": "H3", "fixture": "tests/fixtures/h3/after-turn-status-lifecycle-v1.json", "fixtureId": "sf2-after-turn-status-lifecycle-v1", "verifier": "src/sf2tool/h3/after_turn.py",
         "bindings": [
           { "addressId": "entry", "fixtureField": "function.entryAddress" },
           { "addressId": "silence-rng", "fixtureField": "function.silenceRngAddress" },
