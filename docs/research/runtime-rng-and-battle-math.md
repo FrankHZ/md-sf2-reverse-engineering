@@ -950,12 +950,18 @@ seeds 0 and `0xFFFF` again consume one `RNG(2)` call and produce roll/inaction p
 `1/1`. The protection constant is side-specific, but the branch ordering and random rule are
 otherwise identical.
 
+The final enemy self-target row leaves `d3=1` when the stub returns to the unmodified caller.
+`aiCommand_Attack` tests it at `0xE7C2`, takes the nonzero branch, and writes constant 5 at
+`0xE7CE`. The observer continues to `0xE7D2` and reads `CURRENT_BATTLEACTION` as 5, dynamically
+confirming conversion into `BATTLEACTION_MUDDLED` rather than treating the guard result as a
+standalone flag.
+
 Reproduce with `uv run sf2 h3 muddle-action-guard`. Tracked artifacts are
 `tests/fixtures/h3/muddle-action-guard-v1.json`,
 `schemas/h3-muddle-action-guard-fixture.schema.json`,
 `src/sf2tool/h3/muddle_action_guard.py`, and
-`tools/bizhawk/muddle_action_guard_observer.lua`. Natural target selection and conversion into
-`BATTLEACTION_MUDDLED` remain open.
+`tools/bizhawk/muddle_action_guard_observer.lua`. Natural target selection and the d3=0 continuation
+into the chosen attack/item/spell remain open.
 
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 

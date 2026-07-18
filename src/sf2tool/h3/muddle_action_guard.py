@@ -37,6 +37,16 @@ def _verify_source_contract(disasm: Path) -> None:
     )
     if any(fragment not in source for fragment in required):
         raise ValueError("MUDDLE action-guard source contract drifted")
+    caller = (
+        disasm / "code/gameflow/battle/ai/command/attack.asm"
+    ).read_text(encoding="utf-8")
+    caller_required = (
+        "bsr.w   DetermineMuddledBattleaction",
+        "tst.w   d3",
+        "move.w  #BATTLEACTION_MUDDLED,(a0)",
+    )
+    if any(fragment not in caller for fragment in caller_required):
+        raise ValueError("MUDDLE action conversion source contract drifted")
 
 
 def _model_cases(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -136,6 +146,7 @@ def verify_muddle_action_guard(
                 "harness": shared["harness"],
                 "instrumentation": fixture["instrumentation"],
                 "cases": fixture["cases"],
+                "conversion": fixture["conversion"],
             },
             output_name="muddle-action-guard",
             timeout_seconds=timeout_seconds,
@@ -151,6 +162,11 @@ def verify_muddle_action_guard(
         "id": fixture["id"],
         "battle": fixture["battleId"],
         "records": modeled,
+        "conversion": {
+            "sourceCase": fixture["conversion"]["sourceCase"],
+            "inaction": fixture["conversion"]["expectedInaction"],
+            "battleAction": fixture["conversion"]["expectedBattleAction"],
+        },
     }
     if observed != expected:
         raise ValueError(
@@ -164,5 +180,6 @@ def verify_muddle_action_guard(
         "SelfRolls": ",".join(
             str(record["roll"]) for record in modeled if record["rngCalls"]
         ),
+        "BattleAction": expected["conversion"]["battleAction"],
         "Status": "PASS",
     }

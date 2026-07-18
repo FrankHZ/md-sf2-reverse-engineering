@@ -4,7 +4,7 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "A deterministic private copy of the verified ROM redirects the natural Battle 01 AI attack-command call at 0xE7BE through a 40-byte loop stub in documented alignment padding. The observer supplies eight 10-byte RAM records covering mirrored ally and enemy branches. The stub preserves a0/d4, loads each actor/target/seed, calls the unmodified original DetermineMuddledBattleaction, stores d3 and the resulting seed, then restores registers and returns. One unique post-loop observation reads the complete table. The original disk ROM remains unchanged.",
+  "observationBoundary": "A deterministic private copy of the verified ROM redirects the natural Battle 01 AI attack-command call at 0xE7BE through a 40-byte loop stub in documented alignment padding. The observer supplies eight 10-byte RAM records covering mirrored ally and enemy branches. The stub preserves a0/d4, loads each actor/target/seed, calls the unmodified original DetermineMuddledBattleaction, stores d3 and the resulting seed, then restores registers and returns. One unique post-loop observation reads the complete table; the final d3=1 continues through the original caller and is observed after it writes BATTLEACTION_MUDDLED. The original disk ROM remains unchanged.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "instrumentation": {
     "patchTriggerAddress": 59276,
@@ -20,9 +20,15 @@
   },
   "function": {
     "entryAddress": 49786,
-    "returnAddress": 49862
+    "returnAddress": 49862,
+    "attackCommandEntryAddress": 59276,
+    "muddledActionWriteAddress": 59342,
+    "muddledActionAppliedAddress": 59346
   },
-  "ram": { "autoBattleToggleAddress": 16756907 },
+  "ram": {
+    "autoBattleToggleAddress": 16756907,
+    "currentBattleActionAddress": 16758318
+  },
   "cases": [
     { "id": "ally-protect-bowie", "actor": 1, "target": 0, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 1 },
     { "id": "ally-other-target", "actor": 1, "target": 2, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 0 },
@@ -32,5 +38,10 @@
     { "id": "enemy-other-target", "actor": 129, "target": 130, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 0 },
     { "id": "enemy-self-roll-zero", "actor": 129, "target": 129, "seed": 0, "expectedRngCalls": 1, "expectedRoll": 0, "expectedInaction": 0 },
     { "id": "enemy-self-roll-one", "actor": 129, "target": 129, "seed": 65535, "expectedRngCalls": 1, "expectedRoll": 1, "expectedInaction": 1 }
-  ]
+  ],
+  "conversion": {
+    "sourceCase": "enemy-self-roll-one",
+    "expectedInaction": 1,
+    "expectedBattleAction": 5
+  }
 }

@@ -3,6 +3,7 @@ local stage, prompt_count = "cheat", 0
 local queue = {}
 local setup_done, instrumented = false, false
 local records = {}
+local records_ready, conversion = false, nil
 local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C" }
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
 
@@ -37,7 +38,10 @@ local function write_result_and_exit()
             record.id, record.actor, record.target, record.seed,
             record.rngCalls, record.roll, record.inaction))
     end
-    output:write("]}\n"); output:close()
+    output:write(string.format(
+        '],"conversion":{"sourceCase":"%s","inaction":%d,"battleAction":%d}}\n',
+        conversion.sourceCase, conversion.inaction, conversion.battleAction))
+    output:close()
     client.exitCode(0)
 end
 
@@ -91,8 +95,20 @@ event.on_bus_exec(function()
             inaction=memory.read_u16_be(slot + 6, "M68K BUS") }
     end
     status("milestone:results")
-    write_result_and_exit()
+    records_ready = true
 end, config.instrumentation.resultAddress, "sf2-muddle-guard-results", "M68K BUS")
+
+event.on_bus_exec(function()
+    if not records_ready then return end
+    conversion = {
+        sourceCase=config.conversion.sourceCase,
+        inaction=records[#records].inaction,
+        battleAction=memory.read_u16_be(config.ram.currentBattleActionAddress, "M68K BUS")
+    }
+    status("milestone:muddled-action")
+    write_result_and_exit()
+end, config["function"].muddledActionAppliedAddress,
+    "sf2-muddle-guard-action-applied", "M68K BUS")
 
 local frames = 0
 while true do

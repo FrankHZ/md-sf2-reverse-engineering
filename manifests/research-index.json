@@ -1284,6 +1284,30 @@
       "designContracts": ["docs/design/combat-resolution.md"]
     },
     {
+      "id": "battle.ai.muddle-action-conversion",
+      "subsystem": "battle.ai",
+      "status": "confirmed",
+      "symbol": "aiCommand_Attack",
+      "sourcePath": "code/gameflow/battle/ai/command/attack.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 59276 },
+        { "id": "muddled-action-write", "space": "rom", "kind": "observation", "value": 59342 },
+        { "id": "muddled-action-applied", "space": "rom", "kind": "observation", "value": 59346 },
+        { "id": "current-battle-action", "space": "ram", "kind": "state", "value": 16758318, "symbol": "CURRENT_BATTLEACTION" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/muddle-action-guard-v1.json", "fixtureId": "sf2-muddle-action-guard-both-sides-v1", "verifier": "src/sf2tool/h3/muddle_action_guard.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.attackCommandEntryAddress" },
+          { "addressId": "muddled-action-write", "fixtureField": "function.muddledActionWriteAddress" },
+          { "addressId": "muddled-action-applied", "fixtureField": "function.muddledActionAppliedAddress" },
+          { "addressId": "current-battle-action", "fixtureField": "ram.currentBattleActionAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
       "id": "battle.status.after-turn-expiry",
       "subsystem": "battle.status",
       "status": "confirmed",
