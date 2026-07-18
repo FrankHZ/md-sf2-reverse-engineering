@@ -184,6 +184,16 @@ observer injects before every matching wrapper entry and records the first compl
 while separate hooks confirm all three generic helpers execute. This controlled seam proves helper
 semantics and wrapper caps, not natural reachability of the synthetic values.
 
+## Confirmed at Runtime: Enemy Curse Suppression
+
+The debug battle harness selects Battle 01 and waits for the natural `InitializeEnemyStats` call for
+combatant `0x80`. Immediately before its `UpdateCombatantStats`, the fixture supplies base ATT 10,
+stale status CURSE `0x0004`, and an equipped Black Ring. The item callback reaches
+`ApplyItemOnStats` once and takes the enemy branch at `0x8AA2`. The ring's source-defined ATT +10
+still produces current ATT 20, while final status is zero. This confirms both sides of the rule:
+the refresh mask first removes stale CURSE, and the enemy branch clears the curse-test condition so
+the equipped cursed item cannot set it again.
+
 The companion initialization-prowess fixture observes Karna's unmodified new-game call. Her PRST
 start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell scan. At `0x967A`
 the original takes the dedicated HEAL 3 branch; after `SetBaseProwess`, the callback at `0x969E`

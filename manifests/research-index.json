@@ -992,6 +992,46 @@
       "designContracts": ["docs/design/level-up.md"]
     },
     {
+      "id": "growth.enemy-curse-suppression",
+      "subsystem": "growth.stats",
+      "status": "confirmed",
+      "symbol": "ApplyItemOnStats",
+      "sourcePath": "code/common/stats/updatecombatantstats.asm",
+      "addresses": [
+        { "id": "apply-item", "space": "rom", "kind": "symbol", "value": 35472 },
+        { "id": "enemy-branch", "space": "rom", "kind": "observation", "value": 35490 },
+        { "id": "update-stats", "space": "rom", "kind": "observation", "value": 35278 },
+        { "id": "update-stats-return", "space": "rom", "kind": "observation", "value": 35364 },
+        { "id": "initialize-enemy", "space": "rom", "kind": "observation", "value": 1774602 },
+        { "id": "battle-test", "space": "rom", "kind": "observation", "value": 30364 },
+        { "id": "number-prompt", "space": "rom", "kind": "observation", "value": 90754 },
+        { "id": "flag-prompt", "space": "rom", "kind": "observation", "value": 91068 },
+        { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072, "symbol": "COMBATANT_DATA" },
+        { "id": "current-battle", "space": "ram", "kind": "state", "value": 16774930, "symbol": "CURRENT_BATTLE" },
+        { "id": "cheat-pointer", "space": "ram", "kind": "state", "value": 16757152 },
+        { "id": "debug-mode", "space": "ram", "kind": "state", "value": 16756905 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/enemy-curse-suppression-v1.json", "fixtureId": "sf2-enemy-curse-suppression-v1", "verifier": "src/sf2tool/h3/enemy_curse.py",
+        "bindings": [
+          { "addressId": "apply-item", "fixtureField": "function.applyItemEntryAddress" },
+          { "addressId": "enemy-branch", "fixtureField": "function.enemyBranchAddress" },
+          { "addressId": "update-stats", "fixtureField": "function.updateStatsEntryAddress" },
+          { "addressId": "update-stats-return", "fixtureField": "function.updateStatsReturnAddress" },
+          { "addressId": "initialize-enemy", "fixtureField": "function.initializeEnemyStatsAddress" },
+          { "addressId": "battle-test", "fixtureField": "function.battleTestAddress" },
+          { "addressId": "number-prompt", "fixtureField": "function.numberPromptAddress" },
+          { "addressId": "flag-prompt", "fixtureField": "function.flagPromptAddress" },
+          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+          { "addressId": "current-battle", "fixtureField": "ram.currentBattleAddress" },
+          { "addressId": "cheat-pointer", "fixtureField": "ram.cheatPointerAddress" },
+          { "addressId": "debug-mode", "fixtureField": "ram.debugModeAddress" }
+        ]
+      }],
+      "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/level-up.md"]
+    },
+    {
       "id": "growth.initialize-ally-stats",
       "subsystem": "growth.level-up",
       "status": "confirmed",

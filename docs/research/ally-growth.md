@@ -77,13 +77,17 @@ and current MOV at their source-defined caps. Three decreases clamp current DEF/
 instead of wrapping. The source oracle independently derives the natural growth amounts, equipped
 item effects, field caps, and helper arithmetic before the ROM observation.
 
+A Battle 01 fixture follows the first natural enemy initialization into `UpdateCombatantStats`, then
+supplies a Black Ring at that entry. The enemy-specific `ApplyItemOnStats` branch is observed: ATT
+still increases 10→20, while stale CURSE 4 is removed and the cursed item does not reinsert it.
+
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed fixtures with current-ATT decrease and word/long clamp edges,
-enemy curse handling, and the remaining prowess-effect functions. The existing stat-gain,
-complete-caller, boundary, refresh, initialization-prowess, and stat-clamp fixtures are the first
+Extend the committed emulator-backed fixtures with current-ATT decrease and word/long clamp edges
+and the remaining prowess-effect functions. The existing stat-gain, complete-caller, boundary,
+refresh, initialization-prowess, stat-clamp, and enemy-curse fixtures are the first
 implementation-neutral inputs for a later remake growth module; see
 [`../design/level-up.md`](../design/level-up.md).

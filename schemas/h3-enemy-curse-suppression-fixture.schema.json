@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-enemy-curse-suppression-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "function", "ram", "case"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-enemy-curse-suppression-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "battleId": { "const": 1 },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["battleTestAddress", "numberPromptAddress", "flagPromptAddress", "initializeEnemyStatsAddress", "updateStatsEntryAddress", "updateStatsReturnAddress", "applyItemEntryAddress", "enemyBranchAddress"],
+      "properties": {
+        "battleTestAddress": { "const": 30364 }, "numberPromptAddress": { "const": 90754 },
+        "flagPromptAddress": { "const": 91068 }, "initializeEnemyStatsAddress": { "const": 1774602 },
+        "updateStatsEntryAddress": { "const": 35278 }, "updateStatsReturnAddress": { "const": 35364 },
+        "applyItemEntryAddress": { "const": 35472 }, "enemyBranchAddress": { "const": 35490 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "currentBattleAddress", "cheatPointerAddress", "debugModeAddress"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 }, "combatantEntrySize": { "const": 56 },
+        "currentBattleAddress": { "const": 16774930 }, "cheatPointerAddress": { "const": 16757152 },
+        "debugModeAddress": { "const": 16756905 }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "combatant", "ramSlot", "input", "item", "after", "applyItemCalls", "enemyBranchObserved"],
+      "properties": {
+        "id": { "const": "enemy-black-ring-no-curse" }, "combatant": { "const": 128 }, "ramSlot": { "const": 32 },
+        "input": { "$ref": "#/definitions/stateInput" },
+        "item": {
+          "type": "object", "additionalProperties": false, "required": ["index", "code", "attackIncrease", "cursed"],
+          "properties": { "index": { "const": 24 }, "code": { "const": "BLACK_RING" }, "attackIncrease": { "const": 10 }, "cursed": { "const": true } }
+        },
+        "after": { "$ref": "#/definitions/stateAfter" },
+        "applyItemCalls": { "const": 1 }, "enemyBranchObserved": { "const": true }
+      }
+    }
+  },
+  "definitions": {
+    "stateInput": {
+      "type": "object", "additionalProperties": false,
+      "required": ["baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "baseMove", "currentMove", "baseResistance", "currentResistance", "baseProwess", "currentProwess", "items", "status"],
+      "properties": {
+        "baseAttack": { "const": 10 }, "currentAttack": { "const": 255 },
+        "baseDefense": { "const": 8 }, "currentDefense": { "const": 255 },
+        "baseAgility": { "const": 6 }, "currentAgility": { "const": 255 },
+        "baseMove": { "const": 5 }, "currentMove": { "const": 255 },
+        "baseResistance": { "const": 0 }, "currentResistance": { "const": 65535 },
+        "baseProwess": { "const": 3 }, "currentProwess": { "const": 255 },
+        "items": { "const": [152, 127, 127, 127] }, "status": { "const": 4 }
+      }
+    },
+    "stateAfter": {
+      "type": "object", "additionalProperties": false,
+      "required": ["currentAttack", "currentDefense", "currentAgility", "currentMove", "currentResistance", "currentProwess", "status"],
+      "properties": {
+        "currentAttack": { "const": 20 }, "currentDefense": { "const": 8 },
+        "currentAgility": { "const": 6 }, "currentMove": { "const": 5 },
+        "currentResistance": { "const": 0 }, "currentProwess": { "const": 3 }, "status": { "const": 0 }
+      }
+    }
+  }
+}

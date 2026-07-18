@@ -9,6 +9,7 @@ from typing import Any
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
+from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.growth import verify_growth, verify_initialization_prowess
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.spell_boost import verify_spell_boost
@@ -127,6 +128,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_stat_clamps)
     h3_stat_clamps.add_argument("--timeout-seconds", type=int, default=60)
+    h3_enemy_curse = h3_commands.add_parser(
+        "enemy-curse", help="verify cursed equipment does not mark enemies as cursed"
+    )
+    _add_local_paths(h3_enemy_curse)
+    h3_enemy_curse.add_argument("--timeout-seconds", type=int, default=60)
     h3_battle_exp = h3_commands.add_parser(
         "battle-exp", help="verify natural battle EXP-to-level-up behavior"
     )
@@ -246,6 +252,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "stat-clamps":
         print_record(
             verify_stat_clamp_boundaries(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "enemy-curse":
+        print_record(
+            verify_enemy_curse_suppression(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

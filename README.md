@@ -215,6 +215,8 @@ counter 1/16 保留而 double 从 1/32 提升到 1/16。完整 16 组高半字�
 double/counter 合并当作一个数值加一：`0x73→0x73` 封顶，`0xF3→0x03` 则发生 byte wrap 并清空两者。
 同一成长子系统的单启动 clamp fixture 又覆盖 8 个 wrapper 边界：ATT/DEF/AGI/MOV 的五个上限
 饱和，以及 DEF/AGI/MOV 三个减法下溢归零；带 bit 7 的 base AGI `0xE3→0xE4` 同时确认标志位保留。
+Battle 01 的自然 enemy refresh 另确认 Black Ring 的 ATT +10 对敌人仍生效，但 stale CURSE
+`4→0` 且不会由 cursed item 重新插入。
 第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
 全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然
 初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo，边界 H3 另确认 AGI 127/128、第二行动、

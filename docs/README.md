@@ -31,7 +31,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
   fixture 边界。
 - [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
-  投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
+  投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
   effective-level 缺陷的原版事实和重制选择边界。
 - [`spell-resolution.md`](./design/spell-resolution.md)：攻击法术的元素抗性位域、整数伤害调整、
   promoted power、DAO target-count division、spell critical、共用 downward spread、攻击法术 EXP、

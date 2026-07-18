@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-curse-suppression-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "function": {
+    "battleTestAddress": 30364,
+    "numberPromptAddress": 90754,
+    "flagPromptAddress": 91068,
+    "initializeEnemyStatsAddress": 1774602,
+    "updateStatsEntryAddress": 35278,
+    "updateStatsReturnAddress": 35364,
+    "applyItemEntryAddress": 35472,
+    "enemyBranchAddress": 35490
+  },
+  "ram": {
+    "combatantDataAddress": 16771072, "combatantEntrySize": 56,
+    "currentBattleAddress": 16774930, "cheatPointerAddress": 16757152, "debugModeAddress": 16756905
+  },
+  "case": {
+    "id": "enemy-black-ring-no-curse",
+    "combatant": 128,
+    "ramSlot": 32,
+    "input": {
+      "baseAttack": 10, "currentAttack": 255,
+      "baseDefense": 8, "currentDefense": 255,
+      "baseAgility": 6, "currentAgility": 255,
+      "baseMove": 5, "currentMove": 255,
+      "baseResistance": 0, "currentResistance": 65535,
+      "baseProwess": 3, "currentProwess": 255,
+      "items": [152, 127, 127, 127],
+      "status": 4
+    },
+    "item": { "index": 24, "code": "BLACK_RING", "attackIncrease": 10, "cursed": true },
+    "after": {
+      "currentAttack": 20, "currentDefense": 8, "currentAgility": 6, "currentMove": 5,
+      "currentResistance": 0, "currentProwess": 3, "status": 0
+    },
+    "applyItemCalls": 1,
+    "enemyBranchObserved": true
+  }
+}
