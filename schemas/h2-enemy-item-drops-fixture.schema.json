@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 enemy item drops extraction fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-enemy-item-drops-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["dropEntryAddress", "tableAddress", "terminatorAddress", "endAddress"],
+      "properties": {
+        "dropEntryAddress": { "const": 48420 },
+        "tableAddress": { "const": 48722 },
+        "terminatorAddress": { "const": 48842 },
+        "endAddress": { "const": 48844 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryCount", "uniqueBattleCount", "minimumFlag", "maximumFlag", "randomDropCount", "randomDropRange", "maximumEntity", "terminator"],
+      "properties": {
+        "entryCount": { "const": 30 },
+        "uniqueBattleCount": { "const": 22 },
+        "minimumFlag": { "const": 0 },
+        "maximumFlag": { "const": 29 },
+        "randomDropCount": { "const": 3 },
+        "randomDropRange": { "const": 32 },
+        "maximumEntity": { "const": 15 },
+        "terminator": { "const": 65535 }
+      }
+    }
+  }
+}

@@ -16,8 +16,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   Battle 01 行动顺序、AGI 127/128 边界、区域激活，以及物理伤害从地形/弓手加成到
   dodge、critical、spread、double/counter、死亡/距离/状态/阵营/特殊敌人后续校验及完整 double validator、HP/EXP 构造、击杀等级差、最终 EXP 减半/随机化/最低值、EXP 200 饱和/单阈值命令、持久回放、99 EXP 自然升级、BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败与多目标 kill reward、SPOIT 目标/施法者 MP 边界矩阵、BOOST 1 首次/重施、DISPEL/SILENCE 消费链，以及回合后状态过期/继续的 H3 动态 fixture。
 - [`enemy-promotions.md`](./research/enemy-promotions.md)：五段转职映射、103 个敌人名称、
-  56-byte 敌人定义与 103 条敌人 gold word 的 source/ROM 合同，以及 gold 表后 69-word unused
-  尾部边界、教堂与敌人初始化的静态消费者。
+  56-byte 敌人定义、30 条敌人掉落与 103 条敌人 gold word 的 source/ROM 合同，以及 drop
+  终止/flag/RNG 特例、gold 表后 69-word unused 尾部边界、教堂与敌人初始化的静态消费者。
 - [`battle01-placement.md`](./research/battle01-placement.md)：第一场剧情战斗的 map link、Stack
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计

@@ -712,6 +712,19 @@ Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
 `tools/bizhawk/spell_desoul_observer.lua`. The supplied target list confirms multi-target resolution
 order but not DESOUL 2's natural geometry.
 
+## Confirmed Static Boundary: Enemy Item Drops
+
+The H2 fixture `tests/fixtures/h2/enemy-item-drops-v1.json` connects
+`battlesceneScript_DropEnemyItem` at `0xBD24` to `table_EnemyItemDrops` at `0xBE52`. Thirty
+four-byte records cover 22 battles and use persistent flags 0-29; `0xFFFF` terminates the table at
+`0xBECA`. Taros Sword, Iron Ball, and Counter Sword are the only hardcoded `RNG(32)` drops. The
+remaining 27 matching records do not consume drop RNG.
+
+The verifier byte-compares source and ROM and checks the consumer's ally/enemy/death, item-possession,
+flag, removal, inventory, rare-deals, and unreachable-code branches. Reproduce with
+`uv run sf2 h2 enemy-drops`. Runtime outcomes for rare rolls, inventory failure, dead recipients,
+and repeated flags remain Unknown rather than being promoted from source inspection alone.
+
 ## Confirmed: SPOIT MP-Absorption Boundary Matrix and Replay Order
 
 The SPOIT fixture replaces Bowie's scheduled Battle 01 attack with spell entry 15. At the

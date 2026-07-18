@@ -510,6 +510,46 @@
       "designContracts": ["docs/design/combat-resolution.md"]
     },
     {
+      "id": "battle.reward.drop-enemy-item",
+      "subsystem": "battle.reward",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_DropEnemyItem",
+      "sourcePath": "code/gameflow/battle/battleactions/dropenemyitem.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 48420 }
+      ],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/enemy-item-drops-v1.json", "fixtureId": "sf2-enemy-item-drops-v1", "verifier": "src/sf2tool/h2/enemy_drops.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.dropEntryAddress" }
+        ]
+      }],
+      "documents": ["docs/research/enemy-promotions.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.reward.enemy-item-drop-table",
+      "subsystem": "battle.reward",
+      "status": "confirmed",
+      "symbol": "table_EnemyItemDrops",
+      "sourcePath": "data/battles/global/enemyitemdrops.asm",
+      "addresses": [
+        { "id": "table", "space": "rom", "kind": "symbol", "value": 48722 },
+        { "id": "terminator", "space": "rom", "kind": "observation", "value": 48842 },
+        { "id": "end", "space": "rom", "kind": "observation", "value": 48844 }
+      ],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/enemy-item-drops-v1.json", "fixtureId": "sf2-enemy-item-drops-v1", "verifier": "src/sf2tool/h2/enemy_drops.py",
+        "bindings": [
+          { "addressId": "table", "fixtureField": "function.tableAddress" },
+          { "addressId": "terminator", "fixtureField": "function.terminatorAddress" },
+          { "addressId": "end", "fixtureField": "function.endAddress" }
+        ]
+      }],
+      "documents": ["docs/research/enemy-promotions.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
       "id": "battle.spell-healing.exp",
       "subsystem": "battle.spell",
       "status": "confirmed",

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
@@ -123,6 +124,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_enemy_gold)
     h2_enemy_gold.add_argument("--output-path", type=_path)
+    h2_enemy_drops = h2_commands.add_parser(
+        "enemy-drops", help="extract and byte-compare the enemy item drop table"
+    )
+    _add_local_paths(h2_enemy_drops)
+    h2_enemy_drops.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -270,6 +276,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "enemy-gold":
         print_record(
             verify_enemy_gold(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "enemy-drops":
+        print_record(
+            verify_enemy_item_drops(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

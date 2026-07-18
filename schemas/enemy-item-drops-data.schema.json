@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/enemy-item-drops-data.schema.json",
+  "title": "Shining Force II enemy item drops source and ROM parity output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "sourcePath", "romRange", "entries", "terminator"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-enemy-item-drops-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "sourcePath": { "const": "data/battles/global/enemyitemdrops.asm" },
+    "romRange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["start", "terminatorAddress", "endExclusive", "entrySize"],
+      "properties": {
+        "start": { "type": "integer", "minimum": 0 },
+        "terminatorAddress": { "type": "integer", "minimum": 1 },
+        "endExclusive": { "type": "integer", "minimum": 1 },
+        "entrySize": { "const": 4 }
+      }
+    },
+    "entries": {
+      "type": "array", "minItems": 30, "maxItems": 30,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["battle", "entity", "combatant", "item", "flag", "randomChanceRange"],
+        "properties": {
+          "battle": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "entity": { "type": "integer", "minimum": 0, "maximum": 31 },
+          "combatant": { "type": "integer", "minimum": 128, "maximum": 159 },
+          "item": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "flag": { "type": "integer", "minimum": 0, "maximum": 31 },
+          "randomChanceRange": { "type": ["integer", "null"], "enum": [32, null] }
+        }
+      }
+    },
+    "terminator": { "const": 65535 }
+  }
+}

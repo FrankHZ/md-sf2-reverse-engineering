@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
@@ -183,6 +184,8 @@ def verify(
             ("-RomPath", rom_path, "-UpstreamPath", upstream_path),
         )
     if not skip_extraction:
+        _heading("H2: enemy item drop source/ROM parity and terminator boundary")
+        print_record(verify_enemy_item_drops(rom_path, upstream_path))
         _heading("H2: enemy gold source/ROM parity and unused-tail boundary")
         print_record(verify_enemy_gold(rom_path, upstream_path))
         for stage in H2_STAGES:

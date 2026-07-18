@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-item-drops-v1",
+  "outputPath": "local/derived/enemy-item-drops-data.json",
+  "outputSha256": "94461FF56F709EA51950B76763F4132B134F97F2FC4AD50E0461E93439A1F1AD",
+  "counts": { "entries": 30, "uniqueBattles": 22, "randomDrops": 3 }
+}

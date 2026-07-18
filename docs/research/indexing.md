@@ -73,7 +73,7 @@ index verifier proves every copy still agrees.
 ## Current Boundary
 
 The index currently answers which named H3-covered symbols and selected H2 tables have executable
-evidence and where that evidence is documented. Enemy gold is the first indexed H2 data table;
-other static coverage remains in `manifests/extractions/` until a concrete subsystem query benefits
+evidence and where that evidence is documented. Enemy gold and item drops are the first indexed H2
+reward tables; other static coverage remains in `manifests/extractions/` until a subsystem benefits
 from the connection. Source coverage percentages must use an explicitly defined denominator and
 must not treat these indexed records as whole-program coverage.

@@ -1,4 +1,4 @@
-# Promotions, Enemy Definitions, and Gold
+# Promotions, Enemy Definitions, and Rewards
 
 - Status: **Confirmed storage contract and static consumers; runtime scenarios pending**
 - Evidence date: 2026-07-18
@@ -11,6 +11,7 @@
 ```powershell
 pwsh ./scripts/Test-EnemyPromotionExtraction.ps1
 uv run sf2 h2 enemy-gold
+uv run sf2 h2 enemy-drops
 ```
 
 The verifier exports the pinned assembly contract and independently decodes the locked ROM, validates
@@ -19,6 +20,8 @@ Generated names and full records remain under ignored `local/derived/`.
 The Python-owned gold rail separately parses the source's explicit used/unused boundary, decodes the
 locked ROM words, byte-compares all 172 entries, validates the generated schema and pinned hash, and
 writes only to `local/derived/enemy-gold-data.json`.
+The companion drop rail applies the same source/ROM/hash discipline to the 30-entry enemy-item table
+and its terminating word.
 
 ## ROM Tables
 
@@ -27,11 +30,13 @@ writes only to `local/derived/enemy-gold-data.json`.
 | promotions | `0x21046..0x21072` | five length-prefixed byte lists | 5 sections / 39 values |
 | enemy names | `0xFB8A..0xFF87` | length byte followed by ASCII payload | 103 |
 | enemy definitions | `0x1B1A66..0x1B30EE` | fixed 56-byte records, big-endian words | 103 |
+| enemy item drops | `0xBE52..0xBECC` | 30 fixed four-byte entries + `0xFFFF` | 30 |
 | enemy gold | `0xBECC..0xC024` | big-endian words; explicit used/tail boundary | 103 used + 69 unused |
 
 The source paths are `data/stats/allies/classes/promotions.asm`,
 `data/stats/enemies/enemynames.asm`, `data/stats/enemies/enemydefs.asm`, and
-`data/stats/enemies/enemygold.asm`. Enum resolution comes from
+`data/stats/enemies/enemygold.asm`; enemy drops are stored in
+`data/battles/global/enemyitemdrops.asm`. Enum resolution comes from
 `sf2enums.asm`. The extraction manifest pins all four source hashes.
 
 ## Confirmed: Enemy Gold Table and Unused Tail
@@ -47,6 +52,25 @@ so treating the entire 172-word region as an enemy table would manufacture 69 in
 The H2 fixture preserves the tail for source/ROM parity while exposing only the first 103 values as
 canonical enemy data. The DESOUL H3 fixture independently confirms enemy index 0 contributes its
 table value 10 once per successful kill target.
+
+## Confirmed: Enemy Item Drop Table and Consumer Policy
+
+`table_EnemyItemDrops` contains 30 four-byte records at `0xBE52..0xBECA`, followed by word
+terminator `0xFFFF`. Each record stores battle index, enemy combatant index (`128 + entity`), item
+index, and one persistent dropped-flag index. The flags are unique and contiguous 0-29, using 30 of
+the four-byte flag area's 32 available bits. The records cover 22 battles; entity indexes range
+from 0 to 15. The Python H2 rail resolves every battle/item enum and byte-compares all 122 ROM bytes.
+
+`battlesceneScript_DropEnemyItem` only searches this table when an ally defeats an enemy. A matching
+record must agree on battle and entity, and the target must still carry the named item. Taros Sword,
+Iron Ball, and Counter Sword alone consume `RNG(32)` and drop only on zero; the other 27 entries are
+guaranteed once their preconditions match. Before removing the target item, the routine sets the
+record's persistent flag and aborts if it was already set. It gives the item to a living actor when
+inventory permits; otherwise only rare items enter deals. The source contains an unreachable
+battle-upgrade/random-chance block after an unconditional branch, so it is not part of the rule.
+
+The H2 contract owns table bytes and these named source branches. Actual 1/32 success/failure,
+inventory-full routing, dead-actor routing, and repeated-flag behavior still require H3 fixtures.
 
 ## Confirmed: Promotion Table and Church Mapping
 
@@ -118,6 +142,7 @@ null; its exact renderer-visible consequences remain a separate behavioral quest
 - Enemy upgrade selection, difficulty adjustment, AI command-set merging, and second-turn behavior
   must be modeled as transformations, not flattened into the base record.
 - Next H3 cases should use one AGI-below-128 and one AGI-above-128 enemy, plus a promotion case that
-  distinguishes the promotee from the special-item holder.
-- Battle sprites, map sprites, drop tables, battle placement, and enemy-upgrade ranges are not
+  distinguishes the promotee from the special-item holder; reward cases should exercise rare-drop
+  RNG, full inventory/deals routing, and an already-set drop flag.
+- Battle sprites, map sprites, battle placement, and enemy-upgrade ranges are not
   part of this contract yet.
