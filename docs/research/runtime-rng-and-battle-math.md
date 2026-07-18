@@ -1,7 +1,7 @@
 # Runtime RNG and Battle-Math Call Chains
 
-- Status: **Confirmed runtime fixtures for RNG, level up/stat refresh, turn order, physical attacks, and the first spell-damage matrix**
-- Evidence date: 2026-07-17
+- Status: **Confirmed runtime fixtures for RNG, level up/stat refresh, turn order, physical attacks, and bounded spell families**
+- Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -29,6 +29,7 @@ the locked ROM instruction bytes.
 | turn entry | `AddCombatantAndRandomizedAgiToTurnOrder` | `0x255A4` | same file |
 | spell resistance | `GetResistanceToSpell` | `0xC22A..0xC24E` | `code/gameflow/battle/battleactions/getresistancetospell.asm` |
 | spell damage | `battlesceneScript_CalculateSpellDamage` | `0xBB02..0xBB56` | `code/gameflow/battle/battleactions/calculatespelldamage.asm` |
+| DISPEL | `spellEffect_Dispel` | `0xB41A..0xB488` | `code/gameflow/battle/battleactions/castspell.asm` |
 
 Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
 `RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
@@ -692,6 +693,52 @@ Tracked artifacts are `tests/fixtures/h3/spell-slow-v1.json`,
 `schemas/h3-spell-slow-fixture.schema.json`, `src/sf2tool/h3/spell_slow.py`, and
 `tools/bizhawk/spell_slow_observer.lua`.
 
+## Confirmed: DISPEL 1 Spell Gate, STATUS Matrix, and Recast
+
+The DISPEL fixture supplies five enemy targets. Four know one spell and use STATUS settings 0-3;
+the fifth has setting 0 but all four spell slots contain `SPELL_NOTHING`. Target 129 starts with one
+SILENCE counter (`0x0100`). The pinned definition costs 5 MP and uses the STATUS element;
+`STATUSEFFECT_SILENCE=0x0300`, `STATUSEFFECTCOUNTER_SILENCE=0x0100`, and
+`CHANCE_TO_INFLICT_SILENCE=5`.
+
+At each `spellEffect_Dispel` entry `0xB41A`, the observer resets seed `0x1234`. Runtime at `0xB426`
+confirms spell counts `1/1/1/1/0`. A target with at least one spell adds 5 to its STATUS setting;
+the no-spell branch replaces the threshold with 8. The shared range-8 roll is 7 in every case:
+
+| Target case | STATUS setting | Spell count | Threshold | Result |
+| --- | --- | --- | --- | --- |
+| fresh | 0 | 1 | 5 | success |
+| existing `0x0100` | 1 | 1 | 6 | success |
+| fresh | 2 | 1 | 7 | success |
+| fresh | 3 | 1 | 8 | failure / immunity |
+| no spells | 0 | 0 | 8 | failure / immunity |
+
+The first three calls emit enemy reactions at `0xB45A` and add 5 EXP each. DISPEL does not mutate
+stored status during construction: the statuses remain `0/0x0100/0/0/0` until playback. The
+existing-silence case is not rejected; its reaction payload ORs the old field with `0x0300`, so
+recast refreshes `0x0100 -> 0x0300` and earns another 5 EXP. The two failures emit neither reaction
+nor EXP.
+
+Battle 01 halves 15 accumulated EXP to 7. Final seed `0xECAB` produces award rolls 0 and 3, yielding
+an 8-EXP command. Playback orders caster MP `20 -> 15`, enemy status commands for targets
+128/129/130, then caster EXP `0 -> 8`; final statuses are `0x0300/0x0300/0x0300/0/0`.
+
+Source inspection additionally confirms that later cast actions check the selected spell's
+`AFFECTEDBYSILENCE` property, mask the caster status with `0x0300`, set `silencedActor`, and stop the
+action after its animation. That consumer has not yet been independently runtime-replayed, so only
+the application/recast behavior above is H3-confirmed. The after-turn source randomly tests and
+subtracts one `0x0100` counter; expiration timing remains open.
+
+Reproduce with:
+
+```powershell
+uv run sf2 h3 spell-dispel
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-dispel-v1.json`,
+`schemas/h3-spell-dispel-fixture.schema.json`, `src/sf2tool/h3/spell_dispel.py`, and
+`tools/bizhawk/spell_dispel_observer.lua`.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -702,7 +749,8 @@ Tracked artifacts are `tests/fixtures/h3/spell-slow-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, BOOST/SLOW expiry and level-2 geometry, other status spells,
+  DESOUL failure/multi-target cases, BOOST/SLOW expiry and level-2 geometry, DISPEL's silenced-caster
+  consumer/expiry and other status spells,
   SPOIT boundary cases, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.

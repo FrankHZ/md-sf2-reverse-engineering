@@ -9,7 +9,8 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one SLEEP 1 status-resistance matrix, one DESOUL 1 success case, and one
-SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, and a SLOW 1 resistance matrix. It must
+SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, and a DISPEL 1
+spell-count/resistance/recast case. It must
 not be generalized to adjacent branches until those paths have their own H3 evidence.
 
 ## Required Inputs
@@ -266,6 +267,35 @@ produces 7; award rolls 0 and 3 raise the command to 8. Playback orders caster M
 The source after-turn path subtracts one `0x0400` unit per processed turn. Runtime expiration,
 SLOW reapplication, SLOW 2 geometry, and interactions with BOOST/equipment remain separate cases.
 
+## Confirmed DISPEL 1 Spell Gate and Recast
+
+DISPEL owns SILENCE mask `0x0300` and counter unit `0x0100`. Before effectiveness, it counts the
+target's four spell slots after masking each entry to its six-bit base-spell index. A target with no
+known spell receives threshold 8 and is immune regardless of STATUS setting. Otherwise the
+threshold is `5 + setting`:
+
+| STATUS setting | Known spells | Threshold | Controlled roll | Result |
+| --- | --- | --- | --- | --- |
+| 0 | 1 | 5 | 7 | success |
+| 1 | 1 | 6 | 7 | success |
+| 2 | 1 | 7 | 7 | success |
+| 3 | 1 | 8 | 7 | failure / immunity |
+| 0 | 0 | 8 | 7 | failure / immunity |
+
+Each success ORs the target's existing status with `0x0300`, emits a status reaction, and adds 5
+EXP. Unlike SLOW, DISPEL does not update the stored status while constructing commands. Playback is
+the mutation boundary. An already-silenced target at `0x0100` is eligible for the same roll; success
+refreshes it to `0x0300` and awards EXP again rather than rejecting the recast.
+
+The confirmed five-target case accumulates 15 EXP, applies Battle 01 enemy-target halving and award
+rolls to produce 8, then replays MP `20 -> 15`, three ordered SILENCE reactions, and EXP `0 -> 8`.
+A remake fidelity resolver must preserve the target-spell gate, threshold 8 immunity, construction
+versus replay boundary, and successful recast refresh. Whether a modernization should suppress EXP
+for a refresh is a deliberate deviation.
+
+Source evidence connects `0x0300` to the later cast-action gate for spells marked
+`AFFECTEDBYSILENCE`, but that consumer and random after-turn expiration are not yet H3 fixtures.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
@@ -278,6 +308,7 @@ SLOW reapplication, SLOW 2 geometry, and interactions with BOOST/equipment remai
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent MP/EXP replay |
 | `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` counter; 3/8 DEF/AGI floor; same-side status EXP; cost/status replay; failed recast status-write/stat-refresh mismatch |
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
+| `sf2-dispel1-spell-gate-and-recast-v1` | `tests/fixtures/h3/spell-dispel-v1.json` | known-spell count gate; thresholds 5/6/7/8 and no-spell 8; `0x0300` counter; successful `0x0100` recast refresh; construction/replay timing; MP/EXP persistence |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -295,7 +326,8 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** remaining healing branches, non-SLEEP/DESOUL/BOOST/SLOW status spells, BOOST/SLOW 2,
+- **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/
+  SLOW/DISPEL subsets, BOOST/SLOW 2,
   their reapplication/expiration edges, unclamped/empty/full-caster SPOIT and other drain branches,
   DESOUL failure/multi-target branches, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the

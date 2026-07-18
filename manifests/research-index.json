@@ -519,6 +519,32 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.spell-dispel.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Dispel",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 46106 },
+        { "id": "spell-count", "space": "rom", "kind": "observation", "value": 46118 },
+        { "id": "threshold", "space": "rom", "kind": "observation", "value": 46130 },
+        { "id": "reaction", "space": "rom", "kind": "observation", "value": 46170 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 46214 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-dispel-v1.json", "fixtureId": "sf2-dispel1-spell-gate-and-recast-v1", "verifier": "src/sf2tool/h3/spell_dispel.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.dispelEffectEntryAddress" },
+          { "addressId": "spell-count", "fixtureField": "function.dispelSpellCountAddress" },
+          { "addressId": "threshold", "fixtureField": "function.dispelThresholdAddress" },
+          { "addressId": "reaction", "fixtureField": "function.dispelReactionAddress" },
+          { "addressId": "return", "fixtureField": "function.dispelEffectReturnAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.spell-healing.resolve",
       "subsystem": "battle.spell",
       "status": "confirmed",

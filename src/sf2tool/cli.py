@@ -13,6 +13,7 @@ from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
+from sf2tool.h3.spell_dispel import verify_spell_dispel
 from sf2tool.h3.spell_healing import verify_spell_healing
 from sf2tool.h3.spell_mp import verify_spell_mp_absorb
 from sf2tool.h3.spell_slow import verify_spell_slow
@@ -158,6 +159,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_slow)
     h3_spell_slow.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_dispel = h3_commands.add_parser(
+        "spell-dispel",
+        help="verify DISPEL 1 spell counting, resistance, recast, EXP, and replay",
+    )
+    _add_local_paths(h3_spell_dispel)
+    h3_spell_dispel.add_argument("--timeout-seconds", type=int, default=90)
     return parser
 
 
@@ -272,6 +279,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-slow":
         print_record(
             verify_spell_slow(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-dispel":
+        print_record(
+            verify_spell_dispel(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
