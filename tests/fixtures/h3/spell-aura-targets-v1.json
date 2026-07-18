@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-aura-target-geometry-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Three AURA actions replayed from one pre-action Battle 01 core state. Only CURRENT_BATTLEACTION and controlled combatant state are replaced before the original battlescene target dispatcher runs. PopulateTargetsListForSpell, radius-coordinate expansion or the AURA 4 all-allies branch, target sorting, per-target healing, and cumulative healing EXP execute naturally; TARGETS_LIST is observed but never injected.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-healing-v1.json",
+  "function": {
+    "determineTargetsEntryAddress": 40406,
+    "determineTargetsReturnAddress": 40542,
+    "targetListReadyAddress": 40744,
+    "populateTargetsForSpellEntryAddress": 50718,
+    "populateTargetsEntryAddress": 50734,
+    "populateAllAlliesEntryAddress": 50830,
+    "populateTargetsReturnAddress": 50828,
+    "healEffectEntryAddress": 45332,
+    "preCapPowerAddress": 45380,
+    "cappedRecoveryAddress": 45386,
+    "healingExpEntryAddress": 43122,
+    "healingExpReturnAddress": 43208
+  },
+  "ram": {
+    "battleSceneExpAddress": 16758316,
+    "targetsListLengthAddress": 16758334,
+    "targetsListAddress": 16758354
+  },
+  "setup": {
+    "actor": 0,
+    "healerClass": 4,
+    "schedulingTarget": 128,
+    "actionType": 1,
+    "target": 1,
+    "allies": [
+      { "combatant": 0, "x": 8, "y": 16, "maxHp": 100, "currentHp": 90, "state": "alive" },
+      { "combatant": 1, "x": 10, "y": 10, "maxHp": 100, "currentHp": 95, "state": "alive" },
+      { "combatant": 2, "x": 11, "y": 10, "maxHp": 100, "currentHp": 85, "state": "alive" },
+      { "combatant": 3, "x": 12, "y": 10, "maxHp": 50, "currentHp": 10, "state": "alive" },
+      { "combatant": 4, "x": 15, "y": 10, "maxHp": 20, "currentHp": 5, "state": "alive" },
+      { "combatant": 5, "x": 10, "y": 11, "maxHp": 100, "currentHp": 0, "state": "dead" },
+      { "combatant": 6, "x": 255, "y": 255, "maxHp": 100, "currentHp": 100, "state": "unplaced" }
+    ]
+  },
+  "cases": [
+    {
+      "id": "aura1-radius-one",
+      "actionSpell": 1,
+      "level": 1,
+      "radius": 1,
+      "power": 15,
+      "allAllies": false,
+      "targets": [1, 2],
+      "effects": [
+        { "target": 1, "maxHp": 100, "currentHp": 95, "missingHp": 5, "preCapPower": 15, "recovery": 5, "initialAccumulator": 0, "finalAccumulator": 10 },
+        { "target": 2, "maxHp": 100, "currentHp": 85, "missingHp": 15, "preCapPower": 15, "recovery": 15, "initialAccumulator": 10, "finalAccumulator": 20 }
+      ]
+    },
+    {
+      "id": "aura2-radius-two",
+      "actionSpell": 65,
+      "level": 2,
+      "radius": 2,
+      "power": 15,
+      "allAllies": false,
+      "targets": [1, 2, 3],
+      "effects": [
+        { "target": 1, "maxHp": 100, "currentHp": 95, "missingHp": 5, "preCapPower": 15, "recovery": 5, "initialAccumulator": 0, "finalAccumulator": 10 },
+        { "target": 2, "maxHp": 100, "currentHp": 85, "missingHp": 15, "preCapPower": 15, "recovery": 15, "initialAccumulator": 10, "finalAccumulator": 20 },
+        { "target": 3, "maxHp": 50, "currentHp": 10, "missingHp": 40, "preCapPower": 15, "recovery": 15, "initialAccumulator": 20, "finalAccumulator": 25 }
+      ]
+    },
+    {
+      "id": "aura4-all-living-placed-allies",
+      "actionSpell": 193,
+      "level": 4,
+      "radius": 0,
+      "power": 255,
+      "allAllies": true,
+      "targets": [0, 1, 2, 3, 4],
+      "effects": [
+        { "target": 0, "maxHp": 100, "currentHp": 90, "missingHp": 10, "preCapPower": 10, "recovery": 10, "initialAccumulator": 0, "finalAccumulator": 10 },
+        { "target": 1, "maxHp": 100, "currentHp": 95, "missingHp": 5, "preCapPower": 5, "recovery": 5, "initialAccumulator": 10, "finalAccumulator": 20 },
+        { "target": 2, "maxHp": 100, "currentHp": 85, "missingHp": 15, "preCapPower": 15, "recovery": 15, "initialAccumulator": 20, "finalAccumulator": 25 },
+        { "target": 3, "maxHp": 50, "currentHp": 10, "missingHp": 40, "preCapPower": 40, "recovery": 40, "initialAccumulator": 25, "finalAccumulator": 25 },
+        { "target": 4, "maxHp": 20, "currentHp": 5, "missingHp": 15, "preCapPower": 15, "recovery": 15, "initialAccumulator": 25, "finalAccumulator": 25 }
+      ]
+    }
+  ]
+}

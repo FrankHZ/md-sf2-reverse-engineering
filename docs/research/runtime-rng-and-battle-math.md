@@ -767,6 +767,40 @@ Reproduce with `uv run sf2 h3 spell-healing-exp`. Tracked artifacts are
 `src/sf2tool/h3/spell_healing.py`, and
 `tools/bizhawk/spell_healing_exp_boundaries_observer.lua`.
 
+## Confirmed: AURA Target Geometry and Multi-Target Healing EXP
+
+The AURA fixture replaces Bowie's already scheduled Battle 01 action before
+`battlesceneScript_DetermineTargetsByAction`, then lets the original dispatcher call
+`PopulateTargetsListForSpell`. Unlike the earlier spell matrices, it never writes
+`TARGETS_LIST`. Seven controlled ally slots instead provide a center at `(10,10)`, living targets
+at Manhattan distances one and two, a farther living target, a dead adjacent target, and an
+unplaced target. The completed list is observed at `battlesceneScript_InitializeBattlesceneProperties`
+and the original sorter orders it by combatant index.
+
+AURA 1 reads definition radius 1 and naturally selects combatants `[1,2]`; AURA 2 reads radius 2
+and selects `[1,2,3]`. `PopulateTargetsList` expands every relative-coordinate ring from zero
+through the configured radius, so these observations confirm the inclusive diamond rather than a
+square or radius-only perimeter. The dead adjacent ally and all farther allies are excluded from
+both ordinary cases.
+
+AURA 4 takes the hard-coded `SPELL_AURA|SPELL_LV4` branch instead of its definition radius zero.
+It scans every ally index and retains exactly the living, placed combatants `[0,1,2,3,4]`; this
+includes the far target while excluding the dead and unplaced controls. Its power-255 branch copies
+each target's missing HP, producing ordered recoveries `[10,5,15,40,15]`.
+
+Healing EXP is calculated once per selected target against the shared action accumulator. AURA 1
+therefore advances `0 -> 10 -> 20`; AURA 2 advances `0 -> 10 -> 20 -> 25`; and AURA 4 reaches 25
+on its third target and remains capped for the final two. A fidelity implementation must preserve
+target order because the per-target contributions and 25-point action cap are observable even when
+the final total is equal.
+
+Reproduce with `uv run sf2 h3 spell-aura`. Tracked artifacts are
+`tests/fixtures/h3/spell-aura-targets-v1.json`,
+`schemas/h3-spell-aura-targets-fixture.schema.json`, `src/sf2tool/h3/spell_healing.py`, and
+`tools/bizhawk/spell_aura_targets_observer.lua`. The action-selection seam does not claim that Bowie
+naturally knows AURA; target population, sorting, healing, and EXP accumulation after that seam are
+original execution.
+
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
 The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy

@@ -28,7 +28,11 @@ from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
 from sf2tool.h3.spell_dispel import verify_spell_dispel
 from sf2tool.h3.spell_exp import verify_spell_damage_exp
-from sf2tool.h3.spell_healing import verify_spell_healing, verify_spell_healing_exp
+from sf2tool.h3.spell_healing import (
+    verify_spell_aura,
+    verify_spell_healing,
+    verify_spell_healing_exp,
+)
 from sf2tool.h3.spell_mp import verify_spell_mp_absorb
 from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
@@ -218,6 +222,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_healing_exp)
     h3_spell_healing_exp.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_aura = h3_commands.add_parser(
+        "spell-aura", help="verify AURA radius targets, all-allies filtering, and EXP accumulation"
+    )
+    _add_local_paths(h3_spell_aura)
+    h3_spell_aura.add_argument("--timeout-seconds", type=int, default=90)
     h3_spell_status = h3_commands.add_parser(
         "spell-status", help="verify SLEEP 1 across all four status-resistance settings"
     )
@@ -437,6 +446,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-healing-exp":
         print_record(
             verify_spell_healing_exp(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-aura":
+        print_record(
+            verify_spell_aura(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

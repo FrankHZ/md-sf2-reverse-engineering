@@ -19,6 +19,9 @@ BOUNDARY_SCHEMA = repo_path(
 BOUNDARY_OBSERVER = repo_path(
     "tools/bizhawk/spell_healing_exp_boundaries_observer.lua"
 )
+AURA_FIXTURE = repo_path("tests/fixtures/h3/spell-aura-targets-v1.json")
+AURA_SCHEMA = repo_path("schemas/h3-spell-aura-targets-fixture.schema.json")
+AURA_OBSERVER = repo_path("tools/bizhawk/spell_aura_targets_observer.lua")
 
 
 def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
@@ -355,5 +358,183 @@ def verify_spell_healing_exp(
         "FullRecovery": sum(case["basePower"] == 255 for case in fixture["cases"]),
         "Caps": sum(case["capApplied"] for case in fixture["cases"]),
         "Awards": [case["finalAccumulator"] for case in fixture["cases"]],
+        "Status": "PASS",
+    }
+
+
+def _verify_aura_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
+    target_source = (
+        disasm / "code/gameflow/battle/battlefield/populatetargetslist.asm"
+    ).read_text(encoding="utf-8")
+    target_fragments = (
+        "bsr.w   BuildTargetsArrayWithTeammatesOfTarget",
+        "cmpi.b  #SPELL_AURA|SPELL_LV4,d1",
+        "move.b  SPELLDEF_OFFSET_RADIUS(a0),d2",
+        "addq.b  #1,d2",
+        "bsr.w   ApplyRelativeCoordinatesListToGrid",
+        "bsr.w   PopulateTargetsListWithAllAllies",
+        "jsr     GetCombatantX",
+        "jsr     GetCurrentHp",
+    )
+    if any(fragment not in target_source for fragment in target_fragments):
+        raise ValueError("AURA target-population source contract drift")
+
+    sort_source = (
+        disasm / "code/gameflow/battle/battleactions/sorttargets.asm"
+    ).read_text(encoding="utf-8")
+    if "Sort targets by combatant index" not in sort_source:
+        raise ValueError("AURA target-sort source contract drift")
+
+    spell_defs = (disasm / "data/stats/spells/spelldefs.asm").read_text(
+        encoding="utf-8"
+    )
+    source_levels = {1: "AURA", 2: r"AURA\|LV2", 4: r"AURA\|LV4"}
+    for case in fixture["cases"]:
+        block = re.search(
+            rf"entry\s+{source_levels[case['level']]}\s*;\s*AURA {case['level']}"
+            r"(?P<body>.*?)(?=\n\s*entry\s+)",
+            spell_defs,
+            re.DOTALL,
+        )
+        if not block:
+            raise ValueError(f"pinned spell definitions omit {case['id']}")
+        body = block.group("body")
+        radius = re.search(r"^\s*radius\s+(\d+)\s*$", body, re.MULTILINE)
+        power = re.search(r"^\s*power\s+(\d+)\s*$", body, re.MULTILINE)
+        if (
+            not radius
+            or not power
+            or int(radius.group(1)) != case["radius"]
+            or int(power.group(1)) != case["power"]
+        ):
+            raise ValueError(f"AURA definition drift: {case['id']}")
+
+
+def _aura_model_case(
+    fixture: dict[str, Any], case: dict[str, Any]
+) -> dict[str, Any]:
+    allies = {ally["combatant"]: ally for ally in fixture["setup"]["allies"]}
+    if case["allAllies"]:
+        targets = sorted(
+            combatant
+            for combatant, ally in allies.items()
+            if ally["currentHp"] > 0 and ally["x"] != 0xFF
+        )
+    else:
+        center = allies[fixture["setup"]["target"]]
+        targets = sorted(
+            combatant
+            for combatant, ally in allies.items()
+            if ally["currentHp"] > 0
+            and ally["x"] < 48
+            and ally["y"] < 48
+            and abs(ally["x"] - center["x"]) + abs(ally["y"] - center["y"])
+            <= case["radius"]
+        )
+
+    accumulator = 0
+    effects: list[dict[str, Any]] = []
+    for target in targets:
+        ally = allies[target]
+        missing = ally["maxHp"] - ally["currentHp"]
+        pre_cap = missing if case["power"] == 255 else case["power"]
+        recovery = min(missing, pre_cap)
+        contribution = max((25 * recovery) // ally["maxHp"], 10)
+        initial = accumulator
+        accumulator = min(accumulator + contribution, 25)
+        effects.append(
+            {
+                "target": target,
+                "maxHp": ally["maxHp"],
+                "currentHp": ally["currentHp"],
+                "missingHp": missing,
+                "preCapPower": pre_cap,
+                "recovery": recovery,
+                "initialAccumulator": initial,
+                "finalAccumulator": accumulator,
+            }
+        )
+    return {"targets": targets, "effects": effects}
+
+
+def _verify_aura_models(fixture: dict[str, Any]) -> None:
+    for case in fixture["cases"]:
+        modeled = _aura_model_case(fixture, case)
+        if case["targets"] != modeled["targets"] or case["effects"] != modeled["effects"]:
+            raise ValueError(f"AURA golden disagrees with source model: {case['id']}")
+
+
+def _aura_observed_case(case: dict[str, Any]) -> dict[str, Any]:
+    effect_fields = (
+        "target",
+        "maxHp",
+        "currentHp",
+        "preCapPower",
+        "recovery",
+        "initialAccumulator",
+        "finalAccumulator",
+    )
+    return {
+        "id": case["id"],
+        "actionSpell": case["actionSpell"],
+        "targets": case["targets"],
+        "effects": [
+            {field: effect[field] for field in effect_fields}
+            for effect in case["effects"]
+        ],
+    }
+
+
+def verify_spell_aura(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    timeout_seconds: int = 90,
+) -> dict[str, Any]:
+    fixture = load_json(AURA_FIXTURE)
+    validate_json(fixture, AURA_SCHEMA, owner="AURA target geometry fixture")
+    verify_runtime_contract(fixture, rom_path)
+    healing_shared = load_json(repo_path(fixture["sharedHarnessFixture"]))
+    shared = load_json(repo_path(healing_shared["sharedHarnessFixture"]))
+    disasm = _verify_upstream(upstream_path)
+    _verify_aura_source_contract(fixture, disasm)
+    _verify_aura_models(fixture)
+    observed = run_observer(
+        rom_path=rom_path,
+        observer_path=AURA_OBSERVER,
+        config={
+            "function": {
+                **shared["function"],
+                **healing_shared["function"],
+                **fixture["function"],
+            },
+            "ram": {**shared["ram"], **fixture["ram"]},
+            "harness": shared["harness"],
+            "battleId": fixture["battleId"],
+            "setup": fixture["setup"],
+            "cases": fixture["cases"],
+        },
+        output_name="spell-aura-targets",
+        timeout_seconds=timeout_seconds,
+    )
+    expected = {
+        "battle": fixture["battleId"],
+        "cases": [_aura_observed_case(case) for case in fixture["cases"]],
+    }
+    if (
+        observed.get("system") != "GEN"
+        or observed.get("core") != fixture["emulator"]["core"]
+        or observed.get("result") != expected
+    ):
+        raise ValueError(
+            "AURA target geometry runtime matrix mismatch\n"
+            f"expected={expected!r}\nobserved={observed!r}"
+        )
+    return {
+        "Fixture": fixture["id"],
+        "Cases": len(fixture["cases"]),
+        "Targets": [len(case["targets"]) for case in fixture["cases"]],
+        "FinalExp": [case["effects"][-1]["finalAccumulator"] for case in fixture["cases"]],
+        "AllAlliesTargets": fixture["cases"][-1]["targets"],
         "Status": "PASS",
     }

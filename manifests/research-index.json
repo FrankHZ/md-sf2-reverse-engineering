@@ -608,6 +608,40 @@
       "designContracts": ["docs/design/combat-resolution.md"]
     },
     {
+      "id": "battle.targets.populate-spell",
+      "subsystem": "battle.targets",
+      "status": "confirmed",
+      "symbol": "PopulateTargetsListForSpell",
+      "sourcePath": "code/gameflow/battle/battlefield/populatetargetslist.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 50718 },
+        { "id": "area-entry", "space": "rom", "kind": "observation", "value": 50734 },
+        { "id": "all-allies", "space": "rom", "kind": "observation", "value": 50830 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 50828 },
+        { "id": "action-dispatch", "space": "rom", "kind": "observation", "value": 40406 },
+        { "id": "action-dispatch-return", "space": "rom", "kind": "observation", "value": 40542 },
+        { "id": "target-list-ready", "space": "rom", "kind": "observation", "value": 40744 },
+        { "id": "targets-length", "space": "ram", "kind": "state", "value": 16758334, "symbol": "TARGETS_LIST_LENGTH" },
+        { "id": "targets-list", "space": "ram", "kind": "state", "value": 16758354, "symbol": "TARGETS_LIST" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-aura-targets-v1.json", "fixtureId": "sf2-aura-target-geometry-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.populateTargetsForSpellEntryAddress" },
+          { "addressId": "area-entry", "fixtureField": "function.populateTargetsEntryAddress" },
+          { "addressId": "all-allies", "fixtureField": "function.populateAllAlliesEntryAddress" },
+          { "addressId": "return", "fixtureField": "function.populateTargetsReturnAddress" },
+          { "addressId": "action-dispatch", "fixtureField": "function.determineTargetsEntryAddress" },
+          { "addressId": "action-dispatch-return", "fixtureField": "function.determineTargetsReturnAddress" },
+          { "addressId": "target-list-ready", "fixtureField": "function.targetListReadyAddress" },
+          { "addressId": "targets-length", "fixtureField": "ram.targetsListLengthAddress" },
+          { "addressId": "targets-list", "fixtureField": "ram.targetsListAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.spell-healing.exp",
       "subsystem": "battle.spell",
       "status": "confirmed",
@@ -629,6 +663,14 @@
         },
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-exp-boundaries-v1.json", "fixtureId": "sf2-healing-exp-boundaries-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
+            { "addressId": "return", "fixtureField": "function.healingExpReturnAddress" },
+            { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-aura-targets-v1.json", "fixtureId": "sf2-aura-target-geometry-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
           "bindings": [
             { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
             { "addressId": "return", "fixtureField": "function.healingExpReturnAddress" },
@@ -778,6 +820,14 @@
         },
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-exp-boundaries-v1.json", "fixtureId": "sf2-healing-exp-boundaries-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
+            { "addressId": "adjusted-power", "fixtureField": "function.preCapPowerAddress" },
+            { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-aura-targets-v1.json", "fixtureId": "sf2-aura-target-geometry-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
           "bindings": [
             { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
             { "addressId": "adjusted-power", "fixtureField": "function.preCapPowerAddress" },

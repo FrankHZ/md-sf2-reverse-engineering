@@ -9,7 +9,8 @@
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
-HEAL 1 self-recovery case, one SLEEP 1 status-resistance matrix, one DESOUL 1 success case, and one
+HEAL 1 self-recovery case, one AURA target-geometry matrix, one SLEEP 1 status-resistance matrix,
+one DESOUL 1 success case, and one
 SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, a DISPEL 1
 spell-count/resistance/recast case, SILENCE gating of marked versus unmarked spell actions, and one
 combined after-turn expiry case. It must not be generalized to adjacent branches until those paths
@@ -189,8 +190,29 @@ accumulator = min(accumulator + contribution, 25)
 ```
 
 Starting accumulator 20 plus a minimum contribution stores 25, proving that the cap is applied to
-the cumulative healing action rather than each contribution in isolation. Multi-target AURA
-geometry and ordered accumulation remain outside the matrix.
+the cumulative healing action rather than each contribution in isolation.
+
+## Confirmed AURA Target and Accumulation Subset
+
+For ordinary AURA levels, populate eligible teammates into the battlefield occupancy grid, expand
+the spell's relative-coordinate rings from zero through the definition radius, discard dead or
+unplaced occupants, then sort the resulting combatant indexes. The confirmed layouts are:
+
+```text
+AURA 1, radius 1: center + Manhattan ring 1 -> [1, 2]
+AURA 2, radius 2: center + Manhattan rings 1 and 2 -> [1, 2, 3]
+```
+
+AURA 4 is a hard-coded exception. Ignore its definition radius zero and scan ally indexes 0-29,
+retaining every living combatant whose X coordinate is not the unplaced sentinel. The confirmed
+case returns `[0,1,2,3,4]`, including a far ally and excluding an adjacent dead ally and an
+unplaced living ally. Sort order is combatant index order before healing resolution.
+
+Resolve healing and contribution once per ordered target against one shared accumulator. Confirmed
+accumulator sequences are `0->10->20` for AURA 1, `0->10->20->25` for AURA 2, and
+`0->10->20->25->25->25` for AURA 4. The AURA 4 power-255 sentinel is evaluated independently per
+target and recovers that target's full missing HP. A remake adapter must expose the ordered target
+and contribution trace, not only the final capped total.
 
 ## Confirmed SLEEP 1 Status-Resistance Matrix
 
@@ -405,6 +427,7 @@ naturally carried state remains outside these cases.
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; DAO/APOLLO/NEPTUN/ATLAS comparator hits; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-healing-exp-boundaries-v1` | `tests/fixtures/h3/spell-healing-exp-boundaries-v1.json` | PRST/VICR/MMNK whitelist; ally/enemy/max-HP-zero guards; promoted ordinary power; power-255 full recovery; proportional/minimum EXP and cumulative 25 cap |
+| `sf2-aura-target-geometry-v1` | `tests/fixtures/h3/spell-aura-targets-v1.json` | inclusive Manhattan radii 1/2; target-index sorting; AURA 4 all living placed allies; dead/unplaced exclusion; ordered recovery and cumulative healing EXP cap |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
@@ -431,9 +454,10 @@ expected-deviation fixture.
   action.
 - **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
   miss itself is confirmed at its original entry seam.
-- **Unknown:** multi-target AURA geometry and accumulation, status spells beyond the confirmed
-  SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets, BOOST/SLOW 2,
+- **Unknown:** status spells beyond the confirmed SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
+  BOOST/SLOW 2,
   reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.
-- **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
-  ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.
+- **Unknown:** natural map-generated ordering for multi-target attack and status spells. Their
+  arithmetic fixtures supply ordered lists at the pre-initialization seam; AURA ordering is
+  independently confirmed from original geometry generation.

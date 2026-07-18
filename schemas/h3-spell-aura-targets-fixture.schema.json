@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-aura-targets-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "setup", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-aura-target-geometry-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-healing-v1.json" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["determineTargetsEntryAddress", "determineTargetsReturnAddress", "targetListReadyAddress", "populateTargetsForSpellEntryAddress", "populateTargetsEntryAddress", "populateAllAlliesEntryAddress", "populateTargetsReturnAddress", "healEffectEntryAddress", "preCapPowerAddress", "cappedRecoveryAddress", "healingExpEntryAddress", "healingExpReturnAddress"],
+      "properties": {
+        "determineTargetsEntryAddress": { "const": 40406 }, "determineTargetsReturnAddress": { "const": 40542 }, "targetListReadyAddress": { "const": 40744 },
+        "populateTargetsForSpellEntryAddress": { "const": 50718 }, "populateTargetsEntryAddress": { "const": 50734 }, "populateAllAlliesEntryAddress": { "const": 50830 }, "populateTargetsReturnAddress": { "const": 50828 },
+        "healEffectEntryAddress": { "const": 45332 }, "preCapPowerAddress": { "const": 45380 }, "cappedRecoveryAddress": { "const": 45386 },
+        "healingExpEntryAddress": { "const": 43122 }, "healingExpReturnAddress": { "const": 43208 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["battleSceneExpAddress", "targetsListLengthAddress", "targetsListAddress"],
+      "properties": {
+        "battleSceneExpAddress": { "const": 16758316 },
+        "targetsListLengthAddress": { "const": 16758334 },
+        "targetsListAddress": { "const": 16758354 }
+      }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "healerClass", "schedulingTarget", "actionType", "target", "allies"],
+      "properties": {
+        "actor": { "const": 0 }, "healerClass": { "const": 4 }, "schedulingTarget": { "const": 128 }, "actionType": { "const": 1 }, "target": { "const": 1 },
+        "allies": { "type": "array", "minItems": 7, "maxItems": 7, "items": { "$ref": "#/definitions/ally" } }
+      }
+    },
+    "cases": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/case" } }
+  },
+  "definitions": {
+    "ally": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "x", "y", "maxHp", "currentHp", "state"],
+      "properties": {
+        "combatant": { "type": "integer", "minimum": 0, "maximum": 6 }, "x": { "type": "integer", "minimum": 0, "maximum": 255 }, "y": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "maxHp": { "type": "integer", "minimum": 0, "maximum": 100 }, "currentHp": { "type": "integer", "minimum": 0, "maximum": 100 }, "state": { "enum": ["alive", "dead", "unplaced"] }
+      }
+    },
+    "effect": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "maxHp", "currentHp", "missingHp", "preCapPower", "recovery", "initialAccumulator", "finalAccumulator"],
+      "properties": {
+        "target": { "type": "integer", "minimum": 0, "maximum": 29 }, "maxHp": { "type": "integer", "minimum": 1, "maximum": 100 }, "currentHp": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "missingHp": { "type": "integer", "minimum": 0, "maximum": 100 }, "preCapPower": { "type": "integer", "minimum": 0, "maximum": 255 }, "recovery": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "initialAccumulator": { "type": "integer", "minimum": 0, "maximum": 25 }, "finalAccumulator": { "type": "integer", "minimum": 0, "maximum": 25 }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actionSpell", "level", "radius", "power", "allAllies", "targets", "effects"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }, "actionSpell": { "enum": [1, 65, 193] }, "level": { "enum": [1, 2, 4] }, "radius": { "enum": [0, 1, 2] }, "power": { "enum": [15, 255] }, "allAllies": { "type": "boolean" },
+        "targets": { "type": "array", "minItems": 2, "maxItems": 5, "items": { "type": "integer", "minimum": 0, "maximum": 29 } },
+        "effects": { "type": "array", "minItems": 2, "maxItems": 5, "items": { "$ref": "#/definitions/effect" } }
+      }
+    }
+  }
+}
