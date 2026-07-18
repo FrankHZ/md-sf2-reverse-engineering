@@ -11,6 +11,8 @@ from sf2tool.paths import repo_path
 
 FIXTURE = repo_path("tests/fixtures/h3/spell-muddle-v1.json")
 SCHEMA = repo_path("schemas/h3-spell-muddle-fixture.schema.json")
+FIXTURE_LEVEL1 = repo_path("tests/fixtures/h3/spell-muddle1-v1.json")
+SCHEMA_LEVEL1 = repo_path("schemas/h3-spell-muddle1-fixture.schema.json")
 
 
 def _equate(source: str, name: str) -> int:
@@ -192,6 +194,187 @@ def verify_spell_muddle(
             for record in modeled["construction"]["records"]
         ),
         "StatusMask": f"0x{fixture['case']['statusMask']:04X}",
+        "CommandExp": modeled["construction"]["award"]["commandExp"],
+        "Status": "PASS",
+    }
+
+
+def _verify_level1_source_contract(disasm: Path, case: dict[str, Any]) -> None:
+    definitions = (disasm / "data/stats/spells/spelldefs.asm").read_text(
+        encoding="utf-8"
+    )
+    muddle1 = re.search(
+        r"entry\s+MUDDLE\s*;\s*MUDDLE 1(?P<body>.*?)(?=\n\s*entry\s+)",
+        definitions,
+        re.DOTALL,
+    )
+    if not muddle1 or f"mpCost     {case['spellMpCost']}" not in muddle1.group("body"):
+        raise ValueError("MUDDLE 1 definition disagrees with the fixture")
+
+    enums = (disasm / "sf2enums.asm").read_text(encoding="utf-8")
+    expected_equates = {
+        "SPELL_MUDDLE": case["baseSpell"],
+        "CHANCE_TO_INFLICT_MUDDLE1": case["freshThreshold"],
+        "STATUSEFFECT_MUDDLE": case["muddle1Mask"],
+        "STATUSEFFECT_MUDDLE2": case["muddle2Flag"],
+    }
+    for name, expected in expected_equates.items():
+        if _equate(enums, name) != expected:
+            raise ValueError(f"{name} disagrees with the MUDDLE 1 fixture")
+
+    cast = (disasm / "code/gameflow/battle/battleactions/castspell.asm").read_text(
+        encoding="utf-8"
+    )
+    required = (
+        "moveq   #8,d2           ; muddle 1",
+        "andi.w  #STATUSEFFECT_MUDDLE2,d1",
+        "bne.s   @DetermineSuccess",
+        "moveq   #CHANCE_TO_INFLICT_MUDDLE1,d2",
+        "ori.w   #STATUSEFFECT_MUDDLE,d1",
+        "executeEnemyReaction #0,#0,d1,#1",
+        "bsr.w   battlesceneScript_AddStatusEffectSpellExp",
+    )
+    if any(fragment not in cast for fragment in required):
+        raise ValueError("MUDDLE 1 source contract drifted")
+
+
+def _model_level1_expected(fixture: dict[str, Any]) -> dict[str, Any]:
+    case = fixture["case"]
+    records = []
+    accumulated_exp = 0
+    final_seed = case["seed"]
+    for target in case["targets"]:
+        guarded = bool(target["initialStatus"] & case["muddle2Flag"])
+        threshold = case["guardThreshold"] if guarded else case["freshThreshold"]
+        final_seed, roll = _rng_step(case["seed"], 8)
+        success = roll >= threshold
+        if success:
+            accumulated_exp = min(accumulated_exp + 5, 49)
+        records.append(
+            {
+                "combatant": target["combatant"],
+                "setting": target["setting"],
+                "threshold": threshold,
+                "roll": roll,
+                "success": success,
+                "accumulatedExp": accumulated_exp,
+                "statusDuringConstruction": target["initialStatus"],
+            }
+        )
+
+    award_seed = final_seed
+    halved = accumulated_exp // 2 if fixture["battleId"] == 1 else accumulated_exp
+    seed, first_roll = _rng_step(final_seed, 16)
+    randomized = halved + int(first_roll == 0)
+    _, second_roll = _rng_step(seed, 16)
+    command_exp = max(randomized - int(second_roll == 0), 1)
+    successful = [
+        (target, record)
+        for target, record in zip(case["targets"], records, strict=True)
+        if record["success"]
+    ]
+    return {
+        "construction": {
+            "actorMp": case["initialMp"],
+            "records": records,
+            "award": {
+                "accumulatedExp": accumulated_exp,
+                "seed": award_seed,
+                "halved": halved,
+                "firstRoll": first_roll,
+                "secondRoll": second_roll,
+                "commandExp": command_exp,
+            },
+        },
+        "replay": {
+            "allyReaction": {
+                "mpChange": -case["spellMpCost"],
+                "mpBefore": case["initialMp"],
+                "mpAfter": case["initialMp"] - case["spellMpCost"],
+            },
+            "enemyReactions": [
+                {
+                    "combatant": target["combatant"],
+                    "statusBefore": target["initialStatus"],
+                    "statusAfter": target["initialStatus"] | case["muddle1Mask"],
+                }
+                for target, _ in successful
+            ],
+            "expReaction": {
+                "commandExp": command_exp,
+                "expBefore": case["actorInitialExp"],
+                "expAfter": case["actorInitialExp"] + command_exp,
+            },
+            "finalActorMp": case["initialMp"] - case["spellMpCost"],
+            "finalActorExp": case["actorInitialExp"] + command_exp,
+            "finalTargetStatus": [
+                target["initialStatus"] | case["muddle1Mask"]
+                if record["success"]
+                else target["initialStatus"]
+                for target, record in zip(case["targets"], records, strict=True)
+            ],
+        },
+    }
+
+
+def verify_spell_muddle1(
+    rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 75
+) -> dict[str, Any]:
+    fixture = load_json(FIXTURE_LEVEL1)
+    validate_json(fixture, SCHEMA_LEVEL1, owner="MUDDLE 1 fixture")
+    verify_runtime_contract(fixture, rom_path)
+    shared = load_json(repo_path(fixture["sharedHarnessFixture"]))
+    _verify_level1_source_contract(_verify_upstream(upstream_path), fixture["case"])
+    modeled = _model_level1_expected(fixture)
+    if fixture["expected"] != modeled:
+        raise ValueError("MUDDLE 1 golden disagrees with source model")
+
+    function = {**shared["function"], **fixture["function"]}
+    function["sleepEffectEntryAddress"] = fixture["function"][
+        "muddleEffectEntryAddress"
+    ]
+    observed = run_observer(
+        rom_path=rom_path,
+        observer_path=repo_path(fixture["sharedObserver"]),
+        config={
+            "function": function,
+            "ram": shared["ram"],
+            "harness": shared["harness"],
+            "case": fixture["case"],
+        },
+        output_name="spell-muddle1",
+        timeout_seconds=timeout_seconds,
+    )
+    expected = {
+        "system": "GEN",
+        "core": fixture["emulator"]["core"],
+        "id": fixture["case"]["id"],
+        "battle": fixture["battleId"],
+        "action": {
+            "type": fixture["case"]["actionType"],
+            "spell": fixture["case"]["actionSpell"],
+            "targetCount": len(fixture["case"]["targets"]),
+        },
+        **fixture["expected"],
+    }
+    if observed != expected:
+        raise ValueError(
+            "MUDDLE 1 runtime observation mismatch\n"
+            f"expected={expected!r}\nobserved={observed!r}"
+        )
+    return {
+        "Fixture": fixture["id"],
+        "Spell": "MUDDLE 1",
+        "Thresholds": ",".join(
+            str(record["threshold"]) for record in modeled["construction"]["records"]
+        ),
+        "Results": ",".join(
+            "success" if record["success"] else "failure"
+            for record in modeled["construction"]["records"]
+        ),
+        "FinalStatus": ",".join(
+            f"0x{status:04X}" for status in modeled["replay"]["finalTargetStatus"]
+        ),
         "CommandExp": modeled["construction"]["award"]["commandExp"],
         "Status": "PASS",
     }

@@ -10,9 +10,9 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one AURA target-geometry matrix, one DETOX level matrix, one SLEEP 1
-status-resistance matrix, one ATTACK fresh/recast case, one MUDDLE 2 resistance matrix, one DESOUL
-1 success case, one SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance
-matrix, a DISPEL 1
+status-resistance matrix, one ATTACK fresh/recast case, MUDDLE 1 guard/recast and MUDDLE 2
+resistance matrices, one DESOUL 1 success case, one SPOIT MP-absorption case, BOOST 1
+fresh/recast behavior, a SLOW 1 resistance matrix, a DISPEL 1
 spell-count/resistance/recast case, SILENCE gating of marked versus unmarked spell actions, and one
 combined after-turn expiry case. It must not be generalized to adjacent branches until those paths
 have their own H3 evidence.
@@ -272,9 +272,27 @@ the reaction command replays. The controlled three-success action accumulates 15
 8-EXP command after Battle 01 halving/randomization, spends 11 MP, and persists `0x0038` on the
 first three targets only.
 
-This matrix confirms fresh MUDDLE 2 application. MUDDLE 1's pre-existing-MUDDLE-2 guard,
-reapplication, duration transitions, and the later confused-action behavior remain separate
-contracts.
+This matrix confirms fresh MUDDLE 2 application. Its reapplication, duration transitions, and the
+later confused-action behavior remain separate contracts.
+
+## Confirmed MUDDLE 1 Resistance Bypass and MUDDLE 2 Guard
+
+MUDDLE 1 does not add or inspect the target's STATUS resistance setting. It starts with threshold
+8, reads the target's status, and changes the threshold to 5 unless the MUDDLE 2 flag `0x0008` is
+already present. Therefore both fresh setting-0 and fresh setting-3 targets use threshold 5; with
+controlled roll 7 both succeed. This is a spell-specific exception to the generic-looking STATUS
+matrix.
+
+An existing one-counter MUDDLE 1 field `0x0010` also uses threshold 5. Success ORs in `0x0030`,
+refreshing it to the full three-counter field and awarding another 5 EXP. Unrelated status bits are
+preserved: a target starting at SLEEP `0x0040` becomes `0x0070`. A target starting at combined
+MUDDLE 2 state `0x0038` retains threshold 8, so roll 7 fails with no reaction or EXP and leaves the
+state unchanged.
+
+The controlled action accumulates 15 EXP, replays three enemy reactions in target order, spends 6
+MP, and awards 8 EXP after the same Battle 01 adjustment. Fidelity code must preserve the
+MUDDLE-2-only guard; applying setting-based resistance to MUDDLE 1 or rejecting every MUDDLE 1
+recast changes observable behavior.
 
 ## Confirmed SLEEP 1 Status-Resistance Matrix
 
@@ -493,6 +511,7 @@ naturally carried state remains outside these cases.
 | `sf2-detox-level-status-matrix-v1` | `tests/fixtures/h3/spell-detox-v1.json` | zero-based level masks; poison/stun/curse cure flags; unrelated-status preservation; one 5-EXP award per effective target; threshold-8 no-effect unwind; cursed-item unequip |
 | `sf2-attack1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-attack-v1.json` | `0xC000` counter; 3/8 ATT floor; fresh reaction and 5 EXP; threshold-8 recast failure; status-write/current-ATT mismatch after failed recast |
 | `sf2-muddle2-resistance-matrix-v1` | `tests/fixtures/h3/spell-muddle-v1.json` | STATUS thresholds 5/6/7/8; setting-3 immunity; combined `0x0038` status reaction; 5 EXP per success; MP/status/EXP replay |
+| `sf2-muddle1-fresh-recast-guard-v1` | `tests/fixtures/h3/spell-muddle1-v1.json` | resistance-independent threshold 5; MUDDLE 1 refresh; unrelated-status preservation; MUDDLE 2 threshold-8 guard; MP/status/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
@@ -520,8 +539,8 @@ expected-deviation fixture.
 - **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
   miss itself is confirmed at its original entry seam.
 - **Unknown:** status spells beyond the confirmed
-  ATTACK/DETOX/MUDDLE 2/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets, MUDDLE 1,
-  MUDDLE/BOOST/SLOW reapplication and repeated-lifetime edges, BOOST/SLOW 2 geometry,
+  ATTACK/DETOX/MUDDLE/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
+  MUDDLE 2/BOOST/SLOW reapplication and repeated-lifetime edges, BOOST/SLOW 2 geometry,
   MUDDLE lifecycle/confused-action behavior, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.
 - **Unknown:** natural map-generated ordering for multi-target attack and status spells. Their

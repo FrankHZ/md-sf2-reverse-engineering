@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-muddle1-fresh-recast-guard-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 MUDDLE 1 action over fresh setting-0 and setting-3 targets, an existing MUDDLE 1 target, and an existing MUDDLE 2 target. It observes resistance-independent threshold 5, the threshold-8 MUDDLE 2 guard, status-command construction, EXP, and persistent replay through the generic status-spell observer.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "sharedObserver": "tools/bizhawk/spell_status_observer.lua",
+  "function": {
+    "muddleEffectEntryAddress": 46216,
+    "muddleLevel1DefaultThresholdAddress": 46254,
+    "muddleLevel1GuardAddress": 46266,
+    "muddleLevel1FreshThresholdAddress": 46268,
+    "muddleLevel1StatusAddress": 46280,
+    "muddleReactionAddress": 46314,
+    "muddleEffectReturnAddress": 46356,
+    "effectivenessEntryAddress": 47768,
+    "effectivenessRollAddress": 47784,
+    "effectivenessFailureAddress": 47820,
+    "effectivenessSuccessAddress": 47826,
+    "statusExpAppliedAddress": 43272,
+    "statusReactionAppliedAddress": 102298
+  },
+  "case": {
+    "id": "bowie-muddle1-fresh-recast-and-level2-guard",
+    "actor": 0,
+    "actorClass": 0,
+    "initialMp": 20,
+    "actorInitialExp": 0,
+    "actionType": 1,
+    "actionSpell": 7,
+    "baseSpell": 7,
+    "spellMpCost": 6,
+    "freshThreshold": 5,
+    "guardThreshold": 8,
+    "seed": 4660,
+    "muddle1Mask": 48,
+    "muddle2Flag": 8,
+    "targets": [
+      { "combatant": 128, "resistanceWord": 0, "setting": 0, "initialStatus": 0 },
+      { "combatant": 129, "resistanceWord": 49152, "setting": 3, "initialStatus": 64 },
+      { "combatant": 130, "resistanceWord": 16384, "setting": 1, "initialStatus": 16 },
+      { "combatant": 131, "resistanceWord": 0, "setting": 0, "initialStatus": 56 }
+    ]
+  },
+  "expected": {
+    "construction": {
+      "actorMp": 20,
+      "records": [
+        { "combatant": 128, "setting": 0, "threshold": 5, "roll": 7, "success": true, "accumulatedExp": 5, "statusDuringConstruction": 0 },
+        { "combatant": 129, "setting": 3, "threshold": 5, "roll": 7, "success": true, "accumulatedExp": 10, "statusDuringConstruction": 64 },
+        { "combatant": 130, "setting": 1, "threshold": 5, "roll": 7, "success": true, "accumulatedExp": 15, "statusDuringConstruction": 16 },
+        { "combatant": 131, "setting": 0, "threshold": 8, "roll": 7, "success": false, "accumulatedExp": 15, "statusDuringConstruction": 56 }
+      ],
+      "award": { "accumulatedExp": 15, "seed": 60587, "halved": 7, "firstRoll": 0, "secondRoll": 3, "commandExp": 8 }
+    },
+    "replay": {
+      "allyReaction": { "mpChange": -6, "mpBefore": 20, "mpAfter": 14 },
+      "enemyReactions": [
+        { "combatant": 128, "statusBefore": 0, "statusAfter": 48 },
+        { "combatant": 129, "statusBefore": 64, "statusAfter": 112 },
+        { "combatant": 130, "statusBefore": 16, "statusAfter": 48 }
+      ],
+      "expReaction": { "commandExp": 8, "expBefore": 0, "expAfter": 8 },
+      "finalActorMp": 14,
+      "finalActorExp": 8,
+      "finalTargetStatus": [48, 112, 48, 56]
+    }
+  }
+}

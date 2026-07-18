@@ -879,8 +879,30 @@ EXP to 7; award rolls 0 and 3 produce an 8-EXP command. Replay spends 11 MP (`20
 Reproduce with `uv run sf2 h3 spell-muddle`. Tracked artifacts are
 `tests/fixtures/h3/spell-muddle-v1.json`, `schemas/h3-spell-muddle-fixture.schema.json`, and
 `src/sf2tool/h3/spell_muddle.py`; runtime control deliberately reuses
-`tools/bizhawk/spell_status_observer.lua`. MUDDLE 1's special already-MUDDLE-2 threshold, recasts,
-duration, and confused actions remain outside this fixture.
+`tools/bizhawk/spell_status_observer.lua`. MUDDLE 2 reapplication, duration, and confused actions
+remain outside this fixture.
+
+## Confirmed: MUDDLE 1 Resistance Bypass, Recast, and Level-2 Guard
+
+A second controlled MUDDLE action supplies four initial target states while the shared observer
+resets seed `0x1234` at each `0xB488` entry. The first target is fresh at STATUS setting 0. The
+second is fresh apart from SLEEP `0x0040` and carries setting 3. The third has one MUDDLE 1 counter
+`0x0010`. The fourth already has combined MUDDLE 2 state `0x0038`.
+
+At `0xB4AE`, MUDDLE 1 initializes threshold 8, then tests only bit `0x0008`. The first three targets
+lack that bit, so `0xB4BC` replaces the threshold with constant 5 regardless of their resistance
+settings. Roll 7 succeeds for all three, demonstrating both setting-3 bypass and successful
+MUDDLE 1 refresh. Their replayed statuses become `0x0030`, `0x0070`, and `0x0030`; the second
+preserves SLEEP and the third refreshes one counter to three.
+
+The combined MUDDLE 2 target keeps threshold 8. Roll 7 takes the failure unwind, emits no reaction
+or status EXP, and leaves `0x0038` unchanged. The three successful targets accumulate 15 status
+EXP; Battle 01 produces the same 8-EXP command, while replay spends 6 MP (`20 -> 14`).
+
+Reproduce with `uv run sf2 h3 spell-muddle1`. Tracked artifacts are
+`tests/fixtures/h3/spell-muddle1-v1.json`, `schemas/h3-spell-muddle1-fixture.schema.json`, and the
+shared `src/sf2tool/h3/spell_muddle.py`. The generic observer now accepts an optional per-target
+initial status; omitted values retain the prior zero-status behavior for SLEEP and MUDDLE 2.
 
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
@@ -1235,7 +1257,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 - Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, a complete
   naturally scheduled non-Battle-01 spell award and multi-target AURA healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry,
-  MUDDLE 1/reapplication/confused-action behavior, and other status spells, SPOIT enemy-caster
+  MUDDLE 2 reapplication and confused-action behavior, and other status spells, SPOIT enemy-caster
   behavior, and other non-damage spell
   families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
