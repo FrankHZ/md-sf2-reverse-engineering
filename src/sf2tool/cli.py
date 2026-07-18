@@ -9,7 +9,7 @@ from typing import Any
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
-from sf2tool.h3.growth import verify_growth
+from sf2tool.h3.growth import verify_growth, verify_initialization_prowess
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
@@ -116,6 +116,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_growth)
     h3_growth.add_argument("--timeout-seconds", type=int, default=60)
+    h3_growth_prowess = h3_commands.add_parser(
+        "growth-prowess", help="verify the HEAL 3 initialization prowess special case"
+    )
+    _add_local_paths(h3_growth_prowess)
+    h3_growth_prowess.add_argument("--timeout-seconds", type=int, default=60)
     h3_battle_exp = h3_commands.add_parser(
         "battle-exp", help="verify natural battle EXP-to-level-up behavior"
     )
@@ -219,6 +224,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "growth":
         print_record(
             verify_growth(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "growth-prowess":
+        print_record(
+            verify_initialization_prowess(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

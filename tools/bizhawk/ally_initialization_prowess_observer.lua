@@ -16,6 +16,12 @@ local function prowess(ally)
     return memory.read_u8(address, "M68K BUS")
 end
 
+local function set_prowess(ally, value)
+    local address = config.ram.combatantDataAddress
+        + ally * config.ram.combatantEntrySize + config.ram.baseProwessOffset
+    memory.write_u8(address, value, "M68K BUS")
+end
+
 local function write_result_and_exit(result)
     local output = assert(io.open(config.outputPath, "w"))
     output:write(string.format(
@@ -39,6 +45,9 @@ end, config["function"].entryAddress, "sf2-karna-init-entry", "M68K BUS")
 
 event.on_bus_exec(function()
     if active == nil or (reg("D1") & 0xFF) ~= config.case.spell then return end
+    if config.case.injectedBaseProwess ~= nil then
+        set_prowess(active.ally, config.case.injectedBaseProwess)
+    end
     active.effective_level = reg("D5")
     active.spell = reg("D1") & 0xFF
     active.before = prowess(active.ally)

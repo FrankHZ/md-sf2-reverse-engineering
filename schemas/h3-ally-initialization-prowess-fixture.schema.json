@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/h3-ally-initialization-prowess-fixture.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "case"],
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "cases"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-karna-heal3-prowess-v1" },
@@ -30,19 +30,23 @@
         "baseProwessOffset": { "const": 30 }
       }
     },
-    "case": {
+    "cases": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "ally", "allyCode", "classCode", "startingLevel", "effectiveLevel", "spell", "baseProwessBefore", "baseProwessAfter"],
+      "required": ["id", "ally", "allyCode", "classCode", "startingLevel", "effectiveLevel", "spell", "injectedBaseProwess", "baseProwessBefore", "baseProwessAfter"],
       "properties": {
-        "id": { "const": "karna-prst-heal3" },
+        "id": { "enum": ["karna-prst-heal3-natural", "karna-prst-heal3-counter-preservation"] },
         "ally": { "const": 15 },
         "allyCode": { "const": "KARNA" },
         "classCode": { "const": "PRST" },
         "startingLevel": { "const": 24 },
         "effectiveLevel": { "const": 24 },
         "spell": { "const": 128 },
-        "baseProwessBefore": { "const": 3 },
-        "baseProwessAfter": { "const": 19 }
+        "injectedBaseProwess": { "type": ["integer", "null"], "minimum": 0, "maximum": 255 },
+        "baseProwessBefore": { "enum": [3, 67] },
+        "baseProwessAfter": { "enum": [19, 83] }
+      }
       }
     }
   }

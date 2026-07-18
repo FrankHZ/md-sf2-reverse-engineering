@@ -847,16 +847,19 @@ def _verify_refresh_observation(
         raise ValueError("level-up refresh runtime mismatch")
 
 
-def _verify_prowess_model(fixture: dict[str, Any], *, disasm: Path) -> None:
-    case = fixture["case"]
+def _verify_prowess_models(fixture: dict[str, Any], *, disasm: Path) -> None:
     equates = _parse_equates(disasm)
     starts = _parse_ally_starts(disasm)
     ally_codes = _parse_ally_codes(disasm)
-    ally = case["ally"]
+    source_case = fixture["cases"][0]
+    ally = source_case["ally"]
     class_code, starting_level = starts[ally]
-    if ally_codes[ally] != case["allyCode"] or class_code != case["classCode"]:
+    if (
+        ally_codes[ally] != source_case["allyCode"]
+        or class_code != source_case["classCode"]
+    ):
         raise ValueError("Karna prowess source identity drift")
-    if starting_level != case["startingLevel"]:
+    if starting_level != source_case["startingLevel"]:
         raise ValueError("Karna prowess starting-level drift")
 
     class_id = equates[f"CLASS_{class_code}"]
@@ -871,27 +874,37 @@ def _verify_prowess_model(fixture: dict[str, Any], *, disasm: Path) -> None:
     if len(matching) != 1 or matching[0]["level"] > starting_level:
         raise ValueError("Karna HEAL 3 source contract drift")
 
-    shifted = (initial >> equates["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"]) + 1
-    if shifted == 8:
-        shifted = 7
-    after = (initial & equates["PROWESS_MASK_CRITICAL"]) | (
-        shifted << equates["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"]
-    )
-    modeled = {
-        "startingLevel": starting_level,
-        "effectiveLevel": starting_level,
-        "spell": heal3,
-        "baseProwessBefore": initial,
-        "baseProwessAfter": after & 0xFF,
-    }
-    if any(case[field] != value for field, value in modeled.items()):
-        raise ValueError("Karna HEAL 3 prowess golden disagrees with source model")
+    for case in fixture["cases"]:
+        if any(
+            case[field] != source_case[field]
+            for field in ("ally", "allyCode", "classCode", "startingLevel")
+        ):
+            raise ValueError("synthetic HEAL 3 case source identity drift")
+        before = case["injectedBaseProwess"]
+        if before is None:
+            before = initial
+        shifted = (before >> equates["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"]) + 1
+        if shifted == 8:
+            shifted = 7
+        after = (before & equates["PROWESS_MASK_CRITICAL"]) | (
+            shifted << equates["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"]
+        )
+        modeled = {
+            "startingLevel": starting_level,
+            "effectiveLevel": starting_level,
+            "spell": heal3,
+            "baseProwessBefore": before,
+            "baseProwessAfter": after & 0xFF,
+        }
+        if any(case[field] != value for field, value in modeled.items()):
+            raise ValueError("Karna HEAL 3 prowess golden disagrees with source model")
 
 
-def _verify_prowess_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> None:
+def _verify_prowess_observation(
+    fixture: dict[str, Any], case: dict[str, Any], observed: dict[str, Any]
+) -> None:
     if observed.get("system") != "GEN" or observed.get("core") != fixture["emulator"]["core"]:
         raise ValueError("unexpected Karna prowess execution system/core")
-    case = fixture["case"]
     expected = {
         "id": case["id"],
         "ally": case["ally"],
@@ -903,6 +916,48 @@ def _verify_prowess_observation(fixture: dict[str, Any], observed: dict[str, Any
     }
     if observed.get("result") != expected:
         raise ValueError("Karna HEAL 3 prowess runtime mismatch")
+
+
+def _run_prowess_observations(
+    fixture: dict[str, Any], rom_path: Path, *, timeout_seconds: int
+) -> None:
+    for case in fixture["cases"]:
+        observed = run_observer(
+            rom_path=rom_path,
+            observer_path=PROWESS_OBSERVER,
+            config={
+                "function": fixture["function"],
+                "ram": fixture["ram"],
+                "case": {
+                    "id": case["id"],
+                    "ally": case["ally"],
+                    "spell": case["spell"],
+                    "injectedBaseProwess": case["injectedBaseProwess"],
+                },
+            },
+            output_name=f"ally-initialization-prowess-{case['id']}",
+            timeout_seconds=timeout_seconds,
+        )
+        _verify_prowess_observation(fixture, case, observed)
+
+
+def verify_initialization_prowess(
+    rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 60
+) -> dict[str, Any]:
+    fixture = load_json(PROWESS_FIXTURE)
+    validate_json(fixture, PROWESS_SCHEMA, owner=str(PROWESS_FIXTURE))
+    verify_runtime_contract(fixture, rom_path)
+    _verify_prowess_models(fixture, disasm=_verify_upstream(upstream_path))
+    _run_prowess_observations(fixture, rom_path, timeout_seconds=timeout_seconds)
+    return {
+        "Fixture": fixture["id"],
+        "Cases": len(fixture["cases"]),
+        "Transitions": [
+            f"0x{case['baseProwessBefore']:02X}->0x{case['baseProwessAfter']:02X}"
+            for case in fixture["cases"]
+        ],
+        "Status": "PASS",
+    }
 
 
 def verify_growth(
@@ -929,7 +984,7 @@ def verify_growth(
     _verify_level_models(level, disasm=disasm, curves=curves)
     _verify_boundary_models(boundary, disasm=disasm, curves=curves)
     _verify_refresh_model(refresh, disasm=disasm, curves=curves)
-    _verify_prowess_model(prowess, disasm=disasm)
+    _verify_prowess_models(prowess, disasm=disasm)
 
     stat_observed = run_observer(
         rom_path=rom_path,
@@ -998,22 +1053,7 @@ def verify_growth(
             timeout_seconds=timeout_seconds,
         )
         _verify_refresh_observation(refresh, case, refresh_observed)
-    prowess_observed = run_observer(
-        rom_path=rom_path,
-        observer_path=PROWESS_OBSERVER,
-        config={
-            "function": prowess["function"],
-            "ram": prowess["ram"],
-            "case": {
-                "id": prowess["case"]["id"],
-                "ally": prowess["case"]["ally"],
-                "spell": prowess["case"]["spell"],
-            },
-        },
-        output_name="ally-initialization-prowess",
-        timeout_seconds=timeout_seconds,
-    )
-    _verify_prowess_observation(prowess, prowess_observed)
+    _run_prowess_observations(prowess, rom_path, timeout_seconds=timeout_seconds)
     return {
         "StatGainFixture": stat["id"],
         "StatGainCases": len(stat["cases"]),
@@ -1024,7 +1064,7 @@ def verify_growth(
         "RefreshFixture": refresh["id"],
         "RefreshCases": len(refresh["cases"]),
         "ProwessFixture": prowess["id"],
-        "ProwessCases": 1,
+        "ProwessCases": len(prowess["cases"]),
         "TortBoundaryConfirmed": True,
         "Engine": f"BizHawk {stat['emulator']['version']} / {stat['emulator']['core']}",
         "Status": "PASS",

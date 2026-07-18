@@ -174,7 +174,10 @@ start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell
 the original takes the dedicated HEAL 3 branch; after `SetBaseProwess`, the callback at `0x969E`
 records base prowess `0x03→0x13`, upgrading double attack from 1/32 to 1/16 while leaving the natural
 critical and counter settings unchanged. The branch itself does not call `LearnSpell`; the following
-23-call `LevelUp` replay learns HEAL 3 at effective level 22 through the ordinary path.
+23-call `LevelUp` replay learns HEAL 3 at effective level 22 through the ordinary path. A separate
+emulator start injects `0x43` at the branch and records `0x43→0x53`, confirming that counter 1/16 is
+preserved for this synthetic input while double attack advances from 1/32 to 1/16. The source-model
+oracle independently derives both transitions from the pinned `InitializeAllyStats` instructions.
 
 ## Confirmed Statically and at Runtime: Turn-Order Score
 
@@ -835,7 +838,8 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 
 ## Unknown / Next Fixtures
 
-- Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
+- Add the HEAL 3 shifted-value-eight cap, other prowess bit combinations, and remaining
+  stat-cap/underflow edges.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

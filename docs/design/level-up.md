@@ -148,17 +148,21 @@ branches, or gold.
 level before replaying earlier level-ups. When natural new-game initialization reaches Karna/PRST at
 starting level 24, the HEAL 3 entry (`0x80`, threshold 22) takes a dedicated branch at `0x967A`.
 It changes base prowess from `0x03` (critical 1/16, double 1/32, counter 1/32) to `0x13`
-(critical 1/16, double 1/16, counter 1/32). The observer records the write after `SetBaseProwess` at
-`0x969E`; it performs no state or register mutation.
+(critical 1/16, double 1/16, counter 1/32). A second run injects `0x43` immediately before the
+branch and observes `0x53`: the counter 1/16 setting is preserved while double attack improves from
+1/32 to 1/16. The observer records the write after `SetBaseProwess` at `0x969E`; apart from the
+explicit synthetic input in the second run, it performs no state or register mutation.
 
 This special branch changes prowess but deliberately skips `LearnSpell` during the preliminary scan.
 The subsequent `LevelUp` replay reaches effective level 22 and learns HEAL 3 through the ordinary
 path. A remake must therefore preserve the resulting prowess and spell state without depending on
 this two-stage initialization implementation.
 
-The source instruction keeps only the critical nibble before writing the incremented double setting,
-so a synthetic nonzero counter setting would be cleared. Karna's natural PRST base prowess has zero
-counter bits, and the H3 fixture does not generalize that latent behavior beyond the observed case.
+The original treats the full high nibble as one scalar: shift right four bits, increment, apply the
+special source cap when the shifted value equals eight, then combine it with the unchanged critical
+nibble. The two confirmed transitions are therefore `0x03→0x13` and `0x43→0x53`. This establishes
+counter preservation for the tested nonzero setting, but does not yet independently cover every
+counter/double bit combination or the shifted-value-eight cap.
 
 ## Confirmed TORT Boundary Defect
 
@@ -182,7 +186,7 @@ record that choice explicitly before H4 treats either behavior as normative.
 
 - low-stat underflow and ATT/DEF/AGI/MOV cap-saturation edges;
 - enemy curse suppression and the remaining critical/counter/set prowess equip-effect functions;
-- the latent HEAL 3 behavior with a synthetic nonzero counter setting.
+- the HEAL 3 shifted-value-eight cap and other counter/double bit combinations.
 
 The future remake growth module should consume the same six fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.

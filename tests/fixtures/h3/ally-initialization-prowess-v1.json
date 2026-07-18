@@ -13,15 +13,30 @@
     "combatantEntrySize": 56,
     "baseProwessOffset": 30
   },
-  "case": {
-    "id": "karna-prst-heal3",
-    "ally": 15,
-    "allyCode": "KARNA",
-    "classCode": "PRST",
-    "startingLevel": 24,
-    "effectiveLevel": 24,
-    "spell": 128,
-    "baseProwessBefore": 3,
-    "baseProwessAfter": 19
-  }
+  "cases": [
+    {
+      "id": "karna-prst-heal3-natural",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": null,
+      "baseProwessBefore": 3,
+      "baseProwessAfter": 19
+    },
+    {
+      "id": "karna-prst-heal3-counter-preservation",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 67,
+      "baseProwessBefore": 67,
+      "baseProwessAfter": 83
+    }
+  ]
 }

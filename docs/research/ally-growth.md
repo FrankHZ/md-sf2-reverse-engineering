@@ -52,7 +52,9 @@ post-projection growth, base/promoted cap exits and their level 39→40 / 98→9
 It also confirms that Peter/WIZ scans forward into Tyrin's WIZ block at `0x1EE653`, while Claude/SDMN
 reaches the final sentinel and takes the genuine missing-class exit. A mutation-free startup observer
 confirms Karna's HEAL 3 initialization special case changes PRST base prowess from `0x03` to `0x13`
-before the ordinary level-up replay learns the spell.
+before the ordinary level-up replay learns the spell. A controlled second run injects `0x43` at the
+same branch and observes `0x53`, proving that this input's counter 1/16 bits survive while the double
+setting advances from 1/32 to 1/16.
 
 A complete-combatant fixture follows Slade/THIF from level 39 to 40 through the call to
 `UpdateCombatantStats`. Current HP/MP remain unchanged when maxima grow. Current ATT/DEF/AGI/MOV,
@@ -73,6 +75,7 @@ counts, hashes, structural rules, and research conclusions are tracked.
 ## Next Evidence
 
 Extend the committed emulator-backed fixtures with underflow/cap edges, enemy curse handling, the
-remaining prowess-effect functions, plus synthetic nonzero-counter input to the HEAL 3 branch. The existing stat-gain,
-complete-caller, boundary, and refresh fixtures are the first implementation-neutral inputs for a
-later remake growth module; see [`../design/level-up.md`](../design/level-up.md).
+remaining prowess-effect functions, and the HEAL 3 shifted-value-eight cap. The existing stat-gain,
+complete-caller, boundary, refresh, and initialization-prowess fixtures are the first
+implementation-neutral inputs for a later remake growth module; see
+[`../design/level-up.md`](../design/level-up.md).
