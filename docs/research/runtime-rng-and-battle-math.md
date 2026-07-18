@@ -579,25 +579,29 @@ Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
 `schemas/h3-spell-desoul-fixture.schema.json`, `src/sf2tool/h3/spell_desoul.py`, and
 `tools/bizhawk/spell_desoul_observer.lua`.
 
-## Confirmed: SPOIT Random MP Absorption and Replay Order
+## Confirmed: SPOIT MP-Absorption Boundary Matrix and Replay Order
 
-The SPOIT fixture replaces Bowie's scheduled Battle 01 attack with spell entry 15 and supplies one
-enemy target with current/max MP 2/2. SPOIT's pinned definition has MP cost 0. At the genuine
-`spellEffect_AbsorbMp` entry `0xB5D6`, seed `0x1234` produces 2 from `RNG(3)`; the effect adds 3,
-making an unclamped transfer of 5. The observation at `0xB5EC` confirms the source clamp reduces
-that value to the target's current MP, 2. The effect then reaches the shared status-EXP routine and
-adds 5. Actor/target MP remain 10/2 when scene construction returns.
+The SPOIT fixture replaces Bowie's scheduled Battle 01 attack with spell entry 15. At the
+pre-initialization seam it supplies enemy combatants 128-130 with current/max MP `0/0`, `2/2`, and
+`10/10`; at each genuine `spellEffect_AbsorbMp` entry `0xB5D6`, it resets seed `0x1234` to isolate
+the MP boundary from RNG variation. Each `RNG(3)` result is 2 and the effect adds 3, making a
+candidate transfer of 5. Observation `0xB5EC` confirms emitted transfers `0`, `2`, and `5`: an empty
+target is clamped to zero, the two-MP target is clamped to two, and the ten-MP target receives the
+unclamped candidate. Each target still reaches the status-EXP routine, so accumulated EXP advances
+`5 -> 10 -> 15`. Construction leaves caster MP 18 and target MP `0/2/10` unchanged.
 
-The replay trace preserves three distinct commands: the common spell-cost reaction `ally:0`, the
-effect's `enemy:-2`, and its `ally:2`. The enemy MP checkpoint is `0x18F92`, after
-`DecreaseCurrentMp`; the earlier `0x18F7E` only proves HP application and cannot own MP state.
-Playback changes target MP `2 -> 0`, actor MP `10 -> 12`, and retains the zero-delta command in the
-ordered trace.
+The replay trace preserves all seven commands, including zero deltas:
+`ally:0 -> enemy:0 -> ally:0 -> enemy:-2 -> ally:2 -> enemy:-5 -> ally:5`. The enemy MP checkpoint
+is `0x18F92`, after `DecreaseCurrentMp`; the earlier `0x18F7E` only proves HP application and cannot
+own MP state. Playback leaves targets at `0/0/5`. The caster reaches max MP on the `+2` reaction
+(`18 -> 20`), then retains the later `+5` payload while remaining at 20. This matches
+`IncreaseCurrentMp` at `0x8792`: it supplies current max MP to `IncreaseAndClampByte`, which writes
+the maximum when the proposed value is not below it.
 
-Battle 01 halves status EXP `5 -> 2`. The post-effect seed is `0xECAB`; award `RNG(16)` rolls 0 and
-3 add one without subtracting, emitting 3 EXP and changing Bowie EXP `0 -> 3`. The Python verifier
-independently models the LCG, `roll + 3`, target-MP clamp, award randomization, and replay order
-before launching BizHawk. Reproduce with:
+Battle 01 halves status EXP `15 -> 7`. The post-effect seed is `0xECAB`; award `RNG(16)` rolls 0 and
+3 add one without subtracting, emitting 8 EXP and changing Bowie EXP `0 -> 8`. The Python verifier
+independently models the LCG, all three target-MP clamps, cumulative EXP, award randomization, and
+max-MP-clamped replay before launching BizHawk. Reproduce with:
 
 ```powershell
 uv run sf2 h3 spell-mp
@@ -605,8 +609,9 @@ uv run sf2 h3 spell-mp
 
 Tracked artifacts are `tests/fixtures/h3/spell-mp-absorb-v1.json`,
 `schemas/h3-spell-mp-absorb-fixture.schema.json`, `src/sf2tool/h3/spell_mp.py`, and
-`tools/bizhawk/spell_mp_absorb_observer.lua`. This case does not establish unclamped transfer,
-zero-MP target behavior, caster max-MP capping, enemy-caster behavior, or other drain effects.
+`tools/bizhawk/spell_mp_absorb_observer.lua`. The supplied target list isolates arithmetic and does
+not establish naturally selected multi-target geometry, enemy-caster behavior, or other drain
+effects.
 
 ## Confirmed: BOOST 1 Fresh Application and Failed-Recast Mutation
 
@@ -828,8 +833,8 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
   DESOUL failure/multi-target cases, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
-  reapplication, and other status spells,
-  SPOIT boundary cases, and other non-damage spell families.
+  reapplication, and other status spells, SPOIT enemy-caster behavior, and other non-damage spell
+  families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

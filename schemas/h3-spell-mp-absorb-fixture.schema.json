@@ -1,29 +1,101 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://example.invalid/md-sf2/schemas/h3-spell-mp-absorb-fixture.schema.json",
-  "type": "object", "additionalProperties": false,
+  "type": "object",
+  "additionalProperties": false,
   "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "sharedStatusFixture", "function", "case", "expected"],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-spoit-mp-absorb-v1" },
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-spoit-mp-absorb-v1" },
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
-    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
-    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 },
+    "emulator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
     "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
     "sharedStatusFixture": { "const": "tests/fixtures/h3/spell-status-sleep-v1.json" },
-    "function": { "type": "object", "additionalProperties": false, "required": ["absorbEffectEntryAddress", "randomRollAddress", "clampedTransferAddress", "enemyMpAppliedAddress"], "properties": { "absorbEffectEntryAddress": { "const": 46550 }, "randomRollAddress": { "const": 46564 }, "clampedTransferAddress": { "const": 46572 }, "enemyMpAppliedAddress": { "const": 102290 } } },
-    "case": { "type": "object", "additionalProperties": false, "required": ["id", "actor", "actorClass", "actorMaxMp", "actorInitialMp", "actorInitialExp", "actorInitialStatus", "actionType", "actionSpell", "spellMpCost", "seed", "target", "targetMaxMp", "targetInitialMp"], "properties": { "id": { "const": "bowie-spoit-target-two-mp" }, "actor": { "const": 0 }, "actorClass": { "const": 0 }, "actorMaxMp": { "const": 20 }, "actorInitialMp": { "const": 10 }, "actorInitialExp": { "const": 0 }, "actorInitialStatus": { "const": 768 }, "actionType": { "const": 1 }, "actionSpell": { "const": 15 }, "spellMpCost": { "const": 0 }, "seed": { "const": 4660 }, "target": { "const": 128 }, "targetMaxMp": { "const": 2 }, "targetInitialMp": { "const": 2 } } },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["absorbEffectEntryAddress", "randomRollAddress", "clampedTransferAddress", "casterMpAppliedAddress", "enemyMpAppliedAddress"],
+      "properties": {
+        "absorbEffectEntryAddress": { "const": 46550 },
+        "randomRollAddress": { "const": 46564 },
+        "clampedTransferAddress": { "const": 46572 },
+        "casterMpAppliedAddress": { "const": 101884 },
+        "enemyMpAppliedAddress": { "const": 102290 }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actor", "actorClass", "actorMaxMp", "actorInitialMp", "actorInitialExp", "actorInitialStatus", "actionType", "actionSpell", "spellMpCost", "seed", "targets"],
+      "properties": {
+        "id": { "const": "bowie-spoit-mp-boundary-matrix" },
+        "actor": { "const": 0 }, "actorClass": { "const": 0 },
+        "actorMaxMp": { "const": 20 }, "actorInitialMp": { "const": 18 },
+        "actorInitialExp": { "const": 0 }, "actorInitialStatus": { "const": 768 },
+        "actionType": { "const": 1 }, "actionSpell": { "const": 15 },
+        "spellMpCost": { "const": 0 }, "seed": { "const": 4660 },
+        "targets": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "$ref": "#/definitions/target" }
+        }
+      }
+    },
     "expected": { "$ref": "#/definitions/expected" }
   },
   "definitions": {
-    "award": { "type": "object", "additionalProperties": false, "required": ["seed", "halved", "firstRoll", "secondRoll", "commandExp"], "properties": { "seed": { "const": 60587 }, "halved": { "const": 2 }, "firstRoll": { "const": 0 }, "secondRoll": { "const": 3 }, "commandExp": { "const": 3 } } },
-    "allyReaction": { "type": "object", "additionalProperties": false, "required": ["mpChange", "mpBefore", "mpAfter"], "properties": { "mpChange": { "type": "integer" }, "mpBefore": { "type": "integer" }, "mpAfter": { "type": "integer" } } },
-    "enemyReaction": { "type": "object", "additionalProperties": false, "required": ["mpChange", "mpBefore", "mpAfter"], "properties": { "mpChange": { "const": -2 }, "mpBefore": { "const": 2 }, "mpAfter": { "const": 0 } } },
-    "expReaction": { "type": "object", "additionalProperties": false, "required": ["commandExp", "expBefore", "expAfter"], "properties": { "commandExp": { "const": 3 }, "expBefore": { "const": 0 }, "expAfter": { "const": 3 } } },
+    "target": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "maxMp", "initialMp"],
+      "properties": { "combatant": { "type": "integer", "minimum": 128, "maximum": 130 }, "maxMp": { "type": "integer", "minimum": 0 }, "initialMp": { "type": "integer", "minimum": 0 } }
+    },
+    "constructionRecord": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "randomRoll", "unclampedTransfer", "targetMp", "transfer", "accumulatedExp"],
+      "properties": { "combatant": { "type": "integer" }, "randomRoll": { "const": 2 }, "unclampedTransfer": { "const": 5 }, "targetMp": { "type": "integer" }, "transfer": { "type": "integer" }, "accumulatedExp": { "type": "integer" } }
+    },
+    "reaction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "mpChange", "mpBefore", "mpAfter"],
+      "properties": { "combatant": { "type": "integer" }, "mpChange": { "type": "integer" }, "mpBefore": { "type": "integer" }, "mpAfter": { "type": "integer" } }
+    },
+    "award": {
+      "type": "object", "additionalProperties": false,
+      "required": ["seed", "halved", "firstRoll", "secondRoll", "commandExp"],
+      "properties": { "seed": { "const": 60587 }, "halved": { "const": 7 }, "firstRoll": { "const": 0 }, "secondRoll": { "const": 3 }, "commandExp": { "const": 8 } }
+    },
+    "expReaction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commandExp", "expBefore", "expAfter"],
+      "properties": { "commandExp": { "const": 8 }, "expBefore": { "const": 0 }, "expAfter": { "const": 8 } }
+    },
     "expected": {
-      "type": "object", "additionalProperties": false, "required": ["construction", "replay"],
+      "type": "object", "additionalProperties": false,
+      "required": ["construction", "replay"],
       "properties": {
-        "construction": { "type": "object", "additionalProperties": false, "required": ["randomRoll", "unclampedTransfer", "targetMp", "transfer", "accumulatedExp", "actorMp", "actorStatus", "award"], "properties": { "randomRoll": { "const": 2 }, "unclampedTransfer": { "const": 5 }, "targetMp": { "const": 2 }, "transfer": { "const": 2 }, "accumulatedExp": { "const": 5 }, "actorMp": { "const": 10 }, "actorStatus": { "const": 768 }, "award": { "$ref": "#/definitions/award" } } },
-        "replay": { "type": "object", "additionalProperties": false, "required": ["reactionOrder", "allyReactions", "enemyReaction", "expReaction", "finalActorMp", "finalActorExp", "finalActorStatus", "finalTargetMp"], "properties": { "reactionOrder": { "const": ["ally:0", "enemy:-2", "ally:2"] }, "allyReactions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/allyReaction" } }, "enemyReaction": { "$ref": "#/definitions/enemyReaction" }, "expReaction": { "$ref": "#/definitions/expReaction" }, "finalActorMp": { "const": 12 }, "finalActorExp": { "const": 3 }, "finalActorStatus": { "const": 768 }, "finalTargetMp": { "const": 0 } } }
+        "construction": {
+          "type": "object", "additionalProperties": false,
+          "required": ["records", "accumulatedExp", "actorMp", "actorStatus", "award"],
+          "properties": {
+            "records": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/constructionRecord" } },
+            "accumulatedExp": { "const": 15 }, "actorMp": { "const": 18 }, "actorStatus": { "const": 768 }, "award": { "$ref": "#/definitions/award" }
+          }
+        },
+        "replay": {
+          "type": "object", "additionalProperties": false,
+          "required": ["reactionOrder", "allyReactions", "enemyReactions", "expReaction", "finalActorMp", "finalActorExp", "finalActorStatus", "finalTargetMp"],
+          "properties": {
+            "reactionOrder": { "const": ["ally:0", "enemy:0", "ally:0", "enemy:-2", "ally:2", "enemy:-5", "ally:5"] },
+            "allyReactions": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/reaction" } },
+            "enemyReactions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/reaction" } },
+            "expReaction": { "$ref": "#/definitions/expReaction" },
+            "finalActorMp": { "const": 20 }, "finalActorExp": { "const": 8 }, "finalActorStatus": { "const": 768 },
+            "finalTargetMp": { "const": [0, 0, 5] }
+          }
+        }
       }
     }
   }

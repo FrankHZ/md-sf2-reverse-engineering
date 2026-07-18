@@ -40,27 +40,96 @@ def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
     )
     if any(fragment not in cast for fragment in required):
         raise ValueError("SPOIT source contract drifted")
+    stats2 = (disasm / "code/common/stats/combatantstats_2.asm").read_text(
+        encoding="utf-8"
+    )
+    stats3 = (disasm / "code/common/stats/combatantstats_3.asm").read_text(
+        encoding="utf-8"
+    )
+    replay_required = (
+        "IncreaseCurrentMp:",
+        "move.b  COMBATANT_OFFSET_MP_MAX(a0),d6",
+        "bsr.w   IncreaseAndClampByte",
+    )
+    clamp_required = (
+        "IncreaseAndClampByte:",
+        "cmp.b   d6,d1",
+        "move.b  d6,d1",
+        "move.b  d1,(a0,d7.w)",
+    )
+    if any(fragment not in stats2 for fragment in replay_required) or any(
+        fragment not in stats3 for fragment in clamp_required
+    ):
+        raise ValueError("SPOIT replay MP-clamp source contract drifted")
 
 
 def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     case = fixture["case"]
-    seed, roll = _rng_step(case["seed"], 3)
-    unclamped = roll + 3
-    transfer = min(unclamped, case["targetInitialMp"])
-    accumulated_exp = 5
+    records = []
+    accumulated_exp = 0
+    award_seed = None
+    for target in case["targets"]:
+        seed, roll = _rng_step(case["seed"], 3)
+        unclamped = roll + 3
+        transfer = min(unclamped, target["initialMp"])
+        accumulated_exp += 5
+        award_seed = seed
+        records.append(
+            {
+                "combatant": target["combatant"],
+                "randomRoll": roll,
+                "unclampedTransfer": unclamped,
+                "targetMp": target["initialMp"],
+                "transfer": transfer,
+                "accumulatedExp": accumulated_exp,
+            }
+        )
     halved = accumulated_exp // 2 if fixture["battleId"] == 1 else accumulated_exp
-    award_seed = seed
+    assert award_seed is not None
+    seed = award_seed
     seed, first_roll = _rng_step(seed, 16)
     command_exp = halved + int(first_roll == 0)
     _, second_roll = _rng_step(seed, 16)
     command_exp = max(command_exp - int(second_roll == 0), 1)
     actor_after_cost = case["actorInitialMp"] - case["spellMpCost"]
+    actor_mp = actor_after_cost
+    ally_reactions = [
+        {
+            "combatant": case["actor"],
+            "mpChange": -case["spellMpCost"],
+            "mpBefore": case["actorInitialMp"],
+            "mpAfter": actor_after_cost,
+        }
+    ]
+    enemy_reactions = []
+    reaction_order = [f"ally:{-case['spellMpCost']}"]
+    final_target_mp = []
+    for target, record in zip(case["targets"], records, strict=True):
+        transfer = record["transfer"]
+        enemy_reactions.append(
+            {
+                "combatant": target["combatant"],
+                "mpChange": -transfer,
+                "mpBefore": target["initialMp"],
+                "mpAfter": target["initialMp"] - transfer,
+            }
+        )
+        reaction_order.append(f"enemy:{-transfer}")
+        before = actor_mp
+        actor_mp = min(actor_mp + transfer, case["actorMaxMp"])
+        ally_reactions.append(
+            {
+                "combatant": case["actor"],
+                "mpChange": transfer,
+                "mpBefore": before,
+                "mpAfter": actor_mp,
+            }
+        )
+        reaction_order.append(f"ally:{transfer}")
+        final_target_mp.append(target["initialMp"] - transfer)
     return {
         "construction": {
-            "randomRoll": roll,
-            "unclampedTransfer": unclamped,
-            "targetMp": case["targetInitialMp"],
-            "transfer": transfer,
+            "records": records,
             "accumulatedExp": accumulated_exp,
             "actorMp": case["actorInitialMp"],
             "actorStatus": case["actorInitialStatus"],
@@ -73,33 +142,18 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             },
         },
         "replay": {
-            "reactionOrder": ["ally:0", f"enemy:{-transfer}", f"ally:{transfer}"],
-            "allyReactions": [
-                {
-                    "mpChange": -case["spellMpCost"],
-                    "mpBefore": case["actorInitialMp"],
-                    "mpAfter": actor_after_cost,
-                },
-                {
-                    "mpChange": transfer,
-                    "mpBefore": actor_after_cost,
-                    "mpAfter": actor_after_cost + transfer,
-                },
-            ],
-            "enemyReaction": {
-                "mpChange": -transfer,
-                "mpBefore": case["targetInitialMp"],
-                "mpAfter": case["targetInitialMp"] - transfer,
-            },
+            "reactionOrder": reaction_order,
+            "allyReactions": ally_reactions,
+            "enemyReactions": enemy_reactions,
             "expReaction": {
                 "commandExp": command_exp,
                 "expBefore": case["actorInitialExp"],
                 "expAfter": case["actorInitialExp"] + command_exp,
             },
-            "finalActorMp": actor_after_cost + transfer,
+            "finalActorMp": actor_mp,
             "finalActorExp": case["actorInitialExp"] + command_exp,
             "finalActorStatus": case["actorInitialStatus"],
-            "finalTargetMp": case["targetInitialMp"] - transfer,
+            "finalTargetMp": final_target_mp,
         },
     }
 
@@ -133,7 +187,11 @@ def verify_spell_mp_absorb(
         "core": fixture["emulator"]["core"],
         "id": fixture["case"]["id"],
         "battle": fixture["battleId"],
-        "action": {"type": 1, "spell": 15, "target": 128},
+        "action": {
+            "type": 1,
+            "spell": 15,
+            "target": fixture["case"]["targets"][0]["combatant"],
+        },
         **fixture["expected"],
     }
     if observed != expected:
@@ -144,11 +202,16 @@ def verify_spell_mp_absorb(
     return {
         "Fixture": fixture["id"],
         "Spell": "SPOIT",
-        "RandomTransfer": modeled["construction"]["unclampedTransfer"],
-        "ClampedTransfer": modeled["construction"]["transfer"],
+        "RandomTransfer": modeled["construction"]["records"][0][
+            "unclampedTransfer"
+        ],
+        "Transfers": "/".join(
+            str(record["transfer"])
+            for record in modeled["construction"]["records"]
+        ),
         "PersistentMp": (
             f"actor={modeled['replay']['finalActorMp']},"
-            f"target={modeled['replay']['finalTargetMp']}"
+            f"targets={modeled['replay']['finalTargetMp']}"
         ),
         "CasterStatus": f"0x{modeled['replay']['finalActorStatus']:04X}",
         "CommandExp": modeled["construction"]["award"]["commandExp"],

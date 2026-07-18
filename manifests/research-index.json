@@ -332,6 +332,9 @@
       }, {
         "level": "H3", "fixture": "tests/fixtures/h3/spell-boost-v1.json", "fixtureId": "sf2-boost1-fresh-and-recast-v1", "verifier": "src/sf2tool/h3/spell_boost.py",
         "bindings": [{ "addressId": "stats-applied", "fixtureField": "function.allyStatsAppliedAddress" }]
+      }, {
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-mp-absorb-v1.json", "fixtureId": "sf2-spoit-mp-absorb-v1", "verifier": "src/sf2tool/h3/spell_mp.py",
+        "bindings": [{ "addressId": "applied", "fixtureField": "function.casterMpAppliedAddress" }]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/spell-resolution.md"]

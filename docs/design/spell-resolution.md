@@ -192,24 +192,28 @@ one successful enemy instant death, kill cap, reward lookup, and persistent repl
 DESOUL 2 multi-target behavior, ally/enemy-caster reward skips, boss immunity, and battle-victory
 side effects remain outside the case.
 
-## Confirmed SPOIT MP-Absorption Subset
+## Confirmed SPOIT MP-Absorption Boundary Matrix
 
-SPOIT has zero MP cost. At the effect entry it rolls `rng.next(3)`, adds 3, and clamps that result
-to the target's current MP. With seed `0x1234`, the roll is 2 and the candidate transfer is 5; the
-controlled target has only 2 MP, so the emitted transfer is 2. The calculation adds the standard
-5 status-effect EXP. Construction records the reactions but leaves caster/target MP at 10/2.
+SPOIT has zero MP cost. For each target it rolls `rng.next(3)`, adds 3, and clamps that candidate to
+the target's current MP. With a controlled roll of 2, candidate 5 against targets holding 0, 2, and
+10 MP emits transfers 0, 2, and 5. Even the empty target emits a target MP-zero reaction, a caster
+MP-zero reaction, and the standard 5 status-effect EXP. Three targets therefore accumulate 15 EXP
+while construction leaves caster and target MP unchanged.
 
-The command order is observable and significant: the common spell wrapper first emits a zero-cost
-caster reaction, then SPOIT emits enemy MP `-2`, then caster MP `+2`. Replay therefore executes
-`ally:0 -> enemy:-2 -> ally:2`, leaving caster MP 12 and target MP 0. Battle 01 halves accumulated
-EXP `5 -> 2`; the post-effect seed `0xECAB` produces range-16 rolls 0 and 3, so the first adjustment
-raises the command to 3. Caster EXP changes `0 -> 3` after the MP reactions.
+Command order is observable and significant. The common zero-cost reaction precedes target/caster
+pairs in target-list order:
+`ally:0 -> enemy:0 -> ally:0 -> enemy:-2 -> ally:2 -> enemy:-5 -> ally:5`. Replay drains targets to
+`0/0/5`. Caster MP starts at 18, reaches its maximum 20 on the `+2` command, and remains 20 when the
+later `+5` payload is applied. The replay stat primitive, rather than SPOIT construction, owns this
+second clamp to caster maximum MP. Consumers must preserve the command payload separately from the
+post-command state.
 
-This confirms one clamped ally-caster/enemy-target case, including the otherwise easy-to-discard
-zero-delta command. The caster starts with SILENCE status `0x0300`, but SPOIT's properties are exactly
-`TYPE_SPECIAL` and omit `AFFECTEDBYSILENCE`, so the spell executes normally and preserves that status.
-This is the negative control for the marked-spell gate below. An unclamped transfer, empty target,
-caster max-MP clamp, enemy caster, and other drain effects remain outside the case.
+Battle 01 halves accumulated EXP `15 -> 7`; range-16 award rolls 0 and 3 raise the command to 8, so
+caster EXP changes `0 -> 8` after the MP reactions. The caster starts with SILENCE status `0x0300`,
+but SPOIT's properties are exactly `TYPE_SPECIAL` and omit `AFFECTEDBYSILENCE`, so the spell executes
+normally and preserves that status. This remains the negative control for the marked-spell gate
+below. Enemy-caster behavior, naturally selected multi-target geometry, and other drain effects
+remain outside the case.
 
 ## Confirmed BOOST 1 Fresh Application and Recast Quirk
 
@@ -353,7 +357,7 @@ naturally carried state remains outside these cases.
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
-| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent status/MP/EXP replay |
+| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
 | `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` counter; 3/8 DEF/AGI floor; same-side status EXP; cost/status replay; failed recast status-write/stat-refresh mismatch |
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
 | `sf2-dispel1-spell-gate-and-recast-v1` | `tests/fixtures/h3/spell-dispel-v1.json` | known-spell count gate; thresholds 5/6/7/8 and no-spell 8; `0x0300` counter; successful `0x0100` recast refresh; construction/replay timing; MP/EXP persistence |
@@ -378,9 +382,7 @@ expected-deviation fixture.
   kill bonus, and non-Battle-01 award behavior.
 - **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/
   SLOW/DISPEL subsets, BOOST/SLOW 2,
-  reapplication and repeated lifetime edges,
-  unclamped/empty/full-caster SPOIT and other drain
-  branches,
+  reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
   DESOUL failure/multi-target branches, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.

@@ -4,54 +4,64 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "One controlled Battle 01 SPOIT action by a caster already carrying SILENCE 0x0300. Because SPOIT lacks AFFECTEDBYSILENCE, the action continues through range-3 random drain, +3 offset, target-current-MP clamp, zero-cost caster command, ordered target/caster MP reactions, status-spell EXP, Battle 01 award randomization, and persistent replay. Common Battle Test and replay addresses are inherited from named fixtures.",
+  "observationBoundary": "One controlled Battle 01 SPOIT action by a caster already carrying SILENCE 0x0300. The pre-initialization seam supplies three enemy targets with 0, 2, and 10 current MP, and the effect-entry seam resets the same seed for each target. The action observes empty-target zero reactions, target-current-MP clamping, an unclamped transfer, cumulative status-spell EXP, ordered target/caster MP reactions, and the caster-max-MP clamp during persistent replay. Common Battle Test and replay addresses are inherited from named fixtures.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "sharedStatusFixture": "tests/fixtures/h3/spell-status-sleep-v1.json",
   "function": {
     "absorbEffectEntryAddress": 46550,
     "randomRollAddress": 46564,
     "clampedTransferAddress": 46572,
+    "casterMpAppliedAddress": 101884,
     "enemyMpAppliedAddress": 102290
   },
   "case": {
-    "id": "bowie-spoit-target-two-mp",
+    "id": "bowie-spoit-mp-boundary-matrix",
     "actor": 0,
     "actorClass": 0,
     "actorMaxMp": 20,
-    "actorInitialMp": 10,
+    "actorInitialMp": 18,
     "actorInitialExp": 0,
     "actorInitialStatus": 768,
     "actionType": 1,
     "actionSpell": 15,
     "spellMpCost": 0,
     "seed": 4660,
-    "target": 128,
-    "targetMaxMp": 2,
-    "targetInitialMp": 2
+    "targets": [
+      { "combatant": 128, "maxMp": 0, "initialMp": 0 },
+      { "combatant": 129, "maxMp": 2, "initialMp": 2 },
+      { "combatant": 130, "maxMp": 10, "initialMp": 10 }
+    ]
   },
   "expected": {
     "construction": {
-      "randomRoll": 2,
-      "unclampedTransfer": 5,
-      "targetMp": 2,
-      "transfer": 2,
-      "accumulatedExp": 5,
-      "actorMp": 10,
+      "records": [
+        { "combatant": 128, "randomRoll": 2, "unclampedTransfer": 5, "targetMp": 0, "transfer": 0, "accumulatedExp": 5 },
+        { "combatant": 129, "randomRoll": 2, "unclampedTransfer": 5, "targetMp": 2, "transfer": 2, "accumulatedExp": 10 },
+        { "combatant": 130, "randomRoll": 2, "unclampedTransfer": 5, "targetMp": 10, "transfer": 5, "accumulatedExp": 15 }
+      ],
+      "accumulatedExp": 15,
+      "actorMp": 18,
       "actorStatus": 768,
-      "award": { "seed": 60587, "halved": 2, "firstRoll": 0, "secondRoll": 3, "commandExp": 3 }
+      "award": { "seed": 60587, "halved": 7, "firstRoll": 0, "secondRoll": 3, "commandExp": 8 }
     },
     "replay": {
-      "reactionOrder": ["ally:0", "enemy:-2", "ally:2"],
+      "reactionOrder": ["ally:0", "enemy:0", "ally:0", "enemy:-2", "ally:2", "enemy:-5", "ally:5"],
       "allyReactions": [
-        { "mpChange": 0, "mpBefore": 10, "mpAfter": 10 },
-        { "mpChange": 2, "mpBefore": 10, "mpAfter": 12 }
+        { "combatant": 0, "mpChange": 0, "mpBefore": 18, "mpAfter": 18 },
+        { "combatant": 0, "mpChange": 0, "mpBefore": 18, "mpAfter": 18 },
+        { "combatant": 0, "mpChange": 2, "mpBefore": 18, "mpAfter": 20 },
+        { "combatant": 0, "mpChange": 5, "mpBefore": 20, "mpAfter": 20 }
       ],
-      "enemyReaction": { "mpChange": -2, "mpBefore": 2, "mpAfter": 0 },
-      "expReaction": { "commandExp": 3, "expBefore": 0, "expAfter": 3 },
-      "finalActorMp": 12,
-      "finalActorExp": 3,
+      "enemyReactions": [
+        { "combatant": 128, "mpChange": 0, "mpBefore": 0, "mpAfter": 0 },
+        { "combatant": 129, "mpChange": -2, "mpBefore": 2, "mpAfter": 0 },
+        { "combatant": 130, "mpChange": -5, "mpBefore": 10, "mpAfter": 5 }
+      ],
+      "expReaction": { "commandExp": 8, "expBefore": 0, "expAfter": 8 },
+      "finalActorMp": 20,
+      "finalActorExp": 8,
       "finalActorStatus": 768,
-      "finalTargetMp": 0
+      "finalTargetMp": [0, 0, 5]
     }
   }
 }
