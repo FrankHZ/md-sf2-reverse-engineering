@@ -23,14 +23,14 @@ local function write_result_and_exit()
         '{"system":"%s","core":"Genesis Plus GX","id":"%s","battle":%d,'..
         '"action":{"type":%d,"spell":%d,"target":%d},'..
         '"construction":{"randomRoll":%d,"unclampedTransfer":%d,"targetMp":%d,'..
-        '"transfer":%d,"accumulatedExp":%d,"actorMp":%d,'..
+        '"transfer":%d,"accumulatedExp":%d,"actorMp":%d,"actorStatus":%d,'..
         '"award":{"seed":%d,"halved":%d,"firstRoll":%d,"secondRoll":%d,"commandExp":%d}},'..
         '"replay":{"reactionOrder":[',
         emu.getsystemid(),config.case.id,memory.read_u8(config.harness.ram.currentBattleAddress,"M68K BUS"),
         memory.read_u16_be(config.ram.currentBattleActionAddress,"M68K BUS"),
         memory.read_u16_be(config.ram.currentBattleActionAddress+2,"M68K BUS"),config.case.target,
         construction.randomRoll,construction.unclampedTransfer,construction.targetMp,
-        construction.transfer,construction.accumulatedExp,construction.actorMp,
+        construction.transfer,construction.accumulatedExp,construction.actorMp,construction.actorStatus,
         award.seed,award.halved,award.firstRoll,award.secondRoll,award.commandExp))
     for i,item in ipairs(reaction_order) do if i>1 then out:write(",") end;out:write('"'..item..'"') end
     out:write('],"allyReactions":[')
@@ -41,10 +41,11 @@ local function write_result_and_exit()
     out:write(string.format(
         '],"enemyReaction":{"mpChange":%d,"mpBefore":%d,"mpAfter":%d},'..
         '"expReaction":{"commandExp":%d,"expBefore":%d,"expAfter":%d},'..
-        '"finalActorMp":%d,"finalActorExp":%d,"finalTargetMp":%d}}\n',
+        '"finalActorMp":%d,"finalActorExp":%d,"finalActorStatus":%d,"finalTargetMp":%d}}\n',
         enemy_reaction.mpChange,enemy_reaction.mpBefore,enemy_reaction.mpAfter,
         exp_reaction.commandExp,exp_reaction.expBefore,exp_reaction.expAfter,
-        memory.read_u8(actor+17,"M68K BUS"),memory.read_u8(actor+48,"M68K BUS"),memory.read_u8(target+17,"M68K BUS")))
+        memory.read_u8(actor+17,"M68K BUS"),memory.read_u8(actor+48,"M68K BUS"),
+        memory.read_u16_be(actor+44,"M68K BUS"),memory.read_u8(target+17,"M68K BUS")))
     out:close();client.exitCode(0)
 end
 
@@ -58,7 +59,7 @@ event.on_bus_exec(function()
     memory.write_u8(a+16,config.case.actorMaxMp,"M68K BUS");memory.write_u8(a+17,config.case.actorInitialMp,"M68K BUS")
     memory.write_u8(a+23,99,"M68K BUS");memory.write_u8(a+31,0,"M68K BUS")
     for o=32,38,2 do memory.write_u16_be(a+o,0x007F,"M68K BUS") end
-    memory.write_u16_be(a+44,0,"M68K BUS");memory.write_u8(a+48,config.case.actorInitialExp,"M68K BUS")
+    memory.write_u16_be(a+44,config.case.actorInitialStatus,"M68K BUS");memory.write_u8(a+48,config.case.actorInitialExp,"M68K BUS")
     memory.write_u8(a+49,0x80,"M68K BUS");memory.write_u16_be(a+52,4,"M68K BUS")
     memory.write_u8(t+11,1,"M68K BUS");memory.write_u16_be(t+12,100,"M68K BUS");memory.write_u16_be(t+14,100,"M68K BUS")
     memory.write_u8(t+16,config.case.targetMaxMp,"M68K BUS");memory.write_u8(t+17,config.case.targetInitialMp,"M68K BUS")
@@ -93,7 +94,7 @@ end,config["function"].expHalvedAddress,"sf2-mp-half","M68K BUS")
 event.on_bus_exec(function() if award then award.firstRoll=word("M68K D0") end end,config["function"].expFirstRollAddress,"sf2-mp-first","M68K BUS")
 event.on_bus_exec(function() if award then award.secondRoll=word("M68K D0") end end,config["function"].expSecondRollAddress,"sf2-mp-second","M68K BUS")
 event.on_bus_exec(function() if award then award.commandExp=word("M68K D1") end end,config["function"].expFinalAddress,"sf2-mp-final","M68K BUS")
-event.on_bus_exec(function() if construction then construction.actorMp=memory.read_u8(entry(config.case.actor)+17,"M68K BUS");playback=true end end,config["function"].battleSceneEndReturnAddress,"sf2-mp-end","M68K BUS")
+event.on_bus_exec(function() if construction then local actor=entry(config.case.actor);construction.actorMp=memory.read_u8(actor+17,"M68K BUS");construction.actorStatus=memory.read_u16_be(actor+44,"M68K BUS");playback=true end end,config["function"].battleSceneEndReturnAddress,"sf2-mp-end","M68K BUS")
 
 event.on_bus_exec(function()
     if not playback then return end;local a6=emu.getregister("M68K A6")&0xFFFFFF

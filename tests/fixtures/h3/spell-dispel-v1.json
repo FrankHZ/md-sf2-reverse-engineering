@@ -4,7 +4,7 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "One controlled Battle 01 DISPEL 1 action across four STATUS resistance settings plus a spell-less target. The fixture observes spell counting, threshold selection, effectiveness RNG, an existing-silence refresh, status EXP, Battle 01 award randomization, and persistent MP/status/EXP replay. It source-checks but does not runtime-replay the later silenced-caster action gate.",
+  "observationBoundary": "One controlled Battle 01 DISPEL 1 action across four STATUS resistance settings plus a spell-less target. The fixture observes spell counting, threshold selection, effectiveness RNG, an existing-silence refresh, status EXP, Battle 01 award randomization, and persistent MP/status/EXP replay. The later silenced-caster action gate is runtime-replayed by spell-silence-gate-v1.json.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "sharedStatusFixture": "tests/fixtures/h3/spell-status-sleep-v1.json",
   "sharedHealingFixture": "tests/fixtures/h3/spell-healing-v1.json",

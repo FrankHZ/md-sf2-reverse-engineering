@@ -16,6 +16,7 @@ from sf2tool.h3.spell_desoul import verify_spell_desoul
 from sf2tool.h3.spell_dispel import verify_spell_dispel
 from sf2tool.h3.spell_healing import verify_spell_healing
 from sf2tool.h3.spell_mp import verify_spell_mp_absorb
+from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
 from sf2tool.harness import verify
@@ -165,6 +166,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_dispel)
     h3_spell_dispel.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_silence = h3_commands.add_parser(
+        "spell-silence", help="verify SILENCE blocks affected spells before effect dispatch"
+    )
+    _add_local_paths(h3_spell_silence)
+    h3_spell_silence.add_argument("--timeout-seconds", type=int, default=90)
     return parser
 
 
@@ -287,6 +293,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-dispel":
         print_record(
             verify_spell_dispel(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-silence":
+        print_record(
+            verify_spell_silence_gate(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

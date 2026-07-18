@@ -9,8 +9,8 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one SLEEP 1 status-resistance matrix, one DESOUL 1 success case, and one
-SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, and a DISPEL 1
-spell-count/resistance/recast case. It must
+SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, a DISPEL 1
+spell-count/resistance/recast case, and SILENCE gating of marked versus unmarked spell actions. It must
 not be generalized to adjacent branches until those paths have their own H3 evidence.
 
 ## Required Inputs
@@ -204,8 +204,10 @@ EXP `5 -> 2`; the post-effect seed `0xECAB` produces range-16 rolls 0 and 3, so 
 raises the command to 3. Caster EXP changes `0 -> 3` after the MP reactions.
 
 This confirms one clamped ally-caster/enemy-target case, including the otherwise easy-to-discard
-zero-delta command. An unclamped transfer, empty target, caster max-MP clamp, enemy caster, and
-other drain effects remain outside the case.
+zero-delta command. The caster starts with SILENCE status `0x0300`, but SPOIT's properties are exactly
+`TYPE_SPECIAL` and omit `AFFECTEDBYSILENCE`, so the spell executes normally and preserves that status.
+This is the negative control for the marked-spell gate below. An unclamped transfer, empty target,
+caster max-MP clamp, enemy caster, and other drain effects remain outside the case.
 
 ## Confirmed BOOST 1 Fresh Application and Recast Quirk
 
@@ -293,8 +295,24 @@ A remake fidelity resolver must preserve the target-spell gate, threshold 8 immu
 versus replay boundary, and successful recast refresh. Whether a modernization should suppress EXP
 for a refresh is a deliberate deviation.
 
-Source evidence connects `0x0300` to the later cast-action gate for spells marked
-`AFFECTEDBYSILENCE`, but that consumer and random after-turn expiration are not yet H3 fixtures.
+Random after-turn SILENCE expiration is not yet an H3 fixture.
+
+## Confirmed SILENCE Cast Gate and Cost Order
+
+The resolver blocks a silenced caster only when the selected spell has `AFFECTEDBYSILENCE`. In the
+confirmed positive case, Bowie has status `0x0300` and selects BLAZE 1, which carries that property.
+Initialization sets `silencedActor=0xFF`; the scene emits the silenced-action message and skips the
+allowed-action branch, target-effect dispatch, BLAZE effect, and EXP command. The target therefore
+keeps HP 100, MP 2, and status 0, and Bowie keeps EXP 0 and status `0x0300`.
+
+The original command order still charges the spell. The animation phase constructs the caster's
+MP-cost reaction before the scene checks `silencedActor`; playback changes MP `20 -> 18` even though
+no target effect occurs. A fidelity implementation must preserve this cost-before-block ordering,
+the absence of target/EXP commands, and the spell-property condition. Moving the gate before cost or
+blocking every spell while SILENCE is nonzero is a deliberate modernization, not equivalent behavior.
+
+SPOIT provides the unmarked control: under the same `0x0300` caster status it executes its complete
+MP-drain and EXP path because it lacks `AFFECTEDBYSILENCE`.
 
 ## H4 Fixture
 
@@ -305,10 +323,11 @@ Source evidence connects `0x0300` to the later cast-action gate for spells marke
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
-| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent MP/EXP replay |
+| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent status/MP/EXP replay |
 | `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` counter; 3/8 DEF/AGI floor; same-side status EXP; cost/status replay; failed recast status-write/stat-refresh mismatch |
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
 | `sf2-dispel1-spell-gate-and-recast-v1` | `tests/fixtures/h3/spell-dispel-v1.json` | known-spell count gate; thresholds 5/6/7/8 and no-spell 8; `0x0300` counter; successful `0x0100` recast refresh; construction/replay timing; MP/EXP persistence |
+| `sf2-silenced-caster-blocks-blaze1-v1` | `tests/fixtures/h3/spell-silence-gate-v1.json` | `AFFECTEDBYSILENCE` gate; silenced message; cost-before-block command order; no target effect or EXP; persistent actor/target state |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.

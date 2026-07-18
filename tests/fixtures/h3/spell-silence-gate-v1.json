@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-silenced-caster-blocks-blaze1-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 BLAZE 1 action by a caster carrying SILENCE 0x0300. The fixture observes the AFFECTEDBYSILENCE property gate, stack-frame flag, silenced-message branch, absence of target/effect dispatch, EXP suppression, command playback, and persistent actor/target state. The separately extended SPOIT fixture is the no-property control.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "silenceFlagAppliedAddress": 41000,
+    "silenceDecisionAddress": 40070,
+    "silenceMessageAddress": 40076,
+    "notSilencedAddress": 40106,
+    "spellCostReactionAddress": 41510,
+    "applyActionEffectAddress": 40144,
+    "blazeEffectEntryAddress": 47836,
+    "endExpSilenceDecisionAddress": 41840
+  },
+  "case": {
+    "id": "silenced-bowie-blaze1-blocked",
+    "actor": 0,
+    "actorClass": 0,
+    "actorInitialMp": 20,
+    "actorInitialExp": 0,
+    "actorInitialStatus": 768,
+    "silenceMask": 768,
+    "actionType": 1,
+    "actionSpell": 11,
+    "baseSpell": 11,
+    "spellMpCost": 2,
+    "target": 128,
+    "targetInitialHp": 100,
+    "targetInitialMp": 2,
+    "targetInitialStatus": 0
+  },
+  "expected": {
+    "construction": {
+      "silencedFlagAfterProperties": 255,
+      "silencedFlagAtDecision": 255,
+      "silencedMessageCommands": 1,
+      "notSilencedEntries": 0,
+      "costMpChange": -2,
+      "costStatusCommand": 768,
+      "applyActionEffectCalls": 0,
+      "blazeEffectCalls": 0,
+      "expSilencedFlag": 255,
+      "accumulatedExp": 0,
+      "actorMp": 20,
+      "actorStatus": 768,
+      "targetHp": 100,
+      "targetMp": 2,
+      "targetStatus": 0
+    },
+    "replay": {
+      "allyReactionCalls": 1,
+      "allyReaction": { "combatant": 0, "mpChange": -2, "statusCommand": 768, "mpBefore": 20, "mpAfter": 18 },
+      "enemyReactionCalls": 0,
+      "expReactionCalls": 0,
+      "finalActorMp": 18,
+      "finalActorExp": 0,
+      "finalActorStatus": 768,
+      "finalTargetHp": 100,
+      "finalTargetMp": 2,
+      "finalTargetStatus": 0
+    }
+  }
+}

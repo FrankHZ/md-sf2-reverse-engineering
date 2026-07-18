@@ -30,6 +30,7 @@ the locked ROM instruction bytes.
 | spell resistance | `GetResistanceToSpell` | `0xC22A..0xC24E` | `code/gameflow/battle/battleactions/getresistancetospell.asm` |
 | spell damage | `battlesceneScript_CalculateSpellDamage` | `0xBB02..0xBB56` | `code/gameflow/battle/battleactions/calculatespelldamage.asm` |
 | DISPEL | `spellEffect_Dispel` | `0xB41A..0xB488` | `code/gameflow/battle/battleactions/castspell.asm` |
+| SILENCE cast gate | `battlesceneScript_InitializeBattlesceneProperties` | `0x9F28` | `code/gameflow/battle/battleactions/initbattlesceneproperties.asm` |
 
 Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
 `RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
@@ -723,11 +724,8 @@ Battle 01 halves 15 accumulated EXP to 7. Final seed `0xECAB` produces award rol
 an 8-EXP command. Playback orders caster MP `20 -> 15`, enemy status commands for targets
 128/129/130, then caster EXP `0 -> 8`; final statuses are `0x0300/0x0300/0x0300/0/0`.
 
-Source inspection additionally confirms that later cast actions check the selected spell's
-`AFFECTEDBYSILENCE` property, mask the caster status with `0x0300`, set `silencedActor`, and stop the
-action after its animation. That consumer has not yet been independently runtime-replayed, so only
-the application/recast behavior above is H3-confirmed. The after-turn source randomly tests and
-subtracts one `0x0100` counter; expiration timing remains open.
+The after-turn source randomly tests SILENCE and subtracts one `0x0100` counter when its test
+succeeds. Expiration timing remains open; the cast-action consumer is confirmed separately below.
 
 Reproduce with:
 
@@ -739,6 +737,37 @@ Tracked artifacts are `tests/fixtures/h3/spell-dispel-v1.json`,
 `schemas/h3-spell-dispel-fixture.schema.json`, `src/sf2tool/h3/spell_dispel.py`, and
 `tools/bizhawk/spell_dispel_observer.lua`.
 
+## Confirmed: SILENCE Cast Gate, Cost Order, and Property Control
+
+The cast gate is conditional on the selected spell definition, not merely on caster status. BLAZE 1
+has `AFFECTEDBYSILENCE`; with Bowie forced to status `0x0300`, initialization at `0x9F28` sets the
+stack-frame `silencedActor` flag to `0xFF`. Runtime reaches the decision at `0x9C86` and emits one
+silenced-action message at `0x9C8C`, but never enters the allowed branch at `0x9CAA`, calls the
+target effect wrapper at `0x9CD0`, or reaches BLAZE's effect at `0xBADC`.
+
+The block is not free. `battlesceneScript_PerformAnimation` constructs BLAZE's caster reaction at
+`0xA226` before `WriteBattlesceneScript` tests the silence flag. Construction records MP change
+`-2` with status command `0x0300`; replay applies that one ally reaction and changes Bowie from
+20 to 18 MP. The end path sees the same `0xFF` flag at `0xA370`, emits no EXP command, and leaves
+Bowie at EXP 0/status `0x0300`. The target remains HP 100, MP 2, status 0 with no enemy reaction.
+
+SPOIT is the negative control. Its pinned definition has properties exactly `TYPE_SPECIAL`, without
+`AFFECTEDBYSILENCE`. The existing MP-absorption case now starts the caster at the same status
+`0x0300`; the action still reaches its effect, replays target MP `2 -> 0` and caster MP `10 -> 12`,
+awards 3 EXP, and preserves caster status `0x0300`. Thus SILENCE blocks only marked spell actions,
+while the cost-before-block result is specific to the shared spell-action command order.
+
+Reproduce both sides with:
+
+```powershell
+uv run sf2 h3 spell-silence
+uv run sf2 h3 spell-mp
+```
+
+The blocking artifacts are `tests/fixtures/h3/spell-silence-gate-v1.json`,
+`schemas/h3-spell-silence-gate-fixture.schema.json`, `src/sf2tool/h3/spell_silence.py`, and
+`tools/bizhawk/spell_silence_gate_observer.lua`. The control remains owned by the SPOIT artifacts.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -749,8 +778,8 @@ Tracked artifacts are `tests/fixtures/h3/spell-dispel-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, BOOST/SLOW expiry and level-2 geometry, DISPEL's silenced-caster
-  consumer/expiry and other status spells,
+  DESOUL failure/multi-target cases, BOOST/SLOW expiry and level-2 geometry, DISPEL expiry and other
+  status spells,
   SPOIT boundary cases, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.

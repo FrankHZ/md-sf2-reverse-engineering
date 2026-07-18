@@ -23,6 +23,9 @@ def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
     )
     if not match or f"mpCost     {case['spellMpCost']}" not in match.group("body"):
         raise ValueError("SPOIT definition disagrees with the fixture")
+    properties = re.search(r"^\s*properties\s+(.+)$", match.group("body"), re.MULTILINE)
+    if not properties or properties.group(1).strip() != "TYPE_SPECIAL":
+        raise ValueError("SPOIT silence-immunity property disagrees with the fixture")
     cast = (disasm / "code/gameflow/battle/battleactions/castspell.asm").read_text(
         encoding="utf-8"
     )
@@ -60,6 +63,7 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             "transfer": transfer,
             "accumulatedExp": accumulated_exp,
             "actorMp": case["actorInitialMp"],
+            "actorStatus": case["actorInitialStatus"],
             "award": {
                 "seed": award_seed,
                 "halved": halved,
@@ -94,6 +98,7 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             },
             "finalActorMp": actor_after_cost + transfer,
             "finalActorExp": case["actorInitialExp"] + command_exp,
+            "finalActorStatus": case["actorInitialStatus"],
             "finalTargetMp": case["targetInitialMp"] - transfer,
         },
     }
@@ -145,6 +150,7 @@ def verify_spell_mp_absorb(
             f"actor={modeled['replay']['finalActorMp']},"
             f"target={modeled['replay']['finalTargetMp']}"
         ),
+        "CasterStatus": f"0x{modeled['replay']['finalActorStatus']:04X}",
         "CommandExp": modeled["construction"]["award"]["commandExp"],
         "Status": "PASS",
     }

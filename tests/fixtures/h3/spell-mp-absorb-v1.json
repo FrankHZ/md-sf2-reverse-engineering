@@ -4,7 +4,7 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "One controlled Battle 01 SPOIT action through range-3 random drain, +3 offset, target-current-MP clamp, zero-cost caster command, ordered target/caster MP reactions, status-spell EXP, Battle 01 award randomization, and persistent replay. Common Battle Test and replay addresses are inherited from named fixtures.",
+  "observationBoundary": "One controlled Battle 01 SPOIT action by a caster already carrying SILENCE 0x0300. Because SPOIT lacks AFFECTEDBYSILENCE, the action continues through range-3 random drain, +3 offset, target-current-MP clamp, zero-cost caster command, ordered target/caster MP reactions, status-spell EXP, Battle 01 award randomization, and persistent replay. Common Battle Test and replay addresses are inherited from named fixtures.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "sharedStatusFixture": "tests/fixtures/h3/spell-status-sleep-v1.json",
   "function": {
@@ -20,6 +20,7 @@
     "actorMaxMp": 20,
     "actorInitialMp": 10,
     "actorInitialExp": 0,
+    "actorInitialStatus": 768,
     "actionType": 1,
     "actionSpell": 15,
     "spellMpCost": 0,
@@ -36,6 +37,7 @@
       "transfer": 2,
       "accumulatedExp": 5,
       "actorMp": 10,
+      "actorStatus": 768,
       "award": { "seed": 60587, "halved": 2, "firstRoll": 0, "secondRoll": 3, "commandExp": 3 }
     },
     "replay": {
@@ -48,6 +50,7 @@
       "expReaction": { "commandExp": 3, "expBefore": 0, "expAfter": 3 },
       "finalActorMp": 12,
       "finalActorExp": 3,
+      "finalActorStatus": 768,
       "finalTargetMp": 0
     }
   }

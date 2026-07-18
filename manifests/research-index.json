@@ -545,6 +545,39 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.spell-silence.gate",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_InitializeBattlesceneProperties",
+      "sourcePath": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 40744 },
+        { "id": "flag-applied", "space": "rom", "kind": "observation", "value": 41000 },
+        { "id": "decision", "space": "rom", "kind": "observation", "value": 40070 },
+        { "id": "message", "space": "rom", "kind": "observation", "value": 40076 },
+        { "id": "allowed", "space": "rom", "kind": "observation", "value": 40106 },
+        { "id": "cost-reaction", "space": "rom", "kind": "observation", "value": 41510 },
+        { "id": "apply-effect", "space": "rom", "kind": "observation", "value": 40144 },
+        { "id": "blaze-effect", "space": "rom", "kind": "observation", "value": 47836 },
+        { "id": "exp-decision", "space": "rom", "kind": "observation", "value": 41840 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-silence-gate-v1.json", "fixtureId": "sf2-silenced-caster-blocks-blaze1-v1", "verifier": "src/sf2tool/h3/spell_silence.py",
+        "bindings": [
+          { "addressId": "flag-applied", "fixtureField": "function.silenceFlagAppliedAddress" },
+          { "addressId": "decision", "fixtureField": "function.silenceDecisionAddress" },
+          { "addressId": "message", "fixtureField": "function.silenceMessageAddress" },
+          { "addressId": "allowed", "fixtureField": "function.notSilencedAddress" },
+          { "addressId": "cost-reaction", "fixtureField": "function.spellCostReactionAddress" },
+          { "addressId": "apply-effect", "fixtureField": "function.applyActionEffectAddress" },
+          { "addressId": "blaze-effect", "fixtureField": "function.blazeEffectEntryAddress" },
+          { "addressId": "exp-decision", "fixtureField": "function.endExpSilenceDecisionAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.spell-healing.resolve",
       "subsystem": "battle.spell",
       "status": "confirmed",
