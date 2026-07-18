@@ -92,8 +92,20 @@ The controlled seeds produce two zero rolls for each matrix member. Observed ran
 
 For every damage target, the original computes a kill-value bracket from the caster's effective
 level and target level, scales it by `finalDamage / targetMaxHp` with integer truncation, and adds
-the result to the action accumulator with a cap of 49. Promoted caster classes add 20 only for this
-effective-level comparison.
+the result to the action accumulator with a cap of 49. Promoted caster classes add 20 for this
+effective-level comparison. The confirmed bracket function is:
+
+```text
+difference = actorLevel + (promoted ? 20 : 0) - targetLevel
+killBracket = difference < 3 ? 50
+            : difference == 3 ? 40
+            : difference == 4 ? 30
+            : difference == 5 ? 20
+            : difference == 6 ? 10
+            : 0
+damageExp = floor(killBracket * finalDamage / targetMaxHp)
+accumulator = min(accumulator + damageExp, 49)
+```
 
 In the controlled BLAZE case, all combatants are level 1 and each target has max HP 100. The first
 three unpromoted damage results add `floor(50 * damage / 100) = 5, 4, 2`, so the accumulator moves
@@ -107,8 +119,20 @@ the emitted EXP command remains 5. The command replay changes Bowie EXP `0 -> 5`
 The promoted DAO case confirms the zero/minimum boundary. Effective level 21 versus four level-1
 targets contributes zero after every hit. Battle 01 therefore enters award processing with zero;
 range-16 rolls 1 and 7 do not change it, and the final minimum emits a one-EXP command. Replay
-changes Bowie EXP `0 -> 1`. These cases do not yet cover other level-difference brackets, either
-zero-roll adjustment, or the action cap.
+changes Bowie EXP `0 -> 1`.
+
+**Confirmed across the dedicated BLAZE replay matrix:** final damage 10 against max HP 100 produces
+damage EXP `5/4/3/2/1/0` for differences `<3/3/4/5/6/>=7`. A raw level-1 HERO is effective level
+21 and produces 4 against a level-18 target. Starting the accumulator at 48, a nonlethal five-point
+contribution saturates at 49. A lethal 10-damage hit against current HP 10 first stores proportional
+damage EXP 5, then adds the full 50-point kill bracket through the natural post-damage call and also
+saturates at 49. Consumers must keep these two additions ordered and independently capped.
+
+Battle 01 halves the accumulator before its two range-16 adjustments. The independent award matrix
+confirms first-roll zero adds one, second-roll zero subtracts one, two zeroes cancel, and the final
+minimum is one. At a controlled `GiveExpAndGold` seam, changing only the battle ID from 1 to 0 makes
+the one-entry halving table miss, so accumulator 5 remains 5 with nonzero rolls. This owns the table
+lookup branch, not a complete naturally scheduled non-Battle-01 cast.
 
 ### 6. Restore snapshots, then replay HP and MP reactions
 
@@ -358,6 +382,7 @@ naturally carried state remains outside these cases.
 | Fixture ID | File | Required parity |
 | --- | --- | --- |
 | `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; per-target and awarded EXP; temporary/restored/persistent HP; MP/EXP replay |
+| `sf2-spell-damage-exp-v1` | `tests/fixtures/h3/spell-damage-exp-v1.json` | all effective-level brackets; promoted +20; proportional damage EXP; ordered lethal kill bonus; per-addition 49 cap; Battle 01 halving and controlled non-halved table miss |
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; DAO/APOLLO/NEPTUN/ATLAS comparator hits; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
@@ -384,8 +409,8 @@ expected-deviation fixture.
 
 - **Unknown at runtime:** natural full APOLLO/NEPTUN/ATLAS casts and a naturally promoted full BLAZE
   action.
-- **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
-  kill bonus, and non-Battle-01 award behavior.
+- **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
+  miss itself is confirmed at its original entry seam.
 - **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/
   SLOW/DISPEL subsets, BOOST/SLOW 2,
   reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,

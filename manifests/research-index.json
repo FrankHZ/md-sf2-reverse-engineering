@@ -210,16 +210,44 @@
         { "id": "return", "space": "rom", "kind": "observation", "value": 43466 },
         { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072, "symbol": "COMBATANT_DATA" }
       ],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/kill-exp-level-difference-v1.json", "fixtureId": "sf2-kill-exp-level-difference-v1", "verifier": "src/sf2tool/h3/kill_exp.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.entryAddress" },
+            { "addressId": "return", "fixtureField": "function.returnAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-exp-v1.json", "fixtureId": "sf2-spell-damage-exp-v1", "verifier": "src/sf2tool/h3/spell_exp.py",
+          "bindings": [{ "addressId": "return", "fixtureField": "function.getKillExpReturnAddress" }]
+        }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
+      "id": "battle.exp.calculate-damage-exp",
+      "subsystem": "battle.exp",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_CalculateDamageExp",
+      "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43210 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 43252 },
+        { "id": "battle-scene-exp", "space": "ram", "kind": "state", "value": 16758316, "symbol": "BATTLESCENE_EXP" }
+      ],
       "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/kill-exp-level-difference-v1.json", "fixtureId": "sf2-kill-exp-level-difference-v1", "verifier": "src/sf2tool/h3/kill_exp.py",
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-exp-v1.json", "fixtureId": "sf2-spell-damage-exp-v1", "verifier": "src/sf2tool/h3/spell_exp.py",
         "bindings": [
-          { "addressId": "entry", "fixtureField": "function.entryAddress" },
-          { "addressId": "return", "fixtureField": "function.returnAddress" },
-          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" }
+          { "addressId": "entry", "fixtureField": "function.calculateDamageExpEntryAddress" },
+          { "addressId": "return", "fixtureField": "function.calculateDamageExpReturnAddress" },
+          { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/combat-resolution.md"]
+      "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.followup.validate-counter",
@@ -472,6 +500,10 @@
             { "addressId": "exp-second-roll", "fixtureField": "function.expSecondRollAddress" },
             { "addressId": "exp-final", "fixtureField": "function.expFinalAddress" }
           ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-exp-v1.json", "fixtureId": "sf2-spell-damage-exp-v1", "verifier": "src/sf2tool/h3/spell_exp.py",
+          "bindings": [{ "addressId": "entry", "fixtureField": "function.awardExpEntryAddress" }]
         },
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
@@ -785,21 +817,31 @@
       "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
-      "id": "battle.spell-desoul.reward",
-      "subsystem": "battle.spell",
+      "id": "battle.exp.add-kill-exp-and-gold",
+      "subsystem": "battle.exp",
       "status": "confirmed",
       "symbol": "battlesceneScript_AddExpAndGoldForKill",
       "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 43278 },
-        { "id": "applied", "space": "rom", "kind": "observation", "value": 43322 }
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 43322 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 43326 }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
-        "bindings": [{ "addressId": "applied", "fixtureField": "function.killExpGoldAppliedAddress" }]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+          "bindings": [{ "addressId": "applied", "fixtureField": "function.killExpGoldAppliedAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-exp-v1.json", "fixtureId": "sf2-spell-damage-exp-v1", "verifier": "src/sf2tool/h3/spell_exp.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.addKillExpEntryAddress" },
+            { "addressId": "return", "fixtureField": "function.addKillExpReturnAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/spell-resolution.md"]
+      "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.spell-desoul.resolve",

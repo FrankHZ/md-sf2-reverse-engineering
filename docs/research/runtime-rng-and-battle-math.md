@@ -606,6 +606,56 @@ uv run sf2 h3 spell-damage
 The tracked contract is `tests/fixtures/h3/spell-damage-resistance-v1.json`; generated configuration
 and observations remain under ignored `local/derived/h3/`.
 
+## Confirmed: Attack-Spell EXP Brackets, Kill Bonus, and Cap
+
+The dedicated spell-EXP fixture replays one neutral-resistance BLAZE 2 construction from the same
+pre-action Battle 01 core state eleven times. Each run reaches the genuine
+`battlesceneScript_CalculateDamageExp` entry at `0xA8CA` through the original cast dispatcher and
+shared variance path. Seed `0x1234` keeps the final BLAZE damage at 10. At that EXP seam only, the
+observer supplies actor class/level, target level/max/current HP, and the pre-existing action
+accumulator. This isolates reward arithmetic without claiming those combatant combinations were
+naturally present in Battle 01.
+
+With target max HP 100 and accumulator zero, the complete effective-level matrix is:
+
+| Effective actor level minus target level | Kill bracket | Damage EXP for 10 damage |
+| --- | ---: | ---: |
+| `< 3` | 50 | 5 |
+| `3` | 40 | 4 |
+| `4` | 30 | 3 |
+| `5` | 20 | 2 |
+| `6` | 10 | 1 |
+| `>= 7` | 0 | 0 |
+
+The original order is `floor(killBracket * finalDamage / targetMaxHp)`, followed by the shared
+per-action cap. A promoted HERO stored at raw level 1 is compared as effective level 21; against a
+level-18 target it therefore takes the difference-3 branch and adds 4. This independently connects
+the previously confirmed `+20` bracket rule to the full damage-scaling caller.
+
+Two boundary replays confirm that the 49 cap applies after every addition. Starting from an
+accumulator of 48, a nonlethal five-point contribution stores 49. With target current HP reduced to
+10, the same final damage is lethal: damage scaling first stores 5, then the natural post-HP-zero
+call to `battlesceneScript_AddExpAndGoldForKill` adds the full 50-point bracket and saturates at 49.
+The kill reward is not substituted for proportional damage EXP; both additions occur in order.
+
+All Battle 01 cases reset the final award seed to `0x0501`, producing range-16 rolls 4 and 4 after
+integer halving. Thus accumulators `5/4/3/2/1/0/49` emit commands `2/2/1/1/1/1/24` as dictated by
+halving and the minimum-one rule. One final controlled award seam changes only `CURRENT_BATTLE` to
+debug battle 0 at `battlesceneScript_GiveExpAndGold` entry. The halved-battle table contains only
+Battle 01, so the same accumulator 5 remains 5. This confirms table-miss behavior, but not a
+complete naturally scheduled battle-0 spell action. Zero/nonzero award-roll adjustments remain
+owned by `sf2-award-exp-randomization-v1` and the HEAL fixture rather than being duplicated here.
+
+Reproduce the single-boot replay matrix with:
+
+```powershell
+uv run sf2 h3 spell-exp
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-damage-exp-v1.json`,
+`schemas/h3-spell-damage-exp-fixture.schema.json`, `src/sf2tool/h3/spell_exp.py`, and
+`tools/bizhawk/spell_damage_exp_observer.lua`.
+
 ## Confirmed: Invocation Spell Target-Count Division Branch Matrix
 
 The companion DAO fixture reuses the same tracked Battle Test choreography and observer but owns a
@@ -1021,8 +1071,8 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability and additional non-critical
   variance seeds to the confirmed physical path.
-- Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, remaining
-  attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
+- Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, a complete
+  naturally scheduled non-Battle-01 spell award, promoted/full-recovery/multi-target healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
   reapplication, and other status spells, SPOIT enemy-caster behavior, and other non-damage spell
   families.

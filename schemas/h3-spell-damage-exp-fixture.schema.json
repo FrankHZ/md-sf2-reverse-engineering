@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-damage-exp-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "caseSetup", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-spell-damage-exp-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["calculateDamageExpEntryAddress", "calculateDamageExpReturnAddress", "addKillExpEntryAddress", "addKillExpReturnAddress", "awardExpEntryAddress", "getKillExpReturnAddress"],
+      "properties": {
+        "calculateDamageExpEntryAddress": { "const": 43210 }, "calculateDamageExpReturnAddress": { "const": 43252 },
+        "addKillExpEntryAddress": { "const": 43278 }, "addKillExpReturnAddress": { "const": 43326 },
+        "awardExpEntryAddress": { "const": 43000 }, "getKillExpReturnAddress": { "const": 43466 }
+      }
+    },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["battleSceneExpAddress"], "properties": { "battleSceneExpAddress": { "const": 16758316 } } },
+    "caseSetup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "target", "actionType", "actionSpell", "baseSpell", "spellPower", "spellMpCost", "damageSeed", "awardSeed"],
+      "properties": {
+        "actor": { "const": 0 }, "target": { "const": 128 }, "actionType": { "const": 1 },
+        "actionSpell": { "const": 75 }, "baseSpell": { "const": 11 }, "spellPower": { "const": 10 },
+        "spellMpCost": { "const": 6 }, "damageSeed": { "const": 4660 }, "awardSeed": { "const": 1281 }
+      }
+    },
+    "cases": { "type": "array", "minItems": 11, "maxItems": 11, "items": { "$ref": "#/definitions/case" } }
+  },
+  "definitions": {
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "classCode", "class", "actorLevel", "effectiveActorLevel", "targetLevel", "levelDifference", "targetMaxHp", "targetCurrentHp", "initialAccumulatedExp", "finalDamage", "levelBracketExp", "afterDamageExp", "killApplied", "afterKillExp", "awardBattle", "halvedExp", "firstRoll", "secondRoll", "commandExp"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }, "classCode": { "enum": ["SDMN", "HERO"] }, "class": { "enum": [0, 12] },
+        "actorLevel": { "type": "integer", "minimum": 1, "maximum": 99 }, "effectiveActorLevel": { "type": "integer", "minimum": 1, "maximum": 119 },
+        "targetLevel": { "type": "integer", "minimum": 1, "maximum": 99 }, "levelDifference": { "type": "integer", "minimum": -98, "maximum": 118 },
+        "targetMaxHp": { "const": 100 }, "targetCurrentHp": { "enum": [10, 100] }, "initialAccumulatedExp": { "enum": [0, 48] },
+        "finalDamage": { "const": 10 }, "levelBracketExp": { "enum": [0, 10, 20, 30, 40, 50] },
+        "afterDamageExp": { "type": "integer", "minimum": 0, "maximum": 49 }, "killApplied": { "type": "boolean" },
+        "afterKillExp": { "type": "integer", "minimum": 0, "maximum": 49 }, "awardBattle": { "enum": [0, 1] },
+        "halvedExp": { "type": "integer", "minimum": 0, "maximum": 49 }, "firstRoll": { "const": 4 }, "secondRoll": { "const": 4 },
+        "commandExp": { "type": "integer", "minimum": 1, "maximum": 49 }
+      }
+    }
+  }
+}

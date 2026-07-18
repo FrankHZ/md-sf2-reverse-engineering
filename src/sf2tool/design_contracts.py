@@ -62,6 +62,7 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-damage-resistance-v1.json": (
             "sf2-spell-damage-resistance-v1"
         ),
+        "tests/fixtures/h3/spell-damage-exp-v1.json": "sf2-spell-damage-exp-v1",
         "tests/fixtures/h3/spell-summon-division-v1.json": (
             "sf2-spell-summon-division-v1"
         ),

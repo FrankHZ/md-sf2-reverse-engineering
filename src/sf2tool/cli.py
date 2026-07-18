@@ -27,6 +27,7 @@ from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
 from sf2tool.h3.spell_dispel import verify_spell_dispel
+from sf2tool.h3.spell_exp import verify_spell_damage_exp
 from sf2tool.h3.spell_healing import verify_spell_healing
 from sf2tool.h3.spell_mp import verify_spell_mp_absorb
 from sf2tool.h3.spell_silence import verify_spell_silence_gate
@@ -197,6 +198,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_damage)
     h3_spell_damage.add_argument("--timeout-seconds", type=int, default=75)
+    h3_spell_exp = h3_commands.add_parser(
+        "spell-exp", help="verify attack-spell damage EXP brackets, kill bonus, and cap"
+    )
+    _add_local_paths(h3_spell_exp)
+    h3_spell_exp.add_argument("--timeout-seconds", type=int, default=90)
     h3_spell_summon = h3_commands.add_parser(
         "spell-summon", help="verify promoted DAO target-count power division"
     )
@@ -394,6 +400,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-damage":
         print_record(
             verify_spell_damage(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-exp":
+        print_record(
+            verify_spell_damage_exp(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

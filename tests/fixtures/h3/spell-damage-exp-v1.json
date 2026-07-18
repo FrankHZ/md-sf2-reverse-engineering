@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-spell-damage-exp-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One natural Battle 01 BLAZE 2 construction replayed from a pre-action core state. At the genuine damage-EXP entry, each case controls only actor class/level, target level/max/current HP, and the pre-existing action accumulator. The final BLAZE damage remains the original neutral-resistance result. One award case changes CURRENT_BATTLE only at GiveExpAndGold entry to exercise a halved-table miss without claiming a complete non-Battle-01 cast.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "calculateDamageExpEntryAddress": 43210,
+    "calculateDamageExpReturnAddress": 43252,
+    "addKillExpEntryAddress": 43278,
+    "addKillExpReturnAddress": 43326,
+    "awardExpEntryAddress": 43000,
+    "getKillExpReturnAddress": 43466
+  },
+  "ram": {
+    "battleSceneExpAddress": 16758316
+  },
+  "caseSetup": {
+    "actor": 0,
+    "target": 128,
+    "actionType": 1,
+    "actionSpell": 75,
+    "baseSpell": 11,
+    "spellPower": 10,
+    "spellMpCost": 6,
+    "damageSeed": 4660,
+    "awardSeed": 1281
+  },
+  "cases": [
+    { "id": "unpromoted-diff-negative", "classCode": "SDMN", "class": 0, "actorLevel": 1, "effectiveActorLevel": 1, "targetLevel": 10, "levelDifference": -9, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 50, "afterDamageExp": 5, "killApplied": false, "afterKillExp": 5, "awardBattle": 1, "halvedExp": 2, "firstRoll": 4, "secondRoll": 4, "commandExp": 2 },
+    { "id": "unpromoted-diff-two", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 8, "levelDifference": 2, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 50, "afterDamageExp": 5, "killApplied": false, "afterKillExp": 5, "awardBattle": 1, "halvedExp": 2, "firstRoll": 4, "secondRoll": 4, "commandExp": 2 },
+    { "id": "unpromoted-diff-three", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 7, "levelDifference": 3, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 40, "afterDamageExp": 4, "killApplied": false, "afterKillExp": 4, "awardBattle": 1, "halvedExp": 2, "firstRoll": 4, "secondRoll": 4, "commandExp": 2 },
+    { "id": "unpromoted-diff-four", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 6, "levelDifference": 4, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 30, "afterDamageExp": 3, "killApplied": false, "afterKillExp": 3, "awardBattle": 1, "halvedExp": 1, "firstRoll": 4, "secondRoll": 4, "commandExp": 1 },
+    { "id": "unpromoted-diff-five", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 5, "levelDifference": 5, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 20, "afterDamageExp": 2, "killApplied": false, "afterKillExp": 2, "awardBattle": 1, "halvedExp": 1, "firstRoll": 4, "secondRoll": 4, "commandExp": 1 },
+    { "id": "unpromoted-diff-six", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 4, "levelDifference": 6, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 10, "afterDamageExp": 1, "killApplied": false, "afterKillExp": 1, "awardBattle": 1, "halvedExp": 0, "firstRoll": 4, "secondRoll": 4, "commandExp": 1 },
+    { "id": "unpromoted-diff-seven", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 3, "levelDifference": 7, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 0, "afterDamageExp": 0, "killApplied": false, "afterKillExp": 0, "awardBattle": 1, "halvedExp": 0, "firstRoll": 4, "secondRoll": 4, "commandExp": 1 },
+    { "id": "promoted-raw-one-diff-three", "classCode": "HERO", "class": 12, "actorLevel": 1, "effectiveActorLevel": 21, "targetLevel": 18, "levelDifference": 3, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 40, "afterDamageExp": 4, "killApplied": false, "afterKillExp": 4, "awardBattle": 1, "halvedExp": 2, "firstRoll": 4, "secondRoll": 4, "commandExp": 2 },
+    { "id": "nonlethal-action-cap", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 8, "levelDifference": 2, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 48, "finalDamage": 10, "levelBracketExp": 50, "afterDamageExp": 49, "killApplied": false, "afterKillExp": 49, "awardBattle": 1, "halvedExp": 24, "firstRoll": 4, "secondRoll": 4, "commandExp": 24 },
+    { "id": "lethal-kill-bonus-cap", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 8, "levelDifference": 2, "targetMaxHp": 100, "targetCurrentHp": 10, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 50, "afterDamageExp": 5, "killApplied": true, "afterKillExp": 49, "awardBattle": 1, "halvedExp": 24, "firstRoll": 4, "secondRoll": 4, "commandExp": 24 },
+    { "id": "nonbattle-table-miss", "classCode": "SDMN", "class": 0, "actorLevel": 10, "effectiveActorLevel": 10, "targetLevel": 8, "levelDifference": 2, "targetMaxHp": 100, "targetCurrentHp": 100, "initialAccumulatedExp": 0, "finalDamage": 10, "levelBracketExp": 50, "afterDamageExp": 5, "killApplied": false, "afterKillExp": 5, "awardBattle": 0, "halvedExp": 5, "firstRoll": 4, "secondRoll": 4, "commandExp": 5 }
+  ]
+}
