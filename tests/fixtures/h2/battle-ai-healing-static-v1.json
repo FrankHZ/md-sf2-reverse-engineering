@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-healing-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "healCommandEntryAddress": 58350,
+    "requiresHealingEntryAddress": 54154,
+    "determineSpellLevelEntryAddress": 52584,
+    "healTargetPriorityEntryAddress": 52714,
+    "halfHpEntryAddress": 53910,
+    "movetypePriorityTableAddress": 55540
+  },
+  "expected": {
+    "confusedCasterExits": true,
+    "targetSide": "caster-side",
+    "healingRainCheckedFirst": true,
+    "healingRainCondition": "first-enemy-current-hp-less-than-or-equal-half-max",
+    "healingRainTarget": "caster",
+    "acceptedSpellBases": [0, 1],
+    "minimumMpBeforeTargeting": { "heal": 3, "aura": 7 },
+    "itemFallbackAfterSpellFailure": true,
+    "itemTakesPrecedenceAtActionLoad": true,
+    "requiresHealing": "current-hp-times-three-less-than-or-equal-max-hp-times-two",
+    "requiresHealingIncludesTwoThirds": true,
+    "halfHp": "current-hp-times-two-less-than-or-equal-max-hp",
+    "halfHpIncludesEquality": true,
+    "missingHpThresholds": {
+      "noCastMaximum": 2,
+      "level1Maximum": 14,
+      "level3Maximum": 28
+    },
+    "neverReturnsLevel2FromHelper": true,
+    "mpCandidateShiftBits": 5,
+    "mpRequiredShiftBits": 6,
+    "packedBaseSpellEntryIsNotMasked": true,
+    "level2Override": {
+      "selectedLevelBeforeOverride": 0,
+      "targetMustDifferFromCaster": true,
+      "minimumCasterMp": 11,
+      "minimumKnownLevel": 3,
+      "resultLevel": 1
+    },
+    "criticalCommandset": 13,
+    "leaderCommandset": 14,
+    "maximumPriority": 13,
+    "movetypePriorities": [
+      { "name": "MOVETYPE_HEALER", "value": 12, "priority": 12 },
+      { "name": "MOVETYPE_MAGE", "value": 11, "priority": 11 },
+      { "name": "MOVETYPE_STEALTH_ARCHER", "value": 10, "priority": 10 },
+      { "name": "MOVETYPE_CENTAUR_ARCHER", "value": 9, "priority": 9 },
+      { "name": "MOVETYPE_ARCHER", "value": 8, "priority": 8 },
+      { "name": "MOVETYPE_HOVERING", "value": 6, "priority": 7 },
+      { "name": "MOVETYPE_FLYING", "value": 5, "priority": 6 },
+      { "name": "MOVETYPE_BRASS_GUNNER", "value": 4, "priority": 5 },
+      { "name": "MOVETYPE_STEALTH", "value": 3, "priority": 4 },
+      { "name": "MOVETYPE_CENTAUR", "value": 2, "priority": 3 },
+      { "name": "MOVETYPE_REGULAR", "value": 1, "priority": 2 },
+      { "name": "MOVETYPE_AQUATIC", "value": 7, "priority": 1 }
+    ],
+    "unmatchedPriority": 0,
+    "aoePerTargetBase": 4,
+    "aoeScore": "sum-movetype-priority-plus-four-per-target",
+    "storedAsByte": true
+  }
+}

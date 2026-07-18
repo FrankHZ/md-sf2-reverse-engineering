@@ -4,7 +4,7 @@
   "title": "Shining Force II battle AI static source inventory",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "healing", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-battle-ai-static-v1" },
@@ -21,6 +21,7 @@
     "summary": { "$ref": "#/definitions/summary" },
     "actionFilters": { "$ref": "#/definitions/actionFilters" },
     "attackPriority": { "$ref": "#/definitions/attackPriority" },
+    "healing": { "$ref": "#/definitions/healing" },
     "indexedRecordIds": {
       "type": "array",
       "uniqueItems": true,
@@ -259,6 +260,114 @@
             },
             "minimum": { "const": 0 },
             "maximum": { "const": 4 }
+          }
+        }
+      }
+    },
+    "healing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePaths", "command", "eligibility", "spellLevel", "targetPriority"],
+      "properties": {
+        "sourcePaths": {
+          "type": "array", "minItems": 6, "maxItems": 6, "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(?:code|data)/.+\\.asm$" }
+        },
+        "command": {
+          "type": "object", "additionalProperties": false,
+          "required": ["function", "confusedCasterExits", "targetSide", "healingRainCheckedFirst", "healingRainCondition", "healingRainTarget", "acceptedSpellBases", "minimumMpBeforeTargeting", "itemFallbackAfterSpellFailure", "itemTakesPrecedenceAtActionLoad", "targetOrder"],
+          "properties": {
+            "function": { "const": "aiCommand_Heal" },
+            "confusedCasterExits": { "const": true },
+            "targetSide": { "const": "caster-side" },
+            "healingRainCheckedFirst": { "const": true },
+            "healingRainCondition": { "const": "first-enemy-current-hp-less-than-or-equal-half-max" },
+            "healingRainTarget": { "const": "caster" },
+            "acceptedSpellBases": { "const": [0, 1] },
+            "minimumMpBeforeTargeting": { "const": { "heal": 3, "aura": 7 } },
+            "itemFallbackAfterSpellFailure": { "const": true },
+            "itemTakesPrecedenceAtActionLoad": { "const": true },
+            "targetOrder": { "const": "descending-byte-priority-then-first-reachable" }
+          }
+        },
+        "eligibility": {
+          "type": "object", "additionalProperties": false,
+          "required": ["requiresHealing", "requiresHealingIncludesTwoThirds", "halfHp", "halfHpIncludesEquality", "helperUnreachableAlternateEntries"],
+          "properties": {
+            "requiresHealing": { "const": "current-hp-times-three-less-than-or-equal-max-hp-times-two" },
+            "requiresHealingIncludesTwoThirds": { "const": true },
+            "halfHp": { "const": "current-hp-times-two-less-than-or-equal-max-hp" },
+            "halfHpIncludesEquality": { "const": true },
+            "helperUnreachableAlternateEntries": { "const": 2 }
+          }
+        },
+        "spellLevel": {
+          "type": "object", "additionalProperties": false,
+          "required": ["missingHpThresholds", "selection", "fallbackLevel", "returnsZeroBasedLevel", "neverReturnsLevel2FromHelper", "mpCheck", "level2Override"],
+          "properties": {
+            "missingHpThresholds": { "const": { "noCastMaximum": 2, "level1Maximum": 14, "level3Maximum": 28 } },
+            "selection": {
+              "type": "array", "minItems": 4, "maxItems": 4,
+              "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["missingHp", "level"],
+                "properties": {
+                  "missingHp": { "type": "string", "minLength": 1 },
+                  "level": { "type": "integer", "minimum": -1, "maximum": 3 },
+                  "requiresKnownLevel": { "type": "integer", "minimum": 3, "maximum": 4 }
+                }
+              }
+            },
+            "fallbackLevel": { "const": 0 },
+            "returnsZeroBasedLevel": { "const": true },
+            "neverReturnsLevel2FromHelper": { "const": true },
+            "mpCheck": {
+              "type": "object", "additionalProperties": false,
+              "required": ["candidateShiftBits", "requiredShiftBits", "packedBaseSpellEntryIsNotMasked", "decrementsUntilAffordable"],
+              "properties": {
+                "candidateShiftBits": { "const": 5 },
+                "requiredShiftBits": { "const": 6 },
+                "packedBaseSpellEntryIsNotMasked": { "const": true },
+                "decrementsUntilAffordable": { "const": true }
+              }
+            },
+            "level2Override": {
+              "type": "object", "additionalProperties": false,
+              "required": ["selectedLevelBeforeOverride", "targetMustDifferFromCaster", "minimumCasterMp", "minimumKnownLevel", "resultLevel"],
+              "properties": {
+                "selectedLevelBeforeOverride": { "const": 0 },
+                "targetMustDifferFromCaster": { "const": true },
+                "minimumCasterMp": { "const": 11 },
+                "minimumKnownLevel": { "const": 3 },
+                "resultLevel": { "const": 1 }
+              }
+            }
+          }
+        },
+        "targetPriority": {
+          "type": "object", "additionalProperties": false,
+          "required": ["criticalCommandset", "leaderCommandset", "maximum", "criticalAndLeaderUseMaximum", "movetypeTable", "unmatchedPriority", "aoePerTargetBase", "aoeScore", "storedAsByte"],
+          "properties": {
+            "criticalCommandset": { "const": 13 },
+            "leaderCommandset": { "const": 14 },
+            "maximum": { "const": 13 },
+            "criticalAndLeaderUseMaximum": { "const": true },
+            "movetypeTable": {
+              "type": "array", "minItems": 12, "maxItems": 12,
+              "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["name", "value", "priority"],
+                "properties": {
+                  "name": { "type": "string", "pattern": "^MOVETYPE_[A-Z_]+$" },
+                  "value": { "type": "integer", "minimum": 1, "maximum": 12 },
+                  "priority": { "type": "integer", "minimum": 1, "maximum": 12 }
+                }
+              }
+            },
+            "unmatchedPriority": { "const": 0 },
+            "aoePerTargetBase": { "const": 4 },
+            "aoeScore": { "const": "sum-movetype-priority-plus-four-per-target" },
+            "storedAsByte": { "const": true }
           }
         }
       }

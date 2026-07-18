@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battle AI healing static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-healing-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["healCommandEntryAddress", "requiresHealingEntryAddress", "determineSpellLevelEntryAddress", "healTargetPriorityEntryAddress", "halfHpEntryAddress", "movetypePriorityTableAddress"],
+      "properties": {
+        "healCommandEntryAddress": { "const": 58350 },
+        "requiresHealingEntryAddress": { "const": 54154 },
+        "determineSpellLevelEntryAddress": { "const": 52584 },
+        "healTargetPriorityEntryAddress": { "const": 52714 },
+        "halfHpEntryAddress": { "const": 53910 },
+        "movetypePriorityTableAddress": { "const": 55540 }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confusedCasterExits", "targetSide", "healingRainCheckedFirst", "healingRainCondition", "healingRainTarget", "acceptedSpellBases", "minimumMpBeforeTargeting", "itemFallbackAfterSpellFailure", "itemTakesPrecedenceAtActionLoad", "requiresHealing", "requiresHealingIncludesTwoThirds", "halfHp", "halfHpIncludesEquality", "missingHpThresholds", "neverReturnsLevel2FromHelper", "mpCandidateShiftBits", "mpRequiredShiftBits", "packedBaseSpellEntryIsNotMasked", "level2Override", "criticalCommandset", "leaderCommandset", "maximumPriority", "movetypePriorities", "unmatchedPriority", "aoePerTargetBase", "aoeScore", "storedAsByte"],
+      "properties": {
+        "confusedCasterExits": { "const": true },
+        "targetSide": { "const": "caster-side" },
+        "healingRainCheckedFirst": { "const": true },
+        "healingRainCondition": { "const": "first-enemy-current-hp-less-than-or-equal-half-max" },
+        "healingRainTarget": { "const": "caster" },
+        "acceptedSpellBases": { "const": [0, 1] },
+        "minimumMpBeforeTargeting": { "const": { "heal": 3, "aura": 7 } },
+        "itemFallbackAfterSpellFailure": { "const": true },
+        "itemTakesPrecedenceAtActionLoad": { "const": true },
+        "requiresHealing": { "const": "current-hp-times-three-less-than-or-equal-max-hp-times-two" },
+        "requiresHealingIncludesTwoThirds": { "const": true },
+        "halfHp": { "const": "current-hp-times-two-less-than-or-equal-max-hp" },
+        "halfHpIncludesEquality": { "const": true },
+        "missingHpThresholds": { "const": { "noCastMaximum": 2, "level1Maximum": 14, "level3Maximum": 28 } },
+        "neverReturnsLevel2FromHelper": { "const": true },
+        "mpCandidateShiftBits": { "const": 5 },
+        "mpRequiredShiftBits": { "const": 6 },
+        "packedBaseSpellEntryIsNotMasked": { "const": true },
+        "level2Override": { "const": { "selectedLevelBeforeOverride": 0, "targetMustDifferFromCaster": true, "minimumCasterMp": 11, "minimumKnownLevel": 3, "resultLevel": 1 } },
+        "criticalCommandset": { "const": 13 },
+        "leaderCommandset": { "const": 14 },
+        "maximumPriority": { "const": 13 },
+        "movetypePriorities": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "value", "priority"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^MOVETYPE_[A-Z_]+$" },
+              "value": { "type": "integer", "minimum": 1, "maximum": 12 },
+              "priority": { "type": "integer", "minimum": 1, "maximum": 12 }
+            }
+          }
+        },
+        "unmatchedPriority": { "const": 0 },
+        "aoePerTargetBase": { "const": 4 },
+        "aoeScore": { "const": "sum-movetype-priority-plus-four-per-target" },
+        "storedAsByte": { "const": true }
+      }
+    }
+  }
+}

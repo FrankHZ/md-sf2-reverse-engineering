@@ -1,7 +1,7 @@
-# Battle AI Static Inventory and Action Filters
+# Battle AI Static Inventory and Decision Contracts
 
-- Status: **Confirmed** for the pinned-source inventory, call metadata, action-filter code shape,
-  constants, and H1 symbol addresses
+- Status: **Confirmed** for the pinned-source inventory, call metadata, action-filter, attack-priority,
+  healing-decision code shape, constants, and H1 symbol addresses
 - Status: **Inferred** for caller-visible behavior not already reproduced by an H3 fixture
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -16,12 +16,12 @@ uv run sf2 h2 battle-ai
 
 The Python-owned rail scans the complete
 `disasm/code/gameflow/battle/ai` subtree, validates the pinned Git commit, hashes every source file,
-extracts global/local labels and direct/indirect call metadata, parses the five action filters, checks
-their fixture and schema, and writes canonical output to ignored
+extracts global/local labels and direct/indirect call metadata, parses the action filters, attack
+priority, and healing command, checks their fixtures and schemas, and writes canonical output to ignored
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`FAE1CE85A017B06A9B35F2BAA337FD503E6E9296B26E2A870A6B0E63C6487607`.
+`9E83A0CBB10C73A43F474698EC0D00C3A6E18A00A4ED1AD29A800D57FD0FD9AE`.
 
 ## Complete Subtree Inventory
 
@@ -41,8 +41,9 @@ The canonical SHA-256 is
 This is an inventory denominator, not a claim that all 82 labels are behaviorally understood. Before
 this batch, the research index reached only `IsCombatantConfused`, `DetermineMuddledBattleaction`, and
 `aiCommand_Attack` across three files. It now also binds the five action getters, for eight indexed
-records across four files in the first batch. The priority batch raises the subtree total to 18
-records across seven files, plus one linked data-table symbol outside the subtree.
+records across four files in the first batch. Attack priority raised the subtree total to 18 records
+across seven files; healing raises it to 23 records across 12 files. Two linked data-table symbols
+live outside the subtree.
 
 ## Action Getter Addresses
 
@@ -160,6 +161,55 @@ target** (`d7`) equals Sarah (ally index 1); if so it forces the mage table inst
 the attacker's movement type. This is source-confirmed code shape. Whether natural caller state makes
 the Sarah condition reachable in the intended way remains **Inferred**.
 
+## Healing Eligibility and Entry Choice
+
+**Confirmed static model:** `aiCommand_Heal` exits for a confused caster. It checks Healing Rain
+before any spell; the item is used only when the first enemy (`COMBATANT_ENEMIES_START`) is at or
+below half HP, and its action targets the caster because the item spell is area-based. Otherwise the
+command accepts only HEAL or AURA, requiring 3 or 7 MP respectively before target search. Failure
+falls back to an ordinary healing item. If both a stored spell and item reach action loading, the
+item wins.
+
+Targets are living members of the caster's own side. `DoesCombatantRequireHealing` computes
+`3 × current HP <= 2 × max HP`; exactly two-thirds therefore qualifies. The separately named
+`IsCombatantAtLessThanHalfHp` computes `2 × current HP <= max HP`, so its “less than” name/comment
+also includes equality. Both helper bodies contain two alternate entry fragments that normal control
+flow jumps over.
+
+## Healing Spell-Level Decision
+
+`DetermineHealingSpellLevel` uses missing HP and returns zero-based spell levels:
+
+| Missing HP | Static selection |
+| ---: | --- |
+| 0–2 | `-1`, do not cast |
+| 3–14 | level 1 (`0`) |
+| 15–28 | level 3 (`2`) if known, otherwise level 1 |
+| 29+ | level 4 (`3`) if known; otherwise level 3 if known, else level 1 |
+
+Its MP fallback is source-confirmed defective. It shifts the candidate level by five bits instead of
+six and adds the packed stored spell entry without masking its existing level bits, then decrements
+the candidate until the looked-up cost appears affordable. It also converts a resulting level 2
+(`1`) back to level 1 (`0`). The caller can later reintroduce level 2 only when level 1 was selected
+for someone other than the caster, the caster has at least 11 MP, and knows level 3 or higher.
+
+## Healing Target Priority
+
+AI command sets CRITICAL (13) and LEADER (14) receive the maximum score 13. Other targets use this
+descending table; an unlisted movement type scores zero:
+
+| Movement type | Score |
+| --- | ---: |
+| healer / mage | 12 / 11 |
+| stealth archer / centaur archer / archer | 10 / 9 / 8 |
+| hovering / flying | 7 / 6 |
+| brass gunner / stealth / centaur / regular / aquatic | 5 / 4 / 3 / 2 / 1 |
+
+For every candidate AOE center, the command sums `movement score + 4` for each affected target,
+stores the total as a byte, sorts centers descending, and selects the first one for which a usable
+cast/item position exists. The byte store makes overflow a queued runtime boundary rather than an
+assumed wide-integer score.
+
 ## Runtime Question Queue
 
 The next BizHawk batch should share one derived-ROM seam and one result buffer for at least:
@@ -175,6 +225,11 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
    a four-column table;
 9. previous-target Sarah forcing the mage adjustment table, plus enemy/confused early exits;
 10. Script 3's `RNG(3)` 1:2 lethality-versus-movement split and area-spell score summation.
+11. healing eligibility at exact half and two-thirds HP, including odd max-HP rounding;
+12. missing-HP thresholds 2/3, 14/15, and 28/29 across known levels and MP values, specifically the
+    five-bit packed-entry lookup bug and the caller's level-2 override;
+13. Healing Rain first-enemy gate, item fallback/precedence, byte-priority overflow, and first-reachable
+    target selection.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible
 with a small number of case tables; split only when the action-getter and priority seams cannot be
@@ -182,7 +237,7 @@ shared safely.
 
 ## Remaining Static Batches
 
-- healing/support target eligibility and scoring;
+- support target eligibility and scoring;
 - final attack/item/spell action choice and RNG weighting after the three priority lists are populated;
 - movement orders, standby movement, path obstruction, line-attacker/exploder special AI;
 - command dispatcher and swarm/activation control.

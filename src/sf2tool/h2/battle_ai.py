@@ -19,6 +19,10 @@ FIXTURE = repo_path("tests/fixtures/h2/battle-ai-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-static-fixture.schema.json")
 PRIORITY_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-priority-static-v1.json")
 PRIORITY_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-priority-static-fixture.schema.json")
+HEALING_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-healing-static-v1.json")
+HEALING_FIXTURE_SCHEMA = repo_path(
+    "schemas/h2-battle-ai-healing-static-fixture.schema.json"
+)
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
@@ -33,6 +37,9 @@ EQUATE_PATTERN = re.compile(
 SPELL_COMPARE_PATTERN = re.compile(r"cmpi\.b\s+#(SPELL_[A-Z0-9_]+),d5")
 DC_LONG_TARGET_PATTERN = re.compile(r"^\s*dc\.l\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
 DC_BYTE_INTEGER_PATTERN = re.compile(r"^\s*dc\.b\s+(-?\d+)\b", re.MULTILINE)
+DC_BYTE_VALUE_PATTERN = re.compile(
+    r"^\s*dc\.b\s+(-?\d+|[A-Z][A-Z0-9_]+)\b", re.MULTILINE
+)
 REGISTER_TARGETS = {f"a{index}" for index in range(8)} | {
     f"d{index}" for index in range(8)
 } | {"sp", "pc"}
@@ -430,6 +437,158 @@ def _parse_attack_priority(disasm: Path) -> dict[str, Any]:
             "maximum": max(max(values) for values in adjustment_tables.values()),
         },
     }
+
+
+def _parse_healing(disasm: Path) -> dict[str, Any]:
+    command_path = SOURCE_ROOT / "command/heal.asm"
+    requires_path = SOURCE_ROOT / "command/heal/doescombatantrequirehealing.asm"
+    level_path = SOURCE_ROOT / "command/heal/determinehealingspelllevel.asm"
+    priority_path = SOURCE_ROOT / "command/heal/calculatehealtargetpriority.asm"
+    half_hp_path = SOURCE_ROOT / "command/heal/iscombatantatlessthanhalfhp.asm"
+    data_path = Path("data/battles/global/aipriority.asm")
+    command_source = (disasm / command_path).read_text(encoding="utf-8")
+    requires_source = (disasm / requires_path).read_text(encoding="utf-8")
+    level_source = (disasm / level_path).read_text(encoding="utf-8")
+    priority_source = (disasm / priority_path).read_text(encoding="utf-8")
+    half_hp_source = (disasm / half_hp_path).read_text(encoding="utf-8")
+    data_source = (disasm / data_path).read_text(encoding="utf-8")
+    command = _function_block(command_source, "aiCommand_Heal")
+    requires = _function_block(requires_source, "DoesCombatantRequireHealing")
+    level = _function_block(level_source, "DetermineHealingSpellLevel")
+    priority = _function_block(priority_source, "CalculateHealTargetPriority")
+    half_hp = _function_block(half_hp_source, "IsCombatantAtLessThanHalfHp")
+    equates = _equates(disasm)
+
+    required_fragments = (
+        (command, "bsr.w   IsCombatantConfused"),
+        (command, "move.w  #COMBATANT_ENEMIES_START,d0"),
+        (command, "bsr.w   IsCombatantAtLessThanHalfHp"),
+        (command, "cmpi.w  #SPELL_HEAL,d2"),
+        (command, "cmpi.w  #ENEMYAI_MIN_MP_HEAL1,d1"),
+        (command, "cmpi.w  #SPELL_AURA,d2"),
+        (command, "cmpi.w  #ENEMYAI_MIN_MP_AURA1,d1"),
+        (command, "bsr.w   DoesCombatantRequireHealing"),
+        (command, "bsr.w   CalculateHealTargetPriority"),
+        (command, "addi.w  #4,d2"),
+        (command, "move.b  d2,(a2,d4.w)"),
+        (command, "cmpi.b  #ITEM_NOTHING,itemEntry(a6) ; loop to cycle"),
+        (command, "bsr.w   DetermineHealingSpellLevel"),
+        (command, "cmpi.b  #ENEMYAI_MIN_MP_HEAL3,d1"),
+        (command, "move.b  #SPELLENTRY_LV2,d2"),
+        (requires, "mulu.w  #3,d2"),
+        (requires, "add.w   d1,d1"),
+        (requires, "cmp.w   d2,d1"),
+        (half_hp, "add.w   d2,d2"),
+        (half_hp, "cmp.w   d2,d1"),
+        (level, "cmpi.w  #ENEMYAI_THRESHOLD_HEAL1,d1"),
+        (level, "cmpi.w  #ENEMYAI_THRESHOLD_HEAL2,d1"),
+        (level, "cmpi.w  #ENEMYAI_THRESHOLD_HEAL3,d1"),
+        (level, "lsl.w   #5,d1"),
+        (level, "add.w   d4,d1"),
+        (level, "dbf     d2,loc_CDC2"),
+        (level, "cmpi.b  #1,d2"),
+        (priority, "cmpi.w  #AICOMMANDSET_CRITICAL,d1"),
+        (priority, "cmpi.w  #AICOMMANDSET_LEADER,d1"),
+        (priority, "move.w  #MOVETYPES_NUMBER,d6"),
+    )
+    if any(fragment not in block for block, fragment in required_fragments):
+        raise ValueError("battle AI healing source contract drift")
+
+    movetype_names = DC_BYTE_VALUE_PATTERN.findall(
+        _label_block(data_source, "table_HealPriorityMovetypes")
+    )
+    if len(movetype_names) != equates["MOVETYPES_NUMBER"]:
+        raise ValueError(f"battle AI heal-priority table drift: {movetype_names}")
+    movetype_values = [
+        int(name) if name == "-1" else equates[name] for name in movetype_names
+    ]
+    movetype_priorities = [
+        {
+            "name": name,
+            "value": value,
+            "priority": equates["MOVETYPES_NUMBER"] - index,
+        }
+        for index, (name, value) in enumerate(
+            zip(movetype_names, movetype_values, strict=True)
+        )
+        if index
+    ]
+
+    return {
+        "sourcePaths": [
+            command_path.as_posix(),
+            requires_path.as_posix(),
+            level_path.as_posix(),
+            priority_path.as_posix(),
+            half_hp_path.as_posix(),
+            data_path.as_posix(),
+        ],
+        "command": {
+            "function": "aiCommand_Heal",
+            "confusedCasterExits": True,
+            "targetSide": "caster-side",
+            "healingRainCheckedFirst": True,
+            "healingRainCondition": "first-enemy-current-hp-less-than-or-equal-half-max",
+            "healingRainTarget": "caster",
+            "acceptedSpellBases": [equates["SPELL_HEAL"], equates["SPELL_AURA"]],
+            "minimumMpBeforeTargeting": {
+                "heal": equates["ENEMYAI_MIN_MP_HEAL1"],
+                "aura": equates["ENEMYAI_MIN_MP_AURA1"],
+            },
+            "itemFallbackAfterSpellFailure": True,
+            "itemTakesPrecedenceAtActionLoad": True,
+            "targetOrder": "descending-byte-priority-then-first-reachable",
+        },
+        "eligibility": {
+            "requiresHealing": "current-hp-times-three-less-than-or-equal-max-hp-times-two",
+            "requiresHealingIncludesTwoThirds": True,
+            "halfHp": "current-hp-times-two-less-than-or-equal-max-hp",
+            "halfHpIncludesEquality": True,
+            "helperUnreachableAlternateEntries": 2,
+        },
+        "spellLevel": {
+            "missingHpThresholds": {
+                "noCastMaximum": equates["ENEMYAI_THRESHOLD_HEAL1"],
+                "level1Maximum": equates["ENEMYAI_THRESHOLD_HEAL2"],
+                "level3Maximum": equates["ENEMYAI_THRESHOLD_HEAL3"],
+            },
+            "selection": [
+                {"missingHp": "0..2", "level": -1},
+                {"missingHp": "3..14", "level": 0},
+                {"missingHp": "15..28", "level": 2, "requiresKnownLevel": 3},
+                {"missingHp": "29+", "level": 3, "requiresKnownLevel": 4},
+            ],
+            "fallbackLevel": 0,
+            "returnsZeroBasedLevel": True,
+            "neverReturnsLevel2FromHelper": True,
+            "mpCheck": {
+                "candidateShiftBits": 5,
+                "requiredShiftBits": 6,
+                "packedBaseSpellEntryIsNotMasked": True,
+                "decrementsUntilAffordable": True,
+            },
+            "level2Override": {
+                "selectedLevelBeforeOverride": 0,
+                "targetMustDifferFromCaster": True,
+                "minimumCasterMp": equates["ENEMYAI_MIN_MP_HEAL3"],
+                "minimumKnownLevel": 3,
+                "resultLevel": equates["SPELLENTRY_LV2"],
+            },
+        },
+        "targetPriority": {
+            "criticalCommandset": equates["AICOMMANDSET_CRITICAL"],
+            "leaderCommandset": equates["AICOMMANDSET_LEADER"],
+            "maximum": equates["MOVETYPES_NUMBER"],
+            "criticalAndLeaderUseMaximum": True,
+            "movetypeTable": movetype_priorities,
+            "unmatchedPriority": 0,
+            "aoePerTargetBase": 4,
+            "aoeScore": "sum-movetype-priority-plus-four-per-target",
+            "storedAsByte": True,
+        },
+    }
+
+
 def _resolve_upstream(upstream_path: Path) -> tuple[Path, str, dict[str, Any]]:
     upstream_path = upstream_path.resolve(strict=True)
     toolchain = load_json(TOOLCHAIN)
@@ -509,6 +668,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
         "summary": summary,
         "actionFilters": _parse_action_filters(disasm),
         "attackPriority": _parse_attack_priority(disasm),
+        "healing": _parse_healing(disasm),
         "indexedRecordIds": indexed_records,
         "indexedSourcePaths": indexed_files,
         "internalDirectCallTargets": internal_targets,
@@ -588,6 +748,48 @@ def _attack_priority_facts(attack_priority: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _healing_facts(healing: dict[str, Any]) -> dict[str, Any]:
+    command = healing["command"]
+    eligibility = healing["eligibility"]
+    spell_level = healing["spellLevel"]
+    priority = healing["targetPriority"]
+    return {
+        "confusedCasterExits": command["confusedCasterExits"],
+        "targetSide": command["targetSide"],
+        "healingRainCheckedFirst": command["healingRainCheckedFirst"],
+        "healingRainCondition": command["healingRainCondition"],
+        "healingRainTarget": command["healingRainTarget"],
+        "acceptedSpellBases": command["acceptedSpellBases"],
+        "minimumMpBeforeTargeting": command["minimumMpBeforeTargeting"],
+        "itemFallbackAfterSpellFailure": command["itemFallbackAfterSpellFailure"],
+        "itemTakesPrecedenceAtActionLoad": command[
+            "itemTakesPrecedenceAtActionLoad"
+        ],
+        "requiresHealing": eligibility["requiresHealing"],
+        "requiresHealingIncludesTwoThirds": eligibility[
+            "requiresHealingIncludesTwoThirds"
+        ],
+        "halfHp": eligibility["halfHp"],
+        "halfHpIncludesEquality": eligibility["halfHpIncludesEquality"],
+        "missingHpThresholds": spell_level["missingHpThresholds"],
+        "neverReturnsLevel2FromHelper": spell_level["neverReturnsLevel2FromHelper"],
+        "mpCandidateShiftBits": spell_level["mpCheck"]["candidateShiftBits"],
+        "mpRequiredShiftBits": spell_level["mpCheck"]["requiredShiftBits"],
+        "packedBaseSpellEntryIsNotMasked": spell_level["mpCheck"][
+            "packedBaseSpellEntryIsNotMasked"
+        ],
+        "level2Override": spell_level["level2Override"],
+        "criticalCommandset": priority["criticalCommandset"],
+        "leaderCommandset": priority["leaderCommandset"],
+        "maximumPriority": priority["maximum"],
+        "movetypePriorities": priority["movetypeTable"],
+        "unmatchedPriority": priority["unmatchedPriority"],
+        "aoePerTargetBase": priority["aoePerTargetBase"],
+        "aoeScore": priority["aoeScore"],
+        "storedAsByte": priority["storedAsByte"],
+    }
+
+
 def verify_battle_ai_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -599,6 +801,12 @@ def verify_battle_ai_inventory(
         priority_fixture,
         PRIORITY_FIXTURE_SCHEMA,
         owner=str(PRIORITY_FIXTURE),
+    )
+    healing_fixture = load_json(HEALING_FIXTURE)
+    validate_json(
+        healing_fixture,
+        HEALING_FIXTURE_SCHEMA,
+        owner=str(HEALING_FIXTURE),
     )
     rom_manifest = load_json(ROM_MANIFEST)
     output = build_battle_ai_inventory(upstream_path)
@@ -617,6 +825,13 @@ def verify_battle_ai_inventory(
         raise ValueError("battle AI priority fixture provenance drift")
     if _attack_priority_facts(output["attackPriority"]) != priority_fixture["expected"]:
         raise ValueError("battle AI attack-priority facts disagree with fixture")
+    if (
+        healing_fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or healing_fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("battle AI healing fixture provenance drift")
+    if _healing_facts(output["healing"]) != healing_fixture["expected"]:
+        raise ValueError("battle AI healing facts disagree with fixture")
     if output["summary"] != manifest["summary"]:
         raise ValueError(
             "battle AI static summary drift: "

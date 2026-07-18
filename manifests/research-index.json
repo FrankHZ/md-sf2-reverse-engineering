@@ -1904,6 +1904,84 @@
         "bindings": [{ "addressId": "entry", "fixtureField": "function.movetypeAdjustmentTableAddress" }]
       }],
       "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.heal.command",
+      "subsystem": "battle.ai.heal",
+      "status": "confirmed",
+      "symbol": "aiCommand_Heal",
+      "sourcePath": "code/gameflow/battle/ai/command/heal.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 58350 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.healCommandEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.heal.eligibility",
+      "subsystem": "battle.ai.heal",
+      "status": "confirmed",
+      "symbol": "DoesCombatantRequireHealing",
+      "sourcePath": "code/gameflow/battle/ai/command/heal/doescombatantrequirehealing.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54154 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.requiresHealingEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.heal.spell-level",
+      "subsystem": "battle.ai.heal",
+      "status": "confirmed",
+      "symbol": "DetermineHealingSpellLevel",
+      "sourcePath": "code/gameflow/battle/ai/command/heal/determinehealingspelllevel.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52584 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.determineSpellLevelEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.heal.target-priority",
+      "subsystem": "battle.ai.heal",
+      "status": "confirmed",
+      "symbol": "CalculateHealTargetPriority",
+      "sourcePath": "code/gameflow/battle/ai/command/heal/calculatehealtargetpriority.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52714 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.healTargetPriorityEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.heal.half-hp",
+      "subsystem": "battle.ai.heal",
+      "status": "confirmed",
+      "symbol": "IsCombatantAtLessThanHalfHp",
+      "sourcePath": "code/gameflow/battle/ai/command/heal/iscombatantatlessthanhalfhp.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53910 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.halfHpEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.heal.movetype-priority-table",
+      "subsystem": "battle.ai.heal",
+      "status": "confirmed",
+      "symbol": "table_HealPriorityMovetypes",
+      "sourcePath": "data/battles/global/aipriority.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55540 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.movetypePriorityTableAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }
