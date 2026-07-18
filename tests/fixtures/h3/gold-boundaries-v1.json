@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-gold-boundaries-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Natural Battle 01 physical-action reward construction replayed from one pre-action in-memory core state, with BATTLESCENE_GOLD and CURRENT_GOLD replaced at their owning routine entries.",
+  "function": {
+    "giveExpAndGoldEntryAddress": 43000,
+    "increaseGoldEntryAddress": 35226,
+    "increaseGoldReturnAddress": 35250
+  },
+  "ram": {
+    "battleSceneGoldAddress": 16758314,
+    "currentGoldAddress": 16774656,
+    "seedAddress": 16768676
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900,
+      "criticalEntryAddress": 44110
+    },
+    "ram": {
+      "combatantDataAddress": 16771072,
+      "combatantEntrySize": 56,
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "cases": [
+    { "id": "ordinary-addition", "initialGold": 0, "addedGold": 30, "carry": false, "finalGold": 30 },
+    { "id": "exact-cap", "initialGold": 9999969, "addedGold": 30, "carry": false, "finalGold": 9999999 },
+    { "id": "above-cap", "initialGold": 9999990, "addedGold": 30, "carry": false, "finalGold": 9999999 },
+    { "id": "unsigned-carry", "initialGold": 4294967280, "addedGold": 30, "carry": true, "finalGold": 9999999 }
+  ]
+}

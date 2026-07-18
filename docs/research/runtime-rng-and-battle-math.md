@@ -479,6 +479,26 @@ The executable contract is `tests/fixtures/h3/exp-command-boundaries-v1.json`; r
 `uv run sf2 h3 exp-command`. Base/promoted level-cap exits remain independently confirmed by the
 LevelUp boundary fixture; this matrix does not duplicate their containing command path.
 
+## Confirmed: Gold Addition and Cap Boundaries
+
+`IncreaseGold` at `0x899A` adds the incoming longword to `CURRENT_GOLD`, checks the 68000 carry
+flag, then compares the unsigned result with `FORCE_MAX_GOLD` (9,999,999). Either carry or an
+above-cap result writes the cap. Four natural Battle 01 reward constructions confirm:
+
+| Current gold | Incoming | Carry | Final gold |
+| --- | --- | --- | --- |
+| 0 | 30 | no | 30 |
+| 9,999,969 | 30 | no | 9,999,999 |
+| 9,999,990 | 30 | no | 9,999,999 |
+| `0xFFFFFFF0` | 30 | yes | 9,999,999 |
+
+The observer reaches `battlesceneScript_GiveExpAndGold` through a natural lethal physical action,
+replaces only `BATTLESCENE_GOLD` and `CURRENT_GOLD` at their owning entries, and replays one
+pre-action in-memory core state. It records both the stored longword and D1 at the original
+`IncreaseGold` RTS. Reproduce `tests/fixtures/h3/gold-boundaries-v1.json` with
+`uv run sf2 h3 gold`. `DecreaseGold`, Set/Get entry behavior, and non-battle callers remain outside
+this fixture.
+
 ## Confirmed: Double Attack and Counter Chain
 
 The attack-chain fixture uses the same natural Battle 01 AI action but makes both combatants

@@ -482,6 +482,14 @@
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
           "bindings": [{ "addressId": "battle-scene-gold", "fixtureField": "ram.battleSceneGoldAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/gold-boundaries-v1.json", "fixtureId": "sf2-gold-boundaries-v1", "verifier": "src/sf2tool/h3/gold.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.giveExpAndGoldEntryAddress" },
+            { "addressId": "battle-scene-gold", "fixtureField": "ram.battleSceneGoldAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
@@ -738,14 +746,25 @@
       "sourcePath": "code/common/stats/gold.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 35226 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 35250 },
         { "id": "current-gold", "space": "ram", "kind": "state", "value": 16774656, "symbol": "CURRENT_GOLD" }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
-        "bindings": [{ "addressId": "current-gold", "fixtureField": "ram.currentGoldAddress" }]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+          "bindings": [{ "addressId": "current-gold", "fixtureField": "ram.currentGoldAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/gold-boundaries-v1.json", "fixtureId": "sf2-gold-boundaries-v1", "verifier": "src/sf2tool/h3/gold.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.increaseGoldEntryAddress" },
+            { "addressId": "return", "fixtureField": "function.increaseGoldReturnAddress" },
+            { "addressId": "current-gold", "fixtureField": "ram.currentGoldAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/spell-resolution.md"]
+      "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.spell-desoul.reward",

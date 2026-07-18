@@ -218,6 +218,11 @@ canonical range has 103 values, aligned with the 103 enemy definitions. A follow
 tail is explicitly marked unused and must not become enemy rows. Enemy index 0 supplies 10 gold;
 the DESOUL fixture confirms three successful targets accumulate and replay 30.
 
+**Confirmed for gold persistence:** addition uses an unsigned 32-bit intermediate and caps stored
+gold at 9,999,999. Ordinary 0+30 produces 30; exact-cap, above-cap, and 32-bit-carry inputs all
+produce 9,999,999. A compatibility implementation must preserve both the numeric comparison and
+carry-to-cap branch, even if its host integer type cannot overflow naturally.
+
 **Confirmed for enemy item-drop data and source policy:** 30 records map battle + enemy entity +
 held item to persistent flag 0-29. Three named boss weapons use a zero-only `RNG(32)` gate; the
 other 27 records are deterministic after their lookup and possession preconditions pass. The
@@ -225,8 +230,8 @@ routine sets the one-time flag, removes the enemy item, attempts to give it to a
 routes only rare items to deals when direct delivery is unavailable. The remake data loader must
 stop at the `0xFFFF` terminator and preserve all four record fields.
 
-Other battle modifiers, the containing EXP command path at a class level cap, and gold storage
-overflow behavior remain outside this contract version.
+Other battle modifiers, the containing EXP command path at a class level cap, gold subtraction,
+and non-battle gold callers remain outside this contract version.
 
 ## Reference Adapter Shape
 
@@ -267,6 +272,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-exp-command-boundaries-v1` | `tests/fixtures/h3/exp-command-boundaries-v1.json` | EXP cap 200; 100-point threshold; at most one level per command; residual EXP 100 |
 | `sf2-enemy-gold-v1` | `tests/fixtures/h2/enemy-gold-v1.json` | 103 used word entries; 69-word unused tail boundary; source/ROM parity |
 | `sf2-enemy-item-drops-v1` | `tests/fixtures/h2/enemy-item-drops-v1.json` | 30 four-byte records; flags 0-29; three RNG(32) items; `0xFFFF` terminator |
+| `sf2-gold-boundaries-v1` | `tests/fixtures/h3/gold-boundaries-v1.json` | Ordinary/exact/above-cap addition; 32-bit carry; 9,999,999 cap |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
@@ -298,7 +304,7 @@ complete:
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
-- remaining EXP modifiers, the containing EXP command at class level caps, and gold storage overflow;
+- remaining EXP modifiers, the containing EXP command at class level caps, and gold subtraction/non-battle callers;
 - rare-drop RNG outcomes, repeated flags, dead recipients, and inventory-full/deals routing;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
