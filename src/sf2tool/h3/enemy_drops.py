@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -24,9 +25,36 @@ def _verify_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
         "bne.w   @Done           ; done if item dropped flag was already set",
         "jsr     RemoveItemBySlot",
         "jsr     AddItem",
+        "btst    #ITEMTYPE_BIT_RARE,ITEMDEF_OFFSET_TYPE(a0)",
     )
     if any(fragment not in source for fragment in required):
         raise ValueError("enemy item drop behavior source contract drift")
+    deals_source = (disasm / "code/common/stats/dealsinventory.asm").read_text(
+        encoding="utf-8"
+    )
+    if any(
+        fragment not in deals_source
+        for fragment in (
+            "AddItemToDeals:",
+            "cmpi.b  #DEALS_MAX_NUMBER_PER_ITEM,d2",
+            "add.b   d0,(a0)",
+            "divu.w  #2,d1",
+        )
+    ):
+        raise ValueError("deals inventory source contract drift")
+    item_types: dict[int, set[str]] = {}
+    item_index: int | None = None
+    item_definitions = (
+        disasm / "data/stats/items/itemdefs.asm"
+    ).read_text(encoding="utf-8")
+    for line in item_definitions.splitlines():
+        item_header = re.match(r"\s*;\s*(\d+):", line)
+        if item_header:
+            item_index = int(item_header.group(1))
+        elif item_index is not None and "itemType" in line:
+            item_types[item_index] = {
+                field.strip() for field in line.split("itemType", 1)[1].split("|")
+            }
     equates = _parse_equates(disasm)
     rare_items = {
         equates["ITEM_TAROS_SWORD"],
@@ -34,18 +62,25 @@ def _verify_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
         equates["ITEM_COUNTER_SWORD"],
     }
     for case in fixture["cases"]:
-        rare = case["item"] in rare_items
-        roll = _rng_step(case["seed"], 32)[1] if rare else None
-        drops = (not rare or roll == 0) and not case["initialFlag"]
+        random_drop = case["item"] in rare_items
+        if case["item"] not in item_types:
+            raise ValueError(f"missing item type for drop case: {case['item']}")
+        deals_eligible = "RARE" in item_types[case["item"]]
+        roll = _rng_step(case["seed"], 32)[1] if random_drop else None
+        drops = (not random_drop or roll == 0) and not case["initialFlag"]
+        actor_items = list(case["actorItems"])
+        can_receive = case["actorHp"] != 0 and fixture["emptyItem"] in actor_items
+        deals_amount = 0
+        if drops and can_receive:
+            actor_items[actor_items.index(fixture["emptyItem"])] = case["item"]
+        elif drops and deals_eligible:
+            deals_amount = 1
         expected = {
             "roll": roll,
             "finalFlag": case["initialFlag"] or drops,
             "finalTargetItem": fixture["emptyItem"] if drops else case["item"],
-            "finalActorItems": (
-                [case["item"], fixture["emptyItem"], fixture["emptyItem"], fixture["emptyItem"]]
-                if drops
-                else [fixture["emptyItem"]] * 4
-            ),
+            "finalActorItems": actor_items,
+            "finalDealsAmount": deals_amount,
         }
         if any(case[field] != value for field, value in expected.items()):
             raise ValueError(f"enemy item drop golden disagrees with source model: {case['id']}")
@@ -60,6 +95,7 @@ def _verify_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> No
                 "finalFlag": case["finalFlag"],
                 "finalTargetItem": case["finalTargetItem"],
                 "finalActorItems": case["finalActorItems"],
+                "finalDealsAmount": case["finalDealsAmount"],
             }
             for case in fixture["cases"]
         ]

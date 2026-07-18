@@ -62,6 +62,12 @@ local function set_flag(flag)
     memory.write_u8(address, memory.read_u8(address, "M68K BUS") | mask, "M68K BUS")
 end
 
+local function deals_amount(item)
+    local packed = memory.read_u8(config.ram.dealsItemsAddress + math.floor(item / 2), "M68K BUS")
+    if item % 2 == 0 then return (packed >> 4) & 0xF end
+    return packed & 0xF
+end
+
 local function json_boolean(value)
     if value then return "true" end
     return "false"
@@ -79,10 +85,10 @@ local function write_result_and_exit()
     for index, result in ipairs(results) do
         if index > 1 then output:write(",") end
         output:write(string.format(
-            '{"id":"%s","roll":%s,"finalFlag":%s,"finalTargetItem":%d,"finalActorItems":[%d,%d,%d,%d]}',
+            '{"id":"%s","roll":%s,"finalFlag":%s,"finalTargetItem":%d,"finalActorItems":[%d,%d,%d,%d],"finalDealsAmount":%d}',
             result.id, json_number_or_null(result.roll), json_boolean(result.finalFlag),
             result.finalTargetItem, result.finalActorItems[1], result.finalActorItems[2],
-            result.finalActorItems[3], result.finalActorItems[4]))
+            result.finalActorItems[3], result.finalActorItems[4], result.finalDealsAmount))
     end
     output:write("]}}\n")
     output:close()
@@ -94,6 +100,7 @@ local function finish_case()
     active.finalFlag = flag_value(active.flag)
     active.finalTargetItem = memory.read_u16_be(entry(active.target) + 32, "M68K BUS") & 0x7FFF
     active.finalActorItems = read_items(entry(config.actor))
+    active.finalDealsAmount = deals_amount(active.item)
     results[#results + 1] = active
     active = nil
     case_index = case_index + 1
@@ -155,8 +162,8 @@ event.on_bus_exec(function()
     if active ~= nil then return end
     local current_case = config.cases[case_index]
     if replay_state == nil then error("enemy drop replay state was not captured before execution") end
-    local a2 = emu.getregister("M68K A2")
-    local a5 = emu.getregister("M68K A5")
+    local a2 = emu.getregister("M68K A2") & 0xFFFFFF
+    local a5 = emu.getregister("M68K A5") & 0xFFFFFF
     local empty = { config.emptyItem, config.emptyItem, config.emptyItem, config.emptyItem }
     local target = entry(current_case.target)
 
@@ -166,14 +173,19 @@ event.on_bus_exec(function()
     for offset = 0, 3 do
         memory.write_u8(config.ram.enemyItemDroppedFlagsAddress + offset, 0, "M68K BUS")
     end
+    for offset = 0, 63 do
+        memory.write_u8(config.ram.dealsItemsAddress + offset, 0, "M68K BUS")
+    end
     if current_case.initialFlag then set_flag(current_case.flag) end
     memory.write_u16_be(config.ram.seedAddress, current_case.seed, "M68K BUS")
-    write_items(entry(config.actor), empty)
+    memory.write_u16_be(entry(config.actor) + 14, current_case.actorHp, "M68K BUS")
+    write_items(entry(config.actor), current_case.actorItems)
     write_items(target, { current_case.item, config.emptyItem, config.emptyItem, config.emptyItem })
 
     active = {
         id = current_case.id,
         flag = current_case.flag,
+        item = current_case.item,
         target = current_case.target,
         roll = nil
     }

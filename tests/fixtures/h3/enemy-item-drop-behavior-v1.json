@@ -3,7 +3,7 @@
   "id": "sf2-enemy-item-drop-behavior-v1",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
-  "observationBoundary": "Natural lethal Battle 01 physical action entering battlesceneScript_DropEnemyItem, replayed from one pre-action core state with the routine-owned battle, inventory, flag, and seed inputs replaced.",
+  "observationBoundary": "Natural lethal Battle 01 physical action entering battlesceneScript_DropEnemyItem, replayed from one pre-action core state with the routine-owned battle, actor HP/inventory, target inventory, drop flag, deals inventory, and seed inputs replaced.",
   "function": {
     "entryAddress": 48420,
     "randomResultAddress": 48546,
@@ -11,6 +11,7 @@
   },
   "ram": {
     "enemyItemDroppedFlagsAddress": 16775076,
+    "dealsItemsAddress": 16774660,
     "seedAddress": 16768676
   },
   "harness": {
@@ -33,9 +34,13 @@
   "actor": 0,
   "emptyItem": 127,
   "cases": [
-    { "id": "rare-failure", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 1281, "roll": 8, "finalFlag": false, "finalTargetItem": 110, "finalActorItems": [127, 127, 127, 127] },
-    { "id": "rare-success", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 0, "roll": 0, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [110, 127, 127, 127] },
-    { "id": "rare-repeat-flag", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": true, "seed": 0, "roll": 0, "finalFlag": true, "finalTargetItem": 110, "finalActorItems": [127, 127, 127, 127] },
-    { "id": "guaranteed-drop", "battle": 36, "target": 128, "item": 66, "flag": 25, "initialFlag": false, "seed": 1281, "roll": null, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [66, 127, 127, 127] }
+    { "id": "rare-failure", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 1281, "actorHp": 100, "actorItems": [127, 127, 127, 127], "roll": 8, "finalFlag": false, "finalTargetItem": 110, "finalActorItems": [127, 127, 127, 127], "finalDealsAmount": 0 },
+    { "id": "rare-success", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 0, "actorHp": 100, "actorItems": [127, 127, 127, 127], "roll": 0, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [110, 127, 127, 127], "finalDealsAmount": 0 },
+    { "id": "rare-repeat-flag", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": true, "seed": 0, "actorHp": 100, "actorItems": [127, 127, 127, 127], "roll": 0, "finalFlag": true, "finalTargetItem": 110, "finalActorItems": [127, 127, 127, 127], "finalDealsAmount": 0 },
+    { "id": "guaranteed-drop", "battle": 5, "target": 130, "item": 86, "flag": 3, "initialFlag": false, "seed": 1281, "actorHp": 100, "actorItems": [127, 127, 127, 127], "roll": null, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [86, 127, 127, 127], "finalDealsAmount": 0 },
+    { "id": "rare-full-inventory", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 0, "actorHp": 100, "actorItems": [0, 1, 2, 3], "roll": 0, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [0, 1, 2, 3], "finalDealsAmount": 1 },
+    { "id": "rare-dead-actor", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 0, "actorHp": 0, "actorItems": [127, 127, 127, 127], "roll": 0, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [127, 127, 127, 127], "finalDealsAmount": 1 },
+    { "id": "guaranteed-full-inventory", "battle": 5, "target": 130, "item": 86, "flag": 3, "initialFlag": false, "seed": 1281, "actorHp": 100, "actorItems": [0, 1, 2, 3], "roll": null, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [0, 1, 2, 3], "finalDealsAmount": 0 },
+    { "id": "guaranteed-dead-actor", "battle": 5, "target": 130, "item": 86, "flag": 3, "initialFlag": false, "seed": 1281, "actorHp": 0, "actorItems": [127, 127, 127, 127], "roll": null, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [127, 127, 127, 127], "finalDealsAmount": 0 }
   ]
 }

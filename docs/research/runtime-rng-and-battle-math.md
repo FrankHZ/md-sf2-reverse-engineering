@@ -745,18 +745,22 @@ item-possession, flag, removal, inventory, rare-deals, and unreachable-code bran
 static boundary with `uv run sf2 h2 enemy-drops`.
 
 The connected H3 fixture replays one natural lethal Battle 01 physical-action state and replaces
-only the drop routine's battle, held item, flag, and seed inputs. Its four cases confirm:
+only the drop routine's battle, target index/held item, actor HP/inventory, flag/deals state, and
+seed inputs. Its eight cases confirm:
 
 | Case | Input | Observed result |
 | --- | --- | --- |
 | rare failure | Taros Sword, seed `1281` | `RNG(32)=8`; flag stays clear; enemy keeps item |
 | rare success | Taros Sword, seed `0` | `RNG(32)=0`; flag set; enemy loses item; actor receives it |
 | repeated flag | Taros Sword, flag already set, seed `0` | roll still consumed; no removal or delivery |
-| guaranteed | Battle Sword row, seed `1281` | no drop RNG; flag set; item transferred |
+| guaranteed | Short Rod row, seed `1281` | no drop RNG; flag set; item transferred |
+| rare recipient failure | Taros Sword; full inventory or dead actor | enemy loses item; actor unchanged; deals `0 -> 1` |
+| non-rare recipient failure | Short Rod; full inventory or dead actor | enemy loses item; actor unchanged; deals stays 0 |
 
 Reproduce this runtime matrix with `uv run sf2 h3 enemy-drops`. The fixture observes the original
-entry at `0xBD24`, rare-roll result at `0xBDA2`, return at `0xBE50`, and persistent flag bytes at
-`0xFFF7A4`. Inventory failure, dead recipients, and the resulting rare-deals state remain Unknown.
+entry at `0xBD24`, rare-roll result at `0xBDA2`, return at `0xBE50`, persistent flag bytes at
+`0xFFF7A4`, and packed deals inventory at `0xFFF604`. Existing/saturated deals-count behavior
+remains Unknown.
 
 ## Confirmed: SPOIT MP-Absorption Boundary Matrix and Replay Order
 

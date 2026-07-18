@@ -528,6 +528,7 @@
         { "id": "random-result", "space": "rom", "kind": "observation", "value": 48546 },
         { "id": "return", "space": "rom", "kind": "observation", "value": 48720 },
         { "id": "dropped-flags", "space": "ram", "kind": "state", "value": 16775076, "symbol": "ENEMY_ITEM_DROPPED_FLAGS" },
+        { "id": "deals-items", "space": "ram", "kind": "state", "value": 16774660, "symbol": "DEALS_ITEMS" },
         { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
       ],
       "evidence": [
@@ -544,6 +545,7 @@
             { "addressId": "random-result", "fixtureField": "function.randomResultAddress" },
             { "addressId": "return", "fixtureField": "function.returnAddress" },
             { "addressId": "dropped-flags", "fixtureField": "ram.enemyItemDroppedFlagsAddress" },
+            { "addressId": "deals-items", "fixtureField": "ram.dealsItemsAddress" },
             { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
           ]
         }

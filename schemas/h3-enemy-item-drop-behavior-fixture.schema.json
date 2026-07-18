@@ -10,24 +10,25 @@
     "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "type": "string" }, "core": { "const": "Genesis Plus GX" } } },
     "observationBoundary": { "type": "string", "minLength": 1 },
     "function": { "type": "object", "additionalProperties": false, "required": ["entryAddress", "randomResultAddress", "returnAddress"], "properties": { "entryAddress": { "const": 48420 }, "randomResultAddress": { "const": 48546 }, "returnAddress": { "const": 48720 } } },
-    "ram": { "type": "object", "additionalProperties": false, "required": ["enemyItemDroppedFlagsAddress", "seedAddress"], "properties": { "enemyItemDroppedFlagsAddress": { "const": 16775076 }, "seedAddress": { "const": 16768676 } } },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["enemyItemDroppedFlagsAddress", "dealsItemsAddress", "seedAddress"], "properties": { "enemyItemDroppedFlagsAddress": { "const": 16775076 }, "dealsItemsAddress": { "const": 16774660 }, "seedAddress": { "const": 16768676 } } },
     "harness": { "type": "object", "additionalProperties": false, "required": ["function", "ram"], "properties": { "function": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 0 } }, "ram": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 0 } } } },
     "actor": { "const": 0 },
     "emptyItem": { "const": 127 },
-    "cases": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/case" } }
+    "cases": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "$ref": "#/definitions/case" } }
   },
   "definitions": {
     "items": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0, "maximum": 32767 } },
     "case": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "battle", "target", "item", "flag", "initialFlag", "seed", "roll", "finalFlag", "finalTargetItem", "finalActorItems"],
+      "required": ["id", "battle", "target", "item", "flag", "initialFlag", "seed", "actorHp", "actorItems", "roll", "finalFlag", "finalTargetItem", "finalActorItems", "finalDealsAmount"],
       "properties": {
         "id": { "type": "string", "minLength": 1 }, "battle": { "type": "integer", "minimum": 0, "maximum": 255 },
         "target": { "type": "integer", "minimum": 128, "maximum": 159 }, "item": { "type": "integer", "minimum": 0, "maximum": 127 },
         "flag": { "type": "integer", "minimum": 0, "maximum": 31 }, "initialFlag": { "type": "boolean" },
         "seed": { "type": "integer", "minimum": 0, "maximum": 65535 }, "roll": { "type": ["integer", "null"], "minimum": 0, "maximum": 31 },
+        "actorHp": { "type": "integer", "minimum": 0, "maximum": 65535 }, "actorItems": { "$ref": "#/definitions/items" },
         "finalFlag": { "type": "boolean" }, "finalTargetItem": { "type": "integer", "minimum": 0, "maximum": 127 },
-        "finalActorItems": { "$ref": "#/definitions/items" }
+        "finalActorItems": { "$ref": "#/definitions/items" }, "finalDealsAmount": { "type": "integer", "minimum": 0, "maximum": 15 }
       }
     }
   }

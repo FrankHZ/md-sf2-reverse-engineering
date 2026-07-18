@@ -73,9 +73,14 @@ battle-upgrade/random-chance block after an unconditional branch, so it is not p
 The H3 replay matrix confirms the core branches on the original ROM. Taros Sword seed `1281`
 produces roll 8, leaves flag 24 clear, and leaves the item on the enemy. Seed 0 produces roll 0,
 sets flag 24, removes the sword, and gives it to the actor. Starting with flag 24 already set still
-consumes the successful rare roll but aborts before removal or delivery. A non-random Battle Sword row
-sets flag 25 and transfers the item without reaching the drop-RNG checkpoint. Inventory-full and
-dead-actor routing, including rare-deals persistence, remain runtime Unknowns.
+consumes the successful rare roll but aborts before removal or delivery. A non-random Short Rod row
+sets flag 3 and transfers the item without reaching the drop-RNG checkpoint.
+
+Recipient-failure replays confirm removal precedes routing. With either a full inventory or a dead
+actor, Taros Sword is removed from the enemy and its packed deals count changes from 0 to 1. Under
+the same two recipient conditions, Short Rod is removed but enters neither actor inventory nor
+deals because its item definition is not rare. Pre-populated and saturated deals counts remain a
+runtime Unknown.
 
 ## Confirmed: Promotion Table and Church Mapping
 
