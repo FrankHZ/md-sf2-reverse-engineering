@@ -47,6 +47,7 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-status-sleep-v1.json": (
             "sf2-sleep-resistance-matrix-v1"
         ),
+        "tests/fixtures/h3/spell-desoul-v1.json": "sf2-desoul-instant-death-v1",
     },
 }
 

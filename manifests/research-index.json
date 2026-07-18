@@ -384,7 +384,8 @@
         { "id": "exp-halved", "space": "rom", "kind": "observation", "value": 43038 },
         { "id": "exp-first-roll", "space": "rom", "kind": "observation", "value": 43046 },
         { "id": "exp-second-roll", "space": "rom", "kind": "observation", "value": 43060 },
-        { "id": "exp-final", "space": "rom", "kind": "observation", "value": 43072 }
+        { "id": "exp-final", "space": "rom", "kind": "observation", "value": 43072 },
+        { "id": "battle-scene-gold", "space": "ram", "kind": "state", "value": 16758314, "symbol": "BATTLESCENE_GOLD" }
       ],
       "evidence": [
         {
@@ -414,6 +415,10 @@
           "bindings": [
             { "addressId": "target-side-decision", "fixtureField": "function.sameSideDecisionAddress" }
           ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+          "bindings": [{ "addressId": "battle-scene-gold", "fixtureField": "ram.battleSceneGoldAddress" }]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
@@ -456,6 +461,60 @@
           { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
           { "addressId": "adjusted-power", "fixtureField": "function.adjustedPowerAddress" },
           { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.replay.increase-gold",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "IncreaseGold",
+      "sourcePath": "code/common/stats/gold.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 35226 },
+        { "id": "current-gold", "space": "ram", "kind": "state", "value": 16774656, "symbol": "CURRENT_GOLD" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+        "bindings": [{ "addressId": "current-gold", "fixtureField": "ram.currentGoldAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-desoul.reward",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_AddExpAndGoldForKill",
+      "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43278 },
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 43322 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+        "bindings": [{ "addressId": "applied", "fixtureField": "function.killExpGoldAppliedAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-desoul.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Desoul",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 46358 },
+        { "id": "target-dies", "space": "rom", "kind": "observation", "value": 46460 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-desoul-v1.json", "fixtureId": "sf2-desoul-instant-death-v1", "verifier": "src/sf2tool/h3/spell_desoul.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.desoulEffectEntryAddress" },
+          { "addressId": "target-dies", "fixtureField": "function.targetDiesAppliedAddress" }
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],

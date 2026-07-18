@@ -172,6 +172,23 @@ caster EXP `0 -> 8`.
 This confirms SLEEP 1 only. Other status spells may alter the base threshold, pre-existing status,
 reaction payload, message, or EXP/kill behavior and require their own cases.
 
+## Confirmed DESOUL 1 Instant-Death Subset
+
+DESOUL 1 reuses the STATUS effectiveness rule. Against setting 0, threshold 5 and controlled
+range-8 roll 7 succeed. The effect emits enemy HP change `0x8000`, adds kill rewards, and sets the
+scene's `targetDies` flag to `0xFF`; target HP remains 100 during construction.
+
+The controlled target is enemy definition 0 (OOZE), level 1, max/current HP 100, and worth 10 gold.
+Against level-1 unpromoted Bowie, `GetKillExp` returns 50, which the shared per-action cap truncates
+to 49. Battle 01 halves this to 24. From effectiveness seed `0xECAB`, award rolls 0 and 3 add one
+without subtracting, producing a 25-EXP command. Gold is not randomized or halved.
+
+Replay applies caster MP `20 -> 12`, interprets signed HP change `-32768` as the death sentinel and
+sets target HP `100 -> 0`, applies EXP `0 -> 25`, and increases force gold `0 -> 10`. This confirms
+one successful enemy instant death, kill cap, reward lookup, and persistent replay. DESOUL failure,
+DESOUL 2 multi-target behavior, ally/enemy-caster reward skips, boss immunity, and battle-victory
+side effects remain outside the case.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
@@ -180,6 +197,7 @@ reaction payload, message, or EXP/kill behavior and require their own cases.
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
+| `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -197,7 +215,7 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** remaining healing branches, non-SLEEP status spells, drain, instant death, breath
-  attacks, and special spell-effect dispatch.
+- **Unknown:** remaining healing branches, non-SLEEP/DESOUL status spells, drain, DESOUL failure and
+  multi-target branches, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.

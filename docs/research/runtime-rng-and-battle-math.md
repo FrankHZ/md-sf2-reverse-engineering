@@ -549,6 +549,33 @@ Tracked artifacts are `tests/fixtures/h3/spell-status-sleep-v1.json`,
 `schemas/h3-spell-status-sleep-fixture.schema.json`, `src/sf2tool/h3/spell_status.py`, and
 `tools/bizhawk/spell_status_observer.lua`.
 
+## Confirmed: DESOUL 1 Instant Death and Kill Rewards
+
+The DESOUL fixture supplies one neutral-STATUS enemy target and resets seed `0x1234` at the genuine
+`spellEffect_Desoul` entry. Threshold 5 and range-8 roll 7 reach the shared success return. The
+effect writes enemy reaction HP word `0x8000`, then calls
+`battlesceneScript_AddExpAndGoldForKill` and sets stack-frame `targetDies` to `0xFF`.
+
+The target is explicitly enemy definition 0 (OOZE), level 1, max/current HP 100. `GetKillExp`
+returns 50 for level-1 unpromoted Bowie versus level 1, and the per-action cap stores 49. The OOZE
+gold table entry adds 10 to `BATTLESCENE_GOLD`. Neither construction step changes persistent target
+HP or caster MP.
+
+Battle 01 halves 49 to 24. Final effectiveness seed `0xECAB` produces award rolls 0 and 3, so the
+first adds one and the command carries 25 EXP; gold remains 10. Playback changes MP `20 -> 12`,
+interprets reaction word `0x8000` as signed `-32768` and reduces target HP `100 -> 0`, changes EXP
+`0 -> 25`, and changes `CURRENT_GOLD` `0 -> 10` through `IncreaseGold`.
+
+Reproduce the fixture with:
+
+```powershell
+uv run sf2 h3 spell-desoul
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
+`schemas/h3-spell-desoul-fixture.schema.json`, `src/sf2tool/h3/spell_desoul.py`, and
+`tools/bizhawk/spell_desoul_observer.lua`.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -559,7 +586,7 @@ Tracked artifacts are `tests/fixtures/h3/spell-status-sleep-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  other status spells, and other non-damage spell families.
+  DESOUL failure/multi-target cases, other status spells, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.
