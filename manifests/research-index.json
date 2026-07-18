@@ -426,7 +426,9 @@
         { "id": "exp-first-roll", "space": "rom", "kind": "observation", "value": 43046 },
         { "id": "exp-second-roll", "space": "rom", "kind": "observation", "value": 43060 },
         { "id": "exp-final", "space": "rom", "kind": "observation", "value": 43072 },
-        { "id": "battle-scene-gold", "space": "ram", "kind": "state", "value": 16758314, "symbol": "BATTLESCENE_GOLD" }
+        { "id": "battle-scene-gold", "space": "ram", "kind": "state", "value": 16758314, "symbol": "BATTLESCENE_GOLD" },
+        { "id": "battle-scene-exp", "space": "ram", "kind": "state", "value": 16758316, "symbol": "BATTLESCENE_EXP" },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
       ],
       "evidence": [
         {
@@ -441,6 +443,18 @@
         {
           "level": "H3", "fixture": "tests/fixtures/h3/battle-exp-level-up-v1.json", "fixtureId": "sf2-battle-exp-level-up-v1", "verifier": "src/sf2tool/h3/battle_exp.py",
           "bindings": [{ "addressId": "exp-halved", "fixtureField": "function.expRandomizationAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/award-exp-randomization-v1.json", "fixtureId": "sf2-award-exp-randomization-v1", "verifier": "src/sf2tool/h3/award_exp.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.entryAddress" },
+            { "addressId": "exp-halved", "fixtureField": "function.expHalvedAddress" },
+            { "addressId": "exp-first-roll", "fixtureField": "function.firstRollAddress" },
+            { "addressId": "exp-second-roll", "fixtureField": "function.secondRollAddress" },
+            { "addressId": "exp-final", "fixtureField": "function.finalAddress" },
+            { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
         },
         {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",

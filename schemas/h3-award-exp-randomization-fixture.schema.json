@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-award-exp-randomization-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "function", "ram", "harness", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-award-exp-randomization-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "expHalvedAddress", "firstRollAddress", "secondRollAddress", "finalAddress"],
+      "properties": {
+        "entryAddress": { "const": 43000 }, "expHalvedAddress": { "const": 43038 },
+        "firstRollAddress": { "const": 43046 }, "secondRollAddress": { "const": 43060 },
+        "finalAddress": { "const": 43072 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false, "required": ["battleSceneExpAddress", "seedAddress"],
+      "properties": { "battleSceneExpAddress": { "const": 16758316 }, "seedAddress": { "const": 16768676 } }
+    },
+    "harness": {
+      "type": "object", "additionalProperties": false, "required": ["function", "ram"],
+      "properties": {
+        "function": {
+          "type": "object", "additionalProperties": false,
+          "required": ["battleTestAddress", "numberPromptAddress", "flagPromptAddress", "turnOrderEntryAddress", "criticalEntryAddress", "damageApplicationAddress"],
+          "properties": {
+            "battleTestAddress": { "const": 30364 }, "numberPromptAddress": { "const": 90754 },
+            "flagPromptAddress": { "const": 91068 }, "turnOrderEntryAddress": { "const": 152900 },
+            "criticalEntryAddress": { "const": 44110 }, "damageApplicationAddress": { "const": 44434 }
+          }
+        },
+        "ram": {
+          "type": "object", "additionalProperties": false,
+          "required": ["combatantDataAddress", "combatantEntrySize", "currentBattleAddress", "terrainDataAddress", "cheatPointerAddress", "debugModeAddress"],
+          "properties": {
+            "combatantDataAddress": { "const": 16771072 }, "combatantEntrySize": { "const": 56 },
+            "currentBattleAddress": { "const": 16774930 }, "terrainDataAddress": { "const": 16736000 },
+            "cheatPointerAddress": { "const": 16757152 }, "debugModeAddress": { "const": 16756905 }
+          }
+        }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "accumulatedExp", "seed", "halvedExp", "firstRoll", "secondRoll", "commandExp"],
+        "properties": {
+          "id": { "enum": ["nonzero-nonzero-unchanged", "zero-nonzero-increment", "nonzero-zero-decrement", "zero-zero-cancel", "zero-accumulator-minimum"] },
+          "accumulatedExp": { "type": "integer", "minimum": 0, "maximum": 49 },
+          "seed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "halvedExp": { "type": "integer", "minimum": 0, "maximum": 24 },
+          "firstRoll": { "type": "integer", "minimum": 0, "maximum": 15 },
+          "secondRoll": { "type": "integer", "minimum": 0, "maximum": 15 },
+          "commandExp": { "type": "integer", "minimum": 1, "maximum": 49 }
+        }
+      }
+    }
+  }
+}

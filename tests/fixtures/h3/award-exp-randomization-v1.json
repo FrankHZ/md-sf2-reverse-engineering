@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-award-exp-randomization-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Natural Battle 01 physical-action final EXP construction, replayed from one pre-action in-memory core state.",
+  "function": {
+    "entryAddress": 43000,
+    "expHalvedAddress": 43038,
+    "firstRollAddress": 43046,
+    "secondRollAddress": 43060,
+    "finalAddress": 43072
+  },
+  "ram": {
+    "battleSceneExpAddress": 16758316,
+    "seedAddress": 16768676
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900,
+      "criticalEntryAddress": 44110,
+      "damageApplicationAddress": 44434
+    },
+    "ram": {
+      "combatantDataAddress": 16771072,
+      "combatantEntrySize": 56,
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "cases": [
+    { "id": "nonzero-nonzero-unchanged", "accumulatedExp": 49, "seed": 1281, "halvedExp": 24, "firstRoll": 4, "secondRoll": 4, "commandExp": 24 },
+    { "id": "zero-nonzero-increment", "accumulatedExp": 49, "seed": 60587, "halvedExp": 24, "firstRoll": 0, "secondRoll": 3, "commandExp": 25 },
+    { "id": "nonzero-zero-decrement", "accumulatedExp": 49, "seed": 4660, "halvedExp": 24, "firstRoll": 14, "secondRoll": 0, "commandExp": 23 },
+    { "id": "zero-zero-cancel", "accumulatedExp": 49, "seed": 0, "halvedExp": 24, "firstRoll": 0, "secondRoll": 0, "commandExp": 24 },
+    { "id": "zero-accumulator-minimum", "accumulatedExp": 0, "seed": 1281, "halvedExp": 0, "firstRoll": 4, "secondRoll": 4, "commandExp": 1 }
+  ]
+}

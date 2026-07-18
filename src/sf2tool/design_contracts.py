@@ -16,6 +16,9 @@ CONTRACTS = {
         "tests/fixtures/h3/kill-exp-level-difference-v1.json": (
             "sf2-kill-exp-level-difference-v1"
         ),
+        "tests/fixtures/h3/award-exp-randomization-v1.json": (
+            "sf2-award-exp-randomization-v1"
+        ),
         "tests/fixtures/h3/attack-chain-v1.json": "sf2-attack-chain-double-counter-v1",
         "tests/fixtures/h3/dodge-v1.json": "sf2-successful-airborne-dodge-v1",
         "tests/fixtures/h3/lethal-followup-v1.json": "sf2-lethal-followup-validation-v1",

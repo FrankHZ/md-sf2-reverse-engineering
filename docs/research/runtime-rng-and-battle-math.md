@@ -431,6 +431,31 @@ The executable contract is `tests/fixtures/h3/kill-exp-level-difference-v1.json`
 per-action accumulation, battle halving, final randomization, command replay, and persistent level-up
 remain owned by their connected fixtures.
 
+## Confirmed: Final EXP Halving, Randomization, and Minimum
+
+`battlesceneScript_GiveExpAndGold` at `0xA7F8` reads the accumulated word from `BATTLESCENE_EXP`.
+For an enemy target in Battle 01, the battle table matches and shifts the value right once before
+two ordered `RNG(16)` calls. A zero first roll adds one; a zero second roll subtracts one. The
+routine then clamps any non-positive result to one before emitting the EXP command.
+
+| Input EXP | Seed | First / second roll | Final command EXP |
+| --- | --- | --- | --- |
+| 49 | 1281 | 4 / 4 | 24 |
+| 49 | 60587 | 0 / 3 | 25 |
+| 49 | 4660 | 14 / 0 | 23 |
+| 49 | 0 | 0 / 0 | 24 |
+| 0 | 1281 | 4 / 4 | 1 |
+
+The first four rows independently cover unchanged, increment, decrement, and cancellation after
+Battle 01 truncates 49 to 24. The final row confirms the minimum award. Each row follows a natural
+Battle 01 physical action. The observer saves one pre-action in-memory core state and replays it,
+then writes only the accumulated EXP and RNG seed at the routine entry; it does not jump the PC or
+write CPU registers.
+
+The executable contract is `tests/fixtures/h3/award-exp-randomization-v1.json`; reproduce it with
+`uv run sf2 h3 award-exp`. Target-same-side bypass, other halved-battle table entries, EXP storage
+caps, command replay, and multiple level thresholds remain owned by other fixtures or Unknown.
+
 ## Confirmed: Double Attack and Counter Chain
 
 The attack-chain fixture uses the same natural Battle 01 AI action but makes both combatants
@@ -909,7 +934,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
-  seeds, and remaining EXP randomization/cap branches to the confirmed physical path.
+  seeds, and remaining EXP cap branches to the confirmed physical path.
 - Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and

@@ -8,6 +8,7 @@ from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
+from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.growth import (
@@ -153,6 +154,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_kill_exp)
     h3_kill_exp.add_argument("--timeout-seconds", type=int, default=75)
+    h3_award_exp = h3_commands.add_parser(
+        "award-exp", help="verify final EXP halving, randomization, and minimum award"
+    )
+    _add_local_paths(h3_award_exp)
+    h3_award_exp.add_argument("--timeout-seconds", type=int, default=90)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -299,6 +305,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "kill-exp":
         print_record(
             verify_kill_exp_level_differences(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "award-exp":
+        print_record(
+            verify_award_exp_randomization(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
