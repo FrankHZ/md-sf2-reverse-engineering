@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 55 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 31 | 29 code files and 2 data files |
-| Executable code-file reach | 7.49% | 29 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 60 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 32 | 30 code files and 2 data files |
+| Executable code-file reach | 7.75% | 30 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.12% | 2 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 52 | Runtime contracts, often containing multiple cases |
-| Address bindings | 411 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 416 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the two indexed data files. It currently includes 281 fixed
@@ -40,14 +40,15 @@ The current evidence is deep but narrow:
 
 - **Strongest:** reproducible ROM baseline; core stats/growth tables; physical combat, EXP/gold,
   many spell-resolution paths, and Battle 01 initialization/activation.
-- **Partial:** battle AI currently reaches only confusion and muddled attack conversion; turn order,
-  follow-up validation, status lifecycle, and reward behavior cover selected boundaries rather than
+- **Partial:** battle AI has a complete source inventory and five action-filter contracts, while
+  target scoring, healing/support priorities, movement, and dispatcher behavior remain open; turn
+  order, follow-up validation, status lifecycle, and rewards cover selected boundaries rather than
   every caller and state transition.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 7.49% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 7.75% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -60,8 +61,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 55 records; its
-verifier reports 52 H3 fixtures and 411 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 60 records; its
+verifier reports 52 H3 fixtures and 416 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -86,6 +87,7 @@ already demonstrated by the eight-case muddled ally/enemy action-guard fixture.
 
 ## Next Batch
 
-The next batch is `battle.ai`: statically inventory action selection, attack/spell/item filtering,
-target scoring, and confusion branches. Runtime work will be deferred until that audit produces a
-compact ambiguity matrix, then the matrix will run in one or a small number of BizHawk launches.
+The `battle.ai` inventory and five attack/heal/support spell/item filters are now parsed. The next
+static batch owns attack target construction, potential-damage modeling, and priority scripts.
+Runtime work remains deferred until the remaining audit produces a compact ambiguity matrix, then
+the matrix will run in one or a small number of BizHawk launches.

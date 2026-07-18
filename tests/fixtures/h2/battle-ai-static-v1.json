@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "attackSpellEntryAddress": 53108,
+    "healingSpellEntryAddress": 53272,
+    "supportSpellEntryAddress": 53346,
+    "attackItemEntryAddress": 53420,
+    "healingItemEntryAddress": 53600
+  },
+  "expected": {
+    "attackSpellAllowlist": [11, 12, 13, 14, 27, 28],
+    "attackItemAllowlist": [11, 12, 13, 14],
+    "attackSpellRejectedCandidatePolicy": "continue-to-next-slot",
+    "attackItemRejectedCandidatePolicy": "stop-with-item-nothing",
+    "attackItemUnusableCandidatePolicy": "continue-to-next-slot",
+    "allyAttackSpellUsesConfusedFilter": true,
+    "allyAttackItemUsesConfusedFilter": true,
+    "equippedAttackItemBypassesAiUseFlag": true,
+    "healingRainItem": 8,
+    "healingRainBypassesAiUseFlag": true,
+    "healingSpellType": "heal",
+    "supportSpellType": "support"
+  }
+}

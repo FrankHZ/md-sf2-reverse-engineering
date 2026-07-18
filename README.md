@@ -6,15 +6,15 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
-H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
+H2、成长曲线与法术学习合同、battle AI 全目录 inventory 与五类 action filter 静态合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
 职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、完整击杀 EXP 等级差矩阵、行动顺序、区域激活、物理伤害计算链和
 BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门、敌人物品稀有/必掉/重复 flag、四种临时状态的回合后过期/继续/属性刷新，以及 MUDDLE confusion 谓词与双边行动保护矩阵的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-18，研究索引有 55 条 confirmed finding、52 个 H3 fixture 和 411 个地址绑定。
-按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 29 个文件，即
-**7.49% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+截至 2026-07-18，研究索引有 60 条 confirmed finding、52 个 H3 fixture 和 416 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 30 个文件，即
+**7.75% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -207,7 +207,8 @@ fixture 覆盖和对现代重制的合同影响。
 drop rail 确认 flags 0-29、三个 `RNG(32)` 特例和 `0xFFFF` 终止；gold rail 还保留并拒绝误解释源码标记的
 69-word unused 尾部；新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
-原版名称清单。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
+原版名称清单。battle AI 静态 rail 另覆盖完整 26 文件/5,991 行源码面、82 个 global label、
+388 个直接调用点和五类 action getter，并将 5 个新 symbol 绑定到 H1 地址。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在
 `InitializeAllyStats` 和 `LevelUp` 两处被误加 20 effective levels、但本场景无学法术副作用的原版缺陷。
@@ -273,10 +274,10 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 
 ## 下一步
 
-下一块按新的批处理节奏审计完整 **`battle.ai` 静态源码面**：统一整理 action selection、
-attack/spell/item filtering、target scoring、confusion 分支和状态读写，形成结构化模型及运行时问题
-队列。只有静态无法闭合的 caller context、持久状态、RNG/overflow 等问题才进入随后的一次或少量
-BizHawk 矩阵，不再为每个分支单独启动模拟器。
+`battle.ai` 的全目录 inventory 和 attack/heal/support spell/item filter 已完成；下一块继续静态
+解析 **attack target construction、potential damage 与 priority scripts**，把难度、HP 阈值、
+状态/阵营和随机权重整理成结构化规则。只有静态无法闭合的 caller context、持久状态、
+RNG/overflow 等问题才进入随后的一次或少量 BizHawk 矩阵，不再为每个分支单独启动模拟器。
 同时保留升级前一等级、缺失职业块和当前/最大属性刷新，以及
 `LASER radius = 3` 的显式行为验证队列。
 

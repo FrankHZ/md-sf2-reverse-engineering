@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battle AI static inventory fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attackSpellEntryAddress", "healingSpellEntryAddress", "supportSpellEntryAddress", "attackItemEntryAddress", "healingItemEntryAddress"],
+      "properties": {
+        "attackSpellEntryAddress": { "const": 53108 },
+        "healingSpellEntryAddress": { "const": 53272 },
+        "supportSpellEntryAddress": { "const": 53346 },
+        "attackItemEntryAddress": { "const": 53420 },
+        "healingItemEntryAddress": { "const": 53600 }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attackSpellAllowlist", "attackItemAllowlist", "attackSpellRejectedCandidatePolicy", "attackItemRejectedCandidatePolicy", "attackItemUnusableCandidatePolicy", "allyAttackSpellUsesConfusedFilter", "allyAttackItemUsesConfusedFilter", "equippedAttackItemBypassesAiUseFlag", "healingRainItem", "healingRainBypassesAiUseFlag", "healingSpellType", "supportSpellType"],
+      "properties": {
+        "attackSpellAllowlist": { "const": [11, 12, 13, 14, 27, 28] },
+        "attackItemAllowlist": { "const": [11, 12, 13, 14] },
+        "attackSpellRejectedCandidatePolicy": { "const": "continue-to-next-slot" },
+        "attackItemRejectedCandidatePolicy": { "const": "stop-with-item-nothing" },
+        "attackItemUnusableCandidatePolicy": { "const": "continue-to-next-slot" },
+        "allyAttackSpellUsesConfusedFilter": { "const": true },
+        "allyAttackItemUsesConfusedFilter": { "const": true },
+        "equippedAttackItemBypassesAiUseFlag": { "const": true },
+        "healingRainItem": { "const": 8 },
+        "healingRainBypassesAiUseFlag": { "const": true },
+        "healingSpellType": { "const": "heal" },
+        "supportSpellType": { "const": "support" }
+      }
+    }
+  }
+}

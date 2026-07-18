@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/battle-ai-static.schema.json",
+  "title": "Shining Force II battle AI static source inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-static-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "const": "https://github.com/ShiningForceCentral/SF2DISASM.git" },
+        "commit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" }
+      }
+    },
+    "scope": { "const": "code/gameflow/battle/ai" },
+    "summary": { "$ref": "#/definitions/summary" },
+    "actionFilters": { "$ref": "#/definitions/actionFilters" },
+    "indexedRecordIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "indexedSourcePaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^code/gameflow/battle/ai/.+\\.asm$" }
+    },
+    "internalDirectCallTargets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+    },
+    "externalDirectCallTargets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/file" }
+    }
+  },
+  "definitions": {
+    "nonnegative": { "type": "integer", "minimum": 0 },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"],
+      "properties": {
+        "fileCount": { "type": "integer", "minimum": 1 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 1 },
+        "localLabelCount": { "$ref": "#/definitions/nonnegative" },
+        "directCallSiteCount": { "$ref": "#/definitions/nonnegative" },
+        "indirectCallSiteCount": { "$ref": "#/definitions/nonnegative" },
+        "uniqueDirectTargetCount": { "$ref": "#/definitions/nonnegative" },
+        "internalDirectTargetCount": { "$ref": "#/definitions/nonnegative" },
+        "externalDirectTargetCount": { "$ref": "#/definitions/nonnegative" },
+        "indexedRecordCount": { "$ref": "#/definitions/nonnegative" },
+        "indexedFileCount": { "$ref": "#/definitions/nonnegative" }
+      }
+    },
+    "namedValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+        "value": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "spellFilter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["function", "requiredSpellType", "rejectedCandidatePolicy", "confusionFilter"],
+      "properties": {
+        "function": { "type": "string" },
+        "requiredSpellType": { "enum": ["heal", "support"] },
+        "rejectedCandidatePolicy": { "const": "continue-to-next-slot" },
+        "confusionFilter": { "const": false }
+      }
+    },
+    "actionFilters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slotCounts", "sentinels", "spellTypes", "attackSpell", "healingSpell", "supportSpell", "attackItem", "healingItem"],
+      "properties": {
+        "slotCounts": {
+          "type": "object", "additionalProperties": false,
+          "required": ["spells", "items"],
+          "properties": { "spells": { "const": 4 }, "items": { "const": 4 } }
+        },
+        "sentinels": {
+          "type": "object", "additionalProperties": false,
+          "required": ["spellNothing", "itemNothing"],
+          "properties": { "spellNothing": { "const": 63 }, "itemNothing": { "const": 127 } }
+        },
+        "spellTypes": {
+          "type": "object", "additionalProperties": false,
+          "required": ["attack", "heal", "support"],
+          "properties": { "attack": { "const": 0 }, "heal": { "const": 1 }, "support": { "const": 2 } }
+        },
+        "attackSpell": {
+          "type": "object", "additionalProperties": false,
+          "required": ["function", "alliesAlwaysUseConfusedFilter", "confusedEnemyUsesFilter", "confusedAllowlist", "requiredSpellType", "rejectedCandidatePolicy", "returnsHighestUsableLevel"],
+          "properties": {
+            "function": { "const": "GetNextUsableAttackSpell" },
+            "alliesAlwaysUseConfusedFilter": { "const": true },
+            "confusedEnemyUsesFilter": { "const": true },
+            "confusedAllowlist": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "#/definitions/namedValue" } },
+            "requiredSpellType": { "const": "attack" },
+            "rejectedCandidatePolicy": { "const": "continue-to-next-slot" },
+            "returnsHighestUsableLevel": { "const": true }
+          }
+        },
+        "healingSpell": { "$ref": "#/definitions/spellFilter" },
+        "supportSpell": { "$ref": "#/definitions/spellFilter" },
+        "attackItem": {
+          "type": "object", "additionalProperties": false,
+          "required": ["function", "alliesAlwaysUseConfusedFilter", "confusedEnemyUsesFilter", "confusedAllowlist", "requiredSpellType", "equippedItemBypassesAiUseFlag", "unequippedItemRequiresAiUseFlag", "unusableCandidatePolicy", "rejectedCandidatePolicy"],
+          "properties": {
+            "function": { "const": "GetNextUsableAttackItem" },
+            "alliesAlwaysUseConfusedFilter": { "const": true },
+            "confusedEnemyUsesFilter": { "const": true },
+            "confusedAllowlist": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/namedValue" } },
+            "requiredSpellType": { "const": "attack" },
+            "equippedItemBypassesAiUseFlag": { "const": true },
+            "unequippedItemRequiresAiUseFlag": { "const": true },
+            "unusableCandidatePolicy": { "const": "continue-to-next-slot" },
+            "rejectedCandidatePolicy": { "const": "stop-with-item-nothing" }
+          }
+        },
+        "healingItem": {
+          "type": "object", "additionalProperties": false,
+          "required": ["function", "requiredSpellType", "healingRainItem", "healingRainBypassesAiUseFlag", "otherItemsRequireAiUseFlag", "rejectedCandidatePolicy", "confusionFilter"],
+          "properties": {
+            "function": { "const": "GetNextUsableHealingItem" },
+            "requiredSpellType": { "const": "heal" },
+            "healingRainItem": { "$ref": "#/definitions/namedValue" },
+            "healingRainBypassesAiUseFlag": { "const": true },
+            "otherItemsRequireAiUseFlag": { "const": true },
+            "rejectedCandidatePolicy": { "const": "continue-to-next-slot" },
+            "confusionFilter": { "const": false }
+          }
+        }
+      }
+    },
+    "call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "siteCount"],
+      "properties": {
+        "target": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+        "siteCount": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "sourceLineCount", "statementCount", "globalLabels", "localLabelCount", "directCalls", "indirectCallSiteCount"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^code/gameflow/battle/ai/.+\\.asm$" },
+        "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "$ref": "#/definitions/nonnegative" },
+        "globalLabels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+        },
+        "localLabelCount": { "$ref": "#/definitions/nonnegative" },
+        "directCalls": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/call" }
+        },
+        "indirectCallSiteCount": { "$ref": "#/definitions/nonnegative" }
+      }
+    }
+  }
+}

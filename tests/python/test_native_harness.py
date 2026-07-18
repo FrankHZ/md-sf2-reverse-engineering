@@ -7,6 +7,7 @@ import pytest
 
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import verify_index
 from sf2tool.rom import mega_drive_checksum
@@ -19,9 +20,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["H2Fixtures"] == 2
+    assert result["Records"] == 60
+    assert result["H2Fixtures"] == 3
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 52
-    assert result["AddressBindings"] == 411
+    assert result["AddressBindings"] == 416
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -70,6 +72,35 @@ def test_enemy_drops_has_a_dedicated_narrow_extraction_command() -> None:
     args = build_parser().parse_args(["h2", "enemy-drops"])
     assert args.h2_command == "enemy-drops"
     assert args.output_path is None
+
+
+def test_battle_ai_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-ai"])
+    assert args.h2_command == "battle-ai"
+    assert args.output_path is None
+    assert not hasattr(args, "rom_path")
+
+
+def test_battle_ai_inventory_classifies_calls(tmp_path: Path) -> None:
+    source = tmp_path / "sample.asm"
+    source.write_text(
+        "Entry: bsr.w DirectCall\n"
+        "@Loop: jsr (OtherCall).w\n"
+        "        jsr (a0)\n"
+        "loc_1234:\n"
+        "        rts\n",
+        encoding="utf-8",
+    )
+    parsed = _parse_source_file(source, "code/gameflow/battle/ai/sample.asm")
+    assert parsed["globalLabels"] == ["Entry", "loc_1234"]
+    assert parsed["localLabelCount"] == 1
+    assert parsed["statementCount"] == 4
+    assert parsed["directCalls"] == [
+        {"target": "DirectCall", "siteCount": 1},
+        {"target": "OtherCall", "siteCount": 1},
+    ]
+    assert parsed["indirectCallSiteCount"] == 1
+    assert _direct_target("4(a0)") is None
 
 
 def test_kill_exp_has_a_dedicated_narrow_runtime_command() -> None:

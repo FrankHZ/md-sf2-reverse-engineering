@@ -1696,6 +1696,71 @@
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"]
+    },
+    {
+      "id": "battle.ai.filter.attack-spell",
+      "subsystem": "battle.ai.filter",
+      "status": "confirmed",
+      "symbol": "GetNextUsableAttackSpell",
+      "sourcePath": "code/gameflow/battle/ai/getnextuseableaiaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53108 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.attackSpellEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.filter.healing-spell",
+      "subsystem": "battle.ai.filter",
+      "status": "confirmed",
+      "symbol": "GetNextHealingSpell",
+      "sourcePath": "code/gameflow/battle/ai/getnextuseableaiaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53272 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.healingSpellEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.filter.support-spell",
+      "subsystem": "battle.ai.filter",
+      "status": "confirmed",
+      "symbol": "GetNextSupportSpell",
+      "sourcePath": "code/gameflow/battle/ai/getnextuseableaiaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53346 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.supportSpellEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.filter.attack-item",
+      "subsystem": "battle.ai.filter",
+      "status": "confirmed",
+      "symbol": "GetNextUsableAttackItem",
+      "sourcePath": "code/gameflow/battle/ai/getnextuseableaiaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53420 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.attackItemEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.filter.healing-item",
+      "subsystem": "battle.ai.filter",
+      "status": "confirmed",
+      "symbol": "GetNextUsableHealingItem",
+      "sourcePath": "code/gameflow/battle/ai/getnextuseableaiaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53600 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.healingItemEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }
