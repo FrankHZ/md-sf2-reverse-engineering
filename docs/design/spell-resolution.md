@@ -39,8 +39,14 @@ three calls do not receive the promoted-class adjustment, so adjusted power rema
 **Confirmed at the calculation seam:** before the fourth call, the fixture changes the caster class
 to the first promoted class value 12. The original `AdjustSpellPower` multiplies power by 5 and
 shifts right by 2, producing `floor(10 * 5 / 4) = 12`. This owns the class-threshold arithmetic;
-it does not claim a naturally promoted caster performed the complete action. DAO, APOLLO, NEPTUN,
-and ATLAS target-count division remains an H3 expansion gate.
+it does not claim a naturally promoted caster performed the complete BLAZE action.
+
+**Confirmed for DAO 1:** a promoted caster applies the same adjustment first, changing power
+`18 -> floor(18 * 5 / 4) = 22`. Because DAO is one of four hard-coded invocation spell indexes,
+each target calculation then performs unsigned integer division by the current target-list length.
+With four targets, each call changes `22 -> floor(22 / 4) = 5`. The division happens per target but
+does not consume or shrink the list; all four receive base damage 5. APOLLO, NEPTUN, and ATLAS share
+the static branch but do not yet have separate runtime fixtures.
 
 ### 2. Apply the element resistance with integer truncation
 
@@ -96,6 +102,7 @@ after spell-command playback remain a later fixture.
 | Fixture ID | File | Required parity |
 | --- | --- | --- |
 | `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; temporary/restored/persistent HP; caster MP reaction |
+| `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; neutral damage/replay; MP 20→12 |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -110,7 +117,7 @@ expected-deviation fixture.
 
 ## Unknown / Expansion Gates
 
-- **Unknown at runtime:** summon target-count division and a naturally promoted full spell action.
+- **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** attack-spell EXP award and its level-difference/randomization branches.
 - **Unknown:** healing, status resistance/immunity, drain, instant death, breath attacks, and special
   spell-effect dispatch.

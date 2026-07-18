@@ -448,6 +448,29 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.spell-power.adjust",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "AdjustSpellPower",
+      "sourcePath": "code/gameflow/battle/battleactions/calculatespelldamage.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 47958 },
+        { "id": "division-entry", "space": "rom", "kind": "observation", "value": 48032 }
+      ],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+          "bindings": [{ "addressId": "division-entry", "fixtureField": "function.divisionEntryAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-summon-division-v1.json", "fixtureId": "sf2-spell-summon-division-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+          "bindings": [{ "addressId": "division-entry", "fixtureField": "function.divisionEntryAddress" }]
+        }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.turn-order.generate",
       "subsystem": "battle.turn-order",
       "status": "confirmed",

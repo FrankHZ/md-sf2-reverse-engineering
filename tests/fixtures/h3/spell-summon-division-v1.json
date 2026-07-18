@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-spell-summon-division-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled four-target DAO 1 action through promoted spell-power adjustment, invocation target-count division, neutral resistance, noncritical variance, snapshot restoration, and persistent command replay. Runtime addresses and Battle Test choreography are inherited from the named shared harness fixture.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": { "divisionEntryAddress": 48032 },
+  "case": {
+    "id": "promoted-dao1-four-target-division",
+    "actor": 0,
+    "actorClass": 12,
+    "initialMp": 20,
+    "actionType": 1,
+    "actionSpell": 29,
+    "baseSpell": 29,
+    "spellPower": 18,
+    "spellMpCost": 8,
+    "criticalRange": 32,
+    "divideByTargetCount": true,
+    "targets": [
+      { "combatant": 128, "resistanceWord": 0, "setting": 0, "casterClass": 12, "seed": 4660 },
+      { "combatant": 129, "resistanceWord": 0, "setting": 0, "casterClass": 12, "seed": 4660 },
+      { "combatant": 130, "resistanceWord": 0, "setting": 0, "casterClass": 12, "seed": 4660 },
+      { "combatant": 131, "resistanceWord": 0, "setting": 0, "casterClass": 12, "seed": 4660 }
+    ]
+  },
+  "expected": {
+    "construction": {
+      "resistanceCalls": 4,
+      "divisionCalls": 4,
+      "actorMp": 20,
+      "records": [
+        { "combatant": 128, "setting": 0, "casterClass": 12, "preDivisionPower": 22, "adjustedPower": 5, "quarterPower": 1, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
+        { "combatant": 129, "setting": 0, "casterClass": 12, "preDivisionPower": 22, "adjustedPower": 5, "quarterPower": 1, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
+        { "combatant": 130, "setting": 0, "casterClass": 12, "preDivisionPower": 22, "adjustedPower": 5, "quarterPower": 1, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
+        { "combatant": 131, "setting": 0, "casterClass": 12, "preDivisionPower": 22, "adjustedPower": 5, "quarterPower": 1, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 }
+      ]
+    },
+    "replay": {
+      "allyReactions": [{ "combatant": 0, "hpChange": 0, "mpChange": -8, "mpBefore": 20, "mpAfter": 12 }],
+      "enemyReactions": [
+        { "combatant": 128, "hpChange": -5, "hpBefore": 100, "hpAfter": 95 },
+        { "combatant": 129, "hpChange": -5, "hpBefore": 100, "hpAfter": 95 },
+        { "combatant": 130, "hpChange": -5, "hpBefore": 100, "hpAfter": 95 },
+        { "combatant": 131, "hpChange": -5, "hpBefore": 100, "hpAfter": 95 }
+      ],
+      "finalActorMp": 12,
+      "finalTargetHp": [95, 95, 95, 95]
+    }
+  }
+}

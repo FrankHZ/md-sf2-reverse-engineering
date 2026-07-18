@@ -449,6 +449,31 @@ uv run sf2 h3 spell-damage
 The tracked contract is `tests/fixtures/h3/spell-damage-resistance-v1.json`; generated configuration
 and observations remain under ignored `local/derived/h3/`.
 
+## Confirmed: DAO Target-Count Power Division
+
+The companion DAO fixture reuses the same tracked Battle Test choreography and observer but owns a
+separate case/golden. It replaces the scheduled action with DAO 1 (base spell 29), supplies four
+neutral-resistance targets, and keeps the caster at promoted class value 12 for all calls. The
+pinned spell definition supplies power 18 and MP cost 8.
+
+At `AdjustSpellPower`, the original promoted branch executes before the invocation check:
+`floor(18*5/4)=22`. Each of the four calls then reaches `0xBBA0`, reads
+`TARGETS_LIST_LENGTH=4`, and executes `divu`, producing 5. The observer records four division-entry
+hits and four adjusted-power returns of 5. Seed `0x1234` makes each BLAST-family critical roll 29;
+range-1 variance returns zero twice, so each target temporarily reaches 95 HP, restores to 100, and
+then persistently replays to 95. The ally reaction applies DAO's MP cost as `20 -> 12`.
+
+This confirms the exact promoted-before-division order and integer truncation for DAO with four
+targets. APOLLO, NEPTUN, and ATLAS are statically routed through the same branch but remain untested
+at runtime. Reproduce with:
+
+```powershell
+uv run sf2 h3 spell-summon
+```
+
+The case lives in `tests/fixtures/h3/spell-summon-division-v1.json` and explicitly names the shared
+Battle Test fixture from which its unchanged runtime addresses are inherited.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -457,8 +482,8 @@ and observations remain under ignored `local/derived/h3/`.
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
-- Add summon target-count division, a naturally promoted full spell action, attack-spell EXP, and
-  non-damage spell families.
+- Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, attack-spell EXP,
+  and non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

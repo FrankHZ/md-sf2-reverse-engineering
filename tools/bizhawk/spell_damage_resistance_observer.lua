@@ -7,6 +7,7 @@ local action_started = false
 local targets_supplied = false
 local playback = false
 local resistance_calls = 0
+local division_calls = 0
 local records = {}
 local active = nil
 local ally_reactions = {}
@@ -55,20 +56,21 @@ local function write_result_and_exit()
     output:write(string.format(
         '{"system":"%s","core":"Genesis Plus GX","id":"%s","battle":%d,' ..
         '"action":{"type":%d,"spell":%d,"baseSpell":%d,"targetCount":%d},' ..
-        '"construction":{"resistanceCalls":%d,"actorMp":%d,"records":[',
+        '"construction":{"resistanceCalls":%d,"divisionCalls":%d,"actorMp":%d,"records":[',
         emu.getsystemid(), config.case.id,
         memory.read_u8(config.harness.ram.currentBattleAddress, "M68K BUS"),
         memory.read_u16_be(config.ram.currentBattleActionAddress, "M68K BUS"),
         memory.read_u16_be(config.ram.currentBattleActionAddress + 2, "M68K BUS"),
         memory.read_u16_be(config.ram.battleSceneSpellIndexAddress, "M68K BUS"),
-        #records, resistance_calls, construction_actor_mp))
+        #records, resistance_calls, division_calls, construction_actor_mp))
     for index, record in ipairs(records) do
         if index > 1 then output:write(",") end
         output:write(string.format(
-            '{"combatant":%d,"setting":%d,"casterClass":%d,"adjustedPower":%d,"quarterPower":%d,' ..
+            '{"combatant":%d,"setting":%d,"casterClass":%d,"preDivisionPower":%d,"adjustedPower":%d,"quarterPower":%d,' ..
             '"postResistance":%d,"criticalRoll":%d,"criticalFlag":%d,"preVariance":%d,"varianceRange":%d,' ..
             '"varianceRolls":[%d,%d],"finalDamage":%d,"temporaryHp":%d,"restoredHp":%d}',
-            record.combatant, record.setting, record.casterClass, record.adjustedPower, record.quarterPower,
+            record.combatant, record.setting, record.casterClass, record.preDivisionPower,
+            record.adjustedPower, record.quarterPower,
             record.postResistance, record.criticalRoll, record.criticalFlag,
             record.preVariance, record.varianceRange,
             record.varianceRolls[1], record.varianceRolls[2], record.finalDamage,
@@ -195,8 +197,15 @@ end, config["function"].calculateSpellDamageAddress, "sf2-spell-calculate", "M68
 event.on_bus_exec(function()
     if active == nil then return end
     active.adjustedPower = word_register("M68K D6")
+    if active.preDivisionPower == nil then active.preDivisionPower = active.adjustedPower end
     active.quarterPower = active.adjustedPower >> 2
 end, config["function"].adjustedPowerAddress, "sf2-spell-adjusted", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active == nil then return end
+    division_calls = division_calls + 1
+    active.preDivisionPower = word_register("M68K D6")
+end, config["function"].divisionEntryAddress, "sf2-spell-division", "M68K BUS")
 
 event.on_bus_exec(function()
     if active ~= nil then active.postResistance = word_register("M68K D6") end

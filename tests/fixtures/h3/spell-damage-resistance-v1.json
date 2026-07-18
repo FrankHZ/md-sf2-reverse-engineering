@@ -11,6 +11,7 @@
     "getResistanceAddress": 49706,
     "calculateSpellDamageAddress": 47874,
     "adjustedPowerAddress": 47894,
+    "divisionEntryAddress": 48032,
     "postResistanceAddress": 47922,
     "preVarianceAddress": 47942,
     "varianceFirstRollAddress": 44362,
@@ -59,6 +60,7 @@
     "spellPower": 10,
     "spellMpCost": 6,
     "criticalRange": 32,
+    "divideByTargetCount": false,
     "targets": [
       { "combatant": 128, "resistanceWord": 0, "setting": 0, "casterClass": 0, "seed": 4660 },
       { "combatant": 129, "resistanceWord": 64, "setting": 1, "casterClass": 0, "seed": 4660 },
@@ -69,12 +71,13 @@
   "expected": {
     "construction": {
       "resistanceCalls": 4,
+      "divisionCalls": 0,
       "actorMp": 20,
       "records": [
-        { "combatant": 128, "setting": 0, "casterClass": 0, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "temporaryHp": 90, "restoredHp": 100 },
-        { "combatant": 129, "setting": 1, "casterClass": 0, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "temporaryHp": 92, "restoredHp": 100 },
-        { "combatant": 130, "setting": 2, "casterClass": 0, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
-        { "combatant": 131, "setting": 3, "casterClass": 12, "adjustedPower": 12, "quarterPower": 3, "postResistance": 15, "criticalRoll": 0, "criticalFlag": 255, "preVariance": 18, "varianceRange": 3, "varianceRolls": [0, 0], "finalDamage": 18, "temporaryHp": 82, "restoredHp": 100 }
+        { "combatant": 128, "setting": 0, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "temporaryHp": 90, "restoredHp": 100 },
+        { "combatant": 129, "setting": 1, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "temporaryHp": 92, "restoredHp": 100 },
+        { "combatant": 130, "setting": 2, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
+        { "combatant": 131, "setting": 3, "casterClass": 12, "preDivisionPower": 12, "adjustedPower": 12, "quarterPower": 3, "postResistance": 15, "criticalRoll": 0, "criticalFlag": 255, "preVariance": 18, "varianceRange": 3, "varianceRolls": [0, 0], "finalDamage": 18, "temporaryHp": 82, "restoredHp": 100 }
       ]
     },
     "replay": {

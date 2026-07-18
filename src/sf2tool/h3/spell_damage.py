@@ -12,6 +12,8 @@ from sf2tool.paths import repo_path
 FIXTURE = repo_path("tests/fixtures/h3/spell-damage-resistance-v1.json")
 SCHEMA = repo_path("schemas/h3-spell-damage-resistance-fixture.schema.json")
 OBSERVER = repo_path("tools/bizhawk/spell_damage_resistance_observer.lua")
+SUMMON_FIXTURE = repo_path("tests/fixtures/h3/spell-summon-division-v1.json")
+SUMMON_SCHEMA = repo_path("schemas/h3-spell-summon-division-fixture.schema.json")
 
 
 def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
@@ -48,13 +50,45 @@ def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
         raise ValueError("spell-damage arithmetic source contract drifted")
 
 
+def _verify_summon_source_contract(disasm: Path, case: dict[str, Any]) -> None:
+    spell_defs = (disasm / "data/stats/spells/spelldefs.asm").read_text(encoding="utf-8")
+    dao_1 = re.search(
+        r"entry\s+DAO\s*;\s*DAO 1(?P<body>.*?)(?=\n\s*entry\s+)",
+        spell_defs,
+        re.DOTALL,
+    )
+    if not dao_1:
+        raise ValueError("pinned spell definitions do not contain DAO 1")
+    power = re.search(r"^\s*power\s+(\d+)\s*$", dao_1.group("body"), re.MULTILINE)
+    cost = re.search(r"^\s*mpCost\s+(\d+)\s*$", dao_1.group("body"), re.MULTILINE)
+    if not power or int(power.group(1)) != case["spellPower"]:
+        raise ValueError("DAO 1 power disagrees with the fixture")
+    if not cost or int(cost.group(1)) != case["spellMpCost"]:
+        raise ValueError("DAO 1 MP cost disagrees with the fixture")
+    calculation = (
+        disasm / "code/gameflow/battle/battleactions/calculatespelldamage.asm"
+    ).read_text(encoding="utf-8")
+    required_fragments = (
+        "cmpi.w  #SPELL_DAO,d1",
+        "mulu.w  #5,d6",
+        "divu.w  d0,d6",
+    )
+    if any(fragment not in calculation for fragment in required_fragments):
+        raise ValueError("summon spell-power source contract drifted")
+
+
 def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     case = fixture["case"]
     records = []
     for target in case["targets"]:
-        adjusted = case["spellPower"]
+        pre_division = case["spellPower"]
         if target["casterClass"] >= 12:
-            adjusted = (adjusted * 5) >> 2
+            pre_division = (pre_division * 5) >> 2
+        adjusted = (
+            pre_division // len(case["targets"])
+            if case["divideByTargetCount"]
+            else pre_division
+        )
         quarter = adjusted >> 2
         setting = target["setting"]
         if setting == 1:
@@ -77,6 +111,7 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
                 "combatant": target["combatant"],
                 "setting": setting,
                 "casterClass": target["casterClass"],
+                "preDivisionPower": pre_division,
                 "adjustedPower": adjusted,
                 "quarterPower": quarter,
                 "postResistance": post_resistance,
@@ -102,6 +137,9 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     return {
         "construction": {
             "resistanceCalls": len(case["targets"]),
+            "divisionCalls": (
+                len(case["targets"]) if case["divideByTargetCount"] else 0
+            ),
             "actorMp": case["initialMp"],
             "records": records,
         },
@@ -188,6 +226,50 @@ def verify_spell_damage(
             record["finalDamage"]
             for record in fixture["expected"]["construction"]["records"]
         ],
+        "PersistentHp": fixture["expected"]["replay"]["finalTargetHp"],
+        "PersistentMp": fixture["expected"]["replay"]["finalActorMp"],
+        "Status": "PASS",
+    }
+
+
+def verify_spell_summon(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    timeout_seconds: int = 75,
+) -> dict[str, Any]:
+    fixture = load_json(SUMMON_FIXTURE)
+    validate_json(fixture, SUMMON_SCHEMA, owner="summon spell division fixture")
+    verify_runtime_contract(fixture, rom_path)
+    shared = load_json(repo_path(fixture["sharedHarnessFixture"]))
+    disasm = _verify_upstream(upstream_path)
+    _verify_summon_source_contract(disasm, fixture["case"])
+    modeled = _model_expected(fixture)
+    if fixture["expected"] != modeled:
+        raise ValueError("summon spell division golden disagrees with source model")
+
+    observed = run_observer(
+        rom_path=rom_path,
+        observer_path=OBSERVER,
+        config={
+            "function": {**shared["function"], **fixture["function"]},
+            "ram": shared["ram"],
+            "harness": shared["harness"],
+            "case": fixture["case"],
+        },
+        output_name="spell-summon-division",
+        timeout_seconds=timeout_seconds,
+    )
+    _verify_observation(fixture, observed)
+    records = fixture["expected"]["construction"]["records"]
+    return {
+        "Fixture": fixture["id"],
+        "Engine": f"BizHawk {fixture['emulator']['version']} / {fixture['emulator']['core']}",
+        "Battle": fixture["battleId"],
+        "Spell": "DAO 1",
+        "Targets": len(records),
+        "Power": f"{records[0]['preDivisionPower']}->{records[0]['adjustedPower']}",
+        "DivisionCalls": fixture["expected"]["construction"]["divisionCalls"],
         "PersistentHp": fixture["expected"]["replay"]["finalTargetHp"],
         "PersistentMp": fixture["expected"]["replay"]["finalActorMp"],
         "Status": "PASS",

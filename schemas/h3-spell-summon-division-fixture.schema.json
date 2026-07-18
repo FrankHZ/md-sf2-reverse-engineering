@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-summon-division-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "case", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-spell-summon-division-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": { "type": "object", "additionalProperties": false, "required": ["divisionEntryAddress"], "properties": { "divisionEntryAddress": { "const": 48032 } } },
+    "case": { "$ref": "#/definitions/case" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actor", "actorClass", "initialMp", "actionType", "actionSpell", "baseSpell", "spellPower", "spellMpCost", "criticalRange", "divideByTargetCount", "targets"],
+      "properties": {
+        "id": { "const": "promoted-dao1-four-target-division" }, "actor": { "const": 0 }, "actorClass": { "const": 12 }, "initialMp": { "const": 20 },
+        "actionType": { "const": 1 }, "actionSpell": { "const": 29 }, "baseSpell": { "const": 29 }, "spellPower": { "const": 18 }, "spellMpCost": { "const": 8 },
+        "criticalRange": { "const": 32 }, "divideByTargetCount": { "const": true },
+        "targets": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/target" } }
+      }
+    },
+    "target": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "resistanceWord", "setting", "casterClass", "seed"],
+      "properties": { "combatant": { "type": "integer" }, "resistanceWord": { "const": 0 }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "seed": { "const": 4660 } }
+    },
+    "record": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatant", "setting", "casterClass", "preDivisionPower", "adjustedPower", "quarterPower", "postResistance", "criticalRoll", "criticalFlag", "preVariance", "varianceRange", "varianceRolls", "finalDamage", "temporaryHp", "restoredHp"],
+      "properties": {
+        "combatant": { "type": "integer" }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "preDivisionPower": { "const": 22 }, "adjustedPower": { "const": 5 },
+        "quarterPower": { "const": 1 }, "postResistance": { "const": 5 }, "criticalRoll": { "const": 29 }, "criticalFlag": { "const": 0 }, "preVariance": { "const": 5 },
+        "varianceRange": { "const": 1 }, "varianceRolls": { "type": "array", "const": [0, 0] }, "finalDamage": { "const": 5 }, "temporaryHp": { "const": 95 }, "restoredHp": { "const": 100 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["construction", "replay"],
+      "properties": {
+        "construction": { "type": "object", "additionalProperties": false, "required": ["resistanceCalls", "divisionCalls", "actorMp", "records"], "properties": { "resistanceCalls": { "const": 4 }, "divisionCalls": { "const": 4 }, "actorMp": { "const": 20 }, "records": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/record" } } } },
+        "replay": { "type": "object", "additionalProperties": false, "required": ["allyReactions", "enemyReactions", "finalActorMp", "finalTargetHp"], "properties": { "allyReactions": { "type": "array", "minItems": 1 }, "enemyReactions": { "type": "array", "minItems": 4 }, "finalActorMp": { "const": 12 }, "finalTargetHp": { "type": "array", "const": [95, 95, 95, 95] } } }
+      }
+    }
+  }
+}
