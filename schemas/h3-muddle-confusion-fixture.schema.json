@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-muddle-confusion-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-muddle-confusion-truth-table-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": { "type": "object", "additionalProperties": false, "required": ["entryAddress", "counterMaskAddress", "level2MaskAddress", "trueAddress", "returnAddress"], "properties": { "entryAddress": { "const": 50096 }, "counterMaskAddress": { "const": 50106 }, "level2MaskAddress": { "const": 50116 }, "trueAddress": { "const": 50124 }, "returnAddress": { "const": 50140 } } },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["autoBattleToggleAddress"], "properties": { "autoBattleToggleAddress": { "const": 16756907 } } },
+    "cases": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "object", "additionalProperties": false, "required": ["id", "status", "expectedConfused"], "properties": { "id": { "type": "string", "minLength": 1 }, "status": { "type": "integer", "minimum": 0, "maximum": 65535 }, "expectedConfused": { "type": "integer", "minimum": 0, "maximum": 1 } } } }
+  }
+}

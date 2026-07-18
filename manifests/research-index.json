@@ -1234,6 +1234,34 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.ai.muddle-confusion",
+      "subsystem": "battle.ai",
+      "status": "confirmed",
+      "symbol": "IsCombatantConfused",
+      "sourcePath": "code/gameflow/battle/ai/iscombatantconfused.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 50096 },
+        { "id": "counter-mask", "space": "rom", "kind": "observation", "value": 50106 },
+        { "id": "level-2-mask", "space": "rom", "kind": "observation", "value": 50116 },
+        { "id": "true", "space": "rom", "kind": "observation", "value": 50124 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 50140 },
+        { "id": "auto-battle-toggle", "space": "ram", "kind": "state", "value": 16756907, "symbol": "AUTO_BATTLE_TOGGLE" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/muddle-confusion-v1.json", "fixtureId": "sf2-muddle-confusion-truth-table-v1", "verifier": "src/sf2tool/h3/muddle_confusion.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "counter-mask", "fixtureField": "function.counterMaskAddress" },
+          { "addressId": "level-2-mask", "fixtureField": "function.level2MaskAddress" },
+          { "addressId": "true", "fixtureField": "function.trueAddress" },
+          { "addressId": "return", "fixtureField": "function.returnAddress" },
+          { "addressId": "auto-battle-toggle", "fixtureField": "ram.autoBattleToggleAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
       "id": "battle.status.after-turn-expiry",
       "subsystem": "battle.status",
       "status": "confirmed",

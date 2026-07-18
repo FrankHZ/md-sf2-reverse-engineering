@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-muddle-confusion-truth-table-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Four consecutive natural IsCombatantConfused calls during Battle 01 AI control. The observer temporarily supplies no MUDDLE bits, MUDDLE counters only, the level-2 flag only, and their combined state at the function-entry seam, records d1 at the original return, and restores the caller's status after every call.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "entryAddress": 50096,
+    "counterMaskAddress": 50106,
+    "level2MaskAddress": 50116,
+    "trueAddress": 50124,
+    "returnAddress": 50140
+  },
+  "ram": { "autoBattleToggleAddress": 16756907 },
+  "cases": [
+    { "id": "neither", "status": 0, "expectedConfused": 0 },
+    { "id": "counters-only", "status": 48, "expectedConfused": 0 },
+    { "id": "level2-flag-only", "status": 8, "expectedConfused": 0 },
+    { "id": "combined-level2", "status": 56, "expectedConfused": 1 }
+  ]
+}

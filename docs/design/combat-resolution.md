@@ -1,8 +1,8 @@
 # Physical Combat Resolution Contract
 
 - Contract version: `0.1`
-- Scope: normal physical attacks, successful dodge, critical damage, double attack, counterattack,
-  HP reaction replay, kill EXP levels, and Battle 01 EXP award
+- Scope: normal physical attacks, MUDDLE confusion predicate, successful dodge, critical damage,
+  double attack, counterattack, HP reaction replay, kill EXP levels, and Battle 01 EXP award
 - Evidence state: **Confirmed subset**; incomplete systems stay **Unknown** and are not defaulted here
 - Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
 
@@ -51,6 +51,25 @@ roll 0 succeeds. No damage call occurs and both combatants remain at 100 HP.
 The non-dodge chain observes rolls `7/8`, `7/8`, and `31/32` for first, second, and counter attacks.
 This confirms those scenario ranges and that a nonzero roll continues to damage. It does not yet
 define every movement/weapon eligibility branch.
+
+### 1a. Distinguish MUDDLE-controlled turns from level-2 confusion
+
+The packed MUDDLE field has two separate consumers. `ExecuteIndividualTurn` treats any nonzero
+`0x0030` counter field as AI controlled. `IsCombatantConfused`, which feeds side-flipped target
+selection and restricted AI choices, returns one only when both conditions hold:
+
+```text
+confused = (status & 0x0030) != 0 and (status & 0x0008) != 0
+```
+
+The confirmed H3 truth table returns `0,0,0,1` for status words `0x0000`, `0x0030`, `0x0008`, and
+`0x0038`. Thus MUDDLE 1 can hand a force member to AI without making the level-2 confusion
+predicate true; the level-2 flag alone is also insufficient. A remake must not collapse “AI owns
+this turn” and “flip friend/enemy semantics” into one boolean.
+
+This fixture owns the predicate only. Natural side-flipped target enumeration, usable-action
+filtering, protected Bowie/boss targets, self-target inaction, and `BATTLEACTION_MUDDLED` remain
+separate action-selection contracts.
 
 ### 2. Calculate base physical damage with integer arithmetic
 
@@ -289,6 +308,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-gold-boundaries-v1` | `tests/fixtures/h3/gold-boundaries-v1.json` | Ordinary/exact/above-cap addition; 32-bit carry; 9,999,999 cap |
 | `sf2-enemy-item-drop-behavior-v1` | `tests/fixtures/h3/enemy-item-drop-behavior-v1.json` | Rare fail/success; repeated flag; guaranteed transfer; full/dead recipient routing; deals 14/15 saturation |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
+| `sf2-muddle-confusion-truth-table-v1` | `tests/fixtures/h3/muddle-confusion-v1.json` | counters-only, level-2-flag-only, neither, and combined truth table; `0x0038` required for confusion |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
 | `sf2-counter-range-validation-v1` | `tests/fixtures/h3/counter-range-v1.json` | Out-of-range rejection of a forced-valid counter toggle |
@@ -315,7 +335,8 @@ The following remain **Unknown** for a general implementation and block declarin
 complete:
 
 - all dodge eligibility and range-selection branches;
-- natural muddled/same-side and special-enemy action reachability before the confirmed validation seams;
+- natural MUDDLE side-flipped targeting/action selection, same-side reachability, and special-enemy
+  action reachability before the confirmed validation seams;
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;

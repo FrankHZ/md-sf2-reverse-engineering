@@ -904,6 +904,25 @@ Reproduce with `uv run sf2 h3 spell-muddle1`. Tracked artifacts are
 shared `src/sf2tool/h3/spell_muddle.py`. The generic observer now accepts an optional per-target
 initial status; omitted values retain the prior zero-status behavior for SLEEP and MUDDLE 2.
 
+## Confirmed: MUDDLE Confusion Predicate Truth Table
+
+`IsCombatantConfused` at `0xC3B0` is a narrower consumer than the turn-control checks in
+`ExecuteIndividualTurn`. During one Battle 01 auto-battle sequence, the observer intercepts four
+consecutive natural calls, temporarily supplies status words `0x0000`, `0x0030`, `0x0008`, and
+`0x0038`, records `d1` at the original `0xC3DC` return, then restores the caller's status.
+
+Runtime returns `[0,0,0,1]`. The function first masks `0x0030` at `0xC3BA`; only a nonzero counter
+field reaches the separate `0x0008` mask at `0xC3C4`. It writes one at `0xC3CC` only when both are
+present. Consequently MUDDLE 1's counter field is enough to trigger AI ownership elsewhere but is
+not enough to flip sides or enable other level-2 confusion consumers. A stray level-2 bit without
+the counter field is likewise false.
+
+Reproduce with `uv run sf2 h3 muddle-confusion`. Tracked artifacts are
+`tests/fixtures/h3/muddle-confusion-v1.json`,
+`schemas/h3-muddle-confusion-fixture.schema.json`, `src/sf2tool/h3/muddle_confusion.py`, and
+`tools/bizhawk/muddle_confusion_observer.lua`. This fixture stops at the predicate return; natural
+target flipping and muddled battle-action selection remain open.
+
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
 The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy
