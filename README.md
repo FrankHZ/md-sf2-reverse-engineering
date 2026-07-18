@@ -6,7 +6,8 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
-H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算/完整升级、行动顺序、区域激活和物理伤害计算链整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
+职业等级上限与继承法术升级）、行动顺序、区域激活和物理伤害计算链整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗结算与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
@@ -115,7 +116,7 @@ uv run sf2 verify
 ```
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/上限/法术继承边界、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -195,6 +196,9 @@ fixture 覆盖和对现代重制的合同影响。
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在
 `InitializeAllyStats` 和 `LevelUp` 两处被误加 20 effective levels、但本场景无学法术副作用的原版缺陷。
+新增四个自然 `LevelUp` 调用确认 level 30 后改用固定 1.5 基础增益、基础职业 40/转职职业 99
+上限退出，以及 WIZ 的 `level + 20` 阈值和 `$FE` 继承首职业法术表会把 Kazin 的 BLAZE 1
+升级为 BLAZE 3。
 第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
 全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然
 初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo，边界 H3 另确认 AGI 127/128、第二行动、
@@ -232,6 +236,7 @@ reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实�
 
 下一块继续扩展 **Phase 2 的运行时证据**：补齐非 critical 的其他 spread seed、状态/抗性分支、
 后续回合 region 状态与自然 muddle/same-side/special-enemy action reachability。
-同时保留成长 projection/cap/promotion 边界与 `LASER radius = 3` 的显式行为验证队列。
+同时保留升级前一等级、缺失职业块、HEAL 3 特例和当前/最大属性刷新，以及
+`LASER radius = 3` 的显式行为验证队列。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

@@ -386,6 +386,7 @@
       "sourcePath": "code/common/stats/levelup.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 38020 },
+        { "id": "cap-exit", "space": "rom", "kind": "observation", "value": 38086 },
         { "id": "extra-level", "space": "rom", "kind": "observation", "value": 38266 },
         { "id": "spell-scan", "space": "rom", "kind": "observation", "value": 38270 },
         { "id": "return", "space": "rom", "kind": "observation", "value": 38340 },
@@ -393,18 +394,33 @@
         { "id": "level-up-arguments", "space": "ram", "kind": "state", "value": 16756610, "symbol": "LEVELUP_ARGUMENTS" },
         { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/level-up-v1.json", "fixtureId": "sf2-level-up-tort-boundary-v1", "verifier": "src/sf2tool/h3/growth.py",
-        "bindings": [
-          { "addressId": "entry", "fixtureField": "function.levelUpEntryAddress" },
-          { "addressId": "extra-level", "fixtureField": "function.levelUpExtraLevelAddress" },
-          { "addressId": "spell-scan", "fixtureField": "function.levelUpSpellScanAddress" },
-          { "addressId": "return", "fixtureField": "function.levelUpReturnAddress" },
-          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
-          { "addressId": "level-up-arguments", "fixtureField": "ram.levelUpArgumentsAddress" },
-          { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
-        ]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/level-up-v1.json", "fixtureId": "sf2-level-up-tort-boundary-v1", "verifier": "src/sf2tool/h3/growth.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.levelUpEntryAddress" },
+            { "addressId": "extra-level", "fixtureField": "function.levelUpExtraLevelAddress" },
+            { "addressId": "spell-scan", "fixtureField": "function.levelUpSpellScanAddress" },
+            { "addressId": "return", "fixtureField": "function.levelUpReturnAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+            { "addressId": "level-up-arguments", "fixtureField": "ram.levelUpArgumentsAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/level-up-boundaries-v1.json", "fixtureId": "sf2-level-up-boundaries-v1", "verifier": "src/sf2tool/h3/growth.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.entryAddress" },
+            { "addressId": "cap-exit", "fixtureField": "function.capExitAddress" },
+            { "addressId": "extra-level", "fixtureField": "function.extraLevelAddress" },
+            { "addressId": "spell-scan", "fixtureField": "function.spellScanAddress" },
+            { "addressId": "return", "fixtureField": "function.returnAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+            { "addressId": "level-up-arguments", "fixtureField": "ram.levelUpArgumentsAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/ally-growth.md", "docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/level-up.md"]
     },

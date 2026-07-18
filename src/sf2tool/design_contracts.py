@@ -30,6 +30,7 @@ CONTRACTS = {
     "docs/design/level-up.md": {
         "tests/fixtures/h3/stat-gain-v1.json": "sf2-calculate-stat-gain-startup-v1",
         "tests/fixtures/h3/level-up-v1.json": "sf2-level-up-tort-boundary-v1",
+        "tests/fixtures/h3/level-up-boundaries-v1.json": "sf2-level-up-boundaries-v1",
     },
 }
 

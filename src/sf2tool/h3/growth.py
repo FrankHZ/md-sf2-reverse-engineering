@@ -13,8 +13,11 @@ STAT_FIXTURE = repo_path("tests/fixtures/h3/stat-gain-v1.json")
 STAT_SCHEMA = repo_path("schemas/h3-stat-gain-fixture.schema.json")
 LEVEL_FIXTURE = repo_path("tests/fixtures/h3/level-up-v1.json")
 LEVEL_SCHEMA = repo_path("schemas/h3-level-up-fixture.schema.json")
+BOUNDARY_FIXTURE = repo_path("tests/fixtures/h3/level-up-boundaries-v1.json")
+BOUNDARY_SCHEMA = repo_path("schemas/h3-level-up-boundaries-fixture.schema.json")
 STAT_OBSERVER = repo_path("tools/bizhawk/stat_gain_observer.lua")
 LEVEL_OBSERVER = repo_path("tools/bizhawk/level_up_observer.lua")
+BOUNDARY_OBSERVER = repo_path("tools/bizhawk/level_up_boundaries_observer.lua")
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 
 CURVE_NAMES = ("LINEAR", "LATE", "EARLY", "MIDDLE", "EARLYANDLATE")
@@ -65,11 +68,11 @@ def _parse_growth_curves(disasm: Path) -> dict[int, dict[int, tuple[int, int]]]:
 
 def _parse_equates(disasm: Path) -> dict[str, int]:
     text = (disasm / "sf2enums.asm").read_text(encoding="utf-8")
-    pattern = r"^([A-Z0-9_]+):\s+equ\s+(\d+|0x[0-9A-Fa-f]+)"
-    return {
-        name: int(value, 0)
-        for name, value in re.findall(pattern, text, re.MULTILINE)
-    }
+    pattern = r"^([A-Z0-9_]+):\s+equ\s+(\$[0-9A-Fa-f]+|\d+)"
+    result = {}
+    for name, value in re.findall(pattern, text, re.MULTILINE):
+        result[name] = int(value[1:], 16) if value.startswith("$") else int(value)
+    return result
 
 
 def _parse_ally_starts(disasm: Path) -> list[tuple[str, int]]:
@@ -95,9 +98,12 @@ def _parse_stats_block(disasm: Path, ally: int, class_code: str) -> dict[str, An
     marker = re.search(rf"(?:^|:)\s*forClass\s+{re.escape(class_code)}\s*$", text, re.MULTILINE)
     if marker is None:
         raise ValueError(f"missing {class_code} stats block for ally {ally}")
-    following = text[marker.end() :]
-    next_block = re.search(r"(?:^|:)\s*forClass\s+", following, re.MULTILINE)
-    block = following[: next_block.start()] if next_block else following
+    def class_block(source_marker: re.Match[str]) -> str:
+        following = text[source_marker.end() :]
+        next_block = re.search(r"(?:^|:)\s*forClass\s+", following, re.MULTILINE)
+        return following[: next_block.start()] if next_block else following
+
+    block = class_block(marker)
     stats: dict[str, dict[str, Any]] = {}
     for stat, macro in STAT_MACROS.items():
         match = re.search(
@@ -112,10 +118,21 @@ def _parse_stats_block(disasm: Path, ally: int, class_code: str) -> dict[str, An
             "projected": int(match.group(2)),
             "curve": curve,
         }
-    spell_block = block[block.find("spellList") :] if "spellList" in block else ""
-    spell_pattern = r"(\d+)\s*,\s*[A-Z][A-Z0-9_]*(?:\|LV[1-4])?"
-    spells = [int(level) for level in re.findall(spell_pattern, spell_block)]
-    return {"stats": stats, "spellLevels": spells}
+    spell_source = block
+    if "useFirstSpellList" in block:
+        first_marker = re.search(r"(?:^|:)\s*forClass\s+[A-Z0-9_]+\s*$", text, re.MULTILINE)
+        if first_marker is None:
+            raise ValueError(f"missing first spell-list block for ally {ally}")
+        spell_source = class_block(first_marker)
+    spell_block = (
+        spell_source[spell_source.find("spellList") :] if "spellList" in spell_source else ""
+    )
+    spell_pattern = r"(\d+)\s*,\s*([A-Z][A-Z0-9_]*(?:\|LV[1-4])?)"
+    spells = [
+        {"level": int(level), "expression": expression}
+        for level, expression in re.findall(spell_pattern, spell_block)
+    ]
+    return {"stats": stats, "spells": spells}
 
 
 def _rng_step(seed: int, range_: int = 128) -> tuple[int, int]:
@@ -134,10 +151,14 @@ def _calculate_gain(
     second: int,
     curves: dict[int, dict[int, tuple[int, int]]],
 ) -> tuple[int, bool]:
-    total256, gain256 = curves[curve][level + 1]
-    projection = projected - start
-    randomized = (projection * gain256 + first - second + 128) // 256
-    expected_minimum = (projection * total256 + 128) // 256 + start
+    if level >= 30:
+        randomized = (384 + first - second + 128) // 256
+        expected_minimum = projected
+    else:
+        total256, gain256 = curves[curve][level + 1]
+        projection = projected - start
+        randomized = (projection * gain256 + first - second + 128) // 256
+        expected_minimum = (projection * total256 + 128) // 256 + start
     pity = current + randomized < expected_minimum
     return randomized + int(pity), pity
 
@@ -236,7 +257,7 @@ def _model_level_case(
         gains.append(gain)
         after[stat] += gain
     effective_level = 2 + (extra if bug_branch else 0)
-    if effective_level in block["spellLevels"]:
+    if any(spell["level"] == effective_level for spell in block["spells"]):
         raise ValueError(
             f"modeled level-up spell requires an encoded spell assertion: {case['id']}"
         )
@@ -309,19 +330,176 @@ def _verify_level_observation(fixture: dict[str, Any], observed: dict[str, Any])
             raise ValueError(f"level-up runtime mismatch: {expected['id']}")
 
 
+def _encode_spell(expression: str, equates: dict[str, int]) -> int:
+    tokens = expression.split("|")
+    encoded = equates[f"SPELL_{tokens[0]}"]
+    if len(tokens) == 2:
+        encoded |= equates[f"SPELL_{tokens[1]}"]
+    return encoded
+
+
+def _model_boundary_case(
+    case: dict[str, Any],
+    *,
+    disasm: Path,
+    curves: dict[int, dict[int, tuple[int, int]]],
+    equates: dict[str, int],
+    ally_codes: list[str],
+) -> dict[str, Any]:
+    ally = case["ally"]
+    if ally_codes[ally] != case["allyCode"]:
+        raise ValueError(f"level-up boundary ally identity drift: {case['id']}")
+    block = _parse_stats_block(disasm, ally, case["classCode"])
+    class_id = equates[f"CLASS_{case['classCode']}"]
+    values = case["input"]
+    if values["class"] != class_id:
+        raise ValueError(f"level-up boundary class identity drift: {case['id']}")
+    for stat, growth in block["stats"].items():
+        if values[stat] != growth[case["inputBasis"]]:
+            raise ValueError(f"level-up boundary {stat} basis drift: {case['id']}")
+
+    promoted = class_id >= equates["CHAR_CLASS_FIRSTPROMOTED"]
+    cap = equates["CHAR_LEVELCAP_PROMOTED"] if promoted else equates["CHAR_LEVELCAP_BASE"]
+    if values["level"] >= cap:
+        return {
+            "after": values,
+            "capExit": True,
+            "extraLevelBranch": False,
+            "levelBeforeExtra": -1,
+            "effectiveLevel": -1,
+            "expectedSeed": case["seed"],
+            "arguments": [255, 0, 0, 0, 0, 0, 255],
+        }
+
+    after = {
+        **values,
+        "spells": list(values["spells"]),
+        "level": values["level"] + 1,
+    }
+    seed = case["seed"]
+    gains: list[int] = []
+    for stat in STAT_MACROS:
+        growth = block["stats"][stat]
+        if growth["curve"] == 0:
+            gain = 0
+        else:
+            seed, first = _rng_step(seed)
+            seed, second = _rng_step(seed)
+            gain, _ = _calculate_gain(
+                current=values[stat],
+                start=growth["start"],
+                projected=growth["projected"],
+                curve=growth["curve"],
+                level=values["level"],
+                first=first,
+                second=second,
+                curves=curves,
+            )
+        gains.append(gain)
+        after[stat] += gain
+
+    bug_branch = class_id >= equates["CHAR_CLASS_LASTNONPROMOTED"]
+    effective = after["level"] + (
+        equates["CHAR_CLASS_EXTRALEVEL"] if bug_branch else 0
+    )
+    learned = next(
+        (
+            _encode_spell(spell["expression"], equates)
+            for spell in block["spells"]
+            if spell["level"] == effective
+        ),
+        255,
+    )
+    if learned != 255:
+        base_spell = learned & 0x3F
+        slot = next(
+            (
+                index
+                for index, spell in enumerate(after["spells"])
+                if spell != 255 and spell & 0x3F == base_spell
+            ),
+            None,
+        )
+        if slot is None:
+            slot = after["spells"].index(255)
+        after["spells"][slot] = learned
+    return {
+        "after": after,
+        "capExit": False,
+        "extraLevelBranch": bug_branch,
+        "levelBeforeExtra": after["level"] if bug_branch else -1,
+        "effectiveLevel": effective,
+        "expectedSeed": seed,
+        "arguments": [after["level"], *gains, learned],
+    }
+
+
+def _verify_boundary_models(
+    fixture: dict[str, Any], *, disasm: Path, curves: dict[int, dict[int, tuple[int, int]]]
+) -> None:
+    equates = _parse_equates(disasm)
+    ally_codes = _parse_ally_codes(disasm)
+    fields = (
+        "after",
+        "capExit",
+        "extraLevelBranch",
+        "levelBeforeExtra",
+        "effectiveLevel",
+        "expectedSeed",
+        "arguments",
+    )
+    for case in fixture["cases"]:
+        model = _model_boundary_case(
+            case,
+            disasm=disasm,
+            curves=curves,
+            equates=equates,
+            ally_codes=ally_codes,
+        )
+        if any(case[field] != model[field] for field in fields):
+            raise ValueError(f"level-up boundary golden disagrees with source model: {case['id']}")
+
+
+def _verify_boundary_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> None:
+    if observed.get("system") != "GEN" or observed.get("core") != fixture["emulator"]["core"]:
+        raise ValueError("unexpected level-up boundary execution system/core")
+    if len(observed.get("results", [])) != len(fixture["cases"]):
+        raise ValueError("level-up boundary observation count mismatch")
+    for expected, actual in zip(fixture["cases"], observed["results"], strict=True):
+        normalized = {
+            "id": expected["id"],
+            "ally": expected["ally"],
+            "seed": expected["seed"],
+            "before": expected["input"],
+            "after": expected["after"],
+            "capExit": expected["capExit"],
+            "extraLevelBranch": expected["extraLevelBranch"],
+            "levelBeforeExtra": expected["levelBeforeExtra"],
+            "effectiveLevel": expected["effectiveLevel"],
+            "observedSeed": expected["expectedSeed"],
+            "arguments": expected["arguments"],
+        }
+        if actual != normalized:
+            raise ValueError(f"level-up boundary runtime mismatch: {expected['id']}")
+
+
 def verify_growth(
     rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 60
 ) -> dict[str, Any]:
     stat = load_json(STAT_FIXTURE)
     level = load_json(LEVEL_FIXTURE)
+    boundary = load_json(BOUNDARY_FIXTURE)
     validate_json(stat, STAT_SCHEMA, owner=str(STAT_FIXTURE))
     validate_json(level, LEVEL_SCHEMA, owner=str(LEVEL_FIXTURE))
+    validate_json(boundary, BOUNDARY_SCHEMA, owner=str(BOUNDARY_FIXTURE))
     verify_runtime_contract(stat, rom_path)
     verify_runtime_contract(level, rom_path)
+    verify_runtime_contract(boundary, rom_path)
     disasm = _verify_upstream(upstream_path)
     curves = _parse_growth_curves(disasm)
     _verify_stat_models(stat, curves)
     _verify_level_models(level, disasm=disasm, curves=curves)
+    _verify_boundary_models(boundary, disasm=disasm, curves=curves)
 
     stat_observed = run_observer(
         rom_path=rom_path,
@@ -352,11 +530,33 @@ def verify_growth(
         timeout_seconds=timeout_seconds,
     )
     _verify_level_observation(level, level_observed)
+    boundary_observed = run_observer(
+        rom_path=rom_path,
+        observer_path=BOUNDARY_OBSERVER,
+        config={
+            "function": boundary["function"],
+            "ram": boundary["ram"],
+            "cases": [
+                {
+                    "id": case["id"],
+                    "ally": case["ally"],
+                    "seed": case["seed"],
+                    "input": case["input"],
+                }
+                for case in boundary["cases"]
+            ],
+        },
+        output_name="level-up-boundaries",
+        timeout_seconds=timeout_seconds,
+    )
+    _verify_boundary_observation(boundary, boundary_observed)
     return {
         "StatGainFixture": stat["id"],
         "StatGainCases": len(stat["cases"]),
         "LevelUpFixture": level["id"],
         "LevelUpCases": len(level["cases"]),
+        "BoundaryFixture": boundary["id"],
+        "BoundaryCases": len(boundary["cases"]),
         "TortBoundaryConfirmed": True,
         "Engine": f"BizHawk {stat['emulator']['version']} / {stat['emulator']['core']}",
         "Status": "PASS",

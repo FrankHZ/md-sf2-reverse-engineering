@@ -119,6 +119,18 @@ side effect. Its applied gains are HP/MP/ATT/DEF/AGI `[1,0,1,1,1]`, producing pa
 `[2,1,0,1,1,1,255]`. The remake decision boundary is specified in
 [`../design/level-up.md`](../design/level-up.md).
 
+A third growth fixture observes four more natural startup `LevelUp` calls. At entry it controls the
+selected combatant's class, level, base stats, spells, and seed, without changing the PC or CPU
+registers. Its independent model parses the same pinned curves, equates, ally stats blocks, and
+inherited spell lists before BizHawk runs.
+
+Randolf/GLDT confirms the post-projection path: from level 30 and stored projected stats
+`[89,0,53,104,52]`, seed `0x1234` produces gains `[2,0,2,1,2]`, level 31, and final seed `0x621C`.
+Slade/THIF at base level 40 and Chaz/WIZ at promoted level 99 both exit at `0x94C6`, preserve the
+input seed/state, and write the no-level payload `[255,0,0,0,0,0,255]`. Kazin/WIZ confirms the
+promoted effective level 22 and `$FE` inheritance of his first stats block's spell list: BLAZE 1
+(`0x0B`) upgrades to BLAZE 3 (`0x8B`), with payload `[2,2,1,0,1,3,139]`.
+
 ## Confirmed Statically and at Runtime: Turn-Order Score
 
 Inactive or zero-HP combatants are skipped. For each active combatant:
@@ -331,8 +343,8 @@ control-flow contract independently of the earlier non-dodge observations.
 
 ## Unknown / Next Fixtures
 
-- Extend stat-gain runtime coverage through projection level 30, caps, promoted effective levels,
-  and successful learned-spell updates.
+- Extend level-up runtime coverage to the level immediately before each cap, the missing-class-block
+  exit, current/maximum stat refresh, and the HEAL 3/Karna prowess side effect.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

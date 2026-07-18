@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-level-up-boundaries-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-level-up-boundaries-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "type": "string" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "capExitAddress", "extraLevelAddress", "spellScanAddress", "returnAddress"],
+      "properties": {
+        "entryAddress": { "const": 38020 },
+        "capExitAddress": { "const": 38086 },
+        "extraLevelAddress": { "const": 38266 },
+        "spellScanAddress": { "const": 38270 },
+        "returnAddress": { "const": 38340 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "levelUpArgumentsAddress", "seedAddress"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 },
+        "combatantEntrySize": { "const": 56 },
+        "levelUpArgumentsAddress": { "const": 16756610 },
+        "seedAddress": { "const": 16768676 }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "ally", "allyCode", "classCode", "inputBasis", "seed", "input", "after", "capExit", "extraLevelBranch", "levelBeforeExtra", "effectiveLevel", "expectedSeed", "arguments"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+          "ally": { "type": "integer", "minimum": 0, "maximum": 29 },
+          "allyCode": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+          "classCode": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+          "inputBasis": { "enum": ["start", "projected"] },
+          "seed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "input": { "$ref": "#/$defs/stats" },
+          "after": { "$ref": "#/$defs/stats" },
+          "capExit": { "type": "boolean" },
+          "extraLevelBranch": { "type": "boolean" },
+          "levelBeforeExtra": { "type": "integer", "minimum": -1, "maximum": 255 },
+          "effectiveLevel": { "type": "integer", "minimum": -1, "maximum": 255 },
+          "expectedSeed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "arguments": { "type": "array", "minItems": 7, "maxItems": 7, "items": { "type": "integer", "minimum": 0, "maximum": 255 } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "stats": {
+      "type": "object", "additionalProperties": false,
+      "required": ["class", "level", "hp", "mp", "attack", "defense", "agility", "exp", "spells"],
+      "properties": {
+        "class": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "level": { "type": "integer", "minimum": 1, "maximum": 255 },
+        "hp": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "mp": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "attack": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "defense": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "agility": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "exp": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "spells": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0, "maximum": 255 } }
+      }
+    }
+  }
+}

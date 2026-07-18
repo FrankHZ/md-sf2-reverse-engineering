@@ -43,14 +43,16 @@ the pinned source contract. Random variance, expected-minimum rounding, the curv
 minimum-stat pity increment are now covered by controlled H3 observations in
 [`runtime-rng-and-battle-math.md`](./runtime-rng-and-battle-math.md). The complete caller fixture
 additionally confirms first-level stat application, the seven-byte level-up result payload, and both
-TORT effective-level defect sites. Projection-level boundaries, promotion handling, caps, and
-successful spell acquisition still need additional scenarios.
+TORT effective-level defect sites. A second complete-caller fixture confirms level-30
+post-projection growth, base/promoted cap exits, a promoted `level + 20` effective threshold, `$FE`
+spell-list inheritance, and successful BLAZE 1→3 replacement.
 
 The extractor keeps generated names and numeric content under ignored `local/derived/`. Only schemas,
 counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed fixtures to projection-level, promotion, cap, and learned-spell
-boundaries. The existing stat-gain and complete-caller fixtures are the first implementation-neutral
-inputs for a later remake growth module; see [`../design/level-up.md`](../design/level-up.md).
+Extend the committed emulator-backed fixtures to the level immediately before each cap, a missing
+class block, the HEAL 3 prowess side effect, and current/maximum stat refresh behavior. The existing
+stat-gain and complete-caller fixtures are the first implementation-neutral inputs for a later remake
+growth module; see [`../design/level-up.md`](../design/level-up.md).

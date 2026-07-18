@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-level-up-boundaries-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": {
+    "entryAddress": 38020,
+    "capExitAddress": 38086,
+    "extraLevelAddress": 38266,
+    "spellScanAddress": 38270,
+    "returnAddress": 38340
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "levelUpArgumentsAddress": 16756610,
+    "seedAddress": 16768676
+  },
+  "cases": [
+    {
+      "id": "kazin-wiz-inherited-spell", "ally": 4, "allyCode": "KAZIN", "classCode": "WIZ", "inputBasis": "start", "seed": 4660,
+      "input": { "class": 17, "level": 1, "hp": 26, "mp": 40, "attack": 13, "defense": 18, "agility": 29, "exp": 0, "spells": [11, 255, 255, 255] },
+      "after": { "class": 17, "level": 2, "hp": 28, "mp": 41, "attack": 13, "defense": 19, "agility": 32, "exp": 0, "spells": [139, 255, 255, 255] },
+      "capExit": false, "extraLevelBranch": true, "levelBeforeExtra": 2, "effectiveLevel": 22,
+      "expectedSeed": 50398, "arguments": [2, 2, 1, 0, 1, 3, 139]
+    },
+    {
+      "id": "slade-thif-base-cap", "ally": 5, "allyCode": "SLADE", "classCode": "THIF", "inputBasis": "start", "seed": 4660,
+      "input": { "class": 10, "level": 40, "hp": 8, "mp": 0, "attack": 5, "defense": 6, "agility": 6, "exp": 0, "spells": [255, 255, 255, 255] },
+      "after": { "class": 10, "level": 40, "hp": 8, "mp": 0, "attack": 5, "defense": 6, "agility": 6, "exp": 0, "spells": [255, 255, 255, 255] },
+      "capExit": true, "extraLevelBranch": false, "levelBeforeExtra": -1, "effectiveLevel": -1,
+      "expectedSeed": 4660, "arguments": [255, 0, 0, 0, 0, 0, 255]
+    },
+    {
+      "id": "randolf-gldt-post-projection", "ally": 16, "allyCode": "RANDOLF", "classCode": "GLDT", "inputBasis": "projected", "seed": 4660,
+      "input": { "class": 15, "level": 30, "hp": 89, "mp": 0, "attack": 53, "defense": 104, "agility": 52, "exp": 0, "spells": [255, 255, 255, 255] },
+      "after": { "class": 15, "level": 31, "hp": 91, "mp": 0, "attack": 55, "defense": 105, "agility": 54, "exp": 0, "spells": [255, 255, 255, 255] },
+      "capExit": false, "extraLevelBranch": true, "levelBeforeExtra": 31, "effectiveLevel": 51,
+      "expectedSeed": 25116, "arguments": [31, 2, 0, 2, 1, 2, 255]
+    },
+    {
+      "id": "chaz-wiz-promoted-cap", "ally": 27, "allyCode": "CHAZ", "classCode": "WIZ", "inputBasis": "projected", "seed": 4660,
+      "input": { "class": 17, "level": 99, "hp": 83, "mp": 88, "attack": 29, "defense": 61, "agility": 58, "exp": 0, "spells": [255, 255, 255, 255] },
+      "after": { "class": 17, "level": 99, "hp": 83, "mp": 88, "attack": 29, "defense": 61, "agility": 58, "exp": 0, "spells": [255, 255, 255, 255] },
+      "capExit": true, "extraLevelBranch": false, "levelBeforeExtra": -1, "effectiveLevel": -1,
+      "expectedSeed": 4660, "arguments": [255, 0, 0, 0, 0, 0, 255]
+    }
+  ]
+}
