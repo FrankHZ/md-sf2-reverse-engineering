@@ -172,7 +172,8 @@
         { "id": "variance-second", "space": "rom", "kind": "observation", "value": 44370 },
         { "id": "damage-exp-return", "space": "rom", "kind": "observation", "value": 44382 },
         { "id": "hp-apply", "space": "rom", "kind": "observation", "value": 44414 },
-        { "id": "observe", "space": "rom", "kind": "observation", "value": 44434 }
+        { "id": "observe", "space": "rom", "kind": "observation", "value": 44434 },
+        { "id": "battle-scene-exp", "space": "ram", "kind": "state", "value": 16758316, "symbol": "BATTLESCENE_EXP" }
       ],
       "evidence": [
         {
@@ -186,10 +187,17 @@
             { "addressId": "observe", "fixtureField": "function.observeAddress" }
           ]
         },
-        { "level": "H3", "fixture": "tests/fixtures/h3/attack-chain-v1.json", "fixtureId": "sf2-attack-chain-double-counter-v1", "verifier": "scripts/Test-H3AttackChainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.inflictDamageEntryAddress" }] }
+        { "level": "H3", "fixture": "tests/fixtures/h3/attack-chain-v1.json", "fixtureId": "sf2-attack-chain-double-counter-v1", "verifier": "scripts/Test-H3AttackChainFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.inflictDamageEntryAddress" }] },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+          "bindings": [
+            { "addressId": "damage-exp-return", "fixtureField": "function.damageExpAppliedAddress" },
+            { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
+          ]
+        }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/combat-resolution.md"]
+      "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.followup.validate-counter",
@@ -345,10 +353,17 @@
             { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" },
             { "addressId": "return", "fixtureField": "function.giveExpReturnAddress" }
           ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" },
+            { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" }
+          ]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/combat-resolution.md"]
+      "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.replay.give-exp-and-gold",
@@ -376,10 +391,19 @@
         {
           "level": "H3", "fixture": "tests/fixtures/h3/battle-exp-level-up-v1.json", "fixtureId": "sf2-battle-exp-level-up-v1", "verifier": "src/sf2tool/h3/battle_exp.py",
           "bindings": [{ "addressId": "exp-halved", "fixtureField": "function.expRandomizationAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+          "bindings": [
+            { "addressId": "exp-halved", "fixtureField": "function.expHalvedAddress" },
+            { "addressId": "exp-first-roll", "fixtureField": "function.expFirstRollAddress" },
+            { "addressId": "exp-second-roll", "fixtureField": "function.expSecondRollAddress" },
+            { "addressId": "exp-final", "fixtureField": "function.expFinalAddress" }
+          ]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/combat-resolution.md"]
+      "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.spell-resistance.lookup",

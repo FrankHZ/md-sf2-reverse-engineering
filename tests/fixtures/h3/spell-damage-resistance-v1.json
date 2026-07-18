@@ -4,7 +4,7 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "One Battle 01 BLAZE 2 action through original target resistance lookup, spell-power adjustment, critical roll, variance, temporary HP application, snapshot restoration, and command replay to persistent target HP and caster MP. The harness supplies a four-target list and one resistance setting per target at the pre-initialization seam.",
+  "observationBoundary": "One Battle 01 BLAZE 2 action through original target resistance lookup, spell-power adjustment, critical roll, variance, damage EXP accumulation and Battle 01 award randomization, temporary HP application, snapshot restoration, and command replay to persistent target HP, caster MP, and actor EXP. The harness supplies a four-target list and one resistance setting per target at the pre-initialization seam.",
   "function": {
     "writeBattleSceneScriptAddress": 39826,
     "initializePropertiesAddress": 40744,
@@ -16,13 +16,20 @@
     "preVarianceAddress": 47942,
     "varianceFirstRollAddress": 44362,
     "varianceSecondRollAddress": 44370,
+    "damageExpAppliedAddress": 44382,
     "damageAppliedAddress": 44434,
     "battleSceneEndReturnAddress": 40398,
     "allyReactionEntryAddress": 101822,
     "allyReactionAppliedAddress": 101884,
     "enemyReactionEntryAddress": 102222,
     "enemyReactionAppliedAddress": 102270,
-    "executeScriptEndAddress": 99306
+    "executeScriptEndAddress": 99306,
+    "expHalvedAddress": 43038,
+    "expFirstRollAddress": 43046,
+    "expSecondRollAddress": 43060,
+    "expFinalAddress": 43072,
+    "giveExpEntryAddress": 102620,
+    "giveExpAppliedAddress": 102648
   },
   "ram": {
     "combatantDataAddress": 16771072,
@@ -33,6 +40,7 @@
     "targetsListAddress": 16758354,
     "battleSceneAllyAddress": 16757716,
     "battleSceneEnemyAddress": 16757710,
+    "battleSceneExpAddress": 16758316,
     "seedAddress": 16768676
   },
   "harness": {
@@ -54,6 +62,7 @@
     "actor": 0,
     "actorClass": 0,
     "initialMp": 20,
+    "actorInitialExp": 0,
     "actionType": 1,
     "actionSpell": 75,
     "baseSpell": 11,
@@ -74,11 +83,12 @@
       "divisionCalls": 0,
       "actorMp": 20,
       "records": [
-        { "combatant": 128, "setting": 0, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "temporaryHp": 90, "restoredHp": 100 },
-        { "combatant": 129, "setting": 1, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "temporaryHp": 92, "restoredHp": 100 },
-        { "combatant": 130, "setting": 2, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
-        { "combatant": 131, "setting": 3, "casterClass": 12, "preDivisionPower": 12, "adjustedPower": 12, "quarterPower": 3, "postResistance": 15, "criticalRoll": 0, "criticalFlag": 255, "preVariance": 18, "varianceRange": 3, "varianceRolls": [0, 0], "finalDamage": 18, "temporaryHp": 82, "restoredHp": 100 }
-      ]
+        { "combatant": 128, "setting": 0, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "accumulatedExp": 5, "temporaryHp": 90, "restoredHp": 100 },
+        { "combatant": 129, "setting": 1, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "accumulatedExp": 9, "temporaryHp": 92, "restoredHp": 100 },
+        { "combatant": 130, "setting": 2, "casterClass": 0, "preDivisionPower": 10, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "criticalFlag": 0, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "accumulatedExp": 11, "temporaryHp": 95, "restoredHp": 100 },
+        { "combatant": 131, "setting": 3, "casterClass": 12, "preDivisionPower": 12, "adjustedPower": 12, "quarterPower": 3, "postResistance": 15, "criticalRoll": 0, "criticalFlag": 255, "preVariance": 18, "varianceRange": 3, "varianceRolls": [0, 0], "finalDamage": 18, "accumulatedExp": 11, "temporaryHp": 82, "restoredHp": 100 }
+      ],
+      "award": { "accumulatedExp": 11, "seed": 1281, "halved": 5, "firstRoll": 4, "secondRoll": 4, "commandExp": 5 }
     },
     "replay": {
       "allyReactions": [{ "combatant": 0, "hpChange": 0, "mpChange": -6, "mpBefore": 20, "mpAfter": 14 }],
@@ -89,6 +99,8 @@
         { "combatant": 131, "hpChange": -18, "hpBefore": 100, "hpAfter": 82 }
       ],
       "finalActorMp": 14,
+      "expReaction": { "commandExp": 5, "expBefore": 0, "expAfter": 5 },
+      "finalActorExp": 5,
       "finalTargetHp": [90, 92, 95, 82]
     }
   }

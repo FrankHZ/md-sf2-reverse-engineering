@@ -19,9 +19,9 @@
   "definitions": {
     "case": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "actor", "actorClass", "initialMp", "actionType", "actionSpell", "baseSpell", "spellPower", "spellMpCost", "criticalRange", "divideByTargetCount", "targets"],
+      "required": ["id", "actor", "actorClass", "initialMp", "actorInitialExp", "actionType", "actionSpell", "baseSpell", "spellPower", "spellMpCost", "criticalRange", "divideByTargetCount", "targets"],
       "properties": {
-        "id": { "const": "promoted-dao1-four-target-division" }, "actor": { "const": 0 }, "actorClass": { "const": 12 }, "initialMp": { "const": 20 },
+        "id": { "const": "promoted-dao1-four-target-division" }, "actor": { "const": 0 }, "actorClass": { "const": 12 }, "initialMp": { "const": 20 }, "actorInitialExp": { "const": 0 },
         "actionType": { "const": 1 }, "actionSpell": { "const": 29 }, "baseSpell": { "const": 29 }, "spellPower": { "const": 18 }, "spellMpCost": { "const": 8 },
         "criticalRange": { "const": 32 }, "divideByTargetCount": { "const": true },
         "targets": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/target" } }
@@ -33,19 +33,29 @@
     },
     "record": {
       "type": "object", "additionalProperties": false,
-      "required": ["combatant", "setting", "casterClass", "preDivisionPower", "adjustedPower", "quarterPower", "postResistance", "criticalRoll", "criticalFlag", "preVariance", "varianceRange", "varianceRolls", "finalDamage", "temporaryHp", "restoredHp"],
+      "required": ["combatant", "setting", "casterClass", "preDivisionPower", "adjustedPower", "quarterPower", "postResistance", "criticalRoll", "criticalFlag", "preVariance", "varianceRange", "varianceRolls", "finalDamage", "accumulatedExp", "temporaryHp", "restoredHp"],
       "properties": {
         "combatant": { "type": "integer" }, "setting": { "const": 0 }, "casterClass": { "const": 12 }, "preDivisionPower": { "const": 22 }, "adjustedPower": { "const": 5 },
         "quarterPower": { "const": 1 }, "postResistance": { "const": 5 }, "criticalRoll": { "const": 29 }, "criticalFlag": { "const": 0 }, "preVariance": { "const": 5 },
-        "varianceRange": { "const": 1 }, "varianceRolls": { "type": "array", "const": [0, 0] }, "finalDamage": { "const": 5 }, "temporaryHp": { "const": 95 }, "restoredHp": { "const": 100 }
+        "varianceRange": { "const": 1 }, "varianceRolls": { "type": "array", "const": [0, 0] }, "finalDamage": { "const": 5 }, "accumulatedExp": { "const": 0 }, "temporaryHp": { "const": 95 }, "restoredHp": { "const": 100 }
       }
     },
     "expected": {
       "type": "object", "additionalProperties": false, "required": ["construction", "replay"],
       "properties": {
-        "construction": { "type": "object", "additionalProperties": false, "required": ["resistanceCalls", "divisionCalls", "actorMp", "records"], "properties": { "resistanceCalls": { "const": 4 }, "divisionCalls": { "const": 4 }, "actorMp": { "const": 20 }, "records": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/record" } } } },
-        "replay": { "type": "object", "additionalProperties": false, "required": ["allyReactions", "enemyReactions", "finalActorMp", "finalTargetHp"], "properties": { "allyReactions": { "type": "array", "minItems": 1 }, "enemyReactions": { "type": "array", "minItems": 4 }, "finalActorMp": { "const": 12 }, "finalTargetHp": { "type": "array", "const": [95, 95, 95, 95] } } }
+        "construction": { "type": "object", "additionalProperties": false, "required": ["resistanceCalls", "divisionCalls", "actorMp", "records", "award"], "properties": { "resistanceCalls": { "const": 4 }, "divisionCalls": { "const": 4 }, "actorMp": { "const": 20 }, "records": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/record" } }, "award": { "$ref": "#/definitions/award" } } },
+        "replay": { "type": "object", "additionalProperties": false, "required": ["allyReactions", "enemyReactions", "finalActorMp", "expReaction", "finalActorExp", "finalTargetHp"], "properties": { "allyReactions": { "type": "array", "minItems": 1 }, "enemyReactions": { "type": "array", "minItems": 4 }, "finalActorMp": { "const": 12 }, "expReaction": { "$ref": "#/definitions/expReaction" }, "finalActorExp": { "const": 1 }, "finalTargetHp": { "type": "array", "const": [95, 95, 95, 95] } } }
       }
+    },
+    "award": {
+      "type": "object", "additionalProperties": false,
+      "required": ["accumulatedExp", "seed", "halved", "firstRoll", "secondRoll", "commandExp"],
+      "properties": { "accumulatedExp": { "const": 0 }, "seed": { "const": 15685 }, "halved": { "const": 0 }, "firstRoll": { "const": 1 }, "secondRoll": { "const": 7 }, "commandExp": { "const": 1 } }
+    },
+    "expReaction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commandExp", "expBefore", "expAfter"],
+      "properties": { "commandExp": { "const": 1 }, "expBefore": { "const": 0 }, "expAfter": { "const": 1 } }
     }
   }
 }

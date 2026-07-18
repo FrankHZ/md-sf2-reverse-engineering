@@ -438,6 +438,15 @@ MP -6)` command first and changes Bowie's MP `20 -> 14`. Four ordered
 HP `[90,92,95,82]`. The final snapshot is delayed until `ExecuteBattlesceneScript` reaches its end
 marker at `0x183EA`, so it is distinct from both temporary calculation and restoration state.
 
+The same original action also confirms attack-spell EXP rather than stopping at damage. With every
+combatant fixed at level 1 and target max HP 100, `battlesceneScript_CalculateDamageExp` scales the
+unpromoted kill value 50 by final damage. The first three calls add `[5,4,2]`, moving
+`BATTLESCENE_EXP` through `[5,9,11]`. The controlled promoted fourth call has effective level 21
+against level 1, so its kill value is zero and the accumulator remains 11. At
+`battlesceneScript_GiveExpAndGold`, Battle 01 halves this to 5. The remaining seed `0x0501` produces
+range-16 rolls 4 and 4, so neither random adjustment fires and the command carries 5 EXP.
+`bsc0F_giveExp` persistently changes Bowie EXP `0 -> 5`.
+
 The Python verifier independently checks the pinned BLAZE 2 power/cost, FIRE element, resistance
 arithmetic, LCG calls, spread, temporary HP, and restored HP before launching BizHawk. Reproduce the
 single-boot matrix with:
@@ -463,6 +472,12 @@ hits and four adjusted-power returns of 5. Seed `0x1234` makes each BLAST-family
 range-1 variance returns zero twice, so each target temporarily reaches 95 HP, restores to 100, and
 then persistently replays to 95. The ally reaction applies DAO's MP cost as `20 -> 12`.
 
+All four DAO damage-EXP calls see promoted effective level 21 against level 1 and leave the action
+accumulator at zero. Its final damage seed `0x3D45` produces award rolls 1 and 7; after Battle 01
+halving and unchanged randomization, the original minimum clamps the command to 1. Playback changes
+Bowie EXP `0 -> 1`. This independently covers the zero-accumulator/minimum-one boundary in the same
+shared observer boot.
+
 This confirms the exact promoted-before-division order and integer truncation for DAO with four
 targets. APOLLO, NEPTUN, and ATLAS are statically routed through the same branch but remain untested
 at runtime. Reproduce with:
@@ -482,8 +497,8 @@ Battle Test fixture from which its unchanged runtime addresses are inherited.
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
-- Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, attack-spell EXP,
-  and non-damage spell families.
+- Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
+  attack-spell EXP level/randomization/cap branches, and non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

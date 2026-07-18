@@ -80,6 +80,8 @@ def _verify_summon_source_contract(disasm: Path, case: dict[str, Any]) -> None:
 def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     case = fixture["case"]
     records = []
+    accumulated_exp = 0
+    final_seed = 0
     for target in case["targets"]:
         pre_division = case["spellPower"]
         if target["casterClass"] >= 12:
@@ -104,8 +106,18 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
         pre_variance = post_resistance + (quarter if critical_roll == 0 else 0)
         variance_range = (pre_variance >> 3) + 1
         seed, first = _rng_step(seed, variance_range)
-        _, second = _rng_step(seed, variance_range)
+        seed, second = _rng_step(seed, variance_range)
+        final_seed = seed
         final_damage = max(pre_variance - first - second, 1)
+        effective_actor_level = 1 + (20 if target["casterClass"] >= 12 else 0)
+        level_difference = effective_actor_level - 1
+        kill_exp = {3: 40, 4: 30, 5: 20, 6: 10}.get(
+            level_difference, 50 if level_difference < 3 else 0
+        )
+        accumulated_exp = min(
+            accumulated_exp + (kill_exp * final_damage) // 100,
+            49,
+        )
         records.append(
             {
                 "combatant": target["combatant"],
@@ -121,10 +133,18 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
                 "varianceRange": variance_range,
                 "varianceRolls": [first, second],
                 "finalDamage": final_damage,
+                "accumulatedExp": accumulated_exp,
                 "temporaryHp": 100 - final_damage,
                 "restoredHp": 100,
             }
         )
+    award_seed = final_seed
+    halved = accumulated_exp // 2 if fixture["battleId"] == 1 else accumulated_exp
+    seed, first_award_roll = _rng_step(final_seed, 16)
+    randomized = halved + int(first_award_roll == 0)
+    _, second_award_roll = _rng_step(seed, 16)
+    randomized -= int(second_award_roll == 0)
+    command_exp = max(randomized, 1)
     enemy_reactions = [
         {
             "combatant": record["combatant"],
@@ -142,6 +162,14 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             ),
             "actorMp": case["initialMp"],
             "records": records,
+            "award": {
+                "accumulatedExp": accumulated_exp,
+                "seed": award_seed,
+                "halved": halved,
+                "firstRoll": first_award_roll,
+                "secondRoll": second_award_roll,
+                "commandExp": command_exp,
+            },
         },
         "replay": {
             "allyReactions": [
@@ -155,6 +183,12 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             ],
             "enemyReactions": enemy_reactions,
             "finalActorMp": case["initialMp"] - case["spellMpCost"],
+            "expReaction": {
+                "commandExp": command_exp,
+                "expBefore": case["actorInitialExp"],
+                "expAfter": case["actorInitialExp"] + command_exp,
+            },
+            "finalActorExp": case["actorInitialExp"] + command_exp,
             "finalTargetHp": [reaction["hpAfter"] for reaction in enemy_reactions],
         },
     }
@@ -228,6 +262,11 @@ def verify_spell_damage(
         ],
         "PersistentHp": fixture["expected"]["replay"]["finalTargetHp"],
         "PersistentMp": fixture["expected"]["replay"]["finalActorMp"],
+        "AccumulatedExp": fixture["expected"]["construction"]["award"][
+            "accumulatedExp"
+        ],
+        "CommandExp": fixture["expected"]["construction"]["award"]["commandExp"],
+        "PersistentExp": fixture["expected"]["replay"]["finalActorExp"],
         "Status": "PASS",
     }
 
@@ -272,5 +311,10 @@ def verify_spell_summon(
         "DivisionCalls": fixture["expected"]["construction"]["divisionCalls"],
         "PersistentHp": fixture["expected"]["replay"]["finalTargetHp"],
         "PersistentMp": fixture["expected"]["replay"]["finalActorMp"],
+        "AccumulatedExp": fixture["expected"]["construction"]["award"][
+            "accumulatedExp"
+        ],
+        "CommandExp": fixture["expected"]["construction"]["award"]["commandExp"],
+        "PersistentExp": fixture["expected"]["replay"]["finalActorExp"],
         "Status": "PASS",
     }

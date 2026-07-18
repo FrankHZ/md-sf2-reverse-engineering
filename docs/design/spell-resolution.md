@@ -2,13 +2,14 @@
 
 - Contract version: `0.1`
 - Scope: attack-spell element lookup, damage resistance, spell critical, shared downward variance,
-  temporary HP application, and scene-construction restoration
+  damage-EXP accumulation/award, temporary state, and persistent command replay
 - Evidence state: **Confirmed subset**; unsupported spell families remain **Unknown**
 - Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
-layer. It currently owns one BLAZE 2 matrix. It must not be generalized to healing, drain, status,
-instant-death, breath, or summon behavior until those paths have their own H3 evidence.
+layer. It currently owns one BLAZE 2 resistance matrix and one four-target DAO 1 division case. It
+must not be generalized to healing, drain, status, instant-death, breath, or other summon cases
+until those paths have their own H3 evidence.
 
 ## Required Inputs
 
@@ -82,7 +83,29 @@ damage = max(damage - rng.next(range) - rng.next(range), 1)
 The controlled seeds produce two zero rolls for each matrix member. Observed ranges are
 `2, 2, 1, 3`, and final damages therefore remain `10, 8, 5, 18`.
 
-### 5. Restore snapshots, then replay HP and MP reactions
+### 5. Accumulate and award attack-spell EXP
+
+For every damage target, the original computes a kill-value bracket from the caster's effective
+level and target level, scales it by `finalDamage / targetMaxHp` with integer truncation, and adds
+the result to the action accumulator with a cap of 49. Promoted caster classes add 20 only for this
+effective-level comparison.
+
+In the controlled BLAZE case, all combatants are level 1 and each target has max HP 100. The first
+three unpromoted damage results add `floor(50 * damage / 100) = 5, 4, 2`, so the accumulator moves
+`0 -> 5 -> 9 -> 11`. The fourth call uses promoted class 12: effective level 21 versus target level
+1 is outside the rewarded brackets, so its 18 damage adds zero and the accumulator remains 11.
+
+Battle 01 then halves the accumulated value with integer truncation, `11 -> 5`. Two range-16 RNG
+rolls are 4 and 4; because only a zero first roll adds one and only a zero second roll subtracts one,
+the emitted EXP command remains 5. The command replay changes Bowie EXP `0 -> 5`.
+
+The promoted DAO case confirms the zero/minimum boundary. Effective level 21 versus four level-1
+targets contributes zero after every hit. Battle 01 therefore enters award processing with zero;
+range-16 rolls 1 and 7 do not change it, and the final minimum emits a one-EXP command. Replay
+changes Bowie EXP `0 -> 1`. These cases do not yet cover other level-difference brackets, either
+zero-roll adjustment, or the action cap.
+
+### 6. Restore snapshots, then replay HP and MP reactions
 
 The original temporarily changes four 100-HP targets to `90, 92, 95, 82` while constructing the
 battle scene, appends reactions, and restores all four snapshots to 100 before returning from scene
@@ -94,15 +117,15 @@ target HP becomes `90, 92, 95, 82`. The final snapshot is taken only after
 `ExecuteBattlesceneScript` reads the command-list end marker.
 
 A remake does not need to duplicate the original command-buffer internals, but it must expose an
-equivalent ordered trace and avoid treating snapshot restoration as healing. Persistent HP and MP
-after spell-command playback remain a later fixture.
+equivalent ordered trace and avoid treating snapshot restoration as healing. The same replay also
+applies the EXP command after the damage and MP reactions.
 
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
 | --- | --- | --- |
-| `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; temporary/restored/persistent HP; caster MP reaction |
-| `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; neutral damage/replay; MP 20→12 |
+| `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; per-target and awarded EXP; temporary/restored/persistent HP; MP/EXP replay |
+| `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -118,7 +141,8 @@ expected-deviation fixture.
 ## Unknown / Expansion Gates
 
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
-- **Unknown:** attack-spell EXP award and its level-difference/randomization branches.
+- **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
+  kill bonus, and non-Battle-01 award behavior.
 - **Unknown:** healing, status resistance/immunity, drain, instant death, breath attacks, and special
   spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the

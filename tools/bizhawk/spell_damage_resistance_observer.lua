@@ -15,6 +15,8 @@ local enemy_reactions = {}
 local active_ally_reaction = nil
 local active_enemy_reaction = nil
 local construction_actor_mp = nil
+local award = nil
+local exp_reaction = nil
 local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C" }
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
 
@@ -68,15 +70,19 @@ local function write_result_and_exit()
         output:write(string.format(
             '{"combatant":%d,"setting":%d,"casterClass":%d,"preDivisionPower":%d,"adjustedPower":%d,"quarterPower":%d,' ..
             '"postResistance":%d,"criticalRoll":%d,"criticalFlag":%d,"preVariance":%d,"varianceRange":%d,' ..
-            '"varianceRolls":[%d,%d],"finalDamage":%d,"temporaryHp":%d,"restoredHp":%d}',
+            '"varianceRolls":[%d,%d],"finalDamage":%d,"accumulatedExp":%d,"temporaryHp":%d,"restoredHp":%d}',
             record.combatant, record.setting, record.casterClass, record.preDivisionPower,
             record.adjustedPower, record.quarterPower,
             record.postResistance, record.criticalRoll, record.criticalFlag,
             record.preVariance, record.varianceRange,
             record.varianceRolls[1], record.varianceRolls[2], record.finalDamage,
-            record.temporaryHp, record.restoredHp))
+            record.accumulatedExp, record.temporaryHp, record.restoredHp))
     end
-    output:write(']},"replay":{"allyReactions":[')
+    output:write(string.format(
+        '],"award":{"accumulatedExp":%d,"seed":%d,"halved":%d,"firstRoll":%d,' ..
+        '"secondRoll":%d,"commandExp":%d}},"replay":{"allyReactions":[',
+        award.accumulatedExp, award.seed, award.halved, award.firstRoll,
+        award.secondRoll, award.commandExp))
     for index, reaction in ipairs(ally_reactions) do
         if index > 1 then output:write(",") end
         output:write(string.format(
@@ -91,8 +97,12 @@ local function write_result_and_exit()
             '{"combatant":%d,"hpChange":%d,"hpBefore":%d,"hpAfter":%d}',
             reaction.combatant, reaction.hpChange, reaction.hpBefore, reaction.hpAfter))
     end
-    output:write(string.format('],"finalActorMp":%d,"finalTargetHp":[',
-        memory.read_u8(entry(config.case.actor) + 17, "M68K BUS")))
+    output:write(string.format(
+        '],"finalActorMp":%d,"expReaction":{"commandExp":%d,"expBefore":%d,"expAfter":%d},' ..
+        '"finalActorExp":%d,"finalTargetHp":[',
+        memory.read_u8(entry(config.case.actor) + 17, "M68K BUS"),
+        exp_reaction.commandExp, exp_reaction.expBefore, exp_reaction.expAfter,
+        memory.read_u8(entry(config.case.actor) + 48, "M68K BUS")))
     for index, target in ipairs(config.case.targets) do
         if index > 1 then output:write(",") end
         output:write(tostring(memory.read_u16_be(entry(target.combatant) + 14, "M68K BUS")))
@@ -123,6 +133,7 @@ event.on_bus_exec(function()
     stage = "battle"
     local actor = entry(config.case.actor)
     memory.write_u8(actor + 10, config.case.actorClass, "M68K BUS")
+    memory.write_u8(actor + 11, 1, "M68K BUS")
     memory.write_u16_be(actor + 12, 100, "M68K BUS")
     memory.write_u16_be(actor + 14, 100, "M68K BUS")
     memory.write_u8(actor + 16, config.case.initialMp, "M68K BUS")
@@ -134,6 +145,7 @@ event.on_bus_exec(function()
     memory.write_u16_be(actor + 38, 0x007F, "M68K BUS")
     memory.write_u8(actor + 23, 99, "M68K BUS")
     memory.write_u8(actor + 49, 0x80, "M68K BUS")
+    memory.write_u8(actor + 48, config.case.actorInitialExp, "M68K BUS")
     memory.write_u16_be(actor + 52, 4, "M68K BUS")
     for _, target in ipairs(config.case.targets) do
         local address = entry(target.combatant)
@@ -229,6 +241,12 @@ event.on_bus_exec(function()
 end, config["function"].varianceSecondRollAddress, "sf2-spell-variance-2", "M68K BUS")
 
 event.on_bus_exec(function()
+    if active ~= nil then
+        active.accumulatedExp = memory.read_u16_be(config.ram.battleSceneExpAddress, "M68K BUS")
+    end
+end, config["function"].damageExpAppliedAddress, "sf2-spell-damage-exp", "M68K BUS")
+
+event.on_bus_exec(function()
     if active == nil then return end
     active.finalDamage = word_register("M68K D6")
     active.temporaryHp = memory.read_u16_be(entry(active.combatant) + 14, "M68K BUS")
@@ -286,7 +304,44 @@ event.on_bus_exec(function()
 end, config["function"].enemyReactionAppliedAddress, "sf2-spell-enemy-applied", "M68K BUS")
 
 event.on_bus_exec(function()
-    if playback and #ally_reactions == 1 and #enemy_reactions == #config.case.targets then
+    if not action_started then return end
+    award = {
+        accumulatedExp = memory.read_u16_be(config.ram.battleSceneExpAddress, "M68K BUS"),
+        seed = memory.read_u16_be(config.ram.seedAddress, "M68K BUS"),
+        halved = word_register("M68K D1")
+    }
+end, config["function"].expHalvedAddress, "sf2-spell-exp-halved", "M68K BUS")
+
+event.on_bus_exec(function()
+    if award ~= nil then award.firstRoll = word_register("M68K D0") end
+end, config["function"].expFirstRollAddress, "sf2-spell-exp-first", "M68K BUS")
+
+event.on_bus_exec(function()
+    if award ~= nil then award.secondRoll = word_register("M68K D0") end
+end, config["function"].expSecondRollAddress, "sf2-spell-exp-second", "M68K BUS")
+
+event.on_bus_exec(function()
+    if award ~= nil then award.commandExp = word_register("M68K D1") end
+end, config["function"].expFinalAddress, "sf2-spell-exp-final", "M68K BUS")
+
+event.on_bus_exec(function()
+    if not playback then return end
+    local a6 = emu.getregister("M68K A6") & 0xFFFFFF
+    exp_reaction = {
+        commandExp = memory.read_u16_be(a6, "M68K BUS"),
+        expBefore = memory.read_u8(entry(config.case.actor) + 48, "M68K BUS")
+    }
+end, config["function"].giveExpEntryAddress, "sf2-spell-give-exp", "M68K BUS")
+
+event.on_bus_exec(function()
+    if exp_reaction ~= nil then
+        exp_reaction.expAfter = memory.read_u8(entry(config.case.actor) + 48, "M68K BUS")
+    end
+end, config["function"].giveExpAppliedAddress, "sf2-spell-exp-applied", "M68K BUS")
+
+event.on_bus_exec(function()
+    if playback and #ally_reactions == 1 and #enemy_reactions == #config.case.targets
+        and exp_reaction ~= nil and exp_reaction.expAfter ~= nil then
         write_result_and_exit()
     end
 end, config["function"].executeScriptEndAddress, "sf2-spell-script-end", "M68K BUS")
