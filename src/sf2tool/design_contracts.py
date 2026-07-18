@@ -79,6 +79,9 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-attack-v1.json": (
             "sf2-attack1-fresh-and-recast-v1"
         ),
+        "tests/fixtures/h3/spell-muddle-v1.json": (
+            "sf2-muddle2-resistance-matrix-v1"
+        ),
         "tests/fixtures/h3/spell-status-sleep-v1.json": (
             "sf2-sleep-resistance-matrix-v1"
         ),

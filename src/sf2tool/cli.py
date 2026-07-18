@@ -36,6 +36,7 @@ from sf2tool.h3.spell_healing import (
     verify_spell_healing_exp,
 )
 from sf2tool.h3.spell_mp import verify_spell_mp_absorb
+from sf2tool.h3.spell_muddle import verify_spell_muddle
 from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
@@ -239,6 +240,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_attack)
     h3_spell_attack.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_muddle = h3_commands.add_parser(
+        "spell-muddle", help="verify MUDDLE 2 across all four status-resistance settings"
+    )
+    _add_local_paths(h3_spell_muddle)
+    h3_spell_muddle.add_argument("--timeout-seconds", type=int, default=75)
     h3_spell_status = h3_commands.add_parser(
         "spell-status", help="verify SLEEP 1 across all four status-resistance settings"
     )
@@ -482,6 +488,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-attack":
         print_record(
             verify_spell_attack(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-muddle":
+        print_record(
+            verify_spell_muddle(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

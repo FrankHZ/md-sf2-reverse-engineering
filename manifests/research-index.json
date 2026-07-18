@@ -758,6 +758,46 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.spell-muddle.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Muddle",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 46216 },
+        { "id": "threshold", "space": "rom", "kind": "observation", "value": 46228 },
+        { "id": "level-2-status", "space": "rom", "kind": "observation", "value": 46238 },
+        { "id": "combined-status", "space": "rom", "kind": "observation", "value": 46242 },
+        { "id": "reaction", "space": "rom", "kind": "observation", "value": 46314 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 46356 },
+        { "id": "effectiveness-entry", "space": "rom", "kind": "observation", "value": 47768 },
+        { "id": "effectiveness-roll", "space": "rom", "kind": "observation", "value": 47784 },
+        { "id": "effectiveness-failure", "space": "rom", "kind": "observation", "value": 47820 },
+        { "id": "effectiveness-success", "space": "rom", "kind": "observation", "value": 47826 },
+        { "id": "status-exp", "space": "rom", "kind": "observation", "value": 43272 },
+        { "id": "status-replay", "space": "rom", "kind": "observation", "value": 102298 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-muddle-v1.json", "fixtureId": "sf2-muddle2-resistance-matrix-v1", "verifier": "src/sf2tool/h3/spell_muddle.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.muddleEffectEntryAddress" },
+          { "addressId": "threshold", "fixtureField": "function.muddleThresholdAddress" },
+          { "addressId": "level-2-status", "fixtureField": "function.muddleLevel2StatusAddress" },
+          { "addressId": "combined-status", "fixtureField": "function.muddleCombinedStatusAddress" },
+          { "addressId": "reaction", "fixtureField": "function.muddleReactionAddress" },
+          { "addressId": "return", "fixtureField": "function.muddleEffectReturnAddress" },
+          { "addressId": "effectiveness-entry", "fixtureField": "function.effectivenessEntryAddress" },
+          { "addressId": "effectiveness-roll", "fixtureField": "function.effectivenessRollAddress" },
+          { "addressId": "effectiveness-failure", "fixtureField": "function.effectivenessFailureAddress" },
+          { "addressId": "effectiveness-success", "fixtureField": "function.effectivenessSuccessAddress" },
+          { "addressId": "status-exp", "fixtureField": "function.statusExpAppliedAddress" },
+          { "addressId": "status-replay", "fixtureField": "function.statusReactionAppliedAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.spell-boost.resolve",
       "subsystem": "battle.spell",
       "status": "confirmed",

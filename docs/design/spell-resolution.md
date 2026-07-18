@@ -10,8 +10,9 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one AURA target-geometry matrix, one DETOX level matrix, one SLEEP 1
-status-resistance matrix, one ATTACK fresh/recast case, one DESOUL 1 success case, and one
-SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, a DISPEL 1
+status-resistance matrix, one ATTACK fresh/recast case, one MUDDLE 2 resistance matrix, one DESOUL
+1 success case, one SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance
+matrix, a DISPEL 1
 spell-count/resistance/recast case, SILENCE gating of marked versus unmarked spell actions, and one
 combined after-turn expiry case. It must not be generalized to adjacent branches until those paths
 have their own H3 evidence.
@@ -252,6 +253,29 @@ Do not roll back the earlier status write: the target now stores `0xC000`, while
 still reflects the old counter count until a later stat refresh. Preserve this temporary mismatch
 in an ordered construction trace even if the remake does not expose the original command buffer.
 
+## Confirmed MUDDLE 2 Status-Resistance Matrix
+
+MUDDLE 2 uses the same STATUS setting extraction and eight-way effectiveness comparison as SLEEP.
+Add 5 to the target's setting, roll `rng.next(8)`, and succeed when `roll >= threshold`:
+
+| STATUS setting | Threshold | Controlled roll | Result |
+| --- | --- | --- | --- |
+| 0 | 5 | 7 | success |
+| 1 | 6 | 7 | success |
+| 2 | 7 | 7 | success |
+| 3 | 8 | 7 | failure / immunity |
+
+On success, OR both the MUDDLE 2 flag `0x0008` and the three-counter MUDDLE field `0x0030` into the
+reaction status, producing `0x0038`. The effect adds 5 status EXP for each successful target. As
+with SLEEP, target status remains unchanged during construction and becomes persistent only when
+the reaction command replays. The controlled three-success action accumulates 15 EXP, becomes an
+8-EXP command after Battle 01 halving/randomization, spends 11 MP, and persists `0x0038` on the
+first three targets only.
+
+This matrix confirms fresh MUDDLE 2 application. MUDDLE 1's pre-existing-MUDDLE-2 guard,
+reapplication, duration transitions, and the later confused-action behavior remain separate
+contracts.
+
 ## Confirmed SLEEP 1 Status-Resistance Matrix
 
 SLEEP uses the STATUS element, whose setting occupies resistance bits 14-15. For each target, the
@@ -468,6 +492,7 @@ naturally carried state remains outside these cases.
 | `sf2-aura-target-geometry-v1` | `tests/fixtures/h3/spell-aura-targets-v1.json` | inclusive Manhattan radii 1/2; target-index sorting; AURA 4 all living placed allies; dead/unplaced exclusion; ordered recovery and cumulative healing EXP cap |
 | `sf2-detox-level-status-matrix-v1` | `tests/fixtures/h3/spell-detox-v1.json` | zero-based level masks; poison/stun/curse cure flags; unrelated-status preservation; one 5-EXP award per effective target; threshold-8 no-effect unwind; cursed-item unequip |
 | `sf2-attack1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-attack-v1.json` | `0xC000` counter; 3/8 ATT floor; fresh reaction and 5 EXP; threshold-8 recast failure; status-write/current-ATT mismatch after failed recast |
+| `sf2-muddle2-resistance-matrix-v1` | `tests/fixtures/h3/spell-muddle-v1.json` | STATUS thresholds 5/6/7/8; setting-3 immunity; combined `0x0038` status reaction; 5 EXP per success; MP/status/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
@@ -494,9 +519,10 @@ expected-deviation fixture.
   action.
 - **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
   miss itself is confirmed at its original entry seam.
-- **Unknown:** status spells beyond the confirmed ATTACK/DETOX/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
-  BOOST/SLOW 2,
-  reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
+- **Unknown:** status spells beyond the confirmed
+  ATTACK/DETOX/MUDDLE 2/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets, MUDDLE 1,
+  MUDDLE/BOOST/SLOW reapplication and repeated-lifetime edges, BOOST/SLOW 2 geometry,
+  MUDDLE lifecycle/confused-action behavior, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.
 - **Unknown:** natural map-generated ordering for multi-target attack and status spells. Their
   arithmetic fixtures supply ordered lists at the pre-initialization seam; AURA ordering is

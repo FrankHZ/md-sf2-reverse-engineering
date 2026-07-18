@@ -32,6 +32,7 @@ the locked ROM instruction bytes.
 | spell resistance | `GetResistanceToSpell` | `0xC22A..0xC24E` | `code/gameflow/battle/battleactions/getresistancetospell.asm` |
 | spell damage | `battlesceneScript_CalculateSpellDamage` | `0xBB02..0xBB56` | `code/gameflow/battle/battleactions/calculatespelldamage.asm` |
 | DISPEL | `spellEffect_Dispel` | `0xB41A..0xB488` | `code/gameflow/battle/battleactions/castspell.asm` |
+| MUDDLE | `spellEffect_Muddle` | `0xB488..0xB516` | `code/gameflow/battle/battleactions/castspell.asm` |
 | SILENCE cast gate | `battlesceneScript_InitializeBattlesceneProperties` | `0x9F28` | `code/gameflow/battle/battleactions/initbattlesceneproperties.asm` |
 
 Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
@@ -857,6 +858,30 @@ Reproduce with `uv run sf2 h3 spell-attack`. Tracked artifacts are
 `src/sf2tool/h3/spell_attack.py`, and `tools/bizhawk/spell_attack_observer.lua`. Persistent command
 playback and the full three-turn lifecycle remain outside this fixture.
 
+## Confirmed: MUDDLE 2 STATUS-Resistance Matrix
+
+The MUDDLE fixture reuses the generic status-spell observer for one controlled MUDDLE 2 action and
+four enemy targets with STATUS resistance words `0x0000/0x4000/0x8000/0xC000`. At each genuine
+`spellEffect_Muddle` entry `0xB488`, it resets seed `0x1234`. The level-2 branch adds constant 5 to
+the extracted setting before the shared effectiveness routine; range-8 roll 7 therefore gives
+thresholds `5/6/7/8` and results `success/success/success/failure`.
+
+Each success reaches `0xB49E` and `0xB4A2`, ORing MUDDLE 2 bit `0x0008` and MUDDLE counter field
+`0x0030` into the reaction word. The persistent result is `0x0038`: both MUDDLE levels are marked
+and the duration field starts at three counters. Each successful target adds 5 status EXP, while
+setting 3 reaches the shared failure unwind without a reaction or EXP.
+
+Construction leaves all four stored target statuses at zero. Battle 01 halves the accumulated 15
+EXP to 7; award rolls 0 and 3 produce an 8-EXP command. Replay spends 11 MP (`20 -> 9`), applies
+`0x0038` to the first three targets, leaves the immune target at zero, and changes Bowie EXP
+`0 -> 8`.
+
+Reproduce with `uv run sf2 h3 spell-muddle`. Tracked artifacts are
+`tests/fixtures/h3/spell-muddle-v1.json`, `schemas/h3-spell-muddle-fixture.schema.json`, and
+`src/sf2tool/h3/spell_muddle.py`; runtime control deliberately reuses
+`tools/bizhawk/spell_status_observer.lua`. MUDDLE 1's special already-MUDDLE-2 threshold, recasts,
+duration, and confused actions remain outside this fixture.
+
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
 The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy
@@ -1209,8 +1234,9 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   variance seeds to the confirmed physical path.
 - Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, a complete
   naturally scheduled non-Battle-01 spell award and multi-target AURA healing,
-  DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
-  reapplication, and other status spells, SPOIT enemy-caster behavior, and other non-damage spell
+  DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry,
+  MUDDLE 1/reapplication/confused-action behavior, and other status spells, SPOIT enemy-caster
+  behavior, and other non-damage spell
   families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.

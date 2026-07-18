@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-muddle2-resistance-matrix-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 MUDDLE 2 action across all four STATUS resistance settings through threshold construction, effectiveness RNG, combined MUDDLE 1+2 status-command construction, status-effect EXP accumulation, Battle 01 award randomization, and persistent MP/status/EXP replay. The generic status-spell observer and common Battle Test/replay addresses are reused from the named SLEEP fixture.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "sharedObserver": "tools/bizhawk/spell_status_observer.lua",
+  "function": {
+    "muddleEffectEntryAddress": 46216,
+    "muddleThresholdAddress": 46228,
+    "muddleLevel2StatusAddress": 46238,
+    "muddleCombinedStatusAddress": 46242,
+    "muddleReactionAddress": 46314,
+    "muddleEffectReturnAddress": 46356,
+    "effectivenessEntryAddress": 47768,
+    "effectivenessRollAddress": 47784,
+    "effectivenessFailureAddress": 47820,
+    "effectivenessSuccessAddress": 47826,
+    "statusExpAppliedAddress": 43272,
+    "statusReactionAppliedAddress": 102298
+  },
+  "case": {
+    "id": "bowie-muddle2-four-status-resistance-settings",
+    "actor": 0,
+    "actorClass": 0,
+    "initialMp": 20,
+    "actorInitialExp": 0,
+    "actionType": 1,
+    "actionSpell": 71,
+    "baseSpell": 7,
+    "spellMpCost": 11,
+    "baseThreshold": 5,
+    "seed": 4660,
+    "statusMask": 56,
+    "statusCounterUnit": 16,
+    "targets": [
+      { "combatant": 128, "resistanceWord": 0, "setting": 0 },
+      { "combatant": 129, "resistanceWord": 16384, "setting": 1 },
+      { "combatant": 130, "resistanceWord": 32768, "setting": 2 },
+      { "combatant": 131, "resistanceWord": 49152, "setting": 3 }
+    ]
+  },
+  "expected": {
+    "construction": {
+      "actorMp": 20,
+      "records": [
+        { "combatant": 128, "setting": 0, "threshold": 5, "roll": 7, "success": true, "accumulatedExp": 5, "statusDuringConstruction": 0 },
+        { "combatant": 129, "setting": 1, "threshold": 6, "roll": 7, "success": true, "accumulatedExp": 10, "statusDuringConstruction": 0 },
+        { "combatant": 130, "setting": 2, "threshold": 7, "roll": 7, "success": true, "accumulatedExp": 15, "statusDuringConstruction": 0 },
+        { "combatant": 131, "setting": 3, "threshold": 8, "roll": 7, "success": false, "accumulatedExp": 15, "statusDuringConstruction": 0 }
+      ],
+      "award": { "accumulatedExp": 15, "seed": 60587, "halved": 7, "firstRoll": 0, "secondRoll": 3, "commandExp": 8 }
+    },
+    "replay": {
+      "allyReaction": { "mpChange": -11, "mpBefore": 20, "mpAfter": 9 },
+      "enemyReactions": [
+        { "combatant": 128, "statusBefore": 0, "statusAfter": 56 },
+        { "combatant": 129, "statusBefore": 0, "statusAfter": 56 },
+        { "combatant": 130, "statusBefore": 0, "statusAfter": 56 }
+      ],
+      "expReaction": { "commandExp": 8, "expBefore": 0, "expAfter": 8 },
+      "finalActorMp": 9,
+      "finalActorExp": 8,
+      "finalTargetStatus": [56, 56, 56, 0]
+    }
+  }
+}
