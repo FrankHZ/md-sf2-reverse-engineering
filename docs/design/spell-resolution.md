@@ -10,7 +10,7 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one AURA target-geometry matrix, one DETOX level matrix, one SLEEP 1
-status-resistance matrix, one DESOUL 1 success case, and one
+status-resistance matrix, one ATTACK fresh/recast case, one DESOUL 1 success case, and one
 SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, a SLOW 1 resistance matrix, a DISPEL 1
 spell-count/resistance/recast case, SILENCE gating of marked versus unmarked spell actions, and one
 combined after-turn expiry case. It must not be generalized to adjacent branches until those paths
@@ -236,6 +236,22 @@ and add no EXP. A lower-level DETOX does not become effective merely because the
 CURSE that this level cannot clear. Preserve unrelated counters such as BOOST and SLEEP in both
 effective and ineffective cases.
 
+## Confirmed ATTACK 1 Construction Subset
+
+ATTACK 1 writes the full `0xC000` three-counter status before checking whether any ATTACK counter
+was already present. A fresh target succeeds without an effectiveness roll, emits one status
+reaction, and adds 5 status EXP. The displayed and eventual three-counter ATT bonus is:
+
+```text
+bonus = floor(baseAttack * 3 / 8)
+```
+
+For a target already carrying one or more counters, use threshold 8 in the shared eight-way
+effectiveness test. The confirmed roll 7 fails, so no reaction, EXP, or bonus message is emitted.
+Do not roll back the earlier status write: the target now stores `0xC000`, while its current ATT
+still reflects the old counter count until a later stat refresh. Preserve this temporary mismatch
+in an ordered construction trace even if the remake does not expose the original command buffer.
+
 ## Confirmed SLEEP 1 Status-Resistance Matrix
 
 SLEEP uses the STATUS element, whose setting occupies resistance bits 14-15. For each target, the
@@ -451,6 +467,7 @@ naturally carried state remains outside these cases.
 | `sf2-healing-exp-boundaries-v1` | `tests/fixtures/h3/spell-healing-exp-boundaries-v1.json` | PRST/VICR/MMNK whitelist; ally/enemy/max-HP-zero guards; promoted ordinary power; power-255 full recovery; proportional/minimum EXP and cumulative 25 cap |
 | `sf2-aura-target-geometry-v1` | `tests/fixtures/h3/spell-aura-targets-v1.json` | inclusive Manhattan radii 1/2; target-index sorting; AURA 4 all living placed allies; dead/unplaced exclusion; ordered recovery and cumulative healing EXP cap |
 | `sf2-detox-level-status-matrix-v1` | `tests/fixtures/h3/spell-detox-v1.json` | zero-based level masks; poison/stun/curse cure flags; unrelated-status preservation; one 5-EXP award per effective target; threshold-8 no-effect unwind; cursed-item unequip |
+| `sf2-attack1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-attack-v1.json` | `0xC000` counter; 3/8 ATT floor; fresh reaction and 5 EXP; threshold-8 recast failure; status-write/current-ATT mismatch after failed recast |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
@@ -477,7 +494,7 @@ expected-deviation fixture.
   action.
 - **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
   miss itself is confirmed at its original entry seam.
-- **Unknown:** status spells beyond the confirmed DETOX/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
+- **Unknown:** status spells beyond the confirmed ATTACK/DETOX/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
   BOOST/SLOW 2,
   reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.

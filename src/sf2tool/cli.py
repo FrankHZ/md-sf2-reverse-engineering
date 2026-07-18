@@ -23,6 +23,7 @@ from sf2tool.h3.growth import (
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.rng import verify_rng
+from sf2tool.h3.spell_attack import verify_spell_attack
 from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
@@ -233,6 +234,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_detox)
     h3_spell_detox.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_attack = h3_commands.add_parser(
+        "spell-attack", help="verify ATTACK 1 fresh application and recast failure"
+    )
+    _add_local_paths(h3_spell_attack)
+    h3_spell_attack.add_argument("--timeout-seconds", type=int, default=90)
     h3_spell_status = h3_commands.add_parser(
         "spell-status", help="verify SLEEP 1 across all four status-resistance settings"
     )
@@ -468,6 +474,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-detox":
         print_record(
             verify_spell_detox(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-attack":
+        print_record(
+            verify_spell_attack(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

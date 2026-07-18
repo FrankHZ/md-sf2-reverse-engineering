@@ -834,6 +834,29 @@ Reproduce with `uv run sf2 h3 spell-detox`. Tracked artifacts are
 one target and stops at the effect return or shared failure unwind; natural target geometry and
 persistent command playback are outside this boundary.
 
+## Confirmed: ATTACK 1 Fresh Application and Recast Failure
+
+The ATTACK fixture supplies two ally targets to one controlled Battle 01 action. The fresh target
+starts at status zero with base/current ATT 41. `spellEffect_Attack` writes the full three-counter
+mask `0xC000`, emits the status reaction, adds 5 status EXP, and displays
+`floor(41*3/8)=15`. Construction does not refresh current ATT, which remains 41 until a later
+reaction/stat replay boundary.
+
+The second target starts with one ATTACK counter (`0x4000`), base ATT 40, and current ATT 45 from
+its existing `floor(40/8)=5` bonus. The spell writes `0xC000` before testing reapplication. Seed
+`0x1234` produces roll 7 against hard-coded threshold 8, so the shared effectiveness routine takes
+its failure unwind. No reaction, additional EXP, or bonus message is emitted, but construction
+status remains refreshed to `0xC000` while current ATT remains the stale one-counter value 45.
+
+This is the same important state split seen in failed BOOST recasts: status mutation precedes the
+recast test, while derived stats change only when a successful reaction is replayed or another stat
+refresh occurs. A remake must not make a failed recast atomic by rolling back the status write.
+
+Reproduce with `uv run sf2 h3 spell-attack`. Tracked artifacts are
+`tests/fixtures/h3/spell-attack-v1.json`, `schemas/h3-spell-attack-fixture.schema.json`,
+`src/sf2tool/h3/spell_attack.py`, and `tools/bizhawk/spell_attack_observer.lua`. Persistent command
+playback and the full three-turn lifecycle remain outside this fixture.
+
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
 The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy

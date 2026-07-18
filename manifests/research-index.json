@@ -722,6 +722,42 @@
       "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.spell-attack.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Attack",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 45992 },
+        { "id": "status-set", "space": "rom", "kind": "observation", "value": 46012 },
+        { "id": "recast-threshold", "space": "rom", "kind": "observation", "value": 46020 },
+        { "id": "effectiveness-roll", "space": "rom", "kind": "observation", "value": 47784 },
+        { "id": "effectiveness-failure", "space": "rom", "kind": "observation", "value": 47820 },
+        { "id": "reaction", "space": "rom", "kind": "observation", "value": 46030 },
+        { "id": "status-exp", "space": "rom", "kind": "observation", "value": 43272 },
+        { "id": "attack-bonus", "space": "rom", "kind": "observation", "value": 46084 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 46104 },
+        { "id": "battle-scene-exp", "space": "ram", "kind": "state", "value": 16758316, "symbol": "BATTLESCENE_EXP" }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-attack-v1.json", "fixtureId": "sf2-attack1-fresh-and-recast-v1", "verifier": "src/sf2tool/h3/spell_attack.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.attackEffectEntryAddress" },
+          { "addressId": "status-set", "fixtureField": "function.attackStatusSetAddress" },
+          { "addressId": "recast-threshold", "fixtureField": "function.attackThresholdAddress" },
+          { "addressId": "effectiveness-roll", "fixtureField": "function.effectivenessRollAddress" },
+          { "addressId": "effectiveness-failure", "fixtureField": "function.effectivenessFailureAddress" },
+          { "addressId": "reaction", "fixtureField": "function.attackReactionAddress" },
+          { "addressId": "status-exp", "fixtureField": "function.statusExpAppliedAddress" },
+          { "addressId": "attack-bonus", "fixtureField": "function.attackBonusAddress" },
+          { "addressId": "return", "fixtureField": "function.attackEffectReturnAddress" },
+          { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
       "id": "battle.spell-boost.resolve",
       "subsystem": "battle.spell",
       "status": "confirmed",

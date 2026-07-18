@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-attack-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "case", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-attack1-fresh-and-recast-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 }, "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": { "type": "object", "additionalProperties": false, "required": ["attackEffectEntryAddress", "attackStatusSetAddress", "attackThresholdAddress", "effectivenessRollAddress", "effectivenessFailureAddress", "attackReactionAddress", "statusExpAppliedAddress", "attackBonusAddress", "attackEffectReturnAddress"], "properties": {
+      "attackEffectEntryAddress": { "const": 45992 }, "attackStatusSetAddress": { "const": 46012 }, "attackThresholdAddress": { "const": 46020 }, "effectivenessRollAddress": { "const": 47784 }, "effectivenessFailureAddress": { "const": 47820 }, "attackReactionAddress": { "const": 46030 }, "statusExpAppliedAddress": { "const": 43272 }, "attackBonusAddress": { "const": 46084 }, "attackEffectReturnAddress": { "const": 46104 }
+    } },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["battleSceneExpAddress"], "properties": { "battleSceneExpAddress": { "const": 16758316 } } },
+    "case": { "type": "object", "additionalProperties": false, "required": ["id", "actor", "actorClass", "actionType", "actionSpell", "spellMpCost", "seed", "statusMask", "statusCounterUnit", "recastThreshold", "schedulingTarget", "targets"], "properties": {
+      "id": { "const": "bowie-attack1-fresh-and-one-counter-allies" }, "actor": { "const": 0 }, "actorClass": { "const": 0 }, "actionType": { "const": 1 }, "actionSpell": { "const": 5 }, "spellMpCost": { "const": 7 }, "seed": { "const": 4660 }, "statusMask": { "const": 49152 }, "statusCounterUnit": { "const": 16384 }, "recastThreshold": { "const": 8 }, "schedulingTarget": { "const": 128 },
+      "targets": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/target" } }
+    } },
+    "expected": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/record" } }
+  },
+  "definitions": {
+    "target": { "type": "object", "additionalProperties": false, "required": ["combatant", "baseAtt", "initialStatus", "initialCurrentAtt"], "properties": { "combatant": { "enum": [0, 1] }, "baseAtt": { "type": "integer" }, "initialStatus": { "enum": [0, 16384] }, "initialCurrentAtt": { "type": "integer" } } },
+    "record": { "type": "object", "additionalProperties": false, "required": ["combatant", "initialStatus", "setStatus", "reapplication", "threshold", "roll", "success", "reactionStatus", "accumulatedExp", "attackBonus", "statusAfterConstruction", "currentAttAfterConstruction"], "properties": {
+      "combatant": { "enum": [0, 1] }, "initialStatus": { "enum": [0, 16384] }, "setStatus": { "const": 49152 }, "reapplication": { "type": "boolean" }, "threshold": { "enum": [0, 8] }, "roll": { "enum": [-1, 7] }, "success": { "type": "boolean" }, "reactionStatus": { "enum": [0, 49152] }, "accumulatedExp": { "const": 5 }, "attackBonus": { "enum": [0, 15] }, "statusAfterConstruction": { "const": 49152 }, "currentAttAfterConstruction": { "type": "integer" }
+    } }
+  }
+}

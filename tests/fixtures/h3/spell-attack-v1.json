@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-attack1-fresh-and-recast-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 ATTACK 1 construction against a fresh ally and an ally already carrying one ATTACK counter. The standard pre-initialization seam supplies two targets; status mutation, recast effectiveness, reaction emission, status EXP, displayed attack bonus, and construction-time stat state execute naturally. The fixture exits at the second target's shared failure unwind and does not claim persistent command playback.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "attackEffectEntryAddress": 45992,
+    "attackStatusSetAddress": 46012,
+    "attackThresholdAddress": 46020,
+    "effectivenessRollAddress": 47784,
+    "effectivenessFailureAddress": 47820,
+    "attackReactionAddress": 46030,
+    "statusExpAppliedAddress": 43272,
+    "attackBonusAddress": 46084,
+    "attackEffectReturnAddress": 46104
+  },
+  "ram": { "battleSceneExpAddress": 16758316 },
+  "case": {
+    "id": "bowie-attack1-fresh-and-one-counter-allies",
+    "actor": 0,
+    "actorClass": 0,
+    "actionType": 1,
+    "actionSpell": 5,
+    "spellMpCost": 7,
+    "seed": 4660,
+    "statusMask": 49152,
+    "statusCounterUnit": 16384,
+    "recastThreshold": 8,
+    "schedulingTarget": 128,
+    "targets": [
+      { "combatant": 0, "baseAtt": 41, "initialStatus": 0, "initialCurrentAtt": 41 },
+      { "combatant": 1, "baseAtt": 40, "initialStatus": 16384, "initialCurrentAtt": 45 }
+    ]
+  },
+  "expected": [
+    { "combatant": 0, "initialStatus": 0, "setStatus": 49152, "reapplication": false, "threshold": 0, "roll": -1, "success": true, "reactionStatus": 49152, "accumulatedExp": 5, "attackBonus": 15, "statusAfterConstruction": 49152, "currentAttAfterConstruction": 41 },
+    { "combatant": 1, "initialStatus": 16384, "setStatus": 49152, "reapplication": true, "threshold": 8, "roll": 7, "success": false, "reactionStatus": 0, "accumulatedExp": 5, "attackBonus": 0, "statusAfterConstruction": 49152, "currentAttAfterConstruction": 45 }
+  ]
+}

@@ -76,6 +76,9 @@ CONTRACTS = {
         "tests/fixtures/h3/spell-detox-v1.json": (
             "sf2-detox-level-status-matrix-v1"
         ),
+        "tests/fixtures/h3/spell-attack-v1.json": (
+            "sf2-attack1-fresh-and-recast-v1"
+        ),
         "tests/fixtures/h3/spell-status-sleep-v1.json": (
             "sf2-sleep-resistance-matrix-v1"
         ),
