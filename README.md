@@ -211,7 +211,8 @@ HP/MP，派生属性会从 base/class 重建并重新应用 Short Knife 的 +5 A
 部分状态计数、Black Ring 刷新 CURSE，以及 Ninja Katana 的 `INCREASE_DOUBLE` 会把 NINJ
 counter 1/8 错清为 1/32。独立启动观察确认 Karna 在 HEAL 3 预扫描时会把 PRST 基础 prowess
 从 `0x03` 改为 `0x13`，随后再由普通升级回放学会法术；同一分支的合成 `0x43→0x53` 用例确认
-counter 1/16 保留而 double 从 1/32 提升到 1/16，`0x73→0x73` 又确认高半字节加一到 8 时会封顶为 7。
+counter 1/16 保留而 double 从 1/32 提升到 1/16。完整 16 组高半字节矩阵进一步确认原版把
+double/counter 合并当作一个数值加一：`0x73→0x73` 封顶，`0xF3→0x03` 则发生 byte wrap 并清空两者。
 第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
 全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然
 初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo，边界 H3 另确认 AGI 127/128、第二行动、
@@ -251,7 +252,7 @@ reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实�
 
 下一块继续扩展 **Phase 2 的运行时证据**：补齐非 critical 的其他 spread seed、状态/抗性分支、
 后续回合 region 状态与自然 muddle/same-side/special-enemy action reachability。
-同时保留升级前一等级、缺失职业块、HEAL 3 的其他 prowess 位组合和当前/最大属性刷新，以及
+同时保留升级前一等级、缺失职业块和当前/最大属性刷新，以及
 `LASER radius = 3` 的显式行为验证队列。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

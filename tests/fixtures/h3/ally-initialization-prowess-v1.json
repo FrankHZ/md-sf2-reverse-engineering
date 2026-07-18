@@ -15,7 +15,7 @@
   },
   "cases": [
     {
-      "id": "karna-prst-heal3-natural",
+      "id": "karna-prst-heal3-high-0-natural",
       "ally": 15,
       "allyCode": "KARNA",
       "classCode": "PRST",
@@ -27,7 +27,43 @@
       "baseProwessAfter": 19
     },
     {
-      "id": "karna-prst-heal3-counter-preservation",
+      "id": "karna-prst-heal3-high-1",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 19,
+      "baseProwessBefore": 19,
+      "baseProwessAfter": 35
+    },
+    {
+      "id": "karna-prst-heal3-high-2",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 35,
+      "baseProwessBefore": 35,
+      "baseProwessAfter": 51
+    },
+    {
+      "id": "karna-prst-heal3-high-3",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 51,
+      "baseProwessBefore": 51,
+      "baseProwessAfter": 67
+    },
+    {
+      "id": "karna-prst-heal3-high-4",
       "ally": 15,
       "allyCode": "KARNA",
       "classCode": "PRST",
@@ -39,7 +75,31 @@
       "baseProwessAfter": 83
     },
     {
-      "id": "karna-prst-heal3-shifted-eight-cap",
+      "id": "karna-prst-heal3-high-5",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 83,
+      "baseProwessBefore": 83,
+      "baseProwessAfter": 99
+    },
+    {
+      "id": "karna-prst-heal3-high-6",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 99,
+      "baseProwessBefore": 99,
+      "baseProwessAfter": 115
+    },
+    {
+      "id": "karna-prst-heal3-high-7",
       "ally": 15,
       "allyCode": "KARNA",
       "classCode": "PRST",
@@ -49,6 +109,102 @@
       "injectedBaseProwess": 115,
       "baseProwessBefore": 115,
       "baseProwessAfter": 115
+    },
+    {
+      "id": "karna-prst-heal3-high-8",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 131,
+      "baseProwessBefore": 131,
+      "baseProwessAfter": 147
+    },
+    {
+      "id": "karna-prst-heal3-high-9",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 147,
+      "baseProwessBefore": 147,
+      "baseProwessAfter": 163
+    },
+    {
+      "id": "karna-prst-heal3-high-a",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 163,
+      "baseProwessBefore": 163,
+      "baseProwessAfter": 179
+    },
+    {
+      "id": "karna-prst-heal3-high-b",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 179,
+      "baseProwessBefore": 179,
+      "baseProwessAfter": 195
+    },
+    {
+      "id": "karna-prst-heal3-high-c",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 195,
+      "baseProwessBefore": 195,
+      "baseProwessAfter": 211
+    },
+    {
+      "id": "karna-prst-heal3-high-d",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 211,
+      "baseProwessBefore": 211,
+      "baseProwessAfter": 227
+    },
+    {
+      "id": "karna-prst-heal3-high-e",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 227,
+      "baseProwessBefore": 227,
+      "baseProwessAfter": 243
+    },
+    {
+      "id": "karna-prst-heal3-high-f",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 243,
+      "baseProwessBefore": 243,
+      "baseProwessAfter": 3
     }
   ]
 }

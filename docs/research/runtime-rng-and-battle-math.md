@@ -174,12 +174,14 @@ start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell
 the original takes the dedicated HEAL 3 branch; after `SetBaseProwess`, the callback at `0x969E`
 records base prowess `0x03→0x13`, upgrading double attack from 1/32 to 1/16 while leaving the natural
 critical and counter settings unchanged. The branch itself does not call `LearnSpell`; the following
-23-call `LevelUp` replay learns HEAL 3 at effective level 22 through the ordinary path. A separate
-emulator start injects `0x43` at the branch and records `0x43→0x53`, confirming that counter 1/16 is
-preserved for this synthetic input while double attack advances from 1/32 to 1/16. The source-model
-oracle independently derives both transitions from the pinned `InitializeAllyStats` instructions.
-A third injected input confirms the adjacent cap branch: shifting `0x73` yields seven, incrementing
-would yield eight, and the original instead writes the capped `0x73` unchanged.
+23-call `LevelUp` replay learns HEAL 3 at effective level 22 through the ordinary path.
+
+Fifteen separate emulator starts inject the other legal double/counter high nibbles at the HEAL 3
+check, completing a sixteen-case matrix. The output is `(high + 1) & 0xF`, except input 7 remains 7;
+the critical low nibble stays `0x3`. Runtime therefore confirms ordinary increments through
+`0x63→0x73`, the special `0x73→0x73` cap, continued `0x83→0x93` through `0xE3→0xF3`, and byte-wrap
+`0xF3→0x03`. The source-model oracle derives each transition independently from the pinned
+`InitializeAllyStats` instructions before the original ROM is observed.
 
 ## Confirmed Statically and at Runtime: Turn-Order Score
 
@@ -840,7 +842,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 
 ## Unknown / Next Fixtures
 
-- Add other HEAL 3 prowess bit combinations and remaining stat-cap/underflow edges.
+- Add remaining stat-cap/underflow edges.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

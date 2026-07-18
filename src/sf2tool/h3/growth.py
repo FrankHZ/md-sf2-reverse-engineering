@@ -874,15 +874,34 @@ def _verify_prowess_models(fixture: dict[str, Any], *, disasm: Path) -> None:
     if len(matching) != 1 or matching[0]["level"] > starting_level:
         raise ValueError("Karna HEAL 3 source contract drift")
 
-    for case in fixture["cases"]:
+    cases = fixture["cases"]
+    critical = initial & equates["PROWESS_MASK_CRITICAL"]
+    expected_inputs = [(high_nibble << 4) | critical for high_nibble in range(16)]
+    if len(cases) != len(expected_inputs):
+        raise ValueError("Karna HEAL 3 prowess matrix size drift")
+
+    for high_nibble, (case, expected_before) in enumerate(
+        zip(cases, expected_inputs, strict=True)
+    ):
         if any(
             case[field] != source_case[field]
             for field in ("ally", "allyCode", "classCode", "startingLevel")
         ):
             raise ValueError("synthetic HEAL 3 case source identity drift")
+        expected_id = f"karna-prst-heal3-high-{high_nibble:x}"
+        if high_nibble == 0:
+            expected_id += "-natural"
+        if case["id"] != expected_id:
+            raise ValueError("Karna HEAL 3 prowess matrix ordering drift")
         before = case["injectedBaseProwess"]
-        if before is None:
+        if high_nibble == 0:
+            if before is not None:
+                raise ValueError("natural HEAL 3 case must not inject prowess")
             before = initial
+        elif before != expected_before:
+            raise ValueError("synthetic HEAL 3 prowess matrix input drift")
+        if before != expected_before:
+            raise ValueError("Karna HEAL 3 prowess matrix critical nibble drift")
         shifted = (before >> equates["PROWESS_LOWER_DOUBLE_SHIFT_COUNT"]) + 1
         if shifted == 8:
             shifted = 7
