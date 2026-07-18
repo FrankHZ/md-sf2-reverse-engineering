@@ -403,6 +403,14 @@
           ]
         },
         {
+          "level": "H3", "fixture": "tests/fixtures/h3/exp-command-boundaries-v1.json", "fixtureId": "sf2-exp-command-boundaries-v1", "verifier": "src/sf2tool/h3/exp_command.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" },
+            { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" },
+            { "addressId": "return", "fixtureField": "function.giveExpReturnAddress" }
+          ]
+        },
+        {
           "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
           "bindings": [
             { "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" },
@@ -1161,6 +1169,16 @@
         },
         {
           "level": "H3", "fixture": "tests/fixtures/h3/battle-exp-level-up-v1.json", "fixtureId": "sf2-battle-exp-level-up-v1", "verifier": "src/sf2tool/h3/battle_exp.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.levelUpEntryAddress" },
+            { "addressId": "return", "fixtureField": "function.levelUpReturnAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+            { "addressId": "level-up-arguments", "fixtureField": "ram.levelUpArgumentsAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/exp-command-boundaries-v1.json", "fixtureId": "sf2-exp-command-boundaries-v1", "verifier": "src/sf2tool/h3/exp_command.py",
           "bindings": [
             { "addressId": "entry", "fixtureField": "function.levelUpEntryAddress" },
             { "addressId": "return", "fixtureField": "function.levelUpReturnAddress" },

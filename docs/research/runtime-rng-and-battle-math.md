@@ -456,6 +456,29 @@ The executable contract is `tests/fixtures/h3/award-exp-randomization-v1.json`; 
 `uv run sf2 h3 award-exp`. Target-same-side bypass, other halved-battle table entries, EXP storage
 caps, command replay, and multiple level thresholds remain owned by other fixtures or Unknown.
 
+## Confirmed: EXP Command Clamp and Single Threshold
+
+`bsc0F_giveExp` at `0x190DC` masks command bit 15 from the amount, calls `IncreaseExp`, and then
+performs exactly one 100-point subtraction and at most one `LevelUp` call. `IncreaseExp` shares
+`IncreaseAndClampByte` with a source cap of 200. The observed command matrix is:
+
+| Initial EXP | Command | After increase | LevelUp calls | Final level / EXP |
+| --- | --- | --- | --- | --- |
+| 75 | 24 | 99 | 0 | 1 / 99 |
+| 76 | 24 | 100 | 1 | 2 / 0 |
+| 199 | 24 | 200 | 1 | 2 / 100 |
+
+The last row proves both byte saturation and the absence of a repeated-threshold loop: one command
+can leave stored EXP at 100 after one level. Each row replays the original Battle 01 EXP command
+from one post-damage in-memory core state. The observer replaces the command and the actor's
+class/level/EXP inputs at `bsc0F_giveExp`, and sets the routine's original bit-15 flag to suppress
+presentation text; the routine itself masks that flag before arithmetic. It records final state at
+the `LevelUp` return for threshold rows and at the EXP-command return otherwise.
+
+The executable contract is `tests/fixtures/h3/exp-command-boundaries-v1.json`; reproduce it with
+`uv run sf2 h3 exp-command`. Base/promoted level-cap exits remain independently confirmed by the
+LevelUp boundary fixture; this matrix does not duplicate their containing command path.
+
 ## Confirmed: Double Attack and Counter Chain
 
 The attack-chain fixture uses the same natural Battle 01 AI action but makes both combatants
@@ -933,8 +956,8 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
-- Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
-  seeds, and remaining EXP cap branches to the confirmed physical path.
+- Add natural muddled/same-side/special-enemy action reachability and additional non-critical
+  variance seeds to the confirmed physical path.
 - Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and

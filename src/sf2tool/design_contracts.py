@@ -19,6 +19,9 @@ CONTRACTS = {
         "tests/fixtures/h3/award-exp-randomization-v1.json": (
             "sf2-award-exp-randomization-v1"
         ),
+        "tests/fixtures/h3/exp-command-boundaries-v1.json": (
+            "sf2-exp-command-boundaries-v1"
+        ),
         "tests/fixtures/h3/attack-chain-v1.json": "sf2-attack-chain-double-counter-v1",
         "tests/fixtures/h3/dodge-v1.json": "sf2-successful-airborne-dodge-v1",
         "tests/fixtures/h3/lethal-followup-v1.json": "sf2-lethal-followup-validation-v1",
@@ -45,6 +48,9 @@ CONTRACTS = {
             "sf2-enemy-curse-suppression-v1"
         ),
         "tests/fixtures/h3/battle-exp-level-up-v1.json": "sf2-battle-exp-level-up-v1",
+        "tests/fixtures/h3/exp-command-boundaries-v1.json": (
+            "sf2-exp-command-boundaries-v1"
+        ),
     },
     "docs/design/spell-resolution.md": {
         "tests/fixtures/h3/spell-damage-resistance-v1.json": (

@@ -207,8 +207,14 @@ is zero and subtract one when the second is zero. Thus accumulated 49 becomes 24
 the minimum command award of 1. The fixture replays one natural pre-action core state for all five
 rows without replacing the original control flow.
 
-Other battle modifiers, EXP cap and multiple-threshold edges, and the full gold table remain outside
-this contract version.
+**Confirmed for EXP command persistence:** stored EXP plus the command amount saturates at 200.
+Values 75+24 and 76+24 finish at level/EXP `1/99` and `2/0`. The saturation case 199+24 reaches
+200, subtracts one threshold, calls `LevelUp` once, and finishes at `2/100`; the command does not
+loop over a second threshold. The observer uses the original command bit-15 presentation flag to
+skip text while leaving its masked arithmetic amount at 24.
+
+Other battle modifiers, the containing command path at a class level cap, and the full gold table
+remain outside this contract version.
 
 ## Reference Adapter Shape
 
@@ -246,6 +252,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-battle-exp-level-up-v1` | `tests/fixtures/h3/battle-exp-level-up-v1.json` | 99 + 24 threshold, one LevelUp call, payload, persistent level/stats/EXP |
 | `sf2-kill-exp-level-difference-v1` | `tests/fixtures/h3/kill-exp-level-difference-v1.json` | Effective-level subtraction; 50/40/30/20/10/0 brackets; promoted +20 offset |
 | `sf2-award-exp-randomization-v1` | `tests/fixtures/h3/award-exp-randomization-v1.json` | Battle 01 halving; ordered +1/-1 RNG branches; cancellation; minimum 1 |
+| `sf2-exp-command-boundaries-v1` | `tests/fixtures/h3/exp-command-boundaries-v1.json` | EXP cap 200; 100-point threshold; at most one level per command; residual EXP 100 |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
@@ -277,7 +284,7 @@ complete:
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
-- remaining EXP/gold tables and EXP cap/multiple-threshold edges;
+- remaining EXP/gold tables and the containing EXP command at class level caps;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
 Each expansion must add or extend H3 evidence first, update this contract, and then become an H4

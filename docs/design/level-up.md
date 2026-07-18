@@ -29,6 +29,9 @@
 - `tests/fixtures/h3/battle-exp-level-up-v1.json` / `sf2-battle-exp-level-up-v1` owns the connected
   natural Battle 01 path from a 24-point EXP command through the 100-point threshold, one
   source-modeled Bowie/SDMN `LevelUp`, and final persistent combatant state.
+- `tests/fixtures/h3/exp-command-boundaries-v1.json` / `sf2-exp-command-boundaries-v1` owns the
+  99-below/exact-100/EXP-cap-200 command boundaries and proves that one command processes at most
+  one 100-point threshold. Run it independently with `uv run sf2 h3 exp-command`.
 - [`../research/ally-growth.md`](../research/ally-growth.md) owns the static curve and class-block
   storage contract; [`../research/runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
   owns addresses and runtime interpretation.
@@ -186,10 +189,12 @@ call `LevelUp`. Seed `0x1234` produces payload `[2,2,0,1,1,1,255]`, level 2, max
 ATT/DEF/AGI `7/5/5`. Current HP/MP remain `12/8`, and the action-only current ATT/AGI values are
 replaced by refreshed values `7/5`.
 
-The fixture observes one call and exits at the containing EXP command's return, so it connects the
-already-confirmed growth routine to persistent battle state. It does not generalize to an award
-that reaches the 200 EXP clamp, more than one threshold, cap-level allies, random +1/-1 award
-branches, or gold.
+The connected fixture observes one call and exits at the containing EXP command's return. Its
+companion boundary matrix confirms `75+24 -> 99` without a level, `76+24 -> 0` with one level, and
+the saturation path `199+24 -> 200 -> 100` with exactly one level. Thus a command never processes
+more than one threshold even when 100 EXP remains. The separate LevelUp boundary fixture owns the
+base/promoted cap exits; their containing EXP-command path, random +1/-1 award branches, and gold
+remain outside this section.
 
 ## Confirmed Karna HEAL 3 Initialization Rule
 
@@ -238,5 +243,5 @@ record that choice explicitly before H4 treats either behavior as normative.
 - current-ATT decrease underflow, byte-overflow inputs, and word/long clamp-helper boundaries;
 - critical-ailment and critical-cap inputs outside the naturally referenced item/class combinations.
 
-The future remake growth module should consume the same eight fixtures first, then extend them rather
+The future remake growth module should consume the same nine fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.

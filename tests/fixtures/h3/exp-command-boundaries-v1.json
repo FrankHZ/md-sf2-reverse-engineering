@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-exp-command-boundaries-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Natural Battle 01 EXP command replayed from one pre-action in-memory core state, with command and actor progression inputs replaced at bsc0F_giveExp entry and the command's original bit-15 presentation-suppression flag set.",
+  "function": {
+    "giveExpEntryAddress": 102620,
+    "giveExpAppliedAddress": 102648,
+    "giveExpReturnAddress": 102878,
+    "levelUpEntryAddress": 38020,
+    "levelUpReturnAddress": 38340
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "levelUpArgumentsAddress": 16756610,
+    "seedAddress": 16768676
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900,
+      "criticalEntryAddress": 44110,
+      "damageApplicationAddress": 44434,
+      "expRandomizationAddress": 43038
+    },
+    "ram": {
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "actor": 0,
+  "target": 128,
+  "cases": [
+    { "id": "below-threshold", "classCode": "SDMN", "class": 0, "level": 1, "initialExp": 75, "commandExp": 24, "expAfterIncrease": 99, "levelUpCalls": 0, "finalLevel": 1, "finalExp": 99 },
+    { "id": "exact-threshold", "classCode": "SDMN", "class": 0, "level": 1, "initialExp": 76, "commandExp": 24, "expAfterIncrease": 100, "levelUpCalls": 1, "levelUpResult": 2, "finalLevel": 2, "finalExp": 0 },
+    { "id": "saturation-single-threshold", "classCode": "SDMN", "class": 0, "level": 1, "initialExp": 199, "commandExp": 24, "expAfterIncrease": 200, "levelUpCalls": 1, "levelUpResult": 2, "finalLevel": 2, "finalExp": 100 }
+  ]
+}
