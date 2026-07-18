@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
@@ -114,6 +115,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     design_parser = commands.add_parser("design-contracts")
     design_parser.add_subparsers(dest="design_command", required=True).add_parser("test")
+
+    h2_parser = commands.add_parser("h2", help="run a narrow deterministic extraction rail")
+    h2_commands = h2_parser.add_subparsers(dest="h2_command", required=True)
+    h2_enemy_gold = h2_commands.add_parser(
+        "enemy-gold", help="extract and byte-compare the enemy gold table"
+    )
+    _add_local_paths(h2_enemy_gold)
+    h2_enemy_gold.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -258,6 +267,14 @@ def dispatch(args: argparse.Namespace) -> None:
                 _print_rows(result)
     elif args.command == "design-contracts":
         print_record(verify_design_contracts())
+    elif args.command == "h2" and args.h2_command == "enemy-gold":
+        print_record(
+            verify_enemy_gold(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
     elif args.command == "h3" and args.h3_command == "rng":
         print_record(verify_rng(args.rom_path, timeout_seconds=args.timeout_seconds))
     elif args.command == "h3" and args.h3_command == "growth":

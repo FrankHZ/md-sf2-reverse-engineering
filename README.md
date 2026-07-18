@@ -194,9 +194,10 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
-当前 H2 已覆盖 12 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
+当前 H2 已覆盖 13 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
 5 条成长曲线、59 个职业成长记录和 122 个学法术条目，以及 5 段转职表、103 个敌人名称和
-103 个 56-byte 敌人定义。新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
+103 个 56-byte 敌人定义，以及 103 条敌人 gold word。gold rail 还保留并拒绝误解释源码标记的
+69-word unused 尾部；新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
 原版名称清单。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次

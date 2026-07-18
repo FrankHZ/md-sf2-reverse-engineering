@@ -213,8 +213,13 @@ Values 75+24 and 76+24 finish at level/EXP `1/99` and `2/0`. The saturation case
 loop over a second threshold. The observer uses the original command bit-15 presentation flag to
 skip text while leaving its masked arithmetic amount at 24.
 
-Other battle modifiers, the containing command path at a class level cap, and the full gold table
-remain outside this contract version.
+**Confirmed for enemy gold data:** the kill path indexes a big-endian word table by enemy ID. The
+canonical range has 103 values, aligned with the 103 enemy definitions. A following 69-word ROM
+tail is explicitly marked unused and must not become enemy rows. Enemy index 0 supplies 10 gold;
+the DESOUL fixture confirms three successful targets accumulate and replay 30.
+
+Other battle modifiers, the containing EXP command path at a class level cap, and gold storage
+overflow behavior remain outside this contract version.
 
 ## Reference Adapter Shape
 
@@ -253,6 +258,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-kill-exp-level-difference-v1` | `tests/fixtures/h3/kill-exp-level-difference-v1.json` | Effective-level subtraction; 50/40/30/20/10/0 brackets; promoted +20 offset |
 | `sf2-award-exp-randomization-v1` | `tests/fixtures/h3/award-exp-randomization-v1.json` | Battle 01 halving; ordered +1/-1 RNG branches; cancellation; minimum 1 |
 | `sf2-exp-command-boundaries-v1` | `tests/fixtures/h3/exp-command-boundaries-v1.json` | EXP cap 200; 100-point threshold; at most one level per command; residual EXP 100 |
+| `sf2-enemy-gold-v1` | `tests/fixtures/h2/enemy-gold-v1.json` | 103 used word entries; 69-word unused tail boundary; source/ROM parity |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
@@ -284,7 +290,7 @@ complete:
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
-- remaining EXP/gold tables and the containing EXP command at class level caps;
+- remaining EXP modifiers, the containing EXP command at class level caps, and gold storage overflow;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
 Each expansion must add or extend H3 evidence first, update this contract, and then become an H4

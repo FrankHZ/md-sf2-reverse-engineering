@@ -1,7 +1,7 @@
-# Promotions and Enemy Definitions
+# Promotions, Enemy Definitions, and Gold
 
 - Status: **Confirmed storage contract and static consumers; runtime scenarios pending**
-- Evidence date: 2026-07-17
+- Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -10,11 +10,15 @@
 
 ```powershell
 pwsh ./scripts/Test-EnemyPromotionExtraction.ps1
+uv run sf2 h2 enemy-gold
 ```
 
 The verifier exports the pinned assembly contract and independently decodes the locked ROM, validates
 both schemas and golden hashes, repeats both exports, then compares 2,722 fields with zero mismatch.
 Generated names and full records remain under ignored `local/derived/`.
+The Python-owned gold rail separately parses the source's explicit used/unused boundary, decodes the
+locked ROM words, byte-compares all 172 entries, validates the generated schema and pinned hash, and
+writes only to `local/derived/enemy-gold-data.json`.
 
 ## ROM Tables
 
@@ -23,10 +27,26 @@ Generated names and full records remain under ignored `local/derived/`.
 | promotions | `0x21046..0x21072` | five length-prefixed byte lists | 5 sections / 39 values |
 | enemy names | `0xFB8A..0xFF87` | length byte followed by ASCII payload | 103 |
 | enemy definitions | `0x1B1A66..0x1B30EE` | fixed 56-byte records, big-endian words | 103 |
+| enemy gold | `0xBECC..0xC024` | big-endian words; explicit used/tail boundary | 103 used + 69 unused |
 
 The source paths are `data/stats/allies/classes/promotions.asm`,
-`data/stats/enemies/enemynames.asm`, and `data/stats/enemies/enemydefs.asm`. Enum resolution comes from
+`data/stats/enemies/enemynames.asm`, `data/stats/enemies/enemydefs.asm`, and
+`data/stats/enemies/enemygold.asm`. Enum resolution comes from
 `sf2enums.asm`. The extraction manifest pins all four source hashes.
+
+## Confirmed: Enemy Gold Table and Unused Tail
+
+The kill-reward routine doubles the enemy index and uses it as a word offset into
+`table_EnemyGold`. The source marks the first 103 words as enemy-indexed values, exactly matching the
+enemy definition count. They occupy `0xBECC..0xBF9A`; the values range from 0 to 3500, with the
+maximum at enemy index 97 and exactly one used zero entry.
+
+The same assembled range continues for 69 words through `0xC024`, but the source places them after
+an explicit `; unused` boundary. Twenty-five of those words are nonzero and the final word is 255,
+so treating the entire 172-word region as an enemy table would manufacture 69 invalid enemy rows.
+The H2 fixture preserves the tail for source/ROM parity while exposing only the first 103 values as
+canonical enemy data. The DESOUL H3 fixture independently confirms enemy index 0 contributes its
+table value 10 once per successful kill target.
 
 ## Confirmed: Promotion Table and Church Mapping
 
@@ -99,5 +119,5 @@ null; its exact renderer-visible consequences remain a separate behavioral quest
   must be modeled as transformations, not flattened into the base record.
 - Next H3 cases should use one AGI-below-128 and one AGI-above-128 enemy, plus a promotion case that
   distinguishes the promotee from the special-item holder.
-- Battle sprites, map sprites, gold, drop tables, battle placement, and enemy-upgrade ranges are not
+- Battle sprites, map sprites, drop tables, battle placement, and enemy-upgrade ranges are not
   part of this contract yet.

@@ -78,14 +78,15 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
             if not source_path.is_file():
                 raise ValueError(f"missing indexed upstream source: {record['sourcePath']}")
             source_text = source_path.read_text(encoding="utf-8")
-            if not re.search(rf"^{re.escape(record['symbol'])}:\s*$", source_text, re.MULTILINE):
+            if not re.search(rf"^{re.escape(record['symbol'])}:", source_text, re.MULTILINE):
                 raise ValueError(
                     f"indexed symbol {record['symbol']} is absent from {record['sourcePath']}"
                 )
 
         if has_listing:
             match = re.search(
-                rf"^(?P<address>[0-9A-F]{{8}})\s+{re.escape(record['symbol'])}:\s*$",
+                rf"^(?P<address>[0-9A-F]{{8}})(?:[ \t]+[0-9A-F]{{2,8}})*"
+                rf"[ \t]+{re.escape(record['symbol'])}:",
                 listing,
                 re.MULTILINE,
             )
@@ -158,11 +159,14 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
                             f"fixture address is not bound by the research index: {key}"
                         )
 
+    indexed_h3_count = sum(path.startswith("tests/fixtures/h3/") for path in fixture_ids)
+    indexed_h2_count = sum(path.startswith("tests/fixtures/h2/") for path in fixture_ids)
     return {
         "Index": "manifests/research-index.json",
         "Records": len(index["records"]),
         "Confirmed": sum(record["status"] == "confirmed" for record in index["records"]),
-        "H3Fixtures": len(fixture_ids),
+        "H2Fixtures": indexed_h2_count,
+        "H3Fixtures": indexed_h3_count,
         "H3FixtureFiles": len(h3_fixtures),
         "AddressBindings": binding_count,
         "ResearchDocuments": len(documents),

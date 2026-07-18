@@ -117,7 +117,7 @@ interpreter or maintain a parallel requirements file. Run Ruff and pytest throug
 The root verification entry point is `uv run sf2 verify`. Keep it non-interactive, deterministic,
 and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
-promotion/enemy and Battle 01 scene extraction, plus BizHawk base/debug-aware RNG,
+promotion/enemy/enemy-gold and Battle 01 scene extraction, plus BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, turn-order, region-activation,
 physical-attack-chain, dodge, and follow-up-validation behavior

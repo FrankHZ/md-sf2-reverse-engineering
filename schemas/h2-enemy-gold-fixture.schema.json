@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 enemy gold extraction fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-enemy-gold-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tableAddress", "usedEndAddress", "endAddress"],
+      "properties": {
+        "tableAddress": { "const": 48844 },
+        "usedEndAddress": { "const": 49050 },
+        "endAddress": { "const": 49188 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["wordCount", "usedCount", "unusedCount", "unusedNonzeroCount", "maximumUsedGold", "maximumUsedGoldIndex", "zeroUsedCount", "finalUnusedWord"],
+      "properties": {
+        "wordCount": { "const": 172 },
+        "usedCount": { "const": 103 },
+        "unusedCount": { "const": 69 },
+        "unusedNonzeroCount": { "const": 25 },
+        "maximumUsedGold": { "const": 3500 },
+        "maximumUsedGoldIndex": { "const": 97 },
+        "zeroUsedCount": { "const": 1 },
+        "finalUnusedWord": { "const": 255 }
+      }
+    }
+  }
+}

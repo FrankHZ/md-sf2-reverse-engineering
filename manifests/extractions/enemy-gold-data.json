@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-gold-v1",
+  "outputPath": "local/derived/enemy-gold-data.json",
+  "outputSha256": "16607CA1AE0477BC22FE81BEA044B7711D8C1EA3A31F4A0064C0288C026AD3DF",
+  "counts": { "words": 172, "used": 103, "unused": 69 }
+}

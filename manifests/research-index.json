@@ -488,6 +488,28 @@
       "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
     },
     {
+      "id": "battle.reward.enemy-gold-table",
+      "subsystem": "battle.reward",
+      "status": "confirmed",
+      "symbol": "table_EnemyGold",
+      "sourcePath": "data/stats/enemies/enemygold.asm",
+      "addresses": [
+        { "id": "table", "space": "rom", "kind": "symbol", "value": 48844 },
+        { "id": "used-end", "space": "rom", "kind": "observation", "value": 49050 },
+        { "id": "end", "space": "rom", "kind": "observation", "value": 49188 }
+      ],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/enemy-gold-v1.json", "fixtureId": "sf2-enemy-gold-v1", "verifier": "src/sf2tool/h2/enemy_gold.py",
+        "bindings": [
+          { "addressId": "table", "fixtureField": "function.tableAddress" },
+          { "addressId": "used-end", "fixtureField": "function.usedEndAddress" },
+          { "addressId": "end", "fixtureField": "function.endAddress" }
+        ]
+      }],
+      "documents": ["docs/research/enemy-promotions.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md"]
+    },
+    {
       "id": "battle.spell-healing.exp",
       "subsystem": "battle.spell",
       "status": "confirmed",

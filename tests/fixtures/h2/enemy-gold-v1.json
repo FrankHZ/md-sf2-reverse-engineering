@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-gold-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "tableAddress": 48844,
+    "usedEndAddress": 49050,
+    "endAddress": 49188
+  },
+  "expected": {
+    "wordCount": 172,
+    "usedCount": 103,
+    "unusedCount": 69,
+    "unusedNonzeroCount": 25,
+    "maximumUsedGold": 3500,
+    "maximumUsedGoldIndex": 97,
+    "zeroUsedCount": 1,
+    "finalUnusedWord": 255
+  }
+}

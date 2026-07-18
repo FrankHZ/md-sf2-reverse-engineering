@@ -690,6 +690,11 @@ there. The OOZE gold entry adds 10 independently for each successful target, pro
 states `10/20/30/30`. Construction records three death commands but leaves all target HP at 100 and
 caster MP at 20.
 
+The connected H2 contract `tests/fixtures/h2/enemy-gold-v1.json` independently byte-compares the
+full source/ROM range. It exposes 103 enemy-indexed gold words and retains, but does not interpret,
+the following 69 words marked unused by the source. Reproduce that data boundary with
+`uv run sf2 h2 enemy-gold`.
+
 Battle 01 halves EXP `49 -> 24`. Final effectiveness seed `0xECAB` produces award rolls 0 and 3, so
 the first adds one and the command carries 25 EXP; gold remains 30. Replay order is
 `ally:-8 -> enemy:-32768 -> enemy:-32768 -> enemy:-32768`. It changes caster MP `20 -> 12`, reduces

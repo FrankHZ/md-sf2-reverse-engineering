@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/enemy-gold-data.schema.json",
+  "title": "Shining Force II enemy gold source and ROM parity output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "sourcePath", "romRange", "usedGold", "unusedWords"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-enemy-gold-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "sourcePath": { "const": "data/stats/enemies/enemygold.asm" },
+    "romRange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["start", "usedEndExclusive", "endExclusive", "wordCount"],
+      "properties": {
+        "start": { "type": "integer", "minimum": 0 },
+        "usedEndExclusive": { "type": "integer", "minimum": 1 },
+        "endExclusive": { "type": "integer", "minimum": 1 },
+        "wordCount": { "const": 172 }
+      }
+    },
+    "usedGold": {
+      "type": "array", "minItems": 103, "maxItems": 103,
+      "items": { "type": "integer", "minimum": 0, "maximum": 65535 }
+    },
+    "unusedWords": {
+      "type": "array", "minItems": 69, "maxItems": 69,
+      "items": { "type": "integer", "minimum": 0, "maximum": 65535 }
+    }
+  }
+}
