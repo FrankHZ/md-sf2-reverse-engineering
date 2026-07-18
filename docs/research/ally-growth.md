@@ -71,6 +71,15 @@ Black Ring + Short Knife ATT stacking followed by CURSE insertion; and Ninja Kat
 `INCREASE_DOUBLE` bug changing NINJ prowess `0x94→0x24`, which raises double chance but clears
 counter 1/8 to 1/32.
 
+Three more Slade/NINJ 98→99 runs cover every other prowess effect used by a pinned original item:
+Critical Sword applies `INCREASE_CRITICAL 1` (`0x94→0x95`), Counter Sword applies
+`INCREASE_COUNTER 1` (`0x94→0xD4`), and Gisarme applies `SET_CRITICAL 6` (`0x94→0x96`). The source
+oracle also counts all item-table occurrences: critical increase 4, double increase 1, counter
+increase 1, critical set 1, and zero references to the otherwise present `SET_DOUBLE` and
+`SET_COUNTER` dispatch handlers. The latter two are therefore statically unreachable from original
+item data, not missing natural runtime cases. Run this focused matrix with
+`uv run sf2 h3 growth-refresh`.
+
 The stat-clamp fixture reuses one natural Slade/THIF 39→40 call while replacing only the destination
 byte at eight wrapper entries. Five increases saturate base/current ATT, base DEF, flagged base AGI,
 and current MOV at their source-defined caps. Three decreases clamp current DEF/AGI/MOV to zero
@@ -86,8 +95,8 @@ counts, hashes, structural rules, and research conclusions are tracked.
 
 ## Next Evidence
 
-Extend the committed emulator-backed fixtures with current-ATT decrease and word/long clamp edges
-and the remaining prowess-effect functions. The existing stat-gain, complete-caller, boundary,
+Extend the committed emulator-backed fixtures with current-ATT decrease and word/long clamp edges,
+plus critical ailment/cap inputs where a defensible natural or controlled seam exists. The existing stat-gain, complete-caller, boundary,
 refresh, initialization-prowess, stat-clamp, and enemy-curse fixtures are the first
 implementation-neutral inputs for a later remake growth module; see
 [`../design/level-up.md`](../design/level-up.md).

@@ -53,6 +53,12 @@ def test_legacy_skip_flags_still_select_the_full_profile() -> None:
     assert full_verify_requested(quick_args) is False
 
 
+def test_growth_refresh_has_a_dedicated_narrow_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "growth-refresh"])
+    assert args.h3_command == "growth-refresh"
+    assert args.timeout_seconds == 60
+
+
 def test_legacy_powershell_surface_does_not_expand() -> None:
     root = Path(__file__).resolve().parents[2]
     scripts = sorted((root / "scripts").rglob("*.ps1"))

@@ -169,6 +169,13 @@ flooring. Equipped Black Ring + Short Knife stack ATT +10/+5, then the cursed de
 and changes prowess `0x94→0x24`: `INCREASE_DOUBLE` raises double from 1/16 to 1/8 but its original
 mask also clears NINJ's counter 1/8 bits to the 1/32 encoding.
 
+The same focused rail now covers the remaining prowess effects reachable from original item data.
+Critical Sword changes `0x94→0x95`, Counter Sword changes `0x94→0xD4`, and Gisarme changes
+`0x94→0x96`; each call follows the natural Slade/NINJ 98→99 level-up and derived-stat refresh. The
+pinned item table has no `SET_DOUBLE` or `SET_COUNTER` records, so their dispatch handlers are
+source-visible but not presented as natural runtime coverage. Reproduce only this eight-case slice
+with `uv run sf2 h3 growth-refresh`.
+
 ## Confirmed at Runtime: Stat Clamp Boundaries
 
 The `sf2-stat-clamp-boundaries-v1` fixture follows a natural Slade/THIF level 39→40 call and uses the

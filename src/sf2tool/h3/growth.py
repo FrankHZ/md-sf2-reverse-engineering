@@ -823,6 +823,16 @@ def _model_refresh_case(
 def _verify_refresh_model(
     fixture: dict[str, Any], *, disasm: Path, curves: dict[int, dict[int, tuple[int, int]]]
 ) -> None:
+    itemdefs = (disasm / "data/stats/items/itemdefs.asm").read_text(encoding="utf-8")
+    expected_prowess_effect_counts = fixture["itemTableProwessEffectCounts"]
+    for effect, expected_count in expected_prowess_effect_counts.items():
+        actual_count = len(re.findall(rf"\b{effect}\s*,", itemdefs))
+        if actual_count != expected_count:
+            raise ValueError(
+                f"level-up refresh {effect} item-table count drift: "
+                f"expected {expected_count}, got {actual_count}"
+            )
+
     for case in fixture["cases"]:
         model = _model_refresh_case(case, disasm=disasm, curves=curves)
         if any(case[field] != value for field, value in model.items()):
@@ -845,6 +855,52 @@ def _verify_refresh_observation(
     }
     if observed.get("result") != expected:
         raise ValueError("level-up refresh runtime mismatch")
+
+
+def _run_refresh_observations(
+    fixture: dict[str, Any], rom_path: Path, *, timeout_seconds: int
+) -> None:
+    for case in fixture["cases"]:
+        observed = run_observer(
+            rom_path=rom_path,
+            observer_path=REFRESH_OBSERVER,
+            config={
+                "function": fixture["function"],
+                "ram": fixture["ram"],
+                "case": {
+                    "id": case["id"],
+                    "ally": case["ally"],
+                    "seed": case["seed"],
+                    "input": case["input"],
+                },
+            },
+            output_name=f"level-up-refresh-{case['id']}",
+            timeout_seconds=timeout_seconds,
+        )
+        _verify_refresh_observation(fixture, case, observed)
+
+
+def verify_level_up_refresh(
+    rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 60
+) -> dict[str, Any]:
+    fixture = load_json(REFRESH_FIXTURE)
+    validate_json(fixture, REFRESH_SCHEMA, owner=str(REFRESH_FIXTURE))
+    verify_runtime_contract(fixture, rom_path)
+    disasm = _verify_upstream(upstream_path)
+    _verify_refresh_model(fixture, disasm=disasm, curves=_parse_growth_curves(disasm))
+    _run_refresh_observations(fixture, rom_path, timeout_seconds=timeout_seconds)
+    return {
+        "Fixture": fixture["id"],
+        "Cases": len(fixture["cases"]),
+        "ProwessItemEffects": [
+            "INCREASE_CRITICAL",
+            "INCREASE_DOUBLE",
+            "INCREASE_COUNTER",
+            "SET_CRITICAL",
+        ],
+        "UnusedProwessItemEffects": fixture["unreferencedProwessEffects"],
+        "Status": "PASS",
+    }
 
 
 def _verify_prowess_models(fixture: dict[str, Any], *, disasm: Path) -> None:
@@ -1054,24 +1110,7 @@ def verify_growth(
         timeout_seconds=timeout_seconds,
     )
     _verify_boundary_observation(boundary, boundary_observed)
-    for case in refresh["cases"]:
-        refresh_observed = run_observer(
-            rom_path=rom_path,
-            observer_path=REFRESH_OBSERVER,
-            config={
-                "function": refresh["function"],
-                "ram": refresh["ram"],
-                "case": {
-                    "id": case["id"],
-                    "ally": case["ally"],
-                    "seed": case["seed"],
-                    "input": case["input"],
-                },
-            },
-            output_name=f"level-up-refresh-{case['id']}",
-            timeout_seconds=timeout_seconds,
-        )
-        _verify_refresh_observation(refresh, case, refresh_observed)
+    _run_refresh_observations(refresh, rom_path, timeout_seconds=timeout_seconds)
     _run_prowess_observations(prowess, rom_path, timeout_seconds=timeout_seconds)
     return {
         "StatGainFixture": stat["id"],

@@ -14,9 +14,10 @@
   controlled natural `LevelUp` calls covering post-projection growth, both class caps, both
   immediately preceding levels, promoted effective levels, inherited spell lists, cross-ally
   class-block scanning, the final missing-class sentinel, and a successful spell upgrade.
-- `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` owns five controlled
+- `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` owns eight controlled
   Slade refresh calls through `UpdateCombatantStats`, including current/base separation, full and
-  partial status counters, ordinary/cursed equipment, and a NINJ prowess-mask case.
+  partial status counters, ordinary/cursed equipment, and all four prowess effects referenced by
+  the original item table. Run it independently with `uv run sf2 h3 growth-refresh`.
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path plus fifteen controlled inputs
   that cover the full HEAL 3 double/counter high-nibble matrix in `InitializeAllyStats`.
@@ -129,6 +130,18 @@ critical 1/8, double 1/16, and counter 1/8, but `INCREASE_DOUBLE` keeps only the
 before inserting double 1/8. Current prowess becomes `0x24`, unintentionally resetting counter to
 1/32. This is a confirmed original equipment bug, not an automatic remake default.
 
+Three additional natural item-table paths retain the same NINJ `0x94` source prowess and level-up
+gains. Critical Sword's `INCREASE_CRITICAL 1` produces `0x95` while preserving double/counter;
+Counter Sword's `INCREASE_COUNTER 1` produces `0xD4` while preserving critical/double; and
+Gisarme's `SET_CRITICAL 6` produces `0x96` while preserving both high-nibble fields. Their ATT
+effects independently produce current ATT 86, 93, and 96 from the refreshed base 54.
+
+The pinned item table references `INCREASE_CRITICAL` four times and `INCREASE_DOUBLE`,
+`INCREASE_COUNTER`, and `SET_CRITICAL` once each. It references `SET_DOUBLE` and `SET_COUNTER` zero
+times even though both handlers are present in the dispatch table. Those two hypothetical handler
+semantics remain source-inferred and are not original-game runtime behavior reachable through an
+unmodified item definition.
+
 A remake should model maximum/current resources and base/derived combat stats as separate fields.
 Level-up must not heal by merely copying new maxima into current HP/MP, and equipment effects must be
 recomputed from the new base rather than incrementally stacked onto stale derived values.
@@ -223,7 +236,7 @@ record that choice explicitly before H4 treats either behavior as normative.
 **Unknown** runtime boundaries still requiring dedicated fixtures:
 
 - current-ATT decrease underflow, byte-overflow inputs, and word/long clamp-helper boundaries;
-- the remaining critical/counter/set prowess equip-effect functions;
+- critical-ailment and critical-cap inputs outside the naturally referenced item/class combinations.
 
 The future remake growth module should consume the same eight fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.

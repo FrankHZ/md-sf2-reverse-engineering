@@ -14,6 +14,15 @@
     "combatantEntrySize": 56,
     "seedAddress": 16768676
   },
+  "itemTableProwessEffectCounts": {
+    "INCREASE_CRITICAL": 4,
+    "INCREASE_DOUBLE": 1,
+    "INCREASE_COUNTER": 1,
+    "SET_CRITICAL": 1,
+    "SET_DOUBLE": 0,
+    "SET_COUNTER": 0
+  },
+  "unreferencedProwessEffects": ["SET_DOUBLE", "SET_COUNTER"],
   "cases": [
     {
       "id": "slade-thif-level39-equipped-refresh", "ally": 5, "allyCode": "SLADE", "classCode": "THIF", "seed": 4660,
@@ -122,6 +131,72 @@
         "baseResistance": 0, "currentResistance": 0,
         "baseProwess": 148, "currentProwess": 36,
         "items": [236, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "updateStatsCallObserved": true, "updateStatsEntryObserved": true
+    },
+    {
+      "id": "slade-ninj-critical-sword-refresh", "ally": 5, "allyCode": "SLADE", "classCode": "NINJ", "seed": 4660,
+      "input": {
+        "class": 27, "level": 98,
+        "maxHp": 90, "currentHp": 7, "maxMp": 50, "currentMp": 3,
+        "baseAttack": 53, "currentAttack": 1, "baseDefense": 82, "currentDefense": 2,
+        "baseAgility": 72, "currentAgility": 3, "baseMove": 7, "currentMove": 1,
+        "baseResistance": 0, "currentResistance": 4660,
+        "baseProwess": 148, "currentProwess": 255,
+        "items": [193, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "after": {
+        "class": 27, "level": 99,
+        "maxHp": 92, "currentHp": 7, "maxMp": 52, "currentMp": 3,
+        "baseAttack": 54, "currentAttack": 86, "baseDefense": 84, "currentDefense": 84,
+        "baseAgility": 74, "currentAgility": 74, "baseMove": 7, "currentMove": 7,
+        "baseResistance": 0, "currentResistance": 0,
+        "baseProwess": 148, "currentProwess": 149,
+        "items": [193, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "updateStatsCallObserved": true, "updateStatsEntryObserved": true
+    },
+    {
+      "id": "slade-ninj-counter-sword-refresh", "ally": 5, "allyCode": "SLADE", "classCode": "NINJ", "seed": 4660,
+      "input": {
+        "class": 27, "level": 98,
+        "maxHp": 90, "currentHp": 7, "maxMp": 50, "currentMp": 3,
+        "baseAttack": 53, "currentAttack": 1, "baseDefense": 82, "currentDefense": 2,
+        "baseAgility": 72, "currentAgility": 3, "baseMove": 7, "currentMove": 1,
+        "baseResistance": 0, "currentResistance": 4660,
+        "baseProwess": 148, "currentProwess": 255,
+        "items": [196, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "after": {
+        "class": 27, "level": 99,
+        "maxHp": 92, "currentHp": 7, "maxMp": 52, "currentMp": 3,
+        "baseAttack": 54, "currentAttack": 93, "baseDefense": 84, "currentDefense": 84,
+        "baseAgility": 74, "currentAgility": 74, "baseMove": 7, "currentMove": 7,
+        "baseResistance": 0, "currentResistance": 0,
+        "baseProwess": 148, "currentProwess": 212,
+        "items": [196, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "updateStatsCallObserved": true, "updateStatsEntryObserved": true
+    },
+    {
+      "id": "slade-ninj-gisarme-refresh", "ally": 5, "allyCode": "SLADE", "classCode": "NINJ", "seed": 4660,
+      "input": {
+        "class": 27, "level": 98,
+        "maxHp": 90, "currentHp": 7, "maxMp": 50, "currentMp": 3,
+        "baseAttack": 53, "currentAttack": 1, "baseDefense": 82, "currentDefense": 2,
+        "baseAgility": 72, "currentAgility": 3, "baseMove": 7, "currentMove": 1,
+        "baseResistance": 0, "currentResistance": 4660,
+        "baseProwess": 148, "currentProwess": 255,
+        "items": [237, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "after": {
+        "class": 27, "level": 99,
+        "maxHp": 92, "currentHp": 7, "maxMp": 52, "currentMp": 3,
+        "baseAttack": 54, "currentAttack": 96, "baseDefense": 84, "currentDefense": 84,
+        "baseAgility": 74, "currentAgility": 74, "baseMove": 7, "currentMove": 7,
+        "baseResistance": 0, "currentResistance": 0,
+        "baseProwess": 148, "currentProwess": 150,
+        "items": [237, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
       },
       "updateStatsCallObserved": true, "updateStatsEntryObserved": true
     }

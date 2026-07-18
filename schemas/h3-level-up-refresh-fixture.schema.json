@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/h3-level-up-refresh-fixture.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "cases"],
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "itemTableProwessEffectCounts", "unreferencedProwessEffects", "cases"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-level-up-refresh-v1" },
@@ -31,8 +31,23 @@
         "seedAddress": { "const": 16768676 }
       }
     },
+    "itemTableProwessEffectCounts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["INCREASE_CRITICAL", "INCREASE_DOUBLE", "INCREASE_COUNTER", "SET_CRITICAL", "SET_DOUBLE", "SET_COUNTER"],
+      "properties": {
+        "INCREASE_CRITICAL": { "const": 4 },
+        "INCREASE_DOUBLE": { "const": 1 },
+        "INCREASE_COUNTER": { "const": 1 },
+        "SET_CRITICAL": { "const": 1 },
+        "SET_DOUBLE": { "const": 0 },
+        "SET_COUNTER": { "const": 0 }
+      }
+    },
+    "unreferencedProwessEffects": {
+      "const": ["SET_DOUBLE", "SET_COUNTER"]
+    },
     "cases": {
-      "type": "array", "minItems": 5, "maxItems": 5,
+      "type": "array", "minItems": 8, "maxItems": 8,
       "items": { "$ref": "#/$defs/refreshCase" }
     }
   },
@@ -41,7 +56,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["id", "ally", "allyCode", "classCode", "seed", "input", "after", "updateStatsCallObserved", "updateStatsEntryObserved"],
       "properties": {
-        "id": { "enum": ["slade-thif-level39-equipped-refresh", "slade-thif-status-and-agility-refresh", "slade-thif-partial-status-refresh", "slade-thif-cursed-ring-refresh", "slade-ninj-prowess-mask-refresh"] },
+        "id": { "enum": ["slade-thif-level39-equipped-refresh", "slade-thif-status-and-agility-refresh", "slade-thif-partial-status-refresh", "slade-thif-cursed-ring-refresh", "slade-ninj-prowess-mask-refresh", "slade-ninj-critical-sword-refresh", "slade-ninj-counter-sword-refresh", "slade-ninj-gisarme-refresh"] },
         "ally": { "const": 5 },
         "allyCode": { "const": "SLADE" },
         "classCode": { "enum": ["NINJ", "THIF"] },
