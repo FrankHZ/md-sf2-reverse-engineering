@@ -21,17 +21,18 @@
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path plus fifteen controlled inputs
   that cover the full HEAL 3 double/counter high-nibble matrix in `InitializeAllyStats`.
-- `tests/fixtures/h3/stat-clamp-boundaries-v1.json` / `sf2-stat-clamp-boundaries-v1` owns eight
-  controlled wrapper calls during one natural Slade level-up, covering five cap saturations and
-  three byte-underflow clamps.
+- `tests/fixtures/h3/stat-clamp-boundaries-v1.json` / `sf2-stat-clamp-boundaries-v1` owns nine
+  controlled wrapper calls during one natural Slade level-up, covering byte carry saturation,
+  word wrap, ordinary caps, and three byte-underflow clamps.
 - `tests/fixtures/h3/enemy-curse-suppression-v1.json` / `sf2-enemy-curse-suppression-v1` owns a
   natural Battle 01 enemy refresh with controlled cursed equipment.
 - `tests/fixtures/h3/battle-exp-level-up-v1.json` / `sf2-battle-exp-level-up-v1` owns the connected
   natural Battle 01 path from a 24-point EXP command through the 100-point threshold, one
   source-modeled Bowie/SDMN `LevelUp`, and final persistent combatant state.
 - `tests/fixtures/h3/exp-command-boundaries-v1.json` / `sf2-exp-command-boundaries-v1` owns the
-  99-below/exact-100/EXP-cap-200 command boundaries and proves that one command processes at most
-  one 100-point threshold. Run it independently with `uv run sf2 h3 exp-command`.
+  99-below/exact-100/EXP-cap-200 command boundaries, base/promoted cap result 255, and proves that
+  one command processes at most one 100-point threshold. Run it independently with
+  `uv run sf2 h3 exp-command`.
 - [`../research/ally-growth.md`](../research/ally-growth.md) owns the static curve and class-block
   storage contract; [`../research/runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
   owns addresses and runtime interpretation.
@@ -157,12 +158,17 @@ wrapper entries, the clamp fixture replaces only the destination byte. Base ATT 
 low seven bits `99+2` to the base-AGI cap 100, then restores the flag, producing `0xE4`.
 
 The same refresh equips source-defined items to reach the current-stat wrappers. Running Ring makes
-MOV `199+2→200`, and Evil Axe makes ATT `199+50→200`. Controlled low inputs confirm unsigned
+MOV `199+2→200`; Evil Axe current ATT `250+50` sets byte carry and clamps to 200. Controlled low inputs confirm unsigned
 subtraction clamps rather than wrapping: Evil Axe DEF `3-5→0`, Evil Lance MOV `1-2→0`, and Demon
 Rod AGI `5-10→0`. The observer reapplies each controlled input before every matching wrapper entry,
-then confirms the original `IncreaseAndClampByte`, `IncreaseAndClamp7Bits`, and
-`DecreaseAndClampByte` helpers were all reached. These are validation-seam facts, not claims that
+then confirms the original `IncreaseAndClampByte`, `IncreaseAndClampWord`, `IncreaseAndClamp7Bits`,
+and `DecreaseAndClampByte` helpers were all reached. These are validation-seam facts, not claims that
 such extreme values occur naturally in an unmodified campaign.
+
+The natural HP +2 wrapper also reaches `IncreaseAndClampWord`. Unlike the byte helper, it detects
+overflow through the signed negative flag rather than carry. Controlled maximum HP `65535+2` wraps
+to positive 1, so it bypasses the 200 cap and stores 1. This is confirmed original behavior at an
+extreme validation seam; fidelity code must not silently replace it with an ideal saturating add.
 
 A fidelity implementation must preserve the AGI flag separately during base-AGI saturation and use
 the source-defined per-field caps. It must not rely on host-language overflow behavior for decrease
@@ -192,9 +198,9 @@ replaced by refreshed values `7/5`.
 The connected fixture observes one call and exits at the containing EXP command's return. Its
 companion boundary matrix confirms `75+24 -> 99` without a level, `76+24 -> 0` with one level, and
 the saturation path `199+24 -> 200 -> 100` with exactly one level. Thus a command never processes
-more than one threshold even when 100 EXP remains. The separate LevelUp boundary fixture owns the
-base/promoted cap exits; their containing EXP-command path, random +1/-1 award branches, and gold
-remain outside this section.
+more than one threshold even when 100 EXP remains. At SDMN level 40 and HERO level 99, the command
+still subtracts 100 and calls `LevelUp`; result 255 leaves the capped level unchanged and EXP at 0.
+Random +1/-1 award branches and gold remain outside this section.
 
 ## Confirmed Karna HEAL 3 Initialization Rule
 
@@ -240,7 +246,7 @@ record that choice explicitly before H4 treats either behavior as normative.
 
 **Unknown** runtime boundaries still requiring dedicated fixtures:
 
-- current-ATT decrease underflow, byte-overflow inputs, and word/long clamp-helper boundaries;
+- current-ATT decrease underflow, remaining word boundaries, and the unused long clamp helpers;
 - critical-ailment and critical-cap inputs outside the naturally referenced item/class combinations.
 
 The future remake growth module should consume the same nine fixtures first, then extend them rather

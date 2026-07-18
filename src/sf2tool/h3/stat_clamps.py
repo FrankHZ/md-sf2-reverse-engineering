@@ -28,7 +28,14 @@ def _clamp(operation: dict[str, Any]) -> int:
     amount = operation["amount"]
     cap = operation["cap"]
     if operation["kind"] == "increase-byte":
+        if before + amount > 0xFF:
+            return cap
         return min(cap, before + amount)
+    if operation["kind"] == "increase-word":
+        value = (before + amount) & 0xFFFF
+        if value & 0x8000:
+            return cap
+        return min(cap, value)
     if operation["kind"] == "decrease-byte":
         return min(cap, max(0, before - amount))
     if operation["kind"] == "increase-7bits":
@@ -91,6 +98,8 @@ def _verify_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
     required_fragments = (
         "IncreaseAndClampByte:",
         "bcs.s   @MakeMaxValue",
+        "IncreaseAndClampWord:",
+        "bmi.s   @MakeMaxValue   ; check if overflow to negative",
         "IncreaseAndClamp7Bits:",
         "andi.b  #TWO_TURN_THRESHOLD,d3",
         "andi.b  #TURN_AGILITY_MASK,d2",
@@ -113,12 +122,14 @@ def _verify_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
                 item_effects[effect] = value
 
     expected_amounts = {
+        "level-up:hp": gains["hp"],
         "level-up:attack": gains["attack"],
         "level-up:defense": gains["defense"],
         "level-up:agility": gains["agility"],
         **{f"item:{effect}": value for effect, value in item_effects.items()},
     }
     expected_caps = {
+        12: equates["CHAR_STATCAP_HP"],
         18: equates["CHAR_STATCAP_ATT"],
         19: equates["CHAR_STATCAP_ATT"],
         20: equates["CHAR_STATCAP_DEF"],
@@ -185,6 +196,7 @@ def _verify_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
 
     expected_after = {
         "level": case["input"]["level"] + 1,
+        "maxHp": operations["level-up:hp"]["after"],
         "baseAttack": base_attack,
         "currentAttack": current["currentAttack"],
         "baseDefense": base_defense,
@@ -242,7 +254,21 @@ def verify_stat_clamp_boundaries(
     return {
         "Fixture": fixture["id"],
         "Operations": len(case["operations"]),
-        "Caps": sum(operation["kind"].startswith("increase") for operation in case["operations"]),
+        "Caps": sum(
+            (
+                operation["after"] & 0x7F
+                if operation["kind"] == "increase-7bits"
+                else operation["after"]
+            )
+            == operation["cap"]
+            for operation in case["operations"]
+            if operation["kind"].startswith("increase")
+        ),
+        "Wraps": sum(
+            operation["kind"] == "increase-word"
+            and operation["after"] < operation["before"]
+            for operation in case["operations"]
+        ),
         "Underflows": sum(
             operation["id"].endswith("underflow") for operation in case["operations"]
         ),

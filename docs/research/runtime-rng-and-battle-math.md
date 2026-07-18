@@ -186,11 +186,16 @@ base ATT `199+2` and base DEF `199+1` at 200. `IncreaseAndClamp7Bits` turns flag
 `0xE3` into `0xE4`: low AGI clamps from 99+2 to 100 while bit 7 survives.
 
 During the same `UpdateCombatantStats`, four equipped source records reach the item wrappers.
-Current MOV `199+2` and ATT `199+50` saturate at 200. Current DEF `3-5`, MOV `1-2`, and AGI `5-10`
+Current MOV `199+2` saturates normally; ATT `250+50` sets byte carry and clamps to 200. Current DEF `3-5`, MOV `1-2`, and AGI `5-10`
 each become zero through `DecreaseAndClampByte`; none wrap into the unsigned high range. The
 observer injects before every matching wrapper entry and records the first complete transition,
-while separate hooks confirm all three generic helpers execute. This controlled seam proves helper
+while separate hooks confirm all four generic helpers execute. This controlled seam proves helper
 semantics and wrapper caps, not natural reachability of the synthetic values.
+
+The natural level-up also supplies HP +2 to `IncreaseMaxHp`. Replacing only maximum HP with 65535
+confirms a distinct word-helper edge: `IncreaseAndClampWord` wraps the sum to positive 1, then misses
+both its signed-negative overflow test and the 200 cap comparison. Final maximum HP is 1. The byte
+helper therefore saturates carry, while the word helper has a signed-overflow hole for this input.
 
 ## Confirmed at Runtime: Enemy Curse Suppression
 
@@ -1010,7 +1015,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 
 ## Unknown / Next Fixtures
 
-- Add current-ATT decrease, byte-overflow, and word/long clamp-helper edges.
+- Add current-ATT decrease, remaining word boundaries, and direct evidence for the unused long clamp helpers.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

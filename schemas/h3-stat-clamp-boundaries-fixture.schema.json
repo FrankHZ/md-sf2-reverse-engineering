@@ -17,14 +17,16 @@
     },
     "function": {
       "type": "object", "additionalProperties": false,
-      "required": ["levelUpEntryAddress", "updateStatsEntryAddress", "updateStatsReturnAddress", "increaseAndClampByteAddress", "increaseAndClamp7BitsAddress", "decreaseAndClampByteAddress", "increaseBaseAttEntryAddress", "increaseBaseAttReturnAddress", "increaseBaseDefEntryAddress", "increaseBaseDefReturnAddress", "increaseBaseAgiEntryAddress", "increaseBaseAgiReturnAddress", "increaseCurrentMovEntryAddress", "increaseCurrentMovReturnAddress", "increaseCurrentAttEntryAddress", "increaseCurrentAttReturnAddress", "decreaseCurrentDefEntryAddress", "decreaseCurrentDefReturnAddress", "decreaseCurrentMovEntryAddress", "decreaseCurrentMovReturnAddress", "decreaseCurrentAgiEntryAddress", "decreaseCurrentAgiReturnAddress"],
+      "required": ["levelUpEntryAddress", "updateStatsEntryAddress", "updateStatsReturnAddress", "increaseAndClampByteAddress", "increaseAndClampWordAddress", "increaseAndClamp7BitsAddress", "decreaseAndClampByteAddress", "increaseMaxHpEntryAddress", "increaseMaxHpReturnAddress", "increaseBaseAttEntryAddress", "increaseBaseAttReturnAddress", "increaseBaseDefEntryAddress", "increaseBaseDefReturnAddress", "increaseBaseAgiEntryAddress", "increaseBaseAgiReturnAddress", "increaseCurrentMovEntryAddress", "increaseCurrentMovReturnAddress", "increaseCurrentAttEntryAddress", "increaseCurrentAttReturnAddress", "decreaseCurrentDefEntryAddress", "decreaseCurrentDefReturnAddress", "decreaseCurrentMovEntryAddress", "decreaseCurrentMovReturnAddress", "decreaseCurrentAgiEntryAddress", "decreaseCurrentAgiReturnAddress"],
       "properties": {
         "levelUpEntryAddress": { "const": 38020 },
         "updateStatsEntryAddress": { "const": 35278 },
         "updateStatsReturnAddress": { "const": 35364 },
         "increaseAndClampByteAddress": { "const": 37650 },
+        "increaseAndClampWordAddress": { "const": 37782 },
         "increaseAndClamp7BitsAddress": { "const": 37684 },
         "decreaseAndClampByteAddress": { "const": 37740 },
+        "increaseMaxHpEntryAddress": { "const": 34636 }, "increaseMaxHpReturnAddress": { "const": 34656 },
         "increaseBaseAttEntryAddress": { "const": 34732 }, "increaseBaseAttReturnAddress": { "const": 34752 },
         "increaseBaseDefEntryAddress": { "const": 34776 }, "increaseBaseDefReturnAddress": { "const": 34796 },
         "increaseBaseAgiEntryAddress": { "const": 34820 }, "increaseBaseAgiReturnAddress": { "const": 34838 },
@@ -61,34 +63,34 @@
           }
         },
         "operations": {
-          "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true,
+          "type": "array", "minItems": 9, "maxItems": 9, "uniqueItems": true,
           "items": {
             "type": "object", "additionalProperties": false,
             "required": ["id", "source", "kind", "entryKey", "fieldOffset", "before", "amount", "cap", "after"],
             "properties": {
               "id": { "type": "string", "minLength": 1 }, "source": { "type": "string", "minLength": 1 },
-              "kind": { "enum": ["increase-byte", "increase-7bits", "decrease-byte"] },
-              "entryKey": { "enum": ["increaseBaseAtt", "increaseBaseDef", "increaseBaseAgi", "increaseCurrentMov", "increaseCurrentAtt", "decreaseCurrentDef", "decreaseCurrentMov", "decreaseCurrentAgi"] },
+              "kind": { "enum": ["increase-byte", "increase-word", "increase-7bits", "decrease-byte"] },
+              "entryKey": { "enum": ["increaseMaxHp", "increaseBaseAtt", "increaseBaseDef", "increaseBaseAgi", "increaseCurrentMov", "increaseCurrentAtt", "decreaseCurrentDef", "decreaseCurrentMov", "decreaseCurrentAgi"] },
               "fieldOffset": { "type": "integer", "minimum": 0, "maximum": 55 },
-              "before": { "type": "integer", "minimum": 0, "maximum": 255 },
-              "amount": { "type": "integer", "minimum": 0, "maximum": 255 },
-              "cap": { "type": "integer", "minimum": 0, "maximum": 255 },
-              "after": { "type": "integer", "minimum": 0, "maximum": 255 }
+              "before": { "type": "integer", "minimum": 0, "maximum": 65535 },
+              "amount": { "type": "integer", "minimum": 0, "maximum": 65535 },
+              "cap": { "type": "integer", "minimum": 0, "maximum": 65535 },
+              "after": { "type": "integer", "minimum": 0, "maximum": 65535 }
             }
           }
         },
         "helpersObserved": {
           "type": "object", "additionalProperties": false,
-          "required": ["increaseByte", "increase7Bits", "decreaseByte"],
+          "required": ["increaseByte", "increaseWord", "increase7Bits", "decreaseByte"],
           "properties": {
-            "increaseByte": { "const": true }, "increase7Bits": { "const": true }, "decreaseByte": { "const": true }
+            "increaseByte": { "const": true }, "increaseWord": { "const": true }, "increase7Bits": { "const": true }, "decreaseByte": { "const": true }
           }
         },
         "after": {
           "type": "object", "additionalProperties": false,
-          "required": ["level", "baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "baseMove", "currentMove", "status"],
+          "required": ["level", "maxHp", "baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "baseMove", "currentMove", "status"],
           "properties": {
-            "level": { "const": 40 }, "baseAttack": { "const": 200 }, "currentAttack": { "const": 200 },
+            "level": { "const": 40 }, "maxHp": { "const": 1 }, "baseAttack": { "const": 200 }, "currentAttack": { "const": 200 },
             "baseDefense": { "const": 200 }, "currentDefense": { "const": 0 },
             "baseAgility": { "const": 228 }, "currentAgility": { "const": 0 },
             "baseMove": { "const": 7 }, "currentMove": { "const": 0 }, "status": { "const": 4 }

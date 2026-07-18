@@ -41,6 +41,7 @@ local function snapshot(ally)
     local source = combatant_address(ally)
     return {
         level = memory.read_u8(source + 11, "M68K BUS"),
+        maxHp = memory.read_u16_be(source + 12, "M68K BUS"),
         baseAttack = memory.read_u8(source + 18, "M68K BUS"),
         currentAttack = memory.read_u8(source + 19, "M68K BUS"),
         baseDefense = memory.read_u8(source + 20, "M68K BUS"),
@@ -65,14 +66,14 @@ local function write_result_and_exit()
             operation.id, operation.before, operation.amount, operation.after))
     end
     output:write(string.format(
-        '],"helpersObserved":{"increaseByte":%s,"increase7Bits":%s,"decreaseByte":%s},"after":',
-        tostring(active.helpers.increaseByte), tostring(active.helpers.increase7Bits),
+        '],"helpersObserved":{"increaseByte":%s,"increaseWord":%s,"increase7Bits":%s,"decreaseByte":%s},"after":',
+        tostring(active.helpers.increaseByte), tostring(active.helpers.increaseWord), tostring(active.helpers.increase7Bits),
         tostring(active.helpers.decreaseByte)))
     local value = active.after
     output:write(string.format(
-        '{"level":%d,"baseAttack":%d,"currentAttack":%d,"baseDefense":%d,"currentDefense":%d,' ..
+        '{"level":%d,"maxHp":%d,"baseAttack":%d,"currentAttack":%d,"baseDefense":%d,"currentDefense":%d,' ..
         '"baseAgility":%d,"currentAgility":%d,"baseMove":%d,"currentMove":%d,"status":%d}}}\n',
-        value.level, value.baseAttack, value.currentAttack, value.baseDefense, value.currentDefense,
+        value.level, value.maxHp, value.baseAttack, value.currentAttack, value.baseDefense, value.currentDefense,
         value.baseAgility, value.currentAgility, value.baseMove, value.currentMove, value.status))
     output:close()
     client.exitCode(0)
@@ -84,13 +85,17 @@ event.on_bus_exec(function()
     memory.write_u16_be(config.ram.seedAddress, config.case.seed, "M68K BUS")
     active = {
         id = config.case.id, ally = config.case.ally, operations = {},
-        helpers = { increaseByte = false, increase7Bits = false, decreaseByte = false }
+        helpers = { increaseByte = false, increaseWord = false, increase7Bits = false, decreaseByte = false }
     }
 end, config["function"].levelUpEntryAddress, "sf2-stat-clamp-level-up", "M68K BUS")
 
 event.on_bus_exec(function()
     if active ~= nil then active.helpers.increaseByte = true end
 end, config["function"].increaseAndClampByteAddress, "sf2-stat-clamp-increase-byte", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active ~= nil then active.helpers.increaseWord = true end
+end, config["function"].increaseAndClampWordAddress, "sf2-stat-clamp-increase-word", "M68K BUS")
 
 event.on_bus_exec(function()
     if active ~= nil then active.helpers.increase7Bits = true end
@@ -106,20 +111,22 @@ for index, configured in ipairs(config.case.operations) do
     event.on_bus_exec(function()
         if active == nil then return end
         if reg("D0") ~= active.ally then return end
-        if (reg("D1") & 0xFF) ~= operation.amount then return end
+        local word = operation.kind == "increase-word"
+        local amount = reg("D1")
+        if not word then amount = amount & 0xFF end
+        if amount ~= operation.amount then return end
+        local target = combatant_address(active.ally) + operation.fieldOffset
         if active.operations[operation_index] ~= nil then
-            memory.write_u8(
-                combatant_address(active.ally) + operation.fieldOffset,
-                operation.before,
-                "M68K BUS")
+            if word then memory.write_u16_be(target, operation.before, "M68K BUS")
+            else memory.write_u8(target, operation.before, "M68K BUS") end
             return
         end
-        local target = combatant_address(active.ally) + operation.fieldOffset
-        memory.write_u8(target, operation.before, "M68K BUS")
+        if word then memory.write_u16_be(target, operation.before, "M68K BUS")
+        else memory.write_u8(target, operation.before, "M68K BUS") end
         active.operations[operation_index] = {
             id = operation.id,
-            before = memory.read_u8(target, "M68K BUS"),
-            amount = reg("D1") & 0xFF,
+            before = word and memory.read_u16_be(target, "M68K BUS") or memory.read_u8(target, "M68K BUS"),
+            amount = amount,
             after = nil
         }
     end, config["function"][operation.entryKey .. "EntryAddress"],
@@ -129,8 +136,12 @@ for index, configured in ipairs(config.case.operations) do
         if active == nil then return end
         local observed = active.operations[operation_index]
         if observed == nil or observed.after ~= nil then return end
-        observed.after = memory.read_u8(
-            combatant_address(active.ally) + operation.fieldOffset, "M68K BUS")
+        local target = combatant_address(active.ally) + operation.fieldOffset
+        if operation.kind == "increase-word" then
+            observed.after = memory.read_u16_be(target, "M68K BUS")
+        else
+            observed.after = memory.read_u8(target, "M68K BUS")
+        end
     end, config["function"][operation.entryKey .. "ReturnAddress"],
         "sf2-stat-clamp-return-" .. operation.id, "M68K BUS")
 end
@@ -149,5 +160,15 @@ local frames = 0
 while true do
     frames = frames + 1
     emu.frameadvance()
-    if frames % 600 == 0 then status(string.format("frame=%d", frames)) end
+    if frames % 600 == 0 then
+        local captured = 0
+        if active ~= nil then
+            for index = 1, #config.case.operations do
+                local operation = active.operations[index]
+                if operation ~= nil and operation.after ~= nil then captured = captured + 1 end
+            end
+        end
+        status(string.format("frame=%d,active=%s,captured=%d", frames,
+            tostring(active ~= nil), captured))
+    end
 end

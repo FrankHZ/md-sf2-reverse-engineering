@@ -8,8 +8,11 @@
     "updateStatsEntryAddress": 35278,
     "updateStatsReturnAddress": 35364,
     "increaseAndClampByteAddress": 37650,
+    "increaseAndClampWordAddress": 37782,
     "increaseAndClamp7BitsAddress": 37684,
     "decreaseAndClampByteAddress": 37740,
+    "increaseMaxHpEntryAddress": 34636,
+    "increaseMaxHpReturnAddress": 34656,
     "increaseBaseAttEntryAddress": 34732,
     "increaseBaseAttReturnAddress": 34752,
     "increaseBaseDefEntryAddress": 34776,
@@ -52,6 +55,11 @@
     },
     "operations": [
       {
+        "id": "max-hp-word-wrap", "source": "level-up:hp", "kind": "increase-word",
+        "entryKey": "increaseMaxHp", "fieldOffset": 12,
+        "before": 65535, "amount": 2, "cap": 200, "after": 1
+      },
+      {
         "id": "base-attack-cap", "source": "level-up:attack", "kind": "increase-byte",
         "entryKey": "increaseBaseAtt", "fieldOffset": 18,
         "before": 199, "amount": 2, "cap": 200, "after": 200
@@ -72,9 +80,9 @@
         "before": 199, "amount": 2, "cap": 200, "after": 200
       },
       {
-        "id": "current-attack-cap", "source": "item:INCREASE_ATT", "kind": "increase-byte",
+        "id": "current-attack-byte-carry", "source": "item:INCREASE_ATT", "kind": "increase-byte",
         "entryKey": "increaseCurrentAtt", "fieldOffset": 19,
-        "before": 199, "amount": 50, "cap": 200, "after": 200
+        "before": 250, "amount": 50, "cap": 200, "after": 200
       },
       {
         "id": "current-defense-underflow", "source": "item:DECREASE_DEF", "kind": "decrease-byte",
@@ -92,9 +100,10 @@
         "before": 5, "amount": 10, "cap": 200, "after": 0
       }
     ],
-    "helpersObserved": { "increaseByte": true, "increase7Bits": true, "decreaseByte": true },
+    "helpersObserved": { "increaseByte": true, "increaseWord": true, "increase7Bits": true, "decreaseByte": true },
     "after": {
       "level": 40,
+      "maxHp": 1,
       "baseAttack": 200,
       "currentAttack": 200,
       "baseDefense": 200,
