@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
 from sf2tool.harness import verify
@@ -52,6 +53,11 @@ def build_parser() -> argparse.ArgumentParser:
     verify_parser.add_argument("--skip-rebuild", action="store_true")
     verify_parser.add_argument("--skip-extraction", action="store_true")
     verify_parser.add_argument("--skip-runtime", action="store_true")
+    verify_parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="run commit-level Python, contract, index, ROM, and toolchain gates only",
+    )
 
     init_parser = commands.add_parser("init", help="initialize ignored local research inputs")
     init_parser.add_argument("--rom-path", type=_path, required=True)
@@ -86,6 +92,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_growth)
     h3_growth.add_argument("--timeout-seconds", type=int, default=60)
+    h3_battle_exp = h3_commands.add_parser(
+        "battle-exp", help="verify natural battle EXP-to-level-up behavior"
+    )
+    _add_local_paths(h3_battle_exp)
+    h3_battle_exp.add_argument("--timeout-seconds", type=int, default=75)
     return parser
 
 
@@ -97,6 +108,7 @@ def dispatch(args: argparse.Namespace) -> None:
             skip_rebuild=args.skip_rebuild,
             skip_extraction=args.skip_extraction,
             skip_runtime=args.skip_runtime,
+            quick=args.quick,
         )
     elif args.command == "init":
         run_powershell("Initialize-LocalResearch.ps1", ("-RomPath", args.rom_path))
@@ -127,6 +139,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "growth":
         print_record(
             verify_growth(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "battle-exp":
+        print_record(
+            verify_battle_exp_level_up(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

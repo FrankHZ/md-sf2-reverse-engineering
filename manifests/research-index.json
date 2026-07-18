@@ -280,12 +280,23 @@
       "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 102620 },
-        { "id": "applied", "space": "rom", "kind": "observation", "value": 102648 }
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 102648 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 102878 }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
-        "bindings": [{ "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" }, { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" }]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+          "bindings": [{ "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" }, { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-exp-level-up-v1.json", "fixtureId": "sf2-battle-exp-level-up-v1", "verifier": "src/sf2tool/h3/battle_exp.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.giveExpEntryAddress" },
+            { "addressId": "applied", "fixtureField": "function.giveExpAppliedAddress" },
+            { "addressId": "return", "fixtureField": "function.giveExpReturnAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/combat-resolution.md"]
     },
@@ -302,15 +313,21 @@
         { "id": "exp-second-roll", "space": "rom", "kind": "observation", "value": 43060 },
         { "id": "exp-final", "space": "rom", "kind": "observation", "value": 43072 }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
-        "bindings": [
-          { "addressId": "exp-halved", "fixtureField": "function.expHalvedAddress" },
-          { "addressId": "exp-first-roll", "fixtureField": "function.expFirstRollAddress" },
-          { "addressId": "exp-second-roll", "fixtureField": "function.expSecondRollAddress" },
-          { "addressId": "exp-final", "fixtureField": "function.expFinalAddress" }
-        ]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+          "bindings": [
+            { "addressId": "exp-halved", "fixtureField": "function.expHalvedAddress" },
+            { "addressId": "exp-first-roll", "fixtureField": "function.expFirstRollAddress" },
+            { "addressId": "exp-second-roll", "fixtureField": "function.expSecondRollAddress" },
+            { "addressId": "exp-final", "fixtureField": "function.expFinalAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-exp-level-up-v1.json", "fixtureId": "sf2-battle-exp-level-up-v1", "verifier": "src/sf2tool/h3/battle_exp.py",
+          "bindings": [{ "addressId": "exp-halved", "fixtureField": "function.expRandomizationAddress" }]
+        }
+      ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/combat-resolution.md"]
     },
@@ -445,6 +462,16 @@
             { "addressId": "entry", "fixtureField": "function.entryAddress" },
             { "addressId": "update-stats-call", "fixtureField": "function.updateStatsCallAddress" },
             { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-exp-level-up-v1.json", "fixtureId": "sf2-battle-exp-level-up-v1", "verifier": "src/sf2tool/h3/battle_exp.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.levelUpEntryAddress" },
+            { "addressId": "return", "fixtureField": "function.levelUpReturnAddress" },
+            { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+            { "addressId": "level-up-arguments", "fixtureField": "ram.levelUpArgumentsAddress" },
             { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
           ]
         }

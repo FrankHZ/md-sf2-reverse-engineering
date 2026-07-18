@@ -117,9 +117,9 @@ interpreter or maintain a parallel requirements file. Run Ruff and pytest throug
 The root verification entry point is `uv run sf2 verify`. Keep it non-interactive, deterministic,
 and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
-promotion/enemy and Battle 01 scene extraction, plus BizHawk
-base/debug-aware RNG, stat-gain/complete level-up, turn-order, region-activation, physical-attack-chain, dodge, and
-follow-up-validation behavior
+promotion/enemy and Battle 01 scene extraction, plus BizHawk base/debug-aware RNG,
+stat-gain/complete level-up, battle-EXP level-up, turn-order, region-activation,
+physical-attack-chain, dodge, and follow-up-validation behavior
 fixtures; extend the same entry
 point as later rails become available:
 
@@ -133,6 +133,13 @@ point as later rails become available:
    small state facts, traces, or hashes rather than committing captured assets.
 5. **Remake parity**: run the same implementation-neutral fixtures against remake
    systems and report intentional deviations separately.
+
+Use `uv run sf2 verify --quick` as the normal commit gate. It owns Ruff, pytest, design-contract
+traceability, the research index, ROM identity, and toolchain provenance. Pair it with only the
+narrow H2/H3 command that owns the changed slice (for example, `uv run sf2 h3 battle-exp`). Do not
+run the 10+ minute full `uv run sf2 verify` after every ordinary commit. Reserve the full gate for
+phase milestones, release/merge readiness, changes to shared harness orchestration or legacy rails,
+and explicit full-parity requests.
 
 Do not weaken a golden expectation merely to make a change pass. First decide
 whether the original evidence, extractor, fixture, or remake behavior is wrong.
@@ -171,5 +178,6 @@ JSON between runtimes.
 
 A slice is done when its outputs are reproducible, provenance is recorded,
 relevant docs and contracts agree, generated/private artifacts remain untracked,
-and the narrow verification command passes. If verification cannot run, report
-the exact missing dependency or evidence instead of substituting confidence.
+`uv run sf2 verify --quick` and the owning narrow verification command pass. If
+verification cannot run, report the exact missing dependency or evidence instead
+of substituting confidence.

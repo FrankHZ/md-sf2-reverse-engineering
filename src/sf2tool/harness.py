@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from sf2tool.design_contracts import verify_design_contracts
+from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_record
+from sf2tool.paths import repo_path
 from sf2tool.research_index import verify_index
 from sf2tool.rom import verify_rom
 from sf2tool.toolchain import verify_toolchain
@@ -135,6 +139,16 @@ def _run_stage(stage: LegacyStage, rom_path: Path, upstream_path: Path) -> None:
     run_powershell(stage.script, arguments)
 
 
+def _run_python_gates() -> None:
+    root = repo_path(".")
+    subprocess.run(
+        [sys.executable, "-m", "ruff", "check", "src", "tests/python"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run([sys.executable, "-m", "pytest"], cwd=root, check=True)
+
+
 def verify(
     *,
     rom_path: Path,
@@ -142,7 +156,10 @@ def verify(
     skip_rebuild: bool = False,
     skip_extraction: bool = False,
     skip_runtime: bool = False,
+    quick: bool = False,
 ) -> None:
+    _heading("Python: static and unit gates")
+    _run_python_gates()
     _heading("Documentation: design-contract traceability")
     print_record(verify_design_contracts())
     _heading("Research: symbol, address, fixture, and document index")
@@ -151,6 +168,9 @@ def verify(
     print_record(verify_rom(rom_path))
     _heading("Toolchain provenance")
     print_record(verify_toolchain(upstream_path))
+    if quick:
+        _heading("Repository quick verification: PASS")
+        return
 
     if not skip_rebuild:
         _heading("H1: bit-perfect original rebuild")
@@ -166,6 +186,8 @@ def verify(
         print_record(verify_rng(rom_path))
         _heading("H3: original stat-gain and complete level-up runtime behavior")
         print_record(verify_growth(rom_path, upstream_path))
+        _heading("H3: natural battle EXP threshold and persistent level-up behavior")
+        print_record(verify_battle_exp_level_up(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
     _heading("Repository verification: PASS")

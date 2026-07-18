@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-battle-exp-level-up-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "function", "ram", "harness", "case", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-exp-level-up-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "function": { "$ref": "#/definitions/function" },
+    "ram": { "$ref": "#/definitions/ram" },
+    "harness": { "$ref": "#/definitions/harness" },
+    "case": { "$ref": "#/definitions/case" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expRandomizationAddress", "giveExpEntryAddress", "giveExpAppliedAddress", "giveExpReturnAddress", "levelUpEntryAddress", "levelUpReturnAddress"],
+      "properties": {
+        "expRandomizationAddress": { "const": 43038 }, "giveExpEntryAddress": { "const": 102620 },
+        "giveExpAppliedAddress": { "const": 102648 }, "giveExpReturnAddress": { "const": 102878 },
+        "levelUpEntryAddress": { "const": 38020 }, "levelUpReturnAddress": { "const": 38340 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "levelUpArgumentsAddress", "seedAddress"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 }, "combatantEntrySize": { "const": 56 },
+        "levelUpArgumentsAddress": { "const": 16756610 }, "seedAddress": { "const": 16768676 }
+      }
+    },
+    "harness": {
+      "type": "object", "additionalProperties": false, "required": ["function", "ram"],
+      "properties": {
+        "function": {
+          "type": "object", "additionalProperties": false,
+          "required": ["battleTestAddress", "numberPromptAddress", "flagPromptAddress", "turnOrderEntryAddress", "criticalEntryAddress", "damageApplicationAddress"],
+          "properties": {
+            "battleTestAddress": { "const": 30364 }, "numberPromptAddress": { "const": 90754 },
+            "flagPromptAddress": { "const": 91068 }, "turnOrderEntryAddress": { "const": 152900 },
+            "criticalEntryAddress": { "const": 44110 }, "damageApplicationAddress": { "const": 44434 }
+          }
+        },
+        "ram": {
+          "type": "object", "additionalProperties": false,
+          "required": ["currentBattleAddress", "terrainDataAddress", "cheatPointerAddress", "debugModeAddress"],
+          "properties": {
+            "currentBattleAddress": { "const": 16774930 }, "terrainDataAddress": { "const": 16736000 },
+            "cheatPointerAddress": { "const": 16757152 }, "debugModeAddress": { "const": 16756905 }
+          }
+        }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actor", "allyCode", "classCode", "target", "awardSeed", "levelUpSeed", "awardModel", "input"],
+      "properties": {
+        "id": { "const": "bowie-sdmn-natural-battle-level-up" }, "actor": { "const": 0 },
+        "allyCode": { "const": "BOWIE" }, "classCode": { "const": "SDMN" }, "target": { "const": 128 },
+        "awardSeed": { "const": 1281 }, "levelUpSeed": { "const": 4660 },
+        "awardModel": {
+          "type": "object", "additionalProperties": false,
+          "required": ["accumulatedExp", "halvedBattle", "randomRange", "firstRoll", "secondRoll"],
+          "properties": {
+            "accumulatedExp": { "const": 49 }, "halvedBattle": { "const": true }, "randomRange": { "const": 16 },
+            "firstRoll": { "const": 4 }, "secondRoll": { "const": 4 }
+          }
+        },
+        "input": {
+          "type": "object", "additionalProperties": false,
+          "required": ["class", "level", "maxHp", "currentHp", "maxMp", "currentMp", "baseAttack", "battleAttack", "baseDefense", "currentDefense", "baseAgility", "battleAgility", "items", "exp"],
+          "properties": {
+            "class": { "const": 0 }, "level": { "const": 1 }, "maxHp": { "const": 12 }, "currentHp": { "const": 12 },
+            "maxMp": { "const": 8 }, "currentMp": { "const": 8 }, "baseAttack": { "const": 6 }, "battleAttack": { "const": 99 },
+            "baseDefense": { "const": 4 }, "currentDefense": { "const": 4 }, "baseAgility": { "const": 4 }, "battleAgility": { "const": 99 },
+            "items": { "type": "array", "const": [127, 127, 127, 127] }, "exp": { "const": 99 }
+          }
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["class", "level", "maxHp", "currentHp", "maxMp", "currentMp", "baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "exp"],
+      "properties": {
+        "class": { "type": "integer", "minimum": 0, "maximum": 255 }, "level": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "maxHp": { "type": "integer", "minimum": 0, "maximum": 65535 }, "currentHp": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "maxMp": { "type": "integer", "minimum": 0, "maximum": 255 }, "currentMp": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseAttack": { "type": "integer", "minimum": 0, "maximum": 255 }, "currentAttack": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseDefense": { "type": "integer", "minimum": 0, "maximum": 255 }, "currentDefense": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "baseAgility": { "type": "integer", "minimum": 0, "maximum": 255 }, "currentAgility": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "exp": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["award", "levelUp", "final"],
+      "properties": {
+        "award": {
+          "type": "object", "additionalProperties": false, "required": ["commandExp", "expBefore", "expAfterIncrease", "expAfterThreshold"],
+          "properties": { "commandExp": { "const": 24 }, "expBefore": { "const": 99 }, "expAfterIncrease": { "const": 123 }, "expAfterThreshold": { "const": 23 } }
+        },
+        "levelUp": {
+          "type": "object", "additionalProperties": false, "required": ["calls", "seed", "observedSeed", "before", "after", "arguments"],
+          "properties": {
+            "calls": { "const": 1 }, "seed": { "const": 4660 }, "observedSeed": { "const": 50398 },
+            "before": { "$ref": "#/definitions/snapshot" }, "after": { "$ref": "#/definitions/snapshot" },
+            "arguments": { "type": "array", "const": [2, 2, 0, 1, 1, 1, 255] }
+          }
+        },
+        "final": { "$ref": "#/definitions/snapshot" }
+      }
+    }
+  }
+}

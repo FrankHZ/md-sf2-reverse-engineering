@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-exp-level-up-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Natural Battle 01 damage award replay through EXP threshold subtraction, LevelUp, and final persistent combatant state.",
+  "function": {
+    "expRandomizationAddress": 43038,
+    "giveExpEntryAddress": 102620,
+    "giveExpAppliedAddress": 102648,
+    "giveExpReturnAddress": 102878,
+    "levelUpEntryAddress": 38020,
+    "levelUpReturnAddress": 38340
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "levelUpArgumentsAddress": 16756610,
+    "seedAddress": 16768676
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900,
+      "criticalEntryAddress": 44110,
+      "damageApplicationAddress": 44434
+    },
+    "ram": {
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "case": {
+    "id": "bowie-sdmn-natural-battle-level-up",
+    "actor": 0,
+    "allyCode": "BOWIE",
+    "classCode": "SDMN",
+    "target": 128,
+    "awardSeed": 1281,
+    "levelUpSeed": 4660,
+    "awardModel": {
+      "accumulatedExp": 49,
+      "halvedBattle": true,
+      "randomRange": 16,
+      "firstRoll": 4,
+      "secondRoll": 4
+    },
+    "input": {
+      "class": 0,
+      "level": 1,
+      "maxHp": 12,
+      "currentHp": 12,
+      "maxMp": 8,
+      "currentMp": 8,
+      "baseAttack": 6,
+      "battleAttack": 99,
+      "baseDefense": 4,
+      "currentDefense": 4,
+      "baseAgility": 4,
+      "battleAgility": 99,
+      "items": [127, 127, 127, 127],
+      "exp": 99
+    }
+  },
+  "expected": {
+    "award": { "commandExp": 24, "expBefore": 99, "expAfterIncrease": 123, "expAfterThreshold": 23 },
+    "levelUp": {
+      "calls": 1,
+      "seed": 4660,
+      "observedSeed": 50398,
+      "before": {
+        "class": 0, "level": 1, "maxHp": 12, "currentHp": 12, "maxMp": 8, "currentMp": 8,
+        "baseAttack": 6, "currentAttack": 99, "baseDefense": 4, "currentDefense": 4,
+        "baseAgility": 4, "currentAgility": 99, "exp": 23
+      },
+      "after": {
+        "class": 0, "level": 2, "maxHp": 14, "currentHp": 12, "maxMp": 8, "currentMp": 8,
+        "baseAttack": 7, "currentAttack": 7, "baseDefense": 5, "currentDefense": 5,
+        "baseAgility": 5, "currentAgility": 5, "exp": 23
+      },
+      "arguments": [2, 2, 0, 1, 1, 1, 255]
+    },
+    "final": {
+      "class": 0, "level": 2, "maxHp": 14, "currentHp": 12, "maxMp": 8, "currentMp": 8,
+      "baseAttack": 7, "currentAttack": 7, "baseDefense": 5, "currentDefense": 5,
+      "baseAgility": 5, "currentAgility": 5, "exp": 23
+    }
+  }
+}

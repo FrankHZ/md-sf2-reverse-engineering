@@ -12,6 +12,7 @@ CONTRACTS = {
             "sf2-physical-damage-application-v1"
         ),
         "tests/fixtures/h3/battle-scene-replay-v1.json": "sf2-battle-scene-replay-v1",
+        "tests/fixtures/h3/battle-exp-level-up-v1.json": "sf2-battle-exp-level-up-v1",
         "tests/fixtures/h3/attack-chain-v1.json": "sf2-attack-chain-double-counter-v1",
         "tests/fixtures/h3/dodge-v1.json": "sf2-successful-airborne-dodge-v1",
         "tests/fixtures/h3/lethal-followup-v1.json": "sf2-lethal-followup-validation-v1",
@@ -33,6 +34,7 @@ CONTRACTS = {
         "tests/fixtures/h3/level-up-boundaries-v1.json": "sf2-level-up-boundaries-v1",
         "tests/fixtures/h3/level-up-refresh-v1.json": "sf2-level-up-refresh-v1",
         "tests/fixtures/h3/ally-initialization-prowess-v1.json": "sf2-karna-heal3-prowess-v1",
+        "tests/fixtures/h3/battle-exp-level-up-v1.json": "sf2-battle-exp-level-up-v1",
     },
 }
 

@@ -7,7 +7,7 @@
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
 H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
-职业等级上限与继承法术升级）、行动顺序、区域激活和物理伤害计算链整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、行动顺序、区域激活和物理伤害计算链整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗结算与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
@@ -108,15 +108,20 @@ golden 数据应尽量是地址、数值、短结构、哈希和状态转换，�
 
 ## Harness：项目的主干
 
-依赖由 `uv` 和提交的 `uv.lock` 固定。首次同步及统一验证入口为：
+依赖由 `uv` 和提交的 `uv.lock` 固定。首次同步、日常提交与完整里程碑验证入口为：
 
 ```powershell
 uv sync --locked
+uv run sf2 verify --quick
 uv run sf2 verify
 ```
 
+日常提交默认只跑 `--quick`（Ruff、pytest、设计合同、研究索引、ROM 身份和工具链来源）以及本次
+改动直接拥有的窄 rail，例如 `uv run sf2 h3 battle-exp`。十分钟以上的完整 `verify` 只在阶段
+里程碑、准备合并/发布、共享 harness 或兼容层发生变化，以及明确要求全量 parity 时运行。
+
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/上限/法术继承边界、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/上限/法术继承边界、战斗 EXP 自然升级、行动顺序、区域激活与物理伤害计算链 H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |
@@ -214,7 +219,9 @@ bitfield 增加 primary-active 位；受控 secondary-region 用例进一步确�
 primary/secondary active 两位。AI 驱动的自然攻击另确认 30% 地形减伤和弓手对 hovering
 目标的 25% 加成顺序及整数截断，并继续覆盖 dodge、受控 critical、两次向下 spread、double/counter、
 死亡目标清除后续 double/counter，完整覆盖 double validator，并确认距离、睡眠/眩晕状态、同阵营标志及五种特殊敌人的方向性反击排除、HP 零下限、击杀判定、单行动 49 EXP 累加上限、
-reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实际入账。
+reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实际入账。连接夹具进一步从
+99 EXP 出发确认 `99 -> 123 -> 23`、一次自然 Bowie/SDMN 升级、`[2,2,0,1,1,1,255]` 结果载荷，
+以及不回复当前 HP/MP、刷新派生属性后的最终持久状态。
 
 ### Phase 3 — Game Design Reconstruction
 

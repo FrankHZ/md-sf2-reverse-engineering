@@ -20,6 +20,9 @@
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path through the HEAL 3 prowess
   special case in `InitializeAllyStats`.
+- `tests/fixtures/h3/battle-exp-level-up-v1.json` / `sf2-battle-exp-level-up-v1` owns the connected
+  natural Battle 01 path from a 24-point EXP command through the 100-point threshold, one
+  source-modeled Bowie/SDMN `LevelUp`, and final persistent combatant state.
 - [`../research/ally-growth.md`](../research/ally-growth.md) owns the static curve and class-block
   storage contract; [`../research/runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
   owns addresses and runtime interpretation.
@@ -125,6 +128,20 @@ A remake should model maximum/current resources and base/derived combat stats as
 Level-up must not heal by merely copying new maxima into current HP/MP, and equipment effects must be
 recomputed from the new base rather than incrementally stacked onto stale derived values.
 
+## Confirmed Battle Award Entry
+
+The connected battle fixture starts Bowie/SDMN level 1 at 99 EXP with source-modeled base stats and
+empty equipment. Natural Battle 01 resolution supplies a 24-point command. `bsc0F_giveExp` applies
+it before testing the threshold, so stored EXP passes through `99 -> 123 -> 23`; only then does it
+call `LevelUp`. Seed `0x1234` produces payload `[2,2,0,1,1,1,255]`, level 2, maximum HP 14, and base
+ATT/DEF/AGI `7/5/5`. Current HP/MP remain `12/8`, and the action-only current ATT/AGI values are
+replaced by refreshed values `7/5`.
+
+The fixture observes one call and exits at the containing EXP command's return, so it connects the
+already-confirmed growth routine to persistent battle state. It does not generalize to an award
+that reaches the 200 EXP clamp, more than one threshold, cap-level allies, random +1/-1 award
+branches, or gold.
+
 ## Confirmed Karna HEAL 3 Initialization Rule
 
 `InitializeAllyStats` scans every spell whose threshold is at or below the ally's starting effective
@@ -167,5 +184,5 @@ record that choice explicitly before H4 treats either behavior as normative.
 - enemy curse suppression and the remaining critical/counter/set prowess equip-effect functions;
 - the latent HEAL 3 behavior with a synthetic nonzero counter setting.
 
-The future remake growth module should consume the same five fixtures first, then extend them rather
+The future remake growth module should consume the same six fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.

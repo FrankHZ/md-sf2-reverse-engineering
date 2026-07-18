@@ -325,6 +325,7 @@ pwsh ./scripts/Test-H3CounterSameSideFixture.ps1
 pwsh ./scripts/Test-H3CounterBurstRockFixture.ps1
 pwsh ./scripts/Test-H3CounterSpecialEnemiesFixture.ps1
 pwsh ./scripts/Test-H3DoubleValidationFixture.ps1
+uv run sf2 h3 battle-exp
 ```
 
 The application snapshot at `0xAD92` is deliberately not treated as the final state. During
@@ -341,9 +342,20 @@ and uses normal debug text-skip input during playback; it does not patch the com
 either interpreter directly. `tests/fixtures/h3/battle-scene-replay-v1.json` and the same independent
 RNG model validate restoration, both EXP rolls, signed reaction, persistent HP, and final EXP.
 
-The damage/replay fixture alone does not claim dialogue/death-animation semantics, level-up after
-EXP >= 100, double, counter, dodge, resistance, or status behavior; the next fixture owns the
-non-dodge double/counter chain.
+The connected battle-EXP fixture starts Bowie/SDMN at level 1 and 99 EXP, with source-modeled base
+stats and no equipment. The same natural Battle 01 damage path generates the 24-point command.
+`bsc0F_giveExp` first calls `IncreaseExp`, producing 123, then compares current EXP with 100,
+stores the remainder 23, and calls `LevelUp` exactly once. Seed `0x1234` at the genuine `LevelUp`
+entry yields payload `[2,2,0,1,1,1,255]` and final base stats HP/MP/ATT/DEF/AGI
+`14/8/7/5/5`; the final RNG seed is `0xC4DE`. Current HP/MP remain `12/8`, while the deliberately
+high action-only ATT/AGI values are refreshed to the new unmodified bases `7/5`. The observer exits
+only at `bsc0F_giveExp` return `0x191DE`, so the final snapshot owns persistent state rather than an
+internal LevelUp scratch boundary.
+
+`tests/fixtures/h3/battle-exp-level-up-v1.json` is independently modeled from the pinned EXP routine,
+LCG, Bowie growth block, five growth curves, and empty-equipment refresh. It confirms this one
+99 + 24 transition and its side effects; dialogue/death-animation timing, other EXP adjustments,
+multiple-threshold/cap edges, resistance, and status behavior remain outside it.
 
 ## Confirmed: Double Attack and Counter Chain
 
@@ -383,13 +395,12 @@ control-flow contract independently of the earlier non-dodge observations.
 
 ## Unknown / Next Fixtures
 
-- Extend level-up runtime coverage to the level immediately before each cap, the missing-class-block
-  exit, current/maximum stat refresh, and synthetic nonzero-counter input to the HEAL 3 branch.
+- Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, resistance, additional non-critical
-  variance seeds, and an EXP-caused level-up to the confirmed physical path.
+  variance seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

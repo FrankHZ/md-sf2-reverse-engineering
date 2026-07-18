@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from sf2tool.cli import build_parser
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import verify_index
@@ -18,14 +19,20 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 24
-    assert result["AddressBindings"] == 126
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 25
+    assert result["AddressBindings"] == 135
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
     data = bytearray(0x203)
     data[0x200:] = b"\x12\x34\x56"
     assert mega_drive_checksum(bytes(data)) == "6834"
+
+
+def test_verify_quick_is_an_explicit_commit_level_profile() -> None:
+    args = build_parser().parse_args(["verify", "--quick"])
+    assert args.command == "verify"
+    assert args.quick is True
 
 
 def test_legacy_powershell_surface_does_not_expand() -> None:

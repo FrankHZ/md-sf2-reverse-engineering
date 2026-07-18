@@ -186,8 +186,15 @@ the temporary snapshot.
 cap of 49. Battle 01 halves 49 with integer truncation to 24. Two subsequent `RNG(16)` rolls of 4
 leave the award unchanged, and command replay changes actor EXP `0 -> 24`.
 
-The complete level-difference table, other battle modifiers, random +1/-1 outcomes, level-up at 100,
-and gold are outside this contract version.
+**Confirmed for the connected 99-EXP fixture:** replay adds the same 24-point command first
+(`99 -> 123`), then subtracts one 100-point threshold (`123 -> 23`) and calls `LevelUp` once. The
+source-modeled Bowie/SDMN level-1 case reaches level 2 with gains HP/MP/ATT/DEF/AGI
+`[2,0,1,1,1]`. Current HP/MP are not healed; derived ATT/DEF/AGI are refreshed from the new bases.
+The final snapshot is taken when `bsc0F_giveExp` returns, after the level-up result payload has been
+consumed by the battle-scene path.
+
+The complete level-difference table, other battle modifiers, random +1/-1 outcomes, EXP cap and
+multiple-threshold edges, and gold are outside this contract version.
 
 ## Reference Adapter Shape
 
@@ -222,6 +229,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-physical-damage-land-archer-v1` | `tests/fixtures/h3/physical-damage-v1.json` | Base, land reduction, anti-air bonus, result |
 | `sf2-physical-damage-application-v1` | `tests/fixtures/h3/physical-damage-application-v1.json` | Critical, spread, HP clamp, EXP accumulator |
 | `sf2-battle-scene-replay-v1` | `tests/fixtures/h3/battle-scene-replay-v1.json` | Snapshot restore, EXP modification, persistent replay |
+| `sf2-battle-exp-level-up-v1` | `tests/fixtures/h3/battle-exp-level-up-v1.json` | 99 + 24 threshold, one LevelUp call, payload, persistent level/stats/EXP |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |
@@ -253,7 +261,7 @@ complete:
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
-- full EXP/gold tables, random EXP adjustment branches, and level-up side effects;
+- full EXP/gold tables, random EXP adjustment branches, and EXP cap/multiple-threshold edges;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
 Each expansion must add or extend H3 evidence first, update this contract, and then become an H4
