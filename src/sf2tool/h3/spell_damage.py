@@ -53,6 +53,8 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
     records = []
     for target in case["targets"]:
         adjusted = case["spellPower"]
+        if target["casterClass"] >= 12:
+            adjusted = (adjusted * 5) >> 2
         quarter = adjusted >> 2
         setting = target["setting"]
         if setting == 1:
@@ -64,7 +66,7 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
         else:
             post_resistance = adjusted
 
-        seed, critical_roll = _rng_step(case["seed"], case["criticalRange"])
+        seed, critical_roll = _rng_step(target["seed"], case["criticalRange"])
         pre_variance = post_resistance + (quarter if critical_roll == 0 else 0)
         variance_range = (pre_variance >> 3) + 1
         seed, first = _rng_step(seed, variance_range)
@@ -74,10 +76,12 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
             {
                 "combatant": target["combatant"],
                 "setting": setting,
+                "casterClass": target["casterClass"],
                 "adjustedPower": adjusted,
                 "quarterPower": quarter,
                 "postResistance": post_resistance,
                 "criticalRoll": critical_roll,
+                "criticalFlag": 255 if critical_roll == 0 else 0,
                 "preVariance": pre_variance,
                 "varianceRange": variance_range,
                 "varianceRolls": [first, second],

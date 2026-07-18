@@ -65,11 +65,12 @@ local function write_result_and_exit()
     for index, record in ipairs(records) do
         if index > 1 then output:write(",") end
         output:write(string.format(
-            '{"combatant":%d,"setting":%d,"adjustedPower":%d,"quarterPower":%d,' ..
-            '"postResistance":%d,"criticalRoll":%d,"preVariance":%d,"varianceRange":%d,' ..
+            '{"combatant":%d,"setting":%d,"casterClass":%d,"adjustedPower":%d,"quarterPower":%d,' ..
+            '"postResistance":%d,"criticalRoll":%d,"criticalFlag":%d,"preVariance":%d,"varianceRange":%d,' ..
             '"varianceRolls":[%d,%d],"finalDamage":%d,"temporaryHp":%d,"restoredHp":%d}',
-            record.combatant, record.setting, record.adjustedPower, record.quarterPower,
-            record.postResistance, record.criticalRoll, record.preVariance, record.varianceRange,
+            record.combatant, record.setting, record.casterClass, record.adjustedPower, record.quarterPower,
+            record.postResistance, record.criticalRoll, record.criticalFlag,
+            record.preVariance, record.varianceRange,
             record.varianceRolls[1], record.varianceRolls[2], record.finalDamage,
             record.temporaryHp, record.restoredHp))
     end
@@ -175,12 +176,20 @@ end, config["function"].getResistanceAddress, "sf2-spell-resistance", "M68K BUS"
 event.on_bus_exec(function()
     if not action_started then return end
     local a5 = emu.getregister("M68K A5") & 0xFFFFFF
+    local combatant = memory.read_u8(a5, "M68K BUS")
+    local target_case = nil
+    for _, target in ipairs(config.case.targets) do
+        if target.combatant == combatant then target_case = target; break end
+    end
+    assert(target_case ~= nil, "spell target is absent from fixture cases")
+    memory.write_u8(entry(config.case.actor) + 10, target_case.casterClass, "M68K BUS")
     active = {
-        combatant = memory.read_u8(a5, "M68K BUS"),
+        combatant = combatant,
         setting = word_register("M68K D2"),
+        casterClass = target_case.casterClass,
         varianceRolls = {}
     }
-    memory.write_u16_be(config.ram.seedAddress, config.case.seed, "M68K BUS")
+    memory.write_u16_be(config.ram.seedAddress, target_case.seed, "M68K BUS")
 end, config["function"].calculateSpellDamageAddress, "sf2-spell-calculate", "M68K BUS")
 
 event.on_bus_exec(function()
@@ -196,6 +205,8 @@ end, config["function"].postResistanceAddress, "sf2-spell-post-resistance", "M68
 event.on_bus_exec(function()
     if active == nil then return end
     active.criticalRoll = word_register("M68K D0")
+    local a2 = emu.getregister("M68K A2") & 0xFFFFFF
+    active.criticalFlag = memory.read_u8(a2 - 3, "M68K BUS")
     active.preVariance = word_register("M68K D6")
     active.varianceRange = (active.preVariance >> 3) + 1
 end, config["function"].preVarianceAddress, "sf2-spell-pre-variance", "M68K BUS")

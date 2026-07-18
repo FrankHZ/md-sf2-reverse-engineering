@@ -33,12 +33,14 @@ consumer context; it cannot globally label setting 3 as either weakness or immun
 
 ### 1. Resolve base power and caster adjustment
 
-**Confirmed for unpromoted SDMN and BLAZE 2:** the spell definition supplies power 10. The caster
-does not receive the promoted-class adjustment, so adjusted power remains 10.
+**Confirmed for unpromoted SDMN and BLAZE 2:** the spell definition supplies power 10. The first
+three calls do not receive the promoted-class adjustment, so adjusted power remains 10.
 
-**Confirmed statically, not yet in this runtime matrix:** a promoted caster multiplies spell power
-by 5 and shifts right by 2, producing `floor(power * 5 / 4)`. DAO, APOLLO, NEPTUN, and ATLAS then
-divide adjusted power by the number of targets. These branches remain expansion gates for H3.
+**Confirmed at the calculation seam:** before the fourth call, the fixture changes the caster class
+to the first promoted class value 12. The original `AdjustSpellPower` multiplies power by 5 and
+shifts right by 2, producing `floor(10 * 5 / 4) = 12`. This owns the class-threshold arithmetic;
+it does not claim a naturally promoted caster performed the complete action. DAO, APOLLO, NEPTUN,
+and ATLAS target-count division remains an H3 expansion gate.
 
 ### 2. Apply the element resistance with integer truncation
 
@@ -51,16 +53,16 @@ major:     damage = floor(adjustedPower / 2)
 weakness:  damage = adjustedPower + quarter
 ```
 
-For BLAZE 2 power 10, the confirmed four-target result is `10, 8, 5, 12`. The minor and weakness
-paths use the already-truncated quarter value 2; they are not floating-point 75%/125% operations.
+For the first three unpromoted calls, neutral/minor/major produce `10, 8, 5`. The promoted fourth
+call enters weakness with adjusted power 12 and quarter 3, producing 15. Minor and weakness use the
+already-truncated quarter value; they are not floating-point 75%/125% operations.
 
 ### 3. Roll spell critical before shared variance
 
 **Confirmed for BLAZE:** critical uses `rng.next(32)`, and roll zero succeeds. On success it adds the
-same truncated `quarter` computed from adjusted power and sets the battle-scene critical flag. The
-matrix resets seed `0x1234` at each calculation entry; all four original calls return 29, so no
-critical modifier is applied. This confirms the noncritical branch and call ordering, not a runtime
-successful spell critical.
+same truncated `quarter` computed from adjusted power and sets the battle-scene critical flag to
+`0xFF`. The first three calls reset seed `0x1234` and return 29, preserving `10, 8, 5`. The promoted
+weakness call resets seed 0, returns 0, sets the flag, and changes `15 -> 18`.
 
 ### 4. Reuse the common downward damage spread
 
@@ -71,18 +73,18 @@ range = floor(damage / 8) + 1
 damage = max(damage - rng.next(range) - rng.next(range), 1)
 ```
 
-The fixed seed produces two zero rolls for each matrix member. Observed ranges are `2, 2, 1, 2`,
-and final damages therefore remain `10, 8, 5, 12`.
+The controlled seeds produce two zero rolls for each matrix member. Observed ranges are
+`2, 2, 1, 3`, and final damages therefore remain `10, 8, 5, 18`.
 
 ### 5. Restore snapshots, then replay HP and MP reactions
 
-The original temporarily changes four 100-HP targets to `90, 92, 95, 88` while constructing the
+The original temporarily changes four 100-HP targets to `90, 92, 95, 82` while constructing the
 battle scene, appends reactions, and restores all four snapshots to 100 before returning from scene
 construction. Caster MP is still 20 at this boundary.
 
 **Confirmed:** command playback then applies one ally reaction `(HP 0, MP -6)` to Bowie, changing
-MP `20 -> 14`, followed by four enemy reactions in target-list order: `-10, -8, -5, -12`. Persistent
-target HP becomes `90, 92, 95, 88`. The final snapshot is taken only after
+MP `20 -> 14`, followed by four enemy reactions in target-list order: `-10, -8, -5, -18`. Persistent
+target HP becomes `90, 92, 95, 82`. The final snapshot is taken only after
 `ExecuteBattlesceneScript` reads the command-list end marker.
 
 A remake does not need to duplicate the original command-buffer internals, but it must expose an
@@ -108,7 +110,7 @@ expected-deviation fixture.
 
 ## Unknown / Expansion Gates
 
-- **Unknown at runtime:** promoted-caster +25%, summon division, and successful spell critical.
+- **Unknown at runtime:** summon target-count division and a naturally promoted full spell action.
 - **Unknown:** attack-spell EXP award and its level-difference/randomization branches.
 - **Unknown:** healing, status resistance/immunity, drain, instant death, breath attacks, and special
   spell-effect dispatch.

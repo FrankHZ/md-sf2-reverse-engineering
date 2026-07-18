@@ -410,27 +410,32 @@ resistance words `0x0000`, `0x0040`, `0x0080`, and `0x00C0`. This is a controlle
 the fixture confirms resistance extraction and subsequent action behavior, but does not claim that
 this four-target geometry was naturally selected.
 
-The pinned BLAZE 2 definition supplies power 10. Bowie remains unpromoted SDMN, so
-`AdjustSpellPower` returns 10 at `0xBB16`; `floor(10/4)` is 2. Runtime observations at `0xBB32`
-confirm the four setting results:
+The pinned BLAZE 2 definition supplies power 10. For the first three calls Bowie remains
+unpromoted SDMN, so `AdjustSpellPower` returns 10 at `0xBB16`; `floor(10/4)` is 2. Immediately before
+the fourth genuine calculation call, the harness changes only the caster class to the first
+promoted value 12. `AdjustSpellPower` then executes its original `mulu #5` and right shift, yielding
+`floor(10*5/4)=12` with quarter 3. This controlled seam confirms the class threshold and arithmetic,
+not a naturally promoted full action. Runtime observations at `0xBB32` confirm:
 
 | FIRE setting | Operation | Damage before critical |
 | --- | --- | --- |
 | neutral 0 | unchanged | 10 |
 | minor 1 | `10 - 2` | 8 |
 | major 2 | `floor(10/2)` | 5 |
-| weakness 3 | `10 + 2` | 12 |
+| weakness 3, promoted call | `12 + 3` | 15 |
 
-Each target resets `RANDOM_SEED` to `0x1234` at the genuine spell-damage entry. BLAZE's original
-`GenerateRandomOrDebugNumber(32)` returns 29, so no spell critical occurs. The shared
-`InflictDamage` path then derives spread ranges `[2,2,1,2]`; both original variance rolls are zero
-in every case, preserving final damages `[10,8,5,12]`. Temporary HP becomes `[90,92,95,88]`.
+The first three targets reset `RANDOM_SEED` to `0x1234` at the genuine spell-damage entry. BLAZE's
+original `GenerateRandomOrDebugNumber(32)` returns 29, so no critical occurs. The fourth resets seed
+0; the original call returns 0, writes the stack-frame critical flag `0xFF`, and adds quarter 3 to
+change `15 -> 18`. The shared `InflictDamage` path derives spread ranges `[2,2,1,3]`; both original
+variance rolls are zero in every case, preserving final damages `[10,8,5,18]`. Temporary HP becomes
+`[90,92,95,82]`.
 After all four reactions have been generated, `battlesceneScript_End` restores all four HP snapshots
 to 100 before `0x9DCE`, while Bowie's MP is still 20. The observer then lets the original command
 interpreter run with debug text skip. `bsc0B_executeAllyReaction` consumes the generated `(HP 0,
 MP -6)` command first and changes Bowie's MP `20 -> 14`. Four ordered
-`bsc0A_executeEnemyReaction` calls consume HP changes `[-10,-8,-5,-12]`, producing persistent target
-HP `[90,92,95,88]`. The final snapshot is delayed until `ExecuteBattlesceneScript` reaches its end
+`bsc0A_executeEnemyReaction` calls consume HP changes `[-10,-8,-5,-18]`, producing persistent target
+HP `[90,92,95,82]`. The final snapshot is delayed until `ExecuteBattlesceneScript` reaches its end
 marker at `0x183EA`, so it is distinct from both temporary calculation and restoration state.
 
 The Python verifier independently checks the pinned BLAZE 2 power/cost, FIRE element, resistance
@@ -452,8 +457,8 @@ and observations remain under ignored `local/derived/h3/`.
   combatants in one round.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
-- Add promoted spell-power adjustment, summon target-count division, successful spell critical,
-  attack-spell EXP, and non-damage spell families.
+- Add summon target-count division, a naturally promoted full spell action, attack-spell EXP, and
+  non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.
