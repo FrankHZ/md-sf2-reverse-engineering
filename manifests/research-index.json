@@ -524,14 +524,30 @@
       "symbol": "battlesceneScript_DropEnemyItem",
       "sourcePath": "code/gameflow/battle/battleactions/dropenemyitem.asm",
       "addresses": [
-        { "id": "entry", "space": "rom", "kind": "symbol", "value": 48420 }
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 48420 },
+        { "id": "random-result", "space": "rom", "kind": "observation", "value": 48546 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 48720 },
+        { "id": "dropped-flags", "space": "ram", "kind": "state", "value": 16775076, "symbol": "ENEMY_ITEM_DROPPED_FLAGS" },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" }
       ],
-      "evidence": [{
-        "level": "H2", "fixture": "tests/fixtures/h2/enemy-item-drops-v1.json", "fixtureId": "sf2-enemy-item-drops-v1", "verifier": "src/sf2tool/h2/enemy_drops.py",
-        "bindings": [
-          { "addressId": "entry", "fixtureField": "function.dropEntryAddress" }
-        ]
-      }],
+      "evidence": [
+        {
+          "level": "H2", "fixture": "tests/fixtures/h2/enemy-item-drops-v1.json", "fixtureId": "sf2-enemy-item-drops-v1", "verifier": "src/sf2tool/h2/enemy_drops.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.dropEntryAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/enemy-item-drop-behavior-v1.json", "fixtureId": "sf2-enemy-item-drop-behavior-v1", "verifier": "src/sf2tool/h3/enemy_drops.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.entryAddress" },
+            { "addressId": "random-result", "fixtureField": "function.randomResultAddress" },
+            { "addressId": "return", "fixtureField": "function.returnAddress" },
+            { "addressId": "dropped-flags", "fixtureField": "ram.enemyItemDroppedFlagsAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/enemy-promotions.md", "docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/combat-resolution.md"]
     },

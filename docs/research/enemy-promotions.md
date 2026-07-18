@@ -1,6 +1,6 @@
 # Promotions, Enemy Definitions, and Rewards
 
-- Status: **Confirmed storage contract and static consumers; runtime scenarios pending**
+- Status: **Confirmed storage contract, static consumers, and core drop runtime branches**
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -12,6 +12,7 @@
 pwsh ./scripts/Test-EnemyPromotionExtraction.ps1
 uv run sf2 h2 enemy-gold
 uv run sf2 h2 enemy-drops
+uv run sf2 h3 enemy-drops
 ```
 
 The verifier exports the pinned assembly contract and independently decodes the locked ROM, validates
@@ -69,8 +70,12 @@ record's persistent flag and aborts if it was already set. It gives the item to 
 inventory permits; otherwise only rare items enter deals. The source contains an unreachable
 battle-upgrade/random-chance block after an unconditional branch, so it is not part of the rule.
 
-The H2 contract owns table bytes and these named source branches. Actual 1/32 success/failure,
-inventory-full routing, dead-actor routing, and repeated-flag behavior still require H3 fixtures.
+The H3 replay matrix confirms the core branches on the original ROM. Taros Sword seed `1281`
+produces roll 8, leaves flag 24 clear, and leaves the item on the enemy. Seed 0 produces roll 0,
+sets flag 24, removes the sword, and gives it to the actor. Starting with flag 24 already set still
+consumes the successful rare roll but aborts before removal or delivery. A non-random Battle Sword row
+sets flag 25 and transfers the item without reaching the drop-RNG checkpoint. Inventory-full and
+dead-actor routing, including rare-deals persistence, remain runtime Unknowns.
 
 ## Confirmed: Promotion Table and Church Mapping
 

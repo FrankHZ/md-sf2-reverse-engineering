@@ -119,8 +119,8 @@ and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
 promotion/enemy/enemy-gold/enemy-drop and Battle 01 scene extraction, plus BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
-final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, turn-order, region-activation,
-physical-attack-chain, dodge, and follow-up-validation behavior
+final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
+turn-order, region-activation, physical-attack-chain, dodge, and follow-up-validation behavior
 fixtures; extend the same entry
 point as later rails become available:
 

@@ -13,6 +13,7 @@ from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
+from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
 from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import (
@@ -186,6 +187,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_gold)
     h3_gold.add_argument("--timeout-seconds", type=int, default=60)
+    h3_enemy_drops = h3_commands.add_parser(
+        "enemy-drops", help="verify rare, repeated-flag, and guaranteed enemy item drops"
+    )
+    _add_local_paths(h3_enemy_drops)
+    h3_enemy_drops.add_argument("--timeout-seconds", type=int, default=75)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -372,6 +378,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "gold":
         print_record(
             verify_gold_boundaries(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "enemy-drops":
+        print_record(
+            verify_enemy_item_drop_behavior(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

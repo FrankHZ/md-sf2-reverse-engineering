@@ -732,7 +732,7 @@ Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
 `tools/bizhawk/spell_desoul_observer.lua`. The supplied target list confirms multi-target resolution
 order but not DESOUL 2's natural geometry.
 
-## Confirmed Static Boundary: Enemy Item Drops
+## Confirmed: Enemy Item-Drop Data and Core Runtime Branches
 
 The H2 fixture `tests/fixtures/h2/enemy-item-drops-v1.json` connects
 `battlesceneScript_DropEnemyItem` at `0xBD24` to `table_EnemyItemDrops` at `0xBE52`. Thirty
@@ -740,10 +740,23 @@ four-byte records cover 22 battles and use persistent flags 0-29; `0xFFFF` termi
 `0xBECA`. Taros Sword, Iron Ball, and Counter Sword are the only hardcoded `RNG(32)` drops. The
 remaining 27 matching records do not consume drop RNG.
 
-The verifier byte-compares source and ROM and checks the consumer's ally/enemy/death, item-possession,
-flag, removal, inventory, rare-deals, and unreachable-code branches. Reproduce with
-`uv run sf2 h2 enemy-drops`. Runtime outcomes for rare rolls, inventory failure, dead recipients,
-and repeated flags remain Unknown rather than being promoted from source inspection alone.
+The H2 verifier byte-compares source and ROM and checks the consumer's ally/enemy/death,
+item-possession, flag, removal, inventory, rare-deals, and unreachable-code branches. Reproduce the
+static boundary with `uv run sf2 h2 enemy-drops`.
+
+The connected H3 fixture replays one natural lethal Battle 01 physical-action state and replaces
+only the drop routine's battle, held item, flag, and seed inputs. Its four cases confirm:
+
+| Case | Input | Observed result |
+| --- | --- | --- |
+| rare failure | Taros Sword, seed `1281` | `RNG(32)=8`; flag stays clear; enemy keeps item |
+| rare success | Taros Sword, seed `0` | `RNG(32)=0`; flag set; enemy loses item; actor receives it |
+| repeated flag | Taros Sword, flag already set, seed `0` | roll still consumed; no removal or delivery |
+| guaranteed | Battle Sword row, seed `1281` | no drop RNG; flag set; item transferred |
+
+Reproduce this runtime matrix with `uv run sf2 h3 enemy-drops`. The fixture observes the original
+entry at `0xBD24`, rare-roll result at `0xBDA2`, return at `0xBE50`, and persistent flag bytes at
+`0xFFF7A4`. Inventory failure, dead recipients, and the resulting rare-deals state remain Unknown.
 
 ## Confirmed: SPOIT MP-Absorption Boundary Matrix and Replay Order
 

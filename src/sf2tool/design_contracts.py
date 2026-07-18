@@ -25,6 +25,9 @@ CONTRACTS = {
         "tests/fixtures/h2/enemy-gold-v1.json": "sf2-enemy-gold-v1",
         "tests/fixtures/h2/enemy-item-drops-v1.json": "sf2-enemy-item-drops-v1",
         "tests/fixtures/h3/gold-boundaries-v1.json": "sf2-gold-boundaries-v1",
+        "tests/fixtures/h3/enemy-item-drop-behavior-v1.json": (
+            "sf2-enemy-item-drop-behavior-v1"
+        ),
         "tests/fixtures/h3/attack-chain-v1.json": "sf2-attack-chain-double-counter-v1",
         "tests/fixtures/h3/dodge-v1.json": "sf2-successful-airborne-dodge-v1",
         "tests/fixtures/h3/lethal-followup-v1.json": "sf2-lethal-followup-validation-v1",

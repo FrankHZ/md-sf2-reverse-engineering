@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-item-drop-behavior-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "observationBoundary": "Natural lethal Battle 01 physical action entering battlesceneScript_DropEnemyItem, replayed from one pre-action core state with the routine-owned battle, inventory, flag, and seed inputs replaced.",
+  "function": {
+    "entryAddress": 48420,
+    "randomResultAddress": 48546,
+    "returnAddress": 48720
+  },
+  "ram": {
+    "enemyItemDroppedFlagsAddress": 16775076,
+    "seedAddress": 16768676
+  },
+  "harness": {
+    "function": {
+      "battleTestAddress": 30364,
+      "numberPromptAddress": 90754,
+      "flagPromptAddress": 91068,
+      "turnOrderEntryAddress": 152900,
+      "criticalEntryAddress": 44110
+    },
+    "ram": {
+      "combatantDataAddress": 16771072,
+      "combatantEntrySize": 56,
+      "currentBattleAddress": 16774930,
+      "terrainDataAddress": 16736000,
+      "cheatPointerAddress": 16757152,
+      "debugModeAddress": 16756905
+    }
+  },
+  "actor": 0,
+  "emptyItem": 127,
+  "cases": [
+    { "id": "rare-failure", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 1281, "roll": 8, "finalFlag": false, "finalTargetItem": 110, "finalActorItems": [127, 127, 127, 127] },
+    { "id": "rare-success", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": false, "seed": 0, "roll": 0, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [110, 127, 127, 127] },
+    { "id": "rare-repeat-flag", "battle": 18, "target": 128, "item": 110, "flag": 24, "initialFlag": true, "seed": 0, "roll": 0, "finalFlag": true, "finalTargetItem": 110, "finalActorItems": [127, 127, 127, 127] },
+    { "id": "guaranteed-drop", "battle": 36, "target": 128, "item": 66, "flag": 25, "initialFlag": false, "seed": 1281, "roll": null, "finalFlag": true, "finalTargetItem": 127, "finalActorItems": [66, 127, 127, 127] }
+  ]
+}

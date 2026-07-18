@@ -10,6 +10,7 @@ from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
+from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
 from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import verify_growth
@@ -206,6 +207,8 @@ def verify(
         print_record(verify_exp_command_boundaries(rom_path, upstream_path))
         _heading("H3: gold addition, cap, and unsigned-carry boundaries")
         print_record(verify_gold_boundaries(rom_path, upstream_path))
+        _heading("H3: rare, repeated-flag, and guaranteed enemy item drops")
+        print_record(verify_enemy_item_drop_behavior(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
     _heading("Repository verification: PASS")
