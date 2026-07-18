@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-slow1-status-resistance-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 SLOW 1 action across all four STATUS resistance settings through threshold construction, effectiveness RNG, 0x0C00 status mutation, status EXP, Battle 01 award randomization, ordered command replay, and derived DEF/AGI refresh. Common Battle Test and replay addresses are inherited from named fixtures.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "sharedStatusFixture": "tests/fixtures/h3/spell-status-sleep-v1.json",
+  "sharedHealingFixture": "tests/fixtures/h3/spell-healing-v1.json",
+  "function": {
+    "slowEffectEntryAddress": 45838,
+    "slowThresholdAddress": 45844,
+    "slowStatusSetAddress": 45866,
+    "slowReactionAddress": 45904,
+    "slowAgiBonusAddress": 45938,
+    "slowDefBonusAddress": 45970,
+    "slowEffectReturnAddress": 45990,
+    "enemyStatsAppliedAddress": 102304
+  },
+  "case": {
+    "id": "bowie-slow1-four-status-resistance-settings",
+    "actor": 0,
+    "actorClass": 0,
+    "actorInitialMp": 20,
+    "actorInitialExp": 0,
+    "actionType": 1,
+    "actionSpell": 4,
+    "spellMpCost": 3,
+    "seed": 4660,
+    "nonzeroResistanceOffset": 5,
+    "statusMask": 3072,
+    "statusCounterUnit": 1024,
+    "targetSameSide": false,
+    "targets": [
+      { "combatant": 128, "resistanceWord": 0, "setting": 0, "baseDef": 41, "baseAgi": 23 },
+      { "combatant": 129, "resistanceWord": 16384, "setting": 1, "baseDef": 41, "baseAgi": 23 },
+      { "combatant": 130, "resistanceWord": 32768, "setting": 2, "baseDef": 41, "baseAgi": 23 },
+      { "combatant": 131, "resistanceWord": 49152, "setting": 3, "baseDef": 41, "baseAgi": 23 }
+    ]
+  },
+  "expected": {
+    "construction": {
+      "actorMp": 20,
+      "records": [
+        { "combatant": 128, "setting": 0, "threshold": 0, "roll": 7, "success": true, "setStatus": 3072, "reactionStatus": 3072, "accumulatedExp": 5, "agiPenalty": 8, "defPenalty": 15, "statusAfterConstruction": 3072, "currentDefAfterConstruction": 41, "currentAgiAfterConstruction": 23 },
+        { "combatant": 129, "setting": 1, "threshold": 6, "roll": 7, "success": true, "setStatus": 3072, "reactionStatus": 3072, "accumulatedExp": 10, "agiPenalty": 8, "defPenalty": 15, "statusAfterConstruction": 3072, "currentDefAfterConstruction": 41, "currentAgiAfterConstruction": 23 },
+        { "combatant": 130, "setting": 2, "threshold": 7, "roll": 7, "success": true, "setStatus": 3072, "reactionStatus": 3072, "accumulatedExp": 15, "agiPenalty": 8, "defPenalty": 15, "statusAfterConstruction": 3072, "currentDefAfterConstruction": 41, "currentAgiAfterConstruction": 23 },
+        { "combatant": 131, "setting": 3, "threshold": 8, "roll": 7, "success": false, "setStatus": 0, "reactionStatus": 0, "accumulatedExp": 15, "agiPenalty": 0, "defPenalty": 0, "statusAfterConstruction": 0, "currentDefAfterConstruction": 41, "currentAgiAfterConstruction": 23 }
+      ],
+      "targetSameSide": false,
+      "award": { "seed": 60587, "halved": 7, "firstRoll": 0, "secondRoll": 3, "commandExp": 8 }
+    },
+    "replay": {
+      "reactionOrder": ["ally:-3:0", "enemy:128:3072", "enemy:129:3072", "enemy:130:3072"],
+      "allyReaction": { "combatant": 0, "mpChange": -3, "statusCommand": 0, "mpBefore": 20, "mpAfter": 17 },
+      "enemyReactions": [
+        { "combatant": 128, "statusCommand": 3072, "statusBefore": 3072, "statusAfter": 3072, "defBefore": 41, "defAfter": 26, "agiBefore": 23, "agiAfter": 15 },
+        { "combatant": 129, "statusCommand": 3072, "statusBefore": 3072, "statusAfter": 3072, "defBefore": 41, "defAfter": 26, "agiBefore": 23, "agiAfter": 15 },
+        { "combatant": 130, "statusCommand": 3072, "statusBefore": 3072, "statusAfter": 3072, "defBefore": 41, "defAfter": 26, "agiBefore": 23, "agiAfter": 15 }
+      ],
+      "expReaction": { "commandExp": 8, "expBefore": 0, "expAfter": 8 },
+      "finalActorMp": 17,
+      "finalActorExp": 8,
+      "finalTargets": [
+        { "combatant": 128, "status": 3072, "currentDef": 26, "currentAgi": 15 },
+        { "combatant": 129, "status": 3072, "currentDef": 26, "currentAgi": 15 },
+        { "combatant": 130, "status": 3072, "currentDef": 26, "currentAgi": 15 },
+        { "combatant": 131, "status": 0, "currentDef": 41, "currentAgi": 23 }
+      ]
+    }
+  }
+}

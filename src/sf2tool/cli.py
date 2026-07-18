@@ -15,6 +15,7 @@ from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
 from sf2tool.h3.spell_desoul import verify_spell_desoul
 from sf2tool.h3.spell_healing import verify_spell_healing
 from sf2tool.h3.spell_mp import verify_spell_mp_absorb
+from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
@@ -138,6 +139,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_boost)
     h3_spell_boost.add_argument("--timeout-seconds", type=int, default=90)
+    h3_spell_slow = h3_commands.add_parser(
+        "spell-slow", help="verify SLOW 1 resistance thresholds, stats, EXP, and replay"
+    )
+    _add_local_paths(h3_spell_slow)
+    h3_spell_slow.add_argument("--timeout-seconds", type=int, default=90)
     return parser
 
 
@@ -244,6 +250,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-boost":
         print_record(
             verify_spell_boost(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-slow":
+        print_record(
+            verify_spell_slow(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

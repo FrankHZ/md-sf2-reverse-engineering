@@ -274,6 +274,7 @@
         { "id": "applied", "space": "rom", "kind": "observation", "value": 102270 },
         { "id": "mp-applied", "space": "rom", "kind": "observation", "value": 102290 },
         { "id": "status-applied", "space": "rom", "kind": "observation", "value": 102298 },
+        { "id": "stats-applied", "space": "rom", "kind": "observation", "value": 102304 },
         { "id": "battle-scene-enemy", "space": "ram", "kind": "state", "value": 16757710, "symbol": "BATTLESCENE_ENEMY" }
       ],
       "evidence": [
@@ -300,6 +301,10 @@
           "bindings": [
             { "addressId": "mp-applied", "fixtureField": "function.enemyMpAppliedAddress" }
           ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-slow-v1.json", "fixtureId": "sf2-slow1-status-resistance-v1", "verifier": "src/sf2tool/h3/spell_slow.py",
+          "bindings": [{ "addressId": "stats-applied", "fixtureField": "function.enemyStatsAppliedAddress" }]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
@@ -478,6 +483,36 @@
           { "addressId": "agi-bonus", "fixtureField": "function.boostAgiBonusAddress" },
           { "addressId": "def-bonus", "fixtureField": "function.boostDefBonusAddress" },
           { "addressId": "return", "fixtureField": "function.boostEffectReturnAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-slow.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Slow",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 45838 },
+        { "id": "threshold", "space": "rom", "kind": "observation", "value": 45844 },
+        { "id": "status-set", "space": "rom", "kind": "observation", "value": 45866 },
+        { "id": "reaction", "space": "rom", "kind": "observation", "value": 45904 },
+        { "id": "agi-penalty", "space": "rom", "kind": "observation", "value": 45938 },
+        { "id": "def-penalty", "space": "rom", "kind": "observation", "value": 45970 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 45990 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-slow-v1.json", "fixtureId": "sf2-slow1-status-resistance-v1", "verifier": "src/sf2tool/h3/spell_slow.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.slowEffectEntryAddress" },
+          { "addressId": "threshold", "fixtureField": "function.slowThresholdAddress" },
+          { "addressId": "status-set", "fixtureField": "function.slowStatusSetAddress" },
+          { "addressId": "reaction", "fixtureField": "function.slowReactionAddress" },
+          { "addressId": "agi-penalty", "fixtureField": "function.slowAgiBonusAddress" },
+          { "addressId": "def-penalty", "fixtureField": "function.slowDefBonusAddress" },
+          { "addressId": "return", "fixtureField": "function.slowEffectReturnAddress" }
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],

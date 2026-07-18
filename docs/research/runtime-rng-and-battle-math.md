@@ -648,6 +648,50 @@ Tracked artifacts are `tests/fixtures/h3/spell-boost-v1.json`,
 `schemas/h3-spell-boost-fixture.schema.json`, `src/sf2tool/h3/spell_boost.py`, and
 `tools/bizhawk/spell_boost_observer.lua`.
 
+## Confirmed: SLOW 1 STATUS Matrix and Derived-Stat Replay
+
+The SLOW fixture supplies four enemy targets with STATUS resistance words `0x0000`, `0x4000`,
+`0x8000`, and `0xC000`. The pinned SLOW 1 definition costs 3 MP. `sf2enums.asm` defines
+`CHANCE_TO_INFLICT_SLOW` as 5, `STATUSEFFECT_SLOW` as `0x0C00`, and one SLOW counter unit as
+`0x0400`.
+
+At each genuine `spellEffect_Slow` entry `0xB30E`, the observer resets seed `0x1234`. Setting 0
+takes the special zero branch; nonzero settings add 5 before the effectiveness call. Runtime at
+`0xB314` and the shared range-8 roll boundary therefore confirms:
+
+| STATUS setting | Threshold | Roll | Result |
+| --- | --- | --- | --- |
+| 0 | 0 | 7 | success |
+| 1 | 6 | 7 | success |
+| 2 | 7 | 7 | success |
+| 3 | 8 | 7 | failure |
+
+This differs from SLEEP's 5/6/7/8 thresholds: neutral SLOW is unconditional, while setting 3 is
+still immune. The first three calls reach post-`SetStatusEffects` `0xB32A`, write enemy reactions
+at `0xB350`, and add 5 EXP each. The fourth failure unwinds before all three operations. Values at
+`0xB372` and `0xB392` confirm `floor(23*3/8)=8` AGI and `floor(41*3/8)=15` DEF penalties.
+
+Construction leaves caster MP 20. The three successful targets already store status `0x0C00`, but
+current DEF/AGI remain 41/23 because `spellEffect_Slow` does not call `UpdateCombatantStats`; the
+immune target remains status 0. Battle 01 halves accumulated EXP 15→7. Final seed `0xECAB` yields
+award rolls 0 and 3, producing an 8-EXP command.
+
+Playback applies caster MP `20 -> 17`, then three enemy status commands in target order. The
+post-stat-refresh checkpoint `0x18FA0` confirms each successful target changes DEF/AGI
+41/23→26/15 while retaining `0x0C00`; target 131 remains 41/23 with status 0. The final EXP command
+changes Bowie 0→8. The after-turn source subtracts one `0x0400` unit, but runtime expiration,
+reapplication, SLOW 2 geometry, and BOOST/SLOW interaction remain open.
+
+Reproduce with:
+
+```powershell
+uv run sf2 h3 spell-slow
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-slow-v1.json`,
+`schemas/h3-spell-slow-fixture.schema.json`, `src/sf2tool/h3/spell_slow.py`, and
+`tools/bizhawk/spell_slow_observer.lua`.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -658,8 +702,8 @@ Tracked artifacts are `tests/fixtures/h3/spell-boost-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, BOOST expiry/BOOST 2, other status spells, SPOIT boundary
-  cases, and other non-damage spell families.
+  DESOUL failure/multi-target cases, BOOST/SLOW expiry and level-2 geometry, other status spells,
+  SPOIT boundary cases, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

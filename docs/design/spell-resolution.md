@@ -9,8 +9,8 @@
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
 HEAL 1 self-recovery case, one SLEEP 1 status-resistance matrix, one DESOUL 1 success case, and one
-SPOIT MP-absorption case, plus BOOST 1 fresh/recast behavior. It must not be generalized to
-adjacent branches until those paths have their own H3 evidence.
+SPOIT MP-absorption case, BOOST 1 fresh/recast behavior, and a SLOW 1 resistance matrix. It must
+not be generalized to adjacent branches until those paths have their own H3 evidence.
 
 ## Required Inputs
 
@@ -236,6 +236,36 @@ A remake fidelity mode must preserve this mutation/reaction ordering. A moderniz
 failed recast a true no-op or recompute stats immediately, but that is an explicit behavioral
 deviation rather than a cleanup that can be hidden inside the resolver.
 
+## Confirmed SLOW 1 STATUS-Resistance Matrix
+
+SLOW owns mask `0x0C00` and counter unit `0x0400`, so a fresh success writes counter value 3. Its
+effectiveness thresholds are not the same as SLEEP despite sharing the STATUS resistance setting:
+
+| STATUS setting | SLOW threshold | Controlled roll | Result |
+| --- | --- | --- | --- |
+| 0 | 0 | 7 | success |
+| 1 | 6 | 7 | success |
+| 2 | 7 | 7 | success |
+| 3 | 8 | 7 | failure / immunity |
+
+Setting 0 takes a dedicated branch that leaves the threshold at zero, so an eight-way RNG result
+always succeeds. Every nonzero setting adds the constant 5 to its numeric value. Setting 3 remains
+immunity because the resulting threshold 8 is unreachable. A generic STATUS resolver therefore
+cannot assume one threshold table for all status spells.
+
+Each success writes `0x0C00` during construction, emits an enemy reaction, and adds 5 EXP. As with
+BOOST, construction changes the stored status before it changes derived stats: three successful
+targets carry `0x0C00` but remain at base DEF/AGI 41/23. During replay, the reaction calls the
+shared stat refresh and subtracts `floor(base*3/8)`, producing DEF/AGI 26/15. The immune target
+stays at status 0 and 41/23.
+
+Three successes accumulate 15 EXP. Enemy targets take the Battle 01 branch, so integer halving
+produces 7; award rolls 0 and 3 raise the command to 8. Playback orders caster MP cost first
+(`20 -> 17`), the three successful enemy reactions, then caster EXP `0 -> 8`.
+
+The source after-turn path subtracts one `0x0400` unit per processed turn. Runtime expiration,
+SLOW reapplication, SLOW 2 geometry, and interactions with BOOST/equipment remain separate cases.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
@@ -247,6 +277,7 @@ deviation rather than a cleanup that can be hidden inside the resolver.
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent MP/EXP replay |
 | `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` counter; 3/8 DEF/AGI floor; same-side status EXP; cost/status replay; failed recast status-write/stat-refresh mismatch |
+| `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -264,8 +295,8 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** remaining healing branches, non-SLEEP/DESOUL/BOOST status spells, BOOST 2 and runtime
-  expiration, unclamped/empty/full-caster SPOIT and other drain branches, DESOUL failure/multi-target
-  branches, breath attacks, and special spell-effect dispatch.
+- **Unknown:** remaining healing branches, non-SLEEP/DESOUL/BOOST/SLOW status spells, BOOST/SLOW 2,
+  their reapplication/expiration edges, unclamped/empty/full-caster SPOIT and other drain branches,
+  DESOUL failure/multi-target branches, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.
