@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-karna-heal3-prowess-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "function": {
+    "entryAddress": 38342,
+    "heal3CheckAddress": 38522,
+    "prowessWrittenAddress": 38558
+  },
+  "ram": {
+    "combatantDataAddress": 16771072,
+    "combatantEntrySize": 56,
+    "baseProwessOffset": 30
+  },
+  "case": {
+    "id": "karna-prst-heal3",
+    "ally": 15,
+    "allyCode": "KARNA",
+    "classCode": "PRST",
+    "startingLevel": 24,
+    "effectiveLevel": 24,
+    "spell": 128,
+    "baseProwessBefore": 3,
+    "baseProwessAfter": 19
+  }
+}

@@ -198,7 +198,8 @@ fixture 覆盖和对现代重制的合同影响。
 `InitializeAllyStats` 和 `LevelUp` 两处被误加 20 effective levels、但本场景无学法术副作用的原版缺陷。
 新增四个自然 `LevelUp` 调用确认 level 30 后改用固定 1.5 基础增益、基础职业 40/转职职业 99
 上限退出，以及 WIZ 的 `level + 20` 阈值和 `$FE` 继承首职业法术表会把 Kazin 的 BLAZE 1
-升级为 BLAZE 3。
+升级为 BLAZE 3。另一个完全不改状态的启动观察确认 Karna 在 HEAL 3 预扫描时会把 PRST
+基础 prowess 从 `0x03` 改为 `0x13`，随后再由普通升级回放学会法术。
 第一场剧情战斗另有 map 57/16×20 area、Stack 解压 terrain、背景/经验/胜负
 全局元数据、9 个 placement/AI 实体和 3 个 region polygon 的独立 ROM decode；固定 seed 的自然
 初始化 H3 确认实际首回合列表恰有 3 名盟友与 6 个 Gizmo，边界 H3 另确认 AGI 127/128、第二行动、
@@ -236,7 +237,7 @@ reaction 的持久 HP 回放，以及 Battle 01 减半/抖动后的 24 EXP 实�
 
 下一块继续扩展 **Phase 2 的运行时证据**：补齐非 critical 的其他 spread seed、状态/抗性分支、
 后续回合 region 状态与自然 muddle/same-side/special-enemy action reachability。
-同时保留升级前一等级、缺失职业块、HEAL 3 特例和当前/最大属性刷新，以及
+同时保留升级前一等级、缺失职业块、HEAL 3 的合成 counter 边界和当前/最大属性刷新，以及
 `LASER radius = 3` 的显式行为验证队列。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

@@ -131,6 +131,13 @@ input seed/state, and write the no-level payload `[255,0,0,0,0,0,255]`. Kazin/WI
 promoted effective level 22 and `$FE` inheritance of his first stats block's spell list: BLAZE 1
 (`0x0B`) upgrades to BLAZE 3 (`0x8B`), with payload `[2,2,1,0,1,3,139]`.
 
+The companion initialization-prowess fixture observes Karna's unmodified new-game call. Her PRST
+start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell scan. At `0x967A`
+the original takes the dedicated HEAL 3 branch; after `SetBaseProwess`, the callback at `0x969E`
+records base prowess `0x03→0x13`, upgrading double attack from 1/32 to 1/16 while leaving the natural
+critical and counter settings unchanged. The branch itself does not call `LearnSpell`; the following
+23-call `LevelUp` replay learns HEAL 3 at effective level 22 through the ordinary path.
+
 ## Confirmed Statically and at Runtime: Turn-Order Score
 
 Inactive or zero-HP combatants are skipped. For each active combatant:
@@ -344,7 +351,7 @@ control-flow contract independently of the earlier non-dodge observations.
 ## Unknown / Next Fixtures
 
 - Extend level-up runtime coverage to the level immediately before each cap, the missing-class-block
-  exit, current/maximum stat refresh, and the HEAL 3/Karna prowess side effect.
+  exit, current/maximum stat refresh, and synthetic nonzero-counter input to the HEAL 3 branch.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

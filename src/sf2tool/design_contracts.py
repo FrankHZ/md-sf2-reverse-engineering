@@ -31,6 +31,7 @@ CONTRACTS = {
         "tests/fixtures/h3/stat-gain-v1.json": "sf2-calculate-stat-gain-startup-v1",
         "tests/fixtures/h3/level-up-v1.json": "sf2-level-up-tort-boundary-v1",
         "tests/fixtures/h3/level-up-boundaries-v1.json": "sf2-level-up-boundaries-v1",
+        "tests/fixtures/h3/ally-initialization-prowess-v1.json": "sf2-karna-heal3-prowess-v1",
     },
 }
 

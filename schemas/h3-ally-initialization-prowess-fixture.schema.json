@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-ally-initialization-prowess-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "case"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-karna-heal3-prowess-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": { "name": { "const": "BizHawk" }, "version": { "type": "string" }, "core": { "const": "Genesis Plus GX" } }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "heal3CheckAddress", "prowessWrittenAddress"],
+      "properties": {
+        "entryAddress": { "const": 38342 },
+        "heal3CheckAddress": { "const": 38522 },
+        "prowessWrittenAddress": { "const": 38558 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["combatantDataAddress", "combatantEntrySize", "baseProwessOffset"],
+      "properties": {
+        "combatantDataAddress": { "const": 16771072 },
+        "combatantEntrySize": { "const": 56 },
+        "baseProwessOffset": { "const": 30 }
+      }
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "ally", "allyCode", "classCode", "startingLevel", "effectiveLevel", "spell", "baseProwessBefore", "baseProwessAfter"],
+      "properties": {
+        "id": { "const": "karna-prst-heal3" },
+        "ally": { "const": 15 },
+        "allyCode": { "const": "KARNA" },
+        "classCode": { "const": "PRST" },
+        "startingLevel": { "const": 24 },
+        "effectiveLevel": { "const": 24 },
+        "spell": { "const": 128 },
+        "baseProwessBefore": { "const": 3 },
+        "baseProwessAfter": { "const": 19 }
+      }
+    }
+  }
+}

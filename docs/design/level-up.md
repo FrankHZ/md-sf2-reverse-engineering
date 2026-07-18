@@ -13,6 +13,9 @@
 - `tests/fixtures/h3/level-up-boundaries-v1.json` / `sf2-level-up-boundaries-v1` owns four
   controlled natural `LevelUp` calls covering post-projection growth, both class caps, promoted
   effective levels, inherited spell lists, and a successful spell upgrade.
+- `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
+  `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path through the HEAL 3 prowess
+  special case in `InitializeAllyStats`.
 - [`../research/ally-growth.md`](../research/ally-growth.md) owns the static curve and class-block
   storage contract; [`../research/runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
   owns addresses and runtime interpretation.
@@ -68,6 +71,24 @@ registers. Four source-modeled cases pass:
 The original therefore uses class ID 12 as the cap boundary (40 below it, 99 from it onward), but
 uses the defective class-11 comparison described below for effective spell-learning levels.
 
+## Confirmed Karna HEAL 3 Initialization Rule
+
+`InitializeAllyStats` scans every spell whose threshold is at or below the ally's starting effective
+level before replaying earlier level-ups. When natural new-game initialization reaches Karna/PRST at
+starting level 24, the HEAL 3 entry (`0x80`, threshold 22) takes a dedicated branch at `0x967A`.
+It changes base prowess from `0x03` (critical 1/16, double 1/32, counter 1/32) to `0x13`
+(critical 1/16, double 1/16, counter 1/32). The observer records the write after `SetBaseProwess` at
+`0x969E`; it performs no state or register mutation.
+
+This special branch changes prowess but deliberately skips `LearnSpell` during the preliminary scan.
+The subsequent `LevelUp` replay reaches effective level 22 and learns HEAL 3 through the ordinary
+path. A remake must therefore preserve the resulting prowess and spell state without depending on
+this two-stage initialization implementation.
+
+The source instruction keeps only the critical nibble before writing the incremented double setting,
+so a synthetic nonzero counter setting would be cleared. Karna's natural PRST base prowess has zero
+counter bits, and the H3 fixture does not generalize that latent behavior beyond the observed case.
+
 ## Confirmed TORT Boundary Defect
 
 The original comparisons use `class < CHAR_CLASS_LASTNONPROMOTED` to skip the promoted-level offset.
@@ -91,7 +112,7 @@ record that choice explicitly before H4 treats either behavior as normative.
 - the level 39→40 and 98→99 transitions immediately before the confirmed cap exits;
 - the no-matching-class-block exit path;
 - current HP/MP and equipment-derived stat refresh behavior after base maxima change;
-- the HEAL 3/Karna prowess side effect, which is separate from ordinary spell replacement.
+- the latent HEAL 3 behavior with a synthetic nonzero counter setting.
 
-The future remake growth module should consume the same three fixtures first, then extend them rather
+The future remake growth module should consume the same four fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.

@@ -31,7 +31,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   spread、double/counter 到临时 HP、reaction 回放和 EXP 的实现无关合同，以及未来 H4 的共享
   fixture 边界。
 - [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、完整升级顺序、
-  投影后固定成长、职业等级上限、继承法术升级、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
+  投影后固定成长、职业等级上限、继承法术升级、Karna/HEAL 3 prowess 特例、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
   effective-level 缺陷的原版事实和重制选择边界。
 
 ## Decisions
