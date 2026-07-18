@@ -31,12 +31,12 @@
       }
     },
     "cases": {
-      "type": "array", "minItems": 2, "maxItems": 2,
+      "type": "array", "minItems": 3, "maxItems": 3,
       "items": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "ally", "allyCode", "classCode", "startingLevel", "effectiveLevel", "spell", "injectedBaseProwess", "baseProwessBefore", "baseProwessAfter"],
       "properties": {
-        "id": { "enum": ["karna-prst-heal3-natural", "karna-prst-heal3-counter-preservation"] },
+        "id": { "enum": ["karna-prst-heal3-natural", "karna-prst-heal3-counter-preservation", "karna-prst-heal3-shifted-eight-cap"] },
         "ally": { "const": 15 },
         "allyCode": { "const": "KARNA" },
         "classCode": { "const": "PRST" },
@@ -44,8 +44,8 @@
         "effectiveLevel": { "const": 24 },
         "spell": { "const": 128 },
         "injectedBaseProwess": { "type": ["integer", "null"], "minimum": 0, "maximum": 255 },
-        "baseProwessBefore": { "enum": [3, 67] },
-        "baseProwessAfter": { "enum": [19, 83] }
+        "baseProwessBefore": { "enum": [3, 67, 115] },
+        "baseProwessAfter": { "enum": [19, 83, 115] }
       }
       }
     }

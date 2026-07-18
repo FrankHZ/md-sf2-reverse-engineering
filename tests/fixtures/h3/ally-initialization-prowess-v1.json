@@ -37,6 +37,18 @@
       "injectedBaseProwess": 67,
       "baseProwessBefore": 67,
       "baseProwessAfter": 83
+    },
+    {
+      "id": "karna-prst-heal3-shifted-eight-cap",
+      "ally": 15,
+      "allyCode": "KARNA",
+      "classCode": "PRST",
+      "startingLevel": 24,
+      "effectiveLevel": 24,
+      "spell": 128,
+      "injectedBaseProwess": 115,
+      "baseProwessBefore": 115,
+      "baseProwessAfter": 115
     }
   ]
 }

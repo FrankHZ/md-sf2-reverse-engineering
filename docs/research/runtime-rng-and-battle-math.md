@@ -178,6 +178,8 @@ critical and counter settings unchanged. The branch itself does not call `LearnS
 emulator start injects `0x43` at the branch and records `0x43→0x53`, confirming that counter 1/16 is
 preserved for this synthetic input while double attack advances from 1/32 to 1/16. The source-model
 oracle independently derives both transitions from the pinned `InitializeAllyStats` instructions.
+A third injected input confirms the adjacent cap branch: shifting `0x73` yields seven, incrementing
+would yield eight, and the original instead writes the capped `0x73` unchanged.
 
 ## Confirmed Statically and at Runtime: Turn-Order Score
 
@@ -838,8 +840,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 
 ## Unknown / Next Fixtures
 
-- Add the HEAL 3 shifted-value-eight cap, other prowess bit combinations, and remaining
-  stat-cap/underflow edges.
+- Add other HEAL 3 prowess bit combinations and remaining stat-cap/underflow edges.
 - Extend turn-order coverage beyond the now-confirmed AGI 127/128, second-turn, dead/unplaced,
   signed-byte, and stable-tie scenario to status-effect agility changes and multiple AGI >= 128
   combatants in one round.

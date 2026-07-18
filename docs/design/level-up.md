@@ -153,16 +153,20 @@ branch and observes `0x53`: the counter 1/16 setting is preserved while double a
 1/32 to 1/16. The observer records the write after `SetBaseProwess` at `0x969E`; apart from the
 explicit synthetic input in the second run, it performs no state or register mutation.
 
+A third run injects `0x73`. Its shifted high-nibble value would increment from seven to eight, so
+the dedicated cap restores seven and the original writes `0x73` unchanged. This confirms the cap
+branch at runtime rather than relying only on the source instruction.
+
 This special branch changes prowess but deliberately skips `LearnSpell` during the preliminary scan.
 The subsequent `LevelUp` replay reaches effective level 22 and learns HEAL 3 through the ordinary
 path. A remake must therefore preserve the resulting prowess and spell state without depending on
 this two-stage initialization implementation.
 
 The original treats the full high nibble as one scalar: shift right four bits, increment, apply the
-special source cap when the shifted value equals eight, then combine it with the unchanged critical
-nibble. The two confirmed transitions are therefore `0x03→0x13` and `0x43→0x53`. This establishes
-counter preservation for the tested nonzero setting, but does not yet independently cover every
-counter/double bit combination or the shifted-value-eight cap.
+special cap when the shifted value equals eight, then combine it with the unchanged critical
+nibble. The confirmed transitions are therefore `0x03→0x13`, `0x43→0x53`, and `0x73→0x73`. This
+establishes counter preservation and the cap for the tested settings, but does not independently
+cover every counter/double bit combination.
 
 ## Confirmed TORT Boundary Defect
 
@@ -186,7 +190,7 @@ record that choice explicitly before H4 treats either behavior as normative.
 
 - low-stat underflow and ATT/DEF/AGI/MOV cap-saturation edges;
 - enemy curse suppression and the remaining critical/counter/set prowess equip-effect functions;
-- the HEAL 3 shifted-value-eight cap and other counter/double bit combinations.
+- other HEAL 3 counter/double bit combinations.
 
 The future remake growth module should consume the same six fixtures first, then extend them rather
 than embedding untested curve or class assumptions in engine code.
