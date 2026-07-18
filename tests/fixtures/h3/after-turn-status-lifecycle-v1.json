@@ -4,7 +4,7 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "Two natural Battle 01 ProcessAfterTurnEffects calls in one emulator session. After Bowie's controlled action, the first case supplies one counter each of SILENCE, SLOW, ATTACK, and BOOST and observes full expiry. A later Gizmo call supplies three counters each and observes SILENCE random continuation plus deterministic one-unit decrements. Both cases include a transient CURSE bit, empty equipment, ordered status writes, messages, and final UpdateCombatantStats normalization.",
+  "observationBoundary": "Five natural Battle 01 ProcessAfterTurnEffects calls in one emulator session. After Bowie's controlled action, one-counter fields fully expire. Four later Gizmo calls cover two-counter SILENCE expiration and continuation plus three-counter continuation and expiration, while SLOW, ATTACK, and BOOST deterministically subtract one unit. Every case includes transient CURSE, empty equipment, ordered status writes, messages, and final UpdateCombatantStats normalization.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "function": {
     "entryAddress": 148034,
@@ -60,6 +60,42 @@
       "initialCurrentDefense": 40,
       "baseAgility": 24,
       "initialCurrentAgility": 24
+    },
+    {
+      "id": "gizmo-two-counter-silence-expires",
+      "combatant": 133,
+      "seed": 0,
+      "initialStatus": 43524,
+      "baseAttack": 40,
+      "initialCurrentAttack": 50,
+      "baseDefense": 40,
+      "initialCurrentDefense": 40,
+      "baseAgility": 24,
+      "initialCurrentAgility": 24
+    },
+    {
+      "id": "gizmo-two-counter-silence-continues",
+      "combatant": 129,
+      "seed": 4660,
+      "initialStatus": 43524,
+      "baseAttack": 40,
+      "initialCurrentAttack": 50,
+      "baseDefense": 40,
+      "initialCurrentDefense": 40,
+      "baseAgility": 24,
+      "initialCurrentAgility": 24
+    },
+    {
+      "id": "gizmo-three-counter-silence-expires",
+      "combatant": 130,
+      "seed": 0,
+      "initialStatus": 65284,
+      "baseAttack": 40,
+      "initialCurrentAttack": 55,
+      "baseDefense": 40,
+      "initialCurrentDefense": 40,
+      "baseAgility": 24,
+      "initialCurrentAgility": 24
     }
   ],
   "expected": {
@@ -80,6 +116,33 @@
         "branches": { "silenceExpiredEntries": 0, "silenceDecrementEntries": 1, "updateStatsEntries": 1 },
         "messages": { "silence": 0, "slow": 0, "attack": 0, "boost": 0 },
         "status": { "initial": 65284, "afterSilence": 65028, "afterSlow": 64004, "afterAttack": 47620, "afterBoost": 43524, "final": 43520 },
+        "stats": { "initialAttack": 55, "initialDefense": 40, "initialAgility": 24, "finalAttack": 50, "finalDefense": 40, "finalAgility": 24 }
+      },
+      {
+        "id": "gizmo-two-counter-silence-expires",
+        "combatant": 133,
+        "rng": { "seed": 0, "range": 512, "observedSeed": 7, "rawRoll": 0, "maskedRoll": 0 },
+        "branches": { "silenceExpiredEntries": 1, "silenceDecrementEntries": 0, "updateStatsEntries": 1 },
+        "messages": { "silence": 1, "slow": 0, "attack": 0, "boost": 0 },
+        "status": { "initial": 43524, "afterSilence": 43012, "afterSlow": 41988, "afterAttack": 25604, "afterBoost": 21508, "final": 21504 },
+        "stats": { "initialAttack": 50, "initialDefense": 40, "initialAgility": 24, "finalAttack": 45, "finalDefense": 40, "finalAgility": 24 }
+      },
+      {
+        "id": "gizmo-two-counter-silence-continues",
+        "combatant": 129,
+        "rng": { "seed": 4660, "range": 512, "observedSeed": 60587, "rawRoll": 473, "maskedRoll": 256 },
+        "branches": { "silenceExpiredEntries": 0, "silenceDecrementEntries": 1, "updateStatsEntries": 1 },
+        "messages": { "silence": 0, "slow": 0, "attack": 0, "boost": 0 },
+        "status": { "initial": 43524, "afterSilence": 43268, "afterSlow": 42244, "afterAttack": 25860, "afterBoost": 21764, "final": 21760 },
+        "stats": { "initialAttack": 50, "initialDefense": 40, "initialAgility": 24, "finalAttack": 45, "finalDefense": 40, "finalAgility": 24 }
+      },
+      {
+        "id": "gizmo-three-counter-silence-expires",
+        "combatant": 130,
+        "rng": { "seed": 0, "range": 768, "observedSeed": 7, "rawRoll": 0, "maskedRoll": 0 },
+        "branches": { "silenceExpiredEntries": 1, "silenceDecrementEntries": 0, "updateStatsEntries": 1 },
+        "messages": { "silence": 1, "slow": 0, "attack": 0, "boost": 0 },
+        "status": { "initial": 65284, "afterSilence": 64516, "afterSlow": 63492, "afterAttack": 47108, "afterBoost": 43012, "final": 43008 },
         "stats": { "initialAttack": 55, "initialDefense": 40, "initialAgility": 24, "finalAttack": 50, "finalDefense": 40, "finalAgility": 24 }
       }
     ]

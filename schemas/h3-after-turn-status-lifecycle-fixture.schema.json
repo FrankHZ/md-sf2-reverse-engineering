@@ -12,8 +12,8 @@
     "function": { "$ref": "#/definitions/function" },
     "action": { "type": "object", "additionalProperties": false, "required": ["actor", "type", "spell", "target"], "properties": { "actor": { "const": 0 }, "type": { "const": 1 }, "spell": { "const": 11 }, "target": { "const": 128 } } },
     "constants": { "$ref": "#/definitions/constants" },
-    "cases": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/case" } },
-    "expected": { "type": "object", "additionalProperties": false, "required": ["records"], "properties": { "records": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/record" } } } }
+    "cases": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/definitions/case" } },
+    "expected": { "type": "object", "additionalProperties": false, "required": ["records"], "properties": { "records": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/definitions/record" } } } }
   },
   "definitions": {
     "function": { "type": "object", "additionalProperties": false, "required": ["entryAddress", "silenceRngAddress", "silenceRngReturnAddress", "silenceBranchAddress", "silenceMessageAddress", "silenceDecrementAddress", "afterSilenceAddress", "slowMessageAddress", "afterSlowAddress", "attackMessageAddress", "afterAttackAddress", "boostMessageAddress", "afterBoostAddress", "updateStatsAddress", "statsAppliedAddress"], "properties": { "entryAddress": { "const": 148034 }, "silenceRngAddress": { "const": 148252 }, "silenceRngReturnAddress": { "const": 148256 }, "silenceBranchAddress": { "const": 148260 }, "silenceMessageAddress": { "const": 148272 }, "silenceDecrementAddress": { "const": 148280 }, "afterSilenceAddress": { "const": 148292 }, "slowMessageAddress": { "const": 148322 }, "afterSlowAddress": { "const": 148334 }, "attackMessageAddress": { "const": 148364 }, "afterAttackAddress": { "const": 148376 }, "boostMessageAddress": { "const": 148406 }, "afterBoostAddress": { "const": 148418 }, "updateStatsAddress": { "const": 148604 }, "statsAppliedAddress": { "const": 148610 } } },

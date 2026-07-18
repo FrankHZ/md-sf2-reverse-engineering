@@ -192,7 +192,7 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
 
 
 def verify_after_turn_status_lifecycle(
-    rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 90
+    rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 150
 ) -> dict[str, Any]:
     fixture = load_json(FIXTURE)
     validate_json(fixture, SCHEMA, owner="after-turn status-lifecycle fixture")
@@ -230,6 +230,8 @@ def verify_after_turn_status_lifecycle(
             f"expected={expected!r}\nobserved={observed!r}"
         )
     records = modeled["records"]
+    expired = sum(record["branches"]["silenceExpiredEntries"] for record in records)
+    continued = sum(record["branches"]["silenceDecrementEntries"] for record in records)
     return {
         "Fixture": fixture["id"],
         "Cases": len(records),
@@ -238,6 +240,7 @@ def verify_after_turn_status_lifecycle(
             f"0x{records[1]['status']['initial']:04X}"
             f"->0x{records[1]['status']['final']:04X}"
         ),
+        "SilenceBranches": f"expire={expired},continue={continued}",
         "Messages": sum(sum(record["messages"].values()) for record in records),
         "Status": "PASS",
     }

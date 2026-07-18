@@ -176,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
         "after-turn", help="verify status expiry, continuation, and final stat refresh"
     )
     _add_local_paths(h3_after_turn)
-    h3_after_turn.add_argument("--timeout-seconds", type=int, default=90)
+    h3_after_turn.add_argument("--timeout-seconds", type=int, default=150)
     return parser
 
 

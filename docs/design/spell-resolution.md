@@ -298,8 +298,8 @@ A remake fidelity resolver must preserve the target-spell gate, threshold 8 immu
 versus replay boundary, and successful recast refresh. Whether a modernization should suppress EXP
 for a refresh is a deliberate deviation.
 
-The after-turn fixture confirms one-counter SILENCE expiration and one three-counter continuation.
-Alternative two/three-counter outcomes and repeated full lifetime are not yet H3 fixtures.
+The after-turn fixture confirms every one-step SILENCE outcome for one, two, and three counters.
+A repeated full lifetime is not yet an H3 fixture.
 
 ## Confirmed SILENCE Cast Gate and Cost Order
 
@@ -318,29 +318,31 @@ blocking every spell while SILENCE is nonzero is a deliberate modernization, not
 SPOIT provides the unmarked control: under the same `0x0300` caster status it executes its complete
 MP-drain and EXP path because it lacks `AFFECTEDBYSILENCE`.
 
-## Confirmed One- and Three-Counter After-Turn Lifecycle
+## Confirmed After-Turn Counter Transition Matrix
 
 After each living combatant's action, the original battle loop calls one status lifecycle pass. The
-two confirmed inputs combine equal counter settings for SILENCE, SLOW, ATTACK, and BOOST with
+five confirmed inputs combine equal counter settings for SILENCE, SLOW, ATTACK, and BOOST with
 CURSE. Processing order is observable and must remain stable:
 
 1. SILENCE uses its current field as the RNG range and masks the result with `0x0300`. Zero clears
    the field and emits expiry; nonzero subtracts `0x0100` without a message.
 2. SLOW, ATTACK, and BOOST always subtract their units `0x0400`, `0x4000`, and `0x1000`; each emits
    expiry only when its updated field is zero.
-3. The one-counter word progresses
-   `0x5504 -> 0x5404 -> 0x5004 -> 0x1004 -> 0x0004`, with four messages.
-4. The controlled three-counter continuation progresses
-   `0xFF04 -> 0xFE04 -> 0xFA04 -> 0xBA04 -> 0xAA04`, with no messages.
-5. One final stat refresh rebuilds current ATT/DEF/AGI. The expiry case changes 45/40/24 to
-   40/40/24; continuation changes 55/40/24 to the two-counter values 50/40/24.
+3. One-counter SILENCE always expires because a range-256 result cannot carry bits `0x0100` or
+   `0x0200`. Controlled cases exercise both zero and nonzero masked results for fields `0x0200` and
+   `0x0300`, confirming direct expiration or one-unit continuation at each setting.
+4. The packed status after all four fields is `0x0004` for one-counter expiry; `0x5404`/`0x5504`
+   for two-counter SILENCE expiry/continuation; and `0xA804`/`0xAA04` for three-counter
+   expiry/continuation.
+5. One final stat refresh rebuilds current ATT/DEF/AGI from the remaining ATTACK/BOOST/SLOW
+   counters: 40/40/24, 45/40/24, or 50/40/24 for resulting settings zero, one, or two.
 
 The final refresh also owns equipment-derived status normalization. CURSE is excluded from the
 preserved status mask and re-added only when an equipped item is cursed. Four empty item slots make
-the intermediate endings `0x0004`/`0xAA04` normalize to `0x0000`/`0xAA00`. A fidelity implementation
-must therefore separate per-field status writes from the final derived-stat/equipment refresh;
-clearing or retaining CURSE earlier produces a different observable sequence. Repeated full
-lifetimes and alternative SILENCE outcomes remain outside these cases.
+the five intermediate endings normalize by clearing bit `0x0004`. A fidelity implementation must
+therefore separate per-field status writes from the final derived-stat/equipment refresh; clearing
+or retaining CURSE earlier produces a different observable sequence. A repeated full lifetime with
+naturally carried state remains outside these cases.
 
 ## H4 Fixture
 
@@ -356,7 +358,7 @@ lifetimes and alternative SILENCE outcomes remain outside these cases.
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
 | `sf2-dispel1-spell-gate-and-recast-v1` | `tests/fixtures/h3/spell-dispel-v1.json` | known-spell count gate; thresholds 5/6/7/8 and no-spell 8; `0x0300` counter; successful `0x0100` recast refresh; construction/replay timing; MP/EXP persistence |
 | `sf2-silenced-caster-blocks-blaze1-v1` | `tests/fixtures/h3/spell-silence-gate-v1.json` | `AFFECTEDBYSILENCE` gate; silenced message; cost-before-block command order; no target effect or EXP; persistent actor/target state |
-| `sf2-after-turn-status-lifecycle-v1` | `tests/fixtures/h3/after-turn-status-lifecycle-v1.json` | one-counter expiry and three-counter continuation; SILENCE RNG range/mask; ordered SILENCE/SLOW/ATTACK/BOOST writes/messages; final stat and equipment-derived CURSE normalization |
+| `sf2-after-turn-status-lifecycle-v1` | `tests/fixtures/h3/after-turn-status-lifecycle-v1.json` | complete one-step SILENCE 1/2/3 counter branch matrix; SLOW/ATTACK/BOOST 1→0, 2→1, 3→2; ordered writes/messages; final stat and CURSE normalization |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -376,7 +378,7 @@ expected-deviation fixture.
   kill bonus, and non-Battle-01 award behavior.
 - **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/
   SLOW/DISPEL subsets, BOOST/SLOW 2,
-  reapplication, repeated lifetime, and alternative SILENCE outcome edges,
+  reapplication and repeated lifetime edges,
   unclamped/empty/full-caster SPOIT and other drain
   branches,
   DESOUL failure/multi-target branches, breath attacks, and special spell-effect dispatch.

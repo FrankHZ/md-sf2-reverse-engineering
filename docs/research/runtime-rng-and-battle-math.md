@@ -728,9 +728,8 @@ an 8-EXP command. Playback orders caster MP `20 -> 15`, enemy status commands fo
 128/129/130, then caster EXP `0 -> 8`; final statuses are `0x0300/0x0300/0x0300/0/0`.
 
 The after-turn source randomly tests SILENCE and subtracts one `0x0100` counter when its test
-continues the effect. The fixture below confirms one-counter expiration and one three-counter
-continuation. Alternative two/three-counter outcomes and repeated full lifetime remain open. The
-cast-action consumer is confirmed separately.
+continues the effect. The fixture below confirms all one-step outcomes for fields `0x0100`, `0x0200`,
+and `0x0300`. A repeated full lifetime remains open. The cast-action consumer is confirmed separately.
 
 Reproduce with:
 
@@ -773,52 +772,40 @@ The blocking artifacts are `tests/fixtures/h3/spell-silence-gate-v1.json`,
 `schemas/h3-spell-silence-gate-fixture.schema.json`, `src/sf2tool/h3/spell_silence.py`, and
 `tools/bizhawk/spell_silence_gate_observer.lua`. The control remains owned by the SPOIT artifacts.
 
-## Confirmed: One- and Three-Counter After-Turn Lifecycle
+## Confirmed: After-Turn Counter Transition Matrix
 
-In one emulator session, Battle 01 naturally calls `ProcessAfterTurnEffects` at `0x24242` first for
-Bowie after a controlled BLAZE action and later for Gizmo 128. Both cases use empty equipment slots,
-base ATT/DEF/AGI 40/40/24, all four duration fields at the same counter setting, and the unrelated
-CURSE bit `0x0004`.
+In one emulator session, Battle 01 naturally calls `ProcessAfterTurnEffects` at `0x24242` for Bowie
+and four Gizmos. Every case uses empty equipment slots, base ATT/DEF/AGI 40/40/24, all four duration
+fields at the same counter setting, and unrelated CURSE `0x0004`. SILENCE is the only random branch:
+its current field is the RNG range, and the result is masked with `0x0300`.
 
-The first call supplies status `0x5504`: one counter each of SILENCE (`0x0100`), SLOW (`0x0400`),
-BOOST (`0x1000`), and ATTACK (`0x4000`). Current values start at 45/40/24, matching one-counter
-ATTACK while one-counter BOOST and SLOW cancel on DEF/AGI.
+| SILENCE counters | Range | Seed | Raw roll | Masked | Branch | New SILENCE field |
+| --- | ---: | ---: | ---: | ---: | --- | ---: |
+| 1 | 256 | `0x1234` | 236 | `0x0000` | expire | `0x0000` |
+| 2 | 512 | `0x0000` | 0 | `0x0000` | expire | `0x0000` |
+| 2 | 512 | `0x1234` | 473 | `0x0100` | continue | `0x0100` |
+| 3 | 768 | `0x0000` | 0 | `0x0000` | expire | `0x0000` |
+| 3 | 768 | `0x1234` | 710 | `0x0200` | continue | `0x0200` |
 
-SILENCE is the only random branch in this combination. At `0x2431C`, the field value itself supplies
-range 256. Seed `0x1234` advances to `0xECAB` and produces raw roll 236; masking with `0x0300`
-produces zero, so runtime takes the expiration message at `0x24330` rather than the decrement at
-`0x24338`. The four original `SetStatusEffects` calls then expose the ordered sequence:
+Expiration reaches message 351 at `0x24330`; continuation reaches the one-unit decrement at
+`0x24338` without that message. Thus a one-counter SILENCE field necessarily expires, while the
+fixture exercises both branches for counters two and three. SLOW, ATTACK, and BOOST are
+deterministic: their `1 -> 0` transitions emit messages 349/350/348, while `2 -> 1` and `3 -> 2`
+emit none. The five combined results are:
 
-| Completed field | Stored status | Expiry message |
-| --- | --- | --- |
-| SILENCE | `0x5404` | 351 |
-| SLOW | `0x5004` | 349 |
-| ATTACK | `0x1004` | 350 |
-| BOOST | `0x0004` | 348 |
+| Input | Status after four fields | Final normalized status | Expiry messages | Final ATT/DEF/AGI |
+| --- | ---: | ---: | ---: | --- |
+| one counter | `0x0004` | `0x0000` | 4 | 40/40/24 |
+| two, SILENCE expires | `0x5404` | `0x5400` | 1 | 45/40/24 |
+| two, SILENCE continues | `0x5504` | `0x5500` | 0 | 45/40/24 |
+| three, SILENCE expires | `0xA804` | `0xA800` | 1 | 50/40/24 |
+| three, SILENCE continues | `0xAA04` | `0xAA00` | 0 | 50/40/24 |
 
-All four messages occur exactly once. Current ATT/DEF/AGI remain 45/40/24 during those field writes.
-The single final `UpdateCombatantStats` call at `0x2447C` rebuilds current stats to 40/40/24. It also
-normalizes CURSE from equipped items: its preserved-status mask deliberately excludes CURSE and
-only re-adds it for an equipped cursed item. With four empty slots, the transient `0x0004` therefore
-becomes final status `0x0000`. This is a confirmed refresh boundary, not generic proof that an
-unrelated status bit survives after-turn processing.
-
-The later Gizmo call supplies maximum three-counter status `0xFF04` and current stats 55/40/24.
-With SILENCE field/range 768, the same seed advances to `0xECAB` and returns raw roll 710. Masked
-result `0x0200` takes the decrement at `0x24338`, not the expiration message. SLOW, ATTACK, and
-BOOST also subtract one unit, so no expiry message is emitted anywhere in this call:
-
-| Completed field | Stored status |
-| --- | --- |
-| SILENCE | `0xFE04` |
-| SLOW | `0xFA04` |
-| ATTACK | `0xBA04` |
-| BOOST | `0xAA04` |
-
-The final refresh again removes unequipped CURSE, yielding `0xAA00`, and recomputes two-counter
-stats as ATT/DEF/AGI 50/40/24. Together the cases confirm one original `3 -> 2` continuation and
-one `1 -> 0` expiration for all four fields. They do not yet prove a repeated three-turn sequence
-or alternative SILENCE RNG outcomes at fields `0x0200`/`0x0300`.
+Each field write preserves CURSE until the single final `UpdateCombatantStats` call at `0x2447C`.
+That refresh rebuilds current stats from the remaining counters and normalizes CURSE from equipped
+items: its preserved-status mask excludes CURSE and only re-adds it for an equipped cursed item.
+With four empty slots, every intermediate low bit `0x0004` is cleared. The fixture confirms the
+complete one-step transition matrix, but not a multi-turn sequence with naturally carried state.
 
 Reproduce with:
 
@@ -840,9 +827,8 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, repeated full status lifetimes and alternative SILENCE
-  continuation/expiration outcomes, BOOST/SLOW level-2 geometry and reapplication, and other status
-  spells,
+  DESOUL failure/multi-target cases, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
+  reapplication, and other status spells,
   SPOIT boundary cases, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
