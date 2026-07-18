@@ -14,31 +14,50 @@
     "combatantEntrySize": 56,
     "seedAddress": 16768676
   },
-  "case": {
-    "id": "slade-thif-level39-equipped-refresh",
-    "ally": 5,
-    "allyCode": "SLADE",
-    "classCode": "THIF",
-    "seed": 4660,
-    "input": {
-      "class": 10, "level": 39,
-      "maxHp": 42, "currentHp": 7, "maxMp": 0, "currentMp": 0,
-      "baseAttack": 45, "currentAttack": 1, "baseDefense": 38, "currentDefense": 2,
-      "baseAgility": 38, "currentAgility": 3, "baseMove": 7, "currentMove": 1,
-      "baseResistance": 0, "currentResistance": 4660,
-      "baseProwess": 19, "currentProwess": 255,
-      "items": [231, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+  "cases": [
+    {
+      "id": "slade-thif-level39-equipped-refresh", "ally": 5, "allyCode": "SLADE", "classCode": "THIF", "seed": 4660,
+      "input": {
+        "class": 10, "level": 39,
+        "maxHp": 42, "currentHp": 7, "maxMp": 0, "currentMp": 0,
+        "baseAttack": 45, "currentAttack": 1, "baseDefense": 38, "currentDefense": 2,
+        "baseAgility": 38, "currentAgility": 3, "baseMove": 7, "currentMove": 1,
+        "baseResistance": 0, "currentResistance": 4660,
+        "baseProwess": 19, "currentProwess": 255,
+        "items": [231, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "after": {
+        "class": 10, "level": 40,
+        "maxHp": 44, "currentHp": 7, "maxMp": 0, "currentMp": 0,
+        "baseAttack": 47, "currentAttack": 52, "baseDefense": 39, "currentDefense": 39,
+        "baseAgility": 40, "currentAgility": 40, "baseMove": 7, "currentMove": 7,
+        "baseResistance": 0, "currentResistance": 0,
+        "baseProwess": 19, "currentProwess": 19,
+        "items": [231, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
+      },
+      "updateStatsCallObserved": true, "updateStatsEntryObserved": true
     },
-    "after": {
-      "class": 10, "level": 40,
-      "maxHp": 44, "currentHp": 7, "maxMp": 0, "currentMp": 0,
-      "baseAttack": 47, "currentAttack": 52, "baseDefense": 39, "currentDefense": 39,
-      "baseAgility": 40, "currentAgility": 40, "baseMove": 7, "currentMove": 7,
-      "baseResistance": 0, "currentResistance": 0,
-      "baseProwess": 19, "currentProwess": 19,
-      "items": [231, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 0, "exp": 0
-    },
-    "updateStatsCallObserved": true,
-    "updateStatsEntryObserved": true
-  }
+    {
+      "id": "slade-thif-status-and-agility-refresh", "ally": 5, "allyCode": "SLADE", "classCode": "THIF", "seed": 4660,
+      "input": {
+        "class": 10, "level": 39,
+        "maxHp": 42, "currentHp": 7, "maxMp": 0, "currentMp": 0,
+        "baseAttack": 45, "currentAttack": 1, "baseDefense": 38, "currentDefense": 2,
+        "baseAgility": 38, "currentAgility": 3, "baseMove": 7, "currentMove": 1,
+        "baseResistance": 0, "currentResistance": 4660,
+        "baseProwess": 19, "currentProwess": 255,
+        "items": [234, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 64513, "exp": 0
+      },
+      "after": {
+        "class": 10, "level": 40,
+        "maxHp": 44, "currentHp": 7, "maxMp": 0, "currentMp": 0,
+        "baseAttack": 47, "currentAttack": 81, "baseDefense": 39, "currentDefense": 39,
+        "baseAgility": 40, "currentAgility": 40, "baseMove": 7, "currentMove": 6,
+        "baseResistance": 0, "currentResistance": 0,
+        "baseProwess": 19, "currentProwess": 19,
+        "items": [234, 127, 127, 127], "spells": [255, 255, 255, 255], "status": 64513, "exp": 0
+      },
+      "updateStatsCallObserved": true, "updateStatsEntryObserved": true
+    }
+  ]
 }

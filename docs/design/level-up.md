@@ -14,9 +14,9 @@
   controlled natural `LevelUp` calls covering post-projection growth, both class caps, both
   immediately preceding levels, promoted effective levels, inherited spell lists, cross-ally
   class-block scanning, the final missing-class sentinel, and a successful spell upgrade.
-- `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` owns Slade's controlled
-  THIF level 39→40 call through `UpdateCombatantStats`, including current/base stat separation and
-  an equipped Short Knife.
+- `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` owns two controlled
+  Slade/THIF level 39→40 calls through `UpdateCombatantStats`, including current/base stat
+  separation, stacked status effects, a Short Knife, and a Thieve's Dagger.
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` owns Karna's unmodified startup path through the HEAL 3 prowess
   special case in `InitializeAllyStats`.
@@ -100,6 +100,13 @@ class values before reapplying status and equipped-item effects. With no status 
 at current ATT 52 (base 47 plus Short Knife 5), DEF 39, AGI 40, MOV 7, resistance 0, and prowess
 `0x13`; current HP remains 7. Items, spells, status, and EXP remain unchanged.
 
+The second case combines maximum-counter ATTACK, BOOST, and SLOW (`3/8` each) with STUN, then equips
+a Thieve's Dagger. Status adjustments use the refreshed base values: ATT 47 gains 17; DEF 39 gains
+and loses 14; AGI 40 gains and loses 15, then STUN subtracts 5; MOV 7 loses 1. Equipment is applied
+after status, so the dagger adds ATT 17 and AGI 5 last. Final current values are ATT 81, DEF 39,
+AGI 40, and MOV 6, while the `0xFC01` status word is preserved. This confirms ordering and per-step
+flooring for the observed maximum-counter combination, not every possible counter value.
+
 A remake should model maximum/current resources and base/derived combat stats as separate fields.
 Level-up must not heal by merely copying new maxima into current HP/MP, and equipment effects must be
 recomputed from the new base rather than incrementally stacked onto stale derived values.
@@ -142,8 +149,8 @@ record that choice explicitly before H4 treats either behavior as normative.
 
 **Unknown** runtime boundaries still requiring dedicated fixtures:
 
-- status-effect ordering and rounding when `UpdateCombatantStats` refreshes a level-up result;
-- refresh behavior for non-attack equipment effects and cursed equipment;
+- status-effect rounding for one- and two-counter values, plus low-stat underflow/saturation edges;
+- refresh behavior for cursed equipment and prowess-changing equip effects;
 - the latent HEAL 3 behavior with a synthetic nonzero counter setting.
 
 The future remake growth module should consume the same five fixtures first, then extend them rather

@@ -641,12 +641,11 @@ def _verify_boundary_observation(fixture: dict[str, Any], observed: dict[str, An
 
 
 def _model_refresh_case(
-    fixture: dict[str, Any],
+    case: dict[str, Any],
     *,
     disasm: Path,
     curves: dict[int, dict[int, tuple[int, int]]],
 ) -> dict[str, Any]:
-    case = fixture["case"]
     ally = case["ally"]
     equates = _parse_equates(disasm)
     ally_codes = _parse_ally_codes(disasm)
@@ -685,7 +684,6 @@ def _model_refresh_case(
     after = {**before, "items": list(before["items"]), "spells": list(before["spells"])}
     after["level"] += 1
     seed = case["seed"]
-    gains: list[int] = []
     for stat, field in source_fields.items():
         growth = block["stats"][stat]
         if growth["curve"] == 0:
@@ -703,7 +701,6 @@ def _model_refresh_case(
                 second=second,
                 curves=curves,
             )
-        gains.append(gain)
         after[field] += gain
 
     after["currentAttack"] = after["baseAttack"]
@@ -712,8 +709,33 @@ def _model_refresh_case(
     after["currentMove"] = after["baseMove"]
     after["currentResistance"] = after["baseResistance"]
     after["currentProwess"] = after["baseProwess"]
-    if before["status"] != 0:
-        raise ValueError("level-up refresh model requires a status-free fixture")
+
+    status_mask = 0
+    for name in (
+        "STATUSEFFECT_STUN",
+        "STATUSEFFECT_POISON",
+        "STATUSEFFECT_MUDDLE2",
+        "STATUSEFFECT_MUDDLE",
+        "STATUSEFFECT_SLEEP",
+        "STATUSEFFECT_SILENCE",
+        "STATUSEFFECT_SLOW",
+        "STATUSEFFECT_BOOST",
+        "STATUSEFFECT_ATTACK",
+    ):
+        status_mask |= equates[name]
+    status = before["status"] & status_mask
+    after["status"] = status
+    attack_setting = (status & equates["STATUSEFFECT_ATTACK"]) >> 14
+    boost_setting = (status & equates["STATUSEFFECT_BOOST"]) >> 12
+    slow_setting = (status & equates["STATUSEFFECT_SLOW"]) >> 10
+    after["currentAttack"] += after["baseAttack"] * attack_setting >> 3
+    after["currentDefense"] += after["baseDefense"] * boost_setting >> 3
+    after["currentAgility"] += after["baseAgility"] * boost_setting >> 3
+    after["currentDefense"] -= after["baseDefense"] * slow_setting >> 3
+    after["currentAgility"] -= after["baseAgility"] * slow_setting >> 3
+    if status & equates["STATUSEFFECT_STUN"]:
+        after["currentMove"] = max(0, after["currentMove"] - 1)
+        after["currentAgility"] = max(0, after["currentAgility"] - 5)
 
     item_mask = equates["ITEMENTRY_MASK_INDEX"]
     equipped_bit = equates["ITEM_EQUIPPED"]
@@ -750,15 +772,17 @@ def _model_refresh_case(
 def _verify_refresh_model(
     fixture: dict[str, Any], *, disasm: Path, curves: dict[int, dict[int, tuple[int, int]]]
 ) -> None:
-    model = _model_refresh_case(fixture, disasm=disasm, curves=curves)
-    if any(fixture["case"][field] != value for field, value in model.items()):
-        raise ValueError("level-up refresh golden disagrees with source model")
+    for case in fixture["cases"]:
+        model = _model_refresh_case(case, disasm=disasm, curves=curves)
+        if any(case[field] != value for field, value in model.items()):
+            raise ValueError(f"level-up refresh golden disagrees with source model: {case['id']}")
 
 
-def _verify_refresh_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> None:
+def _verify_refresh_observation(
+    fixture: dict[str, Any], case: dict[str, Any], observed: dict[str, Any]
+) -> None:
     if observed.get("system") != "GEN" or observed.get("core") != fixture["emulator"]["core"]:
         raise ValueError("unexpected level-up refresh execution system/core")
-    case = fixture["case"]
     expected = {
         "id": case["id"],
         "ally": case["ally"],
@@ -905,23 +929,24 @@ def verify_growth(
         timeout_seconds=timeout_seconds,
     )
     _verify_boundary_observation(boundary, boundary_observed)
-    refresh_observed = run_observer(
-        rom_path=rom_path,
-        observer_path=REFRESH_OBSERVER,
-        config={
-            "function": refresh["function"],
-            "ram": refresh["ram"],
-            "case": {
-                "id": refresh["case"]["id"],
-                "ally": refresh["case"]["ally"],
-                "seed": refresh["case"]["seed"],
-                "input": refresh["case"]["input"],
+    for case in refresh["cases"]:
+        refresh_observed = run_observer(
+            rom_path=rom_path,
+            observer_path=REFRESH_OBSERVER,
+            config={
+                "function": refresh["function"],
+                "ram": refresh["ram"],
+                "case": {
+                    "id": case["id"],
+                    "ally": case["ally"],
+                    "seed": case["seed"],
+                    "input": case["input"],
+                },
             },
-        },
-        output_name="level-up-refresh",
-        timeout_seconds=timeout_seconds,
-    )
-    _verify_refresh_observation(refresh, refresh_observed)
+            output_name=f"level-up-refresh-{case['id']}",
+            timeout_seconds=timeout_seconds,
+        )
+        _verify_refresh_observation(refresh, case, refresh_observed)
     prowess_observed = run_observer(
         rom_path=rom_path,
         observer_path=PROWESS_OBSERVER,
@@ -946,7 +971,7 @@ def verify_growth(
         "BoundaryFixture": boundary["id"],
         "BoundaryCases": len(boundary["cases"]),
         "RefreshFixture": refresh["id"],
-        "RefreshCases": 1,
+        "RefreshCases": len(refresh["cases"]),
         "ProwessFixture": prowess["id"],
         "ProwessCases": 1,
         "TortBoundaryConfirmed": True,

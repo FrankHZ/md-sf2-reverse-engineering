@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/h3-level-up-refresh-fixture.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "case"],
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "function", "ram", "cases"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-level-up-refresh-v1" },
@@ -31,11 +31,17 @@
         "seedAddress": { "const": 16768676 }
       }
     },
-    "case": {
+    "cases": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": { "$ref": "#/$defs/refreshCase" }
+    }
+  },
+  "$defs": {
+    "refreshCase": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "ally", "allyCode", "classCode", "seed", "input", "after", "updateStatsCallObserved", "updateStatsEntryObserved"],
       "properties": {
-        "id": { "const": "slade-thif-level39-equipped-refresh" },
+        "id": { "enum": ["slade-thif-level39-equipped-refresh", "slade-thif-status-and-agility-refresh"] },
         "ally": { "const": 5 },
         "allyCode": { "const": "SLADE" },
         "classCode": { "const": "THIF" },
@@ -45,9 +51,7 @@
         "updateStatsCallObserved": { "const": true },
         "updateStatsEntryObserved": { "const": true }
       }
-    }
-  },
-  "$defs": {
+    },
     "combatant": {
       "type": "object", "additionalProperties": false,
       "required": ["class", "level", "maxHp", "currentHp", "maxMp", "currentMp", "baseAttack", "currentAttack", "baseDefense", "currentDefense", "baseAgility", "currentAgility", "baseMove", "currentMove", "baseResistance", "currentResistance", "baseProwess", "currentProwess", "items", "spells", "status", "exp"],

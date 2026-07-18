@@ -150,6 +150,12 @@ to 39, 40, 7, 0, and `0x13`; items, spells, status, and EXP remain unchanged. `L
 is intentionally not asserted by this fixture because surrounding startup initialization shares
 that scratch area; the complete-caller and boundary fixtures already own its in-call payload.
 
+The second refresh run uses status `0xFC01` (maximum ATTACK/BOOST/SLOW counters plus STUN) and an
+equipped Thieve's Dagger. The original computes the three status fractions independently from base
+stats with floor division, applies STUN next, and equipment last. The observed current result is
+ATT/DEF/AGI/MOV `81/39/40/6`: BOOST and SLOW cancel at equal counters, STUN's AGI -5 is restored by
+the dagger's AGI +5, and the dagger's ATT +17 follows ATTACK's floor(47×3/8)=17 bonus.
+
 The companion initialization-prowess fixture observes Karna's unmodified new-game call. Her PRST
 start level 24 makes HEAL 3's threshold 22 eligible during the preliminary spell scan. At `0x967A`
 the original takes the dedicated HEAL 3 branch; after `SetBaseProwess`, the callback at `0x969E`
