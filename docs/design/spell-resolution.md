@@ -2,15 +2,15 @@
 
 - Contract version: `0.1`
 - Scope: attack-spell element lookup, damage resistance, spell critical, shared downward variance,
-  damage-EXP accumulation/award, temporary state, and persistent command replay
+  damage/status EXP, healing, instant death, MP absorption, temporary state, and command replay
 - Evidence state: **Confirmed subset**; unsupported spell families remain **Unknown**
 - Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
-HEAL 1 self-recovery case, and one SLEEP 1 status-resistance matrix. It must not be generalized to
-other healing, drain, status, instant-death, breath, or summon cases until those paths have their
-own H3 evidence.
+HEAL 1 self-recovery case, one SLEEP 1 status-resistance matrix, one DESOUL 1 success case, and one
+SPOIT MP-absorption case. It must not be generalized to adjacent branches until those paths have
+their own H3 evidence.
 
 ## Required Inputs
 
@@ -189,6 +189,23 @@ one successful enemy instant death, kill cap, reward lookup, and persistent repl
 DESOUL 2 multi-target behavior, ally/enemy-caster reward skips, boss immunity, and battle-victory
 side effects remain outside the case.
 
+## Confirmed SPOIT MP-Absorption Subset
+
+SPOIT has zero MP cost. At the effect entry it rolls `rng.next(3)`, adds 3, and clamps that result
+to the target's current MP. With seed `0x1234`, the roll is 2 and the candidate transfer is 5; the
+controlled target has only 2 MP, so the emitted transfer is 2. The calculation adds the standard
+5 status-effect EXP. Construction records the reactions but leaves caster/target MP at 10/2.
+
+The command order is observable and significant: the common spell wrapper first emits a zero-cost
+caster reaction, then SPOIT emits enemy MP `-2`, then caster MP `+2`. Replay therefore executes
+`ally:0 -> enemy:-2 -> ally:2`, leaving caster MP 12 and target MP 0. Battle 01 halves accumulated
+EXP `5 -> 2`; the post-effect seed `0xECAB` produces range-16 rolls 0 and 3, so the first adjustment
+raises the command to 3. Caster EXP changes `0 -> 3` after the MP reactions.
+
+This confirms one clamped ally-caster/enemy-target case, including the otherwise easy-to-discard
+zero-delta command. An unclamped transfer, empty target, caster max-MP clamp, enemy caster, and
+other drain effects remain outside the case.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
@@ -198,6 +215,7 @@ side effects remain outside the case.
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | successful STATUS roll; `0x8000` death command; 49 EXP cap; enemy gold lookup; targetDies; HP/MP/EXP/gold replay |
+| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | range-3 roll plus 3; target-current-MP clamp; zero-cost/enemy-drain/caster-gain order; status EXP; persistent MP/EXP replay |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -215,7 +233,8 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** remaining healing branches, non-SLEEP/DESOUL status spells, drain, DESOUL failure and
-  multi-target branches, breath attacks, and special spell-effect dispatch.
+- **Unknown:** remaining healing branches, non-SLEEP/DESOUL status spells, unclamped/empty/full-caster
+  SPOIT and other drain branches, DESOUL failure/multi-target branches, breath attacks, and special
+  spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.

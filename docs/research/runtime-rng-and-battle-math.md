@@ -576,6 +576,35 @@ Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
 `schemas/h3-spell-desoul-fixture.schema.json`, `src/sf2tool/h3/spell_desoul.py`, and
 `tools/bizhawk/spell_desoul_observer.lua`.
 
+## Confirmed: SPOIT Random MP Absorption and Replay Order
+
+The SPOIT fixture replaces Bowie's scheduled Battle 01 attack with spell entry 15 and supplies one
+enemy target with current/max MP 2/2. SPOIT's pinned definition has MP cost 0. At the genuine
+`spellEffect_AbsorbMp` entry `0xB5D6`, seed `0x1234` produces 2 from `RNG(3)`; the effect adds 3,
+making an unclamped transfer of 5. The observation at `0xB5EC` confirms the source clamp reduces
+that value to the target's current MP, 2. The effect then reaches the shared status-EXP routine and
+adds 5. Actor/target MP remain 10/2 when scene construction returns.
+
+The replay trace preserves three distinct commands: the common spell-cost reaction `ally:0`, the
+effect's `enemy:-2`, and its `ally:2`. The enemy MP checkpoint is `0x18F92`, after
+`DecreaseCurrentMp`; the earlier `0x18F7E` only proves HP application and cannot own MP state.
+Playback changes target MP `2 -> 0`, actor MP `10 -> 12`, and retains the zero-delta command in the
+ordered trace.
+
+Battle 01 halves status EXP `5 -> 2`. The post-effect seed is `0xECAB`; award `RNG(16)` rolls 0 and
+3 add one without subtracting, emitting 3 EXP and changing Bowie EXP `0 -> 3`. The Python verifier
+independently models the LCG, `roll + 3`, target-MP clamp, award randomization, and replay order
+before launching BizHawk. Reproduce with:
+
+```powershell
+uv run sf2 h3 spell-mp
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-mp-absorb-v1.json`,
+`schemas/h3-spell-mp-absorb-fixture.schema.json`, `src/sf2tool/h3/spell_mp.py`, and
+`tools/bizhawk/spell_mp_absorb_observer.lua`. This case does not establish unclamped transfer,
+zero-MP target behavior, caster max-MP capping, enemy-caster behavior, or other drain effects.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -586,7 +615,8 @@ Tracked artifacts are `tests/fixtures/h3/spell-desoul-v1.json`,
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  DESOUL failure/multi-target cases, other status spells, and other non-damage spell families.
+  DESOUL failure/multi-target cases, other status spells, SPOIT boundary cases, and other
+  non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

@@ -8,7 +8,7 @@
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
 H2、成长曲线与法术学习合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
 职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、行动顺序、区域激活、物理伤害计算链和
-BLAZE 2 四档 FIRE 抗性矩阵、DAO 四目标 power division、攻击法术 EXP、HEAL 1、SLEEP 1 四档 STATUS 抗性与 DESOUL 即死/kill reward 回放的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+BLAZE 2 四档 FIRE 抗性矩阵、DAO 四目标 power division、攻击法术 EXP、HEAL 1、SLEEP 1 四档 STATUS 抗性、DESOUL 即死/kill reward 与 SPOIT MP 吸收回放的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
@@ -122,7 +122,7 @@ uv run sf2 verify
 里程碑、准备合并/发布、共享 harness 或兼容层发生变化，以及明确要求全量 parity 时运行。
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及
-固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/上限/法术继承边界、战斗 EXP 自然升级、行动顺序、区域激活、物理伤害计算链、攻击法术伤害/EXP、HEAL 1、SLEEP 1 及 DESOUL H3；后续在同一入口继续补齐：
+固定 BizHawk/Genesis Plus GX 的基础/调试覆盖 RNG、成长计算/完整升级及投影/上限/法术继承边界、战斗 EXP 自然升级、行动顺序、区域激活、物理伤害计算链、攻击法术伤害/EXP、HEAL 1、SLEEP 1、DESOUL 及 SPOIT H3；后续在同一入口继续补齐：
 
 | 层 | 验证内容 | 通过标准 |
 | --- | --- | --- |

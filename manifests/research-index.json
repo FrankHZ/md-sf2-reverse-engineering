@@ -272,6 +272,7 @@
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 102222 },
         { "id": "applied", "space": "rom", "kind": "observation", "value": 102270 },
+        { "id": "mp-applied", "space": "rom", "kind": "observation", "value": 102290 },
         { "id": "status-applied", "space": "rom", "kind": "observation", "value": 102298 },
         { "id": "battle-scene-enemy", "space": "ram", "kind": "state", "value": 16757710, "symbol": "BATTLESCENE_ENEMY" }
       ],
@@ -292,6 +293,12 @@
           "level": "H3", "fixture": "tests/fixtures/h3/spell-status-sleep-v1.json", "fixtureId": "sf2-sleep-resistance-matrix-v1", "verifier": "src/sf2tool/h3/spell_status.py",
           "bindings": [
             { "addressId": "status-applied", "fixtureField": "function.statusReactionAppliedAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-mp-absorb-v1.json", "fixtureId": "sf2-spoit-mp-absorb-v1", "verifier": "src/sf2tool/h3/spell_mp.py",
+          "bindings": [
+            { "addressId": "mp-applied", "fixtureField": "function.enemyMpAppliedAddress" }
           ]
         }
       ],
@@ -461,6 +468,28 @@
           { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
           { "addressId": "adjusted-power", "fixtureField": "function.adjustedPowerAddress" },
           { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-mp.absorb",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_AbsorbMp",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 46550 },
+        { "id": "random-roll", "space": "rom", "kind": "observation", "value": 46564 },
+        { "id": "clamped-transfer", "space": "rom", "kind": "observation", "value": 46572 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-mp-absorb-v1.json", "fixtureId": "sf2-spoit-mp-absorb-v1", "verifier": "src/sf2tool/h3/spell_mp.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.absorbEffectEntryAddress" },
+          { "addressId": "random-roll", "fixtureField": "function.randomRollAddress" },
+          { "addressId": "clamped-transfer", "fixtureField": "function.clampedTransferAddress" }
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
