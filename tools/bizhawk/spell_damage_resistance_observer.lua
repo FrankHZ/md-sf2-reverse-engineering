@@ -5,9 +5,15 @@ local prompt_count = 0
 local queue = {}
 local action_started = false
 local targets_supplied = false
+local playback = false
 local resistance_calls = 0
 local records = {}
 local active = nil
+local ally_reactions = {}
+local enemy_reactions = {}
+local active_ally_reaction = nil
+local active_enemy_reaction = nil
+local construction_actor_mp = nil
 local names = { [1]="Up", [2]="Down", [4]="Left", [8]="Right", [16]="B", [32]="C" }
 local cheat = { 1,1,2,1,16,32,8,4,1,1,2,1,16,32,8,4 }
 
@@ -39,18 +45,23 @@ local function word_register(name)
     return emu.getregister(name) & 0xFFFF
 end
 
+local function signed_word(value)
+    if value >= 0x8000 then return value - 0x10000 end
+    return value
+end
+
 local function write_result_and_exit()
     local output = assert(io.open(config.outputPath, "w"))
     output:write(string.format(
         '{"system":"%s","core":"Genesis Plus GX","id":"%s","battle":%d,' ..
         '"action":{"type":%d,"spell":%d,"baseSpell":%d,"targetCount":%d},' ..
-        '"resistanceCalls":%d,"actorMpAfterConstruction":%d,"records":[',
+        '"construction":{"resistanceCalls":%d,"actorMp":%d,"records":[',
         emu.getsystemid(), config.case.id,
         memory.read_u8(config.harness.ram.currentBattleAddress, "M68K BUS"),
         memory.read_u16_be(config.ram.currentBattleActionAddress, "M68K BUS"),
         memory.read_u16_be(config.ram.currentBattleActionAddress + 2, "M68K BUS"),
         memory.read_u16_be(config.ram.battleSceneSpellIndexAddress, "M68K BUS"),
-        #records, resistance_calls, memory.read_u8(entry(config.case.actor) + 17, "M68K BUS")))
+        #records, resistance_calls, construction_actor_mp))
     for index, record in ipairs(records) do
         if index > 1 then output:write(",") end
         output:write(string.format(
@@ -60,9 +71,30 @@ local function write_result_and_exit()
             record.combatant, record.setting, record.adjustedPower, record.quarterPower,
             record.postResistance, record.criticalRoll, record.preVariance, record.varianceRange,
             record.varianceRolls[1], record.varianceRolls[2], record.finalDamage,
-            record.temporaryHp, memory.read_u16_be(entry(record.combatant) + 14, "M68K BUS")))
+            record.temporaryHp, record.restoredHp))
     end
-    output:write("]}\n")
+    output:write(']},"replay":{"allyReactions":[')
+    for index, reaction in ipairs(ally_reactions) do
+        if index > 1 then output:write(",") end
+        output:write(string.format(
+            '{"combatant":%d,"hpChange":%d,"mpChange":%d,"mpBefore":%d,"mpAfter":%d}',
+            reaction.combatant, reaction.hpChange, reaction.mpChange,
+            reaction.mpBefore, reaction.mpAfter))
+    end
+    output:write('],"enemyReactions":[')
+    for index, reaction in ipairs(enemy_reactions) do
+        if index > 1 then output:write(",") end
+        output:write(string.format(
+            '{"combatant":%d,"hpChange":%d,"hpBefore":%d,"hpAfter":%d}',
+            reaction.combatant, reaction.hpChange, reaction.hpBefore, reaction.hpAfter))
+    end
+    output:write(string.format('],"finalActorMp":%d,"finalTargetHp":[',
+        memory.read_u8(entry(config.case.actor) + 17, "M68K BUS")))
+    for index, target in ipairs(config.case.targets) do
+        if index > 1 then output:write(",") end
+        output:write(tostring(memory.read_u16_be(entry(target.combatant) + 14, "M68K BUS")))
+    end
+    output:write("]}}\n")
     output:close()
     client.exitCode(0)
 end
@@ -186,8 +218,58 @@ event.on_bus_exec(function()
 end, config["function"].damageAppliedAddress, "sf2-spell-damage-applied", "M68K BUS")
 
 event.on_bus_exec(function()
-    if action_started and #records == #config.case.targets then write_result_and_exit() end
+    if not action_started or #records ~= #config.case.targets or playback then return end
+    for _, record in ipairs(records) do
+        record.restoredHp = memory.read_u16_be(entry(record.combatant) + 14, "M68K BUS")
+    end
+    construction_actor_mp = memory.read_u8(entry(config.case.actor) + 17, "M68K BUS")
+    playback = true
+    status("milestone:playback")
 end, config["function"].battleSceneEndReturnAddress, "sf2-spell-end", "M68K BUS")
+
+event.on_bus_exec(function()
+    if not playback then return end
+    local a6 = emu.getregister("M68K A6") & 0xFFFFFF
+    local combatant = memory.read_u16_be(config.ram.battleSceneAllyAddress, "M68K BUS")
+    active_ally_reaction = {
+        combatant = combatant,
+        hpChange = signed_word(memory.read_u16_be(a6, "M68K BUS")),
+        mpChange = signed_word(memory.read_u16_be(a6 + 2, "M68K BUS")),
+        mpBefore = memory.read_u8(entry(combatant) + 17, "M68K BUS")
+    }
+end, config["function"].allyReactionEntryAddress, "sf2-spell-ally-reaction", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_ally_reaction == nil then return end
+    active_ally_reaction.mpAfter = memory.read_u8(entry(active_ally_reaction.combatant) + 17, "M68K BUS")
+    ally_reactions[#ally_reactions + 1] = active_ally_reaction
+    active_ally_reaction = nil
+end, config["function"].allyReactionAppliedAddress, "sf2-spell-ally-applied", "M68K BUS")
+
+event.on_bus_exec(function()
+    if not playback then return end
+    local a6 = emu.getregister("M68K A6") & 0xFFFFFF
+    local combatant = memory.read_u16_be(config.ram.battleSceneEnemyAddress, "M68K BUS")
+    active_enemy_reaction = {
+        combatant = combatant,
+        hpChange = signed_word(memory.read_u16_be(a6, "M68K BUS")),
+        hpBefore = memory.read_u16_be(entry(combatant) + 14, "M68K BUS")
+    }
+end, config["function"].enemyReactionEntryAddress, "sf2-spell-enemy-reaction", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_enemy_reaction == nil then return end
+    active_enemy_reaction.hpAfter = memory.read_u16_be(
+        entry(active_enemy_reaction.combatant) + 14, "M68K BUS")
+    enemy_reactions[#enemy_reactions + 1] = active_enemy_reaction
+    active_enemy_reaction = nil
+end, config["function"].enemyReactionAppliedAddress, "sf2-spell-enemy-applied", "M68K BUS")
+
+event.on_bus_exec(function()
+    if playback and #ally_reactions == 1 and #enemy_reactions == #config.case.targets then
+        write_result_and_exit()
+    end
+end, config["function"].executeScriptEndAddress, "sf2-spell-script-end", "M68K BUS")
 
 local frames = 0
 while true do
@@ -204,9 +286,11 @@ while true do
         button = table.remove(queue, 1)
     elseif stage == "ui" and memory.read_u8(config.harness.ram.currentBattleAddress, "M68K BUS") == 1 then
         button = "C"
+    elseif stage == "battle" and playback and frames % 12 < 4 then
+        button = "C"
     end
     set_button(button)
-    joypad.set({ Start = (stage == "ui" and memory.read_u8(config.harness.ram.currentBattleAddress, "M68K BUS") == 1) }, 2)
+    joypad.set({ Start = ((stage == "ui" and memory.read_u8(config.harness.ram.currentBattleAddress, "M68K BUS") == 1) or playback) }, 2)
     emu.frameadvance()
     if frames % 600 == 0 then
         status(string.format("frame=%d,stage=%s,pc=%X,records=%d,action=%d", frames, stage,

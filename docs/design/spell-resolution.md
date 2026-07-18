@@ -74,12 +74,16 @@ damage = max(damage - rng.next(range) - rng.next(range), 1)
 The fixed seed produces two zero rolls for each matrix member. Observed ranges are `2, 2, 1, 2`,
 and final damages therefore remain `10, 8, 5, 12`.
 
-### 5. Preserve construction and replay phases
+### 5. Restore snapshots, then replay HP and MP reactions
 
 The original temporarily changes four 100-HP targets to `90, 92, 95, 88` while constructing the
 battle scene, appends reactions, and restores all four snapshots to 100 before returning from scene
-construction. The fixture exits at this restoration boundary, before command playback; caster MP
-therefore remains 20 even though the generated BLAZE 2 action carries an MP cost of 6.
+construction. Caster MP is still 20 at this boundary.
+
+**Confirmed:** command playback then applies one ally reaction `(HP 0, MP -6)` to Bowie, changing
+MP `20 -> 14`, followed by four enemy reactions in target-list order: `-10, -8, -5, -12`. Persistent
+target HP becomes `90, 92, 95, 88`. The final snapshot is taken only after
+`ExecuteBattlesceneScript` reads the command-list end marker.
 
 A remake does not need to duplicate the original command-buffer internals, but it must expose an
 equivalent ordered trace and avoid treating snapshot restoration as healing. Persistent HP and MP
@@ -89,7 +93,7 @@ after spell-command playback remain a later fixture.
 
 | Fixture ID | File | Required parity |
 | --- | --- | --- |
-| `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; temporary and restored HP |
+| `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; temporary/restored/persistent HP; caster MP reaction |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -105,7 +109,7 @@ expected-deviation fixture.
 ## Unknown / Expansion Gates
 
 - **Unknown at runtime:** promoted-caster +25%, summon division, and successful spell critical.
-- **Unknown:** persistent HP/MP after spell command playback and attack-spell EXP award.
+- **Unknown:** attack-spell EXP award and its level-difference/randomization branches.
 - **Unknown:** healing, status resistance/immunity, drain, instant death, breath attacks, and special
   spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the

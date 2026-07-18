@@ -426,8 +426,12 @@ Each target resets `RANDOM_SEED` to `0x1234` at the genuine spell-damage entry. 
 `InflictDamage` path then derives spread ranges `[2,2,1,2]`; both original variance rolls are zero
 in every case, preserving final damages `[10,8,5,12]`. Temporary HP becomes `[90,92,95,88]`.
 After all four reactions have been generated, `battlesceneScript_End` restores all four HP snapshots
-to 100 before `0x9DCE`. The fixture exits there, before battle-scene command playback, so Bowie's MP
-is still 20; persistent HP/MP replay is explicitly not claimed yet.
+to 100 before `0x9DCE`, while Bowie's MP is still 20. The observer then lets the original command
+interpreter run with debug text skip. `bsc0B_executeAllyReaction` consumes the generated `(HP 0,
+MP -6)` command first and changes Bowie's MP `20 -> 14`. Four ordered
+`bsc0A_executeEnemyReaction` calls consume HP changes `[-10,-8,-5,-12]`, producing persistent target
+HP `[90,92,95,88]`. The final snapshot is delayed until `ExecuteBattlesceneScript` reaches its end
+marker at `0x183EA`, so it is distinct from both temporary calculation and restoration state.
 
 The Python verifier independently checks the pinned BLAZE 2 power/cost, FIRE element, resistance
 arithmetic, LCG calls, spread, temporary HP, and restored HP before launching BizHawk. Reproduce the
@@ -449,7 +453,7 @@ and observations remain under ignored `local/derived/h3/`.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add promoted spell-power adjustment, summon target-count division, successful spell critical,
-  persistent spell reaction/MP replay, and non-damage spell families.
+  attack-spell EXP, and non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

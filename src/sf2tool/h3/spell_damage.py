@@ -86,10 +86,35 @@ def _model_expected(fixture: dict[str, Any]) -> dict[str, Any]:
                 "restoredHp": 100,
             }
         )
+    enemy_reactions = [
+        {
+            "combatant": record["combatant"],
+            "hpChange": -record["finalDamage"],
+            "hpBefore": record["restoredHp"],
+            "hpAfter": record["restoredHp"] - record["finalDamage"],
+        }
+        for record in records
+    ]
     return {
-        "resistanceCalls": len(case["targets"]),
-        "actorMpAfterConstruction": case["initialMp"],
-        "records": records,
+        "construction": {
+            "resistanceCalls": len(case["targets"]),
+            "actorMp": case["initialMp"],
+            "records": records,
+        },
+        "replay": {
+            "allyReactions": [
+                {
+                    "combatant": case["actor"],
+                    "hpChange": 0,
+                    "mpChange": -case["spellMpCost"],
+                    "mpBefore": case["initialMp"],
+                    "mpAfter": case["initialMp"] - case["spellMpCost"],
+                }
+            ],
+            "enemyReactions": enemy_reactions,
+            "finalActorMp": case["initialMp"] - case["spellMpCost"],
+            "finalTargetHp": [reaction["hpAfter"] for reaction in enemy_reactions],
+        },
     }
 
 
@@ -148,10 +173,18 @@ def verify_spell_damage(
         "Engine": f"BizHawk {fixture['emulator']['version']} / {fixture['emulator']['core']}",
         "Battle": fixture["battleId"],
         "Spell": "BLAZE 2",
-        "ResistanceSettings": [record["setting"] for record in fixture["expected"]["records"]],
-        "PreVarianceDamage": [
-            record["preVariance"] for record in fixture["expected"]["records"]
+        "ResistanceSettings": [
+            record["setting"] for record in fixture["expected"]["construction"]["records"]
         ],
-        "FinalDamage": [record["finalDamage"] for record in fixture["expected"]["records"]],
+        "PreVarianceDamage": [
+            record["preVariance"]
+            for record in fixture["expected"]["construction"]["records"]
+        ],
+        "FinalDamage": [
+            record["finalDamage"]
+            for record in fixture["expected"]["construction"]["records"]
+        ],
+        "PersistentHp": fixture["expected"]["replay"]["finalTargetHp"],
+        "PersistentMp": fixture["expected"]["replay"]["finalActorMp"],
         "Status": "PASS",
     }

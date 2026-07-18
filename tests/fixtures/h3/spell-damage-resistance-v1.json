@@ -4,7 +4,7 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "One Battle 01 BLAZE 2 action through original target resistance lookup, spell-power adjustment, critical roll, variance, temporary HP application, and battle-scene snapshot restoration. The harness supplies a four-target list and one resistance setting per target at the pre-initialization seam.",
+  "observationBoundary": "One Battle 01 BLAZE 2 action through original target resistance lookup, spell-power adjustment, critical roll, variance, temporary HP application, snapshot restoration, and command replay to persistent target HP and caster MP. The harness supplies a four-target list and one resistance setting per target at the pre-initialization seam.",
   "function": {
     "writeBattleSceneScriptAddress": 39826,
     "initializePropertiesAddress": 40744,
@@ -16,7 +16,12 @@
     "varianceFirstRollAddress": 44362,
     "varianceSecondRollAddress": 44370,
     "damageAppliedAddress": 44434,
-    "battleSceneEndReturnAddress": 40398
+    "battleSceneEndReturnAddress": 40398,
+    "allyReactionEntryAddress": 101822,
+    "allyReactionAppliedAddress": 101884,
+    "enemyReactionEntryAddress": 102222,
+    "enemyReactionAppliedAddress": 102270,
+    "executeScriptEndAddress": 99306
   },
   "ram": {
     "combatantDataAddress": 16771072,
@@ -25,6 +30,8 @@
     "battleSceneSpellIndexAddress": 16758328,
     "targetsListLengthAddress": 16758334,
     "targetsListAddress": 16758354,
+    "battleSceneAllyAddress": 16757716,
+    "battleSceneEnemyAddress": 16757710,
     "seedAddress": 16768676
   },
   "harness": {
@@ -61,13 +68,26 @@
     ]
   },
   "expected": {
-    "resistanceCalls": 4,
-    "actorMpAfterConstruction": 20,
-    "records": [
-      { "combatant": 128, "setting": 0, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "temporaryHp": 90, "restoredHp": 100 },
-      { "combatant": 129, "setting": 1, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "temporaryHp": 92, "restoredHp": 100 },
-      { "combatant": 130, "setting": 2, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
-      { "combatant": 131, "setting": 3, "adjustedPower": 10, "quarterPower": 2, "postResistance": 12, "criticalRoll": 29, "preVariance": 12, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 12, "temporaryHp": 88, "restoredHp": 100 }
-    ]
+    "construction": {
+      "resistanceCalls": 4,
+      "actorMp": 20,
+      "records": [
+        { "combatant": 128, "setting": 0, "adjustedPower": 10, "quarterPower": 2, "postResistance": 10, "criticalRoll": 29, "preVariance": 10, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 10, "temporaryHp": 90, "restoredHp": 100 },
+        { "combatant": 129, "setting": 1, "adjustedPower": 10, "quarterPower": 2, "postResistance": 8, "criticalRoll": 29, "preVariance": 8, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 8, "temporaryHp": 92, "restoredHp": 100 },
+        { "combatant": 130, "setting": 2, "adjustedPower": 10, "quarterPower": 2, "postResistance": 5, "criticalRoll": 29, "preVariance": 5, "varianceRange": 1, "varianceRolls": [0, 0], "finalDamage": 5, "temporaryHp": 95, "restoredHp": 100 },
+        { "combatant": 131, "setting": 3, "adjustedPower": 10, "quarterPower": 2, "postResistance": 12, "criticalRoll": 29, "preVariance": 12, "varianceRange": 2, "varianceRolls": [0, 0], "finalDamage": 12, "temporaryHp": 88, "restoredHp": 100 }
+      ]
+    },
+    "replay": {
+      "allyReactions": [{ "combatant": 0, "hpChange": 0, "mpChange": -6, "mpBefore": 20, "mpAfter": 14 }],
+      "enemyReactions": [
+        { "combatant": 128, "hpChange": -10, "hpBefore": 100, "hpAfter": 90 },
+        { "combatant": 129, "hpChange": -8, "hpBefore": 100, "hpAfter": 92 },
+        { "combatant": 130, "hpChange": -5, "hpBefore": 100, "hpAfter": 95 },
+        { "combatant": 131, "hpChange": -12, "hpBefore": 100, "hpAfter": 88 }
+      ],
+      "finalActorMp": 14,
+      "finalTargetHp": [90, 92, 95, 88]
+    }
   }
 }

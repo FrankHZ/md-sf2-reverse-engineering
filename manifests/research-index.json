@@ -263,14 +263,64 @@
       "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 102222 },
-        { "id": "applied", "space": "rom", "kind": "observation", "value": 102270 }
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 102270 },
+        { "id": "battle-scene-enemy", "space": "ram", "kind": "state", "value": 16757710, "symbol": "BATTLESCENE_ENEMY" }
+      ],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
+          "bindings": [{ "addressId": "entry", "fixtureField": "function.enemyReactionEntryAddress" }, { "addressId": "applied", "fixtureField": "function.enemyReactionAppliedAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.enemyReactionEntryAddress" },
+            { "addressId": "applied", "fixtureField": "function.enemyReactionAppliedAddress" },
+            { "addressId": "battle-scene-enemy", "fixtureField": "ram.battleSceneEnemyAddress" }
+          ]
+        }
+      ],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.replay.ally-reaction",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "bsc0B_executeAllyReaction",
+      "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 101822 },
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 101884 },
+        { "id": "battle-scene-ally", "space": "ram", "kind": "state", "value": 16757716, "symbol": "BATTLESCENE_ALLY" }
       ],
       "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/battle-scene-replay-v1.json", "fixtureId": "sf2-battle-scene-replay-v1", "verifier": "scripts/Test-H3PhysicalDamageFixture.ps1",
-        "bindings": [{ "addressId": "entry", "fixtureField": "function.enemyReactionEntryAddress" }, { "addressId": "applied", "fixtureField": "function.enemyReactionAppliedAddress" }]
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.allyReactionEntryAddress" },
+          { "addressId": "applied", "fixtureField": "function.allyReactionAppliedAddress" },
+          { "addressId": "battle-scene-ally", "fixtureField": "ram.battleSceneAllyAddress" }
+        ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
-      "designContracts": ["docs/design/combat-resolution.md"]
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.replay.execute-script",
+      "subsystem": "battle.replay",
+      "status": "confirmed",
+      "symbol": "ExecuteBattlesceneScript",
+      "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 99224 },
+        { "id": "end", "space": "rom", "kind": "observation", "value": 99306 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-damage-resistance-v1.json", "fixtureId": "sf2-spell-damage-resistance-v1", "verifier": "src/sf2tool/h3/spell_damage.py",
+        "bindings": [{ "addressId": "end", "fixtureField": "function.executeScriptEndAddress" }]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.replay.give-exp",

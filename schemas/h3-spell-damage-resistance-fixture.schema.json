@@ -16,23 +16,27 @@
     "observationBoundary": { "type": "string", "minLength": 1 },
     "function": {
       "type": "object", "additionalProperties": false,
-      "required": ["writeBattleSceneScriptAddress", "initializePropertiesAddress", "getResistanceAddress", "calculateSpellDamageAddress", "adjustedPowerAddress", "postResistanceAddress", "preVarianceAddress", "varianceFirstRollAddress", "varianceSecondRollAddress", "damageAppliedAddress", "battleSceneEndReturnAddress"],
+      "required": ["writeBattleSceneScriptAddress", "initializePropertiesAddress", "getResistanceAddress", "calculateSpellDamageAddress", "adjustedPowerAddress", "postResistanceAddress", "preVarianceAddress", "varianceFirstRollAddress", "varianceSecondRollAddress", "damageAppliedAddress", "battleSceneEndReturnAddress", "allyReactionEntryAddress", "allyReactionAppliedAddress", "enemyReactionEntryAddress", "enemyReactionAppliedAddress", "executeScriptEndAddress"],
       "properties": {
         "writeBattleSceneScriptAddress": { "const": 39826 }, "initializePropertiesAddress": { "const": 40744 },
         "getResistanceAddress": { "const": 49706 }, "calculateSpellDamageAddress": { "const": 47874 },
         "adjustedPowerAddress": { "const": 47894 }, "postResistanceAddress": { "const": 47922 },
         "preVarianceAddress": { "const": 47942 }, "varianceFirstRollAddress": { "const": 44362 },
         "varianceSecondRollAddress": { "const": 44370 }, "damageAppliedAddress": { "const": 44434 },
-        "battleSceneEndReturnAddress": { "const": 40398 }
+        "battleSceneEndReturnAddress": { "const": 40398 },
+        "allyReactionEntryAddress": { "const": 101822 }, "allyReactionAppliedAddress": { "const": 101884 },
+        "enemyReactionEntryAddress": { "const": 102222 }, "enemyReactionAppliedAddress": { "const": 102270 },
+        "executeScriptEndAddress": { "const": 99306 }
       }
     },
     "ram": {
       "type": "object", "additionalProperties": false,
-      "required": ["combatantDataAddress", "combatantEntrySize", "currentBattleActionAddress", "battleSceneSpellIndexAddress", "targetsListLengthAddress", "targetsListAddress", "seedAddress"],
+      "required": ["combatantDataAddress", "combatantEntrySize", "currentBattleActionAddress", "battleSceneSpellIndexAddress", "targetsListLengthAddress", "targetsListAddress", "battleSceneAllyAddress", "battleSceneEnemyAddress", "seedAddress"],
       "properties": {
         "combatantDataAddress": { "const": 16771072 }, "combatantEntrySize": { "const": 56 },
         "currentBattleActionAddress": { "const": 16758318 }, "battleSceneSpellIndexAddress": { "const": 16758328 },
         "targetsListLengthAddress": { "const": 16758334 }, "targetsListAddress": { "const": 16758354 },
+        "battleSceneAllyAddress": { "const": 16757716 }, "battleSceneEnemyAddress": { "const": 16757710 },
         "seedAddress": { "const": 16768676 }
       }
     },
@@ -63,10 +67,24 @@
       }
     },
     "expected": {
-      "type": "object", "additionalProperties": false, "required": ["resistanceCalls", "actorMpAfterConstruction", "records"],
+      "type": "object", "additionalProperties": false, "required": ["construction", "replay"],
       "properties": {
-        "resistanceCalls": { "const": 4 }, "actorMpAfterConstruction": { "const": 20 },
-        "records": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/record" } }
+        "construction": {
+          "type": "object", "additionalProperties": false, "required": ["resistanceCalls", "actorMp", "records"],
+          "properties": {
+            "resistanceCalls": { "const": 4 }, "actorMp": { "const": 20 },
+            "records": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/record" } }
+          }
+        },
+        "replay": {
+          "type": "object", "additionalProperties": false, "required": ["allyReactions", "enemyReactions", "finalActorMp", "finalTargetHp"],
+          "properties": {
+            "allyReactions": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "$ref": "#/definitions/allyReaction" } },
+            "enemyReactions": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/definitions/enemyReaction" } },
+            "finalActorMp": { "const": 14 },
+            "finalTargetHp": { "type": "array", "const": [90, 92, 95, 88] }
+          }
+        }
       }
     }
   },
@@ -85,6 +103,14 @@
         "varianceRolls": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer" } },
         "finalDamage": { "type": "integer" }, "temporaryHp": { "type": "integer" }, "restoredHp": { "type": "integer" }
       }
+    },
+    "allyReaction": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "hpChange", "mpChange", "mpBefore", "mpAfter"],
+      "properties": { "combatant": { "type": "integer" }, "hpChange": { "type": "integer" }, "mpChange": { "type": "integer" }, "mpBefore": { "type": "integer" }, "mpAfter": { "type": "integer" } }
+    },
+    "enemyReaction": {
+      "type": "object", "additionalProperties": false, "required": ["combatant", "hpChange", "hpBefore", "hpAfter"],
+      "properties": { "combatant": { "type": "integer" }, "hpChange": { "type": "integer" }, "hpBefore": { "type": "integer" }, "hpAfter": { "type": "integer" } }
     }
   }
 }
