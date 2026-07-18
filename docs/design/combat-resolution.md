@@ -210,8 +210,10 @@ rows without replacing the original control flow.
 **Confirmed for EXP command persistence:** stored EXP plus the command amount saturates at 200.
 Values 75+24 and 76+24 finish at level/EXP `1/99` and `2/0`. The saturation case 199+24 reaches
 200, subtracts one threshold, calls `LevelUp` once, and finishes at `2/100`; the command does not
-loop over a second threshold. The observer uses the original command bit-15 presentation flag to
-skip text while leaving its masked arithmetic amount at 24.
+loop over a second threshold. At the base/promoted caps, 76+24 still subtracts 100 and calls
+`LevelUp`; result 255 leaves levels 40/99 unchanged and final EXP at 0. The observer uses the
+original command bit-15 presentation flag to skip text while leaving its masked arithmetic amount
+at 24.
 
 **Confirmed for enemy gold data:** the kill path indexes a big-endian word table by enemy ID. The
 canonical range has 103 values, aligned with the 103 enemy definitions. A following 69-word ROM
@@ -242,8 +244,8 @@ rare RNG when applicable, test-and-set flag, removal, then recipient routing.
 Sword delivery increments count 14 to 15; an existing 15 remains 15. Compatibility code must clamp
 per item rather than carry into the adjacent packed nibble.
 
-Other battle modifiers, the containing EXP command path at a class level cap, gold subtraction,
-and non-battle gold callers remain outside this contract version.
+Other battle modifiers, gold subtraction, and non-battle gold callers remain outside this contract
+version.
 
 ## Reference Adapter Shape
 
@@ -281,7 +283,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-battle-exp-level-up-v1` | `tests/fixtures/h3/battle-exp-level-up-v1.json` | 99 + 24 threshold, one LevelUp call, payload, persistent level/stats/EXP |
 | `sf2-kill-exp-level-difference-v1` | `tests/fixtures/h3/kill-exp-level-difference-v1.json` | Effective-level subtraction; 50/40/30/20/10/0 brackets; promoted +20 offset |
 | `sf2-award-exp-randomization-v1` | `tests/fixtures/h3/award-exp-randomization-v1.json` | Battle 01 halving; ordered +1/-1 RNG branches; cancellation; minimum 1 |
-| `sf2-exp-command-boundaries-v1` | `tests/fixtures/h3/exp-command-boundaries-v1.json` | EXP cap 200; 100-point threshold; at most one level per command; residual EXP 100 |
+| `sf2-exp-command-boundaries-v1` | `tests/fixtures/h3/exp-command-boundaries-v1.json` | EXP cap 200; one threshold/call; residual EXP 100; base/promoted cap result 255 |
 | `sf2-enemy-gold-v1` | `tests/fixtures/h2/enemy-gold-v1.json` | 103 used word entries; 69-word unused tail boundary; source/ROM parity |
 | `sf2-enemy-item-drops-v1` | `tests/fixtures/h2/enemy-item-drops-v1.json` | 30 four-byte records; flags 0-29; three RNG(32) items; `0xFFFF` terminator |
 | `sf2-gold-boundaries-v1` | `tests/fixtures/h3/gold-boundaries-v1.json` | Ordinary/exact/above-cap addition; 32-bit carry; 9,999,999 cap |
@@ -317,7 +319,7 @@ complete:
 - critical definitions beyond the verified case and criticals on second/counter attacks;
 - resistance, status effects, spell damage, healing, drain, and instant-death paths;
 - additional spread seeds and the exact lower-bound behavior across all input ranges;
-- remaining EXP modifiers, the containing EXP command at class level caps, and gold subtraction/non-battle callers;
+- remaining EXP modifiers and gold subtraction/non-battle callers;
 - battle-scene command types beyond the confirmed HP reaction and EXP award subset.
 
 Each expansion must add or extend H3 evidence first, update this contract, and then become an H4

@@ -467,17 +467,20 @@ performs exactly one 100-point subtraction and at most one `LevelUp` call. `Incr
 | 75 | 24 | 99 | 0 | 1 / 99 |
 | 76 | 24 | 100 | 1 | 2 / 0 |
 | 199 | 24 | 200 | 1 | 2 / 100 |
+| 76 (SDMN level 40) | 24 | 100 | 1, result 255 | 40 / 0 |
+| 76 (HERO level 99) | 24 | 100 | 1, result 255 | 99 / 0 |
 
-The last row proves both byte saturation and the absence of a repeated-threshold loop: one command
+The 199-EXP row proves both byte saturation and the absence of a repeated-threshold loop: one command
 can leave stored EXP at 100 after one level. Each row replays the original Battle 01 EXP command
 from one post-damage in-memory core state. The observer replaces the command and the actor's
 class/level/EXP inputs at `bsc0F_giveExp`, and sets the routine's original bit-15 flag to suppress
 presentation text; the routine itself masks that flag before arithmetic. It records final state at
 the `LevelUp` return for threshold rows and at the EXP-command return otherwise.
 
-The executable contract is `tests/fixtures/h3/exp-command-boundaries-v1.json`; reproduce it with
-`uv run sf2 h3 exp-command`. Base/promoted level-cap exits remain independently confirmed by the
-LevelUp boundary fixture; this matrix does not duplicate their containing command path.
+The base and promoted cap rows confirm the containing command still subtracts the 100-point
+threshold and calls `LevelUp`; that routine returns 255 and leaves levels 40/99 unchanged. The
+executable contract is `tests/fixtures/h3/exp-command-boundaries-v1.json`; reproduce it with
+`uv run sf2 h3 exp-command`.
 
 ## Confirmed: Gold Addition and Cap Boundaries
 

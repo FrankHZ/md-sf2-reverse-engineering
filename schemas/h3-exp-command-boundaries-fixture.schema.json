@@ -47,7 +47,7 @@
     "actor": { "type": "integer", "minimum": 0, "maximum": 255 },
     "target": { "type": "integer", "minimum": 0, "maximum": 255 },
     "cases": {
-      "type": "array", "minItems": 1,
+      "type": "array", "minItems": 5, "maxItems": 5,
       "items": {
         "type": "object", "additionalProperties": false,
         "required": ["id", "classCode", "class", "level", "initialExp", "commandExp", "expAfterIncrease", "levelUpCalls", "finalLevel", "finalExp"],
