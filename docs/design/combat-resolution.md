@@ -70,11 +70,13 @@ this turn” and “flip friend/enemy semantics” into one boolean.
 The action guard consumes the resulting attacker/target pair after selection. For an ally attacker,
 targeting Bowie returns inaction without RNG; targeting a different non-Bowie ally permits the
 action without RNG. Self-targeting alone consumes `RNG(2)`: roll 0 permits the action and roll 1
-returns inaction. The protected-target test therefore precedes the identity/random test.
+returns inaction. The enemy branch mirrors this exactly: enemy 128 (the first enemy slot, usually
+the boss) is protected; a different enemy target proceeds; self-target rolls 0/1 produce action or
+inaction. The protected-target test therefore precedes the identity/random test on both sides.
 
-The predicate fixture owns side-flip eligibility, while the action-guard fixture owns these ally
-outcomes. Natural side-flipped target enumeration, usable-action filtering, the enemy-side first
-enemy/boss guard, and `BATTLEACTION_MUDDLED` remain separate action-selection contracts.
+The predicate fixture owns side-flip eligibility, while the action-guard fixture owns these final
+pair checks. Natural side-flipped target enumeration, usable-action filtering, and conversion of
+inaction into `BATTLEACTION_MUDDLED` remain separate action-selection contracts.
 
 ### 2. Calculate base physical damage with integer arithmetic
 
@@ -313,7 +315,7 @@ not copy expected numbers into a separate engine-specific test suite.
 | `sf2-gold-boundaries-v1` | `tests/fixtures/h3/gold-boundaries-v1.json` | Ordinary/exact/above-cap addition; 32-bit carry; 9,999,999 cap |
 | `sf2-enemy-item-drop-behavior-v1` | `tests/fixtures/h3/enemy-item-drop-behavior-v1.json` | Rare fail/success; repeated flag; guaranteed transfer; full/dead recipient routing; deals 14/15 saturation |
 | `sf2-attack-chain-double-counter-v1` | `tests/fixtures/h3/attack-chain-v1.json` | Attack order, dodge misses, double/counter, half damage, reactions |
-| `sf2-muddle-action-guard-allies-v1` | `tests/fixtures/h3/muddle-action-guard-v1.json` | Bowie protection; different-ally pass-through; self-target `RNG(2)` roll 0/1 outcomes |
+| `sf2-muddle-action-guard-both-sides-v1` | `tests/fixtures/h3/muddle-action-guard-v1.json` | Bowie/first-enemy protection; different-target pass-through; ally/enemy self-target `RNG(2)` roll 0/1 outcomes |
 | `sf2-muddle-confusion-truth-table-v1` | `tests/fixtures/h3/muddle-confusion-v1.json` | counters-only, level-2-flag-only, neither, and combined truth table; `0x0038` required for confusion |
 | `sf2-successful-airborne-dodge-v1` | `tests/fixtures/h3/dodge-v1.json` | Successful dodge, zero damage calls, unchanged HP |
 | `sf2-lethal-followup-validation-v1` | `tests/fixtures/h3/lethal-followup-v1.json` | Target-death rejection of forced-valid double/counter toggles |

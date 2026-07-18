@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "sf2-muddle-action-guard-allies-v1",
+  "id": "sf2-muddle-action-guard-both-sides-v1",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
   "battleId": 1,
-  "observationBoundary": "A deterministic private copy of the verified ROM redirects the natural Battle 01 AI attack-command call at 0xE7BE through a 40-byte loop stub in documented alignment padding. The observer supplies four 10-byte RAM records. The stub preserves a0/d4, loads each actor/target/seed, calls the unmodified original DetermineMuddledBattleaction, stores d3 and the resulting seed, then restores registers and returns. One unique post-loop observation reads the complete table. The original disk ROM remains unchanged.",
+  "observationBoundary": "A deterministic private copy of the verified ROM redirects the natural Battle 01 AI attack-command call at 0xE7BE through a 40-byte loop stub in documented alignment padding. The observer supplies eight 10-byte RAM records covering mirrored ally and enemy branches. The stub preserves a0/d4, loads each actor/target/seed, calls the unmodified original DetermineMuddledBattleaction, stores d3 and the resulting seed, then restores registers and returns. One unique post-loop observation reads the complete table. The original disk ROM remains unchanged.",
   "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
   "instrumentation": {
     "patchTriggerAddress": 59276,
@@ -13,7 +13,7 @@
     "callSitePatchedHex": "61001810",
     "stubAddress": 65488,
     "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-    "stubHex": "2F082F0441F8B62E78033018321831D8DEA44EB90000C27A30C330F8DEA451CCFFEA281F205F4E75",
+    "stubHex": "2F082F0441F8B62E78073018321831D8DEA44EB90000C27A30C330F8DEA451CCFFEA281F205F4E75",
     "resultAddress": 65522,
     "ramInputAddress": 16758318,
     "recordSize": 10
@@ -27,6 +27,10 @@
     { "id": "ally-protect-bowie", "actor": 1, "target": 0, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 1 },
     { "id": "ally-other-target", "actor": 1, "target": 2, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 0 },
     { "id": "ally-self-roll-zero", "actor": 1, "target": 1, "seed": 0, "expectedRngCalls": 1, "expectedRoll": 0, "expectedInaction": 0 },
-    { "id": "ally-self-roll-one", "actor": 1, "target": 1, "seed": 65535, "expectedRngCalls": 1, "expectedRoll": 1, "expectedInaction": 1 }
+    { "id": "ally-self-roll-one", "actor": 1, "target": 1, "seed": 65535, "expectedRngCalls": 1, "expectedRoll": 1, "expectedInaction": 1 },
+    { "id": "enemy-protect-first-enemy", "actor": 129, "target": 128, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 1 },
+    { "id": "enemy-other-target", "actor": 129, "target": 130, "seed": 4660, "expectedRngCalls": 0, "expectedRoll": -1, "expectedInaction": 0 },
+    { "id": "enemy-self-roll-zero", "actor": 129, "target": 129, "seed": 0, "expectedRngCalls": 1, "expectedRoll": 0, "expectedInaction": 0 },
+    { "id": "enemy-self-roll-one", "actor": 129, "target": 129, "seed": 65535, "expectedRngCalls": 1, "expectedRoll": 1, "expectedInaction": 1 }
   ]
 }

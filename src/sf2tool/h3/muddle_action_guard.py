@@ -29,6 +29,7 @@ def _verify_source_contract(disasm: Path) -> None:
         "DetermineMuddledBattleaction:",
         "btst    #COMBATANT_BIT_ENEMY,d0",
         "cmpi.b  #COMBATANT_ALLIES_START,d1",
+        "cmpi.b  #COMBATANT_ENEMIES_START,d1",
         "cmp.b   d0,d1",
         "moveq   #2,d0",
         "jsr     (GenerateRandomOrDebugNumber).w",
@@ -43,7 +44,8 @@ def _model_cases(cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for case in cases:
         rng_calls = 0
         roll = -1
-        if case["target"] == 0:
+        protected_target = 0x80 if case["actor"] & 0x80 else 0
+        if case["target"] == protected_target:
             inaction = 1
         elif case["target"] != case["actor"]:
             inaction = 0

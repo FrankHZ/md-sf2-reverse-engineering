@@ -923,17 +923,17 @@ Reproduce with `uv run sf2 h3 muddle-confusion`. Tracked artifacts are
 `tools/bizhawk/muddle_confusion_observer.lua`. This fixture stops at the predicate return; natural
 target flipping and most muddled battle-action selection remain open.
 
-## Confirmed: MUDDLE Ally Action Guards
+## Confirmed: MUDDLE Ally and Enemy Action Guards
 
 `DetermineMuddledBattleaction` at `0xC27A` receives the selected attacker in `d0` and target in
 `d1`, and returns an inaction toggle in `d3`. BizHawk 2.11.1's Genesis Plus GX core cannot set CPU
 registers, so a deterministic private ROM copy redirects one natural Battle 01 AI command call at
 `0xE7BE` through a 40-byte stub in the original `0xFF87..0xFFFF` alignment padding. The verifier
 creates an ignored private ROM copy after checking the original call and padding bytes; the
-canonical disk ROM is unchanged. The stub preserves `a0/d4`, loops over four scratch-RAM records,
-calls the unmodified original function each time, and
-stores `d3` plus the resulting seed. A unique post-loop callback reads the table before registers are
-restored. Python verifies the original bytes before creating the copy, and Lua verifies the derived
+canonical disk ROM is unchanged. The stub preserves `a0/d4`, loops over eight scratch-RAM records,
+calls the unmodified original function each time, and stores `d3` plus the resulting seed. A unique
+post-loop callback reads the table before registers are restored. Python verifies the original
+bytes before creating the copy, and Lua verifies the derived
 call/stub bytes before supplying the table. The runner registers the derived MD5 in BizHawk's user
 database only for the subprocess lifetime, preventing an unknown-ROM modal without leaving a
 toolchain mutation.
@@ -944,12 +944,18 @@ without RNG. Self-target cases consume exactly one `GenerateRandomOrDebugNumber(
 `0xC2C6`. This confirms the ally branch ordering: protect Bowie first, allow a different target,
 otherwise use a 50/50 self-target guard.
 
+The enemy branch reproduces the same matrix with actor 129. Target 128, the first enemy slot and
+usual boss slot, returns inaction 1 without RNG; target 130 returns zero without RNG. Self-target
+seeds 0 and `0xFFFF` again consume one `RNG(2)` call and produce roll/inaction pairs `0/0` and
+`1/1`. The protection constant is side-specific, but the branch ordering and random rule are
+otherwise identical.
+
 Reproduce with `uv run sf2 h3 muddle-action-guard`. Tracked artifacts are
 `tests/fixtures/h3/muddle-action-guard-v1.json`,
 `schemas/h3-muddle-action-guard-fixture.schema.json`,
 `src/sf2tool/h3/muddle_action_guard.py`, and
-`tools/bizhawk/muddle_action_guard_observer.lua`. The mirrored enemy branch, natural target
-selection, and conversion into `BATTLEACTION_MUDDLED` remain open.
+`tools/bizhawk/muddle_action_guard_observer.lua`. Natural target selection and conversion into
+`BATTLEACTION_MUDDLED` remain open.
 
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 

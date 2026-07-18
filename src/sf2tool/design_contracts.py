@@ -8,7 +8,7 @@ from sf2tool.paths import repo_path
 CONTRACTS = {
     "docs/design/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (
-            "sf2-muddle-action-guard-allies-v1"
+            "sf2-muddle-action-guard-both-sides-v1"
         ),
         "tests/fixtures/h3/muddle-confusion-v1.json": (
             "sf2-muddle-confusion-truth-table-v1"

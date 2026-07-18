@@ -1273,7 +1273,7 @@
         { "id": "auto-battle-toggle", "space": "ram", "kind": "state", "value": 16756907, "symbol": "AUTO_BATTLE_TOGGLE" }
       ],
       "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/muddle-action-guard-v1.json", "fixtureId": "sf2-muddle-action-guard-allies-v1", "verifier": "src/sf2tool/h3/muddle_action_guard.py",
+        "level": "H3", "fixture": "tests/fixtures/h3/muddle-action-guard-v1.json", "fixtureId": "sf2-muddle-action-guard-both-sides-v1", "verifier": "src/sf2tool/h3/muddle_action_guard.py",
         "bindings": [
           { "addressId": "entry", "fixtureField": "function.entryAddress" },
           { "addressId": "return", "fixtureField": "function.returnAddress" },

@@ -209,7 +209,7 @@ def build_parser() -> argparse.ArgumentParser:
     h3_muddle_confusion.add_argument("--timeout-seconds", type=int, default=75)
     h3_muddle_action_guard = h3_commands.add_parser(
         "muddle-action-guard",
-        help="verify muddled ally protected-target and self-target action guards",
+        help="verify muddled ally/enemy protected-target and self-target action guards",
     )
     _add_local_paths(h3_muddle_action_guard)
     h3_muddle_action_guard.add_argument("--timeout-seconds", type=int, default=120)
