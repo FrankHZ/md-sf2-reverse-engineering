@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-healing-exp-boundaries-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Ten self-targeted HEAL actions replayed from one pre-action Battle 01 core state. The original dispatcher, power lookup, promoted adjustment or power-255 full-recovery branch, missing-HP cap, and CalculateHealingExp call execute naturally. At CalculateHealingExp entry only, the fixture controls the pre-existing accumulator and, for one case, substitutes an enemy actor index to isolate the enemy skip without claiming a naturally scheduled enemy HEAL.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-healing-v1.json",
+  "function": {
+    "healEffectEntryAddress": 45332,
+    "preCapPowerAddress": 45380,
+    "cappedRecoveryAddress": 45386,
+    "healingExpEntryAddress": 43122,
+    "healingExpReturnAddress": 43208
+  },
+  "ram": { "battleSceneExpAddress": 16758316 },
+  "caseSetup": { "actor": 0, "target": 0, "enemyActor": 128, "schedulingTarget": 128, "actionType": 1 },
+  "cases": [
+    { "id": "prst-minimum", "classCode": "PRST", "class": 4, "expActor": 0, "actionSpell": 0, "basePower": 15, "targetMaxHp": 100, "targetCurrentHp": 95, "missingHp": 5, "preCapPower": 15, "recovery": 5, "initialAccumulator": 0, "eligible": true, "rawHealingExp": 1, "computedHealingExp": 10, "finalAccumulator": 10, "capApplied": false },
+    { "id": "vicr-whitelist-promoted-power", "classCode": "VICR", "class": 19, "expActor": 0, "actionSpell": 0, "basePower": 15, "targetMaxHp": 100, "targetCurrentHp": 95, "missingHp": 5, "preCapPower": 18, "recovery": 5, "initialAccumulator": 0, "eligible": true, "rawHealingExp": 1, "computedHealingExp": 10, "finalAccumulator": 10, "capApplied": false },
+    { "id": "mmnk-whitelist-promoted-power", "classCode": "MMNK", "class": 20, "expActor": 0, "actionSpell": 0, "basePower": 15, "targetMaxHp": 100, "targetCurrentHp": 95, "missingHp": 5, "preCapPower": 18, "recovery": 5, "initialAccumulator": 0, "eligible": true, "rawHealingExp": 1, "computedHealingExp": 10, "finalAccumulator": 10, "capApplied": false },
+    { "id": "sdmn-nonhealer-skip", "classCode": "SDMN", "class": 0, "expActor": 0, "actionSpell": 0, "basePower": 15, "targetMaxHp": 100, "targetCurrentHp": 95, "missingHp": 5, "preCapPower": 15, "recovery": 5, "initialAccumulator": 0, "eligible": false, "rawHealingExp": 1, "computedHealingExp": 0, "finalAccumulator": 0, "capApplied": false },
+    { "id": "enemy-actor-skip", "classCode": "PRST", "class": 4, "expActor": 128, "actionSpell": 0, "basePower": 15, "targetMaxHp": 100, "targetCurrentHp": 95, "missingHp": 5, "preCapPower": 15, "recovery": 5, "initialAccumulator": 0, "eligible": false, "rawHealingExp": 1, "computedHealingExp": 0, "finalAccumulator": 0, "capApplied": false },
+    { "id": "vicr-heal3-proportional", "classCode": "VICR", "class": 19, "expActor": 0, "actionSpell": 128, "basePower": 30, "targetMaxHp": 50, "targetCurrentHp": 10, "missingHp": 40, "preCapPower": 37, "recovery": 37, "initialAccumulator": 0, "eligible": true, "rawHealingExp": 18, "computedHealingExp": 18, "finalAccumulator": 18, "capApplied": false },
+    { "id": "healing-action-cap", "classCode": "PRST", "class": 4, "expActor": 0, "actionSpell": 0, "basePower": 15, "targetMaxHp": 100, "targetCurrentHp": 95, "missingHp": 5, "preCapPower": 15, "recovery": 5, "initialAccumulator": 20, "eligible": true, "rawHealingExp": 1, "computedHealingExp": 10, "finalAccumulator": 25, "capApplied": true },
+    { "id": "vicr-heal4-full-recovery", "classCode": "VICR", "class": 19, "expActor": 0, "actionSpell": 192, "basePower": 255, "targetMaxHp": 100, "targetCurrentHp": 1, "missingHp": 99, "preCapPower": 99, "recovery": 99, "initialAccumulator": 0, "eligible": true, "rawHealingExp": 24, "computedHealingExp": 24, "finalAccumulator": 24, "capApplied": false },
+    { "id": "prst-heal4-exact-maximum", "classCode": "PRST", "class": 4, "expActor": 0, "actionSpell": 192, "basePower": 255, "targetMaxHp": 100, "targetCurrentHp": 0, "missingHp": 100, "preCapPower": 100, "recovery": 100, "initialAccumulator": 0, "eligible": true, "rawHealingExp": 25, "computedHealingExp": 25, "finalAccumulator": 25, "capApplied": false },
+    { "id": "zero-max-hp-skip", "classCode": "PRST", "class": 4, "expActor": 0, "actionSpell": 0, "basePower": 15, "targetMaxHp": 0, "targetCurrentHp": 0, "missingHp": 0, "preCapPower": 15, "recovery": 0, "initialAccumulator": 0, "eligible": false, "rawHealingExp": 0, "computedHealingExp": 0, "finalAccumulator": 0, "capApplied": false }
+  ]
+}

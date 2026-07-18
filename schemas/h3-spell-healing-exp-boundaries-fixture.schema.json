@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-healing-exp-boundaries-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "caseSetup", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-healing-exp-boundaries-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 }, "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-healing-v1.json" },
+    "function": { "type": "object", "additionalProperties": false, "required": ["healEffectEntryAddress", "preCapPowerAddress", "cappedRecoveryAddress", "healingExpEntryAddress", "healingExpReturnAddress"], "properties": { "healEffectEntryAddress": { "const": 45332 }, "preCapPowerAddress": { "const": 45380 }, "cappedRecoveryAddress": { "const": 45386 }, "healingExpEntryAddress": { "const": 43122 }, "healingExpReturnAddress": { "const": 43208 } } },
+    "ram": { "type": "object", "additionalProperties": false, "required": ["battleSceneExpAddress"], "properties": { "battleSceneExpAddress": { "const": 16758316 } } },
+    "caseSetup": { "type": "object", "additionalProperties": false, "required": ["actor", "target", "enemyActor", "schedulingTarget", "actionType"], "properties": { "actor": { "const": 0 }, "target": { "const": 0 }, "enemyActor": { "const": 128 }, "schedulingTarget": { "const": 128 }, "actionType": { "const": 1 } } },
+    "cases": { "type": "array", "minItems": 10, "maxItems": 10, "items": { "$ref": "#/definitions/case" } }
+  },
+  "definitions": {
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "classCode", "class", "expActor", "actionSpell", "basePower", "targetMaxHp", "targetCurrentHp", "missingHp", "preCapPower", "recovery", "initialAccumulator", "eligible", "rawHealingExp", "computedHealingExp", "finalAccumulator", "capApplied"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }, "classCode": { "enum": ["SDMN", "PRST", "VICR", "MMNK"] }, "class": { "enum": [0, 4, 19, 20] }, "expActor": { "enum": [0, 128] },
+        "actionSpell": { "enum": [0, 128, 192] }, "basePower": { "enum": [15, 30, 255] }, "targetMaxHp": { "enum": [0, 50, 100] }, "targetCurrentHp": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "missingHp": { "type": "integer", "minimum": 0, "maximum": 100 }, "preCapPower": { "type": "integer", "minimum": 0, "maximum": 255 }, "recovery": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "initialAccumulator": { "enum": [0, 20] }, "eligible": { "type": "boolean" }, "rawHealingExp": { "type": "integer", "minimum": 0, "maximum": 25 },
+        "computedHealingExp": { "type": "integer", "minimum": 0, "maximum": 25 }, "finalAccumulator": { "type": "integer", "minimum": 0, "maximum": 25 }, "capApplied": { "type": "boolean" }
+      }
+    }
+  }
+}

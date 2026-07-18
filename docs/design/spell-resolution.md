@@ -170,8 +170,27 @@ and the command carries 9 EXP.
 
 Playback applies the MP reaction first (`20 -> 17`), then the +5 HP reaction (`95 -> 100`), then
 the EXP command (`0 -> 9`). This confirms one recovery cap, healer-class minimum, same-side award
-branch, downward random adjustment, and persistent replay. It does not cover promoted healing
-power, full-recovery power 255, multi-target AURA, non-healer/enemy EXP skips, or the 25-point cap.
+branch, downward random adjustment, and persistent replay.
+
+**Confirmed across the healing boundary matrix:** ordinary spell power receives the promoted
+5/4 adjustment before the missing-HP cap. VICR/MMNK HEAL 1 therefore reaches power 18, while a VICR
+HEAL 3 reaches 37 and recovers 37/50 HP for 18 EXP. HEAL 4 power 255 is a sentinel rather than a
+numeric power: it copies missing HP directly into the recovery amount and skips promotion scaling.
+Missing 99/100 HP therefore recovers 99/100 and computes 24/25 EXP.
+
+Healing EXP is awarded only when the actor is an ally and its current class is PRST, VICR, or MMNK.
+SDMN and a controlled enemy actor index both leave the accumulator unchanged. A max-HP-zero target
+also skips before division and before the minimum. Otherwise:
+
+```text
+raw = floor(25 * recovery / targetMaxHp)
+contribution = max(raw, 10)
+accumulator = min(accumulator + contribution, 25)
+```
+
+Starting accumulator 20 plus a minimum contribution stores 25, proving that the cap is applied to
+the cumulative healing action rather than each contribution in isolation. Multi-target AURA
+geometry and ordered accumulation remain outside the matrix.
 
 ## Confirmed SLEEP 1 Status-Resistance Matrix
 
@@ -385,6 +404,7 @@ naturally carried state remains outside these cases.
 | `sf2-spell-damage-exp-v1` | `tests/fixtures/h3/spell-damage-exp-v1.json` | all effective-level brackets; promoted +20; proportional damage EXP; ordered lethal kill bonus; per-addition 49 cap; Battle 01 halving and controlled non-halved table miss |
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; DAO/APOLLO/NEPTUN/ATLAS comparator hits; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
+| `sf2-healing-exp-boundaries-v1` | `tests/fixtures/h3/spell-healing-exp-boundaries-v1.json` | PRST/VICR/MMNK whitelist; ally/enemy/max-HP-zero guards; promoted ordinary power; power-255 full recovery; proportional/minimum EXP and cumulative 25 cap |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS settings 0-3; success/failure unwind; three ordered `0x8000` commands; targetDies reset; 49 EXP per-action saturation; cumulative enemy gold; HP/MP/EXP/gold replay |
 | `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | silenced-caster unmarked-spell control; empty/clamped/unclamped target MP matrix; zero-delta and ordered drain/gain commands; cumulative status EXP; caster-max-MP clamp; persistent status/MP/EXP replay |
@@ -411,8 +431,8 @@ expected-deviation fixture.
   action.
 - **Unknown:** a complete naturally scheduled non-Battle-01 attack-spell action. The reward table
   miss itself is confirmed at its original entry seam.
-- **Unknown:** remaining healing branches, status spells beyond the confirmed SLEEP/DESOUL/BOOST/
-  SLOW/DISPEL subsets, BOOST/SLOW 2,
+- **Unknown:** multi-target AURA geometry and accumulation, status spells beyond the confirmed
+  SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets, BOOST/SLOW 2,
   reapplication and repeated lifetime edges, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the

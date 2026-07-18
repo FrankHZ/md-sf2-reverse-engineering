@@ -615,15 +615,27 @@
       "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 43122 },
-        { "id": "applied", "space": "rom", "kind": "observation", "value": 43204 }
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 43204 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 43208 },
+        { "id": "battle-scene-exp", "space": "ram", "kind": "state", "value": 16758316, "symbol": "BATTLESCENE_EXP" }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
-        "bindings": [
-          { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
-          { "addressId": "applied", "fixtureField": "function.healingExpAppliedAddress" }
-        ]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
+            { "addressId": "applied", "fixtureField": "function.healingExpAppliedAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-exp-boundaries-v1.json", "fixtureId": "sf2-healing-exp-boundaries-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
+            { "addressId": "return", "fixtureField": "function.healingExpReturnAddress" },
+            { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/spell-resolution.md"]
     },
@@ -755,14 +767,24 @@
         { "id": "adjusted-power", "space": "rom", "kind": "observation", "value": 45380 },
         { "id": "capped-recovery", "space": "rom", "kind": "observation", "value": 45386 }
       ],
-      "evidence": [{
-        "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
-        "bindings": [
-          { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
-          { "addressId": "adjusted-power", "fixtureField": "function.adjustedPowerAddress" },
-          { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
-        ]
-      }],
+      "evidence": [
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
+            { "addressId": "adjusted-power", "fixtureField": "function.adjustedPowerAddress" },
+            { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
+          ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-exp-boundaries-v1.json", "fixtureId": "sf2-healing-exp-boundaries-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
+            { "addressId": "adjusted-power", "fixtureField": "function.preCapPowerAddress" },
+            { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/spell-resolution.md"]
     },

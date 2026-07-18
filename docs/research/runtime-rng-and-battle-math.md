@@ -721,6 +721,52 @@ The fixture, schema, independent source model, and observer are
 uv run sf2 h3 spell-healing
 ```
 
+## Confirmed: Healing EXP Eligibility, Full Recovery, and Cap
+
+The healing-EXP boundary fixture replays ten self-targeted HEAL actions from the same pre-action
+core state and stops at the genuine `battlesceneScript_CalculateHealingExp` return `0xA8C8`.
+HEAL 1, HEAL 3, and HEAL 4 still pass through the original dispatcher, definition lookup, promoted
+power adjustment or power-255 branch, missing-HP cap, reaction construction, and EXP call. The
+observer changes the pre-existing action accumulator only at EXP entry; one enemy-actor case also
+substitutes the actor index there, so it proves the enemy guard without claiming a naturally
+scheduled enemy HEAL.
+
+The runtime class gate accepts exactly the three source-listed healer classes in the matrix:
+
+| Actor identity/class | Power before missing-HP cap | Recovery | Accumulator result |
+| --- | ---: | ---: | ---: |
+| ally PRST, HEAL 1 | 15 | 5 | 10 |
+| ally VICR, HEAL 1 | 18 | 5 | 10 |
+| ally MMNK, HEAL 1 | 18 | 5 | 10 |
+| ally SDMN, HEAL 1 | 15 | 5 | 0 |
+| enemy-index actor, PRST action seam | 15 | 5 | 0 |
+
+VICR and MMNK cross the promoted-class threshold, so ordinary power 15 becomes
+`floor(15*5/4)=18` before the missing-HP cap. A VICR HEAL 3 case similarly changes power `30 -> 37`,
+recovers 37 of 40 missing HP on a max-50 target, and awards `floor(25*37/50)=18`; this is above the
+10-point minimum and confirms the proportional branch independently.
+
+HEAL 4's definition power 255 bypasses `AdjustSpellPower`. The original copies missing HP directly
+into d6: a promoted VICR missing 99 HP records pre-cap power/recovery 99 and awards 24, while a PRST
+at 0/100 HP records 100 and awards exactly 25. The VICR case proves that full recovery does not
+multiply the sentinel by 5/4 or adjust the copied missing-HP amount afterward.
+
+Starting from action accumulator 20, a five-HP HEAL 1 computes the minimum award 10 but the healing
+cap stores 25 rather than 30. A max-HP-zero target reaches the explicit division guard and leaves
+the accumulator zero; the minimum is not applied on that skip path. Together the observed rule is:
+
+```text
+if actor is ally and class in {PRST, VICR, MMNK} and targetMaxHp != 0:
+    contribution = max(floor(25 * recovery / targetMaxHp), 10)
+    accumulator = min(accumulator + contribution, 25)
+```
+
+Reproduce with `uv run sf2 h3 spell-healing-exp`. Tracked artifacts are
+`tests/fixtures/h3/spell-healing-exp-boundaries-v1.json`,
+`schemas/h3-spell-healing-exp-boundaries-fixture.schema.json`,
+`src/sf2tool/h3/spell_healing.py`, and
+`tools/bizhawk/spell_healing_exp_boundaries_observer.lua`.
+
 ## Confirmed: SLEEP 1 STATUS-Resistance Matrix
 
 The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy
@@ -1072,7 +1118,7 @@ Tracked artifacts are `tests/fixtures/h3/after-turn-status-lifecycle-v1.json`,
 - Add natural muddled/same-side/special-enemy action reachability and additional non-critical
   variance seeds to the confirmed physical path.
 - Add natural full APOLLO/NEPTUN/ATLAS casts, a naturally promoted full BLAZE action, a complete
-  naturally scheduled non-Battle-01 spell award, promoted/full-recovery/multi-target healing,
+  naturally scheduled non-Battle-01 spell award and multi-target AURA healing,
   DESOUL 2 natural geometry, repeated full status lifetimes, BOOST/SLOW level-2 geometry and
   reapplication, and other status spells, SPOIT enemy-caster behavior, and other non-damage spell
   families.

@@ -5,13 +5,20 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.h3.bizhawk import run_observer, verify_runtime_contract
-from sf2tool.h3.growth import _rng_step, _verify_upstream
+from sf2tool.h3.growth import _parse_equates, _rng_step, _verify_upstream
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 
 FIXTURE = repo_path("tests/fixtures/h3/spell-healing-v1.json")
 SCHEMA = repo_path("schemas/h3-spell-healing-fixture.schema.json")
 OBSERVER = repo_path("tools/bizhawk/spell_healing_observer.lua")
+BOUNDARY_FIXTURE = repo_path("tests/fixtures/h3/spell-healing-exp-boundaries-v1.json")
+BOUNDARY_SCHEMA = repo_path(
+    "schemas/h3-spell-healing-exp-boundaries-fixture.schema.json"
+)
+BOUNDARY_OBSERVER = repo_path(
+    "tools/bizhawk/spell_healing_exp_boundaries_observer.lua"
+)
 
 
 def _verify_source_contract(disasm: Path, case: dict[str, Any]) -> None:
@@ -178,5 +185,175 @@ def verify_spell_healing(
         "PersistentHp": modeled["replay"]["finalActorHp"],
         "PersistentMp": modeled["replay"]["finalActorMp"],
         "PersistentExp": modeled["replay"]["finalActorExp"],
+        "Status": "PASS",
+    }
+
+
+def _verify_boundary_source_contract(fixture: dict[str, Any], disasm: Path) -> None:
+    source = (disasm / "code/gameflow/battle/battleactions/earnexp.asm").read_text(
+        encoding="utf-8"
+    )
+    required = (
+        "btst    #COMBATANT_BIT_ENEMY,d0",
+        "cmpi.b  #CLASS_PRST,d1",
+        "cmpi.b  #CLASS_VICR,d1",
+        "cmpi.b  #CLASS_MMNK,d1",
+        "tst.w   d1",
+        "move.w  #HEALING_SPELL_EXP_MAX,d5",
+        "mulu.w  d6,d5",
+        "divu.w  d1,d5",
+        "moveq   #HEALING_SPELL_EXP_MIN,d5",
+        "move.w  #HEALING_ACTION_EXP_CAP,((BATTLESCENE_EXP-$1000000)).w",
+    )
+    if any(fragment not in source for fragment in required):
+        raise ValueError("healing EXP boundary source contract drift")
+
+    cast = (
+        disasm / "code/gameflow/battle/battleactions/castspell.asm"
+    ).read_text(encoding="utf-8")
+    full_recovery = (
+        "cmpi.b  #255,d6",
+        "move.w  d2,d6",
+        "bra.s   @CapRecovery    ; if spell power = 255, full recovery",
+    )
+    if any(fragment not in cast for fragment in full_recovery):
+        raise ValueError("healing full-recovery source contract drift")
+
+    spell_defs = (disasm / "data/stats/spells/spelldefs.asm").read_text(encoding="utf-8")
+    expected_powers = {0: 15, 128: 30, 192: 255}
+    labels = {
+        0: r"HEAL\s*;\s*HEAL 1",
+        128: r"HEAL\|LV3\s*;\s*HEAL 3",
+        192: r"HEAL\|LV4\s*;\s*HEAL 4",
+    }
+    for spell, expected_power in expected_powers.items():
+        block = re.search(
+            rf"entry\s+{labels[spell]}(?P<body>.*?)(?=\n\s*entry\s+)",
+            spell_defs,
+            re.DOTALL,
+        )
+        power = (
+            re.search(r"^\s*power\s+(\d+)\s*$", block.group("body"), re.MULTILINE)
+            if block
+            else None
+        )
+        if not power or int(power.group(1)) != expected_power:
+            raise ValueError(f"HEAL spell power drift for action entry {spell}")
+    if any(expected_powers[case["actionSpell"]] != case["basePower"] for case in fixture["cases"]):
+        raise ValueError("healing EXP fixture base power drift")
+
+
+def _verify_boundary_models(fixture: dict[str, Any], disasm: Path) -> None:
+    equates = _parse_equates(disasm)
+    healer_classes = {
+        equates["CLASS_PRST"],
+        equates["CLASS_VICR"],
+        equates["CLASS_MMNK"],
+    }
+    for case in fixture["cases"]:
+        if case["class"] != equates[f"CLASS_{case['classCode']}"]:
+            raise ValueError(f"healing EXP class identity drift: {case['id']}")
+        missing = case["targetMaxHp"] - case["targetCurrentHp"]
+        if case["basePower"] == 255:
+            pre_cap = missing
+        else:
+            pre_cap = case["basePower"]
+            if case["class"] >= equates["CHAR_CLASS_FIRSTPROMOTED"]:
+                pre_cap = (pre_cap * 5) >> 2
+        recovery = min(missing, pre_cap)
+        raw = (
+            (25 * recovery) // case["targetMaxHp"] if case["targetMaxHp"] else 0
+        )
+        eligible = (
+            case["expActor"] < 128
+            and case["class"] in healer_classes
+            and case["targetMaxHp"] > 0
+        )
+        computed = max(raw, 10) if eligible else 0
+        final = min(case["initialAccumulator"] + computed, 25)
+        modeled = {
+            "missingHp": missing,
+            "preCapPower": pre_cap,
+            "recovery": recovery,
+            "eligible": eligible,
+            "rawHealingExp": raw,
+            "computedHealingExp": computed,
+            "finalAccumulator": final,
+            "capApplied": eligible
+            and case["initialAccumulator"] + computed > 25,
+        }
+        if any(case[field] != value for field, value in modeled.items()):
+            raise ValueError(f"healing EXP golden disagrees with model: {case['id']}")
+
+
+def _boundary_observed_case(case: dict[str, Any]) -> dict[str, Any]:
+    fields = (
+        "id",
+        "class",
+        "expActor",
+        "actionSpell",
+        "targetMaxHp",
+        "targetCurrentHp",
+        "preCapPower",
+        "recovery",
+        "initialAccumulator",
+        "finalAccumulator",
+    )
+    return {field: case[field] for field in fields}
+
+
+def verify_spell_healing_exp(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    timeout_seconds: int = 90,
+) -> dict[str, Any]:
+    fixture = load_json(BOUNDARY_FIXTURE)
+    validate_json(fixture, BOUNDARY_SCHEMA, owner="healing EXP boundary fixture")
+    verify_runtime_contract(fixture, rom_path)
+    healing_shared = load_json(repo_path(fixture["sharedHarnessFixture"]))
+    shared = load_json(repo_path(healing_shared["sharedHarnessFixture"]))
+    disasm = _verify_upstream(upstream_path)
+    _verify_boundary_source_contract(fixture, disasm)
+    _verify_boundary_models(fixture, disasm)
+    observed = run_observer(
+        rom_path=rom_path,
+        observer_path=BOUNDARY_OBSERVER,
+        config={
+            "function": {
+                **shared["function"],
+                **healing_shared["function"],
+                **fixture["function"],
+            },
+            "ram": {**shared["ram"], **fixture["ram"]},
+            "harness": shared["harness"],
+            "battleId": fixture["battleId"],
+            "setup": fixture["caseSetup"],
+            "cases": fixture["cases"],
+        },
+        output_name="spell-healing-exp-boundaries",
+        timeout_seconds=timeout_seconds,
+    )
+    expected = {
+        "battle": fixture["battleId"],
+        "cases": [_boundary_observed_case(case) for case in fixture["cases"]],
+    }
+    if (
+        observed.get("system") != "GEN"
+        or observed.get("core") != fixture["emulator"]["core"]
+        or observed.get("result") != expected
+    ):
+        raise ValueError(
+            "healing EXP boundary runtime matrix mismatch\n"
+            f"expected={expected!r}\nobserved={observed!r}"
+        )
+    return {
+        "Fixture": fixture["id"],
+        "Cases": len(fixture["cases"]),
+        "Eligible": sum(case["eligible"] for case in fixture["cases"]),
+        "Skipped": sum(not case["eligible"] for case in fixture["cases"]),
+        "FullRecovery": sum(case["basePower"] == 255 for case in fixture["cases"]),
+        "Caps": sum(case["capApplied"] for case in fixture["cases"]),
+        "Awards": [case["finalAccumulator"] for case in fixture["cases"]],
         "Status": "PASS",
     }
