@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-heal1-self-recovery-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "One controlled Battle 01 HEAL 1 self-cast by an unpromoted PRST through power lookup, missing-HP recovery cap, healer-class minimum EXP, Battle 01 award randomization, and persistent HP/MP/EXP command replay. Shared Battle Test choreography and replay addresses are inherited from the named damage-spell fixture.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "healEffectEntryAddress": 45332,
+    "adjustedPowerAddress": 45380,
+    "cappedRecoveryAddress": 45386,
+    "healingExpEntryAddress": 43122,
+    "healingExpAppliedAddress": 43204,
+    "sameSideDecisionAddress": 43012
+  },
+  "case": {
+    "id": "prst-heal1-self-five-missing-hp",
+    "actor": 0,
+    "schedulingClass": 0,
+    "healerClass": 4,
+    "actorLevel": 1,
+    "actorMaxHp": 100,
+    "schedulingHp": 100,
+    "actorInitialHp": 95,
+    "actorInitialMp": 20,
+    "actorInitialExp": 0,
+    "actionType": 1,
+    "actionSpell": 0,
+    "spellPower": 15,
+    "spellMpCost": 3,
+    "seed": 4660,
+    "targetSameSide": true,
+    "schedulingTarget": 128,
+    "target": 0
+  },
+  "expected": {
+    "construction": {
+      "missingHp": 5,
+      "basePower": 15,
+      "adjustedPower": 15,
+      "cappedRecovery": 5,
+      "accumulatedExp": 10,
+      "targetSameSide": true,
+      "actorHp": 95,
+      "actorMp": 20,
+      "award": { "seed": 4660, "halved": 10, "firstRoll": 14, "secondRoll": 0, "commandExp": 9 }
+    },
+    "replay": {
+      "allyReactions": [
+        { "hpChange": 0, "mpChange": -3, "hpBefore": 95, "hpAfter": 95, "mpBefore": 20, "mpAfter": 17 },
+        { "hpChange": 5, "mpChange": 0, "hpBefore": 95, "hpAfter": 100, "mpBefore": 17, "mpAfter": 17 }
+      ],
+      "expReaction": { "commandExp": 9, "expBefore": 0, "expAfter": 9 },
+      "finalActorHp": 100,
+      "finalActorMp": 17,
+      "finalActorExp": 9
+    }
+  }
+}

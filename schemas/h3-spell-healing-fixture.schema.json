@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h3-spell-healing-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "case", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-heal1-self-recovery-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": { "name": { "const": "BizHawk" }, "version": { "const": "2.11.1" }, "core": { "const": "Genesis Plus GX" } } },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["healEffectEntryAddress", "adjustedPowerAddress", "cappedRecoveryAddress", "healingExpEntryAddress", "healingExpAppliedAddress", "sameSideDecisionAddress"],
+      "properties": {
+        "healEffectEntryAddress": { "const": 45332 }, "adjustedPowerAddress": { "const": 45380 },
+        "cappedRecoveryAddress": { "const": 45386 }, "healingExpEntryAddress": { "const": 43122 },
+        "healingExpAppliedAddress": { "const": 43204 }, "sameSideDecisionAddress": { "const": 43012 }
+      }
+    },
+    "case": { "$ref": "#/definitions/case" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "actor", "schedulingClass", "healerClass", "actorLevel", "actorMaxHp", "schedulingHp", "actorInitialHp", "actorInitialMp", "actorInitialExp", "actionType", "actionSpell", "spellPower", "spellMpCost", "seed", "targetSameSide", "schedulingTarget", "target"],
+      "properties": {
+        "id": { "const": "prst-heal1-self-five-missing-hp" }, "actor": { "const": 0 }, "schedulingClass": { "const": 0 }, "healerClass": { "const": 4 },
+        "actorLevel": { "const": 1 }, "actorMaxHp": { "const": 100 }, "schedulingHp": { "const": 100 }, "actorInitialHp": { "const": 95 },
+        "actorInitialMp": { "const": 20 }, "actorInitialExp": { "const": 0 }, "actionType": { "const": 1 },
+        "actionSpell": { "const": 0 }, "spellPower": { "const": 15 }, "spellMpCost": { "const": 3 },
+        "seed": { "const": 4660 }, "targetSameSide": { "const": true }, "schedulingTarget": { "const": 128 }, "target": { "const": 0 }
+      }
+    },
+    "award": {
+      "type": "object", "additionalProperties": false,
+      "required": ["seed", "halved", "firstRoll", "secondRoll", "commandExp"],
+      "properties": { "seed": { "const": 4660 }, "halved": { "const": 10 }, "firstRoll": { "const": 14 }, "secondRoll": { "const": 0 }, "commandExp": { "const": 9 } }
+    },
+    "reaction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["hpChange", "mpChange", "hpBefore", "hpAfter", "mpBefore", "mpAfter"],
+      "properties": { "hpChange": { "type": "integer" }, "mpChange": { "type": "integer" }, "hpBefore": { "type": "integer" }, "hpAfter": { "type": "integer" }, "mpBefore": { "type": "integer" }, "mpAfter": { "type": "integer" } }
+    },
+    "expReaction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commandExp", "expBefore", "expAfter"],
+      "properties": { "commandExp": { "const": 9 }, "expBefore": { "const": 0 }, "expAfter": { "const": 9 } }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["construction", "replay"],
+      "properties": {
+        "construction": {
+          "type": "object", "additionalProperties": false,
+          "required": ["missingHp", "basePower", "adjustedPower", "cappedRecovery", "accumulatedExp", "targetSameSide", "actorHp", "actorMp", "award"],
+          "properties": { "missingHp": { "const": 5 }, "basePower": { "const": 15 }, "adjustedPower": { "const": 15 }, "cappedRecovery": { "const": 5 }, "accumulatedExp": { "const": 10 }, "targetSameSide": { "const": true }, "actorHp": { "const": 95 }, "actorMp": { "const": 20 }, "award": { "$ref": "#/definitions/award" } }
+        },
+        "replay": {
+          "type": "object", "additionalProperties": false,
+          "required": ["allyReactions", "expReaction", "finalActorHp", "finalActorMp", "finalActorExp"],
+          "properties": { "allyReactions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/definitions/reaction" } }, "expReaction": { "$ref": "#/definitions/expReaction" }, "finalActorHp": { "const": 100 }, "finalActorMp": { "const": 17 }, "finalActorExp": { "const": 9 } }
+        }
+      }
+    }
+  }
+}

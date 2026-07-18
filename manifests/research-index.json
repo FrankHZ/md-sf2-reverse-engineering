@@ -373,6 +373,7 @@
       "sourcePath": "code/gameflow/battle/battleactions/giveexpandgold.asm",
       "addresses": [
         { "id": "entry", "space": "rom", "kind": "symbol", "value": 43000 },
+        { "id": "target-side-decision", "space": "rom", "kind": "observation", "value": 43012 },
         { "id": "exp-halved", "space": "rom", "kind": "observation", "value": 43038 },
         { "id": "exp-first-roll", "space": "rom", "kind": "observation", "value": 43046 },
         { "id": "exp-second-roll", "space": "rom", "kind": "observation", "value": 43060 },
@@ -400,10 +401,58 @@
             { "addressId": "exp-second-roll", "fixtureField": "function.expSecondRollAddress" },
             { "addressId": "exp-final", "fixtureField": "function.expFinalAddress" }
           ]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+          "bindings": [
+            { "addressId": "target-side-decision", "fixtureField": "function.sameSideDecisionAddress" }
+          ]
         }
       ],
       "documents": ["docs/research/runtime-rng-and-battle-math.md"],
       "designContracts": ["docs/design/combat-resolution.md", "docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-healing.exp",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "battlesceneScript_CalculateHealingExp",
+      "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 43122 },
+        { "id": "applied", "space": "rom", "kind": "observation", "value": 43204 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.healingExpEntryAddress" },
+          { "addressId": "applied", "fixtureField": "function.healingExpAppliedAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
+    },
+    {
+      "id": "battle.spell-healing.resolve",
+      "subsystem": "battle.spell",
+      "status": "confirmed",
+      "symbol": "spellEffect_Heal",
+      "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 45332 },
+        { "id": "adjusted-power", "space": "rom", "kind": "observation", "value": 45380 },
+        { "id": "capped-recovery", "space": "rom", "kind": "observation", "value": 45386 }
+      ],
+      "evidence": [{
+        "level": "H3", "fixture": "tests/fixtures/h3/spell-healing-v1.json", "fixtureId": "sf2-heal1-self-recovery-v1", "verifier": "src/sf2tool/h3/spell_healing.py",
+        "bindings": [
+          { "addressId": "entry", "fixtureField": "function.healEffectEntryAddress" },
+          { "addressId": "adjusted-power", "fixtureField": "function.adjustedPowerAddress" },
+          { "addressId": "capped-recovery", "fixtureField": "function.cappedRecoveryAddress" }
+        ]
+      }],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "designContracts": ["docs/design/spell-resolution.md"]
     },
     {
       "id": "battle.spell-resistance.lookup",

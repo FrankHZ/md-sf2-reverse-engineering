@@ -489,6 +489,35 @@ uv run sf2 h3 spell-summon
 The case lives in `tests/fixtures/h3/spell-summon-division-v1.json` and explicitly names the shared
 Battle Test fixture from which its unchanged runtime addresses are inherited.
 
+## Confirmed: HEAL 1 Recovery, Healing EXP, and Replay
+
+The HEAL fixture reuses the Battle Test boot but isolates a self-recovery action. It first keeps
+Bowie as full-HP SDMN and creates one live enemy scheduling target so the original AI reaches
+`WriteBattlesceneScript`. At that seam it replaces the scheduled attack with HEAL 1, selects Bowie
+as the sole target, and changes current HP to 95. At the genuine `spellEffect_Heal` entry it changes
+the caster class to PRST (4), which is one of the three hard-coded classes accepted by
+`battlesceneScript_CalculateHealingExp`. This does not claim a natural Bowie HEAL cast.
+
+The pinned HEAL 1 definition supplies power 15 and MP cost 3. `AdjustSpellPower` leaves the
+unpromoted power unchanged. Missing HP is 5, so the original comparison at `0xB144` caps d6 from 15
+to 5 before emitting the ally reaction. HP and MP remain 95/20 during scene construction.
+
+Healing EXP computes `floor(25 * 5 / 100) = 1`, raises it to the minimum 10, and writes 10 to
+`BATTLESCENE_EXP`. At `0xA804`, the observed same-side stack flag is nonzero; the original branches
+directly to randomization and does not apply Battle 01's normal halving table. Seed `0x1234`
+produces range-16 rolls 14 and 0, so only the second adjustment fires and the EXP command becomes 9.
+Playback executes `(HP 0, MP -3)`, then `(HP +5, MP 0)`, then `giveEXP 9`, leaving persistent state
+HP/MP/EXP `100/17/9`.
+
+The fixture, schema, independent source model, and observer are
+`tests/fixtures/h3/spell-healing-v1.json`,
+`schemas/h3-spell-healing-fixture.schema.json`, `src/sf2tool/h3/spell_healing.py`, and
+`tools/bizhawk/spell_healing_observer.lua`. Reproduce it with:
+
+```powershell
+uv run sf2 h3 spell-healing
+```
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -498,7 +527,8 @@ Battle Test fixture from which its unchanged runtime addresses are inherited.
 - Add natural muddled/same-side/special-enemy action reachability, additional non-critical variance
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
-  attack-spell EXP level/randomization/cap branches, and non-damage spell families.
+  attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
+  and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

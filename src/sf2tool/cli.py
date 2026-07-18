@@ -11,6 +11,7 @@ from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
+from sf2tool.h3.spell_healing import verify_spell_healing
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
@@ -108,6 +109,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_spell_summon)
     h3_spell_summon.add_argument("--timeout-seconds", type=int, default=75)
+    h3_spell_healing = h3_commands.add_parser(
+        "spell-healing", help="verify HEAL 1 recovery, EXP award, and command replay"
+    )
+    _add_local_paths(h3_spell_healing)
+    h3_spell_healing.add_argument("--timeout-seconds", type=int, default=75)
     return parser
 
 
@@ -174,6 +180,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "spell-summon":
         print_record(
             verify_spell_summon(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "spell-healing":
+        print_record(
+            verify_spell_healing(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

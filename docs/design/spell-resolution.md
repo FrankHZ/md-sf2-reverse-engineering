@@ -7,9 +7,9 @@
 - Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
-layer. It currently owns one BLAZE 2 resistance matrix and one four-target DAO 1 division case. It
-must not be generalized to healing, drain, status, instant-death, breath, or other summon cases
-until those paths have their own H3 evidence.
+layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, and one
+HEAL 1 self-recovery case. It must not be generalized to other healing, drain, status,
+instant-death, breath, or summon cases until those paths have their own H3 evidence.
 
 ## Required Inputs
 
@@ -120,12 +120,37 @@ A remake does not need to duplicate the original command-buffer internals, but i
 equivalent ordered trace and avoid treating snapshot restoration as healing. The same replay also
 applies the EXP command after the damage and MP reactions.
 
+## Confirmed HEAL 1 Subset
+
+The controlled healing fixture starts from a normal SDMN/full-HP Battle Test setup so the original
+AI schedules Bowie's attack, then changes the action to a self-targeted HEAL 1 and sets current HP
+to 95 at `WriteBattlesceneScript`. At the genuine `spellEffect_Heal` entry it changes only the class
+to PRST (4), allowing the original healer-only EXP check to execute. This seam confirms resolution
+and replay, not that Bowie naturally knows or casts HEAL.
+
+HEAL 1 supplies power 15 and costs 3 MP. The unpromoted caster leaves power at 15; the target has
+max HP 100 and current HP 95, so the missing-HP cap changes recovery `15 -> 5`. Construction appends
+the recovery reaction but does not temporarily change current HP: HP remains 95 and MP remains 20
+until playback.
+
+For PRST, healing EXP starts as `floor(25 * recoveredHp / targetMaxHp)` with a minimum of 10 and an
+action cap of 25. This case therefore changes `floor(25 * 5 / 100) = 1` to 10. The same-side flag is
+nonzero at the award decision, so `GiveExpAndGold` skips the Battle 01 halving table. Starting from
+seed `0x1234`, range-16 rolls are 14 and 0: the first does not add one, the second subtracts one,
+and the command carries 9 EXP.
+
+Playback applies the MP reaction first (`20 -> 17`), then the +5 HP reaction (`95 -> 100`), then
+the EXP command (`0 -> 9`). This confirms one recovery cap, healer-class minimum, same-side award
+branch, downward random adjustment, and persistent replay. It does not cover promoted healing
+power, full-recovery power 255, multi-target AURA, non-healer/enemy EXP skips, or the 25-point cap.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
 | --- | --- | --- |
 | `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; per-target and awarded EXP; temporary/restored/persistent HP; MP/EXP replay |
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
+| `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -143,7 +168,7 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** healing, status resistance/immunity, drain, instant death, breath attacks, and special
-  spell-effect dispatch.
+- **Unknown:** remaining healing branches, status resistance/immunity, drain, instant death, breath
+  attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.
