@@ -879,8 +879,8 @@ EXP to 7; award rolls 0 and 3 produce an 8-EXP command. Replay spends 11 MP (`20
 Reproduce with `uv run sf2 h3 spell-muddle`. Tracked artifacts are
 `tests/fixtures/h3/spell-muddle-v1.json`, `schemas/h3-spell-muddle-fixture.schema.json`, and
 `src/sf2tool/h3/spell_muddle.py`; runtime control deliberately reuses
-`tools/bizhawk/spell_status_observer.lua`. MUDDLE 2 reapplication, duration, and confused actions
-remain outside this fixture.
+`tools/bizhawk/spell_status_observer.lua`. MUDDLE 2 reapplication and confused actions remain
+outside this fixture; one-step duration transitions are owned by the after-turn fixture below.
 
 ## Confirmed: MUDDLE 1 Resistance Bypass, Recast, and Level-2 Guard
 
@@ -1204,9 +1204,23 @@ The blocking artifacts are `tests/fixtures/h3/spell-silence-gate-v1.json`,
 ## Confirmed: After-Turn Counter Transition Matrix
 
 In one emulator session, Battle 01 naturally calls `ProcessAfterTurnEffects` at `0x24242` for Bowie
-and four Gizmos. Every case uses empty equipment slots, base ATT/DEF/AGI 40/40/24, all four duration
-fields at the same counter setting, and unrelated CURSE `0x0004`. SILENCE is the only random branch:
-its current field is the RNG range, and the result is masked with `0x0300`.
+and four Gizmos. Every case uses empty equipment slots, base ATT/DEF/AGI 40/40/24, all five duration
+fields at the same counter setting, combined MUDDLE 2 flag `0x0008`, and unrelated CURSE `0x0004`.
+The observer resets the named seed independently at the MUDDLE and SILENCE RNG seams so each branch
+is reproducible; it does not claim their natural coupled RNG sequence.
+
+| MUDDLE counters | Range | Seed | Raw roll | Masked | Branch | New MUDDLE state |
+| --- | ---: | ---: | ---: | ---: | --- | ---: |
+| 1 | 16 | `0x1234` | 14 | `0x0000` | expire | `0x0000` |
+| 2 | 32 | `0x0000` | 0 | `0x0000` | expire | `0x0000` |
+| 2 | 32 | `0x1234` | 29 | `0x0010` | continue | `0x0018` |
+| 3 | 48 | `0x0000` | 0 | `0x0000` | expire | `0x0000` |
+| 3 | 48 | `0x1234` | 44 | `0x0020` | continue | `0x0028` |
+
+MUDDLE expiry reaches message 355 at `0x242F0`, clears both the `0x0030` counter field and MUDDLE 2
+flag `0x0008`, and writes the combined status at `0x24302`. Continuation reaches `0x242FC`,
+subtracts `0x0010`, preserves `0x0008`, and emits no message. A one-counter field necessarily
+expires; controlled two- and three-counter cases cover both outcomes.
 
 | SILENCE counters | Range | Seed | Raw roll | Masked | Branch | New SILENCE field |
 | --- | ---: | ---: | ---: | ---: | --- | ---: |
@@ -1216,19 +1230,19 @@ its current field is the RNG range, and the result is masked with `0x0300`.
 | 3 | 768 | `0x0000` | 0 | `0x0000` | expire | `0x0000` |
 | 3 | 768 | `0x1234` | 710 | `0x0200` | continue | `0x0200` |
 
-Expiration reaches message 351 at `0x24330`; continuation reaches the one-unit decrement at
+SILENCE expiration reaches message 351 at `0x24330`; continuation reaches the one-unit decrement at
 `0x24338` without that message. Thus a one-counter SILENCE field necessarily expires, while the
 fixture exercises both branches for counters two and three. SLOW, ATTACK, and BOOST are
 deterministic: their `1 -> 0` transitions emit messages 349/350/348, while `2 -> 1` and `3 -> 2`
-emit none. The five combined results are:
+emit none. The five combined results after all five fields are:
 
-| Input | Status after four fields | Final normalized status | Expiry messages | Final ATT/DEF/AGI |
+| Input | Status after five fields | Final normalized status | Expiry messages | Final ATT/DEF/AGI |
 | --- | ---: | ---: | ---: | --- |
-| one counter | `0x0004` | `0x0000` | 4 | 40/40/24 |
-| two, SILENCE expires | `0x5404` | `0x5400` | 1 | 45/40/24 |
-| two, SILENCE continues | `0x5504` | `0x5500` | 0 | 45/40/24 |
-| three, SILENCE expires | `0xA804` | `0xA800` | 1 | 50/40/24 |
-| three, SILENCE continues | `0xAA04` | `0xAA00` | 0 | 50/40/24 |
+| one, both random fields expire | `0x0004` | `0x0000` | 5 | 40/40/24 |
+| two, both expire | `0x5404` | `0x5400` | 2 | 45/40/24 |
+| two, both continue | `0x551C` | `0x5518` | 0 | 45/40/24 |
+| three, both expire | `0xA804` | `0xA800` | 2 | 50/40/24 |
+| three, both continue | `0xAA2C` | `0xAA28` | 0 | 50/40/24 |
 
 Each field write preserves CURSE until the single final `UpdateCombatantStats` call at `0x2447C`.
 That refresh rebuilds current stats from the remaining counters and normalizes CURSE from equipped

@@ -42,23 +42,31 @@ end
 local function record_json()
     return string.format(
         '{"id":"%s","combatant":%d,' ..
+        '"muddleRng":{"seed":%d,"range":%d,"observedSeed":%d,' ..
+        '"rawRoll":%d,"maskedRoll":%d},' ..
         '"rng":{"seed":%d,"range":%d,"observedSeed":%d,' ..
         '"rawRoll":%d,"maskedRoll":%d},' ..
-        '"branches":{"silenceExpiredEntries":%d,"silenceDecrementEntries":%d,' ..
+        '"branches":{"muddleExpiredEntries":%d,"muddleDecrementEntries":%d,' ..
+        '"silenceExpiredEntries":%d,"silenceDecrementEntries":%d,' ..
         '"updateStatsEntries":%d},' ..
-        '"messages":{"silence":%d,"slow":%d,"attack":%d,"boost":%d},' ..
-        '"status":{"initial":%d,"afterSilence":%d,"afterSlow":%d,' ..
+        '"messages":{"muddle":%d,"silence":%d,"slow":%d,"attack":%d,"boost":%d},' ..
+        '"status":{"initial":%d,"afterMuddle":%d,"afterSilence":%d,"afterSlow":%d,' ..
         '"afterAttack":%d,"afterBoost":%d,"final":%d},' ..
         '"stats":{"initialAttack":%d,"initialDefense":%d,"initialAgility":%d,' ..
         '"finalAttack":%d,"finalDefense":%d,"finalAgility":%d}}',
         active_case.id, active_case.combatant,
+        current.muddleRng.seed, current.muddleRng.range, current.muddleRng.observedSeed,
+        current.muddleRng.rawRoll, current.muddleRng.maskedRoll,
         current.rng.seed, current.rng.range, current.rng.observedSeed,
         current.rng.rawRoll, current.rng.maskedRoll,
+        current.branches.muddleExpiredEntries, current.branches.muddleDecrementEntries,
         current.branches.silenceExpiredEntries, current.branches.silenceDecrementEntries,
         current.branches.updateStatsEntries,
+        current.messages.muddle,
         current.messages.silence, current.messages.slow,
         current.messages.attack, current.messages.boost,
-        current.status.initial, current.status.afterSilence, current.status.afterSlow,
+        current.status.initial, current.status.afterMuddle,
+        current.status.afterSilence, current.status.afterSlow,
         current.status.afterAttack, current.status.afterBoost, current.status.final,
         current.stats.initialAttack, current.stats.initialDefense, current.stats.initialAgility,
         current.stats.finalAttack, current.stats.finalDefense, current.stats.finalAgility)
@@ -79,9 +87,10 @@ end
 local function begin_case(case)
     active_case = case
     current = {
-        rng = { seed=case.seed },
-        branches = { silenceExpiredEntries=0, silenceDecrementEntries=0, updateStatsEntries=0 },
-        messages = { silence=0, slow=0, attack=0, boost=0 },
+        muddleRng = { seed=case.seed }, rng = { seed=case.seed },
+        branches = { muddleExpiredEntries=0, muddleDecrementEntries=0,
+            silenceExpiredEntries=0, silenceDecrementEntries=0, updateStatsEntries=0 },
+        messages = { muddle=0, silence=0, slow=0, attack=0, boost=0 },
         status = {},
         stats = {}
     }
@@ -175,6 +184,39 @@ event.on_bus_exec(function()
     local candidate = config.cases[next_case]
     if scheduled == candidate.combatant then begin_case(candidate) end
 end, config["function"].entryAddress, "sf2-after-turn-entry", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_case == nil then return end
+    memory.write_u16_be(config.ram.seedAddress, active_case.seed, "M68K BUS")
+    current.muddleRng.range = word_register("M68K D6")
+end, config["function"].muddleRngAddress, "sf2-after-turn-muddle-rng", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_case == nil then return end
+    current.muddleRng.observedSeed = memory.read_u16_be(config.ram.seedAddress, "M68K BUS")
+    current.muddleRng.rawRoll = word_register("M68K D7")
+end, config["function"].muddleRngReturnAddress, "sf2-after-turn-muddle-rng-return", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_case ~= nil then current.muddleRng.maskedRoll = word_register("M68K D7") end
+end, config["function"].muddleBranchAddress, "sf2-after-turn-muddle-branch", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_case ~= nil then
+        current.branches.muddleExpiredEntries = current.branches.muddleExpiredEntries + 1
+        current.messages.muddle = current.messages.muddle + 1
+    end
+end, config["function"].muddleMessageAddress, "sf2-after-turn-muddle-message", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_case ~= nil then
+        current.branches.muddleDecrementEntries = current.branches.muddleDecrementEntries + 1
+    end
+end, config["function"].muddleDecrementAddress, "sf2-after-turn-muddle-decrement", "M68K BUS")
+
+event.on_bus_exec(function()
+    if active_case ~= nil then current.status.afterMuddle = read_status() end
+end, config["function"].afterMuddleAddress, "sf2-after-turn-after-muddle", "M68K BUS")
 
 event.on_bus_exec(function()
     if active_case == nil then return end

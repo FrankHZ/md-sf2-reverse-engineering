@@ -32,6 +32,9 @@ def _verify_source_contract(disasm: Path, constants: dict[str, Any]) -> None:
     expected_equates = {
         "STATUSEFFECT_CURSE": constants["unrelatedStatus"],
         "ITEM_NOTHING": constants["itemEntries"][0],
+        "STATUSEFFECT_MUDDLE": constants["muddleMask"],
+        "STATUSEFFECT_MUDDLE2": constants["muddle2Flag"],
+        "STATUSEFFECTCOUNTER_MUDDLE": constants["muddleCounterUnit"],
         "STATUSEFFECT_SILENCE": constants["silenceMask"],
         "STATUSEFFECTCOUNTER_SILENCE": constants["silenceCounterUnit"],
         "STATUSEFFECT_SLOW": constants["slowMask"],
@@ -52,6 +55,9 @@ def _verify_source_contract(disasm: Path, constants: dict[str, Any]) -> None:
         "ProcessAfterTurnEffects:",
         "move.w  d1,d6",
         "jsr     (GenerateRandomNumber).w",
+        "andi.w  #STATUSEFFECT_MUDDLE,d7",
+        "subi.w  #STATUSEFFECTCOUNTER_MUDDLE,d1",
+        'txt     355             ; "{CLEAR}{NAME} is fine.',
         "andi.w  #STATUSEFFECT_SILENCE,d7",
         "subi.w  #STATUSEFFECTCOUNTER_SILENCE,d1",
         'txt     351             ; "{CLEAR}{SPELL} expired.',
@@ -119,17 +125,34 @@ def _model_case(constants: dict[str, Any], case: dict[str, Any]) -> dict[str, An
     if initial_stats != provided_stats:
         raise ValueError(f"initial derived stats disagree with packed status: {case['id']}")
 
-    silence_field = case["initialStatus"] & constants["silenceMask"]
+    muddle_field = case["initialStatus"] & constants["muddleMask"]
+    if not muddle_field or not case["initialStatus"] & constants["muddle2Flag"]:
+        raise ValueError("after-turn lifecycle case lacks combined MUDDLE state")
+    muddle_seed, muddle_raw_roll = _rng_step(case["seed"], muddle_field)
+    muddle_masked_roll = muddle_raw_roll & constants["muddleMask"]
+    muddle_expired = muddle_masked_roll == 0
+    if muddle_expired:
+        after_muddle = case["initialStatus"] & ~(
+            constants["muddleMask"] | constants["muddle2Flag"]
+        )
+    else:
+        after_muddle, _ = _decrement_field(
+            case["initialStatus"],
+            constants["muddleMask"],
+            constants["muddleCounterUnit"],
+        )
+
+    silence_field = after_muddle & constants["silenceMask"]
     if not silence_field:
         raise ValueError("after-turn lifecycle case lacks a SILENCE counter")
     seed, raw_roll = _rng_step(case["seed"], silence_field)
     masked_roll = raw_roll & constants["silenceMask"]
     silence_expired = masked_roll == 0
     if silence_expired:
-        after_silence = case["initialStatus"] & ~constants["silenceMask"]
+        after_silence = after_muddle & ~constants["silenceMask"]
     else:
         after_silence, _ = _decrement_field(
-            case["initialStatus"],
+            after_muddle,
             constants["silenceMask"],
             constants["silenceCounterUnit"],
         )
@@ -149,6 +172,13 @@ def _model_case(constants: dict[str, Any], case: dict[str, Any]) -> dict[str, An
     return {
         "id": case["id"],
         "combatant": case["combatant"],
+        "muddleRng": {
+            "seed": case["seed"],
+            "range": muddle_field,
+            "observedSeed": muddle_seed,
+            "rawRoll": muddle_raw_roll,
+            "maskedRoll": muddle_masked_roll,
+        },
         "rng": {
             "seed": case["seed"],
             "range": silence_field,
@@ -157,11 +187,14 @@ def _model_case(constants: dict[str, Any], case: dict[str, Any]) -> dict[str, An
             "maskedRoll": masked_roll,
         },
         "branches": {
+            "muddleExpiredEntries": int(muddle_expired),
+            "muddleDecrementEntries": int(not muddle_expired),
             "silenceExpiredEntries": int(silence_expired),
             "silenceDecrementEntries": int(not silence_expired),
             "updateStatsEntries": 1,
         },
         "messages": {
+            "muddle": int(muddle_expired),
             "silence": int(silence_expired),
             "slow": int(slow_expired),
             "attack": int(attack_expired),
@@ -169,6 +202,7 @@ def _model_case(constants: dict[str, Any], case: dict[str, Any]) -> dict[str, An
         },
         "status": {
             "initial": case["initialStatus"],
+            "afterMuddle": after_muddle,
             "afterSilence": after_silence,
             "afterSlow": after_slow,
             "afterAttack": after_attack,
@@ -232,6 +266,12 @@ def verify_after_turn_status_lifecycle(
     records = modeled["records"]
     expired = sum(record["branches"]["silenceExpiredEntries"] for record in records)
     continued = sum(record["branches"]["silenceDecrementEntries"] for record in records)
+    muddle_expired = sum(
+        record["branches"]["muddleExpiredEntries"] for record in records
+    )
+    muddle_continued = sum(
+        record["branches"]["muddleDecrementEntries"] for record in records
+    )
     return {
         "Fixture": fixture["id"],
         "Cases": len(records),
@@ -241,6 +281,7 @@ def verify_after_turn_status_lifecycle(
             f"->0x{records[1]['status']['final']:04X}"
         ),
         "SilenceBranches": f"expire={expired},continue={continued}",
+        "MuddleBranches": f"expire={muddle_expired},continue={muddle_continued}",
         "Messages": sum(sum(record["messages"].values()) for record in records),
         "Status": "PASS",
     }

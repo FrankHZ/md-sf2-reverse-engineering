@@ -272,8 +272,8 @@ the reaction command replays. The controlled three-success action accumulates 15
 8-EXP command after Battle 01 halving/randomization, spends 11 MP, and persists `0x0038` on the
 first three targets only.
 
-This matrix confirms fresh MUDDLE 2 application. Its reapplication, duration transitions, and the
-later confused-action behavior remain separate contracts.
+This matrix confirms fresh MUDDLE 2 application. Its reapplication and the later confused-action
+behavior remain separate contracts; one-step duration transitions are confirmed below.
 
 ## Confirmed MUDDLE 1 Resistance Bypass and MUDDLE 2 Guard
 
@@ -475,20 +475,23 @@ MP-drain and EXP path because it lacks `AFFECTEDBYSILENCE`.
 ## Confirmed After-Turn Counter Transition Matrix
 
 After each living combatant's action, the original battle loop calls one status lifecycle pass. The
-five confirmed inputs combine equal counter settings for SILENCE, SLOW, ATTACK, and BOOST with
-CURSE. Processing order is observable and must remain stable:
+five confirmed inputs combine equal counter settings for MUDDLE, SILENCE, SLOW, ATTACK, and BOOST,
+plus the MUDDLE 2 flag and CURSE. Processing order is observable and must remain stable:
 
-1. SILENCE uses its current field as the RNG range and masks the result with `0x0300`. Zero clears
-   the field and emits expiry; nonzero subtracts `0x0100` without a message.
-2. SLOW, ATTACK, and BOOST always subtract their units `0x0400`, `0x4000`, and `0x1000`; each emits
+1. MUDDLE uses its current `0x0030` field as the RNG range and masks the result with `0x0030`.
+   Zero clears both the counter field and MUDDLE 2 flag `0x0008` and emits message 355; nonzero
+   subtracts `0x0010` without a message and preserves the level-2 flag.
+2. SILENCE follows the same shape with field `0x0300` and unit `0x0100`, but its expiry message is
+   351 and it has no adjacent level flag.
+3. SLOW, ATTACK, and BOOST always subtract their units `0x0400`, `0x4000`, and `0x1000`; each emits
    expiry only when its updated field is zero.
-3. One-counter SILENCE always expires because a range-256 result cannot carry bits `0x0100` or
-   `0x0200`. Controlled cases exercise both zero and nonzero masked results for fields `0x0200` and
-   `0x0300`, confirming direct expiration or one-unit continuation at each setting.
-4. The packed status after all four fields is `0x0004` for one-counter expiry; `0x5404`/`0x5504`
-   for two-counter SILENCE expiry/continuation; and `0xA804`/`0xAA04` for three-counter
-   expiry/continuation.
-5. One final stat refresh rebuilds current ATT/DEF/AGI from the remaining ATTACK/BOOST/SLOW
+4. One-counter MUDDLE and SILENCE necessarily expire because their RNG results cannot contain the
+   lowest bit of their own masks. Controlled two- and three-counter cases cover both early expiry
+   and one-unit continuation for both random fields.
+5. After all five fields, the confirmed packed states are `0x0004`, `0x5404`, `0x551C`, `0xA804`,
+   and `0xAA2C`; final equipment normalization clears CURSE to produce `0x0000`, `0x5400`,
+   `0x5518`, `0xA800`, and `0xAA28`.
+6. One final stat refresh rebuilds current ATT/DEF/AGI from the remaining ATTACK/BOOST/SLOW
    counters: 40/40/24, 45/40/24, or 50/40/24 for resulting settings zero, one, or two.
 
 The final refresh also owns equipment-derived status normalization. CURSE is excluded from the
@@ -519,7 +522,7 @@ naturally carried state remains outside these cases.
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS thresholds 0/6/7/8; setting-3 immunity; `0x0C00` counter; 3/8 DEF/AGI penalty; construction/replay timing; MP/EXP persistence |
 | `sf2-dispel1-spell-gate-and-recast-v1` | `tests/fixtures/h3/spell-dispel-v1.json` | known-spell count gate; thresholds 5/6/7/8 and no-spell 8; `0x0300` counter; successful `0x0100` recast refresh; construction/replay timing; MP/EXP persistence |
 | `sf2-silenced-caster-blocks-blaze1-v1` | `tests/fixtures/h3/spell-silence-gate-v1.json` | `AFFECTEDBYSILENCE` gate; silenced message; cost-before-block command order; no target effect or EXP; persistent actor/target state |
-| `sf2-after-turn-status-lifecycle-v1` | `tests/fixtures/h3/after-turn-status-lifecycle-v1.json` | complete one-step SILENCE 1/2/3 counter branch matrix; SLOW/ATTACK/BOOST 1→0, 2→1, 3→2; ordered writes/messages; final stat and CURSE normalization |
+| `sf2-after-turn-status-lifecycle-v1` | `tests/fixtures/h3/after-turn-status-lifecycle-v1.json` | complete one-step MUDDLE/SILENCE 1/2/3 expiry/continuation matrix; MUDDLE 2 flag clear/preserve; SLOW/ATTACK/BOOST 1→0, 2→1, 3→2; ordered writes/messages; final stat and CURSE normalization |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -541,7 +544,7 @@ expected-deviation fixture.
 - **Unknown:** status spells beyond the confirmed
   ATTACK/DETOX/MUDDLE/SLEEP/DESOUL/BOOST/SLOW/DISPEL subsets,
   MUDDLE 2/BOOST/SLOW reapplication and repeated-lifetime edges, BOOST/SLOW 2 geometry,
-  MUDDLE lifecycle/confused-action behavior, enemy-caster SPOIT and other drain branches,
+  MUDDLE confused-action behavior, enemy-caster SPOIT and other drain branches,
   DESOUL 2 natural geometry, breath attacks, and special spell-effect dispatch.
 - **Unknown:** natural map-generated ordering for multi-target attack and status spells. Their
   arithmetic fixtures supply ordered lists at the pre-initialization seam; AURA ordering is
