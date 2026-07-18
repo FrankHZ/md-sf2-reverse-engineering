@@ -19,8 +19,8 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 28
-    assert result["AddressBindings"] == 175
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 29
+    assert result["AddressBindings"] == 182
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:

@@ -44,6 +44,9 @@ CONTRACTS = {
             "sf2-spell-summon-division-v1"
         ),
         "tests/fixtures/h3/spell-healing-v1.json": "sf2-heal1-self-recovery-v1",
+        "tests/fixtures/h3/spell-status-sleep-v1.json": (
+            "sf2-sleep-resistance-matrix-v1"
+        ),
     },
 }
 

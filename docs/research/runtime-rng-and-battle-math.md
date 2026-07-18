@@ -518,6 +518,37 @@ The fixture, schema, independent source model, and observer are
 uv run sf2 h3 spell-healing
 ```
 
+## Confirmed: SLEEP 1 STATUS-Resistance Matrix
+
+The SLEEP fixture replaces Bowie's scheduled Battle 01 attack with SLEEP 1 and supplies four enemy
+targets carrying STATUS resistance words `0x0000`, `0x4000`, `0x8000`, and `0xC000`. The original
+`GetResistanceToSpell` rotation extracts settings `[0,1,2,3]`. This is the same controlled target
+list seam used by the damage matrix, not naturally selected map geometry.
+
+At each `spellEffect_Sleep` entry the observer resets `RANDOM_SEED` to `0x1234`. The effect adds its
+base chance constant 5 to the resistance setting, and
+`battlesceneScript_DetermineSpellEffectiveness` obtains range-8 roll 7. Runtime thresholds
+`[5,6,7,8]` therefore produce `[success,success,success,failure]`. The threshold-8 case reaches
+`0xBACC`, writes the no-effect toggle, unwinds the caller, and never emits a reaction or status EXP.
+This dynamically confirms that STATUS setting 3 is immunity for SLEEP 1.
+
+Each successful call reaches `battlesceneScript_AddStatusEffectSpellExp` and adds 5, yielding
+accumulator states `[5,10,15,15]`. The targets remain status-free during construction. Battle 01
+halves 15 to 7; final effectiveness seed `0xECAB` then produces award rolls 0 and 3, adding one and
+emitting 8 EXP. During replay, the caster MP reaction changes `20 -> 16`, three enemy reactions set
+status words to `0x00C0`, the immune target remains zero, and `giveEXP` changes Bowie `0 -> 8`.
+
+The status observer distinguishes the existing HP-applied checkpoint `0x18F7E` from the later
+`SetStatusEffects` return `0x18F9A`; only the latter owns persistent status. Reproduce with:
+
+```powershell
+uv run sf2 h3 spell-status
+```
+
+Tracked artifacts are `tests/fixtures/h3/spell-status-sleep-v1.json`,
+`schemas/h3-spell-status-sleep-fixture.schema.json`, `src/sf2tool/h3/spell_status.py`, and
+`tools/bizhawk/spell_status_observer.lua`.
+
 ## Unknown / Next Fixtures
 
 - Add synthetic nonzero-counter input to the HEAL 3 branch and remaining stat-cap/underflow edges.
@@ -528,7 +559,7 @@ uv run sf2 h3 spell-healing
   seeds, and other EXP randomization/level-difference branches to the confirmed physical path.
 - Add APOLLO/NEPTUN/ATLAS runtime division, a naturally promoted full BLAZE action, remaining
   attack-spell EXP level/randomization/cap branches, promoted/full-recovery/multi-target healing,
-  and other non-damage spell families.
+  other status spells, and other non-damage spell families.
 - The gameplay role and isolation guarantees of `RANDOM_SEED_COPY`, which source comments reserve for
   AI, need a traced scenario rather than a name-based assumption.
 - The existing `LASER radius = 3` static anomaly remains in the behavior-test queue.

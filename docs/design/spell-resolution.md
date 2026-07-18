@@ -7,9 +7,10 @@
 - Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
-layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, and one
-HEAL 1 self-recovery case. It must not be generalized to other healing, drain, status,
-instant-death, breath, or summon cases until those paths have their own H3 evidence.
+layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one
+HEAL 1 self-recovery case, and one SLEEP 1 status-resistance matrix. It must not be generalized to
+other healing, drain, status, instant-death, breath, or summon cases until those paths have their
+own H3 evidence.
 
 ## Required Inputs
 
@@ -144,6 +145,33 @@ the EXP command (`0 -> 9`). This confirms one recovery cap, healer-class minimum
 branch, downward random adjustment, and persistent replay. It does not cover promoted healing
 power, full-recovery power 255, multi-target AURA, non-healer/enemy EXP skips, or the 25-point cap.
 
+## Confirmed SLEEP 1 Status-Resistance Matrix
+
+SLEEP uses the STATUS element, whose setting occupies resistance bits 14-15. For each target, the
+effect adds the base threshold 5 to the extracted setting, rolls `rng.next(8)`, and succeeds when
+`roll >= threshold`:
+
+| STATUS setting | Threshold | Controlled roll | Result |
+| --- | --- | --- | --- |
+| 0 | 5 | 7 | success |
+| 1 | 6 | 7 | success |
+| 2 | 7 | 7 | success |
+| 3 | 8 | 7 | failure / immunity |
+
+The fixture resets seed `0x1234` at each genuine `spellEffect_Sleep` entry, producing roll 7 every
+time. Successful targets receive status word `0x00C0` during command replay. Setting 3 cannot
+succeed because an eight-way RNG result never reaches threshold 8; the failure path emits no status
+reaction and awards no per-target EXP.
+
+Each successful status effect adds 5 EXP, moving the action accumulator `0 -> 5 -> 10 -> 15`; the
+failed fourth target leaves it at 15. Battle 01 halves this to 7. The remaining seed `0xECAB`
+produces award rolls 0 and 3, so the first adjustment adds one and the command carries 8 EXP.
+Playback changes caster MP `20 -> 16`, applies SLEEP to the first three targets only, and changes
+caster EXP `0 -> 8`.
+
+This confirms SLEEP 1 only. Other status spells may alter the base threshold, pre-existing status,
+reaction payload, message, or EXP/kill behavior and require their own cases.
+
 ## H4 Fixture
 
 | Fixture ID | File | Required parity |
@@ -151,6 +179,7 @@ power, full-recovery power 255, multi-target AURA, non-healer/enemy EXP skips, o
 | `sf2-spell-damage-resistance-v1` | `tests/fixtures/h3/spell-damage-resistance-v1.json` | FIRE setting extraction; adjusted/quarter/post-resistance power; critical and variance calls; per-target and awarded EXP; temporary/restored/persistent HP; MP/EXP replay |
 | `sf2-spell-summon-division-v1` | `tests/fixtures/h3/spell-summon-division-v1.json` | promoted DAO power 18→22; four per-target divisions 22→5; zero accumulation/minimum-one EXP award; neutral damage and persistent replay |
 | `sf2-heal1-self-recovery-v1` | `tests/fixtures/h3/spell-healing-v1.json` | HEAL 1 power capped by missing HP; PRST minimum EXP; same-side Battle 01 skip; second zero-roll decrement; HP/MP/EXP replay |
+| `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS settings 0-3; thresholds 5-8; success/failure unwind; 5 EXP per success; immunity at setting 3; MP/status/EXP replay |
 
 The H4 adapter must consume this fixture rather than copying its expected numbers into an
 engine-specific test.
@@ -168,7 +197,7 @@ expected-deviation fixture.
 - **Unknown at runtime:** APOLLO/NEPTUN/ATLAS division and a naturally promoted full BLAZE action.
 - **Unknown:** remaining attack-spell EXP level-difference brackets, zero-roll adjustments, cap,
   kill bonus, and non-Battle-01 award behavior.
-- **Unknown:** remaining healing branches, status resistance/immunity, drain, instant death, breath
+- **Unknown:** remaining healing branches, non-SLEEP status spells, drain, instant death, breath
   attacks, and special spell-effect dispatch.
 - **Unknown:** multi-target ordering produced naturally by map geometry. This fixture supplies the
   ordered four-target list at the pre-initialization seam to isolate resolution arithmetic.
