@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-priority-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "prioritizeTargetsEntryAddress": 51544,
+    "adjustAttackPriorityEntryAddress": 51992,
+    "priorityScriptTableAddress": 52066,
+    "adjustSpellPriorityEntryAddress": 52130,
+    "potentialDamageEntryAddress": 52236,
+    "spellResistanceEntryAddress": 52308,
+    "remainingHpEntryAddress": 52362,
+    "classAdjustmentEntryAddress": 52790,
+    "oneThirdThresholdEntryAddress": 54008,
+    "oneFifthThresholdEntryAddress": 54114,
+    "movetypeAdjustmentTableAddress": 55746
+  },
+  "expected": {
+    "scriptsByDifficultyAndActivation": [
+      [1, 2, 3, 4],
+      [1, 2, 1, 4],
+      [2, 2, 2, 2],
+      [2, 2, 2, 2]
+    ],
+    "allyActivationColumn": 2,
+    "enemyRegularActivationMask": 15,
+    "enemySpellActivationMask": 3,
+    "landEffectMultipliers256": [256, 230, 205],
+    "minimumDamageBeforeLandEffect": 1,
+    "remainingHpMinimum": 0,
+    "script2DamageThreshold": "remaining-less-than-or-equal-current-third",
+    "script2And4LowHpThreshold": "remaining-less-than-or-equal-max-fifth",
+    "script3MovementFormula": "max(19-2*movement,1)",
+    "classAdjustmentAlliesOnly": true,
+    "classAdjustmentSkippedWhenConfused": true,
+    "previousTargetSarahUsesMageTable": true,
+    "sarahIndex": 1,
+    "movetypePointerTargets": [
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Flying",
+      "table_PriorityAdjustments_Flying",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Archer",
+      "table_PriorityAdjustments_Archer",
+      "table_PriorityAdjustments_Mage",
+      "table_PriorityAdjustments_Mage",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular",
+      "table_PriorityAdjustments_Regular"
+    ],
+    "adjustmentTableCount": 4,
+    "adjustmentEntriesPerTable": [32],
+    "minimumClassAdjustment": 0,
+    "maximumClassAdjustment": 4
+  }
+}

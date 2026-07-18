@@ -20,15 +20,15 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 60 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 32 | 30 code files and 2 data files |
-| Executable code-file reach | 7.75% | 30 indexed code files / 387 pinned code files; **not** line or function coverage |
-| Indexed data-file reach | 0.12% | 2 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| Indexed findings | 71 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 36 | 33 code files and 3 data files |
+| Executable code-file reach | 8.53% | 33 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed data-file reach | 0.18% | 3 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 52 | Runtime contracts, often containing multiple cases |
-| Address bindings | 416 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 427 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
-The H2 surface is much broader than the two indexed data files. It currently includes 281 fixed
+The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, and the Battle 01 placement/scene
@@ -40,15 +40,15 @@ The current evidence is deep but narrow:
 
 - **Strongest:** reproducible ROM baseline; core stats/growth tables; physical combat, EXP/gold,
   many spell-resolution paths, and Battle 01 initialization/activation.
-- **Partial:** battle AI has a complete source inventory and five action-filter contracts, while
-  target scoring, healing/support priorities, movement, and dispatcher behavior remain open; turn
-  order, follow-up validation, status lifecycle, and rewards cover selected boundaries rather than
-  every caller and state transition.
+- **Partial:** battle AI has a complete source inventory, five action-filter contracts, and static
+  attack potential-damage/priority models, while healing/support priorities, final action choice,
+  movement, and dispatcher behavior remain open; other battle systems still cover selected
+  boundaries rather than every caller and state transition.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 7.75% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 8.53% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -61,8 +61,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 60 records; its
-verifier reports 52 H3 fixtures and 416 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 71 records; its
+verifier reports 52 H3 fixtures and 427 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -87,7 +87,7 @@ already demonstrated by the eight-case muddled ally/enemy action-guard fixture.
 
 ## Next Batch
 
-The `battle.ai` inventory and five attack/heal/support spell/item filters are now parsed. The next
-static batch owns attack target construction, potential-damage modeling, and priority scripts.
+The `battle.ai` inventory, five action filters, potential-damage model, and attack priority scripts
+are now parsed. The next static batch owns healing/support eligibility and target scoring.
 Runtime work remains deferred until the remaining audit produces a compact ambiguity matrix, then
 the matrix will run in one or a small number of BizHawk launches.

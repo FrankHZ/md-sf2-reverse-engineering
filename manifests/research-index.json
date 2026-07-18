@@ -1761,6 +1761,149 @@
         "bindings": [{ "addressId": "entry", "fixtureField": "function.healingItemEntryAddress" }]
       }],
       "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.populate-targets",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "PrioritizeTargetsForAttackAiCommand",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 51544 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeTargetsEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.select-attack-script",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "AdjustTargetPriorityForAttackByDifficulty",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 51992 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.adjustAttackPriorityEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.script-table",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "pt_TargetPriorityScripts",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52066 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.priorityScriptTableAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.select-spell-script",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "AdjustTargetPriorityForSpellByDifficulty",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52130 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.adjustSpellPriorityEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.potential-physical-damage",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "CalculatePotentialDamage",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52236 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.potentialDamageEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.spell-resistance",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "AdjustSpellPowerForResistance",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52308 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.spellResistanceEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.remaining-hp",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "CalculateRemainingHpAfterPotentialDamage",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52362 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.remainingHpEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.class-adjustment",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "AdjustTargetPriority",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/adjusttargetpriority.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52790 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.classAdjustmentEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.threshold-current-third",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "IsRemainingHpAboveOneThirdOfCurrent",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/targetprioritizationhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54008 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.oneThirdThresholdEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.threshold-max-fifth",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "IsRemainingHpAboveOneFifthOfMax",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/targetprioritizationhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54114 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.oneFifthThresholdEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.priority.movetype-adjustment-table",
+      "subsystem": "battle.ai.priority",
+      "status": "confirmed",
+      "symbol": "pt_AttackPriorityAdjustmentsForMovetype",
+      "sourcePath": "data/battles/global/aipriority.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55746 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.movetypeAdjustmentTableAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }

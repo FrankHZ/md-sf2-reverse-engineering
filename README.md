@@ -12,9 +12,9 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-18，研究索引有 60 条 confirmed finding、52 个 H3 fixture 和 416 个地址绑定。
-按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 30 个文件，即
-**7.75% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+截至 2026-07-18，研究索引有 71 条 confirmed finding、52 个 H3 fixture 和 427 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 33 个文件，即
+**8.53% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -208,7 +208,8 @@ drop rail 确认 flags 0-29、三个 `RNG(32)` 特例和 `0xFFFF` 终止；gold 
 69-word unused 尾部；新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
 原版名称清单。battle AI 静态 rail 另覆盖完整 26 文件/5,991 行源码面、82 个 global label、
-388 个直接调用点和五类 action getter，并将 5 个新 symbol 绑定到 H1 地址。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
+388 个直接调用点、五类 action getter、四套 priority script、物理/法术 potential-damage 模型
+及 4×32 class adjustment 表，并将 16 个新 symbol 绑定到 H1 地址。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在
 `InitializeAllyStats` 和 `LevelUp` 两处被误加 20 effective levels、但本场景无学法术副作用的原版缺陷。
@@ -274,9 +275,9 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 
 ## 下一步
 
-`battle.ai` 的全目录 inventory 和 attack/heal/support spell/item filter 已完成；下一块继续静态
-解析 **attack target construction、potential damage 与 priority scripts**，把难度、HP 阈值、
-状态/阵营和随机权重整理成结构化规则。只有静态无法闭合的 caller context、持久状态、
+`battle.ai` 的全目录 inventory、五类 action filter、potential damage 和 attack priority scripts
+已经完成；下一块继续静态解析 **healing/support target eligibility 与 scoring**，把 HP/MP、状态、
+职业和范围条件整理成结构化规则。只有静态无法闭合的 caller context、持久状态、
 RNG/overflow 等问题才进入随后的一次或少量 BizHawk 矩阵，不再为每个分支单独启动模拟器。
 同时保留升级前一等级、缺失职业块和当前/最大属性刷新，以及
 `LASER radius = 3` 的显式行为验证队列。

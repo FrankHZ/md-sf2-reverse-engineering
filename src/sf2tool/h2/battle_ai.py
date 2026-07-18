@@ -17,6 +17,8 @@ MANIFEST = repo_path("manifests/extractions/battle-ai-static.json")
 SCHEMA = repo_path("schemas/battle-ai-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/battle-ai-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-static-fixture.schema.json")
+PRIORITY_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-priority-static-v1.json")
+PRIORITY_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-priority-static-fixture.schema.json")
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
@@ -29,6 +31,8 @@ EQUATE_PATTERN = re.compile(
     r"^([A-Z][A-Z0-9_]+):\s+equ\s+(\$[0-9A-Fa-f]+|-?\d+)", re.MULTILINE
 )
 SPELL_COMPARE_PATTERN = re.compile(r"cmpi\.b\s+#(SPELL_[A-Z0-9_]+),d5")
+DC_LONG_TARGET_PATTERN = re.compile(r"^\s*dc\.l\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
+DC_BYTE_INTEGER_PATTERN = re.compile(r"^\s*dc\.b\s+(-?\d+)\b", re.MULTILINE)
 REGISTER_TARGETS = {f"a{index}" for index in range(8)} | {
     f"d{index}" for index in range(8)
 } | {"sp", "pc"}
@@ -119,6 +123,17 @@ def _function_block(source: str, name: str) -> str:
     )
     if not match:
         raise ValueError(f"battle AI action-filter function is missing: {name}")
+    return match.group(1)
+
+
+def _label_block(source: str, name: str) -> str:
+    match = re.search(
+        rf"^{re.escape(name)}:\s*$" rf"(.*?)(?=^[A-Za-z_][A-Za-z0-9_]*:\s*$|\Z)",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not match:
+        raise ValueError(f"battle AI static data label is missing: {name}")
     return match.group(1)
 
 
@@ -235,6 +250,186 @@ def _parse_action_filters(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _parse_attack_priority(disasm: Path) -> dict[str, Any]:
+    priority_path = SOURCE_ROOT / "command/attack/prioritizetargets.asm"
+    adjust_path = SOURCE_ROOT / "command/attack/adjusttargetpriority.asm"
+    helper_path = SOURCE_ROOT / "command/attack/targetprioritizationhelperfunctions.asm"
+    data_path = Path("data/battles/global/aipriority.asm")
+    priority_source = (disasm / priority_path).read_text(encoding="utf-8")
+    adjust_source = (disasm / adjust_path).read_text(encoding="utf-8")
+    helper_source = (disasm / helper_path).read_text(encoding="utf-8")
+    data_source = (disasm / data_path).read_text(encoding="utf-8")
+    equates = _equates(disasm)
+
+    selector_targets = DC_LONG_TARGET_PATTERN.findall(
+        _label_block(priority_source, "pt_TargetPriorityScripts")
+    )
+    selector = []
+    for target in selector_targets:
+        match = re.fullmatch(r"TargetPriorityScript([1-4])", target)
+        if not match:
+            raise ValueError(f"unexpected target-priority script pointer: {target}")
+        selector.append(int(match.group(1)))
+    if len(selector) != 16:
+        raise ValueError(f"expected 16 target-priority script pointers, found {len(selector)}")
+
+    adjustment_pointer_targets = DC_LONG_TARGET_PATTERN.findall(
+        _label_block(data_source, "pt_AttackPriorityAdjustmentsForMovetype")
+    )
+    if len(adjustment_pointer_targets) != 16:
+        raise ValueError(
+            "expected 16 attack-priority adjustment pointers, "
+            f"found {len(adjustment_pointer_targets)}"
+        )
+    adjustment_table_names = (
+        "table_PriorityAdjustments_Regular",
+        "table_PriorityAdjustments_Mage",
+        "table_PriorityAdjustments_Archer",
+        "table_PriorityAdjustments_Flying",
+    )
+    adjustment_tables = {
+        name: [
+            int(value)
+            for value in DC_BYTE_INTEGER_PATTERN.findall(_label_block(data_source, name))
+        ]
+        for name in adjustment_table_names
+    }
+    if any(len(values) != 32 for values in adjustment_tables.values()):
+        raise ValueError("battle AI class-priority adjustment table shape drift")
+
+    potential_damage = _function_block(priority_source, "CalculatePotentialDamage")
+    spell_resistance = _function_block(priority_source, "AdjustSpellPowerForResistance")
+    remaining_hp = _function_block(
+        priority_source, "CalculateRemainingHpAfterPotentialDamage"
+    )
+    script_blocks = {
+        index: _function_block(priority_source, f"TargetPriorityScript{index}")
+        for index in range(1, 5)
+    }
+    adjust_priority = _function_block(adjust_source, "AdjustTargetPriority")
+    third_threshold = _function_block(
+        helper_source, "IsRemainingHpAboveOneThirdOfCurrent"
+    )
+    fifth_threshold = _function_block(helper_source, "IsRemainingHpAboveOneFifthOfMax")
+    required_fragments = (
+        (potential_damage, "moveq   #1,d2"),
+        (potential_damage, "move.w  #256,d2"),
+        (potential_damage, "move.w  #230,d2"),
+        (potential_damage, "move.w  #205,d2"),
+        (potential_damage, "lsr.w   #BYTE_SHIFT_COUNT,d6"),
+        (spell_resistance, "sub.w   d3,d6"),
+        (spell_resistance, "lsr.w   #1,d6"),
+        (spell_resistance, "add.w   d3,d6"),
+        (remaining_hp, "moveq   #0,d1"),
+        (script_blocks[1], "addi.w  #15,d6"),
+        (script_blocks[1], "addi.w  #2,d6"),
+        (script_blocks[2], "IsRemainingHpAboveOneThirdOfCurrent"),
+        (script_blocks[2], "IsRemainingHpAboveOneFifthOfMax"),
+        (script_blocks[3], "j_GenerateRandomNumberUnderD6"),
+        (script_blocks[3], "moveq   #18,d6"),
+        (script_blocks[4], "IsRemainingHpAboveOneFifthOfMax"),
+        (adjust_priority, "btst    #COMBATANT_BIT_ENEMY,d0"),
+        (adjust_priority, "bsr.w   IsCombatantConfused"),
+        (adjust_priority, "cmpi.b  #ALLY_SARAH,d7"),
+        (third_threshold, "mulu.w  #3,d2"),
+        (fifth_threshold, "bra.w   @Continue"),
+        (helper_source, "mulu.w  #5,d2"),
+    )
+    if any(fragment not in block for block, fragment in required_fragments):
+        raise ValueError("battle AI attack-priority source contract drift")
+
+    multipliers = [
+        int(value)
+        for value in re.findall(r"move\.w\s+#(256|230|205),d2", potential_damage)
+    ]
+    if multipliers != [256, 230, 205]:
+        raise ValueError(f"battle AI land-effect multiplier drift: {multipliers}")
+
+    return {
+        "sourcePaths": [
+            priority_path.as_posix(),
+            adjust_path.as_posix(),
+            helper_path.as_posix(),
+            data_path.as_posix(),
+        ],
+        "scriptSelector": {
+            "difficultyRows": 4,
+            "activationColumns": 4,
+            "scriptsByDifficultyAndActivation": [
+                selector[index : index + 4] for index in range(0, 16, 4)
+            ],
+            "allyActivationColumn": equates["AIBITFIELD_SECONDARY_ACTIVE"],
+            "enemyRegularActivationMask": equates["BYTE_LOWER_NIBBLE_MASK"],
+            "enemySpellActivationMask": equates["AIBITFIELD_TRIGGER_REGIONS_MASK"],
+        },
+        "regularPotentialDamage": {
+            "minimumBeforeLandEffect": 1,
+            "landEffectMultipliers256": multipliers,
+            "rounding": "floor-after-multiply",
+        },
+        "spellPotentialDamage": {
+            "base": "spell-power",
+            "minorResistance": "power-minus-floor-quarter",
+            "majorResistance": "floor-half",
+            "weakness": "power-plus-floor-quarter",
+            "resistanceValues": {
+                "minor": equates["RESISTANCESETTING_MINOR"],
+                "major": equates["RESISTANCESETTING_MAJOR"],
+                "weakness": equates["RESISTANCESETTING_WEAKNESS"],
+            },
+            "areaScore": "sum-target-priorities",
+        },
+        "remainingHpMinimum": 0,
+        "thresholds": {
+            "script2Damage": "remaining-less-than-or-equal-current-third",
+            "script2And4LowHp": "remaining-less-than-or-equal-max-fifth",
+        },
+        "priorityScripts": [
+            {
+                "id": 1,
+                "base": 1,
+                "lethalBonus": 15,
+                "lastTargetBonus": 2,
+                "usesClassAdjustment": True,
+            },
+            {
+                "id": 2,
+                "base": 1,
+                "lethalBonus": 15,
+                "damageThresholdBonus": 1,
+                "lowHpBonus": 1,
+                "lastTargetBonus": 2,
+                "usesClassAdjustment": True,
+            },
+            {
+                "id": 3,
+                "rngRange": 3,
+                "lethalityBranchOutcomes": 1,
+                "movementBranchOutcomes": 2,
+                "lethalityBase": 1,
+                "lethalBonus": 15,
+                "movementPriorityFormula": "max(19-2*movement,1)",
+                "usesClassAdjustment": False,
+            },
+            {
+                "id": 4,
+                "base": 1,
+                "lethalBonus": 15,
+                "lowHpBonus": 1,
+                "usesClassAdjustment": False,
+            },
+        ],
+        "classAdjustment": {
+            "alliesOnly": True,
+            "skippedWhenConfused": True,
+            "previousTargetSarahUsesMageTable": True,
+            "sarahIndex": equates["ALLY_SARAH"],
+            "movetypePointerTargets": adjustment_pointer_targets,
+            "tables": adjustment_tables,
+            "minimum": min(min(values) for values in adjustment_tables.values()),
+            "maximum": max(max(values) for values in adjustment_tables.values()),
+        },
+    }
 def _resolve_upstream(upstream_path: Path) -> tuple[Path, str, dict[str, Any]]:
     upstream_path = upstream_path.resolve(strict=True)
     toolchain = load_json(TOOLCHAIN)
@@ -313,6 +508,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
         "scope": SOURCE_ROOT.as_posix(),
         "summary": summary,
         "actionFilters": _parse_action_filters(disasm),
+        "attackPriority": _parse_attack_priority(disasm),
         "indexedRecordIds": indexed_records,
         "indexedSourcePaths": indexed_files,
         "internalDirectCallTargets": internal_targets,
@@ -356,12 +552,54 @@ def _action_filter_facts(action_filters: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _attack_priority_facts(attack_priority: dict[str, Any]) -> dict[str, Any]:
+    selector = attack_priority["scriptSelector"]
+    adjustment = attack_priority["classAdjustment"]
+    return {
+        "scriptsByDifficultyAndActivation": selector["scriptsByDifficultyAndActivation"],
+        "allyActivationColumn": selector["allyActivationColumn"],
+        "enemyRegularActivationMask": selector["enemyRegularActivationMask"],
+        "enemySpellActivationMask": selector["enemySpellActivationMask"],
+        "landEffectMultipliers256": attack_priority["regularPotentialDamage"][
+            "landEffectMultipliers256"
+        ],
+        "minimumDamageBeforeLandEffect": attack_priority["regularPotentialDamage"][
+            "minimumBeforeLandEffect"
+        ],
+        "remainingHpMinimum": attack_priority["remainingHpMinimum"],
+        "script2DamageThreshold": attack_priority["thresholds"]["script2Damage"],
+        "script2And4LowHpThreshold": attack_priority["thresholds"][
+            "script2And4LowHp"
+        ],
+        "script3MovementFormula": attack_priority["priorityScripts"][2][
+            "movementPriorityFormula"
+        ],
+        "classAdjustmentAlliesOnly": adjustment["alliesOnly"],
+        "classAdjustmentSkippedWhenConfused": adjustment["skippedWhenConfused"],
+        "previousTargetSarahUsesMageTable": adjustment["previousTargetSarahUsesMageTable"],
+        "sarahIndex": adjustment["sarahIndex"],
+        "movetypePointerTargets": adjustment["movetypePointerTargets"],
+        "adjustmentTableCount": len(adjustment["tables"]),
+        "adjustmentEntriesPerTable": sorted(
+            {len(values) for values in adjustment["tables"].values()}
+        ),
+        "minimumClassAdjustment": adjustment["minimum"],
+        "maximumClassAdjustment": adjustment["maximum"],
+    }
+
+
 def verify_battle_ai_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
     manifest = load_json(MANIFEST)
     fixture = load_json(FIXTURE)
     validate_json(fixture, FIXTURE_SCHEMA, owner=str(FIXTURE))
+    priority_fixture = load_json(PRIORITY_FIXTURE)
+    validate_json(
+        priority_fixture,
+        PRIORITY_FIXTURE_SCHEMA,
+        owner=str(PRIORITY_FIXTURE),
+    )
     rom_manifest = load_json(ROM_MANIFEST)
     output = build_battle_ai_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="battle AI static inventory")
@@ -372,6 +610,13 @@ def verify_battle_ai_inventory(
         raise ValueError("battle AI static fixture provenance drift")
     if _action_filter_facts(output["actionFilters"]) != fixture["expected"]:
         raise ValueError("battle AI action-filter facts disagree with fixture")
+    if (
+        priority_fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or priority_fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("battle AI priority fixture provenance drift")
+    if _attack_priority_facts(output["attackPriority"]) != priority_fixture["expected"]:
+        raise ValueError("battle AI attack-priority facts disagree with fixture")
     if output["summary"] != manifest["summary"]:
         raise ValueError(
             "battle AI static summary drift: "

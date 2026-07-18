@@ -4,7 +4,7 @@
   "title": "Shining Force II battle AI static source inventory",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-battle-ai-static-v1" },
@@ -20,6 +20,7 @@
     "scope": { "const": "code/gameflow/battle/ai" },
     "summary": { "$ref": "#/definitions/summary" },
     "actionFilters": { "$ref": "#/definitions/actionFilters" },
+    "attackPriority": { "$ref": "#/definitions/attackPriority" },
     "indexedRecordIds": {
       "type": "array",
       "uniqueItems": true,
@@ -151,6 +152,120 @@
           }
         }
       }
+    },
+    "attackPriority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePaths", "scriptSelector", "regularPotentialDamage", "spellPotentialDamage", "remainingHpMinimum", "thresholds", "priorityScripts", "classAdjustment"],
+      "properties": {
+        "sourcePaths": {
+          "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(?:code|data)/.+\\.asm$" }
+        },
+        "scriptSelector": {
+          "type": "object", "additionalProperties": false,
+          "required": ["difficultyRows", "activationColumns", "scriptsByDifficultyAndActivation", "allyActivationColumn", "enemyRegularActivationMask", "enemySpellActivationMask"],
+          "properties": {
+            "difficultyRows": { "const": 4 },
+            "activationColumns": { "const": 4 },
+            "scriptsByDifficultyAndActivation": {
+              "type": "array", "minItems": 4, "maxItems": 4,
+              "items": {
+                "type": "array", "minItems": 4, "maxItems": 4,
+                "items": { "type": "integer", "minimum": 1, "maximum": 4 }
+              }
+            },
+            "allyActivationColumn": { "const": 2 },
+            "enemyRegularActivationMask": { "const": 15 },
+            "enemySpellActivationMask": { "const": 3 }
+          }
+        },
+        "regularPotentialDamage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["minimumBeforeLandEffect", "landEffectMultipliers256", "rounding"],
+          "properties": {
+            "minimumBeforeLandEffect": { "const": 1 },
+            "landEffectMultipliers256": { "const": [256, 230, 205] },
+            "rounding": { "const": "floor-after-multiply" }
+          }
+        },
+        "spellPotentialDamage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["base", "minorResistance", "majorResistance", "weakness", "resistanceValues", "areaScore"],
+          "properties": {
+            "base": { "const": "spell-power" },
+            "minorResistance": { "const": "power-minus-floor-quarter" },
+            "majorResistance": { "const": "floor-half" },
+            "weakness": { "const": "power-plus-floor-quarter" },
+            "resistanceValues": {
+              "type": "object", "additionalProperties": false,
+              "required": ["minor", "major", "weakness"],
+              "properties": { "minor": { "const": 1 }, "major": { "const": 2 }, "weakness": { "const": 3 } }
+            },
+            "areaScore": { "const": "sum-target-priorities" }
+          }
+        },
+        "remainingHpMinimum": { "const": 0 },
+        "thresholds": {
+          "type": "object", "additionalProperties": false,
+          "required": ["script2Damage", "script2And4LowHp"],
+          "properties": {
+            "script2Damage": { "const": "remaining-less-than-or-equal-current-third" },
+            "script2And4LowHp": { "const": "remaining-less-than-or-equal-max-fifth" }
+          }
+        },
+        "priorityScripts": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "usesClassAdjustment"],
+            "properties": {
+              "id": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "base": { "type": "integer", "minimum": 0 },
+              "lethalBonus": { "type": "integer", "minimum": 0 },
+              "lastTargetBonus": { "type": "integer", "minimum": 0 },
+              "damageThresholdBonus": { "type": "integer", "minimum": 0 },
+              "lowHpBonus": { "type": "integer", "minimum": 0 },
+              "rngRange": { "type": "integer", "minimum": 1 },
+              "lethalityBranchOutcomes": { "type": "integer", "minimum": 0 },
+              "movementBranchOutcomes": { "type": "integer", "minimum": 0 },
+              "lethalityBase": { "type": "integer", "minimum": 0 },
+              "movementPriorityFormula": { "type": "string", "minLength": 1 },
+              "usesClassAdjustment": { "type": "boolean" }
+            }
+          }
+        },
+        "classAdjustment": {
+          "type": "object", "additionalProperties": false,
+          "required": ["alliesOnly", "skippedWhenConfused", "previousTargetSarahUsesMageTable", "sarahIndex", "movetypePointerTargets", "tables", "minimum", "maximum"],
+          "properties": {
+            "alliesOnly": { "const": true },
+            "skippedWhenConfused": { "const": true },
+            "previousTargetSarahUsesMageTable": { "const": true },
+            "sarahIndex": { "const": 1 },
+            "movetypePointerTargets": {
+              "type": "array", "minItems": 16, "maxItems": 16,
+              "items": { "type": "string", "pattern": "^table_PriorityAdjustments_(?:Regular|Mage|Archer|Flying)$" }
+            },
+            "tables": {
+              "type": "object", "additionalProperties": false,
+              "required": ["table_PriorityAdjustments_Regular", "table_PriorityAdjustments_Mage", "table_PriorityAdjustments_Archer", "table_PriorityAdjustments_Flying"],
+              "properties": {
+                "table_PriorityAdjustments_Regular": { "$ref": "#/definitions/classAdjustmentTable" },
+                "table_PriorityAdjustments_Mage": { "$ref": "#/definitions/classAdjustmentTable" },
+                "table_PriorityAdjustments_Archer": { "$ref": "#/definitions/classAdjustmentTable" },
+                "table_PriorityAdjustments_Flying": { "$ref": "#/definitions/classAdjustmentTable" }
+              }
+            },
+            "minimum": { "const": 0 },
+            "maximum": { "const": 4 }
+          }
+        }
+      }
+    },
+    "classAdjustmentTable": {
+      "type": "array", "minItems": 32, "maxItems": 32,
+      "items": { "type": "integer", "minimum": 0, "maximum": 4 }
     },
     "call": {
       "type": "object",

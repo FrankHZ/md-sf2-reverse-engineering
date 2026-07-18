@@ -118,7 +118,7 @@ The root verification entry point is `uv run sf2 verify`. Keep it non-interactiv
 and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
 promotion/enemy/enemy-gold/enemy-drop, Battle 01 scene extraction, and the complete battle-AI source
-inventory/action-filter contract, plus BizHawk base/debug-aware RNG,
+inventory/action-filter/attack-priority contracts, plus BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
 turn-order, region-activation, physical-attack-chain, dodge, and follow-up-validation behavior
