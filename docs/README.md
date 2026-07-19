@@ -75,7 +75,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   battle terrain/background/sprite/weapon/ground/portrait/special-sprite 完整 Stack corpus、flash
   script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
   special-screen、8 条 base/menu UI、56 条 battle-effect、115 条 map-tileset
-  Stack-compression corpus，以及 46/46 direct named compression consumer 的 owner inventory。
+  Stack-compression corpus、16 套 map palette/79-map 使用与有效 color-zero 合同，以及 46/46
+  direct named compression consumer 的 owner inventory。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
@@ -121,7 +122,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个 frame，以及 weapon/ground
   graphics/palette、670 个 regular map-sprite payload、6 个 special-sprite stream 与 9 个
   special-screen tile stream、8 个 base/menu UI stream，以及 56 条 spell/invocation/status/
-  transition stream、115 条 map-tileset stream 的完整 parity。
+  transition stream、115 条 map-tileset stream 和 16 套 map palette/79 个 header reference 的
+  完整 parity。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

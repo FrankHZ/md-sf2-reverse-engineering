@@ -43,6 +43,7 @@ from sf2tool.h2.map_events import verify_map_events_contract
 from sf2tool.h2.map_import import verify_canonical_map_import
 from sf2tool.h2.map_init import verify_map_init_contract
 from sf2tool.h2.map_layouts import verify_map_layout_contract
+from sf2tool.h2.map_palettes import verify_map_palette_contract
 from sf2tool.h2.map_scripts import verify_map_scripts_inventory
 from sf2tool.h2.map_setup import verify_map_setup_contract
 from sf2tool.h2.map_sprites import verify_map_sprite_contract
@@ -412,6 +413,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_compression_consumers, rom=False)
     h2_compression_consumers.add_argument("--output-path", type=_path)
+    h2_map_palettes = h2_commands.add_parser(
+        "map-palettes",
+        help="verify all map palettes, map-header usage, and effective color-zero behavior",
+    )
+    _add_local_paths(h2_map_palettes)
+    h2_map_palettes.add_argument("--output-path", type=_path)
     h2_map_import = h2_commands.add_parser(
         "map-import", help="build the complete canonical engine-neutral map import"
     )
@@ -1004,6 +1011,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "compression-consumers":
         print_record(
             verify_compression_consumer_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-palettes":
+        print_record(
+            verify_map_palette_contract(
+                args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
             )

@@ -5,7 +5,7 @@
   and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
   corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
-  and complete map-tileset decode/usage corpus
+  and complete map-tileset decode/usage and map-palette/header-usage corpora
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -100,6 +100,13 @@ and payloads match ROM for 471,040 decoded bytes total. The same rail validates 
 395 slots and 32 animation headers. Ordinary and animation references jointly use 114 indices;
 `MapTileset029` is the sole statically unreferenced resource and is not declared runtime-unreachable.
 
+The map-palette table adds sixteen 32-byte payloads and sixteen pointer entries. The payloads contain
+256 mask-valid Genesis color words (69 unique source values), and all sixteen palette indices appear
+across the 79 map headers. Source/H1/ROM parity covers the top-level pointer, table, payloads, and map
+header bytes. Fifteen source palettes begin with a nonzero word, but `LoadMap` clears color 0 after
+copying; every effective map palette therefore begins with zero. The verifier tracks only hashes,
+counts, usage, and this consumer rule—not palette bytes.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -111,7 +118,7 @@ staff strings, cutscene content, or entity-action bodies. Full detail remains un
 No emulator was launched. Remaining questions are grouped as:
 
 1. window-layout and VDP presentation behavior;
-2. map/battle sprite animation frame timing;
+2. map palette/fade behavior and map/battle sprite animation frame timing;
 3. entity-action and global-cutscene dispatch effects;
 4. configuration, debug, fading, and spell-animation data consumers.
 
@@ -137,5 +144,6 @@ uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
+uv run sf2 h2 map-palettes
 uv run sf2 research-index test
 ```

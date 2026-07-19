@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/map-palette-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "usageCounts", "palettes", "maps", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-palette-static-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 15, "maxProperties": 15, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "usageCounts": { "type": "object", "minProperties": 16, "maxProperties": 16, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "palettes": {
+      "type": "array", "minItems": 16, "maxItems": 16,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["index", "symbol", "sourcePath", "sourceAddress", "byteCount", "colorCount", "sourceFirstColor", "effectiveFirstColor", "sourceSha256", "effectiveSha256"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 0, "maximum": 15 }, "symbol": { "type": "string" },
+          "sourcePath": { "type": "string" }, "sourceAddress": { "type": "integer", "minimum": 0 },
+          "byteCount": { "const": 32 }, "colorCount": { "const": 16 },
+          "sourceFirstColor": { "type": "integer", "minimum": 0, "maximum": 3822 }, "effectiveFirstColor": { "const": 0 },
+          "sourceSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }, "effectiveSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+        }
+      }
+    },
+    "maps": {
+      "type": "array", "minItems": 79, "maxItems": 79,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["mapIndex", "sourcePath", "mapAddress", "paletteIndex"],
+        "properties": {
+          "mapIndex": { "type": "integer", "minimum": 0, "maximum": 78 }, "sourcePath": { "type": "string" },
+          "mapAddress": { "type": "integer", "minimum": 0 }, "paletteIndex": { "type": "integer", "minimum": 0, "maximum": 15 }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "string" } }
+  }
+}

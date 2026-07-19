@@ -5,7 +5,8 @@
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
-  special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora
+  special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora, plus the
+  complete map-palette corpus and effective color-zero load boundary
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -161,6 +162,19 @@ The 79 maps provide 395 ordinary tileset slots: 326 real references and 69 `255`
 usage reaches 114 of 115 resources; only `MapTileset029` has no reference in either complete source
 surface. This proves static absence, not runtime unreachability through dynamic or encoded writes.
 
+The twelfth graphics corpus closes `pt_MapPalettes`. Its sixteen pointers select sixteen 32-byte
+payloads, each holding sixteen big-endian Genesis color words. All 512 payload bytes, the 64-byte
+pointer table, the top-level pointer, and the palette byte in every one of the 79 map headers match
+source, H1, and ROM. All 256 color words obey mask `0x0EEE`; the source corpus contains 69 unique
+values. Every palette index 0-15 is referenced by at least one map (index 0 appears 47 times; all
+others appear one to six times).
+
+`LoadMap` copies all 32 source bytes into `PALETTE_1_BASE` and then clears its first word. Fifteen of
+the sixteen source palettes have a nonzero first word, but all sixteen effective palettes therefore
+use zero for color 0. This is a consumer-visible transformation, so canonical remake data must retain
+the source palette and the effective color-zero rule separately. Static parity does not yet prove the
+rendered fade, transition, or final per-map presentation.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -215,6 +229,7 @@ uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
+uv run sf2 h2 map-palettes
 uv run sf2 h2 compression-consumers
 uv run sf2 research-index test
 ```
@@ -224,5 +239,6 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
 `special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
-`battle-effect-graphics-decode.json`, plus `map-tileset-decode.json`.
+`battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
+`map-palette-static.json`.
 The consumer map stays under ignored `local/derived/compression-consumers-static.json`.

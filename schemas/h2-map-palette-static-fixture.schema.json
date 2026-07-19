@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-map-palette-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "table", "summary", "usageCounts", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-map-palette-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 15, "maxProperties": 15, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "usageCounts": { "type": "object", "minProperties": 16, "maxProperties": 16, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "runtimeQuestions": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "string" } }
+  }
+}

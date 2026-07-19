@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-palette-static-v1",
+  "outputSha256": "4F977B4B3EB8E731D2ABB6664F36030487DC186D267E66E9C2DAF3CB211007AB",
+  "summary": {
+    "paletteCount": 16, "paletteByteCount": 512, "colorsPerPalette": 16,
+    "sourceColorWordCount": 256, "uniqueSourceColorCount": 69, "validColorMaskCount": 256,
+    "nonzeroSourceFirstColorCount": 15, "clearedEffectiveFirstColorCount": 16,
+    "pointerTableRomParityCount": 16, "payloadRomParityCount": 16, "mapCount": 79,
+    "mapHeaderRomParityCount": 79, "mapPaletteReferenceCount": 79,
+    "usedPaletteCount": 16, "unusedPaletteCount": 0
+  }
+}

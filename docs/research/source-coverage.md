@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 57 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 58 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,908 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,909 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -110,6 +110,12 @@ The current evidence is deep but narrow:
   (471,040 bytes total). It also ROM-checks all 79 five-slot map headers and 32 animation headers:
   326 ordinary references plus 32 animation references reach 114 unique tilesets. Only index 29 has
   no static reference, so dynamic unreachability remains an explicit question.
+  The adjacent map-palette rail covers all sixteen 32-byte payloads, their pointer table/top-level
+  pointer, and all 79 map-header palette bytes. All sixteen palettes are referenced; the corpus has
+  256 mask-valid Genesis color words and 69 unique source values. Fifteen source palettes have a
+  nonzero first word, but `LoadMap` clears palette-1 color zero after copying, so every effective map
+  palette starts at zero. Fade/transition and rendered per-map presentation remain one grouped
+  runtime question.
   A source-wide denominator now finds 46 direct named compression consumers across 23 files: 35
   Stack calls, four Basic calls, and seven compressed-DMA wrapper calls. All 46 map to twelve
   complete corpus/infrastructure owners; unowned direct calls are zero. Dynamic indirect or
@@ -182,8 +188,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,450 records; its
-verifier reports 381 unique code files, 980 unique data files, 57 H2 fixtures, 58 H3 fixtures, and
-1,908 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 58 H2 fixtures, 58 H3 fixtures, and
+1,909 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

@@ -4,8 +4,9 @@
   private block/layout payloads, record sizes, aggregate record counts, their canonical ROM bytes,
   the deterministic engine-neutral import assembled from them, and the static flag/roof/step/warp
   consumer phases, scan policies, and path-specific working-layout rebuild/preservation rules
-  plus map-animation logical cadence, DMA queue phase, and pinned-BizHawk VRAM transfer frame
-- Status: **Unknown** for rendered layout parity and hardware-level scanline timing
+  plus map-animation logical cadence, DMA queue phase, pinned-BizHawk VRAM transfer frame, and the
+  complete map-palette table/header usage and effective color-zero rule
+- Status: **Unknown** for rendered layout/palette parity and hardware-level scanline timing
 - Evidence date: 2026-07-19
 - ROM SHA-256: `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM`
@@ -79,6 +80,18 @@ ordinary slots across all maps form 395 positions: 326 references and 69 `255` s
 unique tilesets. Animation headers add 32 references across 15 unique indices. Together they reach
 114/115 resources; only `MapTileset029` lacks a static reference. Dynamic unreachability and rendered
 composition remain Unknown.
+
+`pt_MapPalettes` independently contains sixteen 32-byte palettes. All sixteen pointers and payloads,
+the top-level table pointer, and all 79 map-header palette indices match ROM. The headers reference
+every palette: index 0 is used by 47 maps; indices 3 and 4 by six each; index 2 by three; indices 1,
+5, 6, 10, and 12 by two; and the remaining seven indices by one map each. Across 256 source words,
+all values fit the Genesis `0x0EEE` color mask and 69 are unique.
+
+The source bytes are not the complete presentation contract. `LoadMap` copies the full palette into
+`PALETTE_1_BASE`, then clears color 0. Thus 15 nonzero source color-zero words become zero and every
+effective map palette starts with zero. The tracked rail records source/effective hashes and aggregate
+facts without committing palette bytes. Rendered palette/fade/transition parity remains in the shared
+presentation queue.
 
 Static consumers confirm the important ownership rules:
 
@@ -205,6 +218,7 @@ they do not reopen the confirmed one-VInt queue delay under the pinned core.
 uv run sf2 h2 map-content
 uv run sf2 h2 map-layouts
 uv run sf2 h2 map-tilesets
+uv run sf2 h2 map-palettes
 uv run sf2 h2 map-import
 uv run sf2 h2 map-data
 uv run sf2 h3 map-event-dispatch
@@ -215,4 +229,5 @@ uv run sf2 research-index test
 Detailed outputs are written to ignored `local/derived/map-content-static.json`,
 `local/derived/map-layout-decode.json`, and `local/derived/canonical-map-import.json`. The tracked
 fixtures contain only compact non-content evidence. Tileset decode details stay under ignored
-`local/derived/map-tileset-decode.json`.
+`local/derived/map-tileset-decode.json`; palette details stay under ignored
+`local/derived/map-palette-static.json`.

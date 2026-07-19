@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-palette-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": { "LoadMap": 10892, "CopyBytes": 5846 },
+  "table": { "pt_MapPalettes": 608586, "p_pt_MapPalettes": 409604 },
+  "summary": {
+    "paletteCount": 16, "paletteByteCount": 512, "colorsPerPalette": 16,
+    "sourceColorWordCount": 256, "uniqueSourceColorCount": 69, "validColorMaskCount": 256,
+    "nonzeroSourceFirstColorCount": 15, "clearedEffectiveFirstColorCount": 16,
+    "pointerTableRomParityCount": 16, "payloadRomParityCount": 16, "mapCount": 79,
+    "mapHeaderRomParityCount": 79, "mapPaletteReferenceCount": 79,
+    "usedPaletteCount": 16, "unusedPaletteCount": 0
+  },
+  "usageCounts": { "0": 47, "1": 2, "2": 3, "3": 6, "4": 6, "5": 2, "6": 2, "7": 1, "8": 1, "9": 1, "10": 2, "11": 1, "12": 2, "13": 1, "14": 1, "15": 1 },
+  "runtimeQuestions": [
+    "Do all sixteen effective map palettes render with original fade, transition, and per-map presentation behavior after color zero is cleared?"
+  ]
+}

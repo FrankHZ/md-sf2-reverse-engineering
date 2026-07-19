@@ -144,6 +144,7 @@ the complete special-screen Stack-compressed tile corpus/transfer boundaries, pl
 the complete base/diamond-menu/yes-no Stack-compressed UI corpus, plus
 the complete spell/invocation/status/transition battle-effect graphics corpus, plus
 the complete 115-stream map-tileset corpus and map/animation usage boundary, plus
+the complete 16-entry map-palette corpus, 79-map usage table, and effective color-zero boundary, plus
 the complete direct named Basic/Stack/compressed-DMA consumer inventory, plus
 BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
