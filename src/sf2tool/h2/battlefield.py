@@ -131,6 +131,51 @@ def _neighbor_outcome(
     }
 
 
+def _parse_spell_range_rings(path: Path) -> list[dict[str, Any]]:
+    label_pattern = re.compile(r"^SpellRange(\d+):\s+dc\.b\s+(\d+)")
+    pair_pattern = re.compile(r"^\s*dc\.b\s+(-?\d+)\s*,\s*(-?\d+)")
+    rings: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        label = label_pattern.match(line)
+        if label:
+            current = {
+                "radius": int(label.group(1)),
+                "declaredCount": int(label.group(2)),
+                "coordinates": [],
+            }
+            rings.append(current)
+            continue
+        pair = pair_pattern.match(line)
+        if pair and current is not None:
+            current["coordinates"].append([int(pair.group(1)), int(pair.group(2))])
+    if [ring["radius"] for ring in rings] != [0, 1, 2, 3]:
+        raise ValueError("spell range ring set drift")
+    for ring in rings:
+        coordinates = ring["coordinates"]
+        if ring["declaredCount"] != len(coordinates):
+            raise ValueError(f"spell range {ring['radius']} count drift")
+        if any(abs(x) + abs(y) != ring["radius"] for x, y in coordinates):
+            raise ValueError(f"spell range {ring['radius']} geometry drift")
+    return rings
+
+
+def _targeting_facts(targeting: dict[str, Any]) -> dict[str, Any]:
+    rings = targeting["spellRangeRings"]
+    coordinate_hash = (
+        hashlib.sha256(json.dumps(rings, separators=(",", ":")).encode("utf-8")).hexdigest().upper()
+    )
+    return {
+        "spellRangeCounts": [ring["declaredCount"] for ring in rings],
+        "spellRangeCoordinateSha256": coordinate_hash,
+        "unarmedAttackRanges": targeting["unarmedAttackRanges"],
+        "spellTargetSide": targeting["spellTargetSide"],
+        "targetGridAdmission": targeting["targetGridAdmission"],
+        "areaEffects": targeting["areaEffects"],
+        "reachableTargets": targeting["reachableTargets"],
+    }
+
+
 def _build_core_model(disasm: Path) -> dict[str, Any]:
     definitions = _load_equates(disasm / "sf2const.asm", disasm / "sf2enums.asm")
     memo: dict[str, int] = {}
@@ -166,6 +211,27 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
             "btst    #TERRAIN_BIT_IMPASSABLE,d4",
             "bclr    #TERRAIN_BIT_OCCUPIED,(a0)",
             "bset    #TERRAIN_BIT_OCCUPIED,(a0)",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "buildactionrangegrids.asm",
+        [
+            "bsr.w   ClearTargetsArray",
+            "bsr.w   ClearTotalMoveCostsAndMovableGridArrays",
+            "btst    #SPELLPROPS_BIT_TARGETING,SPELLDEF_OFFSET_PROPS(a0)",
+            "movea.l -(a1),a0",
+            "bsr.w   ApplyRelativeCoordinatesListToGrid",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "buildtargetsarray.asm",
+        [
+            "jsr     GetCurrentHp",
+            "jsr     GetActivationBitfield",
+            "btst    #AIBITFIELD_BIT_NEUTRAL,d1",
+            "jsr     GetCombatantY",
+            "jsr     GetCombatantX",
+            "move.b  d0,(a0)",
         ],
     )
 
@@ -232,6 +298,66 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
                 {"entry": 0x43, "set": True, "result": _occupied_entry(0x43, set_flag=True)},
                 {"entry": 0xFF, "set": False, "result": _occupied_entry(0xFF, set_flag=False)},
             ],
+        },
+        "targeting": {
+            "spellRangeRings": _parse_spell_range_rings(
+                disasm / "data/stats/spells/spellranges.asm"
+            ),
+            "unarmedAttackRanges": {
+                "default": {"minimum": 1, "maximum": 1},
+                "brassGunner": {
+                    "class": constant("CLASS_BRGN"),
+                    "minimum": 1,
+                    "maximum": 2,
+                },
+                "krakenArm": {
+                    "enemy": constant("ENEMY_KRAKEN_ARM"),
+                    "minimum": 1,
+                    "maximum": 2,
+                },
+                "krakenHead": {
+                    "enemy": constant("ENEMY_KRAKEN_HEAD"),
+                    "minimum": 1,
+                    "maximum": 3,
+                },
+            },
+            "spellTargetSide": {
+                "propertyBit": constant("SPELLPROPS_BIT_TARGETING"),
+                "propertyClearMeaning": "opponents",
+                "propertySetMeaning": "teammates",
+                "matrix": [
+                    {"caster": "ally", "propertySet": False, "targets": "enemies"},
+                    {"caster": "ally", "propertySet": True, "targets": "allies"},
+                    {"caster": "enemy", "propertySet": False, "targets": "allies"},
+                    {"caster": "enemy", "propertySet": True, "targets": "enemies"},
+                ],
+            },
+            "targetGridAdmission": {
+                "requiresAlive": True,
+                "excludesNeutral": True,
+                "coordinateUpperBoundExclusive": width,
+                "invalidEntry": 255,
+                "relativeCoordinateBytes": constant("BATTLEFIELD_COORDINATES_ENTRY_SIZE"),
+                "obstructedTerrainSkipsGridMarkButNotOccupantLookup": True,
+            },
+            "areaEffects": {
+                "burstRockSpell": constant("SPELL_B_ROCK"),
+                "burstRockBuildsAllCombatants": True,
+                "burstRockExcludesCenterRing": True,
+                "auraLevel4SpellEntry": constant("SPELL_AURA") | constant("SPELL_LV4"),
+                "shineSpell": constant("SPELL_SHINE"),
+                "mapWideListsRequirePositionAndAlive": True,
+                "mapWideListsDoNotCheckNeutral": True,
+            },
+            "reachableTargets": {
+                "confusionFlipsActorSideMask": constant("COMBATANT_MASK_ENEMY_BIT"),
+                "normalRoster": "opponents",
+                "requiresAlive": True,
+                "requiresAttackPosition": True,
+                "storesTotalMoveCostLowByte": True,
+                "listCapacityFromRamLayout": constant("TARGETS_REACHABLE_BY_SPELL_LIST")
+                - constant("TARGETS_REACHABLE_BY_ATTACK_LIST"),
+            },
         },
     }
 
@@ -346,8 +472,11 @@ def verify_battlefield_inventory(
     for filename, symbol in fixture["expected"]["representativeSymbols"].items():
         if symbol not in by_name[filename]["globalLabels"]:
             raise ValueError(f"battlefield representative symbol drift: {filename}::{symbol}")
-    if output["coreModel"] != fixture["expected"]["coreModel"]:
-        raise ValueError("battlefield core array model drift")
+    for key, expected in fixture["expected"]["coreModel"].items():
+        if output["coreModel"][key] != expected:
+            raise ValueError(f"battlefield core array model drift: {key}")
+    if _targeting_facts(output["coreModel"]["targeting"]) != fixture["expected"]["targetingFacts"]:
+        raise ValueError("battlefield range and targeting model drift")
     if output["coreModel"]["arrays"] != fixture["ram"]:
         raise ValueError("battlefield RAM address binding drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()

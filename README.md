@@ -12,7 +12,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-18，研究索引有 144 条 confirmed finding、53 个 H3 fixture 和 523 个地址绑定。
+截至 2026-07-18，研究索引有 145 条 confirmed finding、53 个 H3 fixture 和 524 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 69 个文件，即
 **17.83% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
@@ -214,7 +214,8 @@ movetype/AOE scoring，support admission、DISPEL/MUDDLE 2 target scoring 和两
 ATTACK/BOOST 2 路由、最终 action/target tie-break、move/move-order、dispatcher 与 standby rules，并将 44 个新 symbol
 绑定到 H1 地址。battlefield/pathfinding 静态 rail 另覆盖该目录全部 17 个文件、2,299 行、126 个
 global label 和 116 个直接调用点，并将每个文件的代表入口绑定到 H1 地址；48×48 RAM 数组、
-初始化/占用规则与移动邻格准入已形成静态合同，完整传播、范围与 move-string 继续分批加深。H3 以 7 组受控 seed 验证
+初始化/占用规则、移动邻格准入、四层 Manhattan range 与目标阵营/准入已形成静态合同，完整传播、
+攻击站位与 move-string 继续分批加深。H3 以 7 组受控 seed 验证
 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在

@@ -20,7 +20,8 @@
     "buildMovementArraysAddress": 55938,
     "buildCancelMoveStringAddress": 56218,
     "getMoveOrderPositionAddress": 1775096,
-    "checkForTrappedChestAddress": 1775358
+    "checkForTrappedChestAddress": 1775358,
+    "spellRangesTableAddress": 50576
   },
   "ram": {
     "totalMoveCosts": 16729088,
@@ -107,6 +108,52 @@
           { "entry": 67, "set": true, "result": 195 },
           { "entry": 255, "set": false, "result": 255 }
         ]
+      }
+    },
+    "targetingFacts": {
+      "spellRangeCounts": [1, 4, 8, 12],
+      "spellRangeCoordinateSha256": "9FD6693FA766AA529EC18DFB3EB3DCAE4E5A79B69057426E4AD4F0EBBE4E876E",
+      "unarmedAttackRanges": {
+        "default": { "minimum": 1, "maximum": 1 },
+        "brassGunner": { "class": 22, "minimum": 1, "maximum": 2 },
+        "krakenArm": { "enemy": 59, "minimum": 1, "maximum": 2 },
+        "krakenHead": { "enemy": 87, "minimum": 1, "maximum": 3 }
+      },
+      "spellTargetSide": {
+        "propertyBit": 6,
+        "propertyClearMeaning": "opponents",
+        "propertySetMeaning": "teammates",
+        "matrix": [
+          { "caster": "ally", "propertySet": false, "targets": "enemies" },
+          { "caster": "ally", "propertySet": true, "targets": "allies" },
+          { "caster": "enemy", "propertySet": false, "targets": "allies" },
+          { "caster": "enemy", "propertySet": true, "targets": "enemies" }
+        ]
+      },
+      "targetGridAdmission": {
+        "requiresAlive": true,
+        "excludesNeutral": true,
+        "coordinateUpperBoundExclusive": 48,
+        "invalidEntry": 255,
+        "relativeCoordinateBytes": 2,
+        "obstructedTerrainSkipsGridMarkButNotOccupantLookup": true
+      },
+      "areaEffects": {
+        "burstRockSpell": 25,
+        "burstRockBuildsAllCombatants": true,
+        "burstRockExcludesCenterRing": true,
+        "auraLevel4SpellEntry": 193,
+        "shineSpell": 42,
+        "mapWideListsRequirePositionAndAlive": true,
+        "mapWideListsDoNotCheckNeutral": true
+      },
+      "reachableTargets": {
+        "confusionFlipsActorSideMask": 128,
+        "normalRoster": "opponents",
+        "requiresAlive": true,
+        "requiresAttackPosition": true,
+        "storesTotalMoveCostLowByte": true,
+        "listCapacityFromRamLayout": 48
       }
     }
   }

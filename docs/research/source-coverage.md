@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 144 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 76 | 69 code files and 7 data files |
+| Indexed findings | 145 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 77 | 69 code files and 8 data files |
 | Executable code-file reach | 17.83% | 69 indexed code files / 387 pinned code files; **not** line or function coverage |
-| Indexed data-file reach | 0.41% | 7 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 53 | Runtime contracts, often containing multiple cases |
-| Address bindings | 523 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 524 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -46,8 +46,8 @@ The current evidence is deep but narrow:
   plus at least one indexed entry in every one of its 26 files; dispatcher/standby are parsed but
   deeper special-helper semantics remain open. Battlefield/pathfinding now has a complete 17-file
   inventory and representative address binding in every file; its 48×48 RAM grids, initialization,
-  occupancy, and movement-neighbor admission are modeled, while full propagation, range, target,
-  and move-string semantics remain shallow. Other battle systems still cover selected
+  occupancy, movement-neighbor admission, range rings, and target admission are modeled, while full
+  propagation, attack-position, and move-string semantics remain shallow. Other battle systems cover selected
   boundaries rather than every caller and state transition.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
@@ -66,8 +66,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 144 records; its
-verifier reports 53 H3 fixtures and 523 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 145 records; its
+verifier reports 53 H3 fixtures and 524 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -105,6 +105,6 @@ next moves across the boundary into battlefield/pathfinding, while the remaining
 critical-class, movement, dispatcher, and standby ambiguities accumulate for the next small set of
 shared-boundary launches. The adjacent battlefield/pathfinding directory now also has all 17 files
 inventoried (2,299 lines, 126 global labels, 116 direct call sites), with grid layout,
-initialization, occupancy, and neighbor admission modeled. The next static batches finish
-propagation/tie-break behavior, target/range construction, and move-string reconstruction before
+initialization, occupancy, neighbor admission, range rings, and target admission modeled. The next
+static batches finish propagation/tie-break behavior, attack-position selection, and move-string reconstruction before
 any new runtime launch.

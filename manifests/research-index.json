@@ -2410,6 +2410,10 @@
     {
       "id": "battlefield.inventory.trapped-chest", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "CheckForTrappedChest", "sourcePath": "code/gameflow/battle/battlefield/checkfortrappedchest.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775358 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.checkForTrappedChestAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.range.spell-rings", "subsystem": "battlefield.range", "status": "confirmed", "symbol": "pt_SpellRanges", "sourcePath": "data/stats/spells/spellranges.asm",
+      "addresses": [{ "id": "table", "space": "rom", "kind": "symbol", "value": 50576 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "table", "fixtureField": "function.spellRangesTableAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
     }
   ]
 }

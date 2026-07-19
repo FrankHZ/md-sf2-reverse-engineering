@@ -2,7 +2,7 @@
 
 - Status: **Confirmed** for the pinned 17-file source inventory, representative entry symbols,
   source hashes, static call-edge counts, core grid/RAM layout, initialization, occupancy rules,
-  and movement-neighbor admission
+  movement-neighbor admission, Manhattan range rings, and target-side/admission rules
 - Status: **Inferred** for algorithm names and roles that currently rely on upstream labels/comments
 - Status: **Unknown** for full propagation/tie-break behavior, range/target construction, move-string
   reconstruction, and runtime edge cases until later focused models and the queued H3 matrix are complete
@@ -65,6 +65,26 @@ outside `[0, 48)`. Terrain byte `0xFF` is never changed. Setting occupancy sets 
 suppressed when impassable bit 6 is set, preserving temporary/combined obstructions. The fixture
 contains explicit transformations for ordinary, impassable, and fully obstructed terrain bytes.
 
+## Range and Target Construction
+
+`pt_SpellRanges` at `0x00C590` owns four ordered Manhattan rings: radius 0/1/2/3 contain
+1/4/8/12 signed coordinate pairs. Attack or spell range builders walk the requested rings from
+maximum down to minimum. The unarmed default is 1–1, with hardcoded exceptions for Brass Gunner
+(1–2), Kraken Arm (1–2), and Kraken Head (1–3); equipped weapons and spells read min/max directly
+from their definitions.
+
+Spell property bit 6 means “target teammates”; clear means “target opponents.” Combined with caster
+affiliation this yields the full ally/enemy × clear/set four-case matrix. The map-aligned target grid
+accepts only living, non-neutral combatants whose unsigned coordinates are below 48. When applying a
+relative ring, obstructed terrain can suppress the movable-grid mark but does not suppress the
+occupant lookup, an important distinction for separating visible range from legal entity targets.
+
+Burst Rock builds the target map from both factions and omits its center ring to avoid self-targeting.
+AURA 4 and SHINE bypass rings and enumerate the supplied target's whole faction, requiring a placed, living
+combatant but not applying the neutral-bit filter. Reachable-target enumeration normally scans the
+opposing roster; confusion flips the actor affiliation first. Each accepted target stores the low
+byte of total movement cost in a parallel 48-byte list.
+
 ## Evidence Limits
 
 - **Confirmed:** directory/file set, source metrics, named entry addresses, source hashes, and
@@ -88,10 +108,10 @@ uv run sf2 research-index test
 The H2 command validates the source inventory and fixture schemas, pinned upstream commit, ROM
 provenance, representative labels, summary counts, and canonical output hash. Generated JSON is
 written only to ignored `local/derived/battlefield-static.json`; the accepted SHA-256 is
-`E4CB5515B404D16700DB1FD2A4759DAB7EA7924A081BB3FFEAFC4AB54721B3D5`.
+`7A5198CAB11E7DD86C4EDDA892D4EB6D0094ECF0C0F61D1556CE75E8B8777E08`.
 
 ## Next Static Batches
 
-The next passes will model the complete bucket propagation and tie-break behavior, target/range
-construction, and move-string reconstruction. Runtime questions remain a queue until those models
-expose a compact branch matrix worth launching together.
+The next passes will model the complete bucket propagation and tie-break behavior, attack-position
+selection, and move-string reconstruction. Runtime questions remain a queue until those models expose
+a compact branch matrix worth launching together.

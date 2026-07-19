@@ -8,14 +8,15 @@
     "id": { "const": "sf2-battlefield-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "function": { "type": "object", "minProperties": 18, "maxProperties": 18, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "ram": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "expected": {
       "type": "object", "additionalProperties": false,
-      "required": ["representativeSymbols", "coreModel"],
+      "required": ["representativeSymbols", "coreModel", "targetingFacts"],
       "properties": {
         "representativeSymbols": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "string" } },
-        "coreModel": { "type": "object", "minProperties": 5, "maxProperties": 5 }
+        "coreModel": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+        "targetingFacts": { "type": "object", "minProperties": 7, "maxProperties": 7 }
       }
     }
   }
