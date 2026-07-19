@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for the pinned 42-file inventory, 41 layout-owned source files, H1 entry
   addresses, prompt input/return rules, text controls, the nine field-item dispatches, and portrait
-  header/palette/tile loading boundaries
+  header/palette/tile loading boundaries, plus the complete diamond-menu and yes/no compressed
+  graphics corpus
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -34,6 +35,14 @@ range of 256 and then waits for VInt.
 The yes/no prompt starts on Yes. Left returns 0 (Yes), right returns `-1` (No), A/C confirms, and B
 also returns `-1`; callers therefore cannot distinguish No from cancellation through this return
 value alone. Existing dialogue and gold windows are moved while the prompt is displayed.
+
+The nine-entry diamond-menu tile table contains two distinct formats. Its first three entries have
+bit 31 set and pack four indices selecting uncompressed main-menu icons. The other six entries point
+to pointer words for item, battlefield, church, shop, caravan, and depot Stack streams. Each stream
+decodes to 2,304 bytes, matching two animation frames of four 288-byte icon transfers. The separate
+yes/no stream decodes to 1,152 bytes, matching two frames of two icons. All seven payloads, their
+pointers, and the menu table are source/H1/ROM identical; visible timing and palette composition
+remain in the presentation queue.
 
 `NumberPrompt` applies right/left/down/up deltas of `+1/-1/+10/-10`, clamps after each update to the
 caller-provided minimum and maximum, returns the selected number on A/C, and returns `-1` on B. Its
@@ -72,7 +81,9 @@ because they share VInt/VDP observation points. This static batch starts no emul
 ```powershell
 uv run sf2 h2 common-menus
 uv run sf2 h2 portraits
+uv run sf2 h2 ui-graphics
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/common-menus-static.json`.
+Generated JSON stays under ignored `local/derived/common-menus-static.json` and
+`local/derived/ui-graphics-decode.json`.

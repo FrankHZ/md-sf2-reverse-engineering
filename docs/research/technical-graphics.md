@@ -5,7 +5,7 @@
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
-  special-screen Stack-compression corpora
+  special-screen plus base/menu UI Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -127,6 +127,18 @@ Five other fixed transfers are larger than decoder output: suspend string 448→
 Static code proves the transfer boundary but not which staging bytes occupy the tail at runtime, so
 tail contents and stability remain **Unknown** rather than being modeled as zero padding.
 
+The ninth corpus closes shared base and menu UI graphics. `tiles_Base` is decoded once for startup
+VRAM upload and again as the source for the doubled ending-credits font. Six diamond-menu resources
+each decode to 2,304 bytes (two frames of four 288-byte icons), while the yes/no prompt decodes to
+1,152 bytes (two frames of two icons). Together the eight streams expand 7,848 compressed bytes to
+23,168 bytes; all eight payloads, eight pointers, and the nine-entry menu table match the ROM.
+
+The menu table is heterogeneous by design. Its first three longwords have bit 31 set and pack four
+indices into the uncompressed `tiles_MainMenu`; the other six point to pointer words for the Stack
+resources. The consumer clears and branches on bit 31 before choosing `LoadMainMenuIcon` or the
+Stack decoder, so the tracked contract preserves the two formats instead of treating the packed
+values as malformed addresses.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -169,6 +181,7 @@ uv run sf2 h2 portraits
 uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
+uv run sf2 h2 ui-graphics
 uv run sf2 research-index test
 ```
 
@@ -176,4 +189,4 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
-`special-screen-graphics-decode.json`.
+`special-screen-graphics-decode.json`, plus `ui-graphics-decode.json`.

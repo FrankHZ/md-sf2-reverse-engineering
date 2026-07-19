@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-ui-graphics-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "LoadBaseTiles": 30286,
+    "GenerateEndingCreditsFont": 1753756,
+    "ExecuteDiamondMenu": 66038,
+    "alt_YesNoPrompt": 86668
+  },
+  "table": {
+    "pt_tiles_Menu": 69980,
+    "tiles_Base": 2029030,
+    "p_tiles_Base": 2023464,
+    "tiles_ItemMenu": 174530,
+    "p_tiles_ItemMenu": 163860,
+    "tiles_BattleFieldMenu": 175350,
+    "p_tiles_BattlefieldMenu": 163864,
+    "tiles_ChurchMenu": 176242,
+    "p_tiles_ChurchMenu": 163868,
+    "tiles_ShopMenu": 177176,
+    "p_tiles_ShopMenu": 163872,
+    "tiles_CaravanMenu": 178112,
+    "p_tiles_CaravanMenu": 163876,
+    "tiles_DepotMenu": 178920,
+    "p_tiles_DepotMenu": 163880,
+    "tiles_YesNoPrompt": 179756,
+    "p_tiles_YesNoPrompt": 163884
+  },
+  "menuTable": {
+    "values": [2231435780, 2147549699, 2147549700, 163860, 163864, 163868, 163872, 163876, 163880],
+    "packedMainMenuEntries": [2231435780, 2147549699, 2147549700],
+    "compressedPointerSymbols": ["p_tiles_ItemMenu", "p_tiles_BattlefieldMenu", "p_tiles_ChurchMenu", "p_tiles_ShopMenu", "p_tiles_CaravanMenu", "p_tiles_DepotMenu"]
+  },
+  "summary": {
+    "resourceCount": 8, "baseResourceCount": 1, "diamondMenuResourceCount": 6,
+    "yesNoResourceCount": 1, "menuTableEntryCount": 9, "packedMainMenuEntryCount": 3,
+    "compressedMenuPointerCount": 6, "compressedByteCount": 7848,
+    "decodedByteCount": 23168, "resourceRomParityCount": 8, "pointerRomParityCount": 8,
+    "menuTableRomParityCount": 9, "commandGroupCount": 315, "literalWordCount": 3111,
+    "copyCommandCount": 1869, "copiedWordCount": 8473, "minimumTrailingBits": 32,
+    "maximumTrailingBits": 46, "maximumCopyOffsetWords": 1904, "maximumCopyLengthWords": 33
+  },
+  "runtimeQuestions": [
+    "Do the decoded base, diamond-menu, and yes/no tiles render with original palette, frame timing, and icon-selection behavior?"
+  ]
+}

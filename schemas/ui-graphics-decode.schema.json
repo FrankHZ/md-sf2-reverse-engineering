@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/ui-graphics-decode.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "menuTable", "summary", "resources", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-ui-graphics-decode-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "menuTable": {
+      "type": "object", "additionalProperties": false,
+      "required": ["values", "packedMainMenuEntries", "compressedPointerSymbols"],
+      "properties": {
+        "values": { "type": "array", "minItems": 9, "maxItems": 9, "items": { "type": "integer", "minimum": 0 } },
+        "packedMainMenuEntries": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "integer", "minimum": 0 } },
+        "compressedPointerSymbols": { "type": "array", "minItems": 6, "maxItems": 6, "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "summary": { "type": "object", "minProperties": 20, "maxProperties": 20, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "resources": {
+      "type": "array", "minItems": 8, "maxItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["symbol", "pointerSymbol", "sourcePath", "definitionPath", "expectedDecodedBytes", "family", "sourceAddress", "pointerAddress", "compressedBytes", "decodedBytes", "sourceSha256", "decodedSha256", "inputBitsConsumed", "trailingBits", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords"],
+        "properties": {
+          "symbol": { "type": "string" }, "pointerSymbol": { "type": "string" },
+          "sourcePath": { "type": "string" }, "definitionPath": { "type": "string" },
+          "expectedDecodedBytes": { "type": "integer", "minimum": 1 },
+          "family": { "enum": ["base", "diamond-menu", "yes-no"] },
+          "sourceAddress": { "type": "integer", "minimum": 0 }, "pointerAddress": { "type": "integer", "minimum": 0 },
+          "compressedBytes": { "type": "integer", "minimum": 1 }, "decodedBytes": { "type": "integer", "minimum": 1 },
+          "sourceSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }, "decodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "inputBitsConsumed": { "type": "integer", "minimum": 1 }, "trailingBits": { "type": "integer", "minimum": 0 },
+          "commandGroupCount": { "type": "integer", "minimum": 1 }, "literalWordCount": { "type": "integer", "minimum": 0 },
+          "copyCommandCount": { "type": "integer", "minimum": 0 }, "copiedWordCount": { "type": "integer", "minimum": 0 },
+          "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 }, "maximumCopyLengthWords": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "string" } }
+  }
+}

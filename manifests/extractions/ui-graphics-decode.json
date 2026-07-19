@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-ui-graphics-decode-v1",
+  "outputSha256": "F419B77860864BA58529A54205EB841549843E72A9FF11A1EA572810C27529A4",
+  "summary": {
+    "resourceCount": 8,
+    "baseResourceCount": 1,
+    "diamondMenuResourceCount": 6,
+    "yesNoResourceCount": 1,
+    "menuTableEntryCount": 9,
+    "packedMainMenuEntryCount": 3,
+    "compressedMenuPointerCount": 6,
+    "compressedByteCount": 7848,
+    "decodedByteCount": 23168,
+    "resourceRomParityCount": 8,
+    "pointerRomParityCount": 8,
+    "menuTableRomParityCount": 9,
+    "commandGroupCount": 315,
+    "literalWordCount": 3111,
+    "copyCommandCount": 1869,
+    "copiedWordCount": 8473,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 46,
+    "maximumCopyOffsetWords": 1904,
+    "maximumCopyLengthWords": 33
+  }
+}

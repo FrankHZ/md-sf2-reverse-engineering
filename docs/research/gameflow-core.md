@@ -36,7 +36,8 @@ The next statically verified sequence is:
 3. `InitializeVdpData` (queues, scroll buffers, palettes, sprites, and DMA processing);
 4. `InitializeGame`.
 
-Game initialization loads 4,096 base tiles through compression mode 2, applies the region gate,
+Game initialization expands the base-tile Stack stream to 8,192 bytes and uploads 4,096 words through
+compression mode 2, applies the region gate,
 initializes new-game state, and displays the Sega logo. Start at the logo can skip the intro. After
 the intro/title path, one title result resets through the original start vector while the other
 enters the witch screen.
@@ -101,6 +102,7 @@ emulator for each action or transition.
 
 ```powershell
 uv run sf2 h2 gameflow-core
+uv run sf2 h2 ui-graphics
 uv run sf2 research-index test
 ```
 
