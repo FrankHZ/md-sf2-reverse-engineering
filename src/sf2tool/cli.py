@@ -15,6 +15,7 @@ from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_ai_action import verify_battle_ai_action_choice
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
+from sf2tool.h3.battlefield_matrix import verify_battlefield_movement_matrix
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
@@ -231,6 +232,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_battle_ai_action)
     h3_battle_ai_action.add_argument("--timeout-seconds", type=int, default=120)
+    h3_battlefield_matrix = h3_commands.add_parser(
+        "battlefield-matrix", help="verify batched weighted movement and flat-grid boundaries"
+    )
+    _add_local_paths(h3_battlefield_matrix)
+    h3_battlefield_matrix.add_argument("--timeout-seconds", type=int, default=120)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -498,6 +504,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "battle-ai-action":
         print_record(
             verify_battle_ai_action_choice(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "battlefield-matrix":
+        print_record(
+            verify_battlefield_movement_matrix(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

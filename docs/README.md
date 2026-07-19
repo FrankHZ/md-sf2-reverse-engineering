@@ -27,7 +27,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
   治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
 - [`battlefield-pathfinding.md`](./research/battlefield-pathfinding.md)：战场/寻路 17 文件完整静态
-  inventory、代表入口地址、调用边界，以及后续移动数组、范围、目标和 move-string 的解析队列。
+  inventory、移动/范围/目标/move-string 合同，以及单次启动 5 case 的传播和边界 H3 矩阵。
 
 ## Design
 

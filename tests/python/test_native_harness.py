@@ -22,8 +22,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 145
     assert result["H2Fixtures"] == 10
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 53
-    assert result["AddressBindings"] == 525
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
+    assert result["AddressBindings"] == 537
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:

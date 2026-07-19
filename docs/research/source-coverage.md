@@ -24,8 +24,8 @@ It says that the file has been reached, not that every instruction in the file i
 | Indexed source files | 77 | 69 code files and 8 data files |
 | Executable code-file reach | 17.83% | 69 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H3 fixture files | 53 | Runtime contracts, often containing multiple cases |
-| Address bindings | 525 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
+| Address bindings | 537 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -48,8 +48,9 @@ The current evidence is deep but narrow:
   inventory and representative address binding in every file; its 48×48 RAM grids, initialization,
   occupancy, movement-neighbor admission, range rings, target admission, attack-position selection,
   move-string backtracking, move-order, trapped-chest semantics, and 32-bucket weighted propagation
-  are modeled; row-edge and pre-check read effects remain queued for concentrated H3. Other battle systems cover selected
-  boundaries rather than every caller and state transition.
+  are modeled. One five-case/one-launch H3 matrix confirms weighted propagation, budget-128 bucket
+  wrap, controlled flat row crossing, and pre-check out-of-range helper entries. Other battle systems
+  cover selected boundaries rather than every caller and state transition.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
@@ -68,7 +69,7 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 145 records; its
-verifier reports 53 H3 fixtures and 525 bindings. The default `uv run sf2 verify` checks those
+verifier reports 54 H3 fixtures and 537 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -94,19 +95,11 @@ fixtures.
 
 ## Next Batch
 
-The `battle.ai` inventory, five action filters, potential-damage model, attack priority scripts,
-healing, support, final action choice, movement, dispatcher, and standby commands are now parsed, and
-all 26 battle-AI files have an H2 foothold. The movement-helper batch additionally parses all eight
-terrain helpers and five Manhattan-ring tables; the control batch parses 16 commandsets, 18
-pathfinding entries, three swarm battles and thresholds, activation gates, line attackers, and the
-Burst Rock exploder, plus all five explicitly unused MP/slot helpers. The first concentrated H3
-matrix confirms final action/target choice in one launch. Standby memory now also has both movement
-tables, its full 16-configuration eligibility matrix, and one-past-map precheck recorded. Static work
-next moves across the boundary into battlefield/pathfinding, while the remaining signed-priority,
-critical-class, movement, dispatcher, and standby ambiguities accumulate for the next small set of
-shared-boundary launches. The adjacent battlefield/pathfinding directory now also has all 17 files
-inventoried (2,299 lines, 126 global labels, 116 direct call sites), with grid layout,
-initialization, occupancy, neighbor admission, range rings, target admission, attack-position, and
-move-string backtracking, move-order, trapped-chest handling, and weighted propagation modeled. The
-next battlefield step groups propagation, row-edge, pre-check read, and attack-position ambiguity into
-one H3 launch.
+The `battle.ai` and adjacent `battlefield/pathfinding` directories now have complete 26-file and
+17-file static inventories respectively. The battlefield slice models grid layout, initialization,
+occupancy, neighbor admission, range rings, target admission, attack-position selection, move-string
+backtracking, move orders, trapped chests, and weighted propagation. Its first concentrated runtime
+batch confirms five movement/boundary cases in one launch. Remaining battle-AI signed-priority,
+critical-class, dispatcher/standby questions and the attack-position comment conflict stay queued
+until they form another coherent shared-boundary matrix; static work proceeds to the next source
+subsystem in the meantime.

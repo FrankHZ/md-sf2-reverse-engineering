@@ -2,10 +2,11 @@
 
 - Status: **Confirmed** for the pinned 17-file source inventory, representative entry symbols,
   source hashes, static call-edge counts, core grid/RAM layout, initialization, occupancy rules,
-  weighted movement propagation, Manhattan range rings, and target-side/admission rules
+  weighted movement propagation, Manhattan range rings, target-side/admission rules, and the batched
+  runtime movement-boundary matrix
 - Status: **Inferred** for algorithm names and roles that currently rely on upstream labels/comments
-- Status: **Unknown** for edge-memory effects and caller-visible runtime ambiguities until the queued
-  concentrated H3 matrix is complete
+- Status: **Unknown** for whether shipped map padding exposes flat row crossing to ordinary gameplay,
+  overflow/signedness outside normal stats, and late helpers without known original-game callers
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -69,9 +70,11 @@ AI's hardcoded budget 128 as well as ordinary `MOV*2`. The processed value is
 
 The project-owned model reproduces this linked-list discipline and has deterministic tests for a
 uniform cost-2 diamond, LIFO expansion order, occupied/unaffordable rejection, a 41-cell corridor at
-budget 128, and flat horizontal boundary crossing. The source uses neighbor offsets
+budget 128, and flat horizontal boundary crossing. A five-case H3 matrix now reproduces the same
+reachable counts, costs, and expansion order in the original ROM. The source uses neighbor offsets
 `+1, -1, -48, +48` with only whole-array bounds, so right from X=47 addresses the next row's X=0;
-whether original battle padding always masks that behavior is a runtime/caller question.
+the controlled runtime case confirms that this flat neighbor becomes reachable. Whether shipped
+battle terrain and caller setup always mask it in ordinary play remains unknown.
 
 Occupancy updates scan 30 ally or 32 enemy slots, skipping dead combatants and unsigned coordinates
 outside `[0, 48)`. Terrain byte `0xFF` is never changed. Setting occupancy sets bit 7; clearing it is
@@ -115,9 +118,31 @@ avoids repeating the previous backtrack direction. The AI form reverses the cons
 maps each byte to its opposite with XOR 2. The partial builder stops at
 `max(destinationCost - movementBudget, 0)`.
 
-One static hazard is now queued for concentrated runtime work: neighbor bytes are read before the
-2,304-byte bounds check, so border paths can touch the adjacent RAM byte even though the candidate is
-then rejected. No runtime effect is claimed yet.
+The neighbor helper reads the target byte before its 2,304-byte bounds check. The concentrated H3
+matrix confirms that an array-end origin enters the helper twice with out-of-range offsets (right and
+down), but both candidates are then rejected and only the origin remains reachable. The budget-128
+top-row corridor enters the helper 42 times out of range: once to the left of the origin and once
+above each of 41 expanded cells. This confirms the pre-check read order under controlled RAM guards;
+it does not establish a gameplay-visible corruption or map-specific effect.
+
+## Concentrated Runtime Matrix
+
+The runtime fixture replays five cases from one saved Battle 01 core state and uses one BizHawk
+launch. Each replay enters the natural `InitializeMovementArrays` call, changes only the moving
+combatant's position/MOV before the original register loads, and installs controlled terrain and
+move-cost bytes at `BuildMovementArrays`. Original pointer setup, stack buckets, propagation, helper
+calls, and return execute unchanged.
+
+| Case | Confirmed result |
+| --- | --- |
+| uniform cost 2, budget 4 | 13 reachable cells; LIFO expansion order matches the Python model |
+| mixed weights/two routes | 5 reachable cells; costs preserve the lower-cost route |
+| budget 128 corridor | 41 reachable cells; costs 31, 32, and 40 survive the 32-bucket wrap |
+| X=47 flat right neighbor | offset 96 is reachable, confirming row crossing in controlled terrain |
+| offset 2303 origin | only the origin is reachable; two out-of-range helper entries are observed |
+
+The corridor additionally records all 42 expected out-of-range helper entries. These counts are
+derived independently from the Python expansion order, then compared with the ROM observation.
 
 ## Move Orders and Trapped Chests
 
@@ -135,12 +160,13 @@ or dead-enemy tests.
 ## Evidence Limits
 
 - **Confirmed:** directory/file set, source metrics, named entry addresses, source hashes, and
-  syntactic direct-call relationships reproduced by the Python rail.
-- **Inferred:** broad grouping above, because it follows instruction flow and the pinned upstream
-  symbol vocabulary but is not yet represented as a project-owned behavioral model.
-- **Unknown:** the caller-visible effect of horizontal row crossing and pre-check border reads,
-  overflow/signedness edges outside normal stats, and whether late helpers have reachable original-game
-  callers.
+  syntactic direct-call relationships reproduced by the Python rail; weighted propagation, 32-bucket
+  wrap, flat row crossing, and pre-check out-of-range helper entry reproduced by the H3 matrix.
+- **Inferred:** broad helper roles that still rely on pinned upstream labels/comments rather than a
+  project-owned runtime or data contract.
+- **Unknown:** whether ordinary shipped maps expose horizontal row crossing or a caller-visible effect
+  from pre-check reads, overflow/signedness edges outside normal stats, and whether late helpers have
+  reachable original-game callers.
 
 Static parsing owns those questions first. Only timing, persistence, caller-context, hardware, or
 otherwise irreducible ambiguities will enter a shared BizHawk matrix.
@@ -149,6 +175,7 @@ otherwise irreducible ambiguities will enter a shared BizHawk matrix.
 
 ```powershell
 uv run sf2 h2 battlefield
+uv run sf2 h3 battlefield-matrix
 uv run sf2 research-index test
 ```
 
@@ -157,8 +184,7 @@ provenance, representative labels, summary counts, and canonical output hash. Ge
 written only to ignored `local/derived/battlefield-static.json`; the accepted SHA-256 is
 `C99514D9191D12D70BD2F99E95A61318D2BAB218B2B6232852D764BBE990FC0B`.
 
-## Next Static Batches
-
-The next battlefield pass is one concentrated H3 matrix for weighted propagation, row-edge crossing,
-post-read bounds behavior, and lower-cost attack-position selection. These questions share the same
-grid/RAM setup and will use one emulator launch rather than separate fixtures.
+The H3 command validates five generated cases against the project-owned movement model and the
+original ROM in one BizHawk launch. The next battlefield ambiguity is the conflicting
+attack-position prose versus lower-cost instruction path; it can wait for a future shared grid
+matrix while static-first work advances into the next subsystem.

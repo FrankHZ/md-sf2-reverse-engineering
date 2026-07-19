@@ -2403,7 +2403,36 @@
     },
     {
       "id": "battlefield.inventory.movement-arrays", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "BuildMovementArrays", "sourcePath": "code/gameflow/battle/battlefield/buildmovementarrays.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55938 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.buildMovementArraysAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+      "addresses": [
+        { "id": "initialize", "space": "rom", "kind": "observation", "value": 49864 },
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 55938 },
+        { "id": "expansion", "space": "rom", "kind": "observation", "value": 56020 },
+        { "id": "neighbor-entry", "space": "rom", "kind": "observation", "value": 56136 },
+        { "id": "return", "space": "rom", "kind": "observation", "value": 56128 },
+        { "id": "combatant-data", "space": "ram", "kind": "state", "value": 16771072 },
+        { "id": "total-move-costs", "space": "ram", "kind": "state", "value": 16729088 },
+        { "id": "movable-grid", "space": "ram", "kind": "state", "value": 16731392 },
+        { "id": "target-grid", "space": "ram", "kind": "state", "value": 16733696 },
+        { "id": "battle-terrain", "space": "ram", "kind": "state", "value": 16736000 },
+        { "id": "move-costs-table", "space": "ram", "kind": "state", "value": 16758466 },
+        { "id": "auto-battle-toggle", "space": "ram", "kind": "state", "value": 16756907 }
+      ], "evidence": [
+        { "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.buildMovementArraysAddress" }] },
+        { "level": "H3", "fixture": "tests/fixtures/h3/battlefield-movement-matrix-v1.json", "fixtureId": "sf2-battlefield-movement-runtime-v1", "verifier": "src/sf2tool/h3/battlefield_matrix.py", "bindings": [
+          { "addressId": "initialize", "fixtureField": "function.initializeAddress" },
+          { "addressId": "entry", "fixtureField": "function.entryAddress" },
+          { "addressId": "expansion", "fixtureField": "function.expansionAddress" },
+          { "addressId": "neighbor-entry", "fixtureField": "function.neighborEntryAddress" },
+          { "addressId": "return", "fixtureField": "function.returnAddress" },
+          { "addressId": "combatant-data", "fixtureField": "ram.combatantDataAddress" },
+          { "addressId": "total-move-costs", "fixtureField": "ram.totalMoveCostsAddress" },
+          { "addressId": "movable-grid", "fixtureField": "ram.movableGridAddress" },
+          { "addressId": "target-grid", "fixtureField": "ram.targetGridAddress" },
+          { "addressId": "battle-terrain", "fixtureField": "ram.battleTerrainAddress" },
+          { "addressId": "move-costs-table", "fixtureField": "ram.moveCostsTableAddress" },
+          { "addressId": "auto-battle-toggle", "fixtureField": "ram.autoBattleToggleAddress" }
+        ] }
+      ], "documents": ["docs/research/battlefield-pathfinding.md"]
     },
     {
       "id": "battlefield.inventory.move-string", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "BuildCancelMoveString", "sourcePath": "code/gameflow/battle/battlefield/buildmovestringfunctions.asm",

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battlefield movement runtime matrix fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battlefield-movement-runtime-v1" },
+    "romSha256": { "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object" },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "type": "string" },
+    "function": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "ram": { "type": "object", "minProperties": 7, "maxProperties": 7, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "cases": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "budget", "startOffset", "terrainDefault", "terrainRanges", "terrainEntries", "moveCosts", "probeOffsets", "expected"],
+        "properties": {
+          "id": { "type": "string" },
+          "budget": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "startOffset": { "type": "integer", "minimum": 0, "maximum": 2303 },
+          "terrainDefault": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "terrainRanges": { "type": "array", "items": { "type": "object" } },
+          "terrainEntries": { "type": "array", "items": { "type": "object" } },
+          "moveCosts": { "type": "array", "minItems": 16, "maxItems": 16, "items": { "type": "integer", "minimum": -1, "maximum": 127 } },
+          "probeOffsets": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 2303 } },
+          "expected": { "type": "object" }
+        }
+      }
+    }
+  }
+}
