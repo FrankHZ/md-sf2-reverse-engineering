@@ -68,14 +68,16 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
   field-item dispatch、spell learning、新游戏顺序和未 include 的 alternate source 边界。
 - [`common-menus.md`](./research/common-menus.md)：共享菜单 42 文件、提示框/文本控制、field-item
-  dispatch、商店/教堂/车队等服务入口、diamond/yes-no 压缩图形及 alternate 边界。
+  dispatch、商店/教堂/车队等服务入口、diamond/yes-no 压缩图形、完整 icon storage/copy/highlight
+  合同及 alternate 边界。
 - [`technical-interrupts.md`](./research/technical-interrupts.md)：VInt、DMA、fade、输入重复、wait/sleep
   handshake、trap 路由和待集中验证的硬件时序。
 - [`technical-graphics.md`](./research/technical-graphics.md)：解压、显示初始化、sprite/palette、视差、
   battle terrain/background/sprite/weapon/ground/portrait/special-sprite 完整 Stack corpus、flash
   script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
   special-screen、8 条 base/menu UI、56 条 battle-effect、115 条 map-tileset
-  Stack-compression corpus、16 套 map palette/79-map 使用与有效 color-zero 合同，以及 46/46
+  Stack-compression corpus、163 槽 icon storage/menu-copy/highlight 合同、16 套 map palette/79-map
+  使用与有效 color-zero 合同，以及 46/46
   direct named compression consumer 的 owner inventory。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
@@ -122,8 +124,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个 frame，以及 weapon/ground
   graphics/palette、670 个 regular map-sprite payload、6 个 special-sprite stream 与 9 个
   special-screen tile stream、8 个 base/menu UI stream，以及 56 条 spell/invocation/status/
-  transition stream、115 条 map-tileset stream 和 16 套 map palette/79 个 header reference 的
-  完整 parity。
+  transition stream、115 条 map-tileset stream、163 个 assembled icon/4 个 source-only icon 例外
+  和 16 套 map palette/79 个 header reference 的完整 parity。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

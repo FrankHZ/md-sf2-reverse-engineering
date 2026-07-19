@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/icon-graphics-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "constants", "summary", "storageRoles", "consumerRules", "unassembledPayloads", "highlightMaskSha256", "icons", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-icon-graphics-static-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 3, "maxProperties": 3, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 3, "maxProperties": 3, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "constants": { "type": "object", "minProperties": 13, "maxProperties": 13, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 19, "maxProperties": 19, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "storageRoles": {
+      "type": "array", "minItems": 6, "maxItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["storageIndex", "symbol", "enumName", "spellIndexCollision"],
+        "properties": {
+          "storageIndex": { "type": "integer", "minimum": 0 }, "symbol": { "type": "string" },
+          "enumName": { "type": ["string", "null"] }, "spellIndexCollision": { "type": ["integer", "null"], "minimum": 0 }
+        }
+      }
+    },
+    "consumerRules": {
+      "type": "object", "additionalProperties": false,
+      "required": ["directCopyBytes", "tilesPerIcon", "cornerClean", "highlightFrameCount", "highlightOutputBytes", "highlightOperation"],
+      "properties": {
+        "directCopyBytes": { "const": 192 }, "tilesPerIcon": { "const": 6 },
+        "cornerClean": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": { "type": "object", "additionalProperties": false, "required": ["byteOffset", "orMask"], "properties": { "byteOffset": { "type": "integer", "minimum": 0 }, "orMask": { "type": "integer", "minimum": 0, "maximum": 65535 } } }
+        },
+        "highlightFrameCount": { "const": 2 }, "highlightOutputBytes": { "const": 384 },
+        "highlightOperation": { "const": "source-bitwise-and-mask" }
+      }
+    },
+    "unassembledPayloads": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } },
+    "highlightMaskSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "icons": {
+      "type": "array", "minItems": 163, "maxItems": 163,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["storageIndex", "symbol", "sourcePath", "sourceAddress", "byteCount", "sha256"],
+        "properties": {
+          "storageIndex": { "type": "integer", "minimum": 0, "maximum": 162 }, "symbol": { "type": "string" },
+          "sourcePath": { "type": "string" }, "sourceAddress": { "type": "integer", "minimum": 0 },
+          "byteCount": { "const": 192 }, "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

@@ -6,7 +6,7 @@
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
   special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora, plus the
-  complete map-palette corpus and effective color-zero load boundary
+  complete icon-storage/copy/highlight corpus and map-palette/effective-color-zero boundaries
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -175,6 +175,24 @@ use zero for color 0. This is a consumer-visible transformation, so canonical re
 the source palette and the effective color-zero rule separately. Static parity does not yet prove the
 rendered fade, transition, or final per-map presentation.
 
+The thirteenth graphics corpus closes the uncompressed icon block. The source tree contains 167
+192-byte payloads, but `entries.asm` assembles exactly 163 into one contiguous 31,296-byte range:
+127 `ItemIcon` entries, 30 `SpellIcon` entries, and six `OtherIcon` entries. All 163 payloads and the
+`p_Icons` base pointer match ROM. The source-only exceptions are `item/icon127.bin` and
+`spell/icon016.bin` through `icon018.bin`; they are not silently credited as original-build assets.
+
+Storage is arithmetic rather than a pointer table: index multiplied by 192 is added to `p_Icons`.
+Slots 127 and 128 are `ICON_NOTHING` and `ICON_UNARMED`; slot 129 has no enum name or symbolic code
+reference. Slots 146-148 are Jewel of Light, Jewel of Evil, and the cracks overlay. Because spell
+icons start at 130, those same physical slots also equal spell indices 16-18, whose available payloads
+are not assembled. Static shape proves the collision, not whether generic spell-icon callers can
+receive those three IDs.
+
+`LoadIcon` and the shop loader copy 48 longwords (192 bytes) and force four corner nibbles to color
+15. `LoadHighlightableIcon` instead emits the 192-byte source followed by a second 192-byte frame made
+with bitwise `source AND tiles_IconHighlight`; the mask itself is ROM-checked. Rendered palette,
+highlight timing, and DMA ordering remain presentation questions rather than inferred pixel parity.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -227,6 +245,7 @@ uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
+uv run sf2 h2 icon-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-palettes
@@ -239,6 +258,6 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
 `special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
-`battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
+`icon-graphics-static.json`, `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
 `map-palette-static.json`.
 The consumer map stays under ignored `local/derived/compression-consumers-static.json`.

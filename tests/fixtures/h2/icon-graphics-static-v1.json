@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-icon-graphics-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "LoadHighlightableIcon": 67938,
+    "LoadIcon": 80770,
+    "LoadIconPixelsInShopScreen": 85170
+  },
+  "table": {
+    "p_Icons": 1933312,
+    "ItemIcon000": 1933316,
+    "tiles_IconHighlight": 67978
+  },
+  "constants": {
+    "ICON_NOTHING": 127,
+    "ICON_UNARMED": 128,
+    "ICON_SPELLS_START": 130,
+    "ICON_JEWEL_OF_LIGHT": 146,
+    "ICON_JEWEL_OF_EVIL": 147,
+    "ICON_CRACKS_OVERLAY": 148,
+    "ICON_PIXELS_LONGWORD_COUNTER": 47,
+    "ICON_TILE_BYTESIZE": 192,
+    "ICONS_OFFSET_CRACKS": 28416,
+    "ITEM_NOTHING": 127,
+    "SPELL_HEALIN": 16,
+    "SPELL_FLAME": 17,
+    "SPELL_SNOW": 18
+  },
+  "summary": {
+    "availablePayloadCount": 167,
+    "availablePayloadByteCount": 32064,
+    "assembledIconCount": 163,
+    "assembledIconByteCount": 31296,
+    "unassembledPayloadCount": 4,
+    "iconByteCount": 192,
+    "tilesPerIcon": 6,
+    "itemStorageCount": 127,
+    "spellStorageCount": 30,
+    "otherStorageCount": 6,
+    "storageCollisionCount": 3,
+    "unnamedStorageCount": 1,
+    "iconPayloadRomParityCount": 163,
+    "basePointerRomParityCount": 1,
+    "highlightMaskByteCount": 192,
+    "highlightMaskRomParityCount": 1,
+    "directCopyOutputBytes": 192,
+    "highlightOutputBytes": 384,
+    "cornerCleanWordCount": 4
+  },
+  "storageRoles": [
+    { "storageIndex": 127, "symbol": "OtherIcon000", "enumName": "ICON_NOTHING", "spellIndexCollision": null },
+    { "storageIndex": 128, "symbol": "OtherIcon001", "enumName": "ICON_UNARMED", "spellIndexCollision": null },
+    { "storageIndex": 129, "symbol": "OtherIcon002", "enumName": null, "spellIndexCollision": null },
+    { "storageIndex": 146, "symbol": "OtherIcon003", "enumName": "ICON_JEWEL_OF_LIGHT", "spellIndexCollision": 16 },
+    { "storageIndex": 147, "symbol": "OtherIcon004", "enumName": "ICON_JEWEL_OF_EVIL", "spellIndexCollision": 17 },
+    { "storageIndex": 148, "symbol": "OtherIcon005", "enumName": "ICON_CRACKS_OVERLAY", "spellIndexCollision": 18 }
+  ],
+  "consumerRules": {
+    "directCopyBytes": 192,
+    "tilesPerIcon": 6,
+    "cornerClean": [
+      { "byteOffset": 0, "orMask": 61440 },
+      { "byteOffset": 34, "orMask": 15 },
+      { "byteOffset": 156, "orMask": 61440 },
+      { "byteOffset": 190, "orMask": 15 }
+    ],
+    "highlightFrameCount": 2,
+    "highlightOutputBytes": 384,
+    "highlightOperation": "source-bitwise-and-mask"
+  },
+  "unassembledPayloads": [
+    "data/graphics/icons/item/icon127.bin",
+    "data/graphics/icons/spell/icon016.bin",
+    "data/graphics/icons/spell/icon017.bin",
+    "data/graphics/icons/spell/icon018.bin"
+  ],
+  "runtimeQuestions": [
+    "Can menu state select unnamed storage index 129 or pass spell indices 16-18 to the generic icon loaders, exposing the physical slot collisions?",
+    "Do base icons, forced corner pixels, highlight masks, palette selection, and DMA ordering reproduce the original rendered menu presentation?"
+  ]
+}

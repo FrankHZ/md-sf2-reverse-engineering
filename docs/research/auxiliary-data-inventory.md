@@ -5,7 +5,7 @@
   and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
   corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
-  and complete map-tileset decode/usage and map-palette/header-usage corpora
+  and complete map-tileset decode/usage, map-palette/header-usage, and icon-storage corpora
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -107,6 +107,12 @@ header bytes. Fifteen source palettes begin with a nonzero word, but `LoadMap` c
 copying; every effective map palette therefore begins with zero. The verifier tracks only hashes,
 counts, usage, and this consumer rule—not palette bytes.
 
+The icon source directory has 167 fixed 192-byte payloads, while the original layout assembles 163
+contiguously after `p_Icons`: 127 item, 30 spell, and six special/other entries. Every assembled byte
+and the 192-byte highlight mask match ROM. The four files absent from the build are item 127 and
+spell 16-18; the built slots at those logical positions instead encode nothing and three named
+special icons. Tracked output retains paths, counts, addresses, and hashes, never pixel bytes.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -142,6 +148,7 @@ uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
+uv run sf2 h2 icon-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-palettes

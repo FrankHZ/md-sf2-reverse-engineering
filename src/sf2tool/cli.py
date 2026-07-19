@@ -33,6 +33,7 @@ from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
+from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
 from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
 from sf2tool.h2.map_content import verify_map_content_contract
@@ -395,6 +396,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_ui_graphics)
     h2_ui_graphics.add_argument("--output-path", type=_path)
+    h2_icon_graphics = h2_commands.add_parser(
+        "icon-graphics",
+        help="verify the complete icon storage corpus and menu copy/highlight boundaries",
+    )
+    _add_local_paths(h2_icon_graphics)
+    h2_icon_graphics.add_argument("--output-path", type=_path)
     h2_battle_effect_graphics = h2_commands.add_parser(
         "battle-effect-graphics",
         help="decode spell, invocation, status, and battle-transition graphics corpora",
@@ -987,6 +994,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "ui-graphics":
         print_record(
             verify_ui_graphics_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "icon-graphics":
+        print_record(
+            verify_icon_graphics_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

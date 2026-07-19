@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,450 条 confirmed finding、58 个 H2 fixture、58 个 H3 fixture
-和 1,909 个地址绑定。
+截至 2026-07-19，研究索引有 1,450 条 confirmed finding、59 个 H2 fixture、58 个 H3 fixture
+和 1,912 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -306,6 +306,13 @@ UI graphics rail 再闭合 base tiles、6 套 compressed diamond-menu tiles 和 
 Stack stream：7,848 个压缩字节解出 23,168 bytes，8 个资源、8 个 source pointer 与 9 槽 menu
 table 全部通过 source/H1/ROM parity。menu table 的前 3 槽保留为 high-bit packed main-menu icon
 组合，后 6 槽才是压缩资源二级指针；两条路径不会混作同一种格式。
+icon-graphics rail 接着闭合连续的原版 icon storage：目录中有 167 个 192-byte payload，但构建只
+装配 163 个（127 item、30 spell、6 other），共 31,296 bytes，并由 `p_Icons` 作为无指针表的
+算术索引基址。未装配的 item 127 和 spell 16-18 明确保留为四个 source-only payload；物理槽
+127/128 分别是 nothing/unarmed，槽 129 无 enum，槽 146-148 则由 Jewel of Light、Jewel of Evil
+和 cracks overlay 占据，同时与 `ICON_SPELLS_START + 16..18` 碰撞。成员/商店 loader 的 192-byte
+复制及四角强制色、highlight loader 的 192-byte mask/384-byte 双帧输出均形成静态合同；最终 UI
+palette、DMA 与可达性进入集中 presentation matrix。
 battle-effect graphics rail 接着闭合 23 个 spell container、4 个 invocation container 的 15 frame/
 30 stream、1 条 status animation 与 2 条 battle-transition stream，共 56 条 Stack stream、46,364
 个压缩字节和 200,992 个解压字节。所有 30 个资源、4 个顶层 pointer 和 3 张 pointer table 与 ROM

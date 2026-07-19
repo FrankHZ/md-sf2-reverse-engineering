@@ -2,8 +2,8 @@
 
 - Status: **Confirmed** for the pinned 42-file inventory, 41 layout-owned source files, H1 entry
   addresses, prompt input/return rules, text controls, the nine field-item dispatches, and portrait
-  header/palette/tile loading boundaries, plus the complete diamond-menu and yes/no compressed
-  graphics corpus
+  header/palette/tile loading boundaries, plus the complete diamond-menu/yes-no compressed graphics
+  and uncompressed item/spell/other icon storage/copy/highlight corpora
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -58,6 +58,19 @@ remaining Stack stream deterministically expands to 2,048 bytes before a `0x400`
 submission. The complete source/ROM corpus confirms 52 unique payloads and four aliases; blink/mouth
 frame timing and visible composition remain presentation questions.
 
+The common icon loaders index a single contiguous block by `index * 192`; no per-icon pointer table
+exists. Of 167 available source payloads, 163 are assembled and ROM-identical: 127 item, 30 spell,
+and six other icons. `ITEM_NOTHING`/`ICON_NOTHING` selects special slot 127 instead of the unassembled
+item-127 payload; item/spell payloads 127 and 16-18 are the four explicit source-only exceptions.
+Special slots 146-148 are Jewel of Light, Jewel of Evil, and cracks, while the same arithmetic slots
+also equal spell indices 16-18. Slot 129 has neither an enum name nor a symbolic consumer.
+
+The member-list and shop paths copy 192 bytes and OR color 15 into four corner nibbles. The
+highlightable path writes a 192-byte base frame and a 192-byte `source AND highlight-mask` frame. The
+mask, base pointer, all assembled icon bytes, copy sizes, and mutation offsets are Confirmed; which
+reserved/colliding indices can reach these loaders and the visible palette/DMA sequence remain in the
+shared UI presentation queue.
+
 ## Field Items and Service Boundary
 
 The layout-owned field-item table has nine index/effect pairs, for item indices 3, 5, and 9 through
@@ -82,8 +95,9 @@ because they share VInt/VDP observation points. This static batch starts no emul
 uv run sf2 h2 common-menus
 uv run sf2 h2 portraits
 uv run sf2 h2 ui-graphics
+uv run sf2 h2 icon-graphics
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/common-menus-static.json` and
-`local/derived/ui-graphics-decode.json`.
+Generated JSON stays under ignored `local/derived/common-menus-static.json`,
+`local/derived/ui-graphics-decode.json`, and `local/derived/icon-graphics-static.json`.

@@ -142,6 +142,7 @@ battle-background, battle-sprite, weapon/ground, and portrait corpora, the compl
 map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
 the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
 the complete base/diamond-menu/yes-no Stack-compressed UI corpus, plus
+the complete 163-entry icon storage corpus and menu copy/highlight boundaries, plus
 the complete spell/invocation/status/transition battle-effect graphics corpus, plus
 the complete 115-stream map-tileset corpus and map/animation usage boundary, plus
 the complete 16-entry map-palette corpus, 79-map usage table, and effective color-zero boundary, plus

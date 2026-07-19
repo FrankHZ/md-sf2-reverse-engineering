@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-icon-graphics-static-v1",
+  "outputSha256": "CF3C4E928698EEC45A1F1F21D12EBE63BEC418CF0F6F40E7820AE0B8FFE5AE1F",
+  "summary": {
+    "availablePayloadCount": 167,
+    "availablePayloadByteCount": 32064,
+    "assembledIconCount": 163,
+    "assembledIconByteCount": 31296,
+    "unassembledPayloadCount": 4,
+    "iconByteCount": 192,
+    "tilesPerIcon": 6,
+    "itemStorageCount": 127,
+    "spellStorageCount": 30,
+    "otherStorageCount": 6,
+    "storageCollisionCount": 3,
+    "unnamedStorageCount": 1,
+    "iconPayloadRomParityCount": 163,
+    "basePointerRomParityCount": 1,
+    "highlightMaskByteCount": 192,
+    "highlightMaskRomParityCount": 1,
+    "directCopyOutputBytes": 192,
+    "highlightOutputBytes": 384,
+    "cornerCleanWordCount": 4
+  }
+}
