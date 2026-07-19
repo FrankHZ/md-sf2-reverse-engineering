@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": [
     "schemaVersion", "id", "upstreamCommit", "romSha256", "table", "geometry",
-    "summary", "resourceCounts", "recordCounts", "referenceFacts", "runtimeQuestions"
+    "summary", "resourceCounts", "recordCounts", "setupFacts", "referenceFacts", "runtimeQuestions"
   ],
   "properties": {
     "schemaVersion": { "const": 1 },
@@ -17,6 +17,7 @@
     "summary": { "type": "object" },
     "resourceCounts": { "type": "object" },
     "recordCounts": { "type": "object" },
+    "setupFacts": { "type": "object" },
     "referenceFacts": { "type": "object" },
     "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
   }

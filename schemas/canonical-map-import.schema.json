@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": [
     "schemaVersion", "id", "upstream", "romSha256", "geometry", "table", "summary",
-    "resourceCounts", "recordCounts", "referenceFacts", "maps", "resources",
+    "resourceCounts", "recordCounts", "setupFacts", "referenceFacts", "maps", "resources",
     "runtimeQuestions"
   ],
   "properties": {
@@ -22,6 +22,7 @@
     "summary": { "$ref": "#/$defs/counts" },
     "resourceCounts": { "$ref": "#/$defs/counts" },
     "recordCounts": { "$ref": "#/$defs/counts" },
+    "setupFacts": { "type": "object" },
     "referenceFacts": { "type": "object" },
     "maps": {
       "type": "array", "minItems": 79, "maxItems": 79,
@@ -36,7 +37,7 @@
             "type": "array", "minItems": 5, "maxItems": 5,
             "items": { "type": "integer", "minimum": 0, "maximum": 255 }
           },
-          "references": { "type": "object", "minProperties": 10, "maxProperties": 10 }
+          "references": { "type": "object", "minProperties": 11, "maxProperties": 11 }
         }
       }
     },
@@ -44,7 +45,9 @@
       "type": "object", "additionalProperties": false,
       "required": [
         "blocksets", "layouts", "areaTables", "flagEventTables", "stepEventTables",
-        "roofEventTables", "warpEventTables", "itemTables", "animationTables"
+        "roofEventTables", "warpEventTables", "itemTables", "animationTables", "setupRoutes",
+        "setupDefinitions", "entityLists", "entityEventHandlers", "zoneEventHandlers",
+        "itemEventHandlers", "areaDescriptionHandlers", "initFunctions"
       ],
       "properties": {
         "blocksets": { "$ref": "#/$defs/resources" },
@@ -55,7 +58,15 @@
         "roofEventTables": { "$ref": "#/$defs/resources" },
         "warpEventTables": { "$ref": "#/$defs/resources" },
         "itemTables": { "$ref": "#/$defs/resources" },
-        "animationTables": { "$ref": "#/$defs/resources" }
+        "animationTables": { "$ref": "#/$defs/resources" },
+        "setupRoutes": { "$ref": "#/$defs/logicalResources" },
+        "setupDefinitions": { "$ref": "#/$defs/resources" },
+        "entityLists": { "$ref": "#/$defs/resources" },
+        "entityEventHandlers": { "$ref": "#/$defs/resources" },
+        "zoneEventHandlers": { "$ref": "#/$defs/resources" },
+        "itemEventHandlers": { "$ref": "#/$defs/resources" },
+        "areaDescriptionHandlers": { "$ref": "#/$defs/resources" },
+        "initFunctions": { "$ref": "#/$defs/resources" }
       }
     },
     "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
@@ -71,6 +82,14 @@
           "id": { "type": "string" },
           "address": { "type": "integer", "minimum": 0 }
         }
+      }
+    },
+    "logicalResources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": { "id": { "type": "string" } }
       }
     }
   }

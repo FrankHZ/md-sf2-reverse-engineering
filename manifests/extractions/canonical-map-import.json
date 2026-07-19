@@ -1,16 +1,18 @@
 {
   "schemaVersion": 1,
   "id": "sf2-canonical-map-import-v1",
-  "outputSha256": "CA1179A1884AC2BE1E99D5CFF163D2BFEF1DCB7BEAB1447CD92CAE526BBC50AC",
+  "outputSha256": "207A18A223262321AA7B91FD017E6C5E38900C0A99CE2D5D8C1B88D832ACDC1B",
   "summary": {
     "mapCount": 79,
-    "resourceCount": 737,
-    "nonNullReferenceCount": 752,
-    "absentReferenceCount": 38,
+    "resourceCount": 1480,
+    "nonNullReferenceCount": 816,
+    "absentReferenceCount": 53,
     "sharedReferenceCount": 15,
     "decodedBlockCount": 19771,
     "decodedBlockWordCount": 177939,
     "decodedLayoutWordCount": 315392,
-    "logicalRecordCount": 1027
+    "logicalRecordCount": 1027,
+    "setupLogicalRecordCount": 2348,
+    "allLogicalRecordCount": 3375
   }
 }

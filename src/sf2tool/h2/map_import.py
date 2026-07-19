@@ -13,7 +13,11 @@ from sf2tool.h2.map_content import (
     _parse_equates,
     build_map_content_contract,
 )
+from sf2tool.h2.map_descriptions import build_map_descriptions_contract
+from sf2tool.h2.map_entities import build_map_entities_contract
+from sf2tool.h2.map_events import build_map_events_contract
 from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
+from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
 
@@ -236,6 +240,116 @@ def _layout_resources(
     return blocksets, layouts
 
 
+def _event_handler_resources(events: dict[str, Any], category: str) -> list[dict[str, Any]]:
+    contract = events["categories"][category]
+    tables = {row["symbol"]: row for row in contract["tables"]}
+    handlers = []
+    for source in contract["sourceFiles"]:
+        table = tables.get(source["symbol"])
+        handlers.append(
+            {
+                "id": source["symbol"],
+                "address": source["address"],
+                "kind": "directReturn" if source["directReturnStub"] else "table",
+                "records": [] if table is None else table["records"],
+            }
+        )
+    return handlers
+
+
+def _setup_resources(
+    rom_path: Path, upstream_path: Path, commit: str
+) -> tuple[dict[str, list[dict[str, Any]]], dict[int, str], dict[str, int]]:
+    setup = build_map_setup_contract(rom_path, upstream_path)
+    entities = build_map_entities_contract(rom_path, upstream_path)
+    events = build_map_events_contract(rom_path, upstream_path)
+    descriptions = build_map_descriptions_contract(rom_path, upstream_path)
+    for owner, contract in (
+        ("setup", setup),
+        ("entities", entities),
+        ("events", events),
+        ("descriptions", descriptions),
+    ):
+        if contract["upstream"]["commit"] != commit:
+            raise ValueError(f"canonical map {owner} provenance drift")
+
+    setup_routes = [
+        {
+            "id": f"MapSetupRoute{route['map']:02d}",
+            "map": route["map"],
+            "defaultSetup": route["defaultPointer"],
+            "flagVariants": [
+                {"flag": row["flag"], "setup": row["pointer"]} for row in route["flagVariants"]
+            ],
+        }
+        for route in setup["routes"]
+    ]
+    setup_definitions = [
+        {
+            "id": row["symbol"],
+            "address": row["address"],
+            "references": {name: target["symbol"] for name, target in row["targets"].items()},
+        }
+        for row in setup["pointerTables"]
+    ]
+    entity_lists = [
+        {
+            "id": row["symbol"],
+            "address": row["address"],
+            "records": row["records"],
+        }
+        for row in entities["lists"]
+    ]
+    description_handlers = [
+        {
+            "id": row["symbol"],
+            "address": row["address"],
+            "kind": "directReturn" if row["directReturnStub"] else "tableWrapper",
+            "descriptionTextBase": row["descriptionTextBase"],
+            "records": row["entries"],
+        }
+        for row in descriptions["sourceFiles"]
+    ]
+    init_functions_by_symbol = {
+        target["symbol"]: target["address"]
+        for row in setup["pointerTables"]
+        for target in (row["targets"]["initFunction"],)
+    }
+    resources = {
+        "setupRoutes": setup_routes,
+        "setupDefinitions": setup_definitions,
+        "entityLists": entity_lists,
+        "entityEventHandlers": _event_handler_resources(events, "entityEvents"),
+        "zoneEventHandlers": _event_handler_resources(events, "zoneEvents"),
+        "itemEventHandlers": _event_handler_resources(events, "itemEvents"),
+        "areaDescriptionHandlers": description_handlers,
+        "initFunctions": [
+            {"id": symbol, "address": address}
+            for symbol, address in sorted(init_functions_by_symbol.items())
+        ],
+    }
+    setup_record_count = (
+        sum(len(row["records"]) for row in entity_lists)
+        + sum(
+            len(row["records"])
+            for name in ("entityEventHandlers", "zoneEventHandlers", "itemEventHandlers")
+            for row in resources[name]
+        )
+        + sum(len(row["records"]) for row in description_handlers)
+    )
+    facts = {
+        "routeCount": len(setup_routes),
+        "flagVariantCount": sum(len(row["flagVariants"]) for row in setup_routes),
+        "setupDefinitionCount": len(setup_definitions),
+        "setupDefinitionReferenceCount": len(setup_definitions) * 6,
+        "setupRecordCount": setup_record_count,
+        "missingMapSetupRouteCount": 79 - len(setup_routes),
+        "lastSetFlagWins": True,
+        "directReturnHandlersPreserved": True,
+    }
+    return resources, {row["map"]: row["id"] for row in setup_routes}, facts
+
+
 def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     content = build_map_content_contract(rom_path, upstream_path)
     disasm, commit, toolchain = _resolve_upstream(upstream_path.resolve(strict=True))
@@ -245,6 +359,10 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
     resources = _content_resources(content, disasm, equates)
     blocksets, layouts = _layout_resources(content, disasm)
     resources = {"blocksets": blocksets, "layouts": layouts, **resources}
+    setup_resources, setup_route_by_map, setup_facts = _setup_resources(
+        rom_path, upstream_path, commit
+    )
+    resources.update(setup_resources)
 
     reference_names = {
         "blocks": "blockset",
@@ -270,7 +388,8 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
                 "references": {
                     reference_names[name]: pointer["symbol"]
                     for name, pointer in entry["pointers"].items()
-                },
+                }
+                | {"setupRoute": setup_route_by_map.get(entry["map"])},
             }
         )
 
@@ -298,6 +417,8 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "decodedBlockWordCount": sum(len(block) for row in blocksets for block in row["blocks"]),
         "decodedLayoutWordCount": sum(len(row["words"]) for row in layouts),
         "logicalRecordCount": sum(record_counts.values()),
+        "setupLogicalRecordCount": setup_facts["setupRecordCount"],
+        "allLogicalRecordCount": sum(record_counts.values()) + setup_facts["setupRecordCount"],
     }
     expected_resource_counts = {
         "blocksets": 77,
@@ -309,6 +430,14 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "warpEventTables": 79,
         "itemTables": 156,
         "animationTables": 32,
+        "setupRoutes": 64,
+        "setupDefinitions": 126,
+        "entityLists": 125,
+        "entityEventHandlers": 105,
+        "zoneEventHandlers": 84,
+        "itemEventHandlers": 74,
+        "areaDescriptionHandlers": 75,
+        "initFunctions": 90,
     }
     if resource_counts != expected_resource_counts:
         raise ValueError(f"canonical map resource cardinality drift: {resource_counts}")
@@ -316,6 +445,22 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
     missing = sorted({value for value in reference_values if value is not None} - all_ids)
     if missing:
         raise ValueError(f"canonical map references missing resources: {missing[:5]}")
+    setup_definition_ids = {row["id"] for row in resources["setupDefinitions"]}
+    route_setup_ids = {
+        setup_id
+        for route in resources["setupRoutes"]
+        for setup_id in [route["defaultSetup"]]
+        + [variant["setup"] for variant in route["flagVariants"]]
+    }
+    if route_setup_ids - setup_definition_ids:
+        raise ValueError("canonical map setup route references a missing definition")
+    setup_target_ids = {
+        target
+        for definition in resources["setupDefinitions"]
+        for target in definition["references"].values()
+    }
+    if setup_target_ids - all_ids:
+        raise ValueError("canonical map setup definition references a missing resource")
     return {
         "schemaVersion": 1,
         "id": ID,
@@ -334,6 +479,7 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "summary": summary,
         "resourceCounts": resource_counts,
         "recordCounts": record_counts,
+        "setupFacts": setup_facts,
         "referenceFacts": {
             "blockLayoutAliases": [
                 {"map": 24, "ownerMap": 23},
@@ -377,6 +523,7 @@ def verify_canonical_map_import(
         "summary",
         "resourceCounts",
         "recordCounts",
+        "setupFacts",
         "referenceFacts",
         "runtimeQuestions",
     ):
@@ -397,6 +544,6 @@ def verify_canonical_map_import(
         "SHA256": digest,
         "Maps": output["summary"]["mapCount"],
         "Resources": output["summary"]["resourceCount"],
-        "LogicalRecords": output["summary"]["logicalRecordCount"],
+        "LogicalRecords": output["summary"]["allLogicalRecordCount"],
         "Status": "PASS",
     }

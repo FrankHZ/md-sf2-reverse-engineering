@@ -17,14 +17,16 @@
   },
   "summary": {
     "mapCount": 79,
-    "resourceCount": 737,
-    "nonNullReferenceCount": 752,
-    "absentReferenceCount": 38,
+    "resourceCount": 1480,
+    "nonNullReferenceCount": 816,
+    "absentReferenceCount": 53,
     "sharedReferenceCount": 15,
     "decodedBlockCount": 19771,
     "decodedBlockWordCount": 177939,
     "decodedLayoutWordCount": 315392,
-    "logicalRecordCount": 1027
+    "logicalRecordCount": 1027,
+    "setupLogicalRecordCount": 2348,
+    "allLogicalRecordCount": 3375
   },
   "resourceCounts": {
     "blocksets": 77,
@@ -35,7 +37,15 @@
     "roofEventTables": 79,
     "warpEventTables": 79,
     "itemTables": 156,
-    "animationTables": 32
+    "animationTables": 32,
+    "setupRoutes": 64,
+    "setupDefinitions": 126,
+    "entityLists": 125,
+    "entityEventHandlers": 105,
+    "zoneEventHandlers": 84,
+    "itemEventHandlers": 74,
+    "areaDescriptionHandlers": 75,
+    "initFunctions": 90
   },
   "recordCounts": {
     "areas": 135,
@@ -45,6 +55,16 @@
     "warpEvents": 409,
     "items": 96,
     "animationEntries": 108
+  },
+  "setupFacts": {
+    "routeCount": 64,
+    "flagVariantCount": 66,
+    "setupDefinitionCount": 126,
+    "setupDefinitionReferenceCount": 756,
+    "setupRecordCount": 2348,
+    "missingMapSetupRouteCount": 15,
+    "lastSetFlagWins": true,
+    "directReturnHandlersPreserved": true
   },
   "referenceFacts": {
     "blockLayoutAliases": [

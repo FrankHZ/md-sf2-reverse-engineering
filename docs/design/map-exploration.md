@@ -19,7 +19,8 @@ references:
 4. ordered flag, step, roof, and warp event records;
 5. ordered chest and other-item records;
 6. an optional animation table;
-7. a separately selected six-pointer map-setup definition.
+7. a separately selected six-pointer map-setup definition, resolved through the ordered per-map
+   default/flag route.
 
 References are identities, not implicit copies. Maps 24 and 46 reuse the blockset/layout identities of
 maps 23 and 7. The importer MUST preserve that sharing unless an explicit remake transform requests a
@@ -37,6 +38,12 @@ Evidence is executable through:
 
 The last fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
+
+The canonical import now resolves all 64 setup routes and 126 setup definitions. A setup definition
+references six independently shared resources: entities, entity events, zone events, area
+descriptions, item events, and initialization function. The 15 map IDs with no original route keep a
+null route. Selection scans every flag variant in source order and retains the last set flag; direct
+return handlers remain explicit empty handlers rather than being replaced by guessed defaults.
 
 ## Geometry and Block Data
 
