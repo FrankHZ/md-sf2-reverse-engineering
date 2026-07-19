@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,437 条 confirmed finding、45 个 H2 fixture、56 个 H3 fixture
-和 1,843 个地址绑定。
+截至 2026-07-19，研究索引有 1,437 条 confirmed finding、45 个 H2 fixture、57 个 H3 fixture
+和 1,854 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -381,12 +381,11 @@ source/H1/ROM parity；77 组压缩 blocks/layout 也已由 Python 全量解码�
 126 份六指针 definition 已连接 entity/event/description/init 资源，90 个 init callable 的 654 条
 operation 与全部 130 条 branch 也已结构化。完整输出保持 ignored，仓库仅追踪 schema、digest 和
 聚合 fixture。47 个 standalone script 的 178 个 label/8,058 条 operation、init source 的 201 个
-内嵌 program/3,718 条 operation 均已结构化，75 个 init script target 全部可解析；下一步执行已集中
-规划的 map initialization/event-dispatch runtime matrix。首个十案例 setup-selector H3 已在单次
+内嵌 program/3,718 条 operation 均已结构化，75 个 init script target 全部可解析。首个十案例 setup-selector H3 已在单次
 BizHawk 启动中确认 missing/default、last-set-flag-wins 与 alias route，
 随后六案例 init-dispatch H3 又确认 missing map 跳过调用，以及 active/scripted/direct-return setup
-各自只调用一个 H2 目标并返回；entity/zone/item rail 也已新增 9 个 exact/wildcard/default H2
-选择案例，下一步据此集中验证实际 event dispatch，
+各自只调用一个 H2 目标并返回；entity/zone/item rail 的 9 个 exact/wildcard/default H2
+选择案例也已在一个 BizHawk 启动中全部通过原版 wrapper 分发验证，
 同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义

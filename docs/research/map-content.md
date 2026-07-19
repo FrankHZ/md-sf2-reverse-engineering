@@ -140,7 +140,9 @@ The ten-case setup-selector H3 matrix now confirms default, missing-map, last-se
 alias-pointer selection through the natural debug Map Test exploration path. It does not close map
 transition or presentation behavior. A following six-case init-dispatch matrix confirms missing-map
 skip and exactly one modeled indirect init target for active, scripted, and direct-return setups.
-Static evidence leaves three coherent later matrices:
+A following nine-case event-dispatch matrix confirms entity, zone, and item first-match selection in
+one BizHawk launch without executing the selected scripts. Static evidence leaves three coherent
+later matrices:
 
 1. transition event precedence and state persistence across flag, step, roof, and warp processing;
 2. VInt/VDP frame timing for animation table updates;
@@ -156,6 +158,7 @@ uv run sf2 h2 map-content
 uv run sf2 h2 map-layouts
 uv run sf2 h2 map-import
 uv run sf2 h2 map-data
+uv run sf2 h3 map-event-dispatch
 uv run sf2 research-index test
 ```
 

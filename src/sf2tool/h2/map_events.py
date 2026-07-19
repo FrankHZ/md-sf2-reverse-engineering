@@ -53,7 +53,7 @@ FUNCTION_SYMBOLS = (
 )
 SELECTION_INPUTS = (
     ("entity-specific-after-scan", "entityEvents", 3, (), {"entity": 128}),
-    ("entity-default", "entityEvents", 3, (), {"entity": 254}),
+    ("entity-default", "entityEvents", 3, (), {"entity": 135}),
     ("zone-exact", "zoneEvents", 3, (), {"x": 27, "y": 5}),
     ("zone-wildcard-y", "zoneEvents", 3, (), {"x": 2, "y": 42}),
     ("zone-first-overlapping-match", "zoneEvents", 3, (609,), {"x": 2, "y": 23}),

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-event-dispatch-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "mapTestIndex": 0,
+  "observationBoundary": "A deterministic private copy of the verified ROM replaces the natural RunMapSetupInitFunction indirect call and register restore with one absolute call to a 50-byte trampoline in verified FF alignment padding. Nine cases replay the debug Map Test 0 prompt from one shared core state; Lua writes only a 16-byte input record, CURRENT_MAP, and GAME_FLAGS. The trampoline loads the documented wrapper inputs, calls one unmodified entity, zone, or item wrapper, restores the original init-wrapper registers, and returns. The nine expected script entries are independently byte-checked and replaced by RTS, letting Lua observe each original selection without executing script or presentation content. The original disk ROM remains unchanged.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": {
+    "setupAddress": 292092,
+    "redirectAddress": 292114,
+    "entries": { "entityEvents": 292378, "zoneEvents": 292122, "itemEvents": 292230 }
+  },
+  "ram": { "currentMapAddress": 16774929, "gameFlagsAddress": 16774790 },
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "227900FF4000303900FF4004323900FF4006343900FF4008363900FF400A383900FF400C3A3900FF400E4E914CDF03FF4E75",
+    "ramInputAddress": 16728064,
+    "targetStubs": [
+      { "address": 331706, "originalHex": "4E41" },
+      { "address": 331866, "originalHex": "4E75" },
+      { "address": 331180, "originalHex": "4E41" },
+      { "address": 331124, "originalHex": "41FA" },
+      { "address": 331530, "originalHex": "4E75" },
+      { "address": 331496, "originalHex": "4E75" },
+      { "address": 353010, "originalHex": "4E41" },
+      { "address": 353042, "originalHex": "4E75" },
+      { "address": 366096, "originalHex": "727D" }
+    ]
+  },
+  "cases": [
+    { "id": "entity-specific-after-scan", "category": "entityEvents", "map": 3, "setFlags": [], "query": { "entity": 128 }, "expected": { "selectedRecordOffset": 8, "selectedTargetAddress": 331706, "eventFlags": 1, "maskedItem": null } },
+    { "id": "entity-default", "category": "entityEvents", "map": 3, "setFlags": [], "query": { "entity": 135 }, "expected": { "selectedRecordOffset": 64, "selectedTargetAddress": 331866, "eventFlags": 0, "maskedItem": null } },
+    { "id": "zone-exact", "category": "zoneEvents", "map": 3, "setFlags": [], "query": { "x": 27, "y": 5 }, "expected": { "selectedRecordOffset": 4, "selectedTargetAddress": 331180, "eventFlags": null, "maskedItem": null } },
+    { "id": "zone-wildcard-y", "category": "zoneEvents", "map": 3, "setFlags": [], "query": { "x": 2, "y": 42 }, "expected": { "selectedRecordOffset": 0, "selectedTargetAddress": 331124, "eventFlags": null, "maskedItem": null } },
+    { "id": "zone-first-overlapping-match", "category": "zoneEvents", "map": 3, "setFlags": [609], "query": { "x": 2, "y": 23 }, "expected": { "selectedRecordOffset": 0, "selectedTargetAddress": 331530, "eventFlags": null, "maskedItem": null } },
+    { "id": "zone-default", "category": "zoneEvents", "map": 3, "setFlags": [], "query": { "x": 10, "y": 10 }, "expected": { "selectedRecordOffset": 36, "selectedTargetAddress": 331496, "eventFlags": null, "maskedItem": null } },
+    { "id": "item-index-mask", "category": "itemEvents", "map": 8, "setFlags": [], "query": { "x": 15, "y": 19, "facing": 1, "item": 240 }, "expected": { "selectedRecordOffset": 0, "selectedTargetAddress": 353010, "eventFlags": null, "maskedItem": 112 } },
+    { "id": "item-facing-mismatch-default", "category": "itemEvents", "map": 8, "setFlags": [], "query": { "x": 15, "y": 19, "facing": 2, "item": 112 }, "expected": { "selectedRecordOffset": 12, "selectedTargetAddress": 353042, "eventFlags": null, "maskedItem": 112 } },
+    { "id": "item-wildcard-facing", "category": "itemEvents", "map": 22, "setFlags": [], "query": { "x": 35, "y": 24, "facing": 3, "item": 125 }, "expected": { "selectedRecordOffset": 0, "selectedTargetAddress": 366096, "eventFlags": null, "maskedItem": 125 } }
+  ]
+}

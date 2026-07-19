@@ -157,7 +157,7 @@
       },
       {
         "id": "entity-default", "category": "entityEvents", "map": 3,
-        "setFlags": [], "query": { "entity": 254 }, "selectedSetup": "ms_map3",
+        "setFlags": [], "query": { "entity": 135 }, "selectedSetup": "ms_map3",
         "selectedTable": "ms_map3_EntityEvents", "selectedRecordAddress": 331600,
         "selectedRecordKind": "default", "eventFlags": 0, "resolvedTargetAddress": 331866
       },

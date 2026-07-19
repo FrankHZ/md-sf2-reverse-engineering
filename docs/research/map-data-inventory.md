@@ -3,6 +3,7 @@
 - Status: **Confirmed** for the complete 1,390-file ASM boundary, build reachability, internal-symbol
   addresses, map/setup file classes, pointer/include counts, global table row counts, all 64 setup
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
+  the nine-case entity/zone/item runtime dispatch matrix,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
   1,134 physical records, all 75 area-description targets/227 physical entries, and all 84 init
   sources/90 setup-callable entry points, all 47 standalone setup-script files/8,058 statements,
@@ -169,7 +170,7 @@ Entity cases cover a late specific match and the default; zone cases cover exact
 cover the `$7F` index mask, a facing mismatch that falls through to default, and `$FF` facing. Every
 case retains its selected setup/table, physical record address, record kind, flags where applicable,
 and resolved target address. These are **Confirmed** static first-match contracts and the input table
-for the next grouped H3, not claims about the called script's side effects.
+for the grouped H3, not claims about the called script's side effects.
 
 ## Area-Description Wrappers and Tables
 
@@ -300,6 +301,22 @@ targets, and the flag-506 target that runs a map script. These dispatch facts ar
 BizHawk launch. Story, entity, audio, fade, and persistence effects under the controlled map/flag
 combinations remain outside this fixture and are not promoted from opcode names or successful return.
 
+The third runtime slice consumes all nine H2 event queries in one BizHawk launch. A private derived
+ROM replaces the init wrapper's indirect call and register restore with an absolute call to a
+50-byte trampoline in byte-checked `FF` alignment padding. Lua writes one 16-byte input record per
+replay; the trampoline loads the documented `d0`-`d5` inputs, calls the unmodified entity, zone, or
+item wrapper, restores the original init-wrapper registers, and returns. Each of the nine expected
+script entries is independently checked against its original first word and replaced with `rts`, so
+the observer reaches the selected entry but never executes its story or presentation body. The
+original input ROM is never modified.
+
+All nine wrappers preserve the H2-modeled record offset in `d7` and reach the modeled target address.
+The entity cases also preserve flags 1 and 0; the three item cases expose masked indices 112, 112,
+and 125. This **Confirms** late specific/default entity selection, exact/`$FF`/overlapping-first/
+default zone selection, and item index-mask/facing-default/`$FF`-facing selection. Direct-`rts`
+table reachability, script side effects, portrait/facing behavior, and transition persistence remain
+outside the fixture.
+
 ## Harness Performance
 
 This batch more than doubles the research-index record count. The index verifier now parses the H1
@@ -320,5 +337,6 @@ uv run sf2 h2 map-scripts
 uv run sf2 h2 map-content
 uv run sf2 h3 map-setup-selection
 uv run sf2 h3 map-init-dispatch
+uv run sf2 h3 map-event-dispatch
 uv run sf2 research-index test
 ```

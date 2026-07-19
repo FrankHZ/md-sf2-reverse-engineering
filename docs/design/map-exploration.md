@@ -40,7 +40,9 @@ Evidence is executable through:
 - `sf2-map-setup-selection-runtime-v1` in
   `tests/fixtures/h3/map-setup-selection-v1.json`;
 - `sf2-map-init-dispatch-runtime-v1` in
-  `tests/fixtures/h3/map-init-dispatch-v1.json`.
+  `tests/fixtures/h3/map-init-dispatch-v1.json`;
+- `sf2-map-event-dispatch-runtime-v1` in
+  `tests/fixtures/h3/map-event-dispatch-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -125,7 +127,11 @@ Event arrays preserve source order because original dispatch is order-sensitive:
 The event fixture includes nine executable selection cases over the complete decoded tables:
 entity-specific/default, zone exact/wildcard/overlapping-first/default, and item index-mask,
 facing-mismatch/default, and wildcard-facing behavior. A remake event selector MUST reproduce those
-cases before presentation or story scripts are connected.
+cases before presentation or story scripts are connected. A single-launch H3 matrix confirms all
+nine original wrappers select the same record offsets, target addresses, entity flags, and masked
+item values. It uses a private instrumented ROM whose 50-byte trampoline only supplies documented
+wrapper inputs; each selected script entry is replaced with `rts`, so script side effects and
+presentation remain outside this confirmed selection contract.
 
 Flag, step, and roof records describe rectangular block copies into the working layout. Warp records
 retain trigger coordinates, scroll mode, target map, target coordinates, and facing. The exact order

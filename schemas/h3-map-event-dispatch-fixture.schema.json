@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 map event dispatch runtime matrix fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "mapTestIndex", "observationBoundary", "sharedHarnessFixture", "function", "ram", "instrumentation", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-event-dispatch-runtime-v1" },
+    "romSha256": { "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "core"],
+      "properties": {
+        "name": { "const": "BizHawk" },
+        "version": { "const": "2.11.1" },
+        "core": { "const": "Genesis Plus GX" }
+      }
+    },
+    "mapTestIndex": { "const": 0 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["setupAddress", "redirectAddress", "entries"],
+      "properties": {
+        "setupAddress": { "type": "integer", "minimum": 0 },
+        "redirectAddress": { "type": "integer", "minimum": 0 },
+        "entries": { "$ref": "#/definitions/categoryAddresses" }
+      }
+    },
+    "instrumentation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["callSiteAddress", "callSiteOriginalHex", "callSitePatchedHex", "stubAddress", "stubOriginalHex", "stubHex", "ramInputAddress", "targetStubs"],
+      "properties": {
+        "callSiteAddress": { "type": "integer", "minimum": 0 },
+        "callSiteOriginalHex": { "type": "string", "pattern": "^[0-9A-F]+$" },
+        "callSitePatchedHex": { "type": "string", "pattern": "^[0-9A-F]+$" },
+        "stubAddress": { "type": "integer", "minimum": 0 },
+        "stubOriginalHex": { "type": "string", "pattern": "^[0-9A-F]+$" },
+        "stubHex": { "type": "string", "pattern": "^[0-9A-F]+$" },
+        "ramInputAddress": { "type": "integer", "minimum": 0 },
+        "targetStubs": {
+          "type": "array", "minItems": 9, "maxItems": 9,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["address", "originalHex"],
+            "properties": {
+              "address": { "type": "integer", "minimum": 0 },
+              "originalHex": { "type": "string", "pattern": "^[0-9A-F]{4}$" }
+            }
+          }
+        }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["currentMapAddress", "gameFlagsAddress"],
+      "properties": {
+        "currentMapAddress": { "type": "integer", "minimum": 0 },
+        "gameFlagsAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 9, "maxItems": 9,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "category", "map", "setFlags", "query", "expected"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "category": { "enum": ["entityEvents", "zoneEvents", "itemEvents"] },
+          "map": { "type": "integer", "minimum": 0, "maximum": 78 },
+          "setFlags": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 1023 } },
+          "query": {
+            "type": "object", "additionalProperties": false, "minProperties": 1,
+            "properties": {
+              "entity": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "x": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "y": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "facing": { "type": "integer", "minimum": 0, "maximum": 255 },
+              "item": { "type": "integer", "minimum": 0, "maximum": 255 }
+            }
+          },
+          "expected": {
+            "type": "object", "additionalProperties": false,
+            "required": ["selectedRecordOffset", "selectedTargetAddress", "eventFlags", "maskedItem"],
+            "properties": {
+              "selectedRecordOffset": { "type": "integer", "minimum": 0 },
+              "selectedTargetAddress": { "type": "integer", "minimum": 0 },
+              "eventFlags": { "type": ["integer", "null"], "minimum": 0, "maximum": 255 },
+              "maskedItem": { "type": ["integer", "null"], "minimum": 0, "maximum": 127 }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "categoryAddresses": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entityEvents", "zoneEvents", "itemEvents"],
+      "properties": {
+        "entityEvents": { "type": "integer", "minimum": 0 },
+        "zoneEvents": { "type": "integer", "minimum": 0 },
+        "itemEvents": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
