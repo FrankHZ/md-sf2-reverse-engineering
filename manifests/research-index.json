@@ -216,6 +216,34 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 48056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.useItemAddress" }] }], "documents": ["docs/research/battle-actions.md"]
     },
     {
+      "id": "battle.functions.pulsating-grid", "subsystem": "battle.functions", "status": "confirmed", "symbol": "CreatePulsatingBlocksForGrid", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 142468 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.pulsatingGridAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.angel-wing", "subsystem": "battle.functions", "status": "confirmed", "symbol": "ExecuteBattleaction_AngelWing", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_1.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146840 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.angelWingAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.update-targets", "subsystem": "battle.functions", "status": "confirmed", "symbol": "UpdateTargetsListForCombatant", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 149058 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.updateTargetsAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.relative-move-table", "subsystem": "battle.functions", "status": "confirmed", "symbol": "table_RelativeTileMoveX", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_3.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 153250 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.relativeMoveTableAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.execute-turn", "subsystem": "battle.functions", "status": "confirmed", "symbol": "ExecuteIndividualTurn", "sourcePath": "code/gameflow/battle/battlefunctions/executeindividualturn.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 147120 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.executeTurnAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.load-battle", "subsystem": "battle.functions", "status": "confirmed", "symbol": "LoadBattle", "sourcePath": "code/gameflow/battle/battlefunctions/loadBattle.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 153104 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.loadBattleAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.move-sfx", "subsystem": "battle.functions", "status": "confirmed", "symbol": "SetMoveSfx", "sourcePath": "code/gameflow/battle/battlefunctions/setmovesfx.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 153488 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.setMoveSfxAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
       "id": "battle.combatant.get-enemy",
       "subsystem": "battle.combatant",
       "status": "confirmed",

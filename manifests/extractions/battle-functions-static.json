@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-functions-static-v1",
+  "outputSha256": "A0D820653F5ADE6F4CF71BA14FFCC7C2D8FA33FD3CB4879247305C0E132E51F6",
+  "summary": {
+    "fileCount": 7,
+    "sourceLineCount": 3182,
+    "statementCount": 2128,
+    "globalLabelCount": 127,
+    "localLabelCount": 139,
+    "directCallSiteCount": 394,
+    "indirectCallSiteCount": 2,
+    "uniqueDirectTargetCount": 145,
+    "internalDirectTargetCount": 32,
+    "externalDirectTargetCount": 113,
+    "indexedRecordCount": 7,
+    "indexedFileCount": 7
+  }
+}

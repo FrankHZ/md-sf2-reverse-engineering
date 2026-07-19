@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-functions-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "pulsatingGridAddress": 142468,
+    "angelWingAddress": 146840,
+    "updateTargetsAddress": 149058,
+    "relativeMoveTableAddress": 153250,
+    "executeTurnAddress": 147120,
+    "loadBattleAddress": 153104,
+    "setMoveSfxAddress": 153488
+  },
+  "expected": {
+    "representativeSymbols": {
+      "battlefunctions_0.asm": "CreatePulsatingBlocksForGrid",
+      "battlefunctions_1.asm": "ExecuteBattleaction_AngelWing",
+      "battlefunctions_2.asm": "UpdateTargetsListForCombatant",
+      "battlefunctions_3.asm": "table_RelativeTileMoveX",
+      "executeindividualturn.asm": "ExecuteIndividualTurn",
+      "loadBattle.asm": "LoadBattle",
+      "setmovesfx.asm": "SetMoveSfx"
+    },
+    "functionFacts": {
+      "turnControl": { "deadActorSkipsTurn": true, "aiCauses": ["muddle","ai-controlled-bit","ally-auto-battle","uncontrolled-enemy"], "playerControlledEnemyRequiresToggle": true, "sleepAndStunSkipAction": true, "staySkipsAction": true, "egressAndAngelWingExitBeforeBattlescene": true, "ordinaryActionWritesAndExecutesBattlesceneThenReloadsBattle": true },
+      "kiwiFlameBreath": { "class": 28, "requiresPhysicalAttack": true, "rngUpperBound": 4, "rngSuccessValue": 0, "upgradeLevels": [32,40,50], "spellLevels": [0,1,2,3] },
+      "egress": { "angelWingConsumesItemFirst": true, "spellConsumesDefinitionMp": true, "bothCloseBattlefieldWindows": true, "bothUpdateUnlockedFlag": true, "bothReturnEgressPosition": true, "returnCode": 0 },
+      "loadBattle": { "order": ["fade-out","load-tilesets","position-entities","initialize-sprites","load-map","load-entity-sprites","set-battle-vints","load-terrain","play-map-music","fade-in"], "fairyWoodsOpensTimer": true },
+      "moveSfx": { "outsideBattle": 0, "battleDefault": "walking", "chirrupSandalsOverride": "bloab", "equipmentOverrideAlsoAppliesOutsideBattle": true },
+      "largeHelperBoundary": { "cursorEntityAndGridFileInventoried": true, "targetingAndPlayerInputFileInventoried": true, "relativeMovementTableFileInventoried": true, "deeperBranchSemanticsRemainQueued": true }
+    }
+  }
+}
