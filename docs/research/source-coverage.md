@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 421 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 352 | 344 code files and 8 data files |
-| Executable code-file reach | 88.89% | 344 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 434 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 365 | 357 code files and 8 data files |
+| Executable code-file reach | 92.25% | 357 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 817 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 830 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -88,11 +88,15 @@ The current evidence is deep but narrow:
   without pretending it owns a 68000 listing symbol. Resource routing, overlap-copy direction,
   controller scan shape, SRAM checksum/slot shape, and the sound build chain are static contracts;
   hardware and timing questions remain in four grouped runtime queues.
-- **Minimal or unindexed:** exploration/world state, individual event-script content, conversations,
+  Startup/main-loop/exploration now binds all thirteen layout-owned files and models cold/system
+  initialization, region admission, battle/exploration routing, six map-event types, entity/area
+  interaction, and item handoff. Reset hardware, simultaneous input/event priority, and visible map
+  transitions remain grouped runtime questions.
+- **Minimal or unindexed:** individual event-script content, conversations,
   detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
   graphics/audio runtime output, and most content tables.
 
-Therefore 88.89% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 92.25% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -105,8 +109,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 421 records; its
-verifier reports 344 unique code files, 8 unique data files, 54 H3 fixtures, and 817 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 434 records; its
+verifier reports 357 unique code files, 8 unique data files, 54 H3 fixtures, and 830 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -158,6 +162,7 @@ the 42-file menus boundary is now inventoried too, with 41 layout-owned sources 
 alternate. The 21-file technical interrupt, 11-file technical graphics, and 25-file jump/pointer
 boundaries follow with complete static reach. The twelve-file remaining-services batch then closes
 resource incbins, input, byte copy, SRAM, music bridge, base/thinking RNG, and the auxiliary Z80
-build without an emulator launch. Of the 43 files still outside strict symbol reach, the next
-coherent static batch targets startup/main-loop/exploration before special-screen presentation; UI,
-SRAM hardware, and VDP/Z80 runtime queues remain grouped.
+build without an emulator launch. The following thirteen-file startup/main-loop/exploration batch
+closes the cold-start-to-map control spine and raises strict reach to 92.25%. Of the 30 files still
+outside strict symbol reach, the next coherent static batch targets all nineteen special-screen
+files; UI, SRAM hardware, and VDP/Z80 runtime queues remain grouped.

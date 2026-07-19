@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 startup, main loop, and exploration static fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-gameflow-core-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": { "type": "object", "minProperties": 13, "maxProperties": 13, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["startupFacts", "explorationFacts", "runtimeQuestions"],
+      "properties": {
+        "startupFacts": { "type": "object" }, "explorationFacts": { "type": "object" },
+        "runtimeQuestions": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true }
+      }
+    }
+  }
+}

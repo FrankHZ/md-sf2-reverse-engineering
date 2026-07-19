@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II startup, main loop, and exploration static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "startupFacts", "explorationFacts", "runtimeQuestions", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-gameflow-core-static-v1" },
+    "upstream": { "type": "object" },
+    "scopes": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
+    "summary": {
+      "type": "object",
+      "required": ["fileCount", "startupFileCount", "mainLoopFileCount", "explorationFileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"],
+      "properties": {
+        "fileCount": { "const": 13 }, "startupFileCount": { "const": 7 },
+        "mainLoopFileCount": { "const": 1 }, "explorationFileCount": { "const": 5 },
+        "layoutIncludedFileCount": { "const": 13 }, "indexedRecordCount": { "const": 13 },
+        "indexedFileCount": { "const": 13 }
+      }
+    },
+    "indexedRecordIds": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
+    "representativeSymbols": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+    "representativeAddresses": { "type": "object", "minProperties": 13, "maxProperties": 13, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "internalDirectCallTargets": { "type": "array", "minItems": 33, "maxItems": 33, "uniqueItems": true },
+    "externalDirectCallTargets": { "type": "array", "minItems": 81, "maxItems": 81, "uniqueItems": true },
+    "startupFacts": { "type": "object", "minProperties": 16, "maxProperties": 16 },
+    "explorationFacts": { "type": "object", "minProperties": 15, "maxProperties": 15 },
+    "runtimeQuestions": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true },
+    "files": { "type": "array", "minItems": 13, "maxItems": 13 }
+  }
+}

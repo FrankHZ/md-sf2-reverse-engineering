@@ -18,6 +18,7 @@ from sf2tool.h2.battle_scene_engine import verify_battle_scene_engine_inventory
 from sf2tool.h2.battlefield import verify_battlefield_inventory
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
+from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
@@ -245,6 +246,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_tech_services, rom=False)
     h2_tech_services.add_argument("--output-path", type=_path)
+    h2_gameflow_core = h2_commands.add_parser(
+        "gameflow-core", help="inventory startup, main-loop, and exploration sources"
+    )
+    _add_local_paths(h2_gameflow_core, rom=False)
+    h2_gameflow_core.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -586,6 +592,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "tech-services":
         print_record(
             verify_service_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "gameflow-core":
+        print_record(
+            verify_gameflow_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

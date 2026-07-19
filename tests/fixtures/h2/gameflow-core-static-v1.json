@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-gameflow-core-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "sub_3758": 14168,
+    "GetActivatedEntity": 145306,
+    "loc_239C8": 145864,
+    "ExplorationLoop": 153536,
+    "ProcessPlayerAction": 154326,
+    "MainLoop": 30148,
+    "LoadBaseTiles": 30286,
+    "InitializeGame": 28882,
+    "j_GameIntro": 29120,
+    "Start": 734,
+    "CheckRegion": 32454,
+    "InitializeSystem": 512,
+    "InitializeZ80": 1014
+  },
+  "expected": {
+    "startupFacts": {
+      "coldStartVdpRegisterCount": 24,
+      "coldStartZ80BootstrapByteCount": 38,
+      "coldStartRamClearBytes": 65536,
+      "coldStartCramClearBytes": 128,
+      "coldStartVsramClearBytes": 80,
+      "coldStartPsgChannelCount": 4,
+      "systemVdpRegisterCount": 19,
+      "initializeSystemOrder": ["InitializeVdp", "InitializeZ80", "InitializeVdpData", "InitializeGame"],
+      "z80LoadsGeneratedSoundDriver": true,
+      "gameInitializationOrder": ["LoadBaseTiles", "CheckRegion", "NewGame", "DisplaySegaLogo"],
+      "segaLogoStartCanSkipIntro": true,
+      "titleExitCanResetThroughStartVector": true,
+      "allowedRegionHardwareBits": 128,
+      "rejectedRegionPathLoopsForever": true,
+      "baseTileCount": 4096,
+      "baseTileCompressionMode": 2
+    },
+    "explorationFacts": {
+      "mainLoopChecksMapSwitchBeforeBattle": true,
+      "mainLoopNoBattleSentinel": -1,
+      "mainLoopReturnsFromBattleThroughMapSwitch": true,
+      "mapEventTypeTargets": ["Warp", "GetIntoCaravan", "GetIntoRaft", "GetOutOfCaravan", "GetOutOfRaft", "ZoneEvent"],
+      "mapEventTypeCount": 6,
+      "actionButtonPriority": ["A", "C"],
+      "actionFallbackOpensFieldMenu": true,
+      "activatedEntityCandidateCount": 48,
+      "activatedEntitySkipsPlayer": true,
+      "activatedEntitySkipsFollowers": true,
+      "activatedEntityDistanceLimitUnits": 384,
+      "areaBlockKinds": { "chest": 6144, "generic": 7168, "vase": 11264, "barrel": 12288, "bookshelf": 13312 },
+      "fullInventoryRefillsMapItem": true,
+      "hardcodedPacalonCompletionFlag": 530,
+      "explorationOwnsDoorRoofChestAndPlaneUpdates": true
+    },
+    "runtimeQuestions": [
+      "reset-tmss-region-hardware-matrix",
+      "intro-title-skip-and-debug-input-timing",
+      "exploration-simultaneous-event-and-action-order",
+      "exploration-scroll-door-roof-and-transition-frames"
+    ]
+  }
+}
