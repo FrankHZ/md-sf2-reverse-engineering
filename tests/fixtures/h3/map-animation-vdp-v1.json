@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-animation-vdp-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "mapTestIndex": 0,
+  "observationBoundary": "Four animation cases replay one stable debug Map Test 0 exploration state. Each first runs a two-frame animation-disabled control to subtract DMA queued by the other base callbacks. Lua then supplies deterministic bytes only to the original animation cache and points the original table cursor at an H2-verified entry or terminator. The first VInt contributes one queued DMA but cannot process it; the second changes target VRAM. Minimum cache, mixed counters/nonzero source, terminator wrap, and maximum transfer/target share one launch.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": { "animationAddress": 18290, "processDmaQueueAddress": 1856, "waitForEventAddress": 153884 },
+  "ram": {
+    "currentMapAddress": 16774929,
+    "animationCacheAddress": 16751364,
+    "animationCacheCapacityBytes": 3072,
+    "animationDataAddress": 16754794,
+    "animationCounterAddress": 16754798,
+    "animationMapAddress": 16754800,
+    "dmaQueueBaseAddress": 16766288,
+    "dmaQueueSizeAddress": 16768662,
+    "dmaQueuePointerAddress": 16768724
+  },
+  "cases": [
+    {
+      "id": "map28-min-cache-first-entry", "map": 28, "table": "Map28s9_Animations",
+      "entryIndex": 0, "startAtTerminator": false, "patternSeed": 1,
+      "expected": { "dataAddressBefore": 698524, "dataAddressAfterSubmit": 698532, "dataAddressAfterTransfer": 698532, "sourceByteOffset": 0, "byteCount": 32, "targetByteAddress": 12320, "counterAfterSubmit": 10, "counterAfterTransfer": 9, "queueContributionAfterSubmit": 1, "queueContributionAfterTransfer": 0 }
+    },
+    {
+      "id": "map47-mixed-counter-second-entry", "map": 47, "table": "Map47s9_Animations",
+      "entryIndex": 1, "startAtTerminator": false, "patternSeed": 2,
+      "expected": { "dataAddressBefore": 735384, "dataAddressAfterSubmit": 735392, "dataAddressAfterTransfer": 735392, "sourceByteOffset": 512, "byteCount": 224, "targetByteAddress": 16992, "counterAfterSubmit": 20, "counterAfterTransfer": 19, "queueContributionAfterSubmit": 1, "queueContributionAfterTransfer": 0 }
+    },
+    {
+      "id": "map49-terminator-wrap", "map": 49, "table": "Map49s9_Animations",
+      "entryIndex": 0, "startAtTerminator": true, "patternSeed": 3,
+      "expected": { "dataAddressBefore": 742180, "dataAddressAfterSubmit": 741868, "dataAddressAfterTransfer": 741876, "sourceByteOffset": 0, "byteCount": 64, "targetByteAddress": 9216, "counterAfterSubmit": 1, "counterAfterTransfer": 1, "queueContributionAfterSubmit": 1, "queueContributionAfterTransfer": 1 }
+    },
+    {
+      "id": "map66-max-transfer-second-entry", "map": 66, "table": "Map66s9_Animations",
+      "entryIndex": 1, "startAtTerminator": false, "patternSeed": 4,
+      "expected": { "dataAddressBefore": 774652, "dataAddressAfterSubmit": 774660, "dataAddressAfterTransfer": 774660, "sourceByteOffset": 1536, "byteCount": 1536, "targetByteAddress": 27136, "counterAfterSubmit": 20, "counterAfterTransfer": 19, "queueContributionAfterSubmit": 1, "queueContributionAfterTransfer": 0 }
+    }
+  ]
+}

@@ -828,7 +828,6 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         "sourceSections": source_sections,
         "binaryPayloads": binary_payloads,
         "runtimeQuestions": [
-            "map-animation-vdp-visible-frame-timing",
             "map-block-layout-rendered-parity",
         ],
     }

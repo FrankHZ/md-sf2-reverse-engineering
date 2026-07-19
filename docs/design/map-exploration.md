@@ -4,8 +4,8 @@
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
   dispatch rules, static transition-consumer priority, and load-path-specific layout persistence
 - **Unknown original behavior:** normal-story
-  reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible animation/scroll timing,
-  and final VDP-visible rendered parity
+  reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
+  hardware-level animation scanline timing, and final VDP-visible rendered parity
 - Remake status: implementation-neutral Phase 3 contract; no engine has been selected
 
 ## Contract Boundary
@@ -44,6 +44,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-init-dispatch-v1.json`;
 - `sf2-map-event-dispatch-runtime-v1` in
   `tests/fixtures/h3/map-event-dispatch-v1.json`.
+- `sf2-map-animation-vdp-runtime-v1` in
+  `tests/fixtures/h3/map-animation-vdp-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -172,8 +174,11 @@ entry's counter; `$FFFF` wraps to the first entry of the current map table.
 Each submitted tile queues 16 words (32 bytes) from the cache to VRAM. Animation is the last base
 contextual callback, while the current VInt's DMA queue was processed earlier, so the transfer's
 earliest processing point is the next enabled VInt. A modern engine MUST preserve this logical
-cadence in original-fidelity mode. Exact VDP-visible scanline/frame parity still belongs to the
-shared graphics fixture.
+cadence in original-fidelity mode. The four-case H3 matrix confirms target VRAM remains unchanged in
+the submission frame and matches the selected cache slice after the next enabled VInt. It subtracts
+a two-frame animation-disabled control because the other base callbacks naturally queue three DMA
+commands per observed frame. Hardware-level scanline differences still belong to the shared
+graphics fixture, but do not make the frame-level transfer delay Unknown.
 
 Import validation MUST reject an entry whose replacement source range exceeds its cached tile
 count. The original corpus already satisfies this for all 108 entries; cache sizes are 4-96 tiles,

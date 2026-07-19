@@ -160,7 +160,6 @@
     "declaredLayoutOffsetReferenceCount": 0
   },
   "runtimeQuestions": [
-    "map-animation-vdp-visible-frame-timing",
     "map-block-layout-rendered-parity"
   ]
 }

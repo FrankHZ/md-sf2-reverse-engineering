@@ -135,7 +135,8 @@ promotion/enemy/enemy-gold/enemy-drop, Battle 01 scene extraction, and the compl
 inventory/action-filter/attack-priority contracts, plus BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
-turn-order, region-activation, physical-attack-chain, dodge, and follow-up-validation behavior
+   turn-order, region-activation, physical-attack-chain, dodge, follow-up-validation, and grouped
+   map-animation VInt/DMA/VRAM behavior
 fixtures, plus the ten-case map setup selector and six-case map init dispatch runtime matrices;
 extend the same entry
 point as later rails become available:

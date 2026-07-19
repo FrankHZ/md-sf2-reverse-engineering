@@ -3,7 +3,8 @@
 - Status: **Confirmed** for the pinned seven-file inventory, flag-switched maps, battle-trigger
   admission, egress/savepoint selection, 8 KiB layout decompression boundary, and map VInt gates
 - Status: **Inferred** for presentation intent in the large camera and loader helpers
-- Status: **Unknown** for exact camera/scroll timing and VDP-visible animation/rendered results
+- Status: **Unknown** for exact camera/scroll and hardware scanline timing, plus full
+  VDP-visible rendered-map parity
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -34,7 +35,8 @@ shape without tracking the decoded copyrighted layouts; rendered VDP parity rema
 
 Map VInt bit 0 updates plane A and refreshes window layout when present; bit 1 updates plane B. Tile
 animation requires a positive data pointer, counts down, wraps on its terminator, and queues VInt DMA
-after the current VInt's queue-processing pass. The large camera state
+after the current VInt's queue-processing pass. A four-case pinned-BizHawk matrix confirms the target
+VRAM transfer on the next enabled VInt. The large camera state
 machine and unused randomized loader are hash/call inventoried, while exact camera and VDP timing stay
 in the grouped presentation runtime queue. This batch adds no emulator run.
 

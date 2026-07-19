@@ -18,7 +18,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 H4 复用。
 
 截至 2026-07-19，研究索引有 1,437 条 confirmed finding、45 个 H2 fixture、57 个 H3 fixture
-和 1,854 个地址绑定。
+和 1,865 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：

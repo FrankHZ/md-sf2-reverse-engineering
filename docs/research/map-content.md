@@ -4,8 +4,8 @@
   private block/layout payloads, record sizes, aggregate record counts, their canonical ROM bytes,
   the deterministic engine-neutral import assembled from them, and the static flag/roof/step/warp
   consumer phases, scan policies, and path-specific working-layout rebuild/preservation rules
-  plus map-animation logical cadence and DMA queue phase
-- Status: **Unknown** for rendered layout parity and exact VDP-visible animation timing
+  plus map-animation logical cadence, DMA queue phase, and pinned-BizHawk VRAM transfer frame
+- Status: **Unknown** for rendered layout parity and hardware-level scanline timing
 - Evidence date: 2026-07-19
 - ROM SHA-256: `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM`
@@ -176,13 +176,20 @@ A following nine-case event-dispatch matrix confirms entity, zone, and item firs
 one BizHawk launch without executing the selected scripts. Static parsing now closes the consumer
 phases, first-match/all-match policies, overlap direction, movement-marker exclusivity, target check
 order, working-layout rebuild/preservation by load path, animation counters/wrap, and the one-VInt
-DMA queue phase. Two coherent presentation questions
-remain:
+DMA queue phase. A fourth grouped H3 matrix replays one stable Map Test 0 exploration state for four
+animation boundaries: Map 28's minimum cache, Map 47's mixed counters and nonzero source, Map 49's
+terminator wrap, and Map 66's maximum transfer/highest target. Each case first runs a two-frame
+animation-disabled control, subtracting the three DMA commands queued by other base callbacks. The
+real replay contributes one animation command on submission, leaves target VRAM at the sentinel in
+that frame, and copies all 1,856 tested bytes on the next enabled VInt. The counter-1 wrap case also
+queues its following entry in that second frame.
 
-1. VDP-visible timing for animation table updates;
-2. decoded block/layout rendered-map parity against the VDP presentation path.
+One coherent presentation question remains:
 
-Both belong with the graphics/VDP batch; neither justifies a one-map runtime fixture now.
+1. decoded block/layout rendered-map parity against the complete VDP presentation path.
+
+Hardware scanline differences can be added to that graphics batch if they affect a visible contract;
+they do not reopen the confirmed one-VInt queue delay under the pinned core.
 
 ## Reproduction
 
@@ -192,6 +199,7 @@ uv run sf2 h2 map-layouts
 uv run sf2 h2 map-import
 uv run sf2 h2 map-data
 uv run sf2 h3 map-event-dispatch
+uv run sf2 h3 map-animation-vdp
 uv run sf2 research-index test
 ```
 

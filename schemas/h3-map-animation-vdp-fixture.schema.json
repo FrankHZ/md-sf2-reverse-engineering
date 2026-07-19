@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h3-map-animation-vdp-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "mapTestIndex", "observationBoundary", "sharedHarnessFixture", "function", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-animation-vdp-runtime-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object" },
+    "mapTestIndex": { "const": 0 },
+    "observationBoundary": { "type": "string", "minLength": 40 },
+    "sharedHarnessFixture": { "type": "string" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["animationAddress", "processDmaQueueAddress", "waitForEventAddress"],
+      "properties": {
+        "animationAddress": { "type": "integer", "minimum": 0 },
+        "processDmaQueueAddress": { "type": "integer", "minimum": 0 },
+        "waitForEventAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["currentMapAddress", "animationCacheAddress", "animationCacheCapacityBytes", "animationDataAddress", "animationCounterAddress", "animationMapAddress", "dmaQueueBaseAddress", "dmaQueueSizeAddress", "dmaQueuePointerAddress"],
+      "properties": {
+        "currentMapAddress": { "type": "integer" },
+        "animationCacheAddress": { "type": "integer" },
+        "animationCacheCapacityBytes": { "type": "integer" },
+        "animationDataAddress": { "type": "integer" },
+        "animationCounterAddress": { "type": "integer" },
+        "animationMapAddress": { "type": "integer" },
+        "dmaQueueBaseAddress": { "type": "integer" },
+        "dmaQueueSizeAddress": { "type": "integer" },
+        "dmaQueuePointerAddress": { "type": "integer" }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "map", "table", "entryIndex", "startAtTerminator", "patternSeed", "expected"],
+        "properties": {
+          "id": { "type": "string" }, "map": { "type": "integer" }, "table": { "type": "string" },
+          "entryIndex": { "type": "integer", "minimum": 0 }, "startAtTerminator": { "type": "boolean" },
+          "patternSeed": { "type": "integer", "minimum": 0 },
+          "expected": {
+            "type": "object", "additionalProperties": false,
+            "required": ["dataAddressBefore", "dataAddressAfterSubmit", "dataAddressAfterTransfer", "sourceByteOffset", "byteCount", "targetByteAddress", "counterAfterSubmit", "counterAfterTransfer", "queueContributionAfterSubmit", "queueContributionAfterTransfer"],
+            "properties": {
+              "dataAddressBefore": { "type": "integer" }, "dataAddressAfterSubmit": { "type": "integer" },
+              "dataAddressAfterTransfer": { "type": "integer" }, "sourceByteOffset": { "type": "integer" },
+              "byteCount": { "type": "integer" }, "targetByteAddress": { "type": "integer" },
+              "counterAfterSubmit": { "type": "integer" }, "counterAfterTransfer": { "type": "integer" },
+              "queueContributionAfterSubmit": { "type": "integer" }, "queueContributionAfterTransfer": { "type": "integer" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

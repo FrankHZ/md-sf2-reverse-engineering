@@ -547,7 +547,6 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "maps": maps,
         "resources": resources,
         "runtimeQuestions": [
-            "map-animation-vdp-visible-frame-timing",
             "canonical-map-rendered-vdp-parity",
         ],
     }

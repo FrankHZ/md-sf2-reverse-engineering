@@ -62,6 +62,7 @@ from sf2tool.h3.growth import (
     verify_level_up_refresh,
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
+from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
 from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
@@ -476,6 +477,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_event_dispatch)
     h3_map_event_dispatch.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_animation_vdp = h3_commands.add_parser(
+        "map-animation-vdp",
+        help="verify batched map-animation counter, wrap, DMA queue, and VRAM behavior",
+    )
+    _add_local_paths(h3_map_animation_vdp)
+    h3_map_animation_vdp.add_argument("--timeout-seconds", type=int, default=120)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -1036,6 +1043,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-event-dispatch":
         print_record(
             verify_map_event_dispatch(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-animation-vdp":
+        print_record(
+            verify_map_animation_vdp(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

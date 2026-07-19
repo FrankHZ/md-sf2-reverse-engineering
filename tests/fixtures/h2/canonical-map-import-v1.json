@@ -93,7 +93,6 @@
     "rawFlagsPreserved": true
   },
   "runtimeQuestions": [
-    "map-animation-vdp-visible-frame-timing",
     "canonical-map-rendered-vdp-parity"
   ]
 }
