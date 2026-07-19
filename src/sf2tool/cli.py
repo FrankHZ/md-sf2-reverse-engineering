@@ -20,6 +20,7 @@ from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
+from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_ai_action import verify_battle_ai_action_choice
@@ -209,6 +210,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_common_maps, rom=False)
     h2_common_maps.add_argument("--output-path", type=_path)
+    h2_common_stats = h2_commands.add_parser(
+        "common-stats", help="inventory flags, party, inventory, item, spell, and stat services"
+    )
+    _add_local_paths(h2_common_stats, rom=False)
+    h2_common_stats.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -508,6 +514,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "common-maps":
         print_record(
             verify_map_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "common-stats":
+        print_record(
+            verify_stats_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

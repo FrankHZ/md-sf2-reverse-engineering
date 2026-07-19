@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-common-stats-static-v1",
+  "outputSha256": "80DF5670817C87897B8DB124CC2D175455839D6DCEFAF7FD0EC52F88648E5ADA",
+  "summary": {
+    "fileCount": 20,
+    "sourceLineCount": 5149,
+    "statementCount": 2468,
+    "globalLabelCount": 235,
+    "localLabelCount": 200,
+    "directCallSiteCount": 292,
+    "indirectCallSiteCount": 3,
+    "uniqueDirectTargetCount": 108,
+    "internalDirectTargetCount": 72,
+    "externalDirectTargetCount": 36,
+    "indexedRecordCount": 23,
+    "indexedFileCount": 19,
+    "excludedDuplicateFileCount": 1
+  }
+}

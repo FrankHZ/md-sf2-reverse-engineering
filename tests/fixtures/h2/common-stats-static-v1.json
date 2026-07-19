@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-common-stats-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "updateForceAddress": 39168,
+    "caravanAddress": 39484,
+    "loadAllyNameAddress": 34138,
+    "dealsAddress": 39390,
+    "classNameAddress": 35184,
+    "flagsAddress": 39092,
+    "combatantTypeAddress": 34074,
+    "itemInventoryAddress": 324746,
+    "fieldItemAddress": 141804,
+    "fieldItemUsabilityAddress": 141770,
+    "itemStatsAddress": 35792,
+    "newGameAddress": 38710,
+    "spellStatsAddress": 37318,
+    "unusedAddress": 38018
+  },
+  "expected": {
+    "representativeSymbols": {
+      "battleparty.asm": "UpdateForce",
+      "caravaninventory.asm": "AddItemToCaravan",
+      "combatantstats_1.asm": "GetCombatantName",
+      "combatantstats_2.asm": "LoadAllyName",
+      "combatantstats_3.asm": "GetCombatantEntryAddress",
+      "dealsinventory.asm": "GetDealsItemAmount",
+      "findname.asm": "GetClassName",
+      "gameflags.asm": "CheckFlag",
+      "getcombatanttype.asm": "GetCombatantType",
+      "gold.asm": "SetGold",
+      "iteminventory.asm": "ReceiveMandatoryItem",
+      "items/fielditemeffects.asm": "UseItemOnField",
+      "items/itemactions_1.asm": "IsItemUsableOnField",
+      "items/itemfunctions_s7_0.asm": "ReceiveMandatoryItem",
+      "itemstats.asm": "GetItemName",
+      "levelup.asm": "LevelUp",
+      "newgame.asm": "NewGame",
+      "spellstats.asm": "GetSpellName",
+      "unusedsub_9482.asm": "nullsub_9482",
+      "updatecombatantstats.asm": "UpdateCombatantStats"
+    },
+    "statsFacts": {
+      "flags": {
+        "flagIndexMasked": true,
+        "bitsPerByte": 8,
+        "maskStartsAtBit7": true,
+        "checkSetAndClearShareGetFlag": true
+      },
+      "party": {
+        "joinedAndActiveUseSeparateFlagRanges": true,
+        "updateBuildsForceActiveAndReserveLists": true,
+        "joinForceAutoActivatesBelowForceMax": true,
+        "leaveForceMovesCombatantOffMap": true
+      },
+      "inventories": {
+        "caravanMasksItemStatusBits": true,
+        "caravanFullAddIsIgnored": true,
+        "caravanRemovalCompactsAndWritesNothing": true,
+        "dealsStoresTwoItemCountsPerByte": true,
+        "dealsCountSaturates": true,
+        "dealsRemoveAtZeroIsIgnored": true
+      },
+      "combatantType": {
+        "allySetsHighBit": true,
+        "allyEncodesClassTypeTimesAllyCountPlusIndex": true,
+        "enemyReturnsEnemyIndex": true,
+        "upstreamMarksFeatureUnused": true
+      },
+      "fieldItems": {
+        "dispatchPairCount": 9,
+        "pairs": [
+          {
+            "item": "ITEM_ANTIDOTE",
+            "effect": "fieldItem_CurePoison"
+          },
+          {
+            "item": "ITEM_FAIRY_POWDER",
+            "effect": "fieldItem_CurePoisonAndParalysis"
+          },
+          {
+            "item": "ITEM_POWER_WATER",
+            "effect": "fieldItem_IncreaseAtt"
+          },
+          {
+            "item": "ITEM_PROTECT_MILK",
+            "effect": "fieldItem_IncreaseDef"
+          },
+          {
+            "item": "ITEM_QUICK_CHICKEN",
+            "effect": "fieldItem_IncreaseAgi"
+          },
+          {
+            "item": "ITEM_RUNNING_PIMENTO",
+            "effect": "fieldItem_IncreaseMov"
+          },
+          {
+            "item": "ITEM_CHEERFUL_BREAD",
+            "effect": "fieldItem_IncreaseHp"
+          },
+          {
+            "item": "ITEM_BRIGHT_HONEY",
+            "effect": "fieldItem_IncreaseMp"
+          },
+          {
+            "item": "ITEM_BRAVE_APPLE",
+            "effect": "fieldItem_LevelUp"
+          }
+        ],
+        "terminator": -1,
+        "usabilityListTerminator": -1,
+        "unlistedItemResult": -1
+      },
+      "spells": {
+        "definitionMissDefaultsToFirstEntry": true,
+        "learnSuccess": 0,
+        "sameOrHigherKnownFailure": 1,
+        "noRoomFailure": 2,
+        "higherLevelReplacesKnownEntry": true
+      },
+      "newGame": {
+        "settingsBeforeAllies": true,
+        "allAlliesInitialized": true,
+        "startingGoldThenBowieJoin": true,
+        "allySpellSlotsInitializedToNothing": true,
+        "classDataThenStatsThenDerivedStats": true,
+        "clearsFlagsDealsAndCaravan": true,
+        "defaultMessageSpeed": 2
+      },
+      "inventoryBoundary": {
+        "combatantGettersAndSettersInventoried": true,
+        "itemDefinitionHelpersInventoried": true,
+        "existingLevelGoldAndDerivedStatRailsRetained": true,
+        "callerDependentUiAndItemEffectsRemainQueued": true
+      }
+    },
+    "duplicateSource": {
+      "canonicalPath": "code/common/stats/iteminventory.asm",
+      "alternatePath": "code/common/stats/items/itemfunctions_s7_0.asm",
+      "sameAnnotatedRomRange": true,
+      "sourceByteIdentical": false,
+      "sharedGlobalSymbols": [
+        "DiscardItem",
+        "ReceiveMandatoryItem",
+        "RemoveItemFromInventory"
+      ],
+      "canonicalIncludedByLayout": true,
+      "alternateIncludedByLayout": false,
+      "alternateExcludedFromStrictReach": true,
+      "canonicalSha256": "E1B8B995CC4A862E9F800D32C21283B68B7EE2E35267840E45DA0E2D6CC69DAA",
+      "alternateSha256": "F6517B3209B0E221DE1B003A195A8FC83B3F475332EEF12B7E1BB9C322F5A606"
+    }
+  }
+}

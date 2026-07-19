@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II common stats static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "statsFacts", "duplicateSource", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-stats-static-v1" },
+    "upstream": { "type": "object" }, "scope": { "const": "code/common/stats" },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "excludedDuplicateFileCount"], "properties": { "fileCount": { "const": 20 }, "indexedRecordCount": { "const": 23 }, "indexedFileCount": { "const": 19 }, "excludedDuplicateFileCount": { "const": 1 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 23, "maxItems": 23, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true },
+    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "statsFacts": { "type": "object", "minProperties": 8, "maxProperties": 8 },
+    "duplicateSource": { "type": "object" },
+    "files": { "type": "array", "minItems": 20, "maxItems": 20 }
+  }
+}
