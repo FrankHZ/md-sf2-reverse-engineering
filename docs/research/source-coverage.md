@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 201 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 133 | 125 code files and 8 data files |
-| Executable code-file reach | 32.30% | 125 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 256 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 188 | 180 code files and 8 data files |
+| Executable code-file reach | 46.51% | 180 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 597 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 652 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -59,14 +59,15 @@ The current evidence is deep but narrow:
   and target sorting modeled. The seven shared battle-function files are now inventoried too, with
   individual-turn AI/player routing, Kiwi Flame Breath, exits, loading, and move SFX modeled;
   presentation, large cursor/input state machines, and remaining ailment subroutes are still partial.
-  The twelve root battle-scene files are now inventoried as a separate engine boundary, including
-  the 21-command script interpreter, initialization/selectors, and 32-entry setup/update tables;
-  the 55 animation descendants and their frame/VDP behavior remain explicitly outside that credit.
+  The twelve root battle-scene files and all 55 animation descendants are now separately inventoried,
+  including the 21-command script interpreter, initialization/selectors, 32 setup/update pairs,
+  shared setup files, reused update targets, and root-owned update targets. Frame/VDP behavior is
+  still explicitly outside that static credit.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 32.30% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 46.51% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -79,8 +80,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 201 records; its
-verifier reports 54 H3 fixtures and 597 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 256 records; its
+verifier reports 54 H3 fixtures and 652 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -118,7 +119,7 @@ batch confirms five movement/boundary cases in one launch. Remaining battle-AI s
 critical-class, dispatcher/standby questions and the attack-position comment conflict stay queued
 until they form another coherent shared-boundary matrix. The 29-file battle-actions directory is now
 fully reached without another emulator launch; the seven-file `battlefunctions` boundary is now also
-reached. The twelve-file battle-scene root engine is now fully reached too, without an emulator
-launch. Static work proceeds into its 55 animation descendants; only after their setup/update pairs
-are classified will frame timing and VDP effects be run as one grouped presentation matrix. The
-large cursor/input files' deeper branch models remain queued behind that batch.
+reached. The twelve-file battle-scene root engine and all 55 animation descendants are now fully
+reached without an emulator launch. Their 32 setup/update pairs are classified; frame timing and VDP
+effects can now be run later as one grouped presentation matrix. Static work proceeds to the next
+unindexed battle-adjacent source boundary while that runtime queue remains consolidated.

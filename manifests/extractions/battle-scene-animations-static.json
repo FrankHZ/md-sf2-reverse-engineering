@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-scene-animations-static-v1",
+  "outputSha256": "1184AA1C77A13DFAC7E1C8E7BF739D489F4B0229E460AE2D5E6729442CB5ABF1",
+  "summary": {
+    "fileCount": 55,
+    "sourceLineCount": 7919,
+    "statementCount": 5566,
+    "globalLabelCount": 650,
+    "localLabelCount": 53,
+    "directCallSiteCount": 344,
+    "indirectCallSiteCount": 2,
+    "uniqueDirectTargetCount": 46,
+    "internalDirectTargetCount": 17,
+    "externalDirectTargetCount": 29,
+    "indexedRecordCount": 55,
+    "indexedFileCount": 55
+  }
+}

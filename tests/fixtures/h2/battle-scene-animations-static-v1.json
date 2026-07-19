@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-scene-animations-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "spellanimationSetup_Absorb": 109784,
+    "spellanimationSetup_Apollo": 110800,
+    "spellanimationSetup_ArrowsAndSpears": 109988,
+    "spellanimationSetup_Atlas": 111484,
+    "spellanimationSetup_AttackSpell": 112152,
+    "spellanimationSetup_Blast": 108840,
+    "spellanimationSetup_Blaze": 107642,
+    "spellanimationSetup_Bolt": 109200,
+    "spellanimationSetup_BubbleBreath": 111752,
+    "spellanimationSetup_Buff1": 109470,
+    "spellanimationSetup_BurstRockExplosion": 112362,
+    "spellanimationSetup_CannonFire": 110256,
+    "spellanimationSetup_CutOffAndDodge": 111862,
+    "spellanimationSetup_Dao": 110610,
+    "spellanimationSetup_Debuff1": 109556,
+    "spellanimationSetup_DemonBreath": 109796,
+    "spellanimationSetup_Desoul": 108346,
+    "spellanimationSetup_Detox": 109120,
+    "spellanimationSetup_FlameBreath": 109886,
+    "spellanimationSetup_Freeze": 108116,
+    "spellanimationSetup_GunnerBlast": 110476,
+    "spellanimationSetup_HealingFairy": 108616,
+    "spellanimationSetup_Neptun": 111130,
+    "spellanimationSetup_Nothing": 107640,
+    "spellanimationSetup_OddEyeBeam": 112406,
+    "spellanimationSetup_PhoenixAttack": 112296,
+    "spellanimationSetup_PrismLaser": 111622,
+    "spellanimationSetup_ShotFire": 110346,
+    "spellanimationSetup_SnowBreath": 112224,
+    "spellanimationUpdate_Apollo": 122404,
+    "spellanimationUpdate_ArrowsAndSpears": 120038,
+    "spellanimationUpdate_Atlas": 123188,
+    "spellanimationUpdate_AttackSpell": 125272,
+    "spellanimationUpdate_Blast": 116726,
+    "spellanimationUpdate_Blaze": 112956,
+    "spellanimationUpdate_Bolt": 118352,
+    "spellanimationUpdate_BubbleBreath": 124368,
+    "spellanimationUpdate_Buff": 118780,
+    "spellanimationUpdate_BurstRockExplosion": 125882,
+    "spellanimationUpdate_CannonFire": 120262,
+    "spellanimationUpdate_Dao": 122088,
+    "spellanimationUpdate_Debuff": 118840,
+    "spellanimationUpdate_DemonBreath": 119038,
+    "spellanimationUpdate_Desoul": 115272,
+    "spellanimationUpdate_Detox": 117846,
+    "spellanimationUpdate_FlameBreath": 119526,
+    "spellanimationUpdate_Freeze": 114334,
+    "spellanimationUpdate_GunnerBlast": 121340,
+    "spellanimationUpdate_HealingFairy": 116030,
+    "spellanimationUpdate_Neptun": 122836,
+    "spellanimationUpdate_OddEyeBeam": 126152,
+    "spellanimationUpdate_PhoenixAttack": 125452,
+    "spellanimationUpdate_PrismLaser": 123604,
+    "spellanimationUpdate_ShotFire": 120710,
+    "spellanimationUpdate_SnowBreath": 124850
+  },
+  "expected": {
+    "dispatchSummary": {
+      "setupFileCount": 29,
+      "updateFileCount": 26,
+      "setupDispatchCount": 32,
+      "updateDispatchCount": 32,
+      "uniqueSetupTargetCount": 32,
+      "uniqueUpdateTargetCount": 28,
+      "rootOwnedUpdateTargets": [
+        "spellanimationUpdate_Absorb",
+        "spellanimationUpdate_Nothing"
+      ],
+      "sharedSetupFiles": [
+        "code/gameflow/battle/battlescenes/animation/buff.asm",
+        "code/gameflow/battle/battlescenes/animation/debuff.asm"
+      ],
+      "reusedUpdateTargets": [
+        {
+          "target": "spellanimationUpdate_Absorb",
+          "indices": [
+            10,
+            24
+          ]
+        },
+        {
+          "target": "spellanimationUpdate_Buff",
+          "indices": [
+            8,
+            25
+          ]
+        },
+        {
+          "target": "spellanimationUpdate_Debuff",
+          "indices": [
+            9,
+            27,
+            28
+          ]
+        }
+      ],
+      "allChildFilesDispatched": true
+    }
+  }
+}
