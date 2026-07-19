@@ -14,6 +14,12 @@ The fixtures use tracked Lua bus-execution callbacks against natural game execut
 a controlled RAM input when the original function is entered and read registers/RAM at a later
 instruction boundary. It must not assume that `emu.setregister` works for this core.
 
+Before EmuHawk opens, the Python harness compiles every selected observer with BizHawk's bundled
+`lua54.dll` and fails on parser errors. The ordinary pytest gate also compiles every tracked observer
+when the pinned local toolchain is present and rejects Lua reserved words used as dot-field names.
+This keeps syntax failures such as `config.function` out of the interactive Lua Console; it does not
+replace an H3 run because compilation cannot validate emulator APIs or runtime behavior.
+
 BizHawk's [official repository](https://github.com/TASEmulators/BizHawk) documents command-line Lua,
 Genesis support, stable-release usage, and the MIT license for EmuHawk source. The
 [2.11.1 release](https://github.com/TASEmulators/BizHawk/releases/tag/2.11.1) is pinned rather than a
@@ -57,6 +63,9 @@ execution engine.
 - Root `uv run sf2 verify --full` runs both RNG fixtures and offers `--skip-runtime` for deliberately
   static-only milestone work. Default `uv run sf2 verify` stays on the commit gate. `uv run sf2 h3
   rng` is the narrow Python-owned rail; its tracked Lua observer emits only controlled state facts.
+- `uv run sf2 verify` syntax-checks all tracked observers through the pinned Lua runtime when BizHawk
+  is installed, and every Python-owned H3 launch repeats the selected observer's preflight before
+  starting EmuHawk.
 - Emulator-generated configs, Lua scripts, observations, states, traces, and movies remain ignored.
 - The EmuHawk repository is MIT, but a release bundle contains separately licensed components. The
   manifest records that boundary and the project does not redistribute the bundle.

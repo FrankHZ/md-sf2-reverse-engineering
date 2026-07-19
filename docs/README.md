@@ -24,6 +24,13 @@ migration audit, move only still-valid, project-specific facts into the appropri
 then stop synchronizing against the external store. When a session discovers a durable fact or
 changes the frontier, update the owning repository document in the same slice.
 
+The one-time migration audit on 2026-07-19 found no `md-sf2` project entry in the disabled external
+memory index. The durable chat-era decisions were already owned here: autonomous Phase 2 slice and
+commit cadence in `AGENTS.md`, Python/uv and focused commit verification in ADR 0002, static-first
+batched simulation in ADR 0003, and reproducible coverage counters/frontiers in
+`research/source-coverage.md`. The remaining implementation-only Lua syntax-preflight rule was
+migrated into ADR 0001 during this audit. No continuing memory synchronization is required.
+
 ## Research
 
 `research/` 保存可复现的逆向结论。每篇必须标明 Confirmed、Inferred 和 Unknown，并提供 ROM
