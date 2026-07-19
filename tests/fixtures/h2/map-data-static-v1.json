@@ -758,6 +758,7 @@
         "savePointRows": 23
       },
       "mapContentParsed": true,
+      "mapBinaryPayloadsDecoded": true,
       "mapSetupSemanticsParsed": true,
       "mapEventTablesParsed": true,
       "mapDescriptionTablesParsed": true,

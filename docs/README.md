@@ -83,8 +83,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone
   script/8,058 条语句。
 - [`map-content.md`](./research/map-content.md)：79 个 46-byte map entry、662 个 source-form content
-  section、154 个私有 blocks/layout payload 的完整 source/H1/ROM parity，record layout、consumer
-  规则与 `MAPDATA_OFFSET_LAYOUT` 上游常量缺陷。
+  section、154 个私有 blocks/layout payload 的完整 source/H1/ROM parity，77 组 bitstream 的
+  canonical Python 解码、record/consumer 规则与 `MAPDATA_OFFSET_LAYOUT` 上游常量缺陷。
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
   sprite-dialogue 的 65 文件边界、63 个 H1 binding 与两个 alternate。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、

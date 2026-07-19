@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-layout-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "LoadMapLayoutData": 8422,
+    "LoadMapBlocks": 9074
+  },
+  "summary": {
+    "payloadPairCount": 77,
+    "mapReferenceCount": 79,
+    "aliasReferenceCount": 2,
+    "decodedBlockCount": 19771,
+    "decodedBlockWordCount": 177939,
+    "decodedLayoutWordCount": 315392,
+    "decodedLayoutByteCount": 630784,
+    "minimumBlockCount": 22,
+    "maximumBlockCount": 666,
+    "maximumLayoutBlockIndex": 665,
+    "blockPayloadRomParityCount": 77,
+    "layoutPayloadRomParityCount": 77
+  },
+  "aliases": [
+    { "map": 24, "blockOwnerMap": 23, "layoutOwnerMap": 23 },
+    { "map": 46, "blockOwnerMap": 7, "layoutOwnerMap": 7 }
+  ],
+  "blockCommands": {
+    "absoluteNewFlags": 9165,
+    "repeat": 53813,
+    "adjacent": 23792,
+    "relativeSameFlags": 19211,
+    "rightHistory": 25076,
+    "absoluteSameFlags": 19545,
+    "bottomHistory": 11765,
+    "relativeNewFlags": 13493
+  },
+  "layoutCommands": {
+    "nextBlock": 19540,
+    "upperHistory": 7938,
+    "copyLeft": 102770,
+    "leftHistory": 28303,
+    "copyUpper": 145135,
+    "literal": 11706
+  },
+  "runtimeQuestions": [
+    "decoded-map-rendered-vdp-parity",
+    "map-transition-copy-event-persistence"
+  ]
+}

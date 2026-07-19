@@ -12,6 +12,7 @@ from sf2tool.h2.map_content import _encode_source
 from sf2tool.h2.map_descriptions import _decode_entry
 from sf2tool.h2.map_entities import _record_kind
 from sf2tool.h2.map_events import _decode_event_record
+from sf2tool.h2.map_layouts import decode_map_blocks
 from sf2tool.h2.map_setup import _parse_routes, _select_route
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import listing_symbol_addresses, verify_index
@@ -26,7 +27,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 43
+    assert result["H2Fixtures"] == 44
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
     assert result["AddressBindings"] == 1833
     assert result["IndexedCodeFiles"] == 381
@@ -290,6 +291,19 @@ def test_map_content_encoder_keeps_item_terminator_and_trailing_rts(tmp_path: Pa
     assert encoded == bytes.fromhex("01020301FFFF4E75")
     assert records == 1
     assert trailing_rts is True
+
+
+def test_map_layouts_has_a_static_decode_command() -> None:
+    args = build_parser().parse_args(["h2", "map-layouts"])
+    assert args.h2_command == "map-layouts"
+    assert args.rom_path.name == "sf2-us.bin"
+
+
+def test_zero_command_block_stream_yields_the_three_builtin_blocks() -> None:
+    words, consumed_bits, commands = decode_map_blocks(b"\x00\x00")
+    assert len(words) == 27
+    assert consumed_bits == 14
+    assert commands == {}
 
 
 def test_map_entity_payload_prefix_classifies_record_encoding() -> None:

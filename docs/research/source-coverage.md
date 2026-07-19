@@ -184,11 +184,12 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
-private blocks/layout payloads:
+private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks
+and 77 complete 64x64 layouts with every block reference in range:
 
-1. implement canonical Python decoders for the confirmed blocks/layout byte inputs without committing
-   extracted copyrighted content;
-2. compare decoded layout structure and eventually rendered output through one graphics/VDP matrix;
+1. define the implementation-neutral map import contract over the decoded structures without
+   committing extracted copyrighted content;
+2. compare rendered output through one graphics/VDP matrix;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as
    `Inferred` or `Unknown` until stronger evidence exists;

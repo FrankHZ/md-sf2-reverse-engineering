@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/map-layout-decode.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "summary", "aliases", "blockCommands", "layoutCommands", "payloads", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-layout-decode-v1" },
+    "upstream": {
+      "type": "object",
+      "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "aliases": { "type": "array", "items": { "type": "object" } },
+    "blockCommands": { "$ref": "#/$defs/counts" },
+    "layoutCommands": { "$ref": "#/$defs/counts" },
+    "payloads": {
+      "type": "array",
+      "minItems": 77,
+      "maxItems": 77,
+      "items": {
+        "type": "object",
+        "required": ["map", "blockCount", "layoutWordCount", "blockDecodedSha256", "layoutDecodedSha256"],
+        "properties": {
+          "map": { "type": "integer", "minimum": 0, "maximum": 78 },
+          "blockCount": { "type": "integer", "minimum": 1 },
+          "layoutWordCount": { "const": 4096 },
+          "blockDecodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "layoutDecodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } }
+  }
+}

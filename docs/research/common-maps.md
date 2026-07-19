@@ -3,8 +3,7 @@
 - Status: **Confirmed** for the pinned seven-file inventory, flag-switched maps, battle-trigger
   admission, egress/savepoint selection, 8 KiB layout decompression boundary, and map VInt gates
 - Status: **Inferred** for presentation intent in the large camera and loader helpers
-- Status: **Unknown** for exact camera/scroll timing, VDP-visible animation results, and map data
-  content outside the loader contracts
+- Status: **Unknown** for exact camera/scroll timing and VDP-visible animation/rendered results
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -26,7 +25,12 @@ requires flag 64 and uses a second four-byte map/coordinate table.
 `LoadMapLayoutData` clears its history maps and produces exactly `$2000` bytes. Its top-level modes
 emit a new block, copy a run, or reuse left/upper history. New-map load clears scroll state, updates
 `CURRENT_MAP`, then loads blocks before layout; battle maps additionally apply the battle-area
-overlay. This documents decompressor shape and ordering, not the semantics of each map's content.
+overlay.
+
+The Python-owned decoder now executes every block and layout command over all 77 payload pairs. It
+produces 19,771 3x3 blocks and 77 exact 64x64 layouts; all 315,392 layout words reference an in-range
+decoded block. Maps 24 and 46 reuse both payloads from maps 23 and 7. This closes decompression corpus
+shape without tracking the decoded copyrighted layouts; rendered VDP parity remains separate.
 
 Map VInt bit 0 updates plane A and refreshes window layout when present; bit 1 updates plane B. Tile
 animation requires a positive data pointer, counts down, and performs VInt DMA. The large camera state
@@ -37,6 +41,7 @@ in the grouped presentation runtime queue. This batch adds no emulator run.
 
 ```powershell
 uv run sf2 h2 common-maps
+uv run sf2 h2 map-layouts
 uv run sf2 research-index test
 ```
 

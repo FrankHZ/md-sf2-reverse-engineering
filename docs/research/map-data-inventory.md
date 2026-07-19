@@ -247,9 +247,10 @@ evidence. Remaining questions are grouped as:
 3. walking/special-sprite and portrait/text/entity-facing presentation timing;
 4. rendered block/layout parity and animation VDP frame timing in the later graphics matrix.
 
-Entity streams, every source-form setup family, every source-form content family, and the private
-block/layout input bytes are now closed statically. Continue with a canonical Python layout decoder;
-only ambiguities that survive it should share the prepared runtime matrices.
+Entity streams, every source-form setup family, every source-form content family, and both private
+block/layout bitstreams are now closed statically, including 77 complete decoder passes. Continue
+with an implementation-neutral map import contract; only presentation ambiguities should share the
+prepared runtime matrices.
 
 ## Harness Performance
 

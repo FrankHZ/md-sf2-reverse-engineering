@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-layout-decode-v1",
+  "outputSha256": "EF5E7C493BC50AFDC64197D51350B2E69D5C9E33870FF56565694F79F39E3691",
+  "summary": {
+    "payloadPairCount": 77,
+    "mapReferenceCount": 79,
+    "aliasReferenceCount": 2,
+    "decodedBlockCount": 19771,
+    "decodedBlockWordCount": 177939,
+    "decodedLayoutWordCount": 315392,
+    "decodedLayoutByteCount": 630784,
+    "minimumBlockCount": 22,
+    "maximumBlockCount": 666,
+    "maximumLayoutBlockIndex": 665,
+    "blockPayloadRomParityCount": 77,
+    "layoutPayloadRomParityCount": 77
+  }
+}
