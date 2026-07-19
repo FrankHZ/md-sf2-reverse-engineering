@@ -57,6 +57,26 @@ completed migrations are the base/debug-aware RNG and stat-gain/complete-level-u
 BizHawk; host orchestration and validation belong in Python. Before Python opens EmuHawk, it compiles
 both the tracked observer and generated configuration with BizHawk's pinned `lua54.dll`; syntax
 failures therefore stop at the command line instead of surfacing in the interactive Lua Console.
+Tracked observers also have a repository test that rejects Lua reserved words used through dot-field
+syntax (for example, `.function`). Such keys must be renamed or accessed with bracket syntax. This
+specifically prevents an observer template from reaching EmuHawk with the NLua
+`<name> expected near 'function'` failure that prompted the guard.
+
+## Verification Profiles and Observed Cost
+
+The profile split is an operational contract, not merely a convenience:
+
+- ordinary commits run `uv run sf2 verify` plus the one narrow H2/H3 command that owns the change;
+- phase milestones, release/merge readiness, shared harness changes, and explicit parity requests run
+  `uv run sf2 verify --full`;
+- related runtime cases share one generated case table and one BizHawk launch unless their setup or
+  observation seams cannot safely be shared.
+
+On the 2026-07-19 Windows research workstation, the default gate completed in roughly 3-6 seconds
+after the research index changed from one full H1-listing scan per record to one symbol-map build per
+run. The complete H1-H3 gate completed in 958.1 seconds. These are observed diagnostics, not pass/fail
+thresholds; automation wrapping the full profile should allow at least 20 minutes rather than treating
+a 15-minute caller timeout as a parity failure.
 
 ## Consequences
 

@@ -354,11 +354,13 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 
 ## 下一步
 
-`battle.ai` 的全目录 inventory、五类 action filter、potential damage 和 attack priority scripts
-已经完成；下一块继续静态解析 **healing/support target eligibility 与 scoring**，把 HP/MP、状态、
-职业和范围条件整理成结构化规则。只有静态无法闭合的 caller context、持久状态、
-RNG/overflow 等问题才进入随后的一次或少量 BizHawk 矩阵，不再为每个分支单独启动模拟器。
-同时保留升级前一等级、缺失职业块和当前/最大属性刷新，以及
-`LASER radius = 3` 的显式行为验证队列。
+源码“找文件”阶段已经收口：code 是 381/387 strict reach，剩余 6 个都有明确 H2 所有权；data
+是 1,690/1,690 H2 inventory，980/1,690 strict H1 reach 的差额也全部归因于 include-site-only、
+unlabeled/alternate 或独立 Z80 地址空间。下一步不再为抬高索引百分比做横向扫目录，而是以
+**地图 setup/event 语义**为第一批深挖对象：静态解析 flag selection、entity/zone/item/description
+dispatch、transition/roof/step/warp precedence 和 binary block consumers，形成 Python-owned canonical
+合同。只有 caller ordering、持久状态或二进制消费者仍有歧义时，才启动已经规划为同一 observation
+seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与 VDP/Z80/audio timing 继续留在各自的
+共享矩阵队列，不拆成单案例模拟。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

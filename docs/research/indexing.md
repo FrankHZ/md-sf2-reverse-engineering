@@ -48,6 +48,11 @@ JSON Schema cannot express:
 8. when the H1 listing exists, each symbol address is compared with the assembled listing, including
    labels that share a line with their first data directive.
 
+The H1 listing is parsed once into a symbol-address map for the entire verification run. Duplicate
+spellings at the same address are accepted, while the same symbol at conflicting addresses fails the
+gate. This keeps the 1,000+ record index fast without weakening source-file ownership or address
+parity checks.
+
 The default commit gate `uv run sf2 verify` runs this check before ROM/toolchain provenance; the
 milestone gate `uv run sf2 verify --full` continues into extraction and runtime rails. A fresh
 checkout can validate tracked relationships without private inputs; source and listing checks
@@ -72,9 +77,18 @@ index verifier proves every copy still agrees.
 
 ## Current Boundary
 
-The index currently answers which named H3-covered symbols and selected H2 tables have executable
-evidence and where that evidence is documented. Enemy gold and item drops are the first indexed H2
-reward tables; other static coverage remains in `manifests/extractions/` until a subsystem benefits
-from the connection. Source coverage percentages must use an explicitly defined denominator and
-must not treat these indexed records as whole-program coverage. The current denominator, snapshot,
-and static-first batching policy are recorded in [`source-coverage.md`](./source-coverage.md).
+As of 2026-07-19, the index contains 1,430 confirmed findings and 1,826 checked address bindings. It
+connects all 54 H3 fixture files plus the H2 symbol/table evidence needed by the completed code and
+data inventories. This produces 381/387 strict code-file reach and 980/1,690 strict data-file reach.
+
+Those strict counters deliberately require a named symbol in the claimed source file and a matching
+68000 H1 listing address. They therefore do not credit 662 map bodies that are reachable only through
+an include site, the unlabeled map-storage container, unassembled alternates, or the 41 music sources
+assembled in a separate Z80 address space. Their owning deterministic H2 rails still prove that all
+1,690 data ASM files belong to a known build/inventory graph, so data-ASM H2 inventory is 100% while
+strict data-file reach remains 57.99%. Neither percentage is line, function, semantic, or remake
+completion coverage.
+
+Source coverage percentages must always name their denominator and evidence level. The current
+snapshot, explicit exceptions, and static-first batching policy are recorded in
+[`source-coverage.md`](./source-coverage.md).

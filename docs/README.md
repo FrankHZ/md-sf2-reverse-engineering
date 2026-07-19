@@ -22,8 +22,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
   合同索引、校验规则和新增发现的落地流程。
-- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、61.76% 可执行代码文件
-  reach 的严格边界，以及静态优先、集中运行 H3 的子系统批处理节奏。
+- [`source-coverage.md`](./research/source-coverage.md)：当前覆盖分母、98.45% code-file reach、
+  100% data-ASM H2 inventory、57.99% strict data-file reach 的不同边界，以及静态优先、集中运行
+  H3 的子系统批处理节奏。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
   治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
 - [`battlefield-pathfinding.md`](./research/battlefield-pathfinding.md)：战场/寻路 17 文件完整静态
@@ -44,6 +45,43 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
   field-item dispatch、spell learning、新游戏顺序和未 include 的 alternate source 边界。
+- [`common-menus.md`](./research/common-menus.md)：共享菜单 42 文件、提示框/文本控制、field-item
+  dispatch、商店/教堂/车队等服务入口及 alternate 边界。
+- [`technical-interrupts.md`](./research/technical-interrupts.md)：VInt、DMA、fade、输入重复、wait/sleep
+  handshake、trap 路由和待集中验证的硬件时序。
+- [`technical-graphics.md`](./research/technical-graphics.md)：解压、显示初始化、sprite/palette、视差、
+  flash script 及渲染 parity 边界。
+- [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
+  pointer 的完整静态路由表。
+- [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
+  68000 sound bridge、RNG 和独立 Z80 driver 构建链。
+- [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
+  map event、交互和物品 handoff。
+- [`special-screens.md`](./research/special-screens.md)：logo/title、witch save、suspend/reset、ending
+  等 19 文件特殊画面边界。
+- [`remaining-core.md`](./research/remaining-core.md)：ROM header/vector、window engine、battle test、
+  configuration 与 debug action 的最后主代码边界。
+
+数据侧目录 inventory 与 ROM parity：
+
+- [`battle-global-data.md`](./research/battle-global-data.md)：全局战斗数据 18/18 H2 inventory 与
+  17 个 H1-bound canonical tables。
+- [`ally-data-inventory.md`](./research/ally-data-inventory.md)：ally/class 42 个直接或传递 include
+  文件，以及对既有成长/法术学习 rails 的复用关系。
+- [`core-stats-data-inventory.md`](./research/core-stats-data-inventory.md)：items/spells/enemies 的
+  19 个 source 文件、表维度与已有深层合同所有权。
+- [`battle-cutscene-data.md`](./research/battle-cutscene-data.md)：61 个 battle cutscene data 文件、
+  59 个构建内脚本及两个显式例外。
+- [`battle-spriteset-data.md`](./research/battle-spriteset-data.md)：46 文件 spriteset pointer/include
+  图、header ranges 与 combatant macro 计数。
+- [`battle-routing-data.md`](./research/battle-routing-data.md)：cutscene slots、region routes、terrain
+  aliases、unused joins 和旧 aggregate 边界。
+- [`map-data-inventory.md`](./research/map-data-inventory.md)：完整 1,390-file map ASM build graph、
+  727 个内部 H1 binding、662 个 include-site-only body 和集中 map/event 问题队列。
+- [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
+  sprite-dialogue 的 65 文件边界、63 个 H1 binding 与两个 alternate。
+- [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
+  两个 32 KiB bank 及其 canonical ROM byte parity。
 
 ## Design
 

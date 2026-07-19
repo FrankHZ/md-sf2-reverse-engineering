@@ -175,50 +175,23 @@ observation points safely. The normal batch target is one launch for a coherent 
 demonstrated by the eight-case muddled ally/enemy action guard and fourteen-case final action-choice
 fixtures.
 
-## Next Batch
+## Current Direction
 
-The `battle.ai` and adjacent `battlefield/pathfinding` directories now have complete 26-file and
-17-file static inventories respectively. The 18-file `battleloop` directory and nine top-level battle
-control files are complete at the inventory level too, raising strict code-file reach by 23 files
-across two static-only batches without adding emulator starts. Their models cover the main loop,
-victory/defeat, roster scans, AI-memory reset, forced enemy deaths, between-battle healing, terrain
-decompression, spawn admission, and killed-combatant cleanup. The battlefield slice models grid layout, initialization,
-occupancy, neighbor admission, range rings, target admission, attack-position selection, move-string
-backtracking, move orders, trapped chests, and weighted propagation. Its first concentrated runtime
-batch confirms five movement/boundary cases in one launch. Remaining battle-AI signed-priority,
-critical-class, dispatcher/standby questions and the attack-position comment conflict stay queued
-until they form another coherent shared-boundary matrix. The 29-file battle-actions directory is now
-fully reached without another emulator launch; the seven-file `battlefunctions` boundary is now also
-reached. The twelve-file battle-scene root engine and all 55 animation descendants are now fully
-reached without an emulator launch. Their 32 setup/update pairs are classified; frame timing and VDP
-effects can now be run later as one grouped presentation matrix. The final ten cutscene-routing
-files close the entire 183-file `code/gameflow/battle` tree at file-reach level, still without an
-emulator launch. The 29-file common scripting boundary is now inventoried next, with 28 symbol-bound
-files and one explicitly unlabelled byte range; it adds no emulator launch. Static work moves to
-shared maps/stats boundaries while the runtime queue remains consolidated. The seven-file common
-maps boundary is now complete at the static inventory level too. The 20-file stats boundary followed
-and is now inventoried as well, with its alternate-source exception explicit;
-the 42-file menus boundary is now inventoried too, with 41 layout-owned sources and one overlapping
-alternate. The 21-file technical interrupt, 11-file technical graphics, and 25-file jump/pointer
-boundaries follow with complete static reach. The twelve-file remaining-services batch then closes
-resource incbins, input, byte copy, SRAM, music bridge, base/thinking RNG, and the auxiliary Z80
-build without an emulator launch. The following thirteen-file startup/main-loop/exploration batch
-closes the cold-start-to-map control spine; all nineteen special-screen files and the final five
-primary core files then raise strict reach to 98.45%. The remaining six are fully enumerated H2
-exceptions, so code-file discovery has reached its honest symbol-index ceiling. Static work now moves
-to data tables and individual map/event content, while UI, SRAM hardware, and VDP/Z80 questions stay
-grouped into shared runtime matrices. The first data batch closes `data/battles/global` at 17/18 strict
-symbol reach and 18/18 H2 inventory, raising overall data reach to 19/1,690 without an emulator launch.
-The following ally/class batch reuses the existing core-data parsers and closes all 42 files under
-`data/stats/allies`, including the 30 transitive stat includes. The next combined items/spells/enemies
-batch closes another 19 files while reusing existing core-data and H3 parsers. The 61-file battle
-cutscene directory follows with 59 honest symbol bindings plus two explicit exceptions. The complete
-46-file battle spriteset boundary then raises data reach to 183/1,690 without an emulator launch.
-The following eight-file routing/terrain batch adds seven honest bindings and one excluded legacy
-aggregate, reaching 190/1,690. The complete 1,390-file map ASM graph then adds 727 honest internal
-symbol bindings while keeping 662 include-site-only bodies and one unlabeled container explicit,
-reaching 917/1,690 without an emulator launch. The following 65-file auxiliary graphics, scripting,
-technical, and sprite-dialogue batch adds 63 honest bindings and two explicit alternates, reaching
-980/1,690. The final 41-file Z80 music directory then closes data-ASM discovery at 1,690/1,690 H2
-inventory; strict 68000 H1 reach remains 980/1,690 by design. Static work now moves from discovery to
-deeper table/script semantics while presentation, map, and sound runtime questions stay consolidated.
+Code-file discovery is at its honest symbol-index ceiling: 381/387 files have strict reach and the six
+remaining files are explicitly owned H2 exceptions. Data-file discovery is also closed at 1,690/1,690
+deterministic H2 inventory; its lower 980/1,690 strict reach reflects include-site-only map bodies,
+alternates, unlabeled storage, and the separate Z80 address space rather than unknown files.
+
+The next work is semantic depth, not another sweep for filenames or artificial index percentage:
+
+1. parse map setup selection, event dispatch, transition state, and binary block consumers into
+   structured contracts, starting with source/ROM evidence;
+2. turn stable map/entity/zone/item/description tables and script shapes into canonical Python-owned
+   output without committing extracted copyrighted content;
+3. preserve caller-dependent ordering and persistence as `Inferred` or `Unknown` until observed;
+4. run the already grouped map initialization/event-dispatch matrix only after static parsing leaves a
+   concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in their own
+   later shared matrices.
+
+Historical subsystem closure details live in the owning research documents and Git history. This
+section intentionally states only the active frontier so it cannot masquerade as a stale roadmap.
