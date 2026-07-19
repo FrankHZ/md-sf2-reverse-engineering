@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/map-events-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "runtimeQuestions", "categories"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-events-static-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "scope": { "type": "string", "minLength": 1 },
+    "function": { "$ref": "#/definitions/functionMap" },
+    "summary": { "type": "object", "minProperties": 13, "maxProperties": 13, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "categorySummaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entityEvents", "zoneEvents", "itemEvents"],
+      "properties": {
+        "entityEvents": { "$ref": "#/definitions/categorySummary" },
+        "zoneEvents": { "$ref": "#/definitions/categorySummary" },
+        "itemEvents": { "$ref": "#/definitions/categorySummary" }
+      }
+    },
+    "sourceMacroCounts": { "type": "object" },
+    "consumerFacts": { "type": "object" },
+    "directReturnStubs": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "object" } },
+    "rawZoneDefaultException": { "type": "object" },
+    "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "string" }, "uniqueItems": true },
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entityEvents", "zoneEvents", "itemEvents"],
+      "properties": {
+        "entityEvents": { "$ref": "#/definitions/category" },
+        "zoneEvents": { "$ref": "#/definitions/category" },
+        "itemEvents": { "$ref": "#/definitions/category" }
+      }
+    }
+  },
+  "definitions": {
+    "functionMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["RunMapSetupEntityEvent", "RunMapSetupZoneEvent", "RunMapSetupItemEvent"],
+      "properties": {
+        "RunMapSetupEntityEvent": { "type": "integer", "minimum": 0 },
+        "RunMapSetupZoneEvent": { "type": "integer", "minimum": 0 },
+        "RunMapSetupItemEvent": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "categorySummary": { "type": "object", "minProperties": 15, "maxProperties": 15, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol", "address", "recordCount", "specificRecordCount", "defaultRecordCount", "macroCounts", "directReturnStub", "rawDefaultException"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "recordCount": { "type": "integer", "minimum": 0 },
+        "specificRecordCount": { "type": "integer", "minimum": 0 },
+        "defaultRecordCount": { "type": "integer", "minimum": 0 },
+        "macroCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "directReturnStub": { "type": "boolean" },
+        "rawDefaultException": { "type": "boolean" }
+      }
+    },
+    "record": {
+      "type": "object",
+      "required": ["address", "kind", "relativeOffset", "resolvedTargetAddress"],
+      "properties": {
+        "address": { "type": "integer", "minimum": 0 },
+        "kind": { "enum": ["specific", "default"] },
+        "relativeOffset": { "type": "integer", "minimum": -32768, "maximum": 32767 },
+        "resolvedTargetAddress": { "type": "integer", "minimum": 0 },
+        "entity": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "flags": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "x": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "y": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "facing": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "item": { "type": "integer", "minimum": 0, "maximum": 255 }
+      },
+      "additionalProperties": false
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "address", "recordCount", "records"],
+      "properties": {
+        "symbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "recordCount": { "type": "integer", "minimum": 1 },
+        "records": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/record" } }
+      }
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "sourceMacroCounts", "duplicatePointerTargets", "sourceFiles", "tables"],
+      "properties": {
+        "summary": { "$ref": "#/definitions/categorySummary" },
+        "sourceMacroCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "duplicatePointerTargets": { "type": "array", "items": { "type": "object" } },
+        "sourceFiles": { "type": "array", "items": { "$ref": "#/definitions/sourceFile" } },
+        "tables": { "type": "array", "items": { "$ref": "#/definitions/table" } }
+      }
+    }
+  }
+}

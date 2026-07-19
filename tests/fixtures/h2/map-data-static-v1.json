@@ -758,7 +758,8 @@
         "savePointRows": 23
       },
       "mapContentParsed": false,
-      "mapSetupSemanticsParsed": true
+      "mapSetupSemanticsParsed": true,
+      "mapEventTablesParsed": true
     },
     "runtimeQuestions": [
       "area-description-byte2-d6-condition-meaning",

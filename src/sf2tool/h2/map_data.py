@@ -232,6 +232,7 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
             "globalTables": global_facts,
             "mapContentParsed": False,
             "mapSetupSemanticsParsed": True,
+            "mapEventTablesParsed": True,
         },
         "runtimeQuestions": [
             "area-description-byte2-d6-condition-meaning",

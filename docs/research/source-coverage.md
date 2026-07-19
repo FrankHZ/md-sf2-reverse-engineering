@@ -184,12 +184,13 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage:
 
-1. parse the 105 entity-event, 84 zone-event, 75 description, and 74 item-event sections now that
-   setup selection, all 126 pointer tables, dispatcher shapes, and all 125 entity-list sources are
-   confirmed;
-2. turn those event structures and binary-block consumers into canonical Python-owned output without
-   committing extracted copyrighted content;
-3. preserve script side effects, transition persistence, and the description `d6` condition as
+1. parse the remaining 75 description sections now that setup selection, all 126 pointer tables,
+   all 125 entity-list sources, and all 263 entity/zone/item event sources are source/H1/ROM-confirmed;
+2. turn description structures and binary-block consumers into canonical Python-owned output without
+   committing extracted copyrighted content; the event rail already owns 1,134 physical records and
+   1,451 setup-level references;
+3. preserve direct-`rts` stub reachability, script side effects, transition persistence, and the
+   description `d6` condition as
    `Inferred` or `Unknown` until stronger evidence exists;
 4. run the already grouped map initialization/event-dispatch matrix only after deeper static parsing
    leaves a concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in

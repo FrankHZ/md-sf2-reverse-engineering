@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-events-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "RunMapSetupEntityEvent": 292378,
+    "RunMapSetupZoneEvent": 292122,
+    "RunMapSetupItemEvent": 292230
+  },
+  "expected": {
+    "summary": {
+      "sourceFileCount": 263,
+      "setupPointerReferenceCount": 378,
+      "uniqueTargetCount": 263,
+      "physicalRecordCount": 1134,
+      "specificPhysicalRecordCount": 873,
+      "defaultPhysicalRecordCount": 261,
+      "setupRecordReferenceCount": 1451,
+      "specificSetupRecordReferenceCount": 1076,
+      "defaultSetupRecordReferenceCount": 375,
+      "directReturnStubCount": 2,
+      "directReturnStubReferenceCount": 3,
+      "rawDefaultExceptionCount": 1,
+      "maximumTableRecordCount": 31
+    },
+    "categorySummaries": {
+      "entityEvents": {
+        "sourceFileCount": 105,
+        "setupPointerReferenceCount": 126,
+        "uniqueTargetCount": 105,
+        "decodedTableCount": 103,
+        "aliasedTargetCount": 17,
+        "physicalRecordCount": 850,
+        "specificPhysicalRecordCount": 747,
+        "defaultPhysicalRecordCount": 103,
+        "setupRecordReferenceCount": 998,
+        "specificSetupRecordReferenceCount": 875,
+        "defaultSetupRecordReferenceCount": 123,
+        "directReturnStubCount": 2,
+        "directReturnStubReferenceCount": 3,
+        "rawDefaultExceptionCount": 0,
+        "maximumTableRecordCount": 31
+      },
+      "zoneEvents": {
+        "sourceFileCount": 84,
+        "setupPointerReferenceCount": 126,
+        "uniqueTargetCount": 84,
+        "decodedTableCount": 84,
+        "aliasedTargetCount": 29,
+        "physicalRecordCount": 202,
+        "specificPhysicalRecordCount": 118,
+        "defaultPhysicalRecordCount": 84,
+        "setupRecordReferenceCount": 313,
+        "specificSetupRecordReferenceCount": 187,
+        "defaultSetupRecordReferenceCount": 126,
+        "directReturnStubCount": 0,
+        "directReturnStubReferenceCount": 0,
+        "rawDefaultExceptionCount": 1,
+        "maximumTableRecordCount": 10
+      },
+      "itemEvents": {
+        "sourceFileCount": 74,
+        "setupPointerReferenceCount": 126,
+        "uniqueTargetCount": 74,
+        "decodedTableCount": 74,
+        "aliasedTargetCount": 35,
+        "physicalRecordCount": 82,
+        "specificPhysicalRecordCount": 8,
+        "defaultPhysicalRecordCount": 74,
+        "setupRecordReferenceCount": 140,
+        "specificSetupRecordReferenceCount": 14,
+        "defaultSetupRecordReferenceCount": 126,
+        "directReturnStubCount": 0,
+        "directReturnStubReferenceCount": 0,
+        "rawDefaultExceptionCount": 0,
+        "maximumTableRecordCount": 3
+      }
+    },
+    "sourceMacroCounts": {
+      "entityEvents": {
+        "msDefaultEntityEvent": 102,
+        "msDftEntityEvent": 1,
+        "msEntityEvent": 747
+      },
+      "zoneEvents": {
+        "msDefaultZoneEvent": 83,
+        "msZoneEvent": 118
+      },
+      "itemEvents": {
+        "msDefaultItemEvent": 74,
+        "msItemEvent": 8
+      }
+    },
+    "consumerFacts": {
+      "defaultMarker": 253,
+      "relativeOffsetsResolveFromTableBase": true,
+      "firstMatchingEntryWins": true,
+      "entityEvents": {
+        "pointerOffset": 4,
+        "entryBytes": 4,
+        "defaultMarker": 253,
+        "flagsByteOffset": 1,
+        "turnTowardActorBit": 0,
+        "restoreFacingAfterScriptBit": 1,
+        "matchOrder": "first-matching-entry"
+      },
+      "zoneEvents": {
+        "pointerOffset": 8,
+        "entryBytes": 4,
+        "defaultMarker": 253,
+        "wildcardFields": ["x", "y"],
+        "wildcardValue": 255,
+        "matchOrder": "first-matching-entry"
+      },
+      "itemEvents": {
+        "pointerOffset": 16,
+        "entryBytes": 6,
+        "defaultMarker": 253,
+        "wildcardFields": ["x", "y", "facing"],
+        "wildcardValue": 255,
+        "itemIndexMaskedBeforeMatch": true,
+        "matchOrder": "first-matching-entry"
+      }
+    },
+    "directReturnStubs": [
+      {
+        "symbol": "ms_map52_EntityEvents",
+        "address": 378024,
+        "setupReferenceCount": 2,
+        "pairedEntityListRecordCounts": [4, 0],
+        "nonEmptyPairedEntityListReferenceCount": 1
+      },
+      {
+        "symbol": "ms_map55_EntityEvents",
+        "address": 385606,
+        "setupReferenceCount": 1,
+        "pairedEntityListRecordCounts": [0],
+        "nonEmptyPairedEntityListReferenceCount": 0
+      }
+    ],
+    "rawZoneDefaultException": {
+      "symbol": "ms_map44_ZoneEvents",
+      "address": 345176,
+      "relativeOffset": 1044,
+      "resolvedTargetAddress": 346220,
+      "pointsInsideCutsceneEntityList": true
+    },
+    "runtimeQuestions": [
+      "entity-event-direct-return-stub-unreachability-under-mutated-state",
+      "event-script-side-effects-and-transition-persistence",
+      "event-portrait-facing-and-presentation-timing"
+    ]
+  }
+}

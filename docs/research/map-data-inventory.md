@@ -3,10 +3,11 @@
 - Status: **Confirmed** for the complete 1,390-file ASM boundary, build reachability, internal-symbol
   addresses, map/setup file classes, pointer/include counts, global table row counts, all 64 setup
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
-  and all 125 entity-list sources/980 physical entity records
+  all 125 entity-list sources/980 physical entity records, and all 263 entity/zone/item event sources
+  with 1,134 physical records
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
-- Status: **Unknown** for the description `d6` condition, sequenced-orientation consumption,
-  presentation timing, and binary consumers
+- Status: **Unknown** for direct-`rts` entity-event reachability, the description `d6` condition,
+  sequenced-orientation consumption, presentation timing, and binary consumers
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -117,19 +118,50 @@ scales them by `MAP_TILE_SIZE`, and routes special mapsprites through the specia
 path. The complete numeric records stay in ignored `local/derived/map-entities-static.json`; the
 tracked fixture contains only counts, encodings, fallthrough relationships, addresses, and rules.
 
+## Entity, Zone, and Item Event Tables
+
+The event-table rail follows all three event slots from the 126 setup tables, decodes each unique
+target from ROM until its `$FD` default record, and checks every record address and kind against its
+owning source macros. Relative branch words resolve from the start of the table, matching the
+dispatcher rather than the current record address.
+
+| Category | Source files / unique targets | Decoded tables | Physical records | Setup-level references |
+| --- | ---: | ---: | ---: | ---: |
+| entity | 105 | 103 | 850 (747 specific + 103 default) | 998 |
+| zone | 84 | 84 | 202 (118 specific + 84 default) | 313 |
+| item | 74 | 74 | 82 (8 specific + 74 default) | 140 |
+| **Total** | **263** | **261** | **1,134** | **1,451** |
+
+The difference between 263 unique targets and 261 decoded tables is explicit: entity-event targets
+`ms_map52_EntityEvents` and `ms_map55_EntityEvents` are two-byte direct-`rts` stubs, not `$FD`-ended
+record streams. They are referenced three times. The map 52 default setup pairs its stub with four
+entities, while map 52/flag 512 and map 55 pair theirs with empty lists. The source/ROM shape and
+pairing are **Confirmed**; why the non-empty map 52 setup cannot safely reach this dispatcher remains
+**Unknown** and is retained as one runtime question rather than guessed away.
+
+Map 44 has the other source exception: its zone default is written as raw `dc.w` values instead of
+`msDefaultZoneEvent`, and its relative word resolves to `0x5486C`, four bytes into the cutscene entity
+list beginning at `byte_54868`. The upstream source labels this as a bug. The exact bytes, offset 1,044,
+and target are **Confirmed**; no intended behavior is inferred from the bad pointer.
+
+The complete tables and decoded branch targets stay in ignored
+`local/derived/map-events-static.json`. The tracked fixture keeps category totals, dispatcher rules,
+macro counts, and both exception families without redistributing event content.
+
 ## Concentrated Queue
 
 No emulator was launched. Setup priority and dispatcher order are now closed by source/H1/ROM
 evidence. Remaining questions are grouped as:
 
-1. the area-description byte-2/`d6` condition and sequenced-entity orientation stream consumption;
-2. follower/map-entity collision state, selected event-script side effects, transition persistence,
+1. the 75 area-description sections, their byte-2/`d6` condition, and sequenced-entity orientation;
+2. direct-`rts` entity-event reachability, follower/map-entity collision state, selected event-script
+   side effects, transition persistence,
    and roof/step/warp precedence;
 3. walking/special-sprite, portrait/text/entity-facing presentation timing, and binary consumers.
 
-Entity streams are now closed statically. Continue with entity/zone/item/description tables and their
-default/fallthrough exceptions; only ambiguities that survive that pass should share the prepared map
-initialization/event-dispatch runtime matrix.
+Entity streams plus entity/zone/item event tables are now closed statically. Continue with the 75
+description sections and binary consumers; only ambiguities that survive those passes should share
+the prepared map initialization/event-dispatch runtime matrix.
 
 ## Harness Performance
 
@@ -144,5 +176,6 @@ source file and at the fixture/index address in the H1 listing.
 uv run sf2 h2 map-data
 uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
+uv run sf2 h2 map-events
 uv run sf2 research-index test
 ```

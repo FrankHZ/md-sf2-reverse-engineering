@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h2-map-events-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-events-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 3, "maxProperties": 3 },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "runtimeQuestions"],
+      "properties": {
+        "summary": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+        "categorySummaries": { "type": "object", "minProperties": 3, "maxProperties": 3 },
+        "sourceMacroCounts": { "type": "object", "minProperties": 3, "maxProperties": 3 },
+        "consumerFacts": { "type": "object" },
+        "directReturnStubs": { "type": "array", "minItems": 2, "maxItems": 2 },
+        "rawZoneDefaultException": { "type": "object" },
+        "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true }
+      }
+    }
+  }
+}

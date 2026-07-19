@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-events-static-v1",
+  "outputSha256": "AFE0EA62121C8C2B5C058F92378589FD0C84DE4E6263A726244088A39E3CFAE7",
+  "summary": {
+    "sourceFileCount": 263,
+    "setupPointerReferenceCount": 378,
+    "uniqueTargetCount": 263,
+    "physicalRecordCount": 1134,
+    "specificPhysicalRecordCount": 873,
+    "defaultPhysicalRecordCount": 261,
+    "setupRecordReferenceCount": 1451,
+    "specificSetupRecordReferenceCount": 1076,
+    "defaultSetupRecordReferenceCount": 375,
+    "directReturnStubCount": 2,
+    "directReturnStubReferenceCount": 3,
+    "rawDefaultExceptionCount": 1,
+    "maximumTableRecordCount": 31
+  }
+}

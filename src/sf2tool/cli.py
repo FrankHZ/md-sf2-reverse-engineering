@@ -31,6 +31,7 @@ from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_entities import verify_map_entities_contract
+from sf2tool.h2.map_events import verify_map_events_contract
 from sf2tool.h2.map_setup import verify_map_setup_contract
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
@@ -319,6 +320,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_entities)
     h2_map_entities.add_argument("--output-path", type=_path)
+    h2_map_events = h2_commands.add_parser(
+        "map-events", help="decode entity, zone, and item event tables against source and ROM"
+    )
+    _add_local_paths(h2_map_events)
+    h2_map_events.add_argument("--output-path", type=_path)
     h2_auxiliary_data = h2_commands.add_parser(
         "auxiliary-data", help="inventory graphics, scripting, tech, and sprite-dialogue data"
     )
@@ -755,6 +761,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-entities":
         print_record(
             verify_map_entities_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-events":
+        print_record(
+            verify_map_events_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

@@ -9,6 +9,7 @@ from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h2.map_entities import _record_kind
+from sf2tool.h2.map_events import _decode_event_record
 from sf2tool.h2.map_setup import _parse_routes, _select_route
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import listing_symbol_addresses, verify_index
@@ -23,7 +24,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 38
+    assert result["H2Fixtures"] == 39
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
     assert result["AddressBindings"] == 1833
     assert result["IndexedCodeFiles"] == 381
@@ -270,6 +271,25 @@ def test_map_entity_payload_prefix_classifies_record_encoding() -> None:
     assert _record_kind(bytes.fromhex("0102030400001234")) == "fixed"
     assert _record_kind(bytes.fromhex("01020304FF050607")) == "walking"
     assert _record_kind(bytes.fromhex("01020304FE001234")) == "sequenced"
+
+
+def test_map_events_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-events"])
+    assert args.h2_command == "map-events"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_event_relative_offsets_resolve_from_table_base() -> None:
+    record = _decode_event_record("zoneEvents", 0x1000, 0x1004, bytes.fromhex("FD000020"))
+    assert record == {
+        "address": 0x1004,
+        "kind": "default",
+        "relativeOffset": 0x20,
+        "resolvedTargetAddress": 0x1020,
+        "x": 0xFD,
+        "y": 0,
+    }
 
 
 def test_auxiliary_data_has_a_source_only_inventory_command() -> None:
