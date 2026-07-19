@@ -18,7 +18,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 H4 复用。
 
 截至 2026-07-19，研究索引有 1,467 条 confirmed finding、64 个 H2 fixture、58 个 H3 fixture
-和 1,974 个地址绑定。
+和 1,978 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -328,8 +328,12 @@ presentation matrix。
 variable-width-font rail 接着闭合对话字体的静态数据流：80 个固定 32-byte glyph、256 项
 ASCII-to-symbol table、唯一 longword pointer 和三个 loader/renderer 入口，共 2,820 bytes 通过
 source/H1/ROM parity。glyph 是 15×12 bitplane，stored width 为 3-9，loader 对非零值再加一形成
-advance；ASCII 路径只发出 78/80 个 glyph，70/71 是否由 Huffman 直达，以及 overlap、palette、
-typewriter timing 与 DMA 呈现，保留到共享 text-presentation matrix。
+advance；ASCII 路径只发出 78/80 个 glyph。后续 text-Huffman rail 又闭合 510-byte/255-entry
+offset table 与 1,952-byte tree payload：86 棵定义树、1,536 个 leaf code 连续覆盖整个 payload，
+从初始 context 254 可达全部定义树且不会落入 169 个 `$FFFF` 槽。上游说明写的 256 entries 与
+实际 255 entries 的差异被显式保留；Huffman 与 ASCII 的正常输入并集仍不发出 glyph 70/71。
+完整 4,267-string/control-code replay、非标准直接 symbol 注入，以及 overlap、palette、typewriter
+timing 与 DMA 呈现，保留到共享 text-presentation matrix。
 witch-menu-graphics rail 随后补齐同一 section 6 的非压缩 presentation 数据：32-byte/16-color
 choice palette、960-byte bubble table、两个 longword pointer 和 `ExecuteWitchMainMenu`/
 `DrawWitchMenuBubble` 消费路径，共 1,000 bytes 通过 source/H1/ROM parity。bubble 表严格拆成

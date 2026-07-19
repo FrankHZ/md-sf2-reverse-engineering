@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-text-huffman-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "TextBankTreeOffsets": 188822,
+    "TextBankTreeData": 189332,
+    "InitializeHuffmanDecoder": 188686,
+    "HuffmanDecode": 188708
+  },
+  "summary": {
+    "offsetByteCount": 510,
+    "offsetEntryCount": 255,
+    "definedTreeCount": 86,
+    "missingTreeCount": 169,
+    "treeDataByteCount": 1952,
+    "leafEntryCount": 1536,
+    "nonLeafNodeCount": 1450,
+    "nodeBitCount": 2986,
+    "nodeStorageByteCount": 416,
+    "symbolStorageByteCount": 1536,
+    "zeroPaddingBitCount": 342,
+    "minimumLeafCount": 1,
+    "maximumLeafCount": 66,
+    "minimumCodeBitLength": 0,
+    "maximumCodeBitLength": 14,
+    "emittedSymbolCount": 86,
+    "reachableContextCount": 86,
+    "sourceRomParityByteCount": 2462
+  },
+  "resourceHashes": {
+    "offsetSha256": "C695BFB81A5D29D67815759A83D38BE3E3D4E62F04EC225F6B5BE740E5D8B263",
+    "treeSha256": "922192C49F173B24DB6C6AD259FCA0BB88B1D5DEC87B17E32441C09EB33F9BC9",
+    "offsetFormatNoteSha256": "A3D54B819E79D8CCC4FB93A7FF89FF122834A6B29BFCC02CFDCA913FC3B8987A",
+    "treeFormatNoteSha256": "55A71F6347F9A81B305DB71B28F189BC34B9F7488A9BC0E9A5D3F639E5EB0513"
+  },
+  "offsetTableFacts": {
+    "sentinel": 65535,
+    "actualEntryCount": 255,
+    "upstreamNoteClaimedEntryCount": 256,
+    "upstreamNoteCountMatchesPayload": false,
+    "definedOffsetsStrictlyIncreasing": true,
+    "definedOffsetsUnique": true,
+    "missingContextRanges": [
+      { "start": 8, "end": 9 },
+      { "start": 64, "end": 64 },
+      { "start": 70, "end": 71 },
+      { "start": 75, "end": 237 },
+      { "start": 253, "end": 253 }
+    ]
+  },
+  "packingFacts": {
+    "firstRecordStartsAtOffset": 0,
+    "lastRecordEndsAtOffset": 1952,
+    "gapByteCount": 0,
+    "overlapByteCount": 0,
+    "nonzeroPaddingTreeCount": 0,
+    "recordsCoverEntireTreePayload": true
+  },
+  "decoderFacts": {
+    "initialPreviousSymbol": 254,
+    "treeSelectedByPreviousSymbol": true,
+    "offsetEntryByteCount": 2,
+    "nodeOrder": "preorder",
+    "nonLeafBit": 0,
+    "leafBit": 1,
+    "leftBranchInputBit": 0,
+    "rightBranchInputBit": 1,
+    "leafSymbolsStoredBeforeNodeOffsetInReverseOrder": true,
+    "singleLeafTreeConsumesZeroInputBits": true
+  },
+  "graphSummary": {
+    "definedContextCount": 86,
+    "emittedSymbolCount": 86,
+    "definedContextSha256": "610B4AC17CEDD65C41243962CF9497D266A08C0794329EF941F3BD4F27151F4B",
+    "emittedSymbolSha256": "610B4AC17CEDD65C41243962CF9497D266A08C0794329EF941F3BD4F27151F4B",
+    "emittedSetEqualsDefinedContextSet": true,
+    "allDefinedContextsReachableFrom254": true,
+    "emittedMissingContextCount": 0
+  },
+  "textGlyphReachabilitySummary": {
+    "huffmanGlyphCount": 69,
+    "asciiGlyphCount": 78,
+    "combinedGlyphCount": 78,
+    "huffmanGlyphSha256": "E802F049C00F4B8D6281697070FFA855415DAF4B007B5CEA95A4D8DA25DD39A1",
+    "asciiGlyphSha256": "77726D1DC60DFD7BE27EF9943052AE2DA77C189E7BB400039179A112C36B8EF1",
+    "combinedGlyphSha256": "77726D1DC60DFD7BE27EF9943052AE2DA77C189E7BB400039179A112C36B8EF1",
+    "combinedMissingGlyphIds": [70, 71],
+    "glyphs70And71ReachableThroughNormalTextInputs": false
+  },
+  "codeLengthHistogram": {
+    "0": 1, "1": 42, "2": 95, "3": 131, "4": 169,
+    "5": 239, "6": 225, "7": 170, "8": 181, "9": 97,
+    "10": 66, "11": 53, "12": 45, "13": 14, "14": 8
+  },
+  "selectedTreeFacts": [
+    { "contextSymbol": 0, "offset": 2, "symbolStartOffset": 0, "endOffsetExclusive": 3, "leafCount": 2, "nodeBitCount": 3, "minimumCodeBitLength": 1, "maximumCodeBitLength": 1 },
+    { "contextSymbol": 1, "offset": 69, "symbolStartOffset": 3, "endOffsetExclusive": 86, "leafCount": 66, "nodeBitCount": 131, "minimumCodeBitLength": 3, "maximumCodeBitLength": 14 },
+    { "contextSymbol": 54, "offset": 1256, "symbolStartOffset": 1255, "endOffsetExclusive": 1257, "leafCount": 1, "nodeBitCount": 1, "minimumCodeBitLength": 0, "maximumCodeBitLength": 0 },
+    { "contextSymbol": 238, "offset": 1675, "symbolStartOffset": 1672, "endOffsetExclusive": 1676, "leafCount": 3, "nodeBitCount": 5, "minimumCodeBitLength": 1, "maximumCodeBitLength": 2 },
+    { "contextSymbol": 254, "offset": 1939, "symbolStartOffset": 1890, "endOffsetExclusive": 1952, "leafCount": 49, "nodeBitCount": 97, "minimumCodeBitLength": 3, "maximumCodeBitLength": 12 }
+  ],
+  "runtimeQuestions": [
+    "Do compressed text-bank bit lengths and control-code side effects reproduce all 4,267 original strings when decoded through this static tree contract?",
+    "Can any nonstandard direct symbol injection outside the ASCII and Huffman input paths intentionally render otherwise unreachable glyph IDs 70 and 71?"
+  ]
+}

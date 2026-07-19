@@ -269,8 +269,6 @@ def build_variable_width_font_contract(
             "nonRegularDialogueFontLoadCount": 2,
         },
         "runtimeQuestions": [
-            "Do direct Huffman symbols make glyph IDs 70 and 71 reachable even though "
-            "the ASCII conversion table never emits them?",
             "Do glyph overlap, palette choice, typewriter timing, and DMA reproduce the "
             "original rendered dialogue for every mapped symbol?",
         ],

@@ -70,8 +70,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-cutscenes.md`](./research/battle-cutscenes.md)：战前/开战/战后/败敌/区域 cutscene 的
   10 文件路由、flag 准入、leader-death position 准备和 map-script 调度。
 - [`common-scripting.md`](./research/common-scripting.md)：entity/map/text/credits 的 29 文件
-  inventory、90/80 槽解释器、Huffman 状态、80-glyph variable-width font/256-entry ASCII map
-  数据流和无标签废弃数据边界。
+  inventory、90/80 槽解释器、完整 255-entry/86-tree/1,536-leaf context-Huffman corpus、
+  80-glyph variable-width font/256-entry ASCII map 数据流和无标签废弃数据边界。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
@@ -88,13 +88,15 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   special-screen、8 条 base/menu UI、56 条 battle-effect、115 条 map-tileset
   Stack-compression corpus、208 张 battle-sprite animation table、163 槽 icon
   storage/menu-copy/highlight 合同、19 个 vanilla-built UI-layout owner 与 5,614-byte 静态 corpus、
-  80-glyph variable-width font/ASCII map/loader 合同、witch menu 16-color palette/12-frame bubble
+  80-glyph variable-width font/ASCII map/loader 与完整 context-Huffman 合同、witch menu
+  16-color palette/12-frame bubble
   table、12-resource/8,832-byte special-screen palette/layout corpus、16 套 map palette/79-map
   使用与有效 color-zero 合同，以及 46/46 direct named compression consumer 的 owner inventory。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
-  variable-width font 与 witch-menu direct payload、68000 sound bridge、RNG 和独立 Z80 driver 构建链。
+  variable-width font、context-Huffman 与 witch-menu direct payload、68000 sound bridge、RNG 和
+  独立 Z80 driver 构建链。
 - [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
   map event、交互和物品 handoff。
 - [`special-screens.md`](./research/special-screens.md)：logo/title、witch save、suspend/reset、ending

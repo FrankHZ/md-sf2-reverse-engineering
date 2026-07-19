@@ -1,7 +1,8 @@
 # Common Scripting Engines
 
 - Status: **Confirmed** for the pinned 29-file inventory, 90-slot map-script and 80-slot entity-script
-  dispatch tables, interpreter admission/termination rules, text-bank selection, Huffman state, and
+  dispatch tables, interpreter admission/termination rules, text-bank selection, complete context-
+  Huffman tree corpus and
   the regular entity map-sprite decode/DMA consumer shape, plus the complete variable-width font,
   ASCII conversion, pointer, and glyph-loader data path
 - Status: **Inferred** for named helper intent where only call structure is modeled
@@ -40,6 +41,15 @@ state begins with previous symbol `$FE`, chooses its tree from the previous deco
 persists the bit barrel plus previous symbol across calls. Symbols `$EE` and above are control codes;
 `$FE` terminates the string.
 
+The context-Huffman payload is now a complete static contract. The offset file is 510 bytes and
+therefore contains 255 big-endian entries, not the 256 claimed by its adjacent upstream note. Of
+those entries, 86 select a tree and 169 contain `$FFFF`. The 1,952-byte tree payload packs exactly
+1,536 reverse-stored leaf symbols and 1,450 non-leaf nodes into 86 contiguous records with no gaps,
+overlaps, or nonzero padding bits. Code lengths range from zero through fourteen bits; context 54 is
+the sole one-leaf tree and emits symbol 58 without consuming an input bit. Starting at context 254,
+all 86 defined contexts are reachable, and the emitted-symbol set equals the defined-context set, so
+no valid path selects a `$FFFF` entry. All 2,462 bytes match the H1 addresses and input ROM.
+
 The variable-width font has 80 fixed 32-byte glyph records. Each record stores a width field followed
 by fifteen rows of twelve usable pixel bits; all header and row padding bits are zero. Stored widths
 range from 3 through 9, and `LoadVariableWidthFont` uses `(symbolId - 1) * 32`, then advances zero
@@ -48,9 +58,11 @@ match H1 and ROM.
 
 When `CURRENT_DIALOGUE_ASCII_BYTE_ADDRESS` is nonzero, `GetNextTextSymbol` maps the input byte through
 the 256-entry ASCII table. That table reaches 78 of 80 glyph IDs, maps 145 inputs to the default
-glyph 1, and never emits IDs 70 or 71. The Huffman path bypasses this ASCII table, so absence from the
-ASCII mapping does not prove those two glyphs unreachable. Non-regular dialogue calls the glyph
-loader twice while regular dialogue calls it once; rendered overlap and timing remain runtime facts.
+glyph 1, and never emits IDs 70 or 71. The independent Huffman corpus emits 69 IDs in the 1-80 glyph
+range and also omits 70 and 71. Consequently the union of both normal text-input paths still reaches
+78/80 glyphs and proves those two IDs unreachable through normal ASCII or compressed dialogue.
+Non-regular dialogue calls the glyph loader twice while regular dialogue calls it once; rendered
+overlap and timing remain runtime facts.
 
 `ChangeEntityMapsprite` and `DmaEntityMapsprite` convert one regular map-sprite ID plus facing into
 one of three pointers in `pt_Mapsprites`, call `LoadBasicCompressedData` into
@@ -70,8 +82,9 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-Entity movement timing, dialogue typewriter/render timing, end-credit presentation, and contextual
-meaning of script commands remain grouped runtime questions. They will share scenario setup and
+Entity movement timing, dialogue typewriter/render timing, full text-bank/control-code replay,
+nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
+commands remain grouped runtime questions. They will share scenario setup and
 observation buffers rather than becoming one emulator launch per opcode. Symbolic reference search
 for reserved map-sprite IDs 237-250 is complete; encoded records and runtime writes are the remaining
 static frontier before one shared entity-sprite matrix. This batch adds no emulator run.
@@ -88,8 +101,9 @@ uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts
 uv run sf2 h2 map-sprites
 uv run sf2 h2 variable-width-font
+uv run sf2 h2 text-huffman
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/common-scripting-static.json` and
-`local/derived/variable-width-font-static.json`.
+`local/derived/variable-width-font-static.json` and `local/derived/text-huffman-static.json`.

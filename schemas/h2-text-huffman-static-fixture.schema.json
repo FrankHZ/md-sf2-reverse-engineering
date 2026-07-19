@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-text-huffman-static-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "table", "summary", "resourceHashes", "offsetTableFacts", "packingFacts", "decoderFacts", "graphSummary", "textGlyphReachabilitySummary", "codeLengthHistogram", "selectedTreeFacts", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-text-huffman-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }, "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 18, "maxProperties": 18, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "resourceHashes": { "type": "object", "minProperties": 4, "maxProperties": 4 },
+    "offsetTableFacts": { "type": "object", "minProperties": 7, "maxProperties": 7 },
+    "packingFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
+    "decoderFacts": { "type": "object", "minProperties": 10, "maxProperties": 10 },
+    "graphSummary": { "type": "object", "minProperties": 7, "maxProperties": 7 },
+    "textGlyphReachabilitySummary": { "type": "object", "minProperties": 8, "maxProperties": 8 },
+    "codeLengthHistogram": { "type": "object", "minProperties": 15, "maxProperties": 15 },
+    "selectedTreeFacts": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "type": "object", "minProperties": 8, "maxProperties": 8 } },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

@@ -2,8 +2,8 @@
 
 - Status: **Confirmed** for the complete 12-file source boundary, eleven main-ROM representative
   addresses, twenty technical-resource incbin mappings, byte-copy direction, input scan/wait shape,
-  SRAM slot/checksum structure, the complete variable-width-font and witch-menu direct payload/
-  pointer boundaries, the 68000 music-wait command, and the Z80 driver build chain
+  SRAM slot/checksum structure, the complete variable-width-font, context-Huffman, and witch-menu
+  direct payload/pointer boundaries, the 68000 music-wait command, and the Z80 driver build chain
 - Status: **Inferred** for caller-visible thinking-RNG distribution and perceived delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
@@ -38,6 +38,12 @@ The five incbin files contain exactly twenty named entries across sections 3, 6,
 canonical mapping covers UI/font/title resources, Huffman text trees, witch-screen resources, and
 base tiles. This confirms ROM routing only; extracted copyrighted resource bytes remain local and
 their rendered meaning stays with the corresponding presentation subsystem.
+
+The text-Huffman rail closes the tree entries beyond routing. It checks the 510-byte offset table and
+1,952-byte tree payload against H1 and ROM, reconstructs all 86 defined trees and 1,536 symbol/code
+leaves, proves that their packed spans cover the payload exactly, and proves the context graph is
+closed and wholly reachable from initial symbol 254. The adjacent note's 256-entry statement is kept
+as a documented mismatch: the actual table has 255 entries, with 169 `$FFFF` sentinels.
 
 The variable-width-font rail now closes the font entry beyond routing: its 2,560-byte payload, the
 four-byte pointer, 256-byte ASCII conversion table, 80 record boundaries, width/padding shape, and
@@ -86,6 +92,7 @@ driver instrumentation launch. Isolated one-case fixtures are not warranted by t
 ```powershell
 uv run sf2 h2 tech-services
 uv run sf2 h2 variable-width-font
+uv run sf2 h2 text-huffman
 uv run sf2 h2 witch-menu-graphics
 uv run sf2 research-index test
 ```

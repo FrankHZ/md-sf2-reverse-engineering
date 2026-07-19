@@ -63,6 +63,6 @@
       }
     },
     "consumerFacts": { "type": "object", "minProperties": 10, "maxProperties": 10 },
-    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+    "runtimeQuestions": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "string" } }
   }
 }

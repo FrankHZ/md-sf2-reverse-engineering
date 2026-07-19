@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-text-huffman-static-v1",
+  "outputSha256": "F4633FC9FBF2EE4CD69D7C33EC8822EC3EE52F16414B589535513039A0E3125B",
+  "summary": {
+    "offsetByteCount": 510,
+    "offsetEntryCount": 255,
+    "definedTreeCount": 86,
+    "missingTreeCount": 169,
+    "treeDataByteCount": 1952,
+    "leafEntryCount": 1536,
+    "nonLeafNodeCount": 1450,
+    "nodeBitCount": 2986,
+    "nodeStorageByteCount": 416,
+    "symbolStorageByteCount": 1536,
+    "zeroPaddingBitCount": 342,
+    "minimumLeafCount": 1,
+    "maximumLeafCount": 66,
+    "minimumCodeBitLength": 0,
+    "maximumCodeBitLength": 14,
+    "emittedSymbolCount": 86,
+    "reachableContextCount": 86,
+    "sourceRomParityByteCount": 2462
+  }
+}
