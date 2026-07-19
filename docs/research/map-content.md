@@ -61,10 +61,16 @@ and compares all 12,576 resulting bytes with the canonical ROM.
 An area record is 30 bytes. Flag, step, roof, warp, and animation-entry records are eight bytes;
 items are four bytes; animation headers are four bytes. The animation header fields are tileset and
 cached tile count—not speed—and each entry stores replacement start, tile count, VRAM target, and
-logical counter. Variable tables use a two-byte `$FFFF`
-terminator. Three other-item sections include an assembled `rts` after their terminator (maps 5, 10,
+logical counter. Variable tables use a two-byte `$FFFF` terminator. Three other-item sections include
+an assembled `rts` after their terminator (maps 5, 10,
 and 64); those six code bytes are part of source/ROM parity but are unreachable to the item scanner,
 which stops when the first coordinate byte is negative.
+
+Across all 32 animation tables and 108 entries, cache sizes are 4, 16, 32, 64, or 96 tiles; entry
+counters use 1, 2, 5, 7, 10, or 20 enabled callbacks; and transfers use 1, 2, 3, 6, 7, 16, 32, or 48
+tiles. Complete logical cycles total 40, 44, or 80 callbacks. Every replacement source range stays
+within its table's cached tile count. Targets occupy tile indices 288 through 895 inclusive. These
+are complete-corpus bounds, not a sample of visually obvious maps.
 
 Static consumers confirm the important ownership rules:
 

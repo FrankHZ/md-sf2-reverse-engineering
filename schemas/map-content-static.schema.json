@@ -13,6 +13,7 @@
     "summary",
     "sectionCounts",
     "recordCounts",
+    "animationCorpusFacts",
     "sourceFacts",
     "mapEntries",
     "sourceSections",
@@ -44,6 +45,28 @@
     "summary": { "$ref": "#/$defs/integerMap" },
     "sectionCounts": { "$ref": "#/$defs/integerMap" },
     "recordCounts": { "$ref": "#/$defs/integerMap" },
+    "animationCorpusFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tableCount", "entryCount", "cachedTileCounts", "entryCounterValues", "entryTileCounts",
+        "replacementStartMin", "replacementEndMaxExclusive", "targetStartMin",
+        "targetEndMaxExclusive", "cycleCounterTotals", "allReplacementRangesWithinCache"
+      ],
+      "properties": {
+        "tableCount": { "type": "integer", "minimum": 0 },
+        "entryCount": { "type": "integer", "minimum": 0 },
+        "cachedTileCounts": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "uniqueItems": true },
+        "entryCounterValues": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "uniqueItems": true },
+        "entryTileCounts": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "uniqueItems": true },
+        "replacementStartMin": { "type": "integer", "minimum": 0 },
+        "replacementEndMaxExclusive": { "type": "integer", "minimum": 0 },
+        "targetStartMin": { "type": "integer", "minimum": 0 },
+        "targetEndMaxExclusive": { "type": "integer", "minimum": 0 },
+        "cycleCounterTotals": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "uniqueItems": true },
+        "allReplacementRangesWithinCache": { "type": "boolean" }
+      }
+    },
     "sourceFacts": {
       "type": "object",
       "additionalProperties": false,

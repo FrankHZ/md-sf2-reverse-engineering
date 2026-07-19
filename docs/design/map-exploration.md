@@ -175,6 +175,10 @@ earliest processing point is the next enabled VInt. A modern engine MUST preserv
 cadence in original-fidelity mode. Exact VDP-visible scanline/frame parity still belongs to the
 shared graphics fixture.
 
+Import validation MUST reject an entry whose replacement source range exceeds its cached tile
+count. The original corpus already satisfies this for all 108 entries; cache sizes are 4-96 tiles,
+entry transfers are 1-48 tiles, and complete logical cycles are 40, 44, or 80 enabled callbacks.
+
 Camera interpolation, plane composition, palette application, window interaction, and VDP-visible
 output are presentation adapters over this contract. They do not own map content or event state.
 

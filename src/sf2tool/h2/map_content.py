@@ -646,6 +646,7 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         )
 
     source_sections = []
+    animation_tables: list[dict[str, Any]] = []
     record_counts: dict[str, int] = {}
     for map_index in range(79):
         directory = disasm / ENTRY_ROOT / f"map{map_index:02d}"
@@ -655,6 +656,26 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
                 continue
             symbol = symbol_template.format(map=map_index)
             encoded, record_count, trailing_rts = _encode_source(path, kind, equates)
+            if kind == "animations":
+                entries = [
+                    {
+                        "replacementStartTile": int.from_bytes(
+                            encoded[offset : offset + 2], "big"
+                        ),
+                        "tileCount": int.from_bytes(encoded[offset + 2 : offset + 4], "big"),
+                        "targetStartTile": int.from_bytes(
+                            encoded[offset + 4 : offset + 6], "big"
+                        ),
+                        "counter": int.from_bytes(encoded[offset + 6 : offset + 8], "big"),
+                    }
+                    for offset in range(4, 4 + record_count * 8, 8)
+                ]
+                animation_tables.append(
+                    {
+                        "cachedTileCount": int.from_bytes(encoded[2:4], "big"),
+                        "entries": entries,
+                    }
+                )
             address = addresses[symbol]
             if rom[address : address + len(encoded)] != encoded:
                 raise ValueError(f"map content source/ROM parity drift: {symbol}")
@@ -708,6 +729,39 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         for kind, _, _ in SECTION_LAYOUT
     }
     record_counts["animationTables"] = section_counts["animations"]
+    animation_entries = [
+        entry for table in animation_tables for entry in table["entries"]
+    ]
+    animation_corpus_facts = {
+        "tableCount": len(animation_tables),
+        "entryCount": len(animation_entries),
+        "cachedTileCounts": sorted(
+            {table["cachedTileCount"] for table in animation_tables}
+        ),
+        "entryCounterValues": sorted({entry["counter"] for entry in animation_entries}),
+        "entryTileCounts": sorted({entry["tileCount"] for entry in animation_entries}),
+        "replacementStartMin": min(
+            entry["replacementStartTile"] for entry in animation_entries
+        ),
+        "replacementEndMaxExclusive": max(
+            entry["replacementStartTile"] + entry["tileCount"]
+            for entry in animation_entries
+        ),
+        "targetStartMin": min(entry["targetStartTile"] for entry in animation_entries),
+        "targetEndMaxExclusive": max(
+            entry["targetStartTile"] + entry["tileCount"]
+            for entry in animation_entries
+        ),
+        "cycleCounterTotals": sorted(
+            {sum(entry["counter"] for entry in table["entries"]) for table in animation_tables}
+        ),
+        "allReplacementRangesWithinCache": all(
+            entry["replacementStartTile"] + entry["tileCount"]
+            <= table["cachedTileCount"]
+            for table in animation_tables
+            for entry in table["entries"]
+        ),
+    }
     summary = {
         "mapCount": len(map_entries),
         "mapEntryRomParityCount": len(map_entries),
@@ -768,6 +822,7 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         "summary": summary,
         "sectionCounts": section_counts,
         "recordCounts": record_counts,
+        "animationCorpusFacts": animation_corpus_facts,
         "sourceFacts": source_facts,
         "mapEntries": map_entries,
         "sourceSections": source_sections,
@@ -797,6 +852,7 @@ def verify_map_content_contract(
         "summary",
         "sectionCounts",
         "recordCounts",
+        "animationCorpusFacts",
         "sourceFacts",
         "runtimeQuestions",
     ):

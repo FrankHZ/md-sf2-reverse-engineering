@@ -51,6 +51,19 @@
     "animations": 108,
     "animationTables": 32
   },
+  "animationCorpusFacts": {
+    "tableCount": 32,
+    "entryCount": 108,
+    "cachedTileCounts": [4, 16, 32, 64, 96],
+    "entryCounterValues": [1, 2, 5, 7, 10, 20],
+    "entryTileCounts": [1, 2, 3, 6, 7, 16, 32, 48],
+    "replacementStartMin": 0,
+    "replacementEndMaxExclusive": 96,
+    "targetStartMin": 288,
+    "targetEndMaxExclusive": 896,
+    "cycleCounterTotals": [40, 44, 80],
+    "allReplacementRangesWithinCache": true
+  },
   "sourceFacts": {
     "entryBytes": 46,
     "tilesetBytes": 6,

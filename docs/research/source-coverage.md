@@ -189,7 +189,8 @@ private blocks/layout payloads. The 77 payload pairs also decode deterministical
 and 77 complete 64x64 layouts with every block reference in range. Those structures now join into a
 deterministic 79-map, 1,859-resource canonical import with 15,805 logical records/operations. Its 64 setup routes
 and 126 six-pointer definitions resolve entity/event/description/init ownership; complete generated
-content remains ignored and only aggregate evidence is tracked:
+content remains ignored and only aggregate evidence is tracked. All 32 animation tables also have
+complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
 1. keep the completed ten-case setup-selector, six-case init-dispatch, and nine-case grouped
    entity/zone/item event-dispatch matrices as the runtime selection/call boundary;

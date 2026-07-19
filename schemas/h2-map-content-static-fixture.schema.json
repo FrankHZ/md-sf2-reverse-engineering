@@ -12,6 +12,7 @@
     "summary",
     "sectionCounts",
     "recordCounts",
+    "animationCorpusFacts",
     "sourceFacts",
     "runtimeQuestions"
   ],
@@ -24,6 +25,7 @@
     "summary": { "type": "object" },
     "sectionCounts": { "type": "object" },
     "recordCounts": { "type": "object" },
+    "animationCorpusFacts": { "type": "object" },
     "sourceFacts": { "type": "object" },
     "runtimeQuestions": {
       "type": "array",
