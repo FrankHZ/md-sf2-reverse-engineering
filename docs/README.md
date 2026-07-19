@@ -22,10 +22,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
   合同索引、校验规则和新增发现的落地流程。
-- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、10.34% 可执行代码文件
+- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、10.59% 可执行代码文件
   reach 的严格边界，以及静态优先、集中运行 H3 的子系统批处理节奏。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
-  治疗与支援决策，以及待集中执行的 H3 问题矩阵。
+  治疗、支援与最终行动/目标选择，以及待集中执行的 H3 问题矩阵。
 
 ## Design
 

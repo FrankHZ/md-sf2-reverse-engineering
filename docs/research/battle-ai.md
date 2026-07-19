@@ -1,7 +1,7 @@
 # Battle AI Static Inventory and Decision Contracts
 
 - Status: **Confirmed** for the pinned-source inventory, call metadata, action-filter, attack-priority,
-  healing/support decision code shape, constants, and H1 symbol addresses
+  healing/support/final-action decision code shape, constants, and H1 symbol addresses
 - Status: **Inferred** for caller-visible behavior not already reproduced by an H3 fixture
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -17,11 +17,11 @@ uv run sf2 h2 battle-ai
 The Python-owned rail scans the complete
 `disasm/code/gameflow/battle/ai` subtree, validates the pinned Git commit, hashes every source file,
 extracts global/local labels and direct/indirect call metadata, parses the action filters, attack
-priority, healing, and support commands, checks their fixtures and schemas, and writes canonical output to ignored
+priority, healing, support, and final action choice, checks their fixtures and schemas, and writes canonical output to ignored
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`8917B28CF030D55B405625F0FCCD8DDC8C127D91BCB56822DF45D779C28B166F`.
+`4BEB0ADCCBA341BD29E8095A13866AE119847EA3141C96063124A3DE35F4ED45`.
 
 ## Complete Subtree Inventory
 
@@ -42,8 +42,8 @@ This is an inventory denominator, not a claim that all 82 labels are behaviorall
 this batch, the research index reached only `IsCombatantConfused`, `DetermineMuddledBattleaction`, and
 `aiCommand_Attack` across three files. It now also binds the five action getters, for eight indexed
 records across four files in the first batch. Attack priority raised the subtree total to 18 records
-across seven files; healing raised it to 23 across 12; support raises it to 31 across 14. Two linked
-data-table symbols live outside the subtree.
+across seven files; healing raised it to 23 across 12; support raised it to 31 across 14; final action
+choice raises it to 32 across 15. Three linked data-table symbols live outside the subtree.
 
 ## Action Getter Addresses
 
@@ -241,6 +241,33 @@ Their dormant code also contains independent defects:
 These are confirmed source/control-flow properties. Whether any debug, patch, or unintended entry
 can call the helper routes directly is outside the original command contract.
 
+## Final Attack Action and Target Choice
+
+`DetermineBattleactionForAttackAiCommand` first records whether physical, spell, and item target
+lists are non-empty. With no option it returns Stay; physical alone always attacks. When physical and
+one special option coexist, `RNG(6)` gives the special option two rolls and physical four:
+
+| Viable special option | Physical rolls | Special rolls |
+| --- | --- | --- |
+| spell | 0, 1, 3, 5 | 2, 4 |
+| item | 0, 1, 2, 4 | 3, 5 |
+
+If physical is unavailable, the sole spell/item is always used. AQUA bypasses the 2/6 spell roll and
+is always cast when spell and physical are the only viable categories. When both spell and item are
+viable, `RNG(2)` chooses spell on 0 and item on 1; physical is ignored even if viable.
+
+Target priorities are byte values compared as **signed bytes**, starting from maximum zero. Values
+128–255 therefore act negative and can be ignored rather than outranking ordinary scores. The
+returned priority is capped at 15, but every target tied at the original maximum is retained in
+reverse input order.
+
+Multiple tied targets normally proceed to a signed-byte movement comparison. With ordinary 0–127
+movement values, the branch direction selects the **largest** stored movement value, not the
+smallest, and equal values select the later collected target. For an enemy with critical priority
+15+, the command first applies one of four 32-class order tables selected by movement type; a spell
+forces the mage table. Only the earliest represented class cohort survives before movement tie-break.
+The 16 movement-type pointers and all four class arrays are preserved in canonical output.
+
 ## Runtime Question Queue
 
 The next BizHawk batch should share one derived-ROM seam and one result buffer for at least:
@@ -265,6 +292,10 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     no-fallback behavior when the selected target has no valid attack position;
 15. first-slot unsupported spell shadowing a later MUDDLE 2/DISPEL, plus direct helper probes showing
     the dormant ATTACK score 255 and BOOST 2/DISPEL 2 entry mismatch.
+16. all seven viability masks, confirming the 4:2 physical/special rolls, 1:1 spell/item roll, AQUA
+    bypass, and physical suppression when both special lists are present;
+17. priority bytes 127/128/255, critical class-order cohorts, reversed collection order, and movement
+    values below/above 128 to confirm the signed comparison and largest-value selection.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible
 with a small number of case tables; split only when the action-getter and priority seams cannot be
@@ -272,7 +303,6 @@ shared safely.
 
 ## Remaining Static Batches
 
-- final attack/item/spell action choice and RNG weighting after the three priority lists are populated;
 - movement orders, standby movement, path obstruction, line-attacker/exploder special AI;
 - command dispatcher and swarm/activation control.
 

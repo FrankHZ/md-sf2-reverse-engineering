@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-action-choice-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "determineActionEntryAddress": 60886,
+    "classOrderPointerTableAddress": 55682
+  },
+  "expected": {
+    "viabilityBits": { "physical": 0, "spell": 1, "item": 2 },
+    "noViableAction": { "action": "stay", "target": -1, "priority": 0 },
+    "actionSelection": {
+      "physicalOnly": "physical",
+      "spellOnlyWithPhysical": {
+        "rngRange": 6,
+        "physicalRolls": [0, 1, 3, 5],
+        "spellRolls": [2, 4],
+        "aquaAlwaysSpell": true
+      },
+      "spellOnlyWithoutPhysical": "spell",
+      "itemOnlyWithPhysical": {
+        "rngRange": 6,
+        "physicalRolls": [0, 1, 2, 4],
+        "itemRolls": [3, 5]
+      },
+      "itemOnlyWithoutPhysical": "item",
+      "spellAndItem": {
+        "rngRange": 2,
+        "spellRolls": [0],
+        "itemRolls": [1],
+        "physicalIgnored": true
+      }
+    },
+    "prioritySelection": {
+      "comparison": "signed-byte",
+      "initialMaximum": 0,
+      "criticalThreshold": 15,
+      "returnedPriorityCap": 15,
+      "collectsAllMaximumPriorityTargets": true,
+      "collectionOrder": "reverse-input-order"
+    },
+    "criticalAppliesTo": "enemy-with-priority-at-least-15",
+    "spellActionForcesMageTable": true,
+    "movetypePointerTargets": [
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Flying",
+      "table_AttackPriority_Flying",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Archer",
+      "table_AttackPriority_Archer",
+      "table_AttackPriority_Mage",
+      "table_AttackPriority_Mage",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular",
+      "table_AttackPriority_Regular"
+    ],
+    "classOrderTableCount": 4,
+    "classOrderTableLengths": [32],
+    "retainsEarliestClassCohort": true,
+    "movementTieBreak": {
+      "comparison": "signed-byte",
+      "initialBest": -1,
+      "ordinaryNonnegativeResult": "maximum-movement-value",
+      "equalValuePolicy": "later-collected-target-wins",
+      "maximumCandidateCount": 48
+    }
+  }
+}

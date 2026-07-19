@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battle AI final action-choice static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-action-choice-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["determineActionEntryAddress", "classOrderPointerTableAddress"],
+      "properties": {
+        "determineActionEntryAddress": { "const": 60886 },
+        "classOrderPointerTableAddress": { "const": 55682 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["viabilityBits", "noViableAction", "actionSelection", "prioritySelection", "criticalAppliesTo", "spellActionForcesMageTable", "movetypePointerTargets", "classOrderTableCount", "classOrderTableLengths", "retainsEarliestClassCohort", "movementTieBreak"],
+      "properties": {
+        "viabilityBits": { "const": { "physical": 0, "spell": 1, "item": 2 } },
+        "noViableAction": { "const": { "action": "stay", "target": -1, "priority": 0 } },
+        "actionSelection": { "type": "object" },
+        "prioritySelection": { "type": "object" },
+        "criticalAppliesTo": { "const": "enemy-with-priority-at-least-15" },
+        "spellActionForcesMageTable": { "const": true },
+        "movetypePointerTargets": {
+          "type": "array", "minItems": 16, "maxItems": 16,
+          "items": { "enum": ["table_AttackPriority_Regular", "table_AttackPriority_Mage", "table_AttackPriority_Archer", "table_AttackPriority_Flying"] }
+        },
+        "classOrderTableCount": { "const": 4 },
+        "classOrderTableLengths": { "const": [32] },
+        "retainsEarliestClassCohort": { "const": true },
+        "movementTieBreak": { "const": { "comparison": "signed-byte", "initialBest": -1, "ordinaryNonnegativeResult": "maximum-movement-value", "equalValuePolicy": "later-collected-target-wins", "maximumCandidateCount": 48 } }
+      }
+    }
+  }
+}

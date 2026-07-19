@@ -2086,6 +2086,32 @@
         "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateAttackEntryAddress" }]
       }],
       "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.action-choice.determine",
+      "subsystem": "battle.ai.action-choice",
+      "status": "confirmed",
+      "symbol": "DetermineBattleactionForAttackAiCommand",
+      "sourcePath": "code/gameflow/battle/ai/command/attack/determinebattleaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 60886 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-action-choice-static-v1.json", "fixtureId": "sf2-battle-ai-action-choice-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.determineActionEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.action-choice.class-order-table",
+      "subsystem": "battle.ai.action-choice",
+      "status": "confirmed",
+      "symbol": "pt_AttackPriorityClassesForMovetype",
+      "sourcePath": "data/battles/global/aipriority.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55682 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-action-choice-static-v1.json", "fixtureId": "sf2-battle-ai-action-choice-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.classOrderPointerTableAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }

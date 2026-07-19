@@ -27,6 +27,12 @@ SUPPORT_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-support-static-v1.json"
 SUPPORT_FIXTURE_SCHEMA = repo_path(
     "schemas/h2-battle-ai-support-static-fixture.schema.json"
 )
+ACTION_CHOICE_FIXTURE = repo_path(
+    "tests/fixtures/h2/battle-ai-action-choice-static-v1.json"
+)
+ACTION_CHOICE_FIXTURE_SCHEMA = repo_path(
+    "schemas/h2-battle-ai-action-choice-static-fixture.schema.json"
+)
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
@@ -716,6 +722,113 @@ def _parse_support(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _parse_action_choice(disasm: Path) -> dict[str, Any]:
+    choice_path = SOURCE_ROOT / "command/attack/determinebattleaction.asm"
+    data_path = Path("data/battles/global/aipriority.asm")
+    choice_source = (disasm / choice_path).read_text(encoding="utf-8")
+    data_source = (disasm / data_path).read_text(encoding="utf-8")
+    choice = _function_block(
+        choice_source, "DetermineBattleactionForAttackAiCommand"
+    )
+    equates = _equates(disasm)
+    required_fragments = (
+        (choice, "bset    #0,d3"),
+        (choice, "bset    #1,d3"),
+        (choice, "bset    #2,d3"),
+        (choice, "andi.b  #%110,d4"),
+        (choice, "cmpi.w  #SPELL_AQUA,d1"),
+        (choice, "move.b  #6,d6"),
+        (choice, "cmpi.b  #2,d7"),
+        (choice, "cmpi.b  #4,d7"),
+        (choice, "cmpi.b  #3,d7"),
+        (choice, "cmpi.b  #5,d7"),
+        (choice, "move.b  #2,d6"),
+        (choice, "jsr     j_GenerateRandomNumberUnderD6"),
+        (choice, "cmpi.b  #15,d4"),
+        (choice, "move.b  #15,priority(a6)"),
+        (choice, "lea     (pt_AttackPriorityClassesForMovetype).l,a4"),
+        (choice, "lea     (table_AttackPriority_Mage).l,a4"),
+        (choice, "cmpi.b  #48,d4"),
+        (choice, "move.b  #-1,d2"),
+        (choice, "cmp.b   d5,d2"),
+        (choice, "bgt.s   @loc_51"),
+        (choice, "move.b  d5,d2"),
+    )
+    if any(fragment not in block for block, fragment in required_fragments):
+        raise ValueError("battle AI action-choice source contract drift")
+
+    class_table_names = (
+        "table_AttackPriority_Regular",
+        "table_AttackPriority_Mage",
+        "table_AttackPriority_Archer",
+        "table_AttackPriority_Flying",
+    )
+    class_tables: dict[str, list[int]] = {}
+    for name in class_table_names:
+        tokens = DC_BYTE_VALUE_PATTERN.findall(_label_block(data_source, name))
+        class_tables[name] = [
+            int(token) if token == "-1" else equates[token] for token in tokens
+        ]
+    if any(len(values) != equates["CLASSES_NUMBER"] for values in class_tables.values()):
+        raise ValueError("battle AI class-order table shape drift")
+    class_pointer_targets = DC_LONG_TARGET_PATTERN.findall(
+        _label_block(data_source, "pt_AttackPriorityClassesForMovetype")
+    )
+    if len(class_pointer_targets) != 16:
+        raise ValueError("battle AI class-order pointer table shape drift")
+
+    return {
+        "sourcePaths": [choice_path.as_posix(), data_path.as_posix()],
+        "function": "DetermineBattleactionForAttackAiCommand",
+        "viabilityBits": {"physical": 0, "spell": 1, "item": 2},
+        "noViableAction": {"action": "stay", "target": -1, "priority": 0},
+        "actionSelection": {
+            "physicalOnly": "physical",
+            "spellOnlyWithPhysical": {
+                "rngRange": 6,
+                "physicalRolls": [0, 1, 3, 5],
+                "spellRolls": [2, 4],
+                "aquaAlwaysSpell": True,
+            },
+            "spellOnlyWithoutPhysical": "spell",
+            "itemOnlyWithPhysical": {
+                "rngRange": 6,
+                "physicalRolls": [0, 1, 2, 4],
+                "itemRolls": [3, 5],
+            },
+            "itemOnlyWithoutPhysical": "item",
+            "spellAndItem": {
+                "rngRange": 2,
+                "spellRolls": [0],
+                "itemRolls": [1],
+                "physicalIgnored": True,
+            },
+        },
+        "prioritySelection": {
+            "comparison": "signed-byte",
+            "initialMaximum": 0,
+            "criticalThreshold": 15,
+            "returnedPriorityCap": 15,
+            "collectsAllMaximumPriorityTargets": True,
+            "collectionOrder": "reverse-input-order",
+        },
+        "criticalEnemyClassTieBreak": {
+            "appliesTo": "enemy-with-priority-at-least-15",
+            "spellActionForcesMageTable": True,
+            "movetypePointerTargets": class_pointer_targets,
+            "classOrderTables": class_tables,
+            "retainsEarliestClassCohort": True,
+        },
+        "movementTieBreak": {
+            "comparison": "signed-byte",
+            "initialBest": -1,
+            "ordinaryNonnegativeResult": "maximum-movement-value",
+            "equalValuePolicy": "later-collected-target-wins",
+            "maximumCandidateCount": 48,
+        },
+    }
+
+
 def _resolve_upstream(upstream_path: Path) -> tuple[Path, str, dict[str, Any]]:
     upstream_path = upstream_path.resolve(strict=True)
     toolchain = load_json(TOOLCHAIN)
@@ -797,6 +910,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
         "attackPriority": _parse_attack_priority(disasm),
         "healing": _parse_healing(disasm),
         "support": _parse_support(disasm),
+        "actionChoice": _parse_action_choice(disasm),
         "indexedRecordIds": indexed_records,
         "indexedSourcePaths": indexed_files,
         "internalDirectCallTargets": internal_targets,
@@ -944,6 +1058,25 @@ def _support_facts(support: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _action_choice_facts(action_choice: dict[str, Any]) -> dict[str, Any]:
+    critical = action_choice["criticalEnemyClassTieBreak"]
+    return {
+        "viabilityBits": action_choice["viabilityBits"],
+        "noViableAction": action_choice["noViableAction"],
+        "actionSelection": action_choice["actionSelection"],
+        "prioritySelection": action_choice["prioritySelection"],
+        "criticalAppliesTo": critical["appliesTo"],
+        "spellActionForcesMageTable": critical["spellActionForcesMageTable"],
+        "movetypePointerTargets": critical["movetypePointerTargets"],
+        "classOrderTableCount": len(critical["classOrderTables"]),
+        "classOrderTableLengths": sorted(
+            {len(values) for values in critical["classOrderTables"].values()}
+        ),
+        "retainsEarliestClassCohort": critical["retainsEarliestClassCohort"],
+        "movementTieBreak": action_choice["movementTieBreak"],
+    }
+
+
 def verify_battle_ai_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -967,6 +1100,12 @@ def verify_battle_ai_inventory(
         support_fixture,
         SUPPORT_FIXTURE_SCHEMA,
         owner=str(SUPPORT_FIXTURE),
+    )
+    action_choice_fixture = load_json(ACTION_CHOICE_FIXTURE)
+    validate_json(
+        action_choice_fixture,
+        ACTION_CHOICE_FIXTURE_SCHEMA,
+        owner=str(ACTION_CHOICE_FIXTURE),
     )
     rom_manifest = load_json(ROM_MANIFEST)
     output = build_battle_ai_inventory(upstream_path)
@@ -999,6 +1138,13 @@ def verify_battle_ai_inventory(
         raise ValueError("battle AI support fixture provenance drift")
     if _support_facts(output["support"]) != support_fixture["expected"]:
         raise ValueError("battle AI support facts disagree with fixture")
+    if (
+        action_choice_fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or action_choice_fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("battle AI action-choice fixture provenance drift")
+    if _action_choice_facts(output["actionChoice"]) != action_choice_fixture["expected"]:
+        raise ValueError("battle AI action-choice facts disagree with fixture")
     if output["summary"] != manifest["summary"]:
         raise ValueError(
             "battle AI static summary drift: "
