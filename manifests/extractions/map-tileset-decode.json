@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-tileset-decode-v1",
+  "outputSha256": "2EA6AB3485CAE4F92F31647C05233F0E1C07E81CCB02806706A51F9F0C1E087F",
+  "summary": {
+    "tilesetCount": 115,
+    "fixedDecodedBytesPerTileset": 4096,
+    "compressedByteCount": 198514,
+    "decodedByteCount": 471040,
+    "tableRomParityCount": 115,
+    "payloadRomParityCount": 115,
+    "mapCount": 79,
+    "mapSlotCount": 395,
+    "mapTilesetReferenceCount": 326,
+    "absentMapSlotCount": 69,
+    "uniqueMapTilesetReferenceCount": 100,
+    "animationMapCount": 32,
+    "animationTilesetReferenceCount": 32,
+    "uniqueAnimationTilesetReferenceCount": 15,
+    "combinedUsedTilesetCount": 114,
+    "unusedTilesetCount": 1,
+    "commandGroupCount": 8418,
+    "literalWordCount": 111246,
+    "copyCommandCount": 22485,
+    "copiedWordCount": 124274,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47,
+    "maximumCopyOffsetWords": 2000,
+    "maximumCopyLengthWords": 33
+  }
+}

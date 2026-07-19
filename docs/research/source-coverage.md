@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 55 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 56 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,906 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,907 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -106,6 +106,10 @@ The current evidence is deep but narrow:
   with complete resource/pointer/table ROM parity. Invocation output is consistently 4,096 bytes
   against a 4,608-byte transfer, leaving 15,360 aggregate tail bytes queued for one presentation
   matrix rather than guessed as padding.
+  The map-tileset rail covers all 115 pointer slots and payloads, each with a fixed 4,096-byte output
+  (471,040 bytes total). It also ROM-checks all 79 five-slot map headers and 32 animation headers:
+  326 ordinary references plus 32 animation references reach 114 unique tilesets. Only index 29 has
+  no static reference, so dynamic unreachability remains an explicit question.
   Technical interfaces bind all 25 jump/pointer files and hash the complete 331-stub/60-pointer map;
   this routing structure requires no runtime replay.
   Remaining technical services inventory all twelve resource/sound/SRAM/input/copy/RNG files. Eleven
@@ -174,8 +178,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,450 records; its
-verifier reports 381 unique code files, 980 unique data files, 55 H2 fixtures, 58 H3 fixtures, and
-1,906 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 56 H2 fixtures, 58 H3 fixtures, and
+1,907 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

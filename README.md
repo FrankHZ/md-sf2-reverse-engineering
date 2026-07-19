@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,450 条 confirmed finding、55 个 H2 fixture、58 个 H3 fixture
-和 1,906 个地址绑定。
+截至 2026-07-19，研究索引有 1,450 条 confirmed finding、56 个 H2 fixture、58 个 H3 fixture
+和 1,907 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -311,6 +311,11 @@ battle-effect graphics rail 接着闭合 23 个 spell container、4 个 invocati
 个压缩字节和 200,992 个解压字节。所有 30 个资源、4 个顶层 pointer 和 3 张 pointer table 与 ROM
 一致；每条 invocation stream 解出 4,096 bytes，却固定传输 4,608 bytes，30 条流共留下 15,360-byte
 staging tail，保持为集中运行时观察问题。
+map-tileset rail 随后闭合 `pt_MapTilesets` 全部 115 条 Stack stream：198,514 个压缩字节统一
+解出 471,040 bytes（每条固定 4,096），pointer table、payload、79 份 map header 和 32 份 animation
+header 全部通过 source/H1/ROM parity。395 个普通槽含 326 个引用与 69 个 `255` 空槽；普通地图使用
+100 个唯一 tileset，动画再覆盖 15 个，合并触达 114/115。只有 `MapTileset029` 没有静态引用，
+动态不可达性仍保持 Unknown。
 technical interfaces rail 将 10 个 jump-interface 与 15 个 pointer 文件合并盘点，完整锁定 331
 个 PC-relative jump stub 和 60 个 longword pointer 的 canonical mapping，使严格 reach 升到
 86.30%。该结构完全由 source/H1 决定，不产生运行时问题，也没有模拟器启动。

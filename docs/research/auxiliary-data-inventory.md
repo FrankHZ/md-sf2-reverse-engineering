@@ -5,6 +5,7 @@
   and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
   corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
+  and complete map-tileset decode/usage corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -94,6 +95,11 @@ bytes; 30 resource containers, four top-level pointers, and three pointer tables
 invocation stream produces 4,096 bytes but its consumer transfers 4,608, leaving a 512-byte tail per
 stream whose runtime contents are not inferred from static shape.
 
+The map-tileset table adds 115 Stack payloads. Every stream decodes to 4,096 bytes; all 115 pointers
+and payloads match ROM for 471,040 decoded bytes total. The same rail validates 79 map headers with
+395 slots and 32 animation headers. Ordinary and animation references jointly use 114 indices;
+`MapTileset029` is the sole statically unreferenced resource and is not declared runtime-unreachable.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -130,5 +136,6 @@ uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 battle-effect-graphics
+uv run sf2 h2 map-tilesets
 uv run sf2 research-index test
 ```

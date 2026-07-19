@@ -45,6 +45,7 @@ from sf2tool.h2.map_layouts import verify_map_layout_contract
 from sf2tool.h2.map_scripts import verify_map_scripts_inventory
 from sf2tool.h2.map_setup import verify_map_setup_contract
 from sf2tool.h2.map_sprites import verify_map_sprite_contract
+from sf2tool.h2.map_tilesets import verify_map_tileset_contract
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
 from sf2tool.h2.portraits import verify_portrait_graphics_contract
@@ -398,6 +399,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_battle_effect_graphics)
     h2_battle_effect_graphics.add_argument("--output-path", type=_path)
+    h2_map_tilesets = h2_commands.add_parser(
+        "map-tilesets",
+        help="decode all map Stack tilesets and verify map/animation usage against ROM",
+    )
+    _add_local_paths(h2_map_tilesets)
+    h2_map_tilesets.add_argument("--output-path", type=_path)
     h2_map_import = h2_commands.add_parser(
         "map-import", help="build the complete canonical engine-neutral map import"
     )
@@ -974,6 +981,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "battle-effect-graphics":
         print_record(
             verify_battle_effect_graphics_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-tilesets":
+        print_record(
+            verify_map_tileset_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

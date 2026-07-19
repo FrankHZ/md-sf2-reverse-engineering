@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/map-tileset-decode.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "unusedTilesetIndices", "animationTileCountDistribution", "tilesets", "maps", "animations", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-tileset-decode-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 3, "maxProperties": 3, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 24, "maxProperties": 24, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "unusedTilesetIndices": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": 29 } },
+    "animationTileCountDistribution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["4", "16", "32", "64", "96"],
+      "properties": { "4": { "const": 1 }, "16": { "const": 1 }, "32": { "const": 3 }, "64": { "const": 13 }, "96": { "const": 14 } }
+    },
+    "tilesets": {
+      "type": "array", "minItems": 115, "maxItems": 115,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["index", "symbol", "sourcePath", "sourceAddress", "compressedBytes", "decodedBytes", "sourceSha256", "decodedSha256", "inputBitsConsumed", "trailingBits", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 0, "maximum": 114 }, "symbol": { "type": "string" },
+          "sourcePath": { "type": "string" }, "sourceAddress": { "type": "integer", "minimum": 0 },
+          "compressedBytes": { "type": "integer", "minimum": 1 }, "decodedBytes": { "const": 4096 },
+          "sourceSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }, "decodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "inputBitsConsumed": { "type": "integer", "minimum": 1 }, "trailingBits": { "type": "integer", "minimum": 0 },
+          "commandGroupCount": { "type": "integer", "minimum": 1 }, "literalWordCount": { "type": "integer", "minimum": 0 },
+          "copyCommandCount": { "type": "integer", "minimum": 0 }, "copiedWordCount": { "type": "integer", "minimum": 0 },
+          "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 }, "maximumCopyLengthWords": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "maps": {
+      "type": "array", "minItems": 79, "maxItems": 79,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["mapIndex", "sourcePath", "mapAddress", "paletteIndex", "tilesetSlots"],
+        "properties": {
+          "mapIndex": { "type": "integer", "minimum": 0, "maximum": 78 }, "sourcePath": { "type": "string" },
+          "mapAddress": { "type": "integer", "minimum": 0 }, "paletteIndex": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "tilesetSlots": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "type": "integer", "minimum": 0, "maximum": 255 } }
+        }
+      }
+    },
+    "animations": {
+      "type": "array", "minItems": 32, "maxItems": 32,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["mapIndex", "sourcePath", "address", "tilesetIndex", "tileCount"],
+        "properties": {
+          "mapIndex": { "type": "integer", "minimum": 0, "maximum": 78 }, "sourcePath": { "type": "string" },
+          "address": { "type": "integer", "minimum": 0 }, "tilesetIndex": { "type": "integer", "minimum": 0, "maximum": 114 },
+          "tileCount": { "enum": [4, 16, 32, 64, 96] }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

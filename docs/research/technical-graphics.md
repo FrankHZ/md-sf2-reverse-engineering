@@ -5,7 +5,7 @@
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
-  special-screen, base/menu UI, and battle-effect Stack-compression corpora
+  special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -151,6 +151,16 @@ Every invocation stream decodes to 4,096 bytes, while both consumer paths transf
 the five special-screen over-transfers, this is a confirmed transfer boundary but not evidence that
 the tail is zeroed, stable, or invisible.
 
+The eleventh corpus closes the full 115-entry map-tileset table. Every Stack payload decodes to
+4,096 bytes, totaling 471,040 decoded bytes from 198,514 compressed bytes. The rail checks all 115
+table longwords, all payload ranges, the top-level pointer, all 79 six-byte palette/tileset map
+headers, and all 32 animation headers against H1 and ROM.
+
+The 79 maps provide 395 ordinary tileset slots: 326 real references and 69 `255` sentinels, covering
+100 unique indices. Animation headers add 32 references across 15 unique indices. Combined static
+usage reaches 114 of 115 resources; only `MapTileset029` has no reference in either complete source
+surface. This proves static absence, not runtime unreachability through dynamic or encoded writes.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -195,6 +205,7 @@ uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 battle-effect-graphics
+uv run sf2 h2 map-tilesets
 uv run sf2 research-index test
 ```
 
@@ -203,4 +214,4 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
 `special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
-`battle-effect-graphics-decode.json`.
+`battle-effect-graphics-decode.json`, plus `map-tileset-decode.json`.

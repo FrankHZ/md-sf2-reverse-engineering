@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-tileset-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": { "loadStackAddress": 7752, "LoadMapTilesets": 10722, "LoadMapArea": 11756 },
+  "table": { "pt_MapTilesets": 409612, "p_pt_MapTilesets": 409600 },
+  "summary": {
+    "tilesetCount": 115, "fixedDecodedBytesPerTileset": 4096,
+    "compressedByteCount": 198514, "decodedByteCount": 471040,
+    "tableRomParityCount": 115, "payloadRomParityCount": 115,
+    "mapCount": 79, "mapSlotCount": 395, "mapTilesetReferenceCount": 326,
+    "absentMapSlotCount": 69, "uniqueMapTilesetReferenceCount": 100,
+    "animationMapCount": 32, "animationTilesetReferenceCount": 32,
+    "uniqueAnimationTilesetReferenceCount": 15, "combinedUsedTilesetCount": 114,
+    "unusedTilesetCount": 1, "commandGroupCount": 8418, "literalWordCount": 111246,
+    "copyCommandCount": 22485, "copiedWordCount": 124274, "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47, "maximumCopyOffsetWords": 2000, "maximumCopyLengthWords": 33
+  },
+  "unusedTilesetIndices": [29],
+  "animationTileCountDistribution": { "4": 1, "16": 1, "32": 3, "64": 13, "96": 14 },
+  "runtimeQuestions": [
+    "Do all map-tileset slots and animated replacement ranges render with original palette selection, VRAM placement, and frame composition?",
+    "Is MapTileset029 unreachable through dynamic or encoded writes as indicated by the complete static map-header and animation-header scan?"
+  ]
+}

@@ -72,6 +72,14 @@ tiles. Complete logical cycles total 40, 44, or 80 callbacks. Every replacement 
 within its table's cached tile count. Targets occupy tile indices 288 through 895 inclusive. These
 are complete-corpus bounds, not a sample of visually obvious maps.
 
+The graphics side is now complete too. `pt_MapTilesets` contains 115 Stack-compressed payloads and
+every one decodes to 4,096 bytes, totaling 471,040 bytes. The rail verifies all pointer-table words,
+payload ranges, 79 six-byte map headers, and 32 four-byte animation headers against ROM. The five
+ordinary slots across all maps form 395 positions: 326 references and 69 `255` sentinels, using 100
+unique tilesets. Animation headers add 32 references across 15 unique indices. Together they reach
+114/115 resources; only `MapTileset029` lacks a static reference. Dynamic unreachability and rendered
+composition remain Unknown.
+
 Static consumers confirm the important ownership rules:
 
 - map construction loads blocks, decodes the layout, applies every set flag-copy in source order,
@@ -196,6 +204,7 @@ they do not reopen the confirmed one-VInt queue delay under the pinned core.
 ```powershell
 uv run sf2 h2 map-content
 uv run sf2 h2 map-layouts
+uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-import
 uv run sf2 h2 map-data
 uv run sf2 h3 map-event-dispatch
@@ -205,4 +214,5 @@ uv run sf2 research-index test
 
 Detailed outputs are written to ignored `local/derived/map-content-static.json`,
 `local/derived/map-layout-decode.json`, and `local/derived/canonical-map-import.json`. The tracked
-fixtures contain only compact non-content evidence.
+fixtures contain only compact non-content evidence. Tileset decode details stay under ignored
+`local/derived/map-tileset-decode.json`.
