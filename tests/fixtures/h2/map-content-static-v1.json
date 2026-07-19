@@ -87,6 +87,14 @@
     ],
     "flagEventScanPolicy": "all-set-in-source-order",
     "flagEventOverlapPolicy": "later-copy-wins",
+    "loadMapLayoutPolicyByPath": {
+      "nonnegativeMapArgument": "rebuild-source-and-apply-persistent-state",
+      "negativeCurrentMapArgument": "preserve-working-layout-before-roof-evaluation",
+      "scrollingWarp": "rebuild-target-and-apply-persistent-state",
+      "explicitResetThenCurrentReload": "clear-working-layout-before-roof-evaluation"
+    },
+    "currentMapReloadSkipsBlockAndLayoutDecode": true,
+    "explicitResetWorkingLayoutBytes": 8192,
     "roofOnLoadScanPolicy": "first-containing-record",
     "stepEventScanPolicy": "first-coordinate-match",
     "warpEventScanPolicy": "first-coordinate-match",
@@ -121,7 +129,6 @@
     "declaredLayoutOffsetReferenceCount": 0
   },
   "runtimeQuestions": [
-    "map-transition-working-layout-persistence-across-reload",
     "map-animation-vdp-frame-timing",
     "map-block-layout-rendered-parity"
   ]

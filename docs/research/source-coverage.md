@@ -194,9 +194,8 @@ content remains ignored and only aggregate evidence is tracked:
 1. keep the completed ten-case setup-selector, six-case init-dispatch, and nine-case grouped
    entity/zone/item event-dispatch matrices as the runtime selection/call boundary;
 2. compare rendered output through one graphics/VDP matrix;
-3. preserve normal-story direct-`rts` event reachability, nonstandard description callers, script side effects,
-   and working-layout reload persistence as
-   `Inferred` or `Unknown` until stronger evidence exists;
+3. preserve normal-story direct-`rts` event reachability, nonstandard description callers, and
+   script side effects as `Inferred` or `Unknown` until stronger evidence exists;
 4. extend runtime work into individual init/script side effects only after event integration leaves a
    concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in
    their own later shared matrices.

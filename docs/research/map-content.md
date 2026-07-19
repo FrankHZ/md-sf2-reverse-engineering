@@ -3,8 +3,7 @@
 - Status: **Confirmed** for all 79 map entries, all 662 source-form content sections, all 154
   private block/layout payloads, record sizes, aggregate record counts, their canonical ROM bytes,
   the deterministic engine-neutral import assembled from them, and the static flag/roof/step/warp
-  consumer phases and scan policies
-- Status: **Inferred** for working-layout persistence across reloads
+  consumer phases, scan policies, and path-specific working-layout rebuild/preservation rules
 - Status: **Unknown** for rendered layout parity and exact VDP animation frame timing
 - Evidence date: 2026-07-19
 - ROM SHA-256: `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -81,6 +80,11 @@ Static consumers confirm the important ownership rules:
 - flag records are consumed during layout construction, roof records after area selection on map
   load, and step/warp records from controlled movement. They are not four competing callbacks at one
   common dispatch point;
+- a nonnegative `LoadMap` argument and every scrolling warp rebuild the target working layout from
+  source before replaying persistent flag/chest state. A negative current-map reload skips both
+  block and layout decoding and preserves the existing 8 KiB working layout before roof evaluation.
+  The explicit `ResetCurrentMap` path first clears those 8 KiB and then deliberately uses that
+  preserving reload path;
 - step and roof records advance by eight bytes, item records by four, and warp records by the
   eight-byte enum size;
 - `VInt_UpdateMapAnimations` consumes the selected map's animation table during vertical interrupt
@@ -155,15 +159,14 @@ transition or presentation behavior. A following six-case init-dispatch matrix c
 skip and exactly one modeled indirect init target for active, scripted, and direct-return setups.
 A following nine-case event-dispatch matrix confirms entity, zone, and item first-match selection in
 one BizHawk launch without executing the selected scripts. Static parsing now closes the consumer
-phases, first-match/all-match policies, overlap direction, movement-marker exclusivity, and target
-check order. Three coherent runtime/presentation questions remain:
+phases, first-match/all-match policies, overlap direction, movement-marker exclusivity, target check
+order, and working-layout rebuild/preservation by load path. Two coherent presentation questions
+remain:
 
-1. whether mutations of the working layout persist across the different reload paths;
-2. VInt/VDP frame timing for animation table updates;
-3. decoded block/layout rendered-map parity against the VDP presentation path.
+1. VInt/VDP frame timing for animation table updates;
+2. decoded block/layout rendered-map parity against the VDP presentation path.
 
-The first matrix should share one map-transition observation seam. The latter two belong with the
-graphics/VDP batch; neither justifies a one-map runtime fixture now.
+Both belong with the graphics/VDP batch; neither justifies a one-map runtime fixture now.
 
 ## Reproduction
 

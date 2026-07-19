@@ -2,8 +2,8 @@
 
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
-  dispatch rules, and static transition-consumer priority
-- **Unknown original behavior:** working-layout persistence across reload paths, normal-story
+  dispatch rules, static transition-consumer priority, and load-path-specific layout persistence
+- **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact animation/scroll frame timing,
   and final VDP-visible rendered parity
 - Remake status: implementation-neutral Phase 3 contract; no engine has been selected
@@ -103,9 +103,12 @@ For original-fidelity behavior, a new map load performs these conceptual steps:
 6. evaluate the first matching roof record before the initial plane update;
 7. run the selected setup init function after `LoadMap` returns.
 
-The implementation MAY cache immutable decoded blocksets and layouts, but flag/step/roof copies act on
-a per-map working layout. Cache reuse MUST NOT leak mutated layout state between map loads unless a
-later H3 fixture confirms that persistence in the original.
+The implementation MAY cache immutable decoded blocksets and layouts, but flag/step/roof copies act
+on a separate 8 KiB working layout. A nonnegative map argument and a scrolling warp rebuild that
+layout from source and replay persistent flag/chest state. A negative current-map reload preserves
+the working layout before roof evaluation. The explicit reset operation clears the full working
+layout and then uses that preserving reload path. A remake MUST model the selected path explicitly;
+cache reuse cannot choose preservation based only on whether the map ID changed.
 
 The upstream enum `MAPDATA_OFFSET_LAYOUT = 8` is not part of this contract. The confirmed entry layout
 places the pointer at offset 10; no original code references the defective constant.
@@ -149,8 +152,8 @@ construction, roof-on-load uses the first containing record, and step/warp scans
 coordinate match. Controlled walking checks one mutually exclusive masked marker in the order
 enter-caravan, enter-raft, door, warp, zone, then passability. Door processing mutates and re-reads
 the target block before the warp and zone checks. A remake MUST preserve these phase and ordering
-rules. Whether the resulting working-layout mutations survive each reload path is still **Unknown**
-and remains a grouped parity case.
+rules. The load-path rules above determine whether the resulting working-layout mutations survive;
+only their VDP-visible frame timing remains outside this static contract.
 
 The exploration wait loop polls a pending map event before A/C, and the outer loop dispatches that
 event before a player action. If both are visible in the same poll, the map event wins. Exact

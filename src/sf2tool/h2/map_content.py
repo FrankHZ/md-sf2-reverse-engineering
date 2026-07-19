@@ -292,6 +292,39 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
         ),
         "layout construction",
     )
+    load_map_start = mapload.index("LoadMap:")
+    load_map = mapload[
+        load_map_start : mapload.index("; End of function LoadMap", load_map_start)
+    ]
+    _require_ordered_fragments(
+        load_map,
+        (
+            "ext.w   d1",
+            "bpl.s   @LoadNewMap",
+            "; Reload current map",
+            "lea     MAPDATA_OFFSET_AREAS(a5),a5",
+            "bra.w   @loc_7",
+            "@LoadNewMap:",
+            "bsr.w   LoadMapBlocksAndLayout",
+            "@loc_7:",
+            "bsr.w   ToggleRoofOnMapLoad",
+        ),
+        "new/current map-load paths",
+    )
+    map_transition = mapload[
+        mapload.index("ProcessMapTransition:") : mapload.index(
+            "; End of function ProcessMapTransition"
+        )
+    ]
+    _require_ordered_fragments(
+        map_transition,
+        (
+            "move.b  ((CURRENT_MAP-$1000000)).w,d1",
+            "bsr.w   LoadMapBlocksAndLayout",
+            "bsr.w   ApplyOverworldMapTransition",
+        ),
+        "scrolling map transition",
+    )
     _require_fragments(
         exploration,
         tuple(
@@ -362,6 +395,21 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
         ),
         "warp-event scan",
     )
+    reset_map = exploration[
+        exploration.index("ResetCurrentMap:") : exploration.index(
+            "; End of function ResetCurrentMap"
+        )
+    ]
+    _require_ordered_fragments(
+        reset_map,
+        (
+            "move.w  #MAP_LAYOUT_LONGS_COUNTER,d7",
+            "clr.l   (a2)+",
+            "moveq   #-1,d1",
+            "bra.w   LoadMap",
+        ),
+        "explicit map reset",
+    )
     control_character = entity_script[
         entity_script.index("esc02_controlCharacter:") : entity_script.index(
             "; End of function esc02_controlCharacter"
@@ -421,6 +469,14 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
         ],
         "flagEventScanPolicy": "all-set-in-source-order",
         "flagEventOverlapPolicy": "later-copy-wins",
+        "loadMapLayoutPolicyByPath": {
+            "nonnegativeMapArgument": "rebuild-source-and-apply-persistent-state",
+            "negativeCurrentMapArgument": "preserve-working-layout-before-roof-evaluation",
+            "scrollingWarp": "rebuild-target-and-apply-persistent-state",
+            "explicitResetThenCurrentReload": "clear-working-layout-before-roof-evaluation",
+        },
+        "currentMapReloadSkipsBlockAndLayoutDecode": True,
+        "explicitResetWorkingLayoutBytes": 8192,
         "roofOnLoadScanPolicy": "first-containing-record",
         "stepEventScanPolicy": "first-coordinate-match",
         "warpEventScanPolicy": "first-coordinate-match",
@@ -634,7 +690,6 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         "sourceSections": source_sections,
         "binaryPayloads": binary_payloads,
         "runtimeQuestions": [
-            "map-transition-working-layout-persistence-across-reload",
             "map-animation-vdp-frame-timing",
             "map-block-layout-rendered-parity",
         ],
