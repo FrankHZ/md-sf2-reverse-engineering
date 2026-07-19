@@ -25,8 +25,8 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,834 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 55 | Runtime contracts, often containing multiple cases |
+| Address bindings | 1,838 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -150,8 +150,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,437 records; its
-verifier reports 381 unique code files, 980 unique data files, 45 H2 fixtures, 54 H3 fixtures, and
-1,834 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 45 H2 fixtures, 55 H3 fixtures, and
+1,838 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -191,8 +191,9 @@ deterministic 79-map, 1,859-resource canonical import with 15,805 logical record
 and 126 six-pointer definitions resolve entity/event/description/init ownership; complete generated
 content remains ignored and only aggregate evidence is tracked:
 
-1. run the grouped map initialization/event-dispatch matrix now that all 75 init script targets are
-   statically resolved;
+1. keep the completed ten-case setup-selector matrix as the runtime selection boundary, then run the
+   grouped map initialization/event-dispatch matrix now that all 75 init script targets are statically
+   resolved;
 2. compare rendered output through one graphics/VDP matrix;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as

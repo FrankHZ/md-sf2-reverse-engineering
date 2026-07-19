@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-setup-selection-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "mapTestIndex": 0,
+  "observationBoundary": "Ten cases replay the debug Map Test 0 number prompt from one shared in-memory core state and reach GetCurrentMapSetup through the original exploration path. Lua changes only CURRENT_MAP and the 128-byte GAME_FLAGS bitset at the selector entry. The original map-row scan, every flag check, last-set overwrite, alias route, missing-map sentinel, register restoration, and return execute unchanged in one BizHawk launch.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": { "entryAddress": 292766, "returnAddress": 292834 },
+  "ram": { "currentMapAddress": 16774929, "gameFlagsAddress": 16774790 },
+  "cases": [
+    { "id": "missing-map", "map": 32, "setFlags": [], "expected": { "id": "missing-map", "map": 32, "selectedSymbol": "ms_Void", "selectedAddress": 292840 } },
+    { "id": "map3-default", "map": 3, "setFlags": [], "expected": { "id": "map3-default", "map": 3, "selectedSymbol": "ms_map3", "selectedAddress": 330472 } },
+    { "id": "map3-first-flag", "map": 3, "setFlags": [609], "expected": { "id": "map3-first-flag", "map": 3, "selectedSymbol": "ms_map3_flag609", "selectedAddress": 330496 } },
+    { "id": "map3-later-flag-wins", "map": 3, "setFlags": [609,506], "expected": { "id": "map3-later-flag-wins", "map": 3, "selectedSymbol": "ms_map3_flag506", "selectedAddress": 330520 } },
+    { "id": "map3-last-flag-wins", "map": 3, "setFlags": [609,506,543], "expected": { "id": "map3-last-flag-wins", "map": 3, "selectedSymbol": "ms_map3_flag543", "selectedAddress": 403110 } },
+    { "id": "map7-alias-restores-default", "map": 7, "setFlags": [701,702], "expected": { "id": "map7-alias-restores-default", "map": 7, "selectedSymbol": "ms_map7", "selectedAddress": 349054 } },
+    { "id": "map7-final-variant-wins", "map": 7, "setFlags": [701,702,805], "expected": { "id": "map7-final-variant-wins", "map": 7, "selectedSymbol": "ms_map7_flag805", "selectedAddress": 349102 } },
+    { "id": "map19-sixth-variant-wins", "map": 19, "setFlags": [501,609,506,507,543,982], "expected": { "id": "map19-sixth-variant-wins", "map": 19, "selectedSymbol": "ms_map19_flag982", "selectedAddress": 403890 } },
+    { "id": "map33-late-alias-restores-default", "map": 33, "setFlags": [523,784,786,22], "expected": { "id": "map33-late-alias-restores-default", "map": 33, "selectedSymbol": "ms_map33", "selectedAddress": 370246 } },
+    { "id": "map40-late-alias-restores-default", "map": 40, "setFlags": [506,507], "expected": { "id": "map40-late-alias-restores-default", "map": 40, "selectedSymbol": "ms_map40", "selectedAddress": 343904 } }
+  ]
+}

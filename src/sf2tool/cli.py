@@ -62,6 +62,7 @@ from sf2tool.h3.growth import (
     verify_level_up_refresh,
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
+from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
 from sf2tool.h3.rng import verify_rng
@@ -455,6 +456,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_battlefield_matrix)
     h3_battlefield_matrix.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_setup_selection = h3_commands.add_parser(
+        "map-setup-selection",
+        help="verify map setup default, flag, alias, and missing-map selection",
+    )
+    _add_local_paths(h3_map_setup_selection)
+    h3_map_setup_selection.add_argument("--timeout-seconds", type=int, default=120)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -991,6 +998,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "battlefield-matrix":
         print_record(
             verify_battlefield_movement_matrix(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-setup-selection":
+        print_record(
+            verify_map_setup_selection(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

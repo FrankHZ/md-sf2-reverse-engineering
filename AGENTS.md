@@ -136,7 +136,7 @@ inventory/action-filter/attack-priority contracts, plus BizHawk base/debug-aware
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
 turn-order, region-activation, physical-attack-chain, dodge, and follow-up-validation behavior
-fixtures; extend the same entry
+fixtures, plus the ten-case map setup selector runtime matrix; extend the same entry
 point as later rails become available:
 
 1. **Input identity**: size, hashes, console header, product code, region, and ROM

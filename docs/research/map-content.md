@@ -136,7 +136,9 @@ boundary without redistributing the original maps.
 
 ## Concentrated Runtime Queue
 
-No emulator was launched for this batch. Static evidence leaves three coherent later matrices:
+The ten-case setup-selector H3 matrix now confirms default, missing-map, last-set-flag-wins, and
+alias-pointer selection through the natural debug Map Test exploration path. It does not close map
+transition or presentation behavior. Static evidence leaves three coherent later matrices:
 
 1. transition event precedence and state persistence across flag, step, roof, and warp processing;
 2. VInt/VDP frame timing for animation table updates;

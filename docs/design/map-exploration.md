@@ -34,9 +34,11 @@ Evidence is executable through:
 - `sf2-map-layout-decode-v1` in
   `tests/fixtures/h2/map-layout-decode-v1.json`;
 - `sf2-canonical-map-import-v1` in
-  `tests/fixtures/h2/canonical-map-import-v1.json`.
+  `tests/fixtures/h2/canonical-map-import-v1.json`;
+- `sf2-map-setup-selection-runtime-v1` in
+  `tests/fixtures/h3/map-setup-selection-v1.json`.
 
-The last fixture is the executable serialization of this contract. Its full generated payload stays
+The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
 
 The canonical import now resolves all 64 setup routes and 126 setup definitions. A setup definition
@@ -44,6 +46,10 @@ references six independently shared resources: entities, entity events, zone eve
 descriptions, item events, and initialization function. The 15 map IDs with no original route keep a
 null route. Selection scans every flag variant in source order and retains the last set flag; direct
 return handlers remain explicit empty handlers rather than being replaced by guessed defaults.
+The ten-case H3 matrix confirms the selector itself returns the H2-modeled pointer for a missing map,
+default routes, single and multiple set flags, last-set-flag-wins, and later aliases that restore a
+default pointer. It replays one natural debug Map Test prompt and changes only `CURRENT_MAP` plus the
+game-flag bitset at selector entry; the original scan and return execute unchanged.
 Initialization resources retain ordered operations and complete branch targets, including the one
 confirmed cross-function return edge. A remake importer MAY translate recognized operations into a
 typed command IR, but MUST retain unknown operand text and MUST NOT infer script persistence or frame

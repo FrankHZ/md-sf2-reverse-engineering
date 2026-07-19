@@ -267,22 +267,21 @@ family, and both private block/layout bitstreams are now closed statically, incl
 decoder passes. The map script target graph is now statically closed; remaining state persistence,
 nonstandard callers, and presentation behavior belong in the prepared grouped runtime matrices.
 
-The first prepared runtime slice replays ten setup-selection cases from one natural
+The first runtime slice now replays ten setup-selection cases from one natural
 `GetCurrentMapSetup` entry at ROM `0x4779E` and observes `a0` at the common return seam `0x477E2`.
 The case table is derived from the accepted H2 selector model and covers a missing map, default rows,
 single and multiple set flags, last-set-flag-wins, and later aliases that restore a default pointer.
 Each replay may change only `CURRENT_MAP` and the 128-byte game-flag bitset; the original row scan,
-flag tests, pointer overwrites, register restoration, and return must execute unchanged. This is a
-**planned H3 boundary**, not confirmed runtime evidence, until all cases complete and the observed
-addresses match the H2 model.
+flag tests, pointer overwrites, register restoration, and return execute unchanged. All ten observed
+addresses match the H2 model in one BizHawk launch, so missing-map fallback, default selection,
+single-flag variants, last-set-flag-wins, and later aliases that restore defaults are **Confirmed**.
 
-Harness navigation is the remaining setup problem for that slice. The debug Battle Test route does
-not naturally traverse the exploration selector. A first automated debug Map Test attempt reached
-the map prompt path but did not reach `GetCurrentMapSetup` before timeout, so prompt navigation is not
-accepted as behavioral evidence. Resume by instrumenting the shared path through `NumberPrompt`,
-`DebugSetFlag`, `ExplorationLoop`, `SwitchMap`, and `RunMapSetupInitFunction` in one launch; do not
-replace the natural call with a synthetic direct invocation merely to make the expected selector
-result pass.
+The accepted harness saves its shared core state from the debug Map Test 0 number-prompt frame loop,
+then reaches the selector through `DebugSetFlag`, `ExplorationLoop`, and the original entity/init
+callers on every replay. BizHawk forbids `memorysavestate.savecorestate()` inside an execution
+callback; the rejected first attempt exposed that exception and is not part of the evidence. The
+observer therefore requests the snapshot from the outer frame loop rather than weakening the
+natural-call boundary or invoking the selector synthetically.
 
 ## Harness Performance
 
@@ -302,5 +301,6 @@ uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts
 uv run sf2 h2 map-content
+uv run sf2 h3 map-setup-selection
 uv run sf2 research-index test
 ```
