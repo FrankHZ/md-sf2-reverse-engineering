@@ -65,6 +65,7 @@
         "battleTerrainStackCorpusConfirmed": true,
         "battleBackgroundStackCorpusConfirmed": true,
         "battleSpriteStackCorpusConfirmed": true,
+        "battleWeaponAndGroundStackCorporaConfirmed": true,
         "portraitStackCorpusConfirmed": true,
         "remainingDecompressionCorporaRemainQueued": true,
         "visualAndVdpTimingRemainQueued": true,

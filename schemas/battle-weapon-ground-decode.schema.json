@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/battle-weapon-ground-decode.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "sideSummaries", "groundAliases", "weaponSprites", "weaponPalettes", "groundHeaders", "groundTiles", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-weapon-ground-decode-v1" },
+    "upstream": { "type": "object", "required": ["repository", "commit"] },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/$defs/counts" },
+    "table": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "sideSummaries": { "type": "array", "minItems": 2, "maxItems": 2 },
+    "groundAliases": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["ground", "payloadOwnerGround"],
+        "properties": {
+          "ground": { "type": "integer", "minimum": 0, "maximum": 29 },
+          "payloadOwnerGround": { "type": "integer", "minimum": 0, "maximum": 28 }
+        }
+      }
+    },
+    "weaponSprites": {
+      "type": "array", "minItems": 23, "maxItems": 23,
+      "items": { "$ref": "#/$defs/namedStream" }
+    },
+    "weaponPalettes": {
+      "type": "array", "minItems": 42, "maxItems": 42,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["index", "symbol", "sourcePath", "sourceAddress", "paletteBytes", "paletteSha256"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 0, "maximum": 41 },
+          "symbol": { "type": "string", "pattern": "^WeaponPalette[0-9]{2}$" },
+          "sourcePath": { "type": "string" },
+          "sourceAddress": { "type": "integer", "minimum": 0 },
+          "paletteBytes": { "const": 4 },
+          "paletteSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+        }
+      }
+    },
+    "groundHeaders": {
+      "type": "array", "minItems": 27, "maxItems": 27,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["ground", "symbol", "sourceAddress", "palettePath", "paletteBytes", "paletteSha256", "relativeBaseSymbol", "relativeTilesetOffset", "tilesetSymbol", "tilesetAddress"],
+        "properties": {
+          "ground": { "type": "integer", "minimum": 0, "maximum": 28 },
+          "symbol": { "type": "string", "pattern": "^Ground[0-9]{2}$" },
+          "sourceAddress": { "type": "integer", "minimum": 0 },
+          "palettePath": { "type": "string" },
+          "paletteBytes": { "const": 6 },
+          "paletteSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "relativeBaseSymbol": { "type": "string", "pattern": "^bsg[0-9]{2}_rpbase$" },
+          "relativeTilesetOffset": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "tilesetSymbol": { "type": "string", "pattern": "^GroundTiles[0-9]{2}$" },
+          "tilesetAddress": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "groundTiles": {
+      "type": "array", "minItems": 10, "maxItems": 10,
+      "items": { "$ref": "#/$defs/namedStream" }
+    },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "namedStream": {
+      "type": "object",
+      "required": ["symbol", "sourcePath", "sourceAddress", "compressedBytes", "inputBitsConsumed", "trailingBits", "decodedBytes", "decodedSha256", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "symbol": { "type": "string" },
+        "sourcePath": { "type": "string" },
+        "sourceAddress": { "type": "integer", "minimum": 0 },
+        "compressedBytes": { "type": "integer", "minimum": 1 },
+        "inputBitsConsumed": { "type": "integer", "minimum": 1 },
+        "trailingBits": { "type": "integer", "minimum": 0 },
+        "decodedBytes": { "enum": [1536, 8192] },
+        "decodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "commandGroupCount": { "type": "integer", "minimum": 1 },
+        "literalWordCount": { "type": "integer", "minimum": 0 },
+        "copyCommandCount": { "type": "integer", "minimum": 0 },
+        "copiedWordCount": { "type": "integer", "minimum": 0 },
+        "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 },
+        "maximumCopyLengthWords": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

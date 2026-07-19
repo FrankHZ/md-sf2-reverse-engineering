@@ -3,7 +3,7 @@
 - Status: **Confirmed** for the pinned twelve-file root inventory, 55-file animation inventory,
   21-command scene-script dispatch, scene initialization order, actor/weapon/background selectors,
   complete 32-entry spell setup/update source pairing, battle-background container loader, and
-  ally/enemy battle-sprite property/palette/frame loaders
+  ally/enemy battle-sprite plus weapon/ground property, palette, frame, and DMA loaders
 - Status: **Inferred** for the player-visible intent of named tint and graphics helpers where only
   static call structure has been reproduced
 - Status: **Unknown** for exact frame timing, interrupt/VDP effects, and rendered visual output
@@ -45,6 +45,13 @@ words from the selected 32-byte palette. Frame paths resolve a self-relative wor
 frames and `0xC00` words for enemy frames, matching the H2 corpus's 4,608- and 6,144-byte outputs.
 Animation sequencing and rendered placement remain outside this container contract.
 
+`LoadWeaponPalette` selects one contiguous four-byte entry and writes the final two colors of the
+ally battle-sprite palette. `LoadWeaponsprite` Stack-decodes one 8,192-byte tileset; the source format
+contains four 64-tile views. `LoadBattlesceneGroundToVram` applies three palette words to base color
+indices 3, 4, and 8, resolves a self-relative tileset word after the six palette bytes, decodes 1,536
+bytes, and requests `0x300` DMA words. These loader and size contracts do not prove angle selection,
+layer composition, or visible placement.
+
 Spell animation setup and update each have 32 dispatch entries. Setup preserves the mirror bit and
 stores the decoded variant as one-based; both disabled setup and index `-1` return without dispatch.
 The update path requires its toggle and phase state before jumping to the selected updater.
@@ -72,6 +79,7 @@ uv run sf2 h2 battle-scene-engine
 uv run sf2 h2 battle-scene-animations
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
+uv run sf2 h2 battle-weapon-ground
 uv run sf2 research-index test
 ```
 

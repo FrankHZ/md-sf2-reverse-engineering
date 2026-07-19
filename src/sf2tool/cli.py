@@ -24,6 +24,7 @@ from sf2tool.h2.battle_scene_engine import verify_battle_scene_engine_inventory
 from sf2tool.h2.battle_sprites import verify_battle_sprite_contract
 from sf2tool.h2.battle_spriteset_data import verify_battle_spriteset_data_inventory
 from sf2tool.h2.battle_terrain import verify_battle_terrain_contract
+from sf2tool.h2.battle_weapon_ground import verify_battle_weapon_ground_contract
 from sf2tool.h2.battlefield import verify_battlefield_inventory
 from sf2tool.h2.core_stats_data import verify_core_stats_data_inventory
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
@@ -336,6 +337,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_battle_sprites)
     h2_battle_sprites.add_argument("--output-path", type=_path)
+    h2_battle_weapon_ground = h2_commands.add_parser(
+        "battle-weapon-ground",
+        help="decode battle weapon sprites, weapon palettes, and ground graphics containers",
+    )
+    _add_local_paths(h2_battle_weapon_ground)
+    h2_battle_weapon_ground.add_argument("--output-path", type=_path)
     h2_portraits = h2_commands.add_parser(
         "portraits", help="decode all portrait metadata, palettes, and Stack-compressed tiles"
     )
@@ -854,6 +861,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "battle-sprites":
         print_record(
             verify_battle_sprite_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "battle-weapon-ground":
+        print_record(
+            verify_battle_weapon_ground_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

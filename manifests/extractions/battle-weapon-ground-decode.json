@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-weapon-ground-decode-v1",
+  "outputSha256": "AFDC270DEC8B1AABC9501C2B8425F2276244DE2CE18A802D0723CFBC55E0CD8E",
+  "summary": {
+    "pointerCount": 53, "graphicPayloadCount": 33, "paletteCount": 69,
+    "paletteByteCount": 330, "groundHeaderByteCount": 216,
+    "sourcePayloadByteCount": 28132, "streamCount": 33,
+    "compressedByteCount": 27748, "decodedByteCount": 203776,
+    "commandGroupCount": 753, "literalWordCount": 7308,
+    "copyCommandCount": 4417, "copiedWordCount": 94580,
+    "maximumCopyOffsetWords": 2000, "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32, "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 53, "sourcePayloadRomParityCount": 102
+  }
+}

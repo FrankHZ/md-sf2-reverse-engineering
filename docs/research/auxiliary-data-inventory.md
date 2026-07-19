@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
   two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
-  and the complete battle-background, battle-sprite, and portrait container/decode corpora
+  and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
+  corpora
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -52,6 +53,12 @@ array, and 1-4 palettes. The 86 payloads contain 167 palettes and 408 Stack-comp
 payloads, header boundaries, and stream output sizes are ROM-checked; image and palette bytes remain
 private.
 
+The weapon/ground rail covers both remaining battle-layer families. It validates 23 weapon pointers
+and Stack streams, 42 contiguous four-byte weapon palettes, 30 ground pointers, 27 ground palette/
+relative-pointer headers, and ten shared ground streams. Weapon outputs are fixed at 8,192 bytes and
+ground outputs at 1,536; slots 21/22 reuse ground 12 and slot 29 reuses ground 13. The 53 pointer
+entries and 102 source objects match ROM bytes, while the 203,776 decoded bytes remain local.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -76,6 +83,7 @@ launches.
 uv run sf2 h2 auxiliary-data
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
+uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
 uv run sf2 research-index test
 ```

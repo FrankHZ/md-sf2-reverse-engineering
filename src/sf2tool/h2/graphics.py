@@ -184,6 +184,7 @@ def _graphics_facts(disasm: Path) -> dict[str, Any]:
             "battleTerrainStackCorpusConfirmed": True,
             "battleBackgroundStackCorpusConfirmed": True,
             "battleSpriteStackCorpusConfirmed": True,
+            "battleWeaponAndGroundStackCorporaConfirmed": True,
             "portraitStackCorpusConfirmed": True,
             "remainingDecompressionCorporaRemainQueued": True,
             "visualAndVdpTimingRemainQueued": True,

@@ -3,7 +3,7 @@
 - Status: **Confirmed** for the pinned 11-file layout-owned inventory, H1 entry addresses, the two
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
-  battle-background, battle-sprite, and portrait Stack-compression corpora
+  battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining Basic and embedded Stack-compression corpora, exact VDP timing,
@@ -64,6 +64,13 @@ two to seven. Every ally frame decodes to 4,608 bytes (12×12 tiles) and every e
 bytes (16×12 tiles), totaling 2,271,744 decoded bytes. The rail validates both pointer tables, all 86
 payloads, all 167 palettes, and all 408 streams against ROM boundaries without tracking image bytes.
 
+The fifth corpus closes the remaining battle-scene weapon and ground layers. All 23 weapon streams
+decode to 8,192 bytes (four 64-tile views) and use 42 contiguous four-byte palette entries. The
+30-slot ground table has 27 six-byte palette headers and three aliases matching backgrounds
+(21/22→12, 29→13); its relative words select ten shared streams, each decoding to 1,536 bytes (48
+tiles). The rail ROM-checks 53 pointers and 102 source payload/header objects and confirms 203,776
+decoded bytes without treating tile layout comments as rendered evidence.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -100,10 +107,12 @@ uv run sf2 h2 tech-graphics
 uv run sf2 h2 battle-terrain
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
+uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
-`battle-sprite-decode.json`, plus `portrait-graphics-decode.json`.
+`battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
+`portrait-graphics-decode.json`.

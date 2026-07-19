@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,444 条 confirmed finding、49 个 H2 fixture、58 个 H3 fixture
-和 1,881 个地址绑定。
+截至 2026-07-19，研究索引有 1,447 条 confirmed finding、50 个 H2 fixture、58 个 H3 fixture
+和 1,888 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -286,8 +286,10 @@ payload parity；同一解码器随后闭合 56 槽/52 个唯一 portrait 容器
 动画元数据、palette 边界及 106,496 个解压图形字节；battle background rail 又闭合 30 槽/
 27 个唯一容器、3 个 alias、27 份 32-byte palette 和 54 条 Stack stream，共 331,776 个解压字节。
 battle sprite rail 随后闭合 32 个 ally 与 54 个 enemy 容器、167 份 palette 和 408 个 frame，
-共验证 2,271,744 个解压字节。其余 Basic/嵌套 Stack corpus 和渲染帧继续归入静态批量 parity
-与集中 presentation 矩阵，四个解压批次都没有模拟器启动。
+共验证 2,271,744 个解压字节；weapon/ground rail 再闭合 23 个 weapon stream、42 份 weapon
+palette、27 个 ground header/10 个共享 ground stream，新增 203,776 个解压字节。其余
+Basic/嵌套 Stack corpus 和渲染帧继续归入静态批量 parity 与集中 presentation 矩阵，五个解压
+批次都没有模拟器启动。
 technical interfaces rail 将 10 个 jump-interface 与 15 个 pointer 文件合并盘点，完整锁定 331
 个 PC-relative jump stub 和 60 个 longword pointer 的 canonical mapping，使严格 reach 升到
 86.30%。该结构完全由 source/H1 决定，不产生运行时问题，也没有模拟器启动。

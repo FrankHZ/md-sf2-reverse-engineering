@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-weapon-ground-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "loadWeaponPaletteAddress": 105036,
+    "loadWeaponspriteAddress": 105052,
+    "loadGroundAddress": 105092
+  },
+  "table": {
+    "groundTableAddress": 1802280,
+    "weaponSpriteTableAddress": 1809050,
+    "weaponPaletteAddress": 1830456
+  },
+  "summary": {
+    "pointerCount": 53, "graphicPayloadCount": 33, "paletteCount": 69,
+    "paletteByteCount": 330, "groundHeaderByteCount": 216,
+    "sourcePayloadByteCount": 28132, "streamCount": 33,
+    "compressedByteCount": 27748, "decodedByteCount": 203776,
+    "commandGroupCount": 753, "literalWordCount": 7308,
+    "copyCommandCount": 4417, "copiedWordCount": 94580,
+    "maximumCopyOffsetWords": 2000, "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32, "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 53, "sourcePayloadRomParityCount": 102
+  },
+  "sideSummaries": [
+    {
+      "kind": "weapon", "pointerCount": 23, "graphicPayloadCount": 23,
+      "paletteCount": 42, "paletteByteCount": 168, "decodedBytesPerPayload": 8192,
+      "streamCount": 23, "compressedByteCount": 21314, "decodedByteCount": 188416,
+      "commandGroupCount": 454, "literalWordCount": 3243,
+      "copyCommandCount": 3804, "copiedWordCount": 90965,
+      "maximumCopyOffsetWords": 2000, "maximumCopyLengthWords": 33,
+      "minimumTrailingBits": 32, "maximumTrailingBits": 47
+    },
+    {
+      "kind": "ground", "pointerCount": 30, "headerCount": 27,
+      "aliasPointerCount": 3, "graphicPayloadCount": 10, "paletteCount": 27,
+      "paletteByteCount": 162, "decodedBytesPerPayload": 1536,
+      "streamCount": 10, "compressedByteCount": 6434, "decodedByteCount": 15360,
+      "commandGroupCount": 299, "literalWordCount": 4065,
+      "copyCommandCount": 613, "copiedWordCount": 3615,
+      "maximumCopyOffsetWords": 705, "maximumCopyLengthWords": 33,
+      "minimumTrailingBits": 33, "maximumTrailingBits": 47
+    }
+  ],
+  "groundAliases": [
+    { "ground": 21, "payloadOwnerGround": 12 },
+    { "ground": 22, "payloadOwnerGround": 12 },
+    { "ground": 29, "payloadOwnerGround": 13 }
+  ],
+  "runtimeQuestions": []
+}
