@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-routing-data-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "table": {
+    "rpt_AfterBattleCutscenes": 294132,
+    "table_AfterBattleJoins": 294250,
+    "rpt_EnemyDefeatedCutscenes": 293864,
+    "rpt_BattleStartCutscenes": 293676,
+    "rpt_BeforeBattleCutscenes": 293512,
+    "table_BattleRegionCutscenes": 294600,
+    "pt_BattleTerrainData": 1757444
+  },
+  "expected": {
+    "facts": {
+      "cutsceneRoutes": {
+        "beforeBattle": { "slotCount": 48, "nonEmptySlotCount": 27 },
+        "battleStart": { "slotCount": 48, "nonEmptySlotCount": 1 },
+        "enemyDefeated": { "slotCount": 48, "nonEmptySlotCount": 3 },
+        "afterBattle": { "slotCount": 48, "nonEmptySlotCount": 25 }
+      },
+      "unusedAfterBattleJoinSlots": 52,
+      "unusedAfterBattleJoinNonzeroSlots": 0,
+      "regionActivatedRouteCount": 4,
+      "terrain": {
+        "slotCount": 45,
+        "uniquePayloadCount": 43,
+        "aliasedSlots": { "4": 3, "32": 27 }
+      },
+      "legacySpritesetAggregate": {
+        "pointerCount": 45,
+        "incbinCount": 45,
+        "layoutOwned": false
+      },
+      "routeTargetsParsed": false
+    },
+    "runtimeQuestions": [
+      "cutscene-route-admission-and-empty-slot-fallback",
+      "region-cutscene-flag-lifecycle-and-repeatability",
+      "battle-terrain-alias-selection-and-runtime-consumers"
+    ]
+  }
+}

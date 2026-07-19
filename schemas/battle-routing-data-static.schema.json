@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II battle routing data static inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "inventoryPaths",
+    "builtPaths", "excludedPaths", "exclusions", "indexedRecordIds", "indexedSourcePaths",
+    "representativeSymbols", "representativeAddresses", "facts", "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-routing-data-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "const": "data/battles" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "layoutOwnedFileCount", "alternateFileCount", "representativeAddressCount",
+        "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 8 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 7 },
+        "layoutOwnedFileCount": { "const": 7 },
+        "alternateFileCount": { "const": 1 },
+        "representativeAddressCount": { "const": 7 },
+        "indexedRecordCount": { "const": 7 },
+        "indexedFileCount": { "const": 7 }
+      }
+    },
+    "inventoryPaths": { "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true },
+    "builtPaths": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
+    "excludedPaths": { "type": "array", "minItems": 1, "maxItems": 1, "uniqueItems": true },
+    "exclusions": { "type": "object", "minProperties": 1, "maxProperties": 1 },
+    "indexedRecordIds": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true
+    },
+    "representativeSymbols": { "type": "object", "minProperties": 7, "maxProperties": 7 },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 7, "maxProperties": 7,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "facts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 8, "maxItems": 8 }
+  }
+}

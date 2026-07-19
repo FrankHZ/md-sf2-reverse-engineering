@@ -12,7 +12,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 633 条 confirmed finding、54 个 H3 fixture 和 1,029 个地址绑定。
+截至 2026-07-19，研究索引有 640 条 confirmed finding、54 个 H3 fixture 和 1,036 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -20,7 +20,8 @@ H4 复用。
 例外是未编入构建的旧版零表；`data/stats/allies` 的 42 个直接/传递 include 文件也已全部绑定。
 items/spells/enemies 的 19 个布局文件也已完整盘点并复用既有深层 rail；battle cutscene 数据
 则完成 61/61 H2 inventory 和 59 个真实 H1 绑定；45 个 battle spriteset 与其指针容器也已
-达到 46/46 真实 H1 绑定。严格 data-file reach 现为 183/1,690（10.83%）。H2 的 14 个 ROM
+达到 46/46 真实 H1 绑定；battle cutscene 路由与 terrain 容器再新增 7 个真实绑定和 1 个明确
+alternate。严格 data-file reach 现为 190/1,690（11.24%）。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 

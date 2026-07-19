@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-routing-data-static-v1",
+  "outputSha256": "60804A03C6EA613FF5B506C1707BE11689D96C9FAA3632262D1191D04A7AB152",
+  "summary": {
+    "fileCount": 8,
+    "sourceLineCount": 518,
+    "statementCount": 439,
+    "globalLabelCount": 96,
+    "layoutOwnedFileCount": 7,
+    "alternateFileCount": 1,
+    "representativeAddressCount": 7,
+    "indexedRecordCount": 7,
+    "indexedFileCount": 7
+  }
+}

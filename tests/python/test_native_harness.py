@@ -20,12 +20,12 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 633
-    assert result["H2Fixtures"] == 33
+    assert result["Records"] == 640
+    assert result["H2Fixtures"] == 34
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 1029
+    assert result["AddressBindings"] == 1036
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 183
+    assert result["IndexedDataFiles"] == 190
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -211,6 +211,13 @@ def test_battle_cutscene_data_has_a_source_only_inventory_command() -> None:
 def test_battle_spriteset_data_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "battle-spriteset-data"])
     assert args.h2_command == "battle-spriteset-data"
+    assert not hasattr(args, "rom_path")
+    assert args.output_path is None
+
+
+def test_battle_routing_data_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-routing-data"])
+    assert args.h2_command == "battle-routing-data"
     assert not hasattr(args, "rom_path")
     assert args.output_path is None
 
