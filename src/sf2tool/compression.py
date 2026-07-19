@@ -35,6 +35,108 @@ class StackDecodeResult:
     history_index_counts: tuple[int, ...]
 
 
+@dataclass(frozen=True)
+class BasicDecodeResult:
+    output: bytes
+    input_bytes_consumed: int
+    command_word_count: int
+    literal_word_count: int
+    copy_command_count: int
+    copied_word_count: int
+    repeat_last_word_command_count: int
+    maximum_copy_offset_words: int
+    maximum_copy_length_words: int
+
+
+def decode_basic_compressed(
+    data: bytes, *, expected_output_bytes: int | None = None
+) -> BasicDecodeResult:
+    """Decode SF2's word-oriented command-bitmap/copy format.
+
+    Each command word describes sixteen following words, most-significant bit first. A zero bit
+    emits a literal word. A one bit consumes a copy command: zero terminates the stream, while a
+    nonzero command copies ``33 - low5`` words from the prior output offset encoded in the upper
+    eleven bits. Copies deliberately overlap, matching ``LoadBasicCompressedData``.
+    """
+
+    if not data or len(data) % 2:
+        raise ValueError("basic-compressed input must contain whole words")
+    if expected_output_bytes is not None and expected_output_bytes % 2:
+        raise ValueError("basic decompression produces words, so expected bytes must be even")
+
+    cursor = 0
+    output = bytearray()
+    command_words = 0
+    literal_words = 0
+    copy_commands = 0
+    copied_words = 0
+    repeat_last_commands = 0
+    maximum_copy_offset = 0
+    maximum_copy_length = 0
+
+    def read_word() -> int:
+        nonlocal cursor
+        if cursor + 2 > len(data):
+            raise ValueError("basic-compressed input ended before its terminator")
+        value = int.from_bytes(data[cursor : cursor + 2], "big")
+        cursor += 2
+        return value
+
+    def check_output_bound() -> None:
+        if expected_output_bytes is not None and len(output) > expected_output_bytes:
+            raise ValueError("basic decompression exceeded the expected output size")
+
+    while True:
+        command_word = read_word()
+        command_words += 1
+        for command_bit in range(15, -1, -1):
+            if not (command_word >> command_bit) & 1:
+                output.extend(read_word().to_bytes(2, "big"))
+                literal_words += 1
+                check_output_bound()
+                continue
+
+            command = read_word()
+            if command == 0:
+                decoded = bytes(output)
+                if expected_output_bytes is not None and len(decoded) != expected_output_bytes:
+                    raise ValueError(
+                        "basic decompression output-size drift: "
+                        f"expected {expected_output_bytes}, got {len(decoded)}"
+                    )
+                return BasicDecodeResult(
+                    output=decoded,
+                    input_bytes_consumed=cursor,
+                    command_word_count=command_words,
+                    literal_word_count=literal_words,
+                    copy_command_count=copy_commands,
+                    copied_word_count=copied_words,
+                    repeat_last_word_command_count=repeat_last_commands,
+                    maximum_copy_offset_words=maximum_copy_offset,
+                    maximum_copy_length_words=maximum_copy_length,
+                )
+
+            copy_length = 33 - (command & 0x1F)
+            copy_offset_bytes = (command & 0xFFE0) >> 4
+            if copy_offset_bytes < 2 or copy_offset_bytes % 2:
+                raise ValueError(f"invalid basic copy offset: {copy_offset_bytes}")
+            if copy_offset_bytes > len(output):
+                raise ValueError(
+                    f"basic copy offset {copy_offset_bytes} exceeds {len(output)} output bytes"
+                )
+            copy_offset_words = copy_offset_bytes // 2
+            if copy_offset_words == 1:
+                repeat_last_commands += 1
+            for _ in range(copy_length):
+                source_start = len(output) - copy_offset_bytes
+                output.extend(output[source_start : source_start + 2])
+                check_output_bound()
+            copy_commands += 1
+            copied_words += copy_length
+            maximum_copy_offset = max(maximum_copy_offset, copy_offset_words)
+            maximum_copy_length = max(maximum_copy_length, copy_length)
+
+
 def _stack_command_nibble(reader: _BitReader) -> int:
     if reader.bit() == 0:
         return 0

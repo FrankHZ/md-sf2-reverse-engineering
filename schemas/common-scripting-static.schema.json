@@ -6,8 +6,8 @@
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-scripting-static-v1" },
     "upstream": { "type": "object" }, "scope": { "const": "code/common/scripting" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "unlabeledFileCount"], "properties": { "fileCount": { "const": 29 }, "indexedRecordCount": { "const": 28 }, "indexedFileCount": { "const": 28 }, "unlabeledFileCount": { "const": 1 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "unlabeledFileCount"], "properties": { "fileCount": { "const": 29 }, "indexedRecordCount": { "const": 35 }, "indexedFileCount": { "const": 28 }, "unlabeledFileCount": { "const": 1 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 35, "maxItems": 35, "uniqueItems": true },
     "indexedSourcePaths": { "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true },
     "representativeSymbols": { "type": "object", "minProperties": 28, "maxProperties": 28 },
     "representativeAddresses": { "type": "object", "minProperties": 28, "maxProperties": 28, "additionalProperties": { "type": "integer", "minimum": 0 } },

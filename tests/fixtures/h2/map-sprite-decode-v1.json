@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-sprite-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": { "loadBasicAddress": 6788 },
+  "table": { "mapspriteTableAddress": 819200 },
+  "summary": {
+    "pointerCount": 720, "uniquePayloadCount": 670, "decodedPayloadCount": 669,
+    "sentinelPayloadCount": 1, "aliasPointerCount": 50, "sentinelPointerCount": 9,
+    "sourceByteCount": 225544, "compressedByteCount": 225542,
+    "decodedByteCount": 385344, "decodedBytesPerPayload": 576,
+    "commandWordCount": 6946, "literalWordCount": 87031,
+    "copyCommandCount": 18125, "copiedWordCount": 105641,
+    "repeatLastWordCommandCount": 1500, "maximumCopyOffsetWords": 273,
+    "maximumCopyLengthWords": 33, "pointerTableRomParityCount": 720,
+    "payloadRomParityCount": 670
+  },
+  "sentinel": {
+    "symbol": "Mapsprite237_0", "bytesHex": "FFFF",
+    "pointerSlots": [711, 712, 713, 714, 715, 716, 717, 718, 719]
+  },
+  "runtimeQuestions": [
+    "Are logical map-sprite IDs 237-239 statically unreachable from the regular Basic decoder, as required by their shared 0xFFFF sentinel payload?"
+  ]
+}

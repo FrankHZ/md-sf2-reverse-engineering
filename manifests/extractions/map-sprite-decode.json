@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-sprite-decode-v1",
+  "outputSha256": "48C09CA7F523DDEC289D0CD954BEA12E5A47824DE4A4BEC5697B8EEFF54FDB3E",
+  "summary": {
+    "pointerCount": 720, "uniquePayloadCount": 670, "decodedPayloadCount": 669,
+    "sentinelPayloadCount": 1, "aliasPointerCount": 50, "sentinelPointerCount": 9,
+    "sourceByteCount": 225544, "compressedByteCount": 225542,
+    "decodedByteCount": 385344, "decodedBytesPerPayload": 576,
+    "commandWordCount": 6946, "literalWordCount": 87031,
+    "copyCommandCount": 18125, "copiedWordCount": 105641,
+    "repeatLastWordCommandCount": 1500, "maximumCopyOffsetWords": 273,
+    "maximumCopyLengthWords": 33, "pointerTableRomParityCount": 720,
+    "payloadRomParityCount": 670
+  }
+}

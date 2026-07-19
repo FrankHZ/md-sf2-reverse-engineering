@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from sf2tool.cli import build_parser, full_verify_requested
-from sf2tool.compression import decode_stack_compressed
+from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h2.map_content import _encode_source
@@ -32,9 +32,9 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1447
-    assert result["H2Fixtures"] == 50
+    assert result["H2Fixtures"] == 51
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 1888
+    assert result["AddressBindings"] == 1890
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -286,9 +286,30 @@ def test_stack_decoder_handles_literal_overlap_copy_and_terminator() -> None:
     assert result.maximum_copy_length_words == 2
 
 
+def test_basic_decoder_handles_literal_overlap_copy_and_terminator() -> None:
+    # Bitmap 0,1,1: literal 0x1234, offset-one/length-two copy, terminator.
+    stream = bytes.fromhex("6000 1234 003F 0000")
+    result = decode_basic_compressed(stream, expected_output_bytes=6)
+    assert result.output == bytes.fromhex("1234 1234 1234")
+    assert result.command_word_count == 1
+    assert result.literal_word_count == 1
+    assert result.copy_command_count == 1
+    assert result.copied_word_count == 2
+    assert result.repeat_last_word_command_count == 1
+    assert result.maximum_copy_offset_words == 1
+    assert result.maximum_copy_length_words == 2
+
+
 def test_portraits_have_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "portraits"])
     assert args.h2_command == "portraits"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_sprites_have_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-sprites"])
+    assert args.h2_command == "map-sprites"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 

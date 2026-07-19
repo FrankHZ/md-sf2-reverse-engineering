@@ -43,6 +43,7 @@ from sf2tool.h2.map_init import verify_map_init_contract
 from sf2tool.h2.map_layouts import verify_map_layout_contract
 from sf2tool.h2.map_scripts import verify_map_scripts_inventory
 from sf2tool.h2.map_setup import verify_map_setup_contract
+from sf2tool.h2.map_sprites import verify_map_sprite_contract
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
 from sf2tool.h2.portraits import verify_portrait_graphics_contract
@@ -364,6 +365,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_layouts)
     h2_map_layouts.add_argument("--output-path", type=_path)
+    h2_map_sprites = h2_commands.add_parser(
+        "map-sprites", help="decode the complete Basic-compressed map-sprite pointer corpus"
+    )
+    _add_local_paths(h2_map_sprites)
+    h2_map_sprites.add_argument("--output-path", type=_path)
     h2_map_import = h2_commands.add_parser(
         "map-import", help="build the complete canonical engine-neutral map import"
     )
@@ -900,6 +906,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-layouts":
         print_record(
             verify_map_layout_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-sprites":
+        print_record(
+            verify_map_sprite_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

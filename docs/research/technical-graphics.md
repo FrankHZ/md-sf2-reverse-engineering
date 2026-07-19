@@ -3,11 +3,13 @@
 - Status: **Confirmed** for the pinned 11-file layout-owned inventory, H1 entry addresses, the two
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
-  battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora
+  battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
+  complete regular map-sprite Basic-compression corpus
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
-- Status: **Unknown** for remaining Basic and embedded Stack-compression corpora, exact VDP timing,
-  palette presentation, portrait animation timing, and special-sprite frame output
+- Status: **Unknown** for remaining embedded compression corpora, exact VDP timing, palette
+  presentation, portrait/map-sprite animation timing, special-sprite frame output, and whether the
+  three regular-map-sprite free-spot IDs can reach their shared sentinel payload
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -25,6 +27,13 @@ unused display/graphics helpers.
 `LoadBasicCompressedData` and `LoadStackCompressedData` both accept source in `a0`, destination in
 `a1`, and return bytes written in `d0`. The stack decoder reserves a 32-byte history area and seeds it
 with words 4 through 15 while keeping the four hottest values 0 through 3 in registers.
+
+The Basic format is word-oriented. A 16-bit command bitmap is consumed most-significant bit first:
+zero emits the next literal word, while one consumes a copy word. Copy word zero terminates the
+stream; otherwise its low five bits encode length as `33 - low5`, and its upper eleven bits encode a
+backwards byte offset as `(command & 0xFFE0) >> 4`. Copying may overlap the growing output, so offset
+one word is a repeat-last-word operation. The Python decoder rejects odd inputs, invalid backwards
+references, missing terminators, unexpected trailing bytes, and output-size drift.
 
 The maintained Python decoder now models the full bitstream grammar rather than only this calling
 convention. Each command group expands four variable-length command nibbles into sixteen literal/copy
@@ -71,6 +80,22 @@ decode to 8,192 bytes (four 64-tile views) and use 42 contiguous four-byte palet
 tiles). The rail ROM-checks 53 pointers and 102 source payload/header objects and confirms 203,776
 decoded bytes without treating tile layout comments as rendered evidence.
 
+The sixth corpus closes the regular map-sprite table. Its 720 pointer slots cover 240 logical IDs
+and three directional payloads per ID; 670 source payloads plus 50 pointer aliases satisfy exact
+source/H1/ROM parity. Of those payloads, 669 Basic streams consume 225,542 compressed bytes and each
+decode to exactly 576 bytes (`0x240`), for 385,344 decoded bytes total. The decoder observes 6,946
+command words, 87,031 literal words, and 18,125 copy commands producing 105,641 copied words; maximum
+copy distance is 273 words and maximum length is 33 words.
+
+`ChangeEntityMapsprite` and `DmaEntityMapsprite` select one of the three pointers from map-sprite ID
+and facing, decode into `FF8002_LOADING_SPACE`, and transfer `0x120` words to the entity's VRAM slot.
+IDs 240-255 branch to the special-sprite loader. The remaining source payload `Mapsprite237_0` is only
+the word `0xFFFF` and is shared by all nine pointer slots for enum values `MAPSPRITE_FREE_SPOT1` through
+`MAPSPRITE_FREE_SPOT3` (IDs 237-239). Because those values are below
+`MAPSPRITES_SPECIALS_START = 240`, static consumer shape does not itself prove that the regular Basic
+decoder can never receive them. That reachability question remains **Unknown** rather than treating
+the sentinel as a valid compressed stream.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -94,11 +119,12 @@ screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 
 ## Concentrated Verification Queue
 
-This batch starts no emulator. The same decoder should next expand through remaining embedded Stack
-containers such as special screens, while a separate Basic decoder owns map sprites.
-Rendered behavior joins the shared presentation matrix: display
-initialization, palette interpolation frames, parallax/autoscroll axes, special-sprite updates, and
-flash duration can share VDP/RAM observation points.
+This batch starts no emulator. The Stack decoder should next expand through remaining embedded
+containers such as special screens. Rendered behavior joins the shared presentation matrix: display
+initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
+updates, and flash duration can share VDP/RAM observation points. The IDs 237-239 sentinel question
+should first be searched across map/entity/script data; it needs runtime observation only if static
+reachability remains ambiguous.
 
 ## Reproduction
 
@@ -109,10 +135,11 @@ uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
 uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
+uv run sf2 h2 map-sprites
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
-`portrait-graphics-decode.json`.
+`portrait-graphics-decode.json` and `map-sprite-decode.json`.

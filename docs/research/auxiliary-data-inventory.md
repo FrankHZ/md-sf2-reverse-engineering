@@ -3,7 +3,7 @@
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
   two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
   and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
-  corpora
+  corpora plus the complete regular map-sprite pointer/decode corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -59,6 +59,15 @@ relative-pointer headers, and ten shared ground streams. Weapon outputs are fixe
 ground outputs at 1,536; slots 21/22 reuse ground 12 and slot 29 reuses ground 13. The 53 pointer
 entries and 102 source objects match ROM bytes, while the 203,776 decoded bytes remain local.
 
+The regular map-sprite table contains 720 pointers: 240 logical IDs with three directional payloads
+each. It resolves to 670 source payloads and 50 aliases. The Basic decoder expands 669 payloads to a
+fixed 576 bytes each (385,344 bytes total), with all 720 pointers and all 670 payload byte ranges
+checked against the ROM. The sole non-stream payload, `Mapsprite237_0`, is exactly `0xFFFF` and backs
+the nine slots for reserved IDs 237-239. Those IDs remain below the special-sprite cutoff at 240, so
+their static unreachability from the regular loader is an explicit runtime/data-flow question rather
+than an assumed property. Decoded sprites and compressed source bytes remain private; the tracked
+contract contains only hashes, counts, codec statistics, aliases, addresses, and the sentinel shape.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -74,6 +83,10 @@ No emulator was launched. Remaining questions are grouped as:
 3. entity-action and global-cutscene dispatch effects;
 4. configuration, debug, fading, and spell-animation data consumers.
 
+The map-sprite free-spot sentinel is first assigned to a static reference search across map/entity/
+script content. If that cannot prove IDs 237-239 unreachable, it joins the entity-sprite runtime
+matrix instead of receiving a one-case emulator launch.
+
 These belong with the existing UI/VDP and scripting runtime queues rather than separate one-case
 launches.
 
@@ -85,5 +98,6 @@ uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
 uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
+uv run sf2 h2 map-sprites
 uv run sf2 research-index test
 ```
