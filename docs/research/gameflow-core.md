@@ -2,8 +2,8 @@
 
 - Status: **Confirmed** for all 13 layout-owned files, representative H1 addresses, cold/system
   initialization order, main battle/exploration routing, six map-event routes, interaction admission,
-  item handoff, and player-action priority
-- Status: **Inferred** for simultaneous event/input perception and transition timing
+  item handoff, player-action priority, and map-event-before-action polling/dispatch
+- Status: **Inferred** for interrupt-edge event/input perception and transition timing
 - Status: **Unknown** for reset/TMSS hardware variations, rejected-region presentation on real
   hardware, and exact exploration/VDP frames
 - Evidence date: 2026-07-19
@@ -65,6 +65,14 @@ A/C player actions. The six explicit map-event types are:
 Warp handling includes the source's hard-coded Pacalon completion flag 530 branch. Vehicle and zone
 behavior route to their named map/script helpers.
 
+`WaitForEvent` polls `MAP_EVENT_TYPE` before reading A/C input. After it returns, the outer loop also
+tests and dispatches the map event before it tests the player-action result. Therefore, when both
+values are already visible in one polling iteration, the map event wins. `ProcessMapEvent` clears the
+pending event before selecting one of the six handlers; an out-of-range type plays
+`SFX_BATTLEFIELD_DEATH` and returns. This is a **Confirmed static branch-order rule**. The exact VInt
+edge at which an entity script publishes an event versus the input sample remains a timing question,
+not an unknown priority rule.
+
 Player actions test A before C. C can enter debug routes, use the caravan when co-located, activate
 an entity event, inspect an area, or fall through to the field menu; A goes to the field-menu path.
 Entity activation scans 48 candidates, skips the player and followers, and admits a candidate within
@@ -83,7 +91,7 @@ No emulator was launched for this inventory. Four coherent matrices remain queue
 
 1. reset, TMSS, Z80 bus, and region-hardware variations;
 2. Sega-logo/intro/title skip and debug input timing;
-3. simultaneous map-event and A/C action priority;
+3. map-event publication versus A/C sampling at the VInt edge;
 4. scroll, door, roof, warp, and vehicle transition frames.
 
 The two exploration matrices should reuse one prepared map/entity harness rather than start a new

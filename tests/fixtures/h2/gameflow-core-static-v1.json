@@ -43,6 +43,11 @@
       "mainLoopReturnsFromBattleThroughMapSwitch": true,
       "mapEventTypeTargets": ["Warp", "GetIntoCaravan", "GetIntoRaft", "GetOutOfCaravan", "GetOutOfRaft", "ZoneEvent"],
       "mapEventTypeCount": 6,
+      "waitLoopPollOrder": ["mapEvent", "actionInput"],
+      "outerLoopDispatchOrder": ["mapEvent", "playerAction"],
+      "simultaneouslyObservedEventAndActionWinner": "mapEvent",
+      "mapEventClearedBeforeDispatch": true,
+      "unknownMapEventFallback": "SFX_BATTLEFIELD_DEATH",
       "actionButtonPriority": ["A", "C"],
       "actionFallbackOpensFieldMenu": true,
       "activatedEntityCandidateCount": 48,
@@ -57,7 +62,7 @@
     "runtimeQuestions": [
       "reset-tmss-region-hardware-matrix",
       "intro-title-skip-and-debug-input-timing",
-      "exploration-simultaneous-event-and-action-order",
+      "exploration-map-event-input-vint-edge-timing",
       "exploration-scroll-door-roof-and-transition-frames"
     ]
   }

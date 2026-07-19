@@ -20,6 +20,7 @@ MACROS_PATH = Path("sf2mapmacros.asm")
 MAPLOAD_PATH = Path("code/common/maps/mapload.asm")
 ANIMATIONS_PATH = Path("code/common/maps/animations.asm")
 EXPLORATION_PATH = Path("code/gameflow/exploration/exploration.asm")
+ENTITY_SCRIPT_PATH = Path("code/common/scripting/entity/entityscriptengine_2.asm")
 MANIFEST = repo_path("manifests/extractions/map-content-static.json")
 SCHEMA = repo_path("schemas/map-content-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/map-content-static-v1.json")
@@ -110,6 +111,17 @@ def _require_fragments(source: str, fragments: tuple[str, ...], owner: str) -> N
     for fragment in fragments:
         if fragment not in source:
             raise ValueError(f"{owner} source-shape drift: missing {fragment!r}")
+
+
+def _require_ordered_fragments(
+    source: str, fragments: tuple[str, ...], owner: str
+) -> None:
+    cursor = 0
+    for fragment in fragments:
+        position = source.find(fragment, cursor)
+        if position < 0:
+            raise ValueError(f"{owner} source-order drift at {fragment!r}")
+        cursor = position + len(fragment)
 
 
 def _parse_equates(disasm: Path) -> dict[str, int]:
@@ -214,6 +226,7 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
     mapload = read_upstream_text(disasm / MAPLOAD_PATH)
     animations = read_upstream_text(disasm / ANIMATIONS_PATH)
     exploration = read_upstream_text(disasm / EXPLORATION_PATH)
+    entity_script = read_upstream_text(disasm / ENTITY_SCRIPT_PATH)
     layout_offset_references = sum(
         read_upstream_text(path).count("MAPDATA_OFFSET_LAYOUT")
         for path in disasm.rglob("*.asm")
@@ -260,6 +273,25 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
         ),
         "map loader",
     )
+    layout_load = mapload[
+        mapload.index("LoadMapBlocksAndLayout:") : mapload.index(
+            "; End of function LoadMapBlocksAndLayout"
+        )
+    ]
+    _require_ordered_fragments(
+        layout_load,
+        (
+            "bsr.w   LoadMapBlocks",
+            "bsr.w   LoadMapLayoutData",
+            "movea.l 4(a5),a0",
+            "jsr     j_CheckFlag",
+            "bsr.w   CopyMapBlocks",
+            "lea     (FF0000_RAM_START).l,a1",
+            "jsr     j_CheckFlag",
+            "move.w  #$D802,(a1,d0.w)",
+        ),
+        "layout construction",
+    )
     _require_fragments(
         exploration,
         tuple(
@@ -279,6 +311,79 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
             "addq.l  #MAPDATA_EVENT_WARP_ENTRY_SIZE,a2",
         ),
         "exploration map consumers",
+    )
+    open_door = exploration[
+        exploration.index("OpenDoor:") : exploration.index("; End of function OpenDoor")
+    ]
+    toggle_roof = exploration[
+        exploration.index("ToggleRoofOnMapLoad:") : exploration.index(
+            "; End of function ToggleRoofOnMapLoad"
+        )
+    ]
+    warp = exploration[
+        exploration.index("WarpIfSetAtPoint:") : exploration.index(
+            "; End of function WarpIfSetAtPoint"
+        )
+    ]
+    _require_ordered_fragments(
+        open_door,
+        (
+            "cmp.b   (a2),d0",
+            "cmp.b   1(a2),d1",
+            "move.w  (a2,d0.w),(a2,d2.w)",
+            "@Done:",
+            "addq.l  #8,a2",
+        ),
+        "step-event scan",
+    )
+    _require_ordered_fragments(
+        toggle_roof,
+        (
+            "@Loop:",
+            "bra.w   @Break",
+            "@Next:",
+            "addq.l  #8,a0",
+            "@Break:",
+            "bsr.w   PerformMapBlockCopyScript",
+        ),
+        "roof-event load scan",
+    )
+    _require_ordered_fragments(
+        warp,
+        (
+            "@CheckWarp:",
+            "tst.b   (a2)",
+            "blt.s   @CompareY",
+            "tst.b   MAPDATA_EVENT_WARP_OFFSET_Y(a2)",
+            "blt.s   @SetWarpElements",
+            "move.w  #MAP_EVENT_WARP",
+            "@NextPoint:",
+            "addq.l  #MAPDATA_EVENT_WARP_ENTRY_SIZE,a2",
+        ),
+        "warp-event scan",
+    )
+    control_character = entity_script[
+        entity_script.index("esc02_controlCharacter:") : entity_script.index(
+            "; End of function esc02_controlCharacter"
+        )
+    ]
+    _require_ordered_fragments(
+        control_character,
+        (
+            "cmpi.w  #$3800,d3",
+            "move.w  #MAP_EVENT_GETINTOCARAVAN",
+            "cmpi.w  #$3C00,d3",
+            "move.w  #MAP_EVENT_GETINTORAFT",
+            "cmpi.w  #$400,d3",
+            "bsr.w   OpenDoor",
+            "move.w  (a4,d2.w),d3",
+            "cmpi.w  #$1000,d3",
+            "bsr.w   WarpIfSetAtPoint",
+            "cmpi.w  #$1400,d3",
+            "move.w  #MAP_EVENT_ZONE_EVENT",
+            "cmpi.w  #$C000,(a4,d2.w)",
+        ),
+        "controlled-character target checks",
     )
     _require_fragments(
         animations,
@@ -307,6 +412,42 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
             "terminator": 2,
         },
         "flagEventsAppliedDuringLayoutLoad": True,
+        "layoutConstructionOrder": [
+            "loadBlocks",
+            "decodeLayout",
+            "applyAllSetFlagCopies",
+            "applyAllSetChestMarkers",
+            "applyBattleOverlay",
+        ],
+        "flagEventScanPolicy": "all-set-in-source-order",
+        "flagEventOverlapPolicy": "later-copy-wins",
+        "roofOnLoadScanPolicy": "first-containing-record",
+        "stepEventScanPolicy": "first-coordinate-match",
+        "warpEventScanPolicy": "first-coordinate-match",
+        "warpNegativeCoordinateByteIsWildcard": True,
+        "eventConsumerPhases": {
+            "flag": "layout-load",
+            "roof": "map-load-after-area-selection",
+            "step": "controlled-movement-door-marker",
+            "warp": "controlled-movement-warp-marker",
+        },
+        "controlledMovementTargetCheckOrder": [
+            "enterCaravan",
+            "enterRaft",
+            "openDoorAndRefreshTargetBlock",
+            "warp",
+            "zone",
+            "passability",
+        ],
+        "movementMarkerMask": 15360,
+        "movementMarkerValues": {
+            "door": 1024,
+            "warp": 4096,
+            "zone": 5120,
+            "enterCaravan": 14336,
+            "enterRaft": 15360,
+        },
+        "movementMarkersMutuallyExclusiveBeforeDoorMutation": True,
         "areaSelectionSkipsRemaining22Bytes": True,
         "animationRunsFromVInt": True,
         "declaredLayoutOffset": 8,
@@ -482,6 +623,7 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
             "mapLoader": MAPLOAD_PATH.as_posix(),
             "animations": ANIMATIONS_PATH.as_posix(),
             "exploration": EXPLORATION_PATH.as_posix(),
+            "entityScript": ENTITY_SCRIPT_PATH.as_posix(),
         },
         "table": {"pt_MapData": pointer_table_address},
         "summary": summary,
@@ -492,7 +634,7 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         "sourceSections": source_sections,
         "binaryPayloads": binary_payloads,
         "runtimeQuestions": [
-            "map-transition-event-precedence-and-state-persistence",
+            "map-transition-working-layout-persistence-across-reload",
             "map-animation-vdp-frame-timing",
             "map-block-layout-rendered-parity",
         ],

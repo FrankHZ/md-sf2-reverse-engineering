@@ -167,6 +167,35 @@ def _exploration_facts(sources: dict[str, str]) -> dict[str, Any]:
         ),
         "exploration loop",
     )
+    wait_for_event = functions2[
+        functions2.index("WaitForEvent:") : functions2.index("; End of function WaitForEvent")
+    ]
+    event_poll = wait_for_event.index("move.w  ((MAP_EVENT_TYPE-$1000000)).w,d0")
+    action_poll = wait_for_event.index("move.b  ((CURRENT_PLAYER_INPUT-$1000000)).w,d1")
+    if event_poll >= action_poll:
+        raise ValueError("exploration wait-loop priority drift")
+    exploration_loop = functions2[
+        functions2.index("ExplorationLoop:") : functions2.index(
+            "; End of function ExplorationLoop"
+        )
+    ]
+    event_dispatch = exploration_loop.index("bsr.w   ProcessMapEvent")
+    action_dispatch = exploration_loop.index("bsr.w   ProcessPlayerAction")
+    if event_dispatch >= action_dispatch:
+        raise ValueError("exploration outer-loop priority drift")
+    process_event = functions2[
+        functions2.index("ProcessMapEvent:") : functions2.index(
+            "; End of function ProcessMapEvent"
+        )
+    ]
+    _require_fragments(
+        process_event,
+        (
+            "clr.w   ((MAP_EVENT_TYPE-$1000000)).w",
+            "sndCom  SFX_BATTLEFIELD_DEATH",
+        ),
+        "map-event dispatch",
+    )
     _require_fragments(
         functions0,
         (
@@ -214,6 +243,11 @@ def _exploration_facts(sources: dict[str, str]) -> dict[str, Any]:
         "mainLoopReturnsFromBattleThroughMapSwitch": True,
         "mapEventTypeTargets": [target for _, target in event_matches],
         "mapEventTypeCount": len(event_matches),
+        "waitLoopPollOrder": ["mapEvent", "actionInput"],
+        "outerLoopDispatchOrder": ["mapEvent", "playerAction"],
+        "simultaneouslyObservedEventAndActionWinner": "mapEvent",
+        "mapEventClearedBeforeDispatch": True,
+        "unknownMapEventFallback": "SFX_BATTLEFIELD_DEATH",
         "actionButtonPriority": ["A", "C"],
         "actionFallbackOpensFieldMenu": True,
         "activatedEntityCandidateCount": 48,
@@ -302,7 +336,7 @@ def build_gameflow_inventory(upstream_path: Path) -> dict[str, Any]:
         "runtimeQuestions": [
             "reset-tmss-region-hardware-matrix",
             "intro-title-skip-and-debug-input-timing",
-            "exploration-simultaneous-event-and-action-order",
+            "exploration-map-event-input-vint-edge-timing",
             "exploration-scroll-door-roof-and-transition-frames",
         ],
         "files": files,

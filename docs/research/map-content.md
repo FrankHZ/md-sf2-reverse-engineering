@@ -2,8 +2,9 @@
 
 - Status: **Confirmed** for all 79 map entries, all 662 source-form content sections, all 154
   private block/layout payloads, record sizes, aggregate record counts, their canonical ROM bytes,
-  and the deterministic engine-neutral import assembled from them
-- Status: **Inferred** for transition-time ordering and persistence across flag/step/roof/warp consumers
+  the deterministic engine-neutral import assembled from them, and the static flag/roof/step/warp
+  consumer phases and scan policies
+- Status: **Inferred** for working-layout persistence across reloads
 - Status: **Unknown** for rendered layout parity and exact VDP animation frame timing
 - Evidence date: 2026-07-19
 - ROM SHA-256: `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -65,9 +66,21 @@ which stops when the first coordinate byte is negative.
 
 Static consumers confirm the important ownership rules:
 
-- flag events are applied while `LoadMapBlocksAndLayout` constructs the working layout;
+- map construction loads blocks, decodes the layout, applies every set flag-copy in source order,
+  applies every set chest marker, and finally overlays battle bounds when applicable; overlapping
+  flag copies therefore leave the later copy's words;
 - area selection consumes the first eight coordinate bytes and skips the remaining 22 bytes per
   rejected record;
+- roof-on-load selects the first record whose rectangle contains the controlled entity; step and
+  warp consumers select the first coordinate match, with a negative warp coordinate byte acting as
+  that axis's wildcard;
+- controlled walking checks target markers in the order enter-caravan, enter-raft, door, warp, zone,
+  then passability. All use one masked marker value and are mutually exclusive before mutation. A
+  door copy is applied first and the target block is re-read, so that same move can subsequently
+  observe a newly exposed warp or zone marker;
+- flag records are consumed during layout construction, roof records after area selection on map
+  load, and step/warp records from controlled movement. They are not four competing callbacks at one
+  common dispatch point;
 - step and roof records advance by eight bytes, item records by four, and warp records by the
   eight-byte enum size;
 - `VInt_UpdateMapAnimations` consumes the selected map's animation table during vertical interrupt
@@ -141,10 +154,11 @@ alias-pointer selection through the natural debug Map Test exploration path. It 
 transition or presentation behavior. A following six-case init-dispatch matrix confirms missing-map
 skip and exactly one modeled indirect init target for active, scripted, and direct-return setups.
 A following nine-case event-dispatch matrix confirms entity, zone, and item first-match selection in
-one BizHawk launch without executing the selected scripts. Static evidence leaves three coherent
-later matrices:
+one BizHawk launch without executing the selected scripts. Static parsing now closes the consumer
+phases, first-match/all-match policies, overlap direction, movement-marker exclusivity, and target
+check order. Three coherent runtime/presentation questions remain:
 
-1. transition event precedence and state persistence across flag, step, roof, and warp processing;
+1. whether mutations of the working layout persist across the different reload paths;
 2. VInt/VDP frame timing for animation table updates;
 3. decoded block/layout rendered-map parity against the VDP presentation path.
 

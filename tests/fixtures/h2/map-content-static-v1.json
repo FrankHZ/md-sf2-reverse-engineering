@@ -78,6 +78,42 @@
       "terminator": 2
     },
     "flagEventsAppliedDuringLayoutLoad": true,
+    "layoutConstructionOrder": [
+      "loadBlocks",
+      "decodeLayout",
+      "applyAllSetFlagCopies",
+      "applyAllSetChestMarkers",
+      "applyBattleOverlay"
+    ],
+    "flagEventScanPolicy": "all-set-in-source-order",
+    "flagEventOverlapPolicy": "later-copy-wins",
+    "roofOnLoadScanPolicy": "first-containing-record",
+    "stepEventScanPolicy": "first-coordinate-match",
+    "warpEventScanPolicy": "first-coordinate-match",
+    "warpNegativeCoordinateByteIsWildcard": true,
+    "eventConsumerPhases": {
+      "flag": "layout-load",
+      "roof": "map-load-after-area-selection",
+      "step": "controlled-movement-door-marker",
+      "warp": "controlled-movement-warp-marker"
+    },
+    "controlledMovementTargetCheckOrder": [
+      "enterCaravan",
+      "enterRaft",
+      "openDoorAndRefreshTargetBlock",
+      "warp",
+      "zone",
+      "passability"
+    ],
+    "movementMarkerMask": 15360,
+    "movementMarkerValues": {
+      "door": 1024,
+      "warp": 4096,
+      "zone": 5120,
+      "enterCaravan": 14336,
+      "enterRaft": 15360
+    },
+    "movementMarkersMutuallyExclusiveBeforeDoorMutation": true,
     "areaSelectionSkipsRemaining22Bytes": true,
     "animationRunsFromVInt": true,
     "declaredLayoutOffset": 8,
@@ -85,7 +121,7 @@
     "declaredLayoutOffsetReferenceCount": 0
   },
   "runtimeQuestions": [
-    "map-transition-event-precedence-and-state-persistence",
+    "map-transition-working-layout-persistence-across-reload",
     "map-animation-vdp-frame-timing",
     "map-block-layout-rendered-parity"
   ]

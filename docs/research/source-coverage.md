@@ -92,8 +92,8 @@ The current evidence is deep but narrow:
   hardware and timing questions remain in four grouped runtime queues.
   Startup/main-loop/exploration now binds all thirteen layout-owned files and models cold/system
   initialization, region admission, battle/exploration routing, six map-event types, entity/area
-  interaction, and item handoff. Reset hardware, simultaneous input/event priority, and visible map
-  transitions remain grouped runtime questions.
+  interaction, item handoff, and event-before-action polling. Reset hardware, VInt-edge event/input
+  perception, and visible map transitions remain grouped runtime questions.
   All nineteen special-screen files are inventoried across logo, title, witch, suspend, and ending
   groups. Eighteen resource routes and the save/reset/cheat/effect control structure are static
   contracts; rendered parity is queued as three presentation matrices.
@@ -195,7 +195,7 @@ content remains ignored and only aggregate evidence is tracked:
    entity/zone/item event-dispatch matrices as the runtime selection/call boundary;
 2. compare rendered output through one graphics/VDP matrix;
 3. preserve normal-story direct-`rts` event reachability, nonstandard description callers, script side effects,
-   and transition persistence as
+   and working-layout reload persistence as
    `Inferred` or `Unknown` until stronger evidence exists;
 4. extend runtime work into individual init/script side effects only after event integration leaves a
    concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in

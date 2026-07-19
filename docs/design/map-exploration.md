@@ -1,9 +1,9 @@
 # Map and Exploration Contract
 
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
-  areas/events/items/animations, 64x64 decoded layouts, setup selection, and documented first-match
-  dispatch rules
-- **Unknown original behavior:** transition-time event precedence and persistence, normal-story
+  areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
+  dispatch rules, and static transition-consumer priority
+- **Unknown original behavior:** working-layout persistence across reload paths, normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact animation/scroll frame timing,
   and final VDP-visible rendered parity
 - Remake status: implementation-neutral Phase 3 contract; no engine has been selected
@@ -100,8 +100,8 @@ For original-fidelity behavior, a new map load performs these conceptual steps:
 3. apply flag-triggered block-copy records to the working layout;
 4. select the area containing the requested or current position;
 5. load the area's layer origins, parallax, autoscroll, layer type, music, and animation state;
-6. initialize the selected setup's entities and init function;
-7. evaluate roof state before presenting the settled map.
+6. evaluate the first matching roof record before the initial plane update;
+7. run the selected setup init function after `LoadMap` returns.
 
 The implementation MAY cache immutable decoded blocksets and layouts, but flag/step/roof copies act on
 a per-map working layout. Cache reuse MUST NOT leak mutated layout state between map loads unless a
@@ -143,9 +143,19 @@ original story route always prevents such adjacency is still Unknown and cannot 
 collision rule without a route-level fixture.
 
 Flag, step, and roof records describe rectangular block copies into the working layout. Warp records
-retain trigger coordinates, scroll mode, target map, target coordinates, and facing. The exact order
-between simultaneously eligible transition events is **Unknown** and MUST remain a queued parity
-case rather than an arbitrary priority baked into the data model.
+retain trigger coordinates, scroll mode, target map, target coordinates, and facing. Their original
+consumers do not form one ambiguous priority list: flag copies all run in source order during layout
+construction, roof-on-load uses the first containing record, and step/warp scans use the first
+coordinate match. Controlled walking checks one mutually exclusive masked marker in the order
+enter-caravan, enter-raft, door, warp, zone, then passability. Door processing mutates and re-reads
+the target block before the warp and zone checks. A remake MUST preserve these phase and ordering
+rules. Whether the resulting working-layout mutations survive each reload path is still **Unknown**
+and remains a grouped parity case.
+
+The exploration wait loop polls a pending map event before A/C, and the outer loop dispatches that
+event before a player action. If both are visible in the same poll, the map event wins. Exact
+publication versus input-sampling timing at the original VInt boundary is presentation/runtime
+evidence and remains outside this static priority rule.
 
 ## Animation and Presentation
 
