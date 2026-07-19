@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-movement-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "moveCommandEntryAddress": 61908,
+    "moveOrderCommandEntryAddress": 59788,
+    "moveOrderBuilderEntryAddress": 63392,
+    "krakenMoveCostsAddress": 63924
+  },
+  "expected": {
+    "move": {
+      "movementArrayBudget": 128,
+      "confusedTarget": "first-living-side-index-without-health-or-map-check",
+      "normalTargets": "opposing-living-on-map-combatants",
+      "emptyNormalTargetGuard": false,
+      "moveCostSort": "ascending-unsigned-byte",
+      "classNeighborReorderAppliesWhenTargetListIsEnemies": true,
+      "classRankDistanceMaximum": 1,
+      "combatantIndexDistanceMaximum": 3,
+      "selectedTarget": "first-after-reordering",
+      "krakenEnemyIndexes": [10, 59, 87],
+      "krakenMoveCosts": [15, 2, 2, 3, 4, 3, 3, -1, 2, -1, -1, -1, -1, -1, -1, -1],
+      "initialMoveStringBudget": 4,
+      "postMoveAttackPositionRadii": [0, 1],
+      "returnsSuccessEvenWhenActionBecomesStay": true
+    },
+    "moveOrder": {
+      "enemyOnly": true,
+      "allyStayReadsUninitializedPathfindingMode": true,
+      "stayConditions": ["zero-mov", "no-order", "dead-follow-target", "terrain-check-failure"],
+      "targetTypeSelectsPathIndependentlyOfOrderBits": true,
+      "triesAttackBeforeMovement": true,
+      "movementOnlyAction": "stay-with-move-string",
+      "pathfindingModes": { "regular": 0, "blockNonMovable": 1, "blockAndCarve": 2 }
+    },
+    "moveOrderBuilder": {
+      "movementArrayBudget": 128,
+      "preliminaryMoveBudget": "current-mov-times-two",
+      "attackPositionRadii": [0, 1, 2, 3],
+      "failureMoveString": -1
+    }
+  }
+}

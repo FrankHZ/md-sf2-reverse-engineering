@@ -20,19 +20,15 @@ FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-static-fixture.schema.json")
 PRIORITY_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-priority-static-v1.json")
 PRIORITY_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-priority-static-fixture.schema.json")
 HEALING_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-healing-static-v1.json")
-HEALING_FIXTURE_SCHEMA = repo_path(
-    "schemas/h2-battle-ai-healing-static-fixture.schema.json"
-)
+HEALING_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-healing-static-fixture.schema.json")
 SUPPORT_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-support-static-v1.json")
-SUPPORT_FIXTURE_SCHEMA = repo_path(
-    "schemas/h2-battle-ai-support-static-fixture.schema.json"
-)
-ACTION_CHOICE_FIXTURE = repo_path(
-    "tests/fixtures/h2/battle-ai-action-choice-static-v1.json"
-)
+SUPPORT_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-support-static-fixture.schema.json")
+ACTION_CHOICE_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-action-choice-static-v1.json")
 ACTION_CHOICE_FIXTURE_SCHEMA = repo_path(
     "schemas/h2-battle-ai-action-choice-static-fixture.schema.json"
 )
+MOVEMENT_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-movement-static-v1.json")
+MOVEMENT_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-movement-static-fixture.schema.json")
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
@@ -41,18 +37,14 @@ GLOBAL_LABEL_PATTERN = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 LOCAL_LABEL_PATTERN = re.compile(r"^\s*(@[A-Za-z0-9_]+):")
 CALL_PATTERN = re.compile(r"\b(?:bsr|jsr)(?:\.[bwl])?\s+([^\s,;]+)", re.IGNORECASE)
 DIRECT_TARGET_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-EQUATE_PATTERN = re.compile(
-    r"^([A-Z][A-Z0-9_]+):\s+equ\s+(\$[0-9A-Fa-f]+|-?\d+)", re.MULTILINE
-)
+EQUATE_PATTERN = re.compile(r"^([A-Z][A-Z0-9_]+):\s+equ\s+(\$[0-9A-Fa-f]+|-?\d+)", re.MULTILINE)
 SPELL_COMPARE_PATTERN = re.compile(r"cmpi\.b\s+#(SPELL_[A-Z0-9_]+),d5")
 DC_LONG_TARGET_PATTERN = re.compile(r"^\s*dc\.l\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
 DC_BYTE_INTEGER_PATTERN = re.compile(r"^\s*dc\.b\s+(-?\d+)\b", re.MULTILINE)
-DC_BYTE_VALUE_PATTERN = re.compile(
-    r"^\s*dc\.b\s+(-?\d+|[A-Z][A-Z0-9_]+)\b", re.MULTILINE
+DC_BYTE_VALUE_PATTERN = re.compile(r"^\s*dc\.b\s+(-?\d+|[A-Z][A-Z0-9_]+)\b", re.MULTILINE)
+REGISTER_TARGETS = (
+    {f"a{index}" for index in range(8)} | {f"d{index}" for index in range(8)} | {"sp", "pc"}
 )
-REGISTER_TARGETS = {f"a{index}" for index in range(8)} | {
-    f"d{index}" for index in range(8)
-} | {"sp", "pc"}
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -114,8 +106,7 @@ def _parse_source_file(path: Path, relative_path: str) -> dict[str, Any]:
         "globalLabels": global_labels,
         "localLabelCount": local_label_count,
         "directCalls": [
-            {"target": target, "siteCount": count}
-            for target, count in sorted(direct_calls.items())
+            {"target": target, "siteCount": count} for target, count in sorted(direct_calls.items())
         ],
         "indirectCallSiteCount": indirect_call_count,
     }
@@ -306,8 +297,7 @@ def _parse_attack_priority(disasm: Path) -> dict[str, Any]:
     )
     adjustment_tables = {
         name: [
-            int(value)
-            for value in DC_BYTE_INTEGER_PATTERN.findall(_label_block(data_source, name))
+            int(value) for value in DC_BYTE_INTEGER_PATTERN.findall(_label_block(data_source, name))
         ]
         for name in adjustment_table_names
     }
@@ -316,17 +306,13 @@ def _parse_attack_priority(disasm: Path) -> dict[str, Any]:
 
     potential_damage = _function_block(priority_source, "CalculatePotentialDamage")
     spell_resistance = _function_block(priority_source, "AdjustSpellPowerForResistance")
-    remaining_hp = _function_block(
-        priority_source, "CalculateRemainingHpAfterPotentialDamage"
-    )
+    remaining_hp = _function_block(priority_source, "CalculateRemainingHpAfterPotentialDamage")
     script_blocks = {
         index: _function_block(priority_source, f"TargetPriorityScript{index}")
         for index in range(1, 5)
     }
     adjust_priority = _function_block(adjust_source, "AdjustTargetPriority")
-    third_threshold = _function_block(
-        helper_source, "IsRemainingHpAboveOneThirdOfCurrent"
-    )
+    third_threshold = _function_block(helper_source, "IsRemainingHpAboveOneThirdOfCurrent")
     fifth_threshold = _function_block(helper_source, "IsRemainingHpAboveOneFifthOfMax")
     required_fragments = (
         (potential_damage, "moveq   #1,d2"),
@@ -356,8 +342,7 @@ def _parse_attack_priority(disasm: Path) -> dict[str, Any]:
         raise ValueError("battle AI attack-priority source contract drift")
 
     multipliers = [
-        int(value)
-        for value in re.findall(r"move\.w\s+#(256|230|205),d2", potential_damage)
+        int(value) for value in re.findall(r"move\.w\s+#(256|230|205),d2", potential_damage)
     ]
     if multipliers != [256, 230, 205]:
         raise ValueError(f"battle AI land-effect multiplier drift: {multipliers}")
@@ -509,18 +494,14 @@ def _parse_healing(disasm: Path) -> dict[str, Any]:
     )
     if len(movetype_names) != equates["MOVETYPES_NUMBER"]:
         raise ValueError(f"battle AI heal-priority table drift: {movetype_names}")
-    movetype_values = [
-        int(name) if name == "-1" else equates[name] for name in movetype_names
-    ]
+    movetype_values = [int(name) if name == "-1" else equates[name] for name in movetype_names]
     movetype_priorities = [
         {
             "name": name,
             "value": value,
             "priority": equates["MOVETYPES_NUMBER"] - index,
         }
-        for index, (name, value) in enumerate(
-            zip(movetype_names, movetype_values, strict=True)
-        )
+        for index, (name, value) in enumerate(zip(movetype_names, movetype_values, strict=True))
         if index
     ]
 
@@ -727,9 +708,7 @@ def _parse_action_choice(disasm: Path) -> dict[str, Any]:
     data_path = Path("data/battles/global/aipriority.asm")
     choice_source = (disasm / choice_path).read_text(encoding="utf-8")
     data_source = (disasm / data_path).read_text(encoding="utf-8")
-    choice = _function_block(
-        choice_source, "DetermineBattleactionForAttackAiCommand"
-    )
+    choice = _function_block(choice_source, "DetermineBattleactionForAttackAiCommand")
     equates = _equates(disasm)
     required_fragments = (
         (choice, "bset    #0,d3"),
@@ -766,9 +745,7 @@ def _parse_action_choice(disasm: Path) -> dict[str, Any]:
     class_tables: dict[str, list[int]] = {}
     for name in class_table_names:
         tokens = DC_BYTE_VALUE_PATTERN.findall(_label_block(data_source, name))
-        class_tables[name] = [
-            int(token) if token == "-1" else equates[token] for token in tokens
-        ]
+        class_tables[name] = [int(token) if token == "-1" else equates[token] for token in tokens]
     if any(len(values) != equates["CLASSES_NUMBER"] for values in class_tables.values()):
         raise ValueError("battle AI class-order table shape drift")
     class_pointer_targets = DC_LONG_TARGET_PATTERN.findall(
@@ -829,6 +806,106 @@ def _parse_action_choice(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _parse_movement(disasm: Path) -> dict[str, Any]:
+    move_path = SOURCE_ROOT / "command/move.asm"
+    order_path = SOURCE_ROOT / "command/moveorder.asm"
+    builder_path = SOURCE_ROOT / "command/moveorder/buildmovestringformoveorder.asm"
+    costs_path = Path("data/battles/global/krakenmovecosts.asm")
+    move = _function_block((disasm / move_path).read_text(encoding="utf-8"), "aiCommand_Move")
+    order = _function_block(
+        (disasm / order_path).read_text(encoding="utf-8"), "aiCommand_MoveOrder"
+    )
+    builder = _function_block(
+        (disasm / builder_path).read_text(encoding="utf-8"),
+        "BuildMoveStringForMoveOrder",
+    )
+    costs_source = (disasm / costs_path).read_text(encoding="utf-8")
+    equates = _equates(disasm)
+    checks = (
+        (move, "move.w  #128,d0"),
+        (move, "bsr.w   IsCombatantConfused"),
+        (move, "bsr.w   GetMoveCostToEntity"),
+        (move, "bcc.s   @loc_18"),
+        (move, "lea     (pt_AttackPriorityClassesForMovetype).l,a1"),
+        (move, "cmpi.b  #1,d0"),
+        (move, "cmpi.b  #3,d0"),
+        (move, "cmpi.b  #ENEMY_KRAKEN_LEG,d1"),
+        (move, "cmpi.b  #ENEMY_KRAKEN_ARM,d1"),
+        (move, "cmpi.b  #ENEMY_KRAKEN_HEAD,d1"),
+        (move, "move.w  #4,d3"),
+        (move, "clr.w   d3\n                clr.w   d4"),
+        (move, "move.w  #1,d3\n                move.w  #1,d4"),
+        (order, "btst    #COMBATANT_BIT_ENEMY,d0"),
+        (order, "bsr.w   GetCurrentMov"),
+        (order, "cmpi.b  #AIORDER_NONE,d1"),
+        (order, "btst    #AIORDER_BIT_MOVE_TO,d1"),
+        (order, "bsr.w   aiCommand_Attack"),
+        (order, "bsr.w   BuildMoveStringForMoveOrder"),
+        (order, "move.b  pathfindingMode(a6),d2"),
+        (builder, "move.w  #128,d0"),
+        (builder, "add.w   d3,d3"),
+        (builder, "move.w  #3,d3"),
+        (builder, "move.w  #3,d4"),
+    )
+    if any(fragment not in block for block, fragment in checks):
+        raise ValueError("battle AI movement source contract drift")
+    costs = [
+        int(value)
+        for value in DC_BYTE_INTEGER_PATTERN.findall(
+            _label_block(costs_source, "table_KrakenMoveCosts")
+        )
+    ]
+    if len(costs) != 16:
+        raise ValueError("battle AI Kraken move-cost table shape drift")
+    return {
+        "sourcePaths": [
+            move_path.as_posix(),
+            order_path.as_posix(),
+            builder_path.as_posix(),
+            costs_path.as_posix(),
+        ],
+        "move": {
+            "movementArrayBudget": 128,
+            "confusedTarget": "first-living-side-index-without-health-or-map-check",
+            "normalTargets": "opposing-living-on-map-combatants",
+            "emptyNormalTargetGuard": False,
+            "moveCostSort": "ascending-unsigned-byte",
+            "classNeighborReorderAppliesWhenTargetListIsEnemies": True,
+            "classRankDistanceMaximum": 1,
+            "combatantIndexDistanceMaximum": 3,
+            "selectedTarget": "first-after-reordering",
+            "krakenEnemyIndexes": [
+                equates[name]
+                for name in ("ENEMY_KRAKEN_LEG", "ENEMY_KRAKEN_ARM", "ENEMY_KRAKEN_HEAD")
+            ],
+            "krakenMoveCosts": costs,
+            "initialMoveStringBudget": 4,
+            "postMoveAttackPositionRadii": [0, 1],
+            "returnsSuccessEvenWhenActionBecomesStay": True,
+        },
+        "moveOrder": {
+            "enemyOnly": True,
+            "allyStayReadsUninitializedPathfindingMode": True,
+            "stayConditions": [
+                "zero-mov",
+                "no-order",
+                "dead-follow-target",
+                "terrain-check-failure",
+            ],
+            "targetTypeSelectsPathIndependentlyOfOrderBits": True,
+            "triesAttackBeforeMovement": True,
+            "movementOnlyAction": "stay-with-move-string",
+            "pathfindingModes": {"regular": 0, "blockNonMovable": 1, "blockAndCarve": 2},
+        },
+        "moveOrderBuilder": {
+            "movementArrayBudget": 128,
+            "preliminaryMoveBudget": "current-mov-times-two",
+            "attackPositionRadii": [0, 1, 2, 3],
+            "failureMoveString": -1,
+        },
+    }
+
+
 def _resolve_upstream(upstream_path: Path) -> tuple[Path, str, dict[str, Any]]:
     upstream_path = upstream_path.resolve(strict=True)
     toolchain = load_json(TOOLCHAIN)
@@ -859,9 +936,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
     if not source_paths:
         raise ValueError("battle AI source inventory is empty")
 
-    files = [
-        _parse_source_file(path, path.relative_to(disasm).as_posix()) for path in source_paths
-    ]
+    files = [_parse_source_file(path, path.relative_to(disasm).as_posix()) for path in source_paths]
     all_labels = {label for file in files for label in file["globalLabels"]}
     direct_calls: Counter[str] = Counter()
     for file in files:
@@ -911,6 +986,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
         "healing": _parse_healing(disasm),
         "support": _parse_support(disasm),
         "actionChoice": _parse_action_choice(disasm),
+        "movement": _parse_movement(disasm),
         "indexedRecordIds": indexed_records,
         "indexedSourcePaths": indexed_files,
         "internalDirectCallTargets": internal_targets,
@@ -970,12 +1046,8 @@ def _attack_priority_facts(attack_priority: dict[str, Any]) -> dict[str, Any]:
         ],
         "remainingHpMinimum": attack_priority["remainingHpMinimum"],
         "script2DamageThreshold": attack_priority["thresholds"]["script2Damage"],
-        "script2And4LowHpThreshold": attack_priority["thresholds"][
-            "script2And4LowHp"
-        ],
-        "script3MovementFormula": attack_priority["priorityScripts"][2][
-            "movementPriorityFormula"
-        ],
+        "script2And4LowHpThreshold": attack_priority["thresholds"]["script2And4LowHp"],
+        "script3MovementFormula": attack_priority["priorityScripts"][2]["movementPriorityFormula"],
         "classAdjustmentAlliesOnly": adjustment["alliesOnly"],
         "classAdjustmentSkippedWhenConfused": adjustment["skippedWhenConfused"],
         "previousTargetSarahUsesMageTable": adjustment["previousTargetSarahUsesMageTable"],
@@ -1004,13 +1076,9 @@ def _healing_facts(healing: dict[str, Any]) -> dict[str, Any]:
         "acceptedSpellBases": command["acceptedSpellBases"],
         "minimumMpBeforeTargeting": command["minimumMpBeforeTargeting"],
         "itemFallbackAfterSpellFailure": command["itemFallbackAfterSpellFailure"],
-        "itemTakesPrecedenceAtActionLoad": command[
-            "itemTakesPrecedenceAtActionLoad"
-        ],
+        "itemTakesPrecedenceAtActionLoad": command["itemTakesPrecedenceAtActionLoad"],
         "requiresHealing": eligibility["requiresHealing"],
-        "requiresHealingIncludesTwoThirds": eligibility[
-            "requiresHealingIncludesTwoThirds"
-        ],
+        "requiresHealingIncludesTwoThirds": eligibility["requiresHealingIncludesTwoThirds"],
         "halfHp": eligibility["halfHp"],
         "halfHpIncludesEquality": eligibility["halfHpIncludesEquality"],
         "missingHpThresholds": spell_level["missingHpThresholds"],
@@ -1045,9 +1113,7 @@ def _support_facts(support: dict[str, Any]) -> dict[str, Any]:
             "otherSupportSpellStaysWithoutScanningLaterSlots"
         ],
         "usesDefinitionMpCost": command["usesDefinitionMpCost"],
-        "targetSideUsesSpellTargetingProperty": command[
-            "targetSideUsesSpellTargetingProperty"
-        ],
+        "targetSideUsesSpellTargetingProperty": command["targetSideUsesSpellTargetingProperty"],
         "highestPriorityTieBreak": command["highestPriorityTieBreak"],
         "failedPositionAfterSelection": command["failedPositionAfterSelection"],
         "muddle2": routes["muddle2"],
@@ -1074,6 +1140,14 @@ def _action_choice_facts(action_choice: dict[str, Any]) -> dict[str, Any]:
         ),
         "retainsEarliestClassCohort": critical["retainsEarliestClassCohort"],
         "movementTieBreak": action_choice["movementTieBreak"],
+    }
+
+
+def _movement_facts(movement: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "move": movement["move"],
+        "moveOrder": movement["moveOrder"],
+        "moveOrderBuilder": movement["moveOrderBuilder"],
     }
 
 
@@ -1107,6 +1181,8 @@ def verify_battle_ai_inventory(
         ACTION_CHOICE_FIXTURE_SCHEMA,
         owner=str(ACTION_CHOICE_FIXTURE),
     )
+    movement_fixture = load_json(MOVEMENT_FIXTURE)
+    validate_json(movement_fixture, MOVEMENT_FIXTURE_SCHEMA, owner=str(MOVEMENT_FIXTURE))
     rom_manifest = load_json(ROM_MANIFEST)
     output = build_battle_ai_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="battle AI static inventory")
@@ -1145,6 +1221,13 @@ def verify_battle_ai_inventory(
         raise ValueError("battle AI action-choice fixture provenance drift")
     if _action_choice_facts(output["actionChoice"]) != action_choice_fixture["expected"]:
         raise ValueError("battle AI action-choice facts disagree with fixture")
+    if (
+        movement_fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or movement_fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("battle AI movement fixture provenance drift")
+    if _movement_facts(output["movement"]) != movement_fixture["expected"]:
+        raise ValueError("battle AI movement facts disagree with fixture")
     if output["summary"] != manifest["summary"]:
         raise ValueError(
             "battle AI static summary drift: "

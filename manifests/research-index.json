@@ -2112,6 +2112,34 @@
         "bindings": [{ "addressId": "entry", "fixtureField": "function.classOrderPointerTableAddress" }]
       }],
       "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement.move-command", "subsystem": "battle.ai.movement", "status": "confirmed",
+      "symbol": "aiCommand_Move", "sourcePath": "code/gameflow/battle/ai/command/move.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 61908 }],
+      "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.moveCommandEntryAddress" }] }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement.move-order-command", "subsystem": "battle.ai.movement", "status": "confirmed",
+      "symbol": "aiCommand_MoveOrder", "sourcePath": "code/gameflow/battle/ai/command/moveorder.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 59788 }],
+      "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.moveOrderCommandEntryAddress" }] }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement.move-order-builder", "subsystem": "battle.ai.movement", "status": "confirmed",
+      "symbol": "BuildMoveStringForMoveOrder", "sourcePath": "code/gameflow/battle/ai/command/moveorder/buildmovestringformoveorder.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63392 }],
+      "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.moveOrderBuilderEntryAddress" }] }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement.kraken-costs", "subsystem": "battle.ai.movement", "status": "confirmed",
+      "symbol": "table_KrakenMoveCosts", "sourcePath": "data/battles/global/krakenmovecosts.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63924 }],
+      "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.krakenMoveCostsAddress" }] }],
+      "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }

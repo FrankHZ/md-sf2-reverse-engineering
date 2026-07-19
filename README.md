@@ -6,15 +6,15 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
-H2、成长曲线与法术学习合同、battle AI 全目录 inventory、action filter、攻击/治疗/支援及最终行动选择静态合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
+H2、成长曲线与法术学习合同、battle AI 全目录 inventory、action filter、攻击/治疗/支援、最终行动选择及 movement 静态合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
 职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、完整击杀 EXP 等级差矩阵、行动顺序、区域激活、物理伤害计算链和
 BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门、敌人物品稀有/必掉/重复 flag、四种临时状态的回合后过期/继续/属性刷新，以及 MUDDLE confusion 谓词与双边行动保护矩阵的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-18，研究索引有 87 条 confirmed finding、52 个 H3 fixture 和 443 个地址绑定。
-按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 41 个文件，即
-**10.59% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+截至 2026-07-18，研究索引有 91 条 confirmed finding、52 个 H3 fixture 和 447 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 44 个文件，即
+**11.37% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -211,7 +211,7 @@ drop rail 确认 flags 0-29、三个 `RNG(32)` 特例和 `0xFFFF` 终止；gold 
 388 个直接调用点、五类 action getter、四套 attack priority script、物理/法术 potential-damage
 模型、4×32 class adjustment 表，healing eligibility/spell-level/item precedence 与
 movetype/AOE scoring，support admission、DISPEL/MUDDLE 2 target scoring 和两个不可达
-ATTACK/BOOST 2 路由，以及最终 attack/spell/item RNG 与 target tie-break，并将 32 个新 symbol
+ATTACK/BOOST 2 路由、最终 action/target tie-break，以及 move/move-order path rules，并将 36 个新 symbol
 绑定到 H1 地址。H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在

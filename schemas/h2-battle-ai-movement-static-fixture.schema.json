@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battle AI movement static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-movement-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["moveCommandEntryAddress", "moveOrderCommandEntryAddress", "moveOrderBuilderEntryAddress", "krakenMoveCostsAddress"],
+      "properties": {
+        "moveCommandEntryAddress": { "const": 61908 },
+        "moveOrderCommandEntryAddress": { "const": 59788 },
+        "moveOrderBuilderEntryAddress": { "const": 63392 },
+        "krakenMoveCostsAddress": { "const": 63924 }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["move", "moveOrder", "moveOrderBuilder"],
+      "properties": {
+        "move": { "type": "object" },
+        "moveOrder": { "type": "object" },
+        "moveOrderBuilder": { "type": "object" }
+      }
+    }
+  }
+}

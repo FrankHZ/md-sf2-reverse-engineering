@@ -1,7 +1,7 @@
 # Battle AI Static Inventory and Decision Contracts
 
 - Status: **Confirmed** for the pinned-source inventory, call metadata, action-filter, attack-priority,
-  healing/support/final-action decision code shape, constants, and H1 symbol addresses
+  healing/support/final-action/movement decision code shape, constants, and H1 symbol addresses
 - Status: **Inferred** for caller-visible behavior not already reproduced by an H3 fixture
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -17,11 +17,11 @@ uv run sf2 h2 battle-ai
 The Python-owned rail scans the complete
 `disasm/code/gameflow/battle/ai` subtree, validates the pinned Git commit, hashes every source file,
 extracts global/local labels and direct/indirect call metadata, parses the action filters, attack
-priority, healing, support, and final action choice, checks their fixtures and schemas, and writes canonical output to ignored
+priority, healing, support, final action choice, and movement, checks their fixtures and schemas, and writes canonical output to ignored
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`4BEB0ADCCBA341BD29E8095A13866AE119847EA3141C96063124A3DE35F4ED45`.
+`4653315F38216A984364B0712C1CFB4C613E97C9D49F0D58E9240DE1B6C38035`.
 
 ## Complete Subtree Inventory
 
@@ -43,7 +43,8 @@ this batch, the research index reached only `IsCombatantConfused`, `DetermineMud
 `aiCommand_Attack` across three files. It now also binds the five action getters, for eight indexed
 records across four files in the first batch. Attack priority raised the subtree total to 18 records
 across seven files; healing raised it to 23 across 12; support raised it to 31 across 14; final action
-choice raises it to 32 across 15. Three linked data-table symbols live outside the subtree.
+choice raised it to 32 across 15; movement raises it to 35 across 18. Four linked data-table symbols
+live outside the subtree.
 
 ## Action Getter Addresses
 
@@ -268,6 +269,28 @@ smallest, and equal values select the later collected target. For an enemy with 
 forces the mage table. Only the earliest represented class cohort survives before movement tie-break.
 The 16 movement-type pointers and all four class arrays are preserved in canonical output.
 
+## Move and Move-Order Commands
+
+`aiCommand_Move` builds movement with budget 128. A confused unit directly picks its side's first
+index without checking that target's HP or map position; otherwise it collects living, on-map
+opponents, with no empty-list guard before its cost loop. Costs are sorted ascending as unsigned
+bytes and the first result is selected. A later neighbor pass runs only when the target list contains
+enemies, using the mover's class-order table and swapping adjacent targets when class ranks differ by
+at most one and combatant indexes by at most three.
+
+Kraken Leg, Arm, and Head bypass the normal move-cost table and use the extracted 16-byte Kraken
+table. After a preliminary move string with hardcoded budget 4, the command searches attack positions
+at radii 0 then 1; failure changes the action to Stay, but the function still returns success.
+
+`aiCommand_MoveOrder` is enemy-oriented and tries an Attack command before movement. Zero MOV, no
+order, a dead follow target, or failed terrain check produces Stay. A movement-only outcome is also
+encoded as Stay plus a non-empty move string. The pathfinding mode independently applies regular,
+block-non-movable, or block-and-carve post-processing. The ally early-stay path reaches that
+post-processing without initializing its stack-local mode byte.
+
+`BuildMoveStringForMoveOrder` uses movement-array budget 128, a preliminary budget of `MOV × 2`, then
+tries acceptable attack-space radii 0, 1, 2, and 3. Exhausting all four invalidates the move string.
+
 ## Runtime Question Queue
 
 The next BizHawk batch should share one derived-ROM seam and one result buffer for at least:
@@ -296,6 +319,10 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     bypass, and physical suppression when both special lists are present;
 17. priority bytes 127/128/255, critical class-order cohorts, reversed collection order, and movement
     values below/above 128 to confirm the signed comparison and largest-value selection.
+18. empty normal-move target lists, confused first-side targets that are dead/off-map, neighbor class
+    swaps, Kraken costs, and radius 0/1 post-move fallback;
+19. Move Order ally-mode stack value, attack-before-move behavior, Stay-with-move-string semantics,
+    and radius 0–3 exhaustion in the builder.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible
 with a small number of case tables; split only when the action-getter and priority seams cannot be
@@ -303,7 +330,7 @@ shared safely.
 
 ## Remaining Static Batches
 
-- movement orders, standby movement, path obstruction, line-attacker/exploder special AI;
+- standby movement, path obstruction, line-attacker/exploder special AI;
 - command dispatcher and swarm/activation control.
 
 These remain **Unknown** at subsystem-contract level even though their files and calls are now
