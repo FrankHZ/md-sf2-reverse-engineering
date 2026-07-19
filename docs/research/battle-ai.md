@@ -23,7 +23,7 @@ priority, healing, support, final action choice, and movement, checks their fixt
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`8E0450F707D2BB45DF7A02E97FA23ACA37E50DA0C4BA4D96A8A1859AC78E14B8`.
+`D8B22F5F59EB471CE66BFB158D33EF10D73259101A8F51F923BA2A69C6C150EA`.
 
 ## Complete Subtree Inventory
 
@@ -47,7 +47,9 @@ records across four files in the first batch. Attack priority raised the subtree
 across seven files; healing raised it to 23 across 12; support raised it to 31 across 14; final action
 choice raised it to 32 across 15; movement raised it to 35 across 18. The final control batch now
 indexes at least one representative entry in all 26 files, for 43 subtree records. Four linked
-data-table symbols live outside the subtree. This is full file reach, not full function semantics.
+data-table symbols live outside the subtree. The movement-helper deepening adds seven functions and
+five coordinate tables, bringing the subtree to 55 indexed records. This is full file reach plus
+selected function semantics, not full instruction coverage.
 
 ## Action Getter Addresses
 
@@ -301,6 +303,26 @@ post-processing without initializing its stack-local mode byte.
 `BuildMoveStringForMoveOrder` uses movement-array budget 128, a preliminary budget of `MOV × 2`, then
 tries acceptable attack-space radii 0, 1, 2, and 3. Exhausting all four invalidates the move string.
 
+## Movement Terrain Helper Semantics
+
+**Confirmed static model:** `DetermineMoveOrderQuadrant` selects the primary move order when present
+and otherwise the secondary. Its bit 0 means the destination is left of the combatant and bit 1
+means below; the source comments describing right/above are opposite to the actual comparisons. It
+expands the working bounds four tiles and clamps them to the 64-by-64 terrain limits.
+
+The obstruction helpers do not share that fallback: they return when the primary order is absent,
+so a secondary-only order is ignored. `BlockNonMovableSpacesAroundDestination` builds a movement grid
+from the destination and adds terrain bits 6 and 7 only where that grid is unreachable, leaving
+permanent `0xFF` terrain alone. The quadrant marker sets the same two bits in three of four rectangles,
+leaving the destination-facing rectangle unmarked. The clear helper removes only those temporary
+bits from every non-`0xFF` terrain byte.
+
+`BlockAndCarveAroundDestination` first blocks all non-permanent terrain, then clears Manhattan rings
+0, 1, and 2 around the move-order position. A present last-target entry selects the tethered variant,
+which clears rings 0 through 4. The five parsed coordinate tables contain exactly 1, 4, 8, 12, and
+16 entries and are address-bound individually. These are source/control-flow and table facts; map
+edge effects and caller-visible path choices remain candidates for a later shared runtime matrix.
+
 ## Dispatcher and Standby Control
 
 The dispatcher handles command values 0–7, 10–14, and 16–19. Reserved 8, 9, and 15—and any unknown
@@ -358,7 +380,7 @@ shared safely.
 
 ## Remaining Static Batches
 
-- deeper path-obstruction, line-attacker/exploder, swarm/activation, and unused-helper semantics.
+- line-attacker/exploder, swarm/activation, and unused-helper semantics.
 
 These remain **Unknown** at subsystem-contract level even though their files and calls are now
 inventoried.

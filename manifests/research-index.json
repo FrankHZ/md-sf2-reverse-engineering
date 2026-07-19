@@ -2210,6 +2210,54 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1753998 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.movementHelpersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },
     {
+      "id": "battle.ai.movement-helper.block-non-movable", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "BlockNonMovableSpacesAroundDestination", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754172 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.blockNonMovableAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.block-and-carve", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "BlockAndCarveAroundDestination", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754352 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.blockAndCarveAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.tethered-carve", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "BlockAndCarveForTetheredTarget", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754538 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.tetheredCarveAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.clear-temporary", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "ClearAllTemporaryObstructionFlags", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754708 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearTemporaryObstructionAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.apply-quadrant", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "ApplyQuadrantTerrainMarking", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754778 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.applyQuadrantMarkingAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.mark-rectangle", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "MarkTerrainRectangleObstructed", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754920 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.markTerrainRectangleAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.clear-around-destination", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "ClearObstructionFlagsAroundDestination", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755134 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearAroundDestinationAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.radius-0", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius0", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755208 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius0Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.radius-1", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius1", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755211 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius1Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.radius-2", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius2", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755220 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius2Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.radius-3", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius3", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755237 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius3Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.movement-helper.radius-4", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius4", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755262 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius4Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
       "id": "battle.ai.remaining.control-loop", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "StartAiControl", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57084 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.controlLoopAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },

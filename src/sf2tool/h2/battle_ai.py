@@ -908,6 +908,98 @@ def _parse_movement(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _parse_radius_rings(source: str) -> list[dict[str, Any]]:
+    rings = []
+    for radius in range(5):
+        match = re.search(
+            rf"^list_Radius{radius}:\s+dc\.b\s+([^;\r\n]+)(?P<body>.*?)(?=^list_Radius|^\s+align)",
+            source,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not match:
+            raise ValueError(f"missing battle AI radius-{radius} coordinate list")
+        values = [int(match.group(1).strip())]
+        for line in match.group("body").splitlines():
+            statement = _strip_comment(line).strip()
+            if not statement.startswith("dc.b"):
+                continue
+            values.extend(int(value.strip()) for value in statement[4:].split(","))
+        count = values[0]
+        coordinates = [values[index : index + 2] for index in range(1, len(values), 2)]
+        if len(coordinates) != count or any(len(pair) != 2 for pair in coordinates):
+            raise ValueError(f"battle AI radius-{radius} coordinate count drift")
+        if any(abs(x) + abs(y) != radius for x, y in coordinates):
+            raise ValueError(f"battle AI radius-{radius} is not a Manhattan ring")
+        rings.append({"radius": radius, "count": count, "coordinates": coordinates})
+    return rings
+
+
+def _parse_movement_helpers(source: str) -> dict[str, Any]:
+    quadrant = _function_block(source, "DetermineMoveOrderQuadrant")
+    block_non_movable = _function_block(source, "BlockNonMovableSpacesAroundDestination")
+    direct_carve = _function_block(source, "BlockAndCarveAroundDestination")
+    tethered_carve = _function_block(source, "BlockAndCarveForTetheredTarget")
+    clear_all = _function_block(source, "ClearAllTemporaryObstructionFlags")
+    apply_quadrant = _function_block(source, "ApplyQuadrantTerrainMarking")
+    mark_rectangle = _function_block(source, "MarkTerrainRectangleObstructed")
+    clear_around = _function_block(source, "ClearObstructionFlagsAroundDestination")
+    required = (
+        (quadrant, "move.b  d2,d0"),
+        (quadrant, "bset    #0,d5"),
+        (quadrant, "bset    #1,d5"),
+        (quadrant, "subi.w  #4,d3"),
+        (quadrant, "addi.w  #4,d3"),
+        (block_non_movable, "bra.w   @Done"),
+        (block_non_movable, "jsr     j_BuildMovementArrays"),
+        (block_non_movable, "btst    #TERRAIN_BIT_OCCUPIED,d0"),
+        (direct_carve, "bsr.w   BlockAndCarveForTetheredTarget"),
+        (direct_carve, "lea     list_Radius2(pc), a0"),
+        (tethered_carve, "lea     list_Radius4(pc), a0"),
+        (clear_all, "bclr    #TERRAIN_BIT_OCCUPIED,d0"),
+        (clear_all, "bclr    #TERRAIN_BIT_IMPASSABLE,d0"),
+        (apply_quadrant, "move.b  #3,d1"),
+        (mark_rectangle, "mulu.w  #MAP_SIZE_MAX_TILEWIDTH,d2"),
+        (clear_around, "cmpi.w  #MAP_SIZE_MAX_TILEHEIGHT,d2"),
+        (clear_around, "cmpi.w  #MAP_SIZE_MAX_TILEWIDTH,d1"),
+    )
+    if any(fragment not in block for block, fragment in required):
+        raise ValueError("battle AI movement-helper source contract drift")
+    return {
+        "orderSelection": {
+            "quadrantHelper": "primary-else-secondary",
+            "obstructionHelpers": "primary-only",
+            "secondaryOnlyOrderIsIgnoredByObstructionHelpers": True,
+            "deadFollowTargetResult": -1,
+        },
+        "quadrantBits": {"bit0": "destination-left", "bit1": "destination-below"},
+        "boundExpansionTiles": 4,
+        "temporaryObstructionBits": [6, 7],
+        "permanentObstructionValue": 255,
+        "blockNonMovable": {
+            "buildsMovementGridFromDestination": True,
+            "marksGridUnreachableTerrain": True,
+            "skipsPermanentObstruction": True,
+        },
+        "blockAndCarve": {
+            "lastTargetSelectsTetheredVariant": True,
+            "center": "move-order-position",
+            "blocksAllNonPermanentTerrainFirst": True,
+            "standardClearRadii": [0, 1, 2],
+            "tetheredClearRadii": [0, 1, 2, 3, 4],
+        },
+        "quadrantMarking": {
+            "rectanglesMarkedPerDirection": 3,
+            "markedSelectionCodes": {
+                "right-above": [1, 2, 3],
+                "left-above": [0, 2, 3],
+                "left-below": [0, 1, 3],
+                "right-below": [0, 1, 2],
+            },
+        },
+        "radiusRings": _parse_radius_rings(source),
+    }
+
+
 def _parse_remaining(disasm: Path) -> dict[str, Any]:
     entries = {
         "unusedHealingMp": (SOURCE_ROOT / "command/heal/unusedfunctions_D3CA.asm", "sub_D3CA"),
@@ -982,6 +1074,7 @@ def _parse_remaining(disasm: Path) -> dict[str, Any]:
             "levelShiftBits": 6,
             "noAffordableResult": 63,
         },
+        "movementHelpers": _parse_movement_helpers(sources["movementHelpers"]),
     }
 
 
@@ -1234,7 +1327,13 @@ def _movement_facts(movement: dict[str, Any]) -> dict[str, Any]:
 def _remaining_facts(remaining: dict[str, Any]) -> dict[str, Any]:
     return {
         key: remaining[key]
-        for key in ("representativeSymbols", "dispatcher", "standby", "highestSpellLevel")
+        for key in (
+            "representativeSymbols",
+            "dispatcher",
+            "standby",
+            "highestSpellLevel",
+            "movementHelpers",
+        )
     }
 
 

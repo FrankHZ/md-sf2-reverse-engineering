@@ -10,6 +10,18 @@
     "dispatcherAddress": 58004,
     "highestSpellLevelAddress": 52946,
     "movementHelpersAddress": 1753998,
+    "blockNonMovableAddress": 1754172,
+    "blockAndCarveAddress": 1754352,
+    "tetheredCarveAddress": 1754538,
+    "clearTemporaryObstructionAddress": 1754708,
+    "applyQuadrantMarkingAddress": 1754778,
+    "markTerrainRectangleAddress": 1754920,
+    "clearAroundDestinationAddress": 1755134,
+    "radius0Address": 1755208,
+    "radius1Address": 1755211,
+    "radius2Address": 1755220,
+    "radius3Address": 1755237,
+    "radius4Address": 1755262,
     "controlLoopAddress": 57084,
     "unusedSlotLookupAddress": 53006
   },
@@ -48,6 +60,46 @@
       "search": "known-level-down-to-zero-until-affordable",
       "levelShiftBits": 6,
       "noAffordableResult": 63
+    },
+    "movementHelpers": {
+      "orderSelection": {
+        "quadrantHelper": "primary-else-secondary",
+        "obstructionHelpers": "primary-only",
+        "secondaryOnlyOrderIsIgnoredByObstructionHelpers": true,
+        "deadFollowTargetResult": -1
+      },
+      "quadrantBits": { "bit0": "destination-left", "bit1": "destination-below" },
+      "boundExpansionTiles": 4,
+      "temporaryObstructionBits": [6, 7],
+      "permanentObstructionValue": 255,
+      "blockNonMovable": {
+        "buildsMovementGridFromDestination": true,
+        "marksGridUnreachableTerrain": true,
+        "skipsPermanentObstruction": true
+      },
+      "blockAndCarve": {
+        "lastTargetSelectsTetheredVariant": true,
+        "center": "move-order-position",
+        "blocksAllNonPermanentTerrainFirst": true,
+        "standardClearRadii": [0, 1, 2],
+        "tetheredClearRadii": [0, 1, 2, 3, 4]
+      },
+      "quadrantMarking": {
+        "rectanglesMarkedPerDirection": 3,
+        "markedSelectionCodes": {
+          "right-above": [1, 2, 3],
+          "left-above": [0, 2, 3],
+          "left-below": [0, 1, 3],
+          "right-below": [0, 1, 2]
+        }
+      },
+      "radiusRings": [
+        { "radius": 0, "count": 1, "coordinates": [[0, 0]] },
+        { "radius": 1, "count": 4, "coordinates": [[0, 1], [1, 0], [0, -1], [-1, 0]] },
+        { "radius": 2, "count": 8, "coordinates": [[0, -2], [-1, -1], [-2, 0], [-1, 1], [0, 2], [1, 1], [2, 0], [1, -1]] },
+        { "radius": 3, "count": 12, "coordinates": [[0, -3], [-1, -2], [-2, -1], [-3, 0], [-2, 1], [-1, 2], [0, 3], [1, 2], [2, 1], [3, 0], [2, -1], [1, -2]] },
+        { "radius": 4, "count": 16, "coordinates": [[0, -4], [-1, -3], [-2, -2], [-3, -1], [-4, 0], [-3, 1], [-2, 2], [-1, 3], [0, 4], [1, 3], [2, 2], [3, 1], [4, 0], [3, -1], [2, -2], [1, -3]] }
+      ]
     }
   }
 }
