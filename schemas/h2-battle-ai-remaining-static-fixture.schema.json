@@ -9,7 +9,7 @@
     "id": { "const": "sf2-battle-ai-remaining-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 33, "maxProperties": 33, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "function": { "type": "object", "minProperties": 36, "maxProperties": 36, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "expected": {
       "type": "object", "additionalProperties": false,
       "required": ["representativeSymbols", "dispatcher", "standby", "highestSpellLevel", "movementHelpers", "control", "unusedHelpers"],

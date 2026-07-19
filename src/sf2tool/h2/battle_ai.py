@@ -1177,6 +1177,126 @@ def _parse_unused_helpers(disasm: Path, healing_source: str, slot_source: str) -
     }
 
 
+def _standby_eligibility_outcome(
+    primary_order: bool,
+    secondary_order: bool,
+    primary_trigger_configured: bool,
+    secondary_trigger_configured: bool,
+) -> str:
+    if (primary_order and primary_trigger_configured) or (
+        secondary_order and secondary_trigger_configured
+    ):
+        return "stay"
+    if (
+        primary_order
+        and not primary_trigger_configured
+        and not secondary_order
+        and secondary_trigger_configured
+    ):
+        return "move-order"
+    if (not primary_order and primary_trigger_configured) or (
+        not secondary_order and secondary_trigger_configured
+    ):
+        return "regular-move"
+    return "stay"
+
+
+def _parse_standby(disasm: Path, movement_source: str, eligibility_source: str) -> dict[str, Any]:
+    movement = _function_block(movement_source, "DetermineAiStandbyMovement")
+    eligibility = _function_block(eligibility_source, "ValidateAiStandbyEligibility")
+    table_source = (disasm / "data/battles/global/aistandbymovements.asm").read_text(
+        encoding="utf-8"
+    )
+    required = (
+        (movement, "move.w  #8,d6"),
+        (movement, "move.b  d1,startingX(a6)"),
+        (movement, "move.b  d1,startingY(a6)"),
+        (movement, "andi.b  #BYTE_LOWER_NIBBLE_MASK,d1"),
+        (movement, "lsr.w   #NIBBLE_SHIFT_COUNT,d1"),
+        (movement, "bclr    d6,d7"),
+        (movement, "cmpi.b  #MAP_SIZE_MAX_TILEWIDTH,d1"),
+        (movement, "cmpi.b  #MAP_SIZE_MAX_TILEHEIGHT,d2"),
+        (eligibility, "move.b  #1,d1"),
+        (eligibility, "clr.w   d1"),
+        (eligibility, "move.b  #1,d2"),
+    )
+    if any(fragment not in block for block, fragment in required):
+        raise ValueError("battle AI standby source contract drift")
+
+    pointers = DC_LONG_TARGET_PATTERN.findall(_label_block(table_source, "pt_StandbyAiMovements"))
+    if pointers != ["table_StandbyAiMovements1", "table_StandbyAiMovements2"]:
+        raise ValueError("battle AI standby movement pointers drift")
+    movement_tables = []
+    for move_count, label in zip((3, 4), pointers, strict=True):
+        values: list[int] = []
+        for line in _label_block(table_source, label).splitlines():
+            statement = _strip_comment(line).strip()
+            if not statement.startswith("dc.b"):
+                continue
+            values.extend(int(value.strip()) for value in statement[4:].split(","))
+        coordinates = [values[index : index + 2] for index in range(0, len(values), 2)]
+        if len(coordinates) != move_count or any(len(pair) != 2 for pair in coordinates):
+            raise ValueError(f"battle AI standby movement table drift: {label}")
+        movement_tables.append(
+            {"moveCount": move_count, "label": label, "coordinates": coordinates}
+        )
+
+    decision_matrix = []
+    for primary_order in (False, True):
+        for secondary_order in (False, True):
+            for primary_trigger_configured in (False, True):
+                for secondary_trigger_configured in (False, True):
+                    decision_matrix.append(
+                        {
+                            "primaryOrder": primary_order,
+                            "secondaryOrder": secondary_order,
+                            "primaryTriggerConfigured": primary_trigger_configured,
+                            "secondaryTriggerConfigured": secondary_trigger_configured,
+                            "callerOutcome": _standby_eligibility_outcome(
+                                primary_order,
+                                secondary_order,
+                                primary_trigger_configured,
+                                secondary_trigger_configured,
+                            ),
+                        }
+                    )
+    equates = _equates(disasm)
+    return {
+        "rngRange": 8,
+        "immediateStayRolls": [2, 4, 6],
+        "movementCandidateRolls": [0, 1, 3, 5, 7],
+        "memory": {
+            "lowerNibble": "move-count",
+            "initializedMoveCounts": [3, 4],
+            "upperNibble": "previous-relative-position-index",
+            "previousCandidateExcluded": True,
+            "noAlternativeClearsWholeByte": True,
+        },
+        "movementTables": movement_tables,
+        "regularStartCoordinates": "combatant-starting-x-y",
+        "moveOrderStartingYUsesXResult": True,
+        "candidatePrecheck": {
+            "actualMaximum": [
+                equates["MAP_SIZE_MAX_TILEWIDTH"] - 1,
+                equates["MAP_SIZE_MAX_TILEHEIGHT"] - 1,
+            ],
+            "acceptedMaximum": [
+                equates["MAP_SIZE_MAX_TILEWIDTH"],
+                equates["MAP_SIZE_MAX_TILEHEIGHT"],
+            ],
+            "acceptsOnePastMapMaximum": True,
+        },
+        "selection": "uniform-among-valid-except-previous",
+        "successfulMoveStillUsesStayAction": True,
+        "eligibility": {
+            "routineCommentMeaningConflictsWithCaller": True,
+            "callerTreatsD1ZeroAsMoveAttempt": True,
+            "callerTreatsD2NonzeroAsMoveOrder": True,
+            "decisionMatrix": decision_matrix,
+        },
+    }
+
+
 def _parse_remaining(disasm: Path) -> dict[str, Any]:
     entries = {
         "unusedHealingMp": (SOURCE_ROOT / "command/heal/unusedfunctions_D3CA.asm", "sub_D3CA"),
@@ -1238,14 +1358,9 @@ def _parse_remaining(disasm: Path) -> dict[str, Any]:
                 {"command": 19, "targetType": 0, "pathfindingMode": 2},
             ],
         },
-        "standby": {
-            "rngRange": 8,
-            "immediateStayRolls": [2, 4, 6],
-            "movementCandidateRolls": [0, 1, 3, 5, 7],
-            "memoryMoveCounts": [3, 4],
-            "moveOrderStartingYUsesXResult": True,
-            "eligibilityResultMeaningConflictsWithCallerComments": True,
-        },
+        "standby": _parse_standby(
+            disasm, sources["standbyMovement"], sources["standbyEligibility"]
+        ),
         "highestSpellLevel": {
             "search": "known-level-down-to-zero-until-affordable",
             "levelShiftBits": 6,

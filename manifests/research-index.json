@@ -2206,6 +2206,18 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63722 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyEligibilityAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },
     {
+      "id": "battle.ai.standby.movement-pointers", "subsystem": "battle.ai.standby", "status": "confirmed", "symbol": "pt_StandbyAiMovements", "sourcePath": "data/battles/global/aistandbymovements.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63370 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.standby.movement-3", "subsystem": "battle.ai.standby", "status": "confirmed", "symbol": "table_StandbyAiMovements1", "sourcePath": "data/battles/global/aistandbymovements.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63378 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovement3Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.standby.movement-4", "subsystem": "battle.ai.standby", "status": "confirmed", "symbol": "table_StandbyAiMovements2", "sourcePath": "data/battles/global/aistandbymovements.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63384 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovement4Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
       "id": "battle.ai.remaining.dispatcher", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "ExecuteAiCommand", "sourcePath": "code/gameflow/battle/ai/executeaicommand.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 58004 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.dispatcherAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },

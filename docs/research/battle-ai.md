@@ -23,7 +23,7 @@ priority, healing, support, final action choice, and movement, checks their fixt
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`ADB7A154FD66F809228D6261C9879AD808199F1D1273898656AD1AD44B791F34`.
+`202D78AC27C3BBBEE580ACE75A67BB5D6B96137C28724BB4462F2F49F6CA88AC`.
 
 ## Complete Subtree Inventory
 
@@ -50,7 +50,8 @@ indexes at least one representative entry in all 26 files, for 43 subtree record
 data-table symbols live outside the subtree. The movement-helper deepening adds seven functions and
 five coordinate tables, bringing the subtree to 55 indexed records. The control batch adds three
 more code functions and seven commandset/swarm data symbols, for 58 subtree records and 11 linked
-data symbols. The unused-helper batch binds the final three global functions for 61 subtree records.
+data symbols. The unused-helper batch binds the final three global functions for 61 subtree records;
+three standby movement tables bring the linked data-symbol total to 14.
 This is full file reach plus selected function semantics, not full instruction coverage.
 
 ## Action Getter Addresses
@@ -310,7 +311,7 @@ tries acceptable attack-space radii 0, 1, 2, and 3. Exhausting all four invalida
 **Confirmed static model:** `DetermineMoveOrderQuadrant` selects the primary move order when present
 and otherwise the secondary. Its bit 0 means the destination is left of the combatant and bit 1
 means below; the source comments describing right/above are opposite to the actual comparisons. It
-expands the working bounds four tiles and clamps them to the 64-by-64 terrain limits.
+expands the working bounds four tiles and clamps them to the 48-by-48 terrain limits.
 
 The obstruction helpers do not share that fallback: they return when the primary order is absent,
 so a secondary-only order is ignored. `BlockNonMovableSpacesAroundDestination` builds a movement grid
@@ -356,11 +357,26 @@ The dispatcher handles command values 0–7, 10–14, and 16–19. Reserved 8, 9
 value—return without choosing an action. The five move-order commands map explicitly to target types
 and regular/block/block-and-carve modes in canonical output.
 
-Standby control rolls `RNG(8)`: 2, 4, and 6 immediately stay; the other five rolls attempt a local
-move. Its persistent memory chooses candidate counts three or four. On the move-order branch, both
-starting X and starting Y are loaded from the returned X register, a source-confirmed coordinate
-copy defect. The eligibility helper's documented return meaning is also opposite to how its caller
-branches, so caller-visible permission semantics remain in the runtime queue.
+Standby control rolls thinking-AI `RNG(8)`: 2, 4, and 6 immediately stay; the other five rolls enter
+eligibility. The per-combatant memory byte stores move count 3/4 in the low nibble and the previous
+relative-position index in the high nibble. An uninitialized count uses `RNG(2)` to choose four on 0
+or three on 1. The three-position table contains `(0,-1), (-1,1), (1,1)`; the four-position table is
+the cardinal ring. Valid candidates exclude the remembered index, selection is uniform over the
+remaining set, and no alternative clears the whole memory byte. A successful move is still encoded
+as action Stay plus a generated move string.
+
+The regular branch anchors offsets at the combatant's starting X/Y. The move-order branch stores the
+returned X in both starting X and starting Y, a confirmed coordinate-copy defect. Its initial bounds
+check also accepts coordinate 48 even though the 48-by-48 array's actual maximum is 47; downstream
+position logic may still reject it, so the caller-visible edge result remains queued.
+
+The eligibility routine's comments invert its caller contract: `DetermineAiStandbyMovement` moves
+only when D1 is zero, and treats nonzero as Stay; D2 nonzero selects the move-order anchor. The H2
+model enumerates all 16 combinations of primary/secondary order presence and configured trigger-region
+presence: eleven Stay, four regular-move, and exactly one move-order case. That move-order case is
+primary order present with no primary trigger, secondary order absent, and a secondary trigger
+configured. This unusual polarity is source-confirmed; runtime work is reserved for representative
+caller states rather than another exhaustive static rewrite.
 
 `GetHighestUsableSpellLevel` is the correct comparison point for the broken healing helper: it masks
 the base entry, shifts levels by six, and walks from known level down to zero until MP is sufficient,
@@ -403,8 +419,8 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     swaps, Kraken costs, and radius 0/1 post-move fallback;
 18. Move Order ally-mode stack value, attack-before-move behavior, Stay-with-move-string semantics,
     and radius 0–3 exhaustion in the builder.
-19. dispatcher reserved/unknown no-op values, standby 3/8 immediate-stay distribution, the duplicated
-    X-to-Y move-order coordinate, and eligibility helper/caller polarity.
+19. dispatcher reserved/unknown no-op values plus representative standby eligibility configurations,
+    the accepted coordinate-48 edge, memory reset/cycling, and duplicated X-to-Y move-order anchor.
 20. swarm full-HP/threshold transitions with the ally-subsection count bug, line-attacker facing
     targets, and Burst Rock thinking-RNG 4/6 boundaries at the shared top-level control seam.
 
@@ -412,9 +428,9 @@ Do not split these into one emulator startup per question. Static setup and outp
 with a small number of case tables; split only when the action-getter and priority seams cannot be
 shared safely.
 
-## Remaining Static Batches
+## Remaining Battle-AI Work
 
-- deeper standby-memory semantics and its caller-visible eligibility polarity.
-
-These remain **Unknown** at subsystem-contract level even though their files and calls are now
-inventoried.
+The complete 26-file subtree now has H2 inventory plus focused contracts for every major command,
+top-level control, terrain helpers, standby memory, and explicitly unused functions. Remaining items
+are the concentrated caller-visible H3 questions above and any cross-subsystem findings exposed by
+the battlefield/pathfinding audit; whole-subsystem semantic completion remains **Unknown**.

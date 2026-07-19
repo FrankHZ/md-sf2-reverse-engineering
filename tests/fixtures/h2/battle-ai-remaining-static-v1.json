@@ -7,6 +7,9 @@
     "unusedHealingMpAddress": 54218,
     "standbyMovementAddress": 62754,
     "standbyEligibilityAddress": 63722,
+    "standbyMovementPointersAddress": 63370,
+    "standbyMovement3Address": 63378,
+    "standbyMovement4Address": 63384,
     "dispatcherAddress": 58004,
     "highestSpellLevelAddress": 52946,
     "movementHelpersAddress": 1753998,
@@ -65,9 +68,49 @@
       "rngRange": 8,
       "immediateStayRolls": [2, 4, 6],
       "movementCandidateRolls": [0, 1, 3, 5, 7],
-      "memoryMoveCounts": [3, 4],
+      "memory": {
+        "lowerNibble": "move-count",
+        "initializedMoveCounts": [3, 4],
+        "upperNibble": "previous-relative-position-index",
+        "previousCandidateExcluded": true,
+        "noAlternativeClearsWholeByte": true
+      },
+      "movementTables": [
+        { "moveCount": 3, "label": "table_StandbyAiMovements1", "coordinates": [[0, -1], [-1, 1], [1, 1]] },
+        { "moveCount": 4, "label": "table_StandbyAiMovements2", "coordinates": [[0, -1], [-1, 0], [0, 1], [1, 0]] }
+      ],
+      "regularStartCoordinates": "combatant-starting-x-y",
       "moveOrderStartingYUsesXResult": true,
-      "eligibilityResultMeaningConflictsWithCallerComments": true
+      "candidatePrecheck": {
+        "actualMaximum": [47, 47],
+        "acceptedMaximum": [48, 48],
+        "acceptsOnePastMapMaximum": true
+      },
+      "selection": "uniform-among-valid-except-previous",
+      "successfulMoveStillUsesStayAction": true,
+      "eligibility": {
+        "routineCommentMeaningConflictsWithCaller": true,
+        "callerTreatsD1ZeroAsMoveAttempt": true,
+        "callerTreatsD2NonzeroAsMoveOrder": true,
+        "decisionMatrix": [
+          { "primaryOrder": false, "secondaryOrder": false, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": false, "callerOutcome": "stay" },
+          { "primaryOrder": false, "secondaryOrder": false, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": true, "callerOutcome": "regular-move" },
+          { "primaryOrder": false, "secondaryOrder": false, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": false, "callerOutcome": "regular-move" },
+          { "primaryOrder": false, "secondaryOrder": false, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": true, "callerOutcome": "regular-move" },
+          { "primaryOrder": false, "secondaryOrder": true, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": false, "callerOutcome": "stay" },
+          { "primaryOrder": false, "secondaryOrder": true, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": true, "callerOutcome": "stay" },
+          { "primaryOrder": false, "secondaryOrder": true, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": false, "callerOutcome": "regular-move" },
+          { "primaryOrder": false, "secondaryOrder": true, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": true, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": false, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": false, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": false, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": true, "callerOutcome": "move-order" },
+          { "primaryOrder": true, "secondaryOrder": false, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": false, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": false, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": true, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": true, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": false, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": true, "primaryTriggerConfigured": false, "secondaryTriggerConfigured": true, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": true, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": false, "callerOutcome": "stay" },
+          { "primaryOrder": true, "secondaryOrder": true, "primaryTriggerConfigured": true, "secondaryTriggerConfigured": true, "callerOutcome": "stay" }
+        ]
+      }
     },
     "highestSpellLevel": {
       "search": "known-level-down-to-zero-until-affordable",
