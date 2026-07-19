@@ -29,6 +29,8 @@ ACTION_CHOICE_FIXTURE_SCHEMA = repo_path(
 )
 MOVEMENT_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-movement-static-v1.json")
 MOVEMENT_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-movement-static-fixture.schema.json")
+REMAINING_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-remaining-static-v1.json")
+REMAINING_FIXTURE_SCHEMA = repo_path("schemas/h2-battle-ai-remaining-static-fixture.schema.json")
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
@@ -906,6 +908,83 @@ def _parse_movement(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _parse_remaining(disasm: Path) -> dict[str, Any]:
+    entries = {
+        "unusedHealingMp": (SOURCE_ROOT / "command/heal/unusedfunctions_D3CA.asm", "sub_D3CA"),
+        "standbyMovement": (
+            SOURCE_ROOT / "determineaistandbymovement_1.asm",
+            "DetermineAiStandbyMovement",
+        ),
+        "standbyEligibility": (
+            SOURCE_ROOT / "determineaistandbymovement_2.asm",
+            "ValidateAiStandbyEligibility",
+        ),
+        "dispatcher": (SOURCE_ROOT / "executeaicommand.asm", "ExecuteAiCommand"),
+        "highestSpellLevel": (
+            SOURCE_ROOT / "gethighestusablespelllevel.asm",
+            "GetHighestUsableSpellLevel",
+        ),
+        "movementHelpers": (
+            SOURCE_ROOT / "movementhelperfunctions.asm",
+            "DetermineMoveOrderQuadrant",
+        ),
+        "controlLoop": (SOURCE_ROOT / "startaicontrol.asm", "StartAiControl"),
+        "unusedSlotLookup": (SOURCE_ROOT / "unusedfunctions_CF0E.asm", "GetSlotContainingSpell"),
+    }
+    sources = {
+        key: (disasm / path).read_text(encoding="utf-8") for key, (path, _) in entries.items()
+    }
+    dispatcher = _function_block(sources["dispatcher"], "ExecuteAiCommand")
+    standby = _function_block(sources["standbyMovement"], "DetermineAiStandbyMovement")
+    spell = _function_block(sources["highestSpellLevel"], "GetHighestUsableSpellLevel")
+    checks = (
+        (dispatcher, "cmpi.b  #AI_COMMAND_MOVE_ORDER5,d1"),
+        (standby, "move.w  #8,d6"),
+        (standby, "cmpi.b  #2,d7"),
+        (standby, "cmpi.b  #4,d7"),
+        (standby, "cmpi.b  #6,d7"),
+        (standby, "move.b  #4,d1"),
+        (standby, "move.b  #3,d1"),
+        (standby, "move.b  d1,startingX(a6)"),
+        (standby, "move.b  d1,startingY(a6)"),
+        (spell, "andi.w  #SPELLENTRY_MASK_INDEX,d1"),
+        (spell, "lsl.w   #SPELLENTRY_OFFSET_LV,d1"),
+        (spell, "dbf     d2,@Loop"),
+        (spell, "moveq   #SPELL_NOTHING,d1"),
+    )
+    if any(fragment not in block for block, fragment in checks):
+        raise ValueError("battle AI remaining-source contract drift")
+    return {
+        "sourcePaths": [path.as_posix() for path, _ in entries.values()],
+        "representativeSymbols": {key: symbol for key, (_, symbol) in entries.items()},
+        "dispatcher": {
+            "handledCommandValues": [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 16, 17, 18, 19],
+            "reservedNoOpValues": [8, 9, 15],
+            "unknownValues": "no-op",
+            "moveOrderMappings": [
+                {"command": 10, "targetType": 0, "pathfindingMode": 0},
+                {"command": 16, "targetType": 2, "pathfindingMode": 2},
+                {"command": 17, "targetType": 1, "pathfindingMode": 1},
+                {"command": 18, "targetType": 0, "pathfindingMode": 1},
+                {"command": 19, "targetType": 0, "pathfindingMode": 2},
+            ],
+        },
+        "standby": {
+            "rngRange": 8,
+            "immediateStayRolls": [2, 4, 6],
+            "movementCandidateRolls": [0, 1, 3, 5, 7],
+            "memoryMoveCounts": [3, 4],
+            "moveOrderStartingYUsesXResult": True,
+            "eligibilityResultMeaningConflictsWithCallerComments": True,
+        },
+        "highestSpellLevel": {
+            "search": "known-level-down-to-zero-until-affordable",
+            "levelShiftBits": 6,
+            "noAffordableResult": 63,
+        },
+    }
+
+
 def _resolve_upstream(upstream_path: Path) -> tuple[Path, str, dict[str, Any]]:
     upstream_path = upstream_path.resolve(strict=True)
     toolchain = load_json(TOOLCHAIN)
@@ -987,6 +1066,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
         "support": _parse_support(disasm),
         "actionChoice": _parse_action_choice(disasm),
         "movement": _parse_movement(disasm),
+        "remaining": _parse_remaining(disasm),
         "indexedRecordIds": indexed_records,
         "indexedSourcePaths": indexed_files,
         "internalDirectCallTargets": internal_targets,
@@ -1151,6 +1231,13 @@ def _movement_facts(movement: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _remaining_facts(remaining: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: remaining[key]
+        for key in ("representativeSymbols", "dispatcher", "standby", "highestSpellLevel")
+    }
+
+
 def verify_battle_ai_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -1183,6 +1270,8 @@ def verify_battle_ai_inventory(
     )
     movement_fixture = load_json(MOVEMENT_FIXTURE)
     validate_json(movement_fixture, MOVEMENT_FIXTURE_SCHEMA, owner=str(MOVEMENT_FIXTURE))
+    remaining_fixture = load_json(REMAINING_FIXTURE)
+    validate_json(remaining_fixture, REMAINING_FIXTURE_SCHEMA, owner=str(REMAINING_FIXTURE))
     rom_manifest = load_json(ROM_MANIFEST)
     output = build_battle_ai_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="battle AI static inventory")
@@ -1228,6 +1317,13 @@ def verify_battle_ai_inventory(
         raise ValueError("battle AI movement fixture provenance drift")
     if _movement_facts(output["movement"]) != movement_fixture["expected"]:
         raise ValueError("battle AI movement facts disagree with fixture")
+    if (
+        remaining_fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or remaining_fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("battle AI remaining fixture provenance drift")
+    if _remaining_facts(output["remaining"]) != remaining_fixture["expected"]:
+        raise ValueError("battle AI remaining facts disagree with fixture")
     if output["summary"] != manifest["summary"]:
         raise ValueError(
             "battle AI static summary drift: "

@@ -4,7 +4,7 @@
   "title": "Shining Force II battle AI static source inventory",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "healing", "support", "actionChoice", "movement", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "healing", "support", "actionChoice", "movement", "remaining", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-battle-ai-static-v1" },
@@ -25,6 +25,7 @@
     "support": { "$ref": "#/definitions/support" },
     "actionChoice": { "$ref": "#/definitions/actionChoice" },
     "movement": { "$ref": "#/definitions/movement" },
+    "remaining": { "$ref": "#/definitions/remaining" },
     "indexedRecordIds": {
       "type": "array",
       "uniqueItems": true,
@@ -550,6 +551,17 @@
         "move": { "type": "object" },
         "moveOrder": { "type": "object" },
         "moveOrderBuilder": { "type": "object" }
+      }
+    },
+    "remaining": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePaths", "representativeSymbols", "dispatcher", "standby", "highestSpellLevel"],
+      "properties": {
+        "sourcePaths": { "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true, "items": { "type": "string", "pattern": "^code/gameflow/battle/ai/.+\\.asm$" } },
+        "representativeSymbols": { "type": "object", "minProperties": 8, "maxProperties": 8, "additionalProperties": { "type": "string" } },
+        "dispatcher": { "type": "object" },
+        "standby": { "type": "object" },
+        "highestSpellLevel": { "type": "object" }
       }
     },
     "classAdjustmentTable": {

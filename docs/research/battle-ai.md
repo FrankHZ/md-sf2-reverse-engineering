@@ -21,7 +21,7 @@ priority, healing, support, final action choice, and movement, checks their fixt
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`4653315F38216A984364B0712C1CFB4C613E97C9D49F0D58E9240DE1B6C38035`.
+`8E0450F707D2BB45DF7A02E97FA23ACA37E50DA0C4BA4D96A8A1859AC78E14B8`.
 
 ## Complete Subtree Inventory
 
@@ -43,8 +43,9 @@ this batch, the research index reached only `IsCombatantConfused`, `DetermineMud
 `aiCommand_Attack` across three files. It now also binds the five action getters, for eight indexed
 records across four files in the first batch. Attack priority raised the subtree total to 18 records
 across seven files; healing raised it to 23 across 12; support raised it to 31 across 14; final action
-choice raised it to 32 across 15; movement raises it to 35 across 18. Four linked data-table symbols
-live outside the subtree.
+choice raised it to 32 across 15; movement raised it to 35 across 18. The final control batch now
+indexes at least one representative entry in all 26 files, for 43 subtree records. Four linked
+data-table symbols live outside the subtree. This is full file reach, not full function semantics.
 
 ## Action Getter Addresses
 
@@ -291,6 +292,24 @@ post-processing without initializing its stack-local mode byte.
 `BuildMoveStringForMoveOrder` uses movement-array budget 128, a preliminary budget of `MOV × 2`, then
 tries acceptable attack-space radii 0, 1, 2, and 3. Exhausting all four invalidates the move string.
 
+## Dispatcher and Standby Control
+
+The dispatcher handles command values 0–7, 10–14, and 16–19. Reserved 8, 9, and 15—and any unknown
+value—return without choosing an action. The five move-order commands map explicitly to target types
+and regular/block/block-and-carve modes in canonical output.
+
+Standby control rolls `RNG(8)`: 2, 4, and 6 immediately stay; the other five rolls attempt a local
+move. Its persistent memory chooses candidate counts three or four. On the move-order branch, both
+starting X and starting Y are loaded from the returned X register, a source-confirmed coordinate
+copy defect. The eligibility helper's documented return meaning is also opposite to how its caller
+branches, so caller-visible permission semantics remain in the runtime queue.
+
+`GetHighestUsableSpellLevel` is the correct comparison point for the broken healing helper: it masks
+the base entry, shifts levels by six, and walks from known level down to zero until MP is sufficient,
+returning `SPELL_NOTHING` when none is affordable. The remaining unused healing/slot helpers,
+movement-helper entry, and top-level control loop are now source-hashed and address-bound so every
+battle-AI file has a reproducible H2 foothold; their deeper semantics are not claimed complete.
+
 ## Runtime Question Queue
 
 The next BizHawk batch should share one derived-ROM seam and one result buffer for at least:
@@ -323,6 +342,8 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     swaps, Kraken costs, and radius 0/1 post-move fallback;
 19. Move Order ally-mode stack value, attack-before-move behavior, Stay-with-move-string semantics,
     and radius 0–3 exhaustion in the builder.
+20. dispatcher reserved/unknown no-op values, standby 3/8 immediate-stay distribution, the duplicated
+    X-to-Y move-order coordinate, and eligibility helper/caller polarity.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible
 with a small number of case tables; split only when the action-getter and priority seams cannot be
@@ -330,8 +351,7 @@ shared safely.
 
 ## Remaining Static Batches
 
-- standby movement, path obstruction, line-attacker/exploder special AI;
-- command dispatcher and swarm/activation control.
+- deeper path-obstruction, line-attacker/exploder, swarm/activation, and unused-helper semantics.
 
 These remain **Unknown** at subsystem-contract level even though their files and calls are now
 inventoried.

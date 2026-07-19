@@ -2140,6 +2140,38 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63924 }],
       "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.krakenMoveCostsAddress" }] }],
       "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.unused-healing-mp", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "sub_D3CA", "sourcePath": "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54218 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingMpAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.standby", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "DetermineAiStandbyMovement", "sourcePath": "code/gameflow/battle/ai/determineaistandbymovement_1.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 62754 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.standby-eligibility", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "ValidateAiStandbyEligibility", "sourcePath": "code/gameflow/battle/ai/determineaistandbymovement_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63722 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyEligibilityAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.dispatcher", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "ExecuteAiCommand", "sourcePath": "code/gameflow/battle/ai/executeaicommand.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 58004 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.dispatcherAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.highest-spell-level", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetHighestUsableSpellLevel", "sourcePath": "code/gameflow/battle/ai/gethighestusablespelllevel.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52946 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.highestSpellLevelAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.movement-helpers", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "DetermineMoveOrderQuadrant", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1753998 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.movementHelpersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.control-loop", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "StartAiControl", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57084 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.controlLoopAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.unused-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingSpell", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53006 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }

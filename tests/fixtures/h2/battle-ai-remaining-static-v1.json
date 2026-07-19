@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-remaining-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "unusedHealingMpAddress": 54218,
+    "standbyMovementAddress": 62754,
+    "standbyEligibilityAddress": 63722,
+    "dispatcherAddress": 58004,
+    "highestSpellLevelAddress": 52946,
+    "movementHelpersAddress": 1753998,
+    "controlLoopAddress": 57084,
+    "unusedSlotLookupAddress": 53006
+  },
+  "expected": {
+    "representativeSymbols": {
+      "unusedHealingMp": "sub_D3CA",
+      "standbyMovement": "DetermineAiStandbyMovement",
+      "standbyEligibility": "ValidateAiStandbyEligibility",
+      "dispatcher": "ExecuteAiCommand",
+      "highestSpellLevel": "GetHighestUsableSpellLevel",
+      "movementHelpers": "DetermineMoveOrderQuadrant",
+      "controlLoop": "StartAiControl",
+      "unusedSlotLookup": "GetSlotContainingSpell"
+    },
+    "dispatcher": {
+      "handledCommandValues": [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 16, 17, 18, 19],
+      "reservedNoOpValues": [8, 9, 15],
+      "unknownValues": "no-op",
+      "moveOrderMappings": [
+        { "command": 10, "targetType": 0, "pathfindingMode": 0 },
+        { "command": 16, "targetType": 2, "pathfindingMode": 2 },
+        { "command": 17, "targetType": 1, "pathfindingMode": 1 },
+        { "command": 18, "targetType": 0, "pathfindingMode": 1 },
+        { "command": 19, "targetType": 0, "pathfindingMode": 2 }
+      ]
+    },
+    "standby": {
+      "rngRange": 8,
+      "immediateStayRolls": [2, 4, 6],
+      "movementCandidateRolls": [0, 1, 3, 5, 7],
+      "memoryMoveCounts": [3, 4],
+      "moveOrderStartingYUsesXResult": true,
+      "eligibilityResultMeaningConflictsWithCallerComments": true
+    },
+    "highestSpellLevel": {
+      "search": "known-level-down-to-zero-until-affordable",
+      "levelShiftBits": 6,
+      "noAffordableResult": 63
+    }
+  }
+}
