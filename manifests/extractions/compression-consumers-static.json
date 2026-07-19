@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-compression-consumers-static-v1",
+  "outputSha256": "A4F7E84F900B711D4164A382D92EB6C9C45C5E7044CF96D6579DD67A5E1306A1",
+  "summary": {
+    "callSiteCount": 46,
+    "sourceFileCount": 23,
+    "targetCount": 3,
+    "ownerCount": 12,
+    "ownedCallSiteCount": 46,
+    "unownedCallSiteCount": 0
+  }
+}

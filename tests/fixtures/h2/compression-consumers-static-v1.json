@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-compression-consumers-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadBasicAddress": 6788,
+    "loadStackAddress": 7752,
+    "applyImmediateCompressedAddress": 4994
+  },
+  "summary": {
+    "callSiteCount": 46,
+    "sourceFileCount": 23,
+    "targetCount": 3,
+    "ownerCount": 12,
+    "ownedCallSiteCount": 46,
+    "unownedCallSiteCount": 0
+  },
+  "targetCounts": {
+    "LoadStackCompressedData": 35,
+    "LoadBasicCompressedData": 4,
+    "ApplyImmediateVramDmaOnCompressedTiles": 7
+  },
+  "ownerCounts": {
+    "battle-backgrounds": 2,
+    "battle-effects": 5,
+    "battle-sprites": 7,
+    "battle-terrain": 1,
+    "battle-weapon-ground": 3,
+    "compression-wrapper": 1,
+    "map-sprites": 4,
+    "map-tilesets": 6,
+    "portraits": 1,
+    "special-screens": 9,
+    "special-sprites": 3,
+    "ui-graphics": 4
+  },
+  "runtimeQuestions": [
+    "Dynamic indirect decoder entry and self-modifying call targets are outside this direct named-call denominator and require runtime trace evidence if suspected."
+  ]
+}

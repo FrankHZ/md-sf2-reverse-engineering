@@ -182,10 +182,19 @@ View destinations multiply each plane/axis by its own parallax factor. An enable
 keeps its current position; otherwise the calculated position becomes the destination. The flash
 screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 
+## Direct Consumer Denominator
+
+The complete pinned `disasm/code` tree contains 46 direct named compression calls in 23 files: 35
+to `LoadStackCompressedData`, four to `LoadBasicCompressedData`, and seven to
+`ApplyImmediateVramDmaOnCompressedTiles`. A deterministic source rail assigns every call to one of
+twelve completed corpus or wrapper owners; the unowned count is zero. This is a direct named-call
+denominator, not proof that dynamic indirect calls or self-modifying targets cannot exist.
+
 ## Concentrated Verification Queue
 
-This batch starts no emulator. The Stack decoder should next expand through other remaining embedded
-containers. Rendered behavior joins the shared presentation matrix: display
+This batch starts no emulator. All current direct named decoder consumers now have corpus owners;
+later compression work must come from indirect/embedded tables or new source evidence. Rendered
+behavior joins the shared presentation matrix: display
 initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
 updates, special-screen transfer tails, and flash duration can share VDP/RAM observation points. Static symbolic search is now
 complete for reserved IDs 237-250; the next reachability step must inspect encoded records and
@@ -206,6 +215,7 @@ uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
+uv run sf2 h2 compression-consumers
 uv run sf2 research-index test
 ```
 
@@ -215,3 +225,4 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
 `special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
 `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json`.
+The consumer map stays under ignored `local/derived/compression-consumers-static.json`.

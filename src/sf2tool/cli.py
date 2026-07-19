@@ -27,6 +27,7 @@ from sf2tool.h2.battle_spriteset_data import verify_battle_spriteset_data_invent
 from sf2tool.h2.battle_terrain import verify_battle_terrain_contract
 from sf2tool.h2.battle_weapon_ground import verify_battle_weapon_ground_contract
 from sf2tool.h2.battlefield import verify_battlefield_inventory
+from sf2tool.h2.compression_consumers import verify_compression_consumer_inventory
 from sf2tool.h2.core_stats_data import verify_core_stats_data_inventory
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
@@ -405,6 +406,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_tilesets)
     h2_map_tilesets.add_argument("--output-path", type=_path)
+    h2_compression_consumers = h2_commands.add_parser(
+        "compression-consumers",
+        help="inventory every direct named compression call and its complete corpus owner",
+    )
+    _add_local_paths(h2_compression_consumers, rom=False)
+    h2_compression_consumers.add_argument("--output-path", type=_path)
     h2_map_import = h2_commands.add_parser(
         "map-import", help="build the complete canonical engine-neutral map import"
     )
@@ -990,6 +997,13 @@ def dispatch(args: argparse.Namespace) -> None:
         print_record(
             verify_map_tileset_contract(
                 args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "compression-consumers":
+        print_record(
+            verify_compression_consumer_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )
