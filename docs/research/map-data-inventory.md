@@ -251,8 +251,8 @@ counts, all 178 H1 addresses, body hashes, and reference-source lists remain in 
 
 ## Concentrated Queue
 
-No emulator was launched. Setup priority and dispatcher order are now closed by source/H1/ROM
-evidence. Remaining questions are grouped as:
+No emulator was launched for the accepted static fixtures in this document. Setup priority and
+dispatcher order are now closed by source/H1/ROM evidence. Remaining questions are grouped as:
 
 1. sequenced-entity orientation, direct-`rts` entity-event reachability, and description/init functions
    under nonstandard or mutated callers;
@@ -266,6 +266,23 @@ Entity streams, init and standalone labeled command flow, every source-form setu
 family, and both private block/layout bitstreams are now closed statically, including 77 complete
 decoder passes. The map script target graph is now statically closed; remaining state persistence,
 nonstandard callers, and presentation behavior belong in the prepared grouped runtime matrices.
+
+The first prepared runtime slice replays ten setup-selection cases from one natural
+`GetCurrentMapSetup` entry at ROM `0x4779E` and observes `a0` at the common return seam `0x477E2`.
+The case table is derived from the accepted H2 selector model and covers a missing map, default rows,
+single and multiple set flags, last-set-flag-wins, and later aliases that restore a default pointer.
+Each replay may change only `CURRENT_MAP` and the 128-byte game-flag bitset; the original row scan,
+flag tests, pointer overwrites, register restoration, and return must execute unchanged. This is a
+**planned H3 boundary**, not confirmed runtime evidence, until all cases complete and the observed
+addresses match the H2 model.
+
+Harness navigation is the remaining setup problem for that slice. The debug Battle Test route does
+not naturally traverse the exploration selector. A first automated debug Map Test attempt reached
+the map prompt path but did not reach `GetCurrentMapSetup` before timeout, so prompt navigation is not
+accepted as behavioral evidence. Resume by instrumenting the shared path through `NumberPrompt`,
+`DebugSetFlag`, `ExplorationLoop`, `SwitchMap`, and `RunMapSetupInitFunction` in one launch; do not
+replace the natural call with a synthetic direct invocation merely to make the expected selector
+result pass.
 
 ## Harness Performance
 

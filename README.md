@@ -3,6 +3,11 @@
 这是一个从原版 Mega Drive/Genesis ROM 出发，系统拆解 **Shining Force II**，形成可验证的
 逆向研究、游戏设计文档和结构化数据，并最终在现代引擎中重建其玩法的长期工程。
 
+仓库本身是项目的耐久记录，不依赖外部 agent memory 或旧聊天才能继续。接续工作先读本页、
+[`docs/research/source-coverage.md`](./docs/research/source-coverage.md)、
+[`docs/README.md`](./docs/README.md) 和当前主题文档，再检查 `git status` 与近期提交；详细结论、
+未知项、复现命令和当前 frontier 必须回写到各自的仓库所有者。
+
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径

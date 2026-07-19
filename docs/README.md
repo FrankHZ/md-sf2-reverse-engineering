@@ -2,6 +2,25 @@
 
 文档按“证据 → 合同 → 实现选择”分层，避免把原版事实、推断和重制偏好混在一起。
 
+## Continuity Without External Memory
+
+The repository is the durable project record. A fresh contributor or agent should be able to resume
+without a previous chat transcript or external memory store:
+
+1. read the root [`README.md`](../README.md) for scope, baseline, current phase, aggregate evidence,
+   and the active frontier;
+2. read [`research/source-coverage.md`](./research/source-coverage.md) for the exact coverage
+   denominators, verification cadence, and current subsystem direction;
+3. use this index to open the closest research, design, or decision owner;
+4. inspect `git status` and recent commits before assuming the active slice is complete or the
+   worktree is clean;
+5. reproduce counters from tracked manifests and commands instead of copying a stale progress note.
+
+Topic documents own detailed findings and unknowns, decision records own durable tool/architecture
+choices, and Git history owns completed-slice chronology. External agent memory is neither required
+nor authoritative. When a session discovers a durable fact or changes the frontier, update the
+owning repository document in the same slice.
+
 ## Research
 
 `research/` 保存可复现的逆向结论。每篇必须标明 Confirmed、Inferred 和 Unknown，并提供 ROM

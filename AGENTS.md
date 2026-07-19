@@ -23,6 +23,20 @@ experiments. Every useful discovery should become one or more of:
 3. Keep changes within the current phase. Do not jump into engine code while the
    relevant original behavior and data contract are still undefined.
 
+External agent memory is not a project dependency or source of truth. To resume work, read the
+root `README.md`, `docs/research/source-coverage.md`, `docs/README.md`, and the closest owning topic
+document, then inspect `git status` and recent commits. The repository must contain every durable
+decision, current frontier, evidence counter, reproduction command, and unresolved question needed
+to continue. Do not leave an important project fact only in a chat summary, local agent memory, or
+an ignored generated report.
+
+Within the accepted Phase 2 direction, continue autonomously through plan, reverse engineering,
+documentation, focused verification, private-artifact scan, and commit. Do not pause for approval or
+produce a user report after every ordinary slice. Ask before a phase change, modern-engine choice,
+new distribution/licensing posture, destructive treatment of private inputs, or another decision
+that materially changes project direction. Preserve unrelated or unfinished work already present in
+the worktree and stage only the files owned by the completed slice.
+
 When more documents exist, use these ownership boundaries:
 
 - `docs/research/`: source-backed reverse-engineering findings.
