@@ -18,6 +18,7 @@ from sf2tool.h2.map_entities import build_map_entities_contract
 from sf2tool.h2.map_events import build_map_events_contract
 from sf2tool.h2.map_init import build_map_init_contract
 from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
+from sf2tool.h2.map_scripts import build_map_scripts_inventory
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
@@ -266,12 +267,14 @@ def _setup_resources(
     events = build_map_events_contract(rom_path, upstream_path)
     descriptions = build_map_descriptions_contract(rom_path, upstream_path)
     init = build_map_init_contract(rom_path, upstream_path)
+    scripts = build_map_scripts_inventory(upstream_path)
     for owner, contract in (
         ("setup", setup),
         ("entities", entities),
         ("events", events),
         ("descriptions", descriptions),
         ("init", init),
+        ("scripts", scripts),
     ):
         if contract["upstream"]["commit"] != commit:
             raise ValueError(f"canonical map {owner} provenance drift")
@@ -334,6 +337,7 @@ def _setup_resources(
             }
             for symbol, row in sorted(init_functions_by_symbol.items())
         ],
+        "standaloneScriptPrograms": scripts["programs"],
     }
     setup_record_count = (
         sum(len(row["records"]) for row in entity_lists)
@@ -344,6 +348,11 @@ def _setup_resources(
         )
         + sum(len(row["records"]) for row in description_handlers)
     )
+    standalone_program_ids = {row["id"] for row in scripts["programs"]}
+    init_script_targets = set(init["scriptTargetCounts"])
+    standalone_init_targets = init_script_targets & standalone_program_ids
+    if standalone_init_targets != set(scripts["standaloneOwnedInitScriptTargets"]):
+        raise ValueError("canonical map init/standalone script ownership drift")
     facts = {
         "routeCount": len(setup_routes),
         "flagVariantCount": sum(len(row["flagVariants"]) for row in setup_routes),
@@ -353,6 +362,15 @@ def _setup_resources(
         "initOperationCount": sum(
             len(row["operations"]) for row in init_functions_by_symbol.values()
         ),
+        "standaloneProgramCount": len(scripts["programs"]),
+        "standaloneOperationCount": sum(len(row["operations"]) for row in scripts["programs"]),
+        "standaloneTargetReferenceCount": sum(
+            len(operation["targetSymbols"])
+            for row in scripts["programs"]
+            for operation in row["operations"]
+        ),
+        "standaloneOwnedInitScriptTargetCount": len(standalone_init_targets),
+        "embeddedInitScriptTargetCount": len(init_script_targets - standalone_program_ids),
         "missingMapSetupRouteCount": 79 - len(setup_routes),
         "lastSetFlagWins": True,
         "directReturnHandlersPreserved": True,
@@ -428,10 +446,12 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "decodedLayoutWordCount": sum(len(row["words"]) for row in layouts),
         "logicalRecordCount": sum(record_counts.values()),
         "setupLogicalRecordCount": setup_facts["setupRecordCount"]
-        + setup_facts["initOperationCount"],
+        + setup_facts["initOperationCount"]
+        + setup_facts["standaloneOperationCount"],
         "allLogicalRecordCount": sum(record_counts.values())
         + setup_facts["setupRecordCount"]
-        + setup_facts["initOperationCount"],
+        + setup_facts["initOperationCount"]
+        + setup_facts["standaloneOperationCount"],
     }
     expected_resource_counts = {
         "blocksets": 77,
@@ -451,6 +471,7 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "itemEventHandlers": 74,
         "areaDescriptionHandlers": 75,
         "initFunctions": 90,
+        "standaloneScriptPrograms": 178,
     }
     if resource_counts != expected_resource_counts:
         raise ValueError(f"canonical map resource cardinality drift: {resource_counts}")

@@ -237,8 +237,11 @@ references; no label is unreferenced. Of the 75 distinct targets called by init 
 
 The most frequent commands are text, facing/action, waits, movement, and positioning; the exact
 command map includes 122 `csc_end` markers and 16 `rts` statements. These counts and reference edges
-are **Confirmed** static structure, not story semantics or frame timing. Full command counts, all 178
-H1 addresses, body hashes, and reference-source lists remain in ignored
+are **Confirmed** static structure, not story semantics or frame timing. All 178 labels now own a
+non-empty ordered program in the local output, jointly covering all 8,058 operations. Operand symbol
+resolution identifies 100 operations with exactly 100 references to another standalone label; the
+edge stores both symbol and H1 address without assuming what the command does. Full programs, command
+counts, all 178 H1 addresses, body hashes, and reference-source lists remain in ignored
 `local/derived/map-scripts-static.json`.
 
 ## Concentrated Queue
@@ -254,10 +257,10 @@ evidence. Remaining questions are grouped as:
 3. walking/special-sprite and portrait/text/entity-facing presentation timing;
 4. rendered block/layout parity and animation VDP frame timing in the later graphics matrix.
 
-Entity streams, init control flow, every source-form setup family, every source-form content family,
-and both private block/layout bitstreams are now closed statically, including 77 complete decoder
-passes. Continue with standalone script control/data flow; only runtime state and presentation
-ambiguities should share the prepared matrices.
+Entity streams, init control flow, standalone labeled command flow, every source-form setup/content
+family, and both private block/layout bitstreams are now closed statically, including 77 complete
+decoder passes. The next static depth target is the 63 init-called script labels embedded inside init
+sources; only runtime state and presentation ambiguities should share the prepared matrices.
 
 ## Harness Performance
 

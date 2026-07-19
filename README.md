@@ -372,10 +372,11 @@ target、84 个 initialization source 与全部 47 个 standalone setup script �
 map entry、662 个 source-form map-content section 和 154 个私有 blocks/layout payload 现已全部完成
 source/H1/ROM parity；77 组压缩 blocks/layout 也已由 Python 全量解码为 19,771 个 3x3 block 与
 77 个 64x64 layout，并验证所有 layout 索引不越界。解码结果现已接入包含 79 个 map definition、
-1,480 个共享资源和 4,029 个逻辑记录/操作的实现无关 canonical import；其中 64 条 setup route、
+1,658 个共享资源和 12,087 个逻辑记录/操作的实现无关 canonical import；其中 64 条 setup route、
 126 份六指针 definition 已连接 entity/event/description/init 资源，90 个 init callable 的 654 条
 operation 与全部 130 条 branch 也已结构化。完整输出保持 ignored，仓库仅追踪 schema、digest 和
-聚合 fixture。下一步把 47 个 standalone script 解析成 labeled command/control-flow 资源，
+聚合 fixture。47 个 standalone script 的 178 个 label/8,058 条 operation 及 100 条 symbol edge
+也已结构化；下一步处理 init source 内嵌的另外 63 个 script target，
 同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义

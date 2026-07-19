@@ -102,11 +102,11 @@ decoded hashes and per-map command counts remain ignored local metadata, not tra
 
 `sf2-canonical-map-import-v1` now joins the pointer graph, decoded blocksets/layouts, logical
 source-form records, and setup selection graph into one deterministic JSON data contract. It contains
-79 map definitions and 1,480 identity-preserving resources. The content side owns 77 blocksets, 77
+79 map definitions and 1,658 identity-preserving resources. The content side owns 77 blocksets, 77
 layouts, five families of 79 event/content tables, 156 item tables, and 32 animation tables. The setup
 side adds 64 routes, 126 six-pointer definitions, 125 entity lists, 263 event handlers, 75 area-
-description handlers, and 90 init functions with normalized operation lists. Together they contain
-19,771 blocks, 315,392 layout words, and 4,029 logical records/operations. Every non-null map/setup
+description handlers, 90 init functions, and 178 standalone labeled programs. Together they contain
+19,771 blocks, 315,392 layout words, and 12,087 logical records/operations. Every non-null map/setup
 reference resolves to a resource.
 
 The import does not inline shared resources into each map. Maps 24 and 46 retain their original
@@ -124,7 +124,11 @@ Each init-function resource retains ordered opcodes/operands, labels, script/dir
 and resolved local or H1-addressed branch edges. This is syntax and control-flow evidence only: an
 opcode name does not by itself prove its persistent story-state or presentation effect.
 
-The verifier builds the full 9.6 MB output twice and requires byte-identical canonical JSON, then
+Standalone programs cover all 8,058 statements and resolve 100 operand references to another of the
+178 labels. Twelve of the 75 init `script` targets are owned here; the other 63 are labels embedded in
+init sources and remain the next import-depth boundary rather than being silently treated as missing.
+
+The verifier builds the full 11.2 MB output twice and requires byte-identical canonical JSON, then
 checks its tracked digest and schema. The full output remains under ignored `local/derived/`; the
 tracked fixture stores only geometry, counts, alias facts, and provenance. This closes the data-import
 boundary without redistributing the original maps.

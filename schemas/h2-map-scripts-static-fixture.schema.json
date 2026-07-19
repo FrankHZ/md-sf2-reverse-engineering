@@ -14,7 +14,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["summary", "labelKindCounts", "mostFrequentCommands", "standaloneOwnedInitScriptTargets", "runtimeQuestions"],
       "properties": {
-        "summary": { "type": "object", "minProperties": 16, "maxProperties": 16 },
+        "summary": { "type": "object", "minProperties": 20, "maxProperties": 20 },
         "labelKindCounts": { "type": "object" },
         "mostFrequentCommands": { "type": "array", "minItems": 12, "maxItems": 12 },
         "standaloneOwnedInitScriptTargets": { "type": "array", "minItems": 12, "maxItems": 12 },

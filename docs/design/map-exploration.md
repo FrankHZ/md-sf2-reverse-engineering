@@ -48,6 +48,9 @@ Initialization resources retain ordered operations and complete branch targets, 
 confirmed cross-function return edge. A remake importer MAY translate recognized operations into a
 typed command IR, but MUST retain unknown operand text and MUST NOT infer script persistence or frame
 timing from opcode names alone.
+Standalone script resources likewise retain ordered commands, operand text, and resolved references
+between all 178 labels. These are importable command graphs, not proof that a modern engine may skip
+the original interpreter's state, wait, camera, dialogue, or presentation sequencing.
 
 ## Geometry and Block Data
 

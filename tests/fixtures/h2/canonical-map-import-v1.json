@@ -17,7 +17,7 @@
   },
   "summary": {
     "mapCount": 79,
-    "resourceCount": 1480,
+    "resourceCount": 1658,
     "nonNullReferenceCount": 816,
     "absentReferenceCount": 53,
     "sharedReferenceCount": 15,
@@ -25,8 +25,8 @@
     "decodedBlockWordCount": 177939,
     "decodedLayoutWordCount": 315392,
     "logicalRecordCount": 1027,
-    "setupLogicalRecordCount": 3002,
-    "allLogicalRecordCount": 4029
+    "setupLogicalRecordCount": 11060,
+    "allLogicalRecordCount": 12087
   },
   "resourceCounts": {
     "blocksets": 77,
@@ -45,7 +45,8 @@
     "zoneEventHandlers": 84,
     "itemEventHandlers": 74,
     "areaDescriptionHandlers": 75,
-    "initFunctions": 90
+    "initFunctions": 90,
+    "standaloneScriptPrograms": 178
   },
   "recordCounts": {
     "areas": 135,
@@ -63,6 +64,11 @@
     "setupDefinitionReferenceCount": 756,
     "setupRecordCount": 2348,
     "initOperationCount": 654,
+    "standaloneProgramCount": 178,
+    "standaloneOperationCount": 8058,
+    "standaloneTargetReferenceCount": 100,
+    "standaloneOwnedInitScriptTargetCount": 12,
+    "embeddedInitScriptTargetCount": 63,
     "missingMapSetupRouteCount": 15,
     "lastSetFlagWins": true,
     "directReturnHandlersPreserved": true

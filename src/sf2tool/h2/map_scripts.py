@@ -85,6 +85,63 @@ def _reference_facts(
     return rows, dict(totals)
 
 
+def _script_programs(
+    path: str, source: str, definitions: dict[str, str], addresses: dict[str, int]
+) -> list[dict[str, Any]]:
+    programs: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    pending = ""
+    for raw_line in source.splitlines():
+        line = raw_line.split(";", 1)[0].strip()
+        if not line:
+            continue
+        label_match = re.match(r"^([A-Za-z_][A-Za-z0-9_]*):\s*", line)
+        if label_match:
+            symbol = label_match.group(1)
+            if symbol not in definitions or definitions[symbol] != path:
+                raise ValueError(f"standalone script label ownership drift: {symbol}")
+            current = {
+                "id": symbol,
+                "address": addresses[symbol],
+                "path": path,
+                "kind": _label_kind(symbol),
+                "operations": [],
+            }
+            programs.append(current)
+            line = line[label_match.end() :].strip()
+            if not line:
+                continue
+        if current is None:
+            raise ValueError(f"standalone script statement precedes first label: {path}")
+        pending = f"{pending} {line}".strip()
+        if pending.endswith("&"):
+            pending = pending[:-1].rstrip()
+            continue
+        parts = pending.split(None, 1)
+        opcode = parts[0]
+        operand_text = parts[1] if len(parts) == 2 else ""
+        target_symbols = [
+            match.group(0)
+            for match in re.finditer(r"\b[A-Za-z_][A-Za-z0-9_]*\b", operand_text)
+            if match.group(0) in definitions
+        ]
+        current["operations"].append(
+            {
+                "index": len(current["operations"]),
+                "opcode": opcode,
+                "operandText": operand_text,
+                "targetSymbols": target_symbols,
+                "targetAddresses": [addresses[symbol] for symbol in target_symbols],
+            }
+        )
+        pending = ""
+    if pending:
+        raise ValueError(f"unterminated standalone script continuation: {path}")
+    if any(not row["operations"] for row in programs):
+        raise ValueError(f"standalone script label has no operations: {path}")
+    return programs
+
+
 def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
     upstream_path = upstream_path.resolve(strict=True)
     disasm, commit, toolchain = _resolve_upstream(upstream_path)
@@ -93,9 +150,7 @@ def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
         raise ValueError(f"map scripts H1 listing is missing: {listing_path}")
     addresses = listing_symbol_addresses(listing_path.read_text(encoding="utf-8"))
     script_paths = sorted(
-        path
-        for path in (disasm / SOURCE_ROOT).rglob("scripts*.asm")
-        if "mapsetups" in path.parts
+        path for path in (disasm / SOURCE_ROOT).rglob("scripts*.asm") if "mapsetups" in path.parts
     )
     if len(script_paths) != 47:
         raise ValueError(f"standalone map script boundary drift: {len(script_paths)} files")
@@ -107,9 +162,7 @@ def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
     sources = {
         path.relative_to(disasm).as_posix(): read_upstream_text(path) for path in setup_paths
     }
-    files = [
-        _parse_source_file(path, path.relative_to(disasm).as_posix()) for path in script_paths
-    ]
+    files = [_parse_source_file(path, path.relative_to(disasm).as_posix()) for path in script_paths]
     definitions: dict[str, str] = {}
     for row in files:
         for symbol in row["globalLabels"]:
@@ -119,6 +172,14 @@ def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
                 raise ValueError(f"map script label absent from H1 listing: {symbol}")
             definitions[symbol] = row["path"]
     references, reference_summary = _reference_facts(definitions, sources)
+    script_source_paths = {row["path"] for row in files}
+    programs = [
+        program
+        for path in sorted(script_source_paths)
+        for program in _script_programs(path, sources[path], definitions, addresses)
+    ]
+    if {row["id"] for row in programs} != set(definitions):
+        raise ValueError("standalone script programs do not cover every global label")
 
     command_counts: Counter[str] = Counter()
     for path in script_paths:
@@ -128,15 +189,11 @@ def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
                 command_counts[command] += 1
     label_kinds = Counter(_label_kind(symbol) for symbol in definitions)
     first_symbols = {row["path"]: row["globalLabels"][0] for row in files}
-    representative_addresses = {
-        symbol: addresses[symbol] for symbol in first_symbols.values()
-    }
+    representative_addresses = {symbol: addresses[symbol] for symbol in first_symbols.values()}
 
     init_targets = set(load_json(MAP_INIT_FIXTURE)["expected"]["scriptTargetCounts"])
     standalone_init_targets = sorted(init_targets & set(definitions))
-    unresolved_init_targets = sorted(
-        symbol for symbol in init_targets if symbol not in addresses
-    )
+    unresolved_init_targets = sorted(symbol for symbol in init_targets if symbol not in addresses)
     if unresolved_init_targets:
         raise ValueError(f"init script targets absent from H1 listing: {unresolved_init_targets}")
 
@@ -159,6 +216,14 @@ def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
         "nonStandaloneInitScriptTargetCount": len(init_targets - set(definitions)),
         "cutsceneEndCommandCount": command_counts["csc_end"],
         "returnStatementCount": command_counts["rts"],
+        "programCount": len(programs),
+        "programOperationCount": sum(len(row["operations"]) for row in programs),
+        "operationsWithTargetsCount": sum(
+            bool(operation["targetSymbols"]) for row in programs for operation in row["operations"]
+        ),
+        "operationTargetReferenceCount": sum(
+            len(operation["targetSymbols"]) for row in programs for operation in row["operations"]
+        ),
     }
     return {
         "schemaVersion": 1,
@@ -185,6 +250,7 @@ def build_map_scripts_inventory(upstream_path: Path) -> dict[str, Any]:
         "files": files,
         "labelAddresses": {symbol: addresses[symbol] for symbol in sorted(definitions)},
         "references": references,
+        "programs": programs,
     }
 
 

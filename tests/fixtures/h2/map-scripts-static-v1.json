@@ -38,7 +38,11 @@
       "standaloneOwnedInitScriptTargetCount": 12,
       "nonStandaloneInitScriptTargetCount": 63,
       "cutsceneEndCommandCount": 122,
-      "returnStatementCount": 16
+      "returnStatementCount": 16,
+      "programCount": 178,
+      "programOperationCount": 8058,
+      "operationsWithTargetsCount": 100,
+      "operationTargetReferenceCount": 100
     },
     "labelKindCounts": {
       "cutscene": 141,
