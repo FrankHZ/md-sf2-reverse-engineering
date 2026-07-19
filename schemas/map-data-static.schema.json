@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II complete map ASM static inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "directLayoutPaths",
+    "includeEdges", "strictReach", "indexedRecordIds", "indexedSourcePaths",
+    "representativeSymbols", "representativeAddresses", "facts", "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-data-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "const": "data/maps" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "directLayoutFileCount", "transitiveIncludeFileCount", "internallyLabeledFileCount",
+        "includeSiteOnlyFileCount", "unlabeledContainerFileCount", "representativeAddressCount",
+        "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 1390 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 1 },
+        "directLayoutFileCount": { "const": 8 },
+        "transitiveIncludeFileCount": { "const": 1382 },
+        "internallyLabeledFileCount": { "const": 727 },
+        "includeSiteOnlyFileCount": { "const": 662 },
+        "unlabeledContainerFileCount": { "const": 1 },
+        "representativeAddressCount": { "const": 727 },
+        "indexedRecordCount": { "const": 727 },
+        "indexedFileCount": { "const": 727 }
+      }
+    },
+    "directLayoutPaths": { "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true },
+    "includeEdges": { "type": "array", "minItems": 1382, "maxItems": 1382 },
+    "strictReach": { "type": "object" },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 727, "maxItems": 727, "uniqueItems": true
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 727, "maxItems": 727, "uniqueItems": true
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 727, "maxProperties": 727
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 727, "maxProperties": 727,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "facts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 1390, "maxItems": 1390 }
+  }
+}

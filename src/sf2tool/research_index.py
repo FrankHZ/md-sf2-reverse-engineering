@@ -14,6 +14,25 @@ TOOLCHAIN_PATH = repo_path("manifests/toolchain.json")
 H3_FIXTURE_ROOT = repo_path("tests/fixtures/h3")
 
 
+def listing_symbol_addresses(listing: str) -> dict[str, int]:
+    addresses: dict[str, int] = {}
+    for match in re.finditer(
+        r"^(?P<address>[0-9A-F]{8})(?:[ \t]+[0-9A-F]{2,8})*"
+        r"[ \t]+(?P<symbol>[A-Za-z_][A-Za-z0-9_]*):",
+        listing,
+        re.MULTILINE,
+    ):
+        symbol = match.group("symbol")
+        address = int(match.group("address"), 16)
+        previous = addresses.setdefault(symbol, address)
+        if previous != address:
+            raise ValueError(
+                f"H1 assembler listing defines {symbol} at conflicting addresses: "
+                f"0x{previous:X}, 0x{address:X}"
+            )
+    return addresses
+
+
 def _nested_value(value: Any, field: str) -> Any:
     for segment in field.split("."):
         if not isinstance(value, dict) or segment not in value:
@@ -46,6 +65,7 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
     has_sources = bool(source_root and source_root.is_dir())
     has_listing = bool(listing_path and listing_path.is_file())
     listing = listing_path.read_text(encoding="utf-8") if has_listing and listing_path else ""
+    listing_addresses = listing_symbol_addresses(listing) if has_listing else {}
 
     record_ids: set[str] = set()
     fixture_ids: dict[str, str] = {}
@@ -85,17 +105,11 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
                 )
 
         if has_listing:
-            match = re.search(
-                rf"^(?P<address>[0-9A-F]{{8}})(?:[ \t]+[0-9A-F]{{2,8}})*"
-                rf"[ \t]+{re.escape(record['symbol'])}:",
-                listing,
-                re.MULTILINE,
-            )
-            if not match:
+            if record["symbol"] not in listing_addresses:
                 raise ValueError(
                     f"indexed symbol {record['symbol']} is absent from the H1 assembler listing"
                 )
-            listed_address = int(match.group("address"), 16)
+            listed_address = listing_addresses[record["symbol"]]
             indexed_address = symbol_addresses[0]["value"]
             if listed_address != indexed_address:
                 raise ValueError(

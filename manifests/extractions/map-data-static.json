@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-data-static-v1",
+  "outputSha256": "209F1BFAACDB318C31F9AA822DF48DAEFD8E030C6B9A32E91B3CD08821358C6B",
+  "summary": {
+    "fileCount": 1390,
+    "sourceLineCount": 44977,
+    "statementCount": 28319,
+    "globalLabelCount": 3342,
+    "directLayoutFileCount": 8,
+    "transitiveIncludeFileCount": 1382,
+    "internallyLabeledFileCount": 727,
+    "includeSiteOnlyFileCount": 662,
+    "unlabeledContainerFileCount": 1,
+    "representativeAddressCount": 727,
+    "indexedRecordCount": 727,
+    "indexedFileCount": 727
+  }
+}

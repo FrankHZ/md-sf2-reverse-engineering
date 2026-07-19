@@ -9,7 +9,7 @@ from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
-from sf2tool.research_index import verify_index
+from sf2tool.research_index import listing_symbol_addresses, verify_index
 from sf2tool.rom import mega_drive_checksum
 
 
@@ -20,12 +20,20 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 640
-    assert result["H2Fixtures"] == 34
+    assert result["Records"] == 1367
+    assert result["H2Fixtures"] == 35
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 1036
+    assert result["AddressBindings"] == 1763
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 190
+    assert result["IndexedDataFiles"] == 917
+
+
+def test_listing_symbol_addresses_indexes_once_and_rejects_conflicts() -> None:
+    listing = "00000010 4E75 First:\n00000020 Second:\n00000010 First:\n"
+    assert listing_symbol_addresses(listing) == {"First": 0x10, "Second": 0x20}
+
+    with pytest.raises(ValueError, match="conflicting addresses"):
+        listing_symbol_addresses("00000010 First:\n00000012 First:\n")
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -218,6 +226,13 @@ def test_battle_spriteset_data_has_a_source_only_inventory_command() -> None:
 def test_battle_routing_data_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "battle-routing-data"])
     assert args.h2_command == "battle-routing-data"
+    assert not hasattr(args, "rom_path")
+    assert args.output_path is None
+
+
+def test_map_data_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "map-data"])
+    assert args.h2_command == "map-data"
     assert not hasattr(args, "rom_path")
     assert args.output_path is None
 
