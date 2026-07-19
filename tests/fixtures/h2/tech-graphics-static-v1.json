@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-graphics-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "LoadBasicCompressedData": 6788,
+    "sub_30EE": 12526,
+    "InitializeDisplay": 12322,
+    "ExecuteFlashScreenScript": 294634,
+    "InitializeSprites": 6000,
+    "sub_1942": 6466,
+    "LoadSpecialSprite": 154660,
+    "table_2784C": 161868,
+    "sub_30BE": 12478,
+    "sub_18C2": 6338,
+    "UpdateBasePalettesAndBackupCurrent": 6600
+  },
+  "expected": {
+    "graphicsFacts": {
+      "decompression": {
+        "entryPoints": ["LoadBasicCompressedData", "LoadStackCompressedData"],
+        "sourceRegister": "a0",
+        "destinationRegister": "a1",
+        "returnsOutputByteCountInD0": true,
+        "stackHistoryBytes": 32,
+        "stackInitialHistoryWords": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+      },
+      "displayInitialization": {
+        "deactivatesContextualVintFunctionsFirst": true,
+        "waitsForVintBeforeDisablingDisplay": true,
+        "clearsSpriteTable": true,
+        "configuresH32V32NonInterlacedPlanes": true,
+        "loadsBlackScreenImmediately": true,
+        "loadsSpriteMasksAndBaseUiPalette": true
+      },
+      "sprites": {
+        "initializerUsesDbfCounter": true,
+        "initializerWritesSequentialLinks": true,
+        "initializerTerminatesLastLink": true,
+        "battleSpriteLinkHelpersInventoried": true
+      },
+      "paletteTransition": {
+        "timerFrames": 32,
+        "blendStepDivisor": 4,
+        "blendWeightTotal": 8,
+        "queuesCramDmaEachUpdate": true,
+        "canPromoteCopyToNewBaseAtCompletion": true
+      },
+      "specialSprites": {
+        "dispatchSlotCount": 9,
+        "explorationSlotIndex": 2,
+        "loadsPalette4": true,
+        "initialBattleOrExplorationLoadUsesImmediateDma": true,
+        "animationRefreshUsesQueuedDma": true
+      },
+      "viewDestination": {
+        "appliesSeparatePlaneParallaxFactors": true,
+        "autoscrollPreservesCurrentAxisPosition": true,
+        "nonAutoscrollWritesDestinationAxis": true
+      },
+      "flashScreen": { "scriptWords": [65, 30, 65535] },
+      "inventoryBoundary": {
+        "unusedDisplayAndGraphicsHelpersInventoried": true,
+        "decompressionOutputParityRemainsQueued": true,
+        "visualAndVdpTimingRemainQueued": true,
+        "specialSpriteFramePresentationRemainsQueued": true
+      }
+    }
+  }
+}
