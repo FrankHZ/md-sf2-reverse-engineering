@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-common-scripting-static-v1",
+  "outputSha256": "73374BDF9CFE39E044ACD4E0FEF9105ADD3B8A4E884876608A98B286618F9899",
+  "summary": {
+    "fileCount": 29,
+    "sourceLineCount": 11153,
+    "statementCount": 6488,
+    "globalLabelCount": 888,
+    "localLabelCount": 165,
+    "directCallSiteCount": 576,
+    "indirectCallSiteCount": 16,
+    "uniqueDirectTargetCount": 180,
+    "internalDirectTargetCount": 80,
+    "externalDirectTargetCount": 100,
+    "indexedRecordCount": 28,
+    "indexedFileCount": 28,
+    "unlabeledFileCount": 1
+  }
+}

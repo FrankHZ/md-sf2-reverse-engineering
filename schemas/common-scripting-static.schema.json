@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II common scripting static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "dispatchTables", "coreFacts", "unlabeledData", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-scripting-static-v1" },
+    "upstream": { "type": "object" }, "scope": { "const": "code/common/scripting" },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "unlabeledFileCount"], "properties": { "fileCount": { "const": 29 }, "indexedRecordCount": { "const": 28 }, "indexedFileCount": { "const": 28 }, "unlabeledFileCount": { "const": 1 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true },
+    "representativeSymbols": { "type": "object", "minProperties": 28, "maxProperties": 28 },
+    "representativeAddresses": { "type": "object", "minProperties": 28, "maxProperties": 28, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "dispatchTables": { "type": "object", "required": ["mapScript", "entityScript"], "properties": { "mapScript": { "type": "array", "minItems": 90, "maxItems": 90 }, "entityScript": { "type": "array", "minItems": 80, "maxItems": 80 } } },
+    "coreFacts": { "type": "object", "minProperties": 4, "maxProperties": 4 },
+    "unlabeledData": { "type": "object" },
+    "files": { "type": "array", "minItems": 29, "maxItems": 29 }
+  }
+}
