@@ -13,12 +13,13 @@
     "expected": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "selectionCases", "runtimeQuestions"],
+      "required": ["summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "entityEventReachabilityFacts", "directReturnStubs", "rawZoneDefaultException", "selectionCases", "runtimeQuestions"],
       "properties": {
         "summary": { "type": "object", "minProperties": 14, "maxProperties": 14 },
         "categorySummaries": { "type": "object", "minProperties": 3, "maxProperties": 3 },
         "sourceMacroCounts": { "type": "object", "minProperties": 3, "maxProperties": 3 },
         "consumerFacts": { "type": "object" },
+        "entityEventReachabilityFacts": { "type": "object" },
         "directReturnStubs": { "type": "array", "minItems": 2, "maxItems": 2 },
         "rawZoneDefaultException": { "type": "object" },
         "selectionCases": { "type": "array", "minItems": 9, "maxItems": 9 },

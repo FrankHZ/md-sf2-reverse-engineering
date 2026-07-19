@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
+from sf2tool.h2.map_entities import build_map_entities_contract
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
@@ -50,6 +51,11 @@ FUNCTION_SYMBOLS = (
     "RunMapSetupEntityEvent",
     "RunMapSetupZoneEvent",
     "RunMapSetupItemEvent",
+)
+REACHABILITY_FUNCTION_SYMBOLS = (
+    "ProcessPlayerAction",
+    "GetActivatedEntity",
+    "GetEntityEventIndex",
 )
 SELECTION_INPUTS = (
     ("entity-specific-after-scan", "entityEvents", 3, (), {"entity": 128}),
@@ -375,6 +381,70 @@ def _consumer_facts(setup: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _entity_event_reachability_facts(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    sources = {
+        "ProcessPlayerAction": read_upstream_text(
+            disasm / "code/gameflow/exploration/explorationvints.asm"
+        ),
+        "GetActivatedEntity": read_upstream_text(
+            disasm / "code/gameflow/exploration/explorationfunctions_0.asm"
+        ),
+        "GetEntityEventIndex": read_upstream_text(
+            disasm / "code/gameflow/battle/battlefunctions/battlefunctions_0.asm"
+        ),
+    }
+    required = {
+        "ProcessPlayerAction": (
+            "bsr.w   GetActivatedEntity",
+            "tst.w   d0",
+            "bsr.w   GetEntityEventIndex",
+            "jsr     j_RunMapSetupEntityEvent",
+        ),
+        "GetActivatedEntity": (
+            "moveq   #$2F,d7",
+            "bsr.w   IsFollowerEntity",
+            "cmpi.w  #MAP_TILE_SIZE,d5",
+            "moveq   #-1,d0",
+        ),
+        "GetEntityEventIndex": (
+            "moveq   #BATTLE_ALL_ENTITIES_NUMBER,d7",
+            "lea     ((ENTITY_INDEX_LIST-$1000000)).w,a0",
+            "cmpi.w  #BATTLE_ALLY_ENTITIES_NUMBER,d0",
+            "move.w  #$80,d0",
+        ),
+    }
+    for symbol, fragments in required.items():
+        if any(fragment not in sources[symbol] for fragment in fragments):
+            raise ValueError(f"entity event reachability source-shape drift: {symbol}")
+    return {
+        "functionAddresses": {
+            symbol: addresses[symbol] for symbol in REACHABILITY_FUNCTION_SYMBOLS
+        },
+        "activatedEntityScanSlots": 48,
+        "followersAreSkipped": True,
+        "adjacentDistanceIsStrictlyBelowMapTileSize": True,
+        "entityIndexListSlotsScanned": 65,
+        "enemyEventIndexBase": 128,
+        "processActionCallsWrapperAfterNonnegativeActivation": True,
+    }
+
+
+def _clean_state_event_indices(records: list[dict[str, Any]]) -> list[int]:
+    enemy_ordinal = 0
+    event_indices: list[int] = []
+    for record in records:
+        if record["mapSprite"] >= 240:
+            raise ValueError("direct-return reachability model does not cover special map sprites")
+        if record["mapSprite"] < 30:
+            event_indices.append(record["mapSprite"])
+        else:
+            event_indices.append(128 + enemy_ordinal)
+            enemy_ordinal += 1
+    return event_indices
+
+
 def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -385,6 +455,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     addresses = listing_symbol_addresses(listing_path.read_text(encoding="utf-8"))
     rom = rom_path.read_bytes()
     setup = build_map_setup_contract(rom_path, upstream_path)
+    entities = build_map_entities_contract(rom_path, upstream_path)
     if setup["upstream"]["commit"] != commit:
         raise ValueError("map events/setup provenance drift")
 
@@ -395,6 +466,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     entity_target_refs = [
         table["targets"]["entityEvents"]["symbol"] for table in setup["pointerTables"]
     ]
+    entity_lists = {row["symbol"]: row for row in entities["lists"]}
     direct_return_stubs: list[dict[str, Any]] = []
     for symbol in CATEGORY_CONFIG["entityEvents"]["stubSymbols"]:
         owners = [
@@ -402,16 +474,24 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             for table in setup["pointerTables"]
             if table["targets"]["entityEvents"]["symbol"] == symbol
         ]
-        paired_record_counts: list[int] = []
+        pairings: list[dict[str, Any]] = []
         for table in owners:
-            cursor = table["targets"]["entities"]["address"]
-            record_count = 0
-            while rom[cursor] != 0xFF:
-                cursor += 8
-                record_count += 1
-                if record_count >= 48:
-                    raise ValueError(f"unbounded entity list paired with event stub: {symbol}")
-            paired_record_counts.append(record_count)
+            entity_symbol = table["targets"]["entities"]["symbol"]
+            entity_list = entity_lists[entity_symbol]
+            event_indices = _clean_state_event_indices(entity_list["records"])
+            pairings.append(
+                {
+                    "setupSymbol": table["symbol"],
+                    "entityListSymbol": entity_symbol,
+                    "entityRecordCount": entity_list["recordCount"],
+                    "cleanStateEventIndices": event_indices,
+                    "wrapperReachableWithAdjacentNonFollower": bool(event_indices),
+                    "normalStoryRouteReachability": (
+                        "unknown" if event_indices else "not-applicable-empty-list"
+                    ),
+                }
+            )
+        paired_record_counts = [row["entityRecordCount"] for row in pairings]
         direct_return_stubs.append(
             {
                 "symbol": symbol,
@@ -421,6 +501,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
                 "nonEmptyPairedEntityListReferenceCount": sum(
                     record_count > 0 for record_count in paired_record_counts
                 ),
+                "setupPairings": pairings,
             }
         )
     raw_record = next(
@@ -495,11 +576,14 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             category: value["sourceMacroCounts"] for category, value in categories.items()
         },
         "consumerFacts": _consumer_facts(setup),
+        "entityEventReachabilityFacts": _entity_event_reachability_facts(
+            disasm, addresses
+        ),
         "directReturnStubs": direct_return_stubs,
         "rawZoneDefaultException": raw_zone_default,
         "selectionCases": selection_cases,
         "runtimeQuestions": [
-            "entity-event-direct-return-stub-unreachability-under-mutated-state",
+            "entity-event-direct-return-stub-normal-story-route-reachability",
             "event-script-side-effects-and-transition-persistence",
             "event-portrait-facing-and-presentation-timing",
         ],
@@ -526,6 +610,7 @@ def verify_map_events_contract(
         "categorySummaries",
         "sourceMacroCounts",
         "consumerFacts",
+        "entityEventReachabilityFacts",
         "directReturnStubs",
         "rawZoneDefaultException",
         "selectionCases",

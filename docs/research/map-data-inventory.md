@@ -9,7 +9,7 @@
   sources/90 setup-callable entry points, all 47 standalone setup-script files/8,058 statements,
   all 662 source-form content sections, and all 154 private blocks/layout payloads
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
-- Status: **Unknown** for direct-`rts` entity-event reachability, sequenced-orientation consumption,
+- Status: **Unknown** for direct-`rts` entity-event reachability through normal story routes, sequenced-orientation consumption,
   nonstandard description callers, presentation timing, rendered layout parity, and VDP timing
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
@@ -153,7 +153,15 @@ The difference between 263 unique targets and 261 decoded tables is explicit: en
 record streams. They are referenced three times. The map 52 default setup pairs its stub with four
 entities, while map 52/flag 512 and map 55 pair theirs with empty lists. The source/ROM shape and
 pairing are **Confirmed**; why the non-empty map 52 setup cannot safely reach this dispatcher remains
-**Unknown** and is retained as one runtime question rather than guessed away.
+partly explainable rather than wholly unknown. `GetActivatedEntity` scans 48 entity slots, rejects the
+player and followers, and accepts an entity whose Manhattan distance from the activated point is less
+than `MAP_TILE_SIZE`. `ProcessPlayerAction` passes every nonnegative result through
+`GetEntityEventIndex` and then `RunMapSetupEntityEvent`. The index scan switches to event index `$80`
+after the 32 ally slots. Combined with clean-state stream-order initialization, map 52's four regular
+non-ally records therefore receive event indices 128-131. An adjacent non-follower under controlled
+or arbitrarily mutated state is **Confirmed** able to reach the wrapper; the direct `rts` bytes are
+not a valid `$FD`-ended table. Whether normal story entrances, terrain, the zone cutscene, and flag 512
+always prevent that adjacency remains **Unknown** and is the narrower retained runtime question.
 
 Map 44 has the other source exception: its zone default is written as raw `dc.w` values instead of
 `msDefaultZoneEvent`, and its relative word resolves to `0x5486C`, four bytes into the cutscene entity
@@ -263,7 +271,7 @@ counts, all 178 H1 addresses, body hashes, and reference-source lists remain in 
 No emulator was launched for the accepted static fixtures in this document. Setup priority and
 dispatcher order are now closed by source/H1/ROM evidence. Remaining questions are grouped as:
 
-1. sequenced-entity orientation, direct-`rts` entity-event reachability, and description/init functions
+1. sequenced-entity orientation, normal-story direct-`rts` entity-event reachability, and description/init functions
    under nonstandard or mutated callers;
 2. follower/map-entity collision state, selected event/description-script
    side effects, transition persistence,

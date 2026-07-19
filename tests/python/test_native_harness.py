@@ -11,7 +11,11 @@ from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h2.map_content import _encode_source
 from sf2tool.h2.map_descriptions import _decode_entry
 from sf2tool.h2.map_entities import _record_kind
-from sf2tool.h2.map_events import _decode_event_record, _event_matches
+from sf2tool.h2.map_events import (
+    _clean_state_event_indices,
+    _decode_event_record,
+    _event_matches,
+)
 from sf2tool.h2.map_layouts import decode_map_blocks
 from sf2tool.h2.map_setup import _parse_routes, _select_route
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
@@ -324,6 +328,16 @@ def test_map_events_has_a_static_rom_parity_command() -> None:
     assert args.h2_command == "map-events"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
+
+
+def test_map_entity_event_indices_split_allies_from_stream_order_enemies() -> None:
+    records = [
+        {"mapSprite": 2},
+        {"mapSprite": 122},
+        {"mapSprite": 5},
+        {"mapSprite": 132},
+    ]
+    assert _clean_state_event_indices(records) == [2, 128, 5, 129]
 
 
 def test_map_event_matcher_handles_wildcards_defaults_and_item_mask() -> None:

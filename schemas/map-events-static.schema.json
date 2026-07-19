@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/map-events-static.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "selectionCases", "runtimeQuestions", "categories"],
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "entityEventReachabilityFacts", "directReturnStubs", "rawZoneDefaultException", "selectionCases", "runtimeQuestions", "categories"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-map-events-static-v1" },
@@ -32,6 +32,7 @@
     },
     "sourceMacroCounts": { "type": "object" },
     "consumerFacts": { "type": "object" },
+    "entityEventReachabilityFacts": { "type": "object" },
     "directReturnStubs": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "object" } },
     "rawZoneDefaultException": { "type": "object" },
     "selectionCases": { "type": "array", "minItems": 9, "maxItems": 9, "items": { "type": "object" } },

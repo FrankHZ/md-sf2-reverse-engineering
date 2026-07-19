@@ -3,8 +3,9 @@
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, and documented first-match
   dispatch rules
-- **Unknown original behavior:** transition-time event precedence and persistence, direct-`rts` event
-  reachability, exact animation/scroll frame timing, and final VDP-visible rendered parity
+- **Unknown original behavior:** transition-time event precedence and persistence, normal-story
+  reachability of the non-empty map 52 direct-`rts` event setup, exact animation/scroll frame timing,
+  and final VDP-visible rendered parity
 - Remake status: implementation-neutral Phase 3 contract; no engine has been selected
 
 ## Contract Boundary
@@ -132,6 +133,14 @@ nine original wrappers select the same record offsets, target addresses, entity 
 item values. It uses a private instrumented ROM whose 50-byte trampoline only supplies documented
 wrapper inputs; each selected script entry is replaced with `rts`, so script side effects and
 presentation remain outside this confirmed selection contract.
+
+Direct-`rts` entity-event targets are explicit empty handlers, not record arrays. Map 55 and the
+flag-512 map 52 setup pair them with empty entity lists. The default map 52 setup instead initializes
+four non-ally entities, which receive clean-state event indices 128-131; the original interaction
+call chain can reach its wrapper if one is made adjacent and is not a follower. A remake importer
+MUST preserve the empty-handler type and MUST NOT parse its `rts` opcode as event data. Whether the
+original story route always prevents such adjacency is still Unknown and cannot become a remake
+collision rule without a route-level fixture.
 
 Flag, step, and roof records describe rectangular block copies into the working layout. Warp records
 retain trigger coordinates, scroll mode, target map, target coordinates, and facing. The exact order

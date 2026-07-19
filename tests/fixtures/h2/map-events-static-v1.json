@@ -125,20 +125,61 @@
         "itemIndexMask": 127
       }
     },
+    "entityEventReachabilityFacts": {
+      "functionAddresses": {
+        "ProcessPlayerAction": 154326,
+        "GetActivatedEntity": 145306,
+        "GetEntityEventIndex": 143178
+      },
+      "activatedEntityScanSlots": 48,
+      "followersAreSkipped": true,
+      "adjacentDistanceIsStrictlyBelowMapTileSize": true,
+      "entityIndexListSlotsScanned": 65,
+      "enemyEventIndexBase": 128,
+      "processActionCallsWrapperAfterNonnegativeActivation": true
+    },
     "directReturnStubs": [
       {
         "symbol": "ms_map52_EntityEvents",
         "address": 378024,
         "setupReferenceCount": 2,
         "pairedEntityListRecordCounts": [4, 0],
-        "nonEmptyPairedEntityListReferenceCount": 1
+        "nonEmptyPairedEntityListReferenceCount": 1,
+        "setupPairings": [
+          {
+            "setupSymbol": "ms_map52",
+            "entityListSymbol": "ms_map52_Entities",
+            "entityRecordCount": 4,
+            "cleanStateEventIndices": [128, 129, 130, 131],
+            "wrapperReachableWithAdjacentNonFollower": true,
+            "normalStoryRouteReachability": "unknown"
+          },
+          {
+            "setupSymbol": "ms_map52_flag512",
+            "entityListSymbol": "ms_map52_flag512_Entities",
+            "entityRecordCount": 0,
+            "cleanStateEventIndices": [],
+            "wrapperReachableWithAdjacentNonFollower": false,
+            "normalStoryRouteReachability": "not-applicable-empty-list"
+          }
+        ]
       },
       {
         "symbol": "ms_map55_EntityEvents",
         "address": 385606,
         "setupReferenceCount": 1,
         "pairedEntityListRecordCounts": [0],
-        "nonEmptyPairedEntityListReferenceCount": 0
+        "nonEmptyPairedEntityListReferenceCount": 0,
+        "setupPairings": [
+          {
+            "setupSymbol": "ms_map55",
+            "entityListSymbol": "ms_map55_Entities",
+            "entityRecordCount": 0,
+            "cleanStateEventIndices": [],
+            "wrapperReachableWithAdjacentNonFollower": false,
+            "normalStoryRouteReachability": "not-applicable-empty-list"
+          }
+        ]
       }
     ],
     "rawZoneDefaultException": {
@@ -209,7 +250,7 @@
       }
     ],
     "runtimeQuestions": [
-      "entity-event-direct-return-stub-unreachability-under-mutated-state",
+      "entity-event-direct-return-stub-normal-story-route-reachability",
       "event-script-side-effects-and-transition-persistence",
       "event-portrait-facing-and-presentation-timing"
     ]
