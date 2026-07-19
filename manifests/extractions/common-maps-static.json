@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-common-maps-static-v1",
+  "outputSha256": "1642ABADD6FE2742C7F3DFBA0595358AB04D50D52D0C197AF3838BCC204B87E3",
+  "summary": {
+    "fileCount": 7,
+    "sourceLineCount": 2199,
+    "statementCount": 1415,
+    "globalLabelCount": 152,
+    "localLabelCount": 66,
+    "directCallSiteCount": 95,
+    "indirectCallSiteCount": 8,
+    "uniqueDirectTargetCount": 37,
+    "internalDirectTargetCount": 11,
+    "externalDirectTargetCount": 26,
+    "indexedRecordCount": 7,
+    "indexedFileCount": 7
+  }
+}

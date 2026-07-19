@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-common-maps-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "scrollingAddress": 18216,
+    "cameraAddress": 17858,
+    "savepointAddress": 30188,
+    "battleTriggerAddress": 31132,
+    "switchMapAddress": 31062,
+    "mapLayoutAddress": 8422,
+    "unusedMaploadAddress": 11968
+  },
+  "expected": {
+    "representativeSymbols": {
+      "animations.asm": "IsMapScrollingToViewTarget",
+      "camerafunctions.asm": "VInt_UpdateViewData",
+      "egressinit.asm": "GetSavepointForMap",
+      "getbattle.asm": "CheckBattle",
+      "mapinit_0.asm": "SwitchMap",
+      "mapload.asm": "LoadMapLayoutData",
+      "unused_mapload.asm": "sub_2EC0"
+    },
+    "mapFacts": {
+      "mapSwitch": { "entryBytes": 6, "terminatesOnNegativeSourceMap": true, "firstMatchingSetFlagReplacesMap": true },
+      "battleTrigger": { "usesCurrentMapForMinusOneInput": true, "requiresUnlockedFlag": true, "triggerCoordinatesAllowMinusOneWildcard": true, "writesBattleAreaBeforeCompletionCheck": true, "clearsUnlockedFlagWhenCompleted": true, "noMatchBattleIndex": -1 },
+      "egress": { "preFlag399UsesGameStartConstants": true, "savepointEntryBytes": 4, "savepointTerminator": -1, "missingMapDefault": { "x": 1, "y": 1, "facing": "UP" }, "raftResetRequiresFlag64": true, "raftResetEntryBytes": 4 },
+      "mapLayout": { "outputSizeBytes": 8192, "clearsHistoryMapsFirst": true, "modes": ["new block", "copy run", "left history", "upper history"], "mapLoadClearsScrollState": true, "newMapUpdatesCurrentMap": true, "blocksLoadBeforeLayout": true, "battleAreaOverlayAppliedInBattle": true },
+      "vint": { "planeAToggleBit": 0, "planeBToggleBit": 1, "planeAAlsoRefreshesWindowsWhenPresent": true, "tileAnimationRequiresPositiveDataPointer": true, "tileAnimationUsesCountdown": true, "tileAnimationUsesVintDma": true },
+      "inventoryBoundary": { "cameraStateMachineInventoried": true, "unusedRandomMaploadInventoried": true, "cameraAndVdpTimingRemainQueued": true }
+    }
+  }
+}

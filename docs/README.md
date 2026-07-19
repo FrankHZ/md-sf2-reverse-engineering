@@ -22,7 +22,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
   合同索引、校验规则和新增发现的落地流程。
-- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、56.33% 可执行代码文件
+- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、58.14% 可执行代码文件
   reach 的严格边界，以及静态优先、集中运行 H3 的子系统批处理节奏。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
   治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
@@ -40,6 +40,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   10 文件路由、flag 准入、leader-death position 准备和 map-script 调度。
 - [`common-scripting.md`](./research/common-scripting.md)：entity/map/text/credits 的 29 文件
   inventory、90/80 槽解释器、Huffman 状态和无标签废弃数据边界。
+- [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
+  trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 
 ## Design
 

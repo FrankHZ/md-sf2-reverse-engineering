@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 294 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 226 | 218 code files and 8 data files |
-| Executable code-file reach | 56.33% | 218 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 301 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 233 | 225 code files and 8 data files |
+| Executable code-file reach | 58.14% | 225 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 690 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 697 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -67,11 +67,13 @@ The current evidence is deep but narrow:
   content and story semantics are not implied by that boundary milestone. Common scripting now has
   a complete 29-file inventory, 28 H1-bound files, 90/80-slot map/entity dispatch tables, and text
   Huffman state; one unlabeled 288-byte data blob is H2-verified but excluded from symbol reach.
+  Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
+  8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
 - **Minimal or unindexed:** exploration/world state, individual event-script content, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 56.33% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 58.14% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -84,8 +86,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 294 records; its
-verifier reports 54 H3 fixtures and 690 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 301 records; its
+verifier reports 54 H3 fixtures and 697 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -129,4 +131,5 @@ effects can now be run later as one grouped presentation matrix. The final ten c
 files close the entire 183-file `code/gameflow/battle` tree at file-reach level, still without an
 emulator launch. The 29-file common scripting boundary is now inventoried next, with 28 symbol-bound
 files and one explicitly unlabelled byte range; it adds no emulator launch. Static work moves to
-shared maps/stats boundaries while the runtime queue remains consolidated.
+shared maps/stats boundaries while the runtime queue remains consolidated. The seven-file common
+maps boundary is now complete at the static inventory level too; stats is the next shared batch.
