@@ -18,6 +18,7 @@ from sf2tool.h2.battle_scene_engine import verify_battle_scene_engine_inventory
 from sf2tool.h2.battlefield import verify_battlefield_inventory
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
+from sf2tool.h2.interrupts import verify_interrupt_inventory
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
@@ -221,6 +222,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_common_menus, rom=False)
     h2_common_menus.add_argument("--output-path", type=_path)
+    h2_tech_interrupts = h2_commands.add_parser(
+        "tech-interrupts", help="inventory VInt, DMA, fading, traps, and technical handlers"
+    )
+    _add_local_paths(h2_tech_interrupts, rom=False)
+    h2_tech_interrupts.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -534,6 +540,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "common-menus":
         print_record(
             verify_menu_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "tech-interrupts":
+        print_record(
+            verify_interrupt_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

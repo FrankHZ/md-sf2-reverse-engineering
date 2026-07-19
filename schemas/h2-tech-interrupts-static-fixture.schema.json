@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 technical interrupts static fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-interrupts-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": { "type": "object", "minProperties": 21, "maxProperties": 21, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "expected": { "type": "object", "additionalProperties": false, "required": ["interruptFacts"], "properties": { "interruptFacts": { "type": "object", "minProperties": 8, "maxProperties": 8 } } }
+  }
+}

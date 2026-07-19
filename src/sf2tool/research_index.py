@@ -161,6 +161,7 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
 
     indexed_h3_count = sum(path.startswith("tests/fixtures/h3/") for path in fixture_ids)
     indexed_h2_count = sum(path.startswith("tests/fixtures/h2/") for path in fixture_ids)
+    indexed_source_paths = {record["sourcePath"] for record in index["records"]}
     return {
         "Index": "manifests/research-index.json",
         "Records": len(index["records"]),
@@ -169,6 +170,8 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
         "H3Fixtures": indexed_h3_count,
         "H3FixtureFiles": len(h3_fixtures),
         "AddressBindings": binding_count,
+        "IndexedCodeFiles": sum(path.startswith("code/") for path in indexed_source_paths),
+        "IndexedDataFiles": sum(path.startswith("data/") for path in indexed_source_paths),
         "ResearchDocuments": len(documents),
         "DesignContracts": len(contracts),
         "UpstreamSourcesChecked": has_sources,

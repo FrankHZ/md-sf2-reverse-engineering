@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-interrupts-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "ApplyZ80BusUpdates": 2270,
+    "ApplyVramDmaFill": 5134,
+    "EnableDmaQueueProcessing": 3882,
+    "Int_AddressError": 1168,
+    "FadeInFromBlack": 3286,
+    "HInt": 1426,
+    "Trap0_SoundCommand": 1116,
+    "Trap4_CheckFlag": 5888,
+    "Trap5_TextBox": 1366,
+    "Trap6_TriggerAndExecuteMapScript": 1402,
+    "Trap9_ManageContextualFunctions": 1998,
+    "SetBasePalette1": 3268,
+    "RequestVdpCommandQueueProcessing": 3866,
+    "sub_F3A": 3898,
+    "sub_13C0": 5056,
+    "sub_1234": 4660,
+    "WaitDmaEnd": 2966,
+    "VInt": 1428,
+    "ClearVsramAndSprites": 3514,
+    "ApplyImmediateVramDma": 4316,
+    "ApplyImmediateVramDmaOnCompressedTiles": 4994
+  },
+  "expected": {
+    "interruptFacts": {
+      "vint": {
+        "updatesRequireEnableBit": true,
+        "updateOrder": [
+          "wait DMA",
+          "disable display",
+          "VDP queues",
+          "enable display",
+          "VRAM read",
+          "fade",
+          "Z80/input",
+          "contextual functions"
+        ],
+        "clearsWaitingFlagAfterContextualFunctions": true,
+        "frameCounterIncrementsEvenWhenUpdatesSkipped": true,
+        "startCanJumpOutOfIntroWhenPointerIsSet": true
+      },
+      "contextualFunctions": {
+        "slotCount": 8,
+        "enabledByBitfield": true,
+        "secondsCounterFrames": 60,
+        "trapActionCount": 5,
+        "actions": [
+          "clear pointers",
+          "set function and trigger",
+          "clear function and trigger",
+          "clear trigger",
+          "set trigger"
+        ]
+      },
+      "waitAndSleep": {
+        "waitSetsEnableBit": true,
+        "waitSpinsUntilVintClearsFlag": true,
+        "sleepZeroReturnsWithoutWaiting": true,
+        "positiveSleepWaitsRequestedFrameCount": true
+      },
+      "dma": {
+        "immediatePathMasksInterruptsAndRequestsZ80Bus": true,
+        "queuedPathTemporarilyDisablesVint": true,
+        "queuedEntryIncrementsQueueSize": true,
+        "processingRequiresRequestUnlessDmaActive": true,
+        "spriteTableUpdatesBeforeQueuedTransfers": true,
+        "processingResetsQueuePointer": true
+      },
+      "fading": {
+        "modes": ["in from black", "out to black", "in from white", "out to white"],
+        "initialPaletteBitfield": 15,
+        "executeWaitsUntilSettingClears": true,
+        "executeWaitsOneAdditionalVint": true,
+        "colorComponentsClampToNibbleRange": true,
+        "queuesCramDmaAfterColorUpdate": true
+      },
+      "inputRepeat": {
+        "initialDelayFrames": 24,
+        "repeatCadenceFrames": 6,
+        "unchangedInputSuppressedBeforeDelay": true
+      },
+      "traps": {
+        "soundQueueSlots": 4,
+        "soundMinusOneParameterUsesD0": true,
+        "soundDeactivationDropsCommands": true,
+        "flagTrapCount": 4,
+        "textMinusOneClosesDialogue": true,
+        "mapScriptActivatesEntityVintFirst": true
+      },
+      "inventoryBoundary": {
+        "errorAndHintHandlersInventoried": true,
+        "unusedVintAndPalettePathsInventoried": true,
+        "hardwareBusAndVdpTimingRemainQueued": true,
+        "visualFadeAndQueueCapacityBehaviorRemainQueued": true
+      }
+    }
+  }
+}

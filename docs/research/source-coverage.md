@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 354 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 286 | 278 code files and 8 data files |
-| Executable code-file reach | 71.83% | 278 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 375 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 306 | 298 code files and 8 data files |
+| Executable code-file reach | 77.00% | 298 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 750 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 771 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -75,11 +75,14 @@ The current evidence is deep but narrow:
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
   text controls, field items, and service entry points are static contracts; one overlapping member-list
   alternate remains excluded, while UI/presentation timing is queued for concentrated simulation.
+  Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
+  order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
+  remains queued for one technical runtime matrix.
 - **Minimal or unindexed:** exploration/world state, individual event-script content, conversations,
   detailed shops/church flows, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 71.83% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 77.00% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -92,8 +95,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 354 records; its
-verifier reports 54 H3 fixtures and 750 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 375 records; its
+verifier reports 298 unique code files, 8 unique data files, 54 H3 fixtures, and 771 bindings. The
+default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -141,5 +145,6 @@ shared maps/stats boundaries while the runtime queue remains consolidated. The s
 maps boundary is now complete at the static inventory level too. The 20-file stats boundary followed
 and is now inventoried as well, with its alternate-source exception explicit;
 the 42-file menus boundary is now inventoried too, with 41 layout-owned sources and one overlapping
-alternate. The next static batch moves to technical services while UI/presentation runtime queues
-remain grouped.
+alternate. The 21-file technical interrupt boundary follows with complete static reach. The next
+static batch continues through graphics and remaining technical services while UI/presentation and
+VDP/Z80 runtime queues remain grouped.

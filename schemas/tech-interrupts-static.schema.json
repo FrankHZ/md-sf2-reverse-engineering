@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II technical interrupts static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "interruptFacts", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-interrupts-static-v1" },
+    "upstream": { "type": "object" }, "scope": { "const": "code/common/tech/interrupts" },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 21 }, "layoutIncludedFileCount": { "const": 21 }, "indexedRecordCount": { "const": 21 }, "indexedFileCount": { "const": 21 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 21, "maxItems": 21, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 21, "maxItems": 21, "uniqueItems": true },
+    "representativeSymbols": { "type": "object", "minProperties": 21, "maxProperties": 21 },
+    "representativeAddresses": { "type": "object", "minProperties": 21, "maxProperties": 21 },
+    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "interruptFacts": { "type": "object", "minProperties": 8, "maxProperties": 8 },
+    "files": { "type": "array", "minItems": 21, "maxItems": 21 }
+  }
+}

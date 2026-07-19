@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-interrupts-static-v1",
+  "outputSha256": "7A46775C349513D2C92C805F833A50A353F8D40E6CAC3C636123F3FD15B620F1",
+  "summary": {
+    "fileCount": 21,
+    "sourceLineCount": 2320,
+    "statementCount": 1120,
+    "globalLabelCount": 105,
+    "localLabelCount": 84,
+    "directCallSiteCount": 50,
+    "indirectCallSiteCount": 1,
+    "uniqueDirectTargetCount": 32,
+    "internalDirectTargetCount": 22,
+    "externalDirectTargetCount": 10,
+    "layoutIncludedFileCount": 21,
+    "indexedRecordCount": 21,
+    "indexedFileCount": 21
+  }
+}
