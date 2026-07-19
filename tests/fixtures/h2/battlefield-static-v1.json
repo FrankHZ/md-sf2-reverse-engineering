@@ -220,6 +220,41 @@
         "matchResetsSpawningEnemyStats": true,
         "noMatchResult": 65535
       }
+    },
+    "weightedPropagationFacts": {
+      "bucketCount": 32,
+      "bucketDiscipline": "LIFO linked list",
+      "bucketIndex": "remaining budget & 31",
+      "linkedListPointerStoredAcrossMovementGridBytes": true,
+      "firstAdmissionPreventsRelaxation": true,
+      "processedCost": "initial budget - remaining budget",
+      "exactBudgetDestinationMarkedWithoutQueue": true,
+      "flatNeighborOffsets": [1, -1, -48, 48],
+      "horizontalEdgesCanCrossRows": true,
+      "cases": [
+        {
+          "id": "uniform-cost-two",
+          "budget": 4,
+          "reachableCount": 13,
+          "maximumCost": 4,
+          "expansionOrder": [1176, 1224, 1128, 1175, 1177]
+        },
+        {
+          "id": "flat-right-edge-wrap",
+          "budget": 1,
+          "reachableCount": 5,
+          "wrappedOffset": 96,
+          "wrappedCost": 1
+        },
+        {
+          "id": "budget-128-bucket-wrap",
+          "budget": 128,
+          "reachableCount": 41,
+          "lastOffset": 40,
+          "lastCost": 40,
+          "expansionOrderIsSequential": true
+        }
+      ]
     }
   }
 }

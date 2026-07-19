@@ -196,6 +196,132 @@ def _replay_move_string(x: int, y: int, directions: list[int]) -> dict[str, int]
     return {"x": x, "y": y}
 
 
+def build_weighted_movement_model(
+    terrain: list[int],
+    move_costs: list[int],
+    *,
+    start_offset: int,
+    budget: int,
+    width: int = 48,
+) -> dict[str, Any]:
+    """Model BuildMovementArrays' flat-grid, 32-bucket linked-list traversal."""
+    size = len(terrain)
+    if not 0 <= start_offset < size:
+        raise ValueError("movement model start offset is outside the grid")
+    if budget < 0:
+        raise ValueError("movement model budget must be non-negative")
+
+    total_costs = [-1] * size
+    movable_grid = [-1] * size
+    bucket_heads: list[int | None] = [None] * 32
+    links: list[int | None] = [None] * size
+    admitted = [False] * size
+    expansion_order: list[int] = []
+    remaining = budget
+    spent = 0
+    current = start_offset
+
+    while True:
+        admitted[current] = True
+        total_costs[current] = spent
+        movable_grid[current] = spent >> 8
+        expansion_order.append(current)
+
+        for neighbor in (current + 1, current - 1, current - width, current + width):
+            if not 0 <= neighbor < size or admitted[neighbor]:
+                continue
+            terrain_entry = terrain[neighbor] & 0xFF
+            if terrain_entry & 0x80:
+                continue
+            terrain_type = terrain_entry & 0x1F
+            if terrain_type >= len(move_costs):
+                raise ValueError(f"missing move cost for terrain type {terrain_type}")
+            move_cost = move_costs[terrain_type]
+            if move_cost < 0 or move_cost > remaining:
+                continue
+            admitted[neighbor] = True
+            if move_cost == remaining:
+                total = spent + move_cost
+                total_costs[neighbor] = total
+                movable_grid[neighbor] = total >> 8
+                continue
+
+            bucket = (remaining - move_cost) & 0x1F
+            links[neighbor] = bucket_heads[bucket]
+            bucket_heads[bucket] = neighbor
+
+        while True:
+            bucket = remaining & 0x1F
+            next_candidate = bucket_heads[bucket]
+            if next_candidate is not None:
+                bucket_heads[bucket] = links[next_candidate]
+                current = next_candidate
+                break
+            spent += 1
+            remaining -= 1
+            if remaining <= 0:
+                break
+        if remaining <= 0:
+            break
+
+    reachable_costs = {str(offset): cost for offset, cost in enumerate(total_costs) if cost >= 0}
+    return {
+        "reachableCount": len(reachable_costs),
+        "reachableCosts": reachable_costs,
+        "expansionOrder": expansion_order,
+        "maximumCost": max(reachable_costs.values(), default=-1),
+    }
+
+
+def _weighted_propagation_cases() -> list[dict[str, Any]]:
+    size = 48 * 48
+    uniform = build_weighted_movement_model(
+        [0] * size,
+        [2] * 32,
+        start_offset=24 * 48 + 24,
+        budget=4,
+    )
+    wrap = build_weighted_movement_model(
+        [0] * size,
+        [1] * 32,
+        start_offset=1 * 48 + 47,
+        budget=1,
+    )
+    corridor_terrain = [0x80] * size
+    for offset in range(41):
+        corridor_terrain[offset] = 0
+    corridor = build_weighted_movement_model(
+        corridor_terrain,
+        [1] * 32,
+        start_offset=0,
+        budget=128,
+    )
+    return [
+        {
+            "id": "uniform-cost-two",
+            "budget": 4,
+            "reachableCount": uniform["reachableCount"],
+            "maximumCost": uniform["maximumCost"],
+            "expansionOrder": uniform["expansionOrder"],
+        },
+        {
+            "id": "flat-right-edge-wrap",
+            "budget": 1,
+            "reachableCount": wrap["reachableCount"],
+            "wrappedOffset": 2 * 48,
+            "wrappedCost": wrap["reachableCosts"].get(str(2 * 48)),
+        },
+        {
+            "id": "budget-128-bucket-wrap",
+            "budget": 128,
+            "reachableCount": corridor["reachableCount"],
+            "lastOffset": 40,
+            "lastCost": corridor["reachableCosts"].get("40"),
+            "expansionOrderIsSequential": corridor["expansionOrder"] == list(range(41)),
+        },
+    ]
+
+
 def _build_core_model(disasm: Path) -> dict[str, Any]:
     definitions = _load_equates(disasm / "sf2const.asm", disasm / "sf2enums.asm")
     memo: dict[str, int] = {}
@@ -222,6 +348,19 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
             "btst    #TERRAIN_BIT_OCCUPIED,d1",
             "andi.w  #BATTLEFIELD_TERRAIN_ENTRY_MASK,d1",
             "cmp.w   d2,d0",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "buildmovementarrays.asm",
+        [
+            "move.l  #BUILD_MOVEMENT_ARRAYS_STACK_INITIAL_PATTERN,d1",
+            "move.w  tempMovableGridArray(a6,d1.w),d5",
+            "btst    #BATTLEFIELD_PROCESSED_SPACE_BIT,d5",
+            "move.b  (a3,d5.w),tempMovableGridArray(a6,d1.w)",
+            "move.b  (a2,d5.w),tempTotalMoveCostsArray(a6,d1.w)",
+            "move.b  tempMovableGridArray(a6,d1.w),(a3,d5.w)",
+            "move.b  tempTotalMoveCostsArray(a6,d1.w),(a2,d5.w)",
+            "move.w  d5,tempMovableGridArray(a6,d1.w)",
         ],
     )
     _require_ordered_fragments(
@@ -504,6 +643,18 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
                 "noMatchResult": 65535,
             },
         },
+        "weightedPropagation": {
+            "bucketCount": constant("BATTLEFIELD_MOVE_BUDGET_MASK") + 1,
+            "bucketDiscipline": "LIFO linked list",
+            "bucketIndex": "remaining budget & 31",
+            "linkedListPointerStoredAcrossMovementGridBytes": True,
+            "firstAdmissionPreventsRelaxation": True,
+            "processedCost": "initial budget - remaining budget",
+            "exactBudgetDestinationMarkedWithoutQueue": True,
+            "flatNeighborOffsets": [1, -1, -width, width],
+            "horizontalEdgesCanCrossRows": True,
+            "cases": _weighted_propagation_cases(),
+        },
     }
 
 
@@ -626,6 +777,11 @@ def verify_battlefield_inventory(
         raise ValueError("battlefield attack-position or move-string model drift")
     if output["coreModel"]["lateHelpers"] != fixture["expected"]["lateHelperFacts"]:
         raise ValueError("battlefield move-order or trapped-chest model drift")
+    if (
+        output["coreModel"]["weightedPropagation"]
+        != fixture["expected"]["weightedPropagationFacts"]
+    ):
+        raise ValueError("battlefield weighted propagation model drift")
     for name, address in output["coreModel"]["arrays"].items():
         if fixture["ram"][name] != address:
             raise ValueError(f"battlefield RAM address binding drift: {name}")
