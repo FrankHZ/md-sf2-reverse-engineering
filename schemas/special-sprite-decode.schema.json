@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/special-sprite-decode.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "aliases", "routing", "regularSentinelReferences", "resources", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-special-sprite-decode-v1" },
+    "upstream": { "type": "object", "required": ["repository", "commit"] },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/$defs/counts" },
+    "table": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "aliases": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["slot", "payloadSymbol", "ownerSlot"],
+        "properties": {
+          "slot": { "type": "integer", "minimum": 0, "maximum": 9 },
+          "payloadSymbol": { "type": "string" },
+          "ownerSlot": { "type": "integer", "minimum": 0, "maximum": 4 }
+        }
+      }
+    },
+    "routing": {
+      "type": "array", "minItems": 16, "maxItems": 16,
+      "items": { "$ref": "#/$defs/routingRow" }
+    },
+    "regularSentinelReferences": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "items": { "$ref": "#/$defs/referenceRow" }
+    },
+    "resources": {
+      "type": "array", "minItems": 6, "maxItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["symbol", "sourcePath", "sourceAddress", "sourceBytes", "animationOnly", "paletteBytes", "compressedBytes", "inputBitsConsumed", "trailingBits", "decodedBytes", "sourceSha256", "decodedSha256", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords"],
+        "properties": {
+          "symbol": { "type": "string" }, "sourcePath": { "type": "string" },
+          "sourceAddress": { "type": "integer", "minimum": 0 },
+          "sourceBytes": { "type": "integer", "minimum": 1 },
+          "animationOnly": { "type": "boolean" },
+          "paletteBytes": { "type": "integer", "enum": [0, 32] },
+          "compressedBytes": { "type": "integer", "minimum": 1 },
+          "inputBitsConsumed": { "type": "integer", "minimum": 1 },
+          "trailingBits": { "type": "integer", "minimum": 0 },
+          "decodedBytes": { "type": "integer", "enum": [2304, 5184] },
+          "sourceSha256": { "$ref": "#/$defs/hash" }, "decodedSha256": { "$ref": "#/$defs/hash" },
+          "paletteSha256": { "$ref": "#/$defs/hash" },
+          "commandGroupCount": { "type": "integer", "minimum": 1 },
+          "literalWordCount": { "type": "integer", "minimum": 0 },
+          "copyCommandCount": { "type": "integer", "minimum": 0 },
+          "copiedWordCount": { "type": "integer", "minimum": 0 },
+          "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 },
+          "maximumCopyLengthWords": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "referenceRow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapsprite", "enumSymbol", "sourceReferenceCount", "sourceReferencePaths"],
+      "properties": {
+        "mapsprite": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "enumSymbol": { "type": "string" },
+        "sourceReferenceCount": { "type": "integer", "minimum": 0 },
+        "sourceReferencePaths": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "routingRow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapsprite", "enumSymbol", "specialIndex", "pointerSymbol", "loadDispatchTarget", "updateDispatchTarget", "sourceReferenceCount", "sourceReferencePaths"],
+      "properties": {
+        "mapsprite": { "type": "integer", "minimum": 240, "maximum": 255 },
+        "enumSymbol": { "type": "string" },
+        "specialIndex": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "pointerSymbol": { "type": ["string", "null"] },
+        "loadDispatchTarget": { "type": ["string", "null"] },
+        "updateDispatchTarget": { "type": ["string", "null"] },
+        "sourceReferenceCount": { "type": "integer", "minimum": 0 },
+        "sourceReferencePaths": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    }
+  }
+}

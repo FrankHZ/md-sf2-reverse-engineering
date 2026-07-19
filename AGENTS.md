@@ -139,7 +139,8 @@ traceability, input/toolchain provenance, original rebuild, source/ROM static pa
 promotion/enemy/enemy-gold/enemy-drop, Battle 01 scene extraction, and the complete battle-AI source
 inventory/action-filter/attack-priority contracts, the complete Stack-compressed battle-terrain,
 battle-background, battle-sprite, weapon/ground, and portrait corpora, the complete Basic-compressed
-map-sprite corpus, plus BizHawk base/debug-aware RNG,
+map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
+BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
    turn-order, region-activation, physical-attack-chain, dodge, follow-up-validation, and grouped

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-sprite-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadSpecialSpriteAddress": 154660,
+    "animateSpecialSpriteAddress": 154806,
+    "loadStackAddress": 7752
+  },
+  "table": {
+    "specialSpriteTableAddress": 154620,
+    "firstPayloadAddress": 155126,
+    "corpusEndAddress": 161868
+  },
+  "summary": {
+    "pointerCount": 10, "uniquePointerPayloadCount": 5, "aliasPointerCount": 5,
+    "resourceCount": 6, "paletteCount": 5, "animationOnlyStreamCount": 1,
+    "battleSizedStreamCount": 5, "explorationSizedStreamCount": 1,
+    "sourceByteCount": 6742, "paletteByteCount": 160, "compressedByteCount": 6582,
+    "decodedByteCount": 16704, "commandGroupCount": 262, "literalWordCount": 3491,
+    "copyCommandCount": 653, "copiedWordCount": 4861, "minimumTrailingBits": 36,
+    "maximumTrailingBits": 44, "maximumCopyOffsetWords": 960, "maximumCopyLengthWords": 33,
+    "loadDispatchSlotCount": 9, "updateDispatchSlotCount": 9,
+    "fullyRoutedMapSpriteCount": 9, "pointerOnlyMapSpriteCount": 1,
+    "unbackedSpecialMapSpriteCount": 6, "sourceReferencedSpecialMapSpriteCount": 5,
+    "regularSentinelSymbolReferenceCount": 0, "pointerTableRomParityCount": 10,
+    "payloadRomParityCount": 6
+  },
+  "routing": [
+    { "mapsprite": 240, "enumSymbol": "MAPSPRITE_SPECIAL15", "specialIndex": 15, "pointerSymbol": null, "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 241, "enumSymbol": "MAPSPRITE_SPECIAL14", "specialIndex": 14, "pointerSymbol": null, "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 242, "enumSymbol": "MAPSPRITE_SPECIAL13", "specialIndex": 13, "pointerSymbol": null, "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 243, "enumSymbol": "MAPSPRITE_SPECIAL12", "specialIndex": 12, "pointerSymbol": null, "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 244, "enumSymbol": "MAPSPRITE_SPECIAL11", "specialIndex": 11, "pointerSymbol": null, "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 245, "enumSymbol": "MAPSPRITE_SPECIAL10", "specialIndex": 10, "pointerSymbol": null, "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 246, "enumSymbol": "MAPSPRITE_SPECIAL9", "specialIndex": 9, "pointerSymbol": "SpecialSprite_Kraken", "loadDispatchTarget": null, "updateDispatchTarget": null, "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 247, "enumSymbol": "MAPSPRITE_SPECIAL8", "specialIndex": 8, "pointerSymbol": "SpecialSprite_Kraken", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 248, "enumSymbol": "MAPSPRITE_SPECIAL7", "specialIndex": 7, "pointerSymbol": "SpecialSprite_Kraken", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 249, "enumSymbol": "MAPSPRITE_SPECIAL6", "specialIndex": 6, "pointerSymbol": "SpecialSprite_Kraken", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 250, "enumSymbol": "MAPSPRITE_SPECIAL5", "specialIndex": 5, "pointerSymbol": "SpecialSprite_Zeon", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 251, "enumSymbol": "MAPSPRITE_ZEON", "specialIndex": 4, "pointerSymbol": "SpecialSprite_Zeon", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 3, "sourceReferencePaths": ["data/battles/entries/battle42/cs_afterbattle.asm", "data/maps/entries/map18/mapsetups/s1_entities_530.asm", "data/maps/entries/map59/mapsetups/s6_initfunction.asm"] },
+    { "mapsprite": 252, "enumSymbol": "MAPSPRITE_EVIL_SPIRIT", "specialIndex": 3, "pointerSymbol": "SpecialSprite_EvilSpirit", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 1, "sourceReferencePaths": ["data/maps/entries/map34/mapsetups/s1_entities.asm"] },
+    { "mapsprite": 253, "enumSymbol": "MAPSPRITE_NAZCA_SHIP", "specialIndex": 2, "pointerSymbol": "SpecialSprite_NazcaShip", "loadDispatchTarget": "specialSprite_Exploration", "updateDispatchTarget": "specialSpriteUpdate_Exploration", "sourceReferenceCount": 3, "sourceReferencePaths": ["data/maps/entries/map37/mapsetups/scripts.asm", "data/maps/entries/map59/mapsetups/s6_initfunction.asm"] },
+    { "mapsprite": 254, "enumSymbol": "MAPSPRITE_KRAKEN_HEAD", "specialIndex": 1, "pointerSymbol": "SpecialSprite_Kraken", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 1, "sourceReferencePaths": ["data/battles/entries/battle16/cs_beforebattle.asm"] },
+    { "mapsprite": 255, "enumSymbol": "MAPSPRITE_TAROS", "specialIndex": 0, "pointerSymbol": "SpecialSprite_Taros", "loadDispatchTarget": "specialSprite_Battle", "updateDispatchTarget": "specialSpriteUpdate_Battle", "sourceReferenceCount": 2, "sourceReferencePaths": ["data/battles/entries/battle18/cs_beforebattle.asm", "data/maps/entries/map12/mapsetups/s1_entities.asm"] }
+  ],
+  "regularSentinelReferences": [
+    { "mapsprite": 237, "enumSymbol": "MAPSPRITE_FREE_SPOT1", "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 238, "enumSymbol": "MAPSPRITE_FREE_SPOT2", "sourceReferenceCount": 0, "sourceReferencePaths": [] },
+    { "mapsprite": 239, "enumSymbol": "MAPSPRITE_FREE_SPOT3", "sourceReferenceCount": 0, "sourceReferencePaths": [] }
+  ],
+  "runtimeQuestions": [
+    "Are map-sprite IDs 240-246 unreachable at runtime, as required by the missing pointer and/or dispatch slots even though the route threshold admits them?",
+    "Can any runtime write or encoded script value select regular map-sprite IDs 237-239 despite the absence of symbolic source references?"
+  ]
+}

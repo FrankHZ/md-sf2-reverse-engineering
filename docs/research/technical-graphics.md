@@ -4,12 +4,12 @@
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
-  complete regular map-sprite Basic-compression corpus
+  complete regular map-sprite Basic-compression and special-sprite Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora, exact VDP timing, palette
   presentation, portrait/map-sprite animation timing, special-sprite frame output, and whether the
-  three regular-map-sprite free-spot IDs can reach their shared sentinel payload
+  three regular-map-sprite free-spot IDs or seven incompletely routed special IDs can be selected
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -96,6 +96,22 @@ the word `0xFFFF` and is shared by all nine pointer slots for enum values `MAPSP
 decoder can never receive them. That reachability question remains **Unknown** rather than treating
 the sentinel as a valid compressed stream.
 
+The seventh corpus closes `data/graphics/specialsprites`. Ten pointer slots resolve to five initial
+containers with five 32-byte palettes; `SpecialSprite_EvilSpiritAlt` contributes a sixth,
+animation-only Stack stream. Five streams decode to 2,304 bytes and the Nazca Ship exploration stream
+to 5,184 bytes, totaling 16,704 decoded bytes from 6,582 compressed bytes. All ten pointers and all
+six contiguous payloads match the ROM; tracked output keeps hashes/statistics rather than palettes or
+tile bytes. `AnimateSpecialSprite` reuses the Evil Spirit and Zeon streams after their 32-byte
+palettes and selects the separate Evil Spirit alternate stream for its middle mode.
+
+The routing boundary is intentionally asymmetric. `LoadSpecialSprite` converts map-sprite ID to
+`255 - ID`; the pointer table has ten indices (0-9), while both load and update dispatch tables have
+only nine (0-8). Therefore IDs 247-255 are fully routed, ID 246 has a Kraken pointer but no dispatch
+entry, and IDs 240-245 have neither. A complete symbolic scan of the pinned ASM finds actual source
+references only for IDs 251-255; IDs 240-250 and regular free-spot IDs 237-239 have none outside their
+enum definitions. This is strong source evidence, but dynamic byte writes or encoded script values
+remain capable of defeating a name-only scan, so runtime unreachability remains **Unknown**.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -122,9 +138,9 @@ screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 This batch starts no emulator. The Stack decoder should next expand through remaining embedded
 containers such as special screens. Rendered behavior joins the shared presentation matrix: display
 initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
-updates, and flash duration can share VDP/RAM observation points. The IDs 237-239 sentinel question
-should first be searched across map/entity/script data; it needs runtime observation only if static
-reachability remains ambiguous.
+updates, and flash duration can share VDP/RAM observation points. Static symbolic search is now
+complete for reserved IDs 237-250; the next reachability step must inspect encoded records and
+runtime writes rather than repeating text search.
 
 ## Reproduction
 
@@ -136,10 +152,11 @@ uv run sf2 h2 battle-sprites
 uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
 uv run sf2 h2 map-sprites
+uv run sf2 h2 special-sprites
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
-`portrait-graphics-decode.json` and `map-sprite-decode.json`.
+`portrait-graphics-decode.json`, `map-sprite-decode.json`, and `special-sprite-decode.json`.

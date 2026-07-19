@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-sprite-decode-v1",
+  "outputSha256": "E3DF0CEDBA48E8A5BB30D639868B9CB90C6C4FFA660D8ADA56DAB9969CEEFCA7",
+  "summary": {
+    "pointerCount": 10, "uniquePointerPayloadCount": 5, "aliasPointerCount": 5,
+    "resourceCount": 6, "paletteCount": 5, "animationOnlyStreamCount": 1,
+    "battleSizedStreamCount": 5, "explorationSizedStreamCount": 1,
+    "sourceByteCount": 6742, "paletteByteCount": 160, "compressedByteCount": 6582,
+    "decodedByteCount": 16704, "commandGroupCount": 262, "literalWordCount": 3491,
+    "copyCommandCount": 653, "copiedWordCount": 4861, "minimumTrailingBits": 36,
+    "maximumTrailingBits": 44, "maximumCopyOffsetWords": 960, "maximumCopyLengthWords": 33,
+    "loadDispatchSlotCount": 9, "updateDispatchSlotCount": 9,
+    "fullyRoutedMapSpriteCount": 9, "pointerOnlyMapSpriteCount": 1,
+    "unbackedSpecialMapSpriteCount": 6, "sourceReferencedSpecialMapSpriteCount": 5,
+    "regularSentinelSymbolReferenceCount": 0, "pointerTableRomParityCount": 10,
+    "payloadRomParityCount": 6
+  }
+}

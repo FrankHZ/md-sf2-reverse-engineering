@@ -187,6 +187,7 @@ def _graphics_facts(disasm: Path) -> dict[str, Any]:
             "battleWeaponAndGroundStackCorporaConfirmed": True,
             "mapSpriteBasicCorpusConfirmed": True,
             "portraitStackCorpusConfirmed": True,
+            "specialSpriteStackCorpusConfirmed": True,
             "remainingDecompressionCorporaRemainQueued": True,
             "visualAndVdpTimingRemainQueued": True,
             "specialSpriteFramePresentationRemainsQueued": True,

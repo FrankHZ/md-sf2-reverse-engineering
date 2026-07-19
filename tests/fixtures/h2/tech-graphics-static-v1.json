@@ -68,6 +68,7 @@
         "battleWeaponAndGroundStackCorporaConfirmed": true,
         "mapSpriteBasicCorpusConfirmed": true,
         "portraitStackCorpusConfirmed": true,
+        "specialSpriteStackCorpusConfirmed": true,
         "remainingDecompressionCorporaRemainQueued": true,
         "visualAndVdpTimingRemainQueued": true,
         "specialSpriteFramePresentationRemainsQueued": true

@@ -44,8 +44,9 @@ one of three pointers in `pt_Mapsprites`, call `LoadBasicCompressedData` into
 `FF8002_LOADING_SPACE`, and DMA `0x120` words (`0x240` bytes) to the entity's VRAM slot. IDs 240-255
 take the separate special-sprite route. The data contract confirms 669 valid streams of that exact
 size, but IDs 237-239 share a raw `0xFFFF` placeholder even though they are below the route cutoff.
-Whether every caller and content producer excludes those three reserved IDs remains **Unknown** and
-is owned as one data-flow/runtime question, not inferred from the enum names.
+A complete symbolic scan finds no source references to those enums, but whether encoded values and
+runtime writes exclude the three reserved IDs remains **Unknown** and is owned as one data-flow/
+runtime question rather than inferred from name absence.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -58,9 +59,9 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 Entity movement timing, dialogue typewriter/render timing, end-credit presentation, and contextual
 meaning of script commands remain grouped runtime questions. They will share scenario setup and
-observation buffers rather than becoming one emulator launch per opcode. The reserved map-sprite
-IDs 237-239 should first receive a complete static reference search, then join the shared entity
-sprite matrix only if necessary. This batch adds no emulator run.
+observation buffers rather than becoming one emulator launch per opcode. Symbolic reference search
+for reserved map-sprite IDs 237-250 is complete; encoded records and runtime writes are the remaining
+static frontier before one shared entity-sprite matrix. This batch adds no emulator run.
 
 ## Reproduction
 

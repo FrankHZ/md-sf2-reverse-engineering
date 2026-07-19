@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-special-sprite-decode-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "table", "summary", "routing", "regularSentinelReferences", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-special-sprite-decode-v1" },
+    "upstreamCommit": { "type": "string" }, "romSha256": { "type": "string" },
+    "function": { "type": "object" }, "table": { "type": "object" },
+    "summary": { "type": "object" },
+    "routing": { "type": "array", "minItems": 16, "maxItems": 16 },
+    "regularSentinelReferences": { "type": "array", "minItems": 3, "maxItems": 3 },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" }, "uniqueItems": true }
+  }
+}
