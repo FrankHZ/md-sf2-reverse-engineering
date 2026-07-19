@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II Z80 music-bank source and ROM-parity inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "rom", "scope", "summary", "entryPaths",
+    "includeEdges", "songPaths", "facts", "strictIndexExclusion", "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-sound-data-static-v1" },
+    "upstream": { "type": "object" },
+    "rom": { "type": "object" },
+    "scope": { "const": "data/sound" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "bankEntryFileCount", "sharedDefinitionFileCount", "songFileCount",
+        "transitiveIncludeFileCount", "strictH1IndexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 41 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 1 },
+        "bankEntryFileCount": { "const": 2 },
+        "sharedDefinitionFileCount": { "const": 2 },
+        "songFileCount": { "const": 37 },
+        "transitiveIncludeFileCount": { "const": 39 },
+        "strictH1IndexedFileCount": { "const": 0 }
+      }
+    },
+    "entryPaths": { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true },
+    "includeEdges": { "type": "array", "minItems": 41, "maxItems": 41 },
+    "songPaths": { "type": "array", "minItems": 37, "maxItems": 37, "uniqueItems": true },
+    "facts": { "type": "object" },
+    "strictIndexExclusion": { "type": "string", "minLength": 1 },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 41, "maxItems": 41 }
+  }
+}

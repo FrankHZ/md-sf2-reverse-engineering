@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-sound-data-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "expected": {
+    "facts": {
+      "assemblyCpu": "z80",
+      "bankAddressSpaceOrigin": 32768,
+      "banks": {
+        "bank0": {
+          "sourcePath": "data/sound/musicbank0/musicbank0.asm",
+          "romOffset": 2064384,
+          "sizeBytes": 32768,
+          "sha256": "EB1A77668279D147FC887CB5E1FBCCA3E037CDC648C63FC78AEBB158E377822D",
+          "pointerSlotCount": 32,
+          "uniquePointerTargetCount": 29,
+          "songIncludeCount": 27,
+          "romParity": true
+        },
+        "bank1": {
+          "sourcePath": "data/sound/musicbank1/musicbank1.asm",
+          "romOffset": 2031616,
+          "sizeBytes": 32768,
+          "sha256": "978575483EC8354379C5099911ADA611BC7BEC96E58E501BF29B71064C72756C",
+          "pointerSlotCount": 32,
+          "uniquePointerTargetCount": 10,
+          "songIncludeCount": 10,
+          "romParity": true
+        }
+      },
+      "romLayoutOrder": ["bank1", "bank0"],
+      "sourceContentParsed": false,
+      "musicSemanticsParsed": false
+    },
+    "strictIndexExclusion": "music sources are assembled in a separate Z80 address space and included into the 68000 ROM as unlabeled bank binaries",
+    "runtimeQuestions": [
+      "music-command-and-channel-interpreter-semantics",
+      "tempo-loop-and-instrument-timing",
+      "bank-selection-and-cross-bank-fallback-behavior"
+    ]
+  }
+}

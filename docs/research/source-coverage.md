@@ -23,13 +23,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Indexed findings | 1,430 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
+| H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
 | Address bindings | 1,826 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
-The H2 surface is broader than the 980 indexed data files. It currently includes the complete
-1,390-file map ASM build graph plus 281 fixed
+The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
+graph, the 41-file Z80 music graph with two bank/ROM parity checks, plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, and the Battle 01 placement/scene
@@ -218,5 +219,6 @@ aggregate, reaching 190/1,690. The complete 1,390-file map ASM graph then adds 7
 symbol bindings while keeping 662 include-site-only bodies and one unlabeled container explicit,
 reaching 917/1,690 without an emulator launch. The following 65-file auxiliary graphics, scripting,
 technical, and sprite-dialogue batch adds 63 honest bindings and two explicit alternates, reaching
-980/1,690. Next move through sound data while the presentation and map runtime questions stay
-consolidated.
+980/1,690. The final 41-file Z80 music directory then closes data-ASM discovery at 1,690/1,690 H2
+inventory; strict 68000 H1 reach remains 980/1,690 by design. Static work now moves from discovery to
+deeper table/script semantics while presentation, map, and sound runtime questions stay consolidated.

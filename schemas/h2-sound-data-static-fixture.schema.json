@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 Z80 music-bank static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-sound-data-static-v1" },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["facts", "strictIndexExclusion", "runtimeQuestions"],
+      "properties": {
+        "facts": { "type": "object" },
+        "strictIndexExclusion": { "type": "string", "minLength": 1 },
+        "runtimeQuestions": {
+          "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
+        }
+      }
+    }
+  }
+}

@@ -244,6 +244,13 @@ def test_auxiliary_data_has_a_source_only_inventory_command() -> None:
     assert args.output_path is None
 
 
+def test_sound_data_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "sound-data"])
+    assert args.h2_command == "sound-data"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
 def test_battle_ai_inventory_classifies_calls(tmp_path: Path) -> None:
     source = tmp_path / "sample.asm"
     source.write_text(

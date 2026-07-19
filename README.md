@@ -23,7 +23,9 @@ items/spells/enemies 的 19 个布局文件也已完整盘点并复用既有深�
 达到 46/46 真实 H1 绑定；battle cutscene 路由与 terrain 容器再新增 7 个真实绑定和 1 个明确
 alternate。完整 `data/maps` 树的 1,390 个 ASM 已全部进入 H2 构建图盘点，其中 727 个文件拥有
 文件内全局符号和真实 H1 地址；graphics/scripting/tech/sprite-dialogue 的 65 文件边界也已完成
-H2，其中 63 个拥有真实 H1 绑定。严格 data-file reach 现为 980/1,690（57.99%）。H2 的 14 个 ROM
+H2，其中 63 个拥有真实 H1 绑定。最后 41 个 Z80 music ASM 也完成 include 图与两组 32 KiB
+bank/ROM 字节一致性验证，因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
+data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 

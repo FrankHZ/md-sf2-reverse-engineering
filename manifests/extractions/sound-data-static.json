@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-sound-data-static-v1",
+  "outputSha256": "0B9C6FA6F60925CBD0580CED06B7A67A6AA1A1E29C13D4ED1AFFE826E85D5D4F",
+  "summary": {
+    "fileCount": 41,
+    "sourceLineCount": 40644,
+    "statementCount": 40170,
+    "globalLabelCount": 468,
+    "bankEntryFileCount": 2,
+    "sharedDefinitionFileCount": 2,
+    "songFileCount": 37,
+    "transitiveIncludeFileCount": 39,
+    "strictH1IndexedFileCount": 0
+  }
+}

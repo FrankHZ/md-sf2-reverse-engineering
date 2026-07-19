@@ -36,6 +36,7 @@ from sf2tool.h2.remaining_core import verify_remaining_core_inventory
 from sf2tool.h2.screens import verify_special_screen_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
 from sf2tool.h2.services import verify_service_inventory
+from sf2tool.h2.sound_data import verify_sound_data_inventory
 from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
@@ -311,6 +312,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_auxiliary_data, rom=False)
     h2_auxiliary_data.add_argument("--output-path", type=_path)
+    h2_sound_data = h2_commands.add_parser(
+        "sound-data", help="inventory Z80 music sources and verify bank bytes against the ROM"
+    )
+    _add_local_paths(h2_sound_data)
+    h2_sound_data.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -729,6 +735,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "auxiliary-data":
         print_record(
             verify_auxiliary_data_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "sound-data":
+        print_record(
+            verify_sound_data_inventory(
+                args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
             )
