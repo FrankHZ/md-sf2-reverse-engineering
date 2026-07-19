@@ -21,6 +21,8 @@ MAPLOAD_PATH = Path("code/common/maps/mapload.asm")
 ANIMATIONS_PATH = Path("code/common/maps/animations.asm")
 EXPLORATION_PATH = Path("code/gameflow/exploration/exploration.asm")
 ENTITY_SCRIPT_PATH = Path("code/common/scripting/entity/entityscriptengine_2.asm")
+BASE_VINTS_PATH = Path("code/gameflow/battle/battlevints.asm")
+VINT_PATH = Path("code/common/tech/interrupts/vint.asm")
 MANIFEST = repo_path("manifests/extractions/map-content-static.json")
 SCHEMA = repo_path("schemas/map-content-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/map-content-static-v1.json")
@@ -227,6 +229,8 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
     animations = read_upstream_text(disasm / ANIMATIONS_PATH)
     exploration = read_upstream_text(disasm / EXPLORATION_PATH)
     entity_script = read_upstream_text(disasm / ENTITY_SCRIPT_PATH)
+    base_vints = read_upstream_text(disasm / BASE_VINTS_PATH)
+    vint = read_upstream_text(disasm / VINT_PATH)
     layout_offset_references = sum(
         read_upstream_text(path).count("MAPDATA_OFFSET_LAYOUT")
         for path in disasm.rglob("*.asm")
@@ -444,6 +448,68 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
         ),
         "map animations",
     )
+    animation_update = animations[
+        animations.index("VInt_UpdateMapAnimations:") : animations.index(
+            "; End of function VInt_UpdateMapAnimations"
+        )
+    ]
+    _require_ordered_fragments(
+        animation_update,
+        (
+            "move.l  ((TILE_ANIMATION_DATA_ADDRESS-$1000000)).w,d0",
+            "ble.s   @Return",
+            "subq.w  #1,((TILE_ANIMATION_COUNTER-$1000000)).w",
+            "bne.s   @Return",
+            "move.w  (a0)+,d1",
+            "bge.w   loc_47A2",
+            "movea.l MAPDATA_OFFSET_ANIMATIONS(a0),a0",
+            "tst.l   (a0)+",
+            "move.w  (a0)+,d1",
+            "move.w  (a0)+,d0",
+            "move.w  (a0)+,d2",
+            "move.w  (a0)+,((TILE_ANIMATION_COUNTER-$1000000)).w",
+            "move.l  a0,((TILE_ANIMATION_DATA_ADDRESS-$1000000)).w",
+            "lsl.w   #5,d1",
+            "lsl.w   #5,d2",
+            "lsl.w   #NIBBLE_SHIFT_COUNT,d0",
+            "bsr.w   ApplyVIntVramDma",
+        ),
+        "map-animation update",
+    )
+    _require_ordered_fragments(
+        mapload,
+        (
+            "move.w  #1,((TILE_ANIMATION_COUNTER-$1000000)).w",
+            "move.l  $18(a5),((TILE_ANIMATION_DATA_ADDRESS-$1000000)).w",
+            "move.w  (a1)+,d0",
+            "bsr.w   LoadStackCompressedData",
+            "move.w  (a1)+,d7",
+            "lsl.w   #5,d7",
+            "bsr.w   CopyBytes",
+            "addq.l  #4,((TILE_ANIMATION_DATA_ADDRESS-$1000000)).w",
+            "move.b  ((CURRENT_MAP-$1000000)).w,((TILE_ANIMATION_MAP_INDEX-$1000000)).w",
+        ),
+        "map-animation load",
+    )
+    callback_order = re.findall(r"dc\.l\s+(VInt_[A-Za-z0-9_]+)", base_vints)
+    expected_callback_order = [
+        "VInt_UpdateMapPlanes",
+        "VInt_UpdateEntities",
+        "VInt_UpdateViewData",
+        "VInt_UpdateScrollingData",
+        "VInt_UpdateSprites",
+        "VInt_UpdateWindows",
+        "VInt_UpdateMapAnimations",
+    ]
+    if callback_order != expected_callback_order:
+        raise ValueError("base VInt callback order drift")
+    _require_ordered_fragments(
+        vint,
+        ("bsr.w   ProcessVdpQueues", "bsr.w   CallContextualFunctions"),
+        "VInt DMA/context order",
+    )
+    if vint.count("bsr.w   ProcessDmaQueue") != 1:
+        raise ValueError("VInt DMA consumer count drift")
     return {
         "entryBytes": 46,
         "tilesetBytes": 6,
@@ -506,6 +572,21 @@ def _source_facts(disasm: Path) -> dict[str, Any]:
         "movementMarkersMutuallyExclusiveBeforeDoorMutation": True,
         "areaSelectionSkipsRemaining22Bytes": True,
         "animationRunsFromVInt": True,
+        "animationHeaderFields": ["tileset", "cachedTileCount"],
+        "animationEntryFields": [
+            "replacementStartTile",
+            "tileCount",
+            "targetStartTile",
+            "counter",
+        ],
+        "animationInitialCounter": 1,
+        "animationCachedBytesPerTile": 32,
+        "animationDmaLengthWordsPerTile": 16,
+        "animationCounterPolicy": "decrement-each-enabled-callback-and-advance-on-zero",
+        "animationTerminatorPolicy": "restart-first-entry-from-current-map-table",
+        "baseVIntCallbackOrder": callback_order,
+        "animationDmaQueuedAfterCurrentVIntDmaPass": True,
+        "animationDmaEarliestProcessing": "next-enabled-vint",
         "declaredLayoutOffset": 8,
         "actualLayoutPointerOffset": 10,
         "declaredLayoutOffsetReferenceCount": layout_offset_references - 1,
@@ -680,6 +761,8 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
             "animations": ANIMATIONS_PATH.as_posix(),
             "exploration": EXPLORATION_PATH.as_posix(),
             "entityScript": ENTITY_SCRIPT_PATH.as_posix(),
+            "baseVIntFunctions": BASE_VINTS_PATH.as_posix(),
+            "vIntEngine": VINT_PATH.as_posix(),
         },
         "table": {"pt_MapData": pointer_table_address},
         "summary": summary,
@@ -690,7 +773,7 @@ def build_map_content_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         "sourceSections": source_sections,
         "binaryPayloads": binary_payloads,
         "runtimeQuestions": [
-            "map-animation-vdp-frame-timing",
+            "map-animation-vdp-visible-frame-timing",
             "map-block-layout-rendered-parity",
         ],
     }

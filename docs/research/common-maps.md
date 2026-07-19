@@ -33,7 +33,8 @@ decoded block. Maps 24 and 46 reuse both payloads from maps 23 and 7. This close
 shape without tracking the decoded copyrighted layouts; rendered VDP parity remains separate.
 
 Map VInt bit 0 updates plane A and refreshes window layout when present; bit 1 updates plane B. Tile
-animation requires a positive data pointer, counts down, and performs VInt DMA. The large camera state
+animation requires a positive data pointer, counts down, wraps on its terminator, and queues VInt DMA
+after the current VInt's queue-processing pass. The large camera state
 machine and unused randomized loader are hash/call inventoried, while exact camera and VDP timing stay
 in the grouped presentation runtime queue. This batch adds no emulator run.
 

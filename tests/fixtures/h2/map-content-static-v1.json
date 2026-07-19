@@ -124,12 +124,30 @@
     "movementMarkersMutuallyExclusiveBeforeDoorMutation": true,
     "areaSelectionSkipsRemaining22Bytes": true,
     "animationRunsFromVInt": true,
+    "animationHeaderFields": ["tileset", "cachedTileCount"],
+    "animationEntryFields": ["replacementStartTile", "tileCount", "targetStartTile", "counter"],
+    "animationInitialCounter": 1,
+    "animationCachedBytesPerTile": 32,
+    "animationDmaLengthWordsPerTile": 16,
+    "animationCounterPolicy": "decrement-each-enabled-callback-and-advance-on-zero",
+    "animationTerminatorPolicy": "restart-first-entry-from-current-map-table",
+    "baseVIntCallbackOrder": [
+      "VInt_UpdateMapPlanes",
+      "VInt_UpdateEntities",
+      "VInt_UpdateViewData",
+      "VInt_UpdateScrollingData",
+      "VInt_UpdateSprites",
+      "VInt_UpdateWindows",
+      "VInt_UpdateMapAnimations"
+    ],
+    "animationDmaQueuedAfterCurrentVIntDmaPass": true,
+    "animationDmaEarliestProcessing": "next-enabled-vint",
     "declaredLayoutOffset": 8,
     "actualLayoutPointerOffset": 10,
     "declaredLayoutOffsetReferenceCount": 0
   },
   "runtimeQuestions": [
-    "map-animation-vdp-frame-timing",
+    "map-animation-vdp-visible-frame-timing",
     "map-block-layout-rendered-parity"
   ]
 }

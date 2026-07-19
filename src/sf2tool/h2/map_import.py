@@ -125,7 +125,7 @@ def _decode_items(data: bytes, count: int) -> list[dict[str, int]]:
 def _decode_animations(data: bytes, count: int) -> dict[str, Any]:
     return {
         "tileset": _u16(data, 0),
-        "speed": _u16(data, 2),
+        "cachedTileCount": _u16(data, 2),
         "entries": [
             {
                 "replacementStartTile": _u16(data, offset),
@@ -547,8 +547,7 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "maps": maps,
         "resources": resources,
         "runtimeQuestions": [
-            "map-transition-event-precedence-and-state-persistence",
-            "map-animation-vdp-frame-timing",
+            "map-animation-vdp-visible-frame-timing",
             "canonical-map-rendered-vdp-parity",
         ],
     }

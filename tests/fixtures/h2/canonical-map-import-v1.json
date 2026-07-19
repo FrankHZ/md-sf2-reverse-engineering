@@ -93,8 +93,7 @@
     "rawFlagsPreserved": true
   },
   "runtimeQuestions": [
-    "map-transition-event-precedence-and-state-persistence",
-    "map-animation-vdp-frame-timing",
+    "map-animation-vdp-visible-frame-timing",
     "canonical-map-rendered-vdp-parity"
   ]
 }

@@ -27,7 +27,7 @@
     "sources": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["entries", "macros", "enums", "mapLoader", "animations", "exploration", "entityScript"],
+      "required": ["entries", "macros", "enums", "mapLoader", "animations", "exploration", "entityScript", "baseVIntFunctions", "vIntEngine"],
       "properties": {
         "entries": { "type": "string" },
         "macros": { "type": "string" },
@@ -35,7 +35,9 @@
         "mapLoader": { "type": "string" },
         "animations": { "type": "string" },
         "exploration": { "type": "string" },
-        "entityScript": { "type": "string" }
+        "entityScript": { "type": "string" },
+        "baseVIntFunctions": { "type": "string" },
+        "vIntEngine": { "type": "string" }
       }
     },
     "table": { "$ref": "#/$defs/integerMap" },
@@ -68,6 +70,16 @@
         "movementMarkersMutuallyExclusiveBeforeDoorMutation",
         "areaSelectionSkipsRemaining22Bytes",
         "animationRunsFromVInt",
+        "animationHeaderFields",
+        "animationEntryFields",
+        "animationInitialCounter",
+        "animationCachedBytesPerTile",
+        "animationDmaLengthWordsPerTile",
+        "animationCounterPolicy",
+        "animationTerminatorPolicy",
+        "baseVIntCallbackOrder",
+        "animationDmaQueuedAfterCurrentVIntDmaPass",
+        "animationDmaEarliestProcessing",
         "declaredLayoutOffset",
         "actualLayoutPointerOffset",
         "declaredLayoutOffsetReferenceCount"
@@ -106,6 +118,16 @@
         "movementMarkersMutuallyExclusiveBeforeDoorMutation": { "type": "boolean" },
         "areaSelectionSkipsRemaining22Bytes": { "type": "boolean" },
         "animationRunsFromVInt": { "type": "boolean" },
+        "animationHeaderFields": { "type": "array", "items": { "type": "string" } },
+        "animationEntryFields": { "type": "array", "items": { "type": "string" } },
+        "animationInitialCounter": { "type": "integer", "minimum": 0 },
+        "animationCachedBytesPerTile": { "type": "integer", "minimum": 0 },
+        "animationDmaLengthWordsPerTile": { "type": "integer", "minimum": 0 },
+        "animationCounterPolicy": { "type": "string" },
+        "animationTerminatorPolicy": { "type": "string" },
+        "baseVIntCallbackOrder": { "type": "array", "items": { "type": "string" } },
+        "animationDmaQueuedAfterCurrentVIntDmaPass": { "type": "boolean" },
+        "animationDmaEarliestProcessing": { "type": "string" },
         "declaredLayoutOffset": { "type": "integer", "minimum": 0 },
         "actualLayoutPointerOffset": { "type": "integer", "minimum": 0 },
         "declaredLayoutOffsetReferenceCount": { "type": "integer", "minimum": 0 }

@@ -4,7 +4,8 @@
   private block/layout payloads, record sizes, aggregate record counts, their canonical ROM bytes,
   the deterministic engine-neutral import assembled from them, and the static flag/roof/step/warp
   consumer phases, scan policies, and path-specific working-layout rebuild/preservation rules
-- Status: **Unknown** for rendered layout parity and exact VDP animation frame timing
+  plus map-animation logical cadence and DMA queue phase
+- Status: **Unknown** for rendered layout parity and exact VDP-visible animation timing
 - Evidence date: 2026-07-19
 - ROM SHA-256: `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM`
@@ -58,7 +59,9 @@ and compares all 12,576 resulting bytes with the canonical ROM.
 | animations | 32 | 108 entries in 32 tables |
 
 An area record is 30 bytes. Flag, step, roof, warp, and animation-entry records are eight bytes;
-items are four bytes; animation headers are four bytes. Variable tables use a two-byte `$FFFF`
+items are four bytes; animation headers are four bytes. The animation header fields are tileset and
+cached tile count—not speed—and each entry stores replacement start, tile count, VRAM target, and
+logical counter. Variable tables use a two-byte `$FFFF`
 terminator. Three other-item sections include an assembled `rts` after their terminator (maps 5, 10,
 and 64); those six code bytes are part of source/ROM parity but are unreachable to the item scanner,
 which stops when the first coordinate byte is negative.
@@ -87,8 +90,14 @@ Static consumers confirm the important ownership rules:
   preserving reload path;
 - step and roof records advance by eight bytes, item records by four, and warp records by the
   eight-byte enum size;
-- `VInt_UpdateMapAnimations` consumes the selected map's animation table during vertical interrupt
-  handling.
+- map load initializes the animation counter to one, decompresses the header's tileset, and caches
+  exactly 32 bytes per header tile. `VInt_UpdateMapAnimations` is the last of seven base contextual
+  callbacks. Each enabled callback decrements the current entry counter and advances on zero; the
+  `$FFFF` terminator restarts at the first entry of the current map's table;
+- an advancing entry queues 16 DMA words per tile from the cached tileset. Because the main VInt
+  processes the existing DMA queue before contextual callbacks, this newly queued transfer cannot
+  be processed until the next enabled VInt. Static evidence defines this logical/queue cadence, not
+  the precise scanline at which the new pixels become visible.
 
 ## Private Binary Payloads
 
@@ -160,10 +169,11 @@ skip and exactly one modeled indirect init target for active, scripted, and dire
 A following nine-case event-dispatch matrix confirms entity, zone, and item first-match selection in
 one BizHawk launch without executing the selected scripts. Static parsing now closes the consumer
 phases, first-match/all-match policies, overlap direction, movement-marker exclusivity, target check
-order, and working-layout rebuild/preservation by load path. Two coherent presentation questions
+order, working-layout rebuild/preservation by load path, animation counters/wrap, and the one-VInt
+DMA queue phase. Two coherent presentation questions
 remain:
 
-1. VInt/VDP frame timing for animation table updates;
+1. VDP-visible timing for animation table updates;
 2. decoded block/layout rendered-map parity against the VDP presentation path.
 
 Both belong with the graphics/VDP batch; neither justifies a one-map runtime fixture now.

@@ -4,7 +4,7 @@
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
   dispatch rules, static transition-consumer priority, and load-path-specific layout persistence
 - **Unknown original behavior:** normal-story
-  reachability of the non-empty map 52 direct-`rts` event setup, exact animation/scroll frame timing,
+  reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible animation/scroll timing,
   and final VDP-visible rendered parity
 - Remake status: implementation-neutral Phase 3 contract; no engine has been selected
 
@@ -162,9 +162,18 @@ evidence and remains outside this static priority rule.
 
 ## Animation and Presentation
 
-Animation tables contain one tileset/speed header and ordered replacement entries. The original
-advances them from VInt and performs DMA. A modern engine MAY schedule equivalent updates in its frame
-loop, but original-fidelity mode needs a shared timing fixture before claiming frame-exact parity.
+Animation tables contain a tileset plus cached-tile-count header and ordered replacement entries.
+The upstream macro's `speed?` comment is not the contract: the consumer multiplies that word by 32
+and uses it as the byte length copied into the animation cache. Each entry owns replacement start,
+tile count, target start, and a logical counter. Map load initializes the counter to one. Each
+enabled base VInt callback decrements it, submits the entry when it reaches zero, and reloads that
+entry's counter; `$FFFF` wraps to the first entry of the current map table.
+
+Each submitted tile queues 16 words (32 bytes) from the cache to VRAM. Animation is the last base
+contextual callback, while the current VInt's DMA queue was processed earlier, so the transfer's
+earliest processing point is the next enabled VInt. A modern engine MUST preserve this logical
+cadence in original-fidelity mode. Exact VDP-visible scanline/frame parity still belongs to the
+shared graphics fixture.
 
 Camera interpolation, plane composition, palette application, window interaction, and VDP-visible
 output are presentation adapters over this contract. They do not own map content or event state.

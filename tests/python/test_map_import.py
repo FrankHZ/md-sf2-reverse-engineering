@@ -22,3 +22,25 @@ def test_source_table_decoders_preserve_raw_values() -> None:
 def test_item_table_terminator_excludes_trailing_rts() -> None:
     item = _decode_source_table("otherItems", bytes.fromhex("181A8601FFFF4E75"), 1, True)
     assert item == [{"x": 24, "y": 26, "flag": 134, "item": 1}]
+
+
+def test_animation_header_names_cached_tile_count_not_speed() -> None:
+    animation = _decode_source_table(
+        "animations",
+        bytes.fromhex("002E00200000001001700014FFFF"),
+        1,
+        False,
+    )
+
+    assert animation == {
+        "tileset": 46,
+        "cachedTileCount": 32,
+        "entries": [
+            {
+                "replacementStartTile": 0,
+                "tileCount": 16,
+                "targetStartTile": 0x170,
+                "counter": 20,
+            }
+        ],
+    }
