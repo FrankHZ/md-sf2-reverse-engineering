@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-action-choice-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "battleId": 1,
+  "observationBoundary": "Fourteen cases replay one natural Battle 01 entry into DetermineBattleactionForAttackAiCommand from an in-memory core state. Lua replaces only the three reachable-target list families, selected spell entry, base RNG seed, and the low byte of RANDOM_SEED_COPY used by the thinking-AI RNG. Original action selection, both RNG calls, signed priority comparison, reverse tie collection, movement tie-break, and return execute unchanged.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": { "entryAddress": 60886, "callerReturnAddress": 59292 },
+  "ram": {
+    "seedAddress": 16768676, "thinkingSeedCopyAddress": 16768944,
+    "autoBattleToggleAddress": 16756907,
+    "attackCountAddress": 16746500, "spellCountAddress": 16746502, "itemCountAddress": 16746504,
+    "spellEntryAddress": 16746508,
+    "attackTargetsAddress": 16746510, "spellTargetsAddress": 16746558, "itemTargetsAddress": 16746606,
+    "attackMovementsAddress": 16746654, "spellMovementsAddress": 16746702, "itemMovementsAddress": 16746750,
+    "attackPrioritiesAddress": 16746798, "spellPrioritiesAddress": 16746846, "itemPrioritiesAddress": 16746894
+  },
+  "cases": [
+    { "id": "none", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [], "movements": [], "priorities": [] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "physical-only", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "spell-only", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [], "movements": [], "priorities": [] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "item-only", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [], "movements": [], "priorities": [] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [4], "movements": [1], "priorities": [10] } },
+    { "id": "spell-item-roll0", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [], "movements": [], "priorities": [] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [4], "movements": [1], "priorities": [10] } },
+    { "id": "physical-spell-roll0", "seed": 0, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "physical-spell-roll2", "seed": 1680, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "physical-aqua", "seed": 4660, "thinkingSeed": 51, "spellEntry": 40, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "physical-item-roll0", "seed": 0, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [4], "movements": [1], "priorities": [10] } },
+    { "id": "physical-item-roll3", "seed": 2521, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [4], "movements": [1], "priorities": [10] } },
+    { "id": "all-roll0", "seed": 0, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [4], "movements": [1], "priorities": [10] } },
+    { "id": "all-roll1", "seed": 2521, "thinkingSeed": 104, "spellEntry": 11, "attack": { "targets": [2], "movements": [1], "priorities": [10] }, "spell": { "targets": [3], "movements": [1], "priorities": [10] }, "item": { "targets": [4], "movements": [1], "priorities": [10] } },
+    { "id": "tie-largest-movement", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [1, 2], "movements": [2, 5], "priorities": [10, 10] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [], "movements": [], "priorities": [] } },
+    { "id": "tie-equal-later-collected", "seed": 4660, "thinkingSeed": 51, "spellEntry": 11, "attack": { "targets": [1, 2], "movements": [5, 5], "priorities": [10, 10] }, "spell": { "targets": [], "movements": [], "priorities": [] }, "item": { "targets": [], "movements": [], "priorities": [] } }
+  ]
+}

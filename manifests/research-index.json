@@ -2093,11 +2093,55 @@
       "status": "confirmed",
       "symbol": "DetermineBattleactionForAttackAiCommand",
       "sourcePath": "code/gameflow/battle/ai/command/attack/determinebattleaction.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 60886 }],
-      "evidence": [{
-        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-action-choice-static-v1.json", "fixtureId": "sf2-battle-ai-action-choice-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
-        "bindings": [{ "addressId": "entry", "fixtureField": "function.determineActionEntryAddress" }]
-      }],
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 60886 },
+        { "id": "caller-return", "space": "rom", "kind": "observation", "value": 59292 },
+        { "id": "random-seed", "space": "ram", "kind": "state", "value": 16768676, "symbol": "RANDOM_SEED" },
+        { "id": "thinking-seed-copy", "space": "ram", "kind": "state", "value": 16768944, "symbol": "RANDOM_SEED_COPY" },
+        { "id": "auto-battle", "space": "ram", "kind": "state", "value": 16756907, "symbol": "AUTO_BATTLE_TOGGLE" },
+        { "id": "attack-count", "space": "ram", "kind": "state", "value": 16746500, "symbol": "FF8804_LOADING_SPACE" },
+        { "id": "spell-count", "space": "ram", "kind": "state", "value": 16746502, "symbol": "TARGETS_REACHABLE_BY_SPELL_NUMBER" },
+        { "id": "item-count", "space": "ram", "kind": "state", "value": 16746504, "symbol": "TARGETS_REACHABLE_BY_ITEM_NUMBER" },
+        { "id": "spell-entry", "space": "ram", "kind": "state", "value": 16746508, "symbol": "ATTACK_COMMAND_SPELL" },
+        { "id": "attack-targets", "space": "ram", "kind": "state", "value": 16746510, "symbol": "TARGETS_REACHABLE_BY_ATTACK_LIST" },
+        { "id": "spell-targets", "space": "ram", "kind": "state", "value": 16746558, "symbol": "TARGETS_REACHABLE_BY_SPELL_LIST" },
+        { "id": "item-targets", "space": "ram", "kind": "state", "value": 16746606, "symbol": "TARGETS_REACHABLE_BY_ITEM_LIST" },
+        { "id": "attack-movements", "space": "ram", "kind": "state", "value": 16746654, "symbol": "ATTACK_MOVEMENT_TO_REACHABLE_TARGETS" },
+        { "id": "spell-movements", "space": "ram", "kind": "state", "value": 16746702, "symbol": "SPELL_MOVEMENT_TO_REACHABLE_TARGETS" },
+        { "id": "item-movements", "space": "ram", "kind": "state", "value": 16746750, "symbol": "ITEM_MOVEMENT_TO_REACHABLE_TARGETS" },
+        { "id": "attack-priorities", "space": "ram", "kind": "state", "value": 16746798, "symbol": "ATTACK_TARGET_PRIORITIES_LIST" },
+        { "id": "spell-priorities", "space": "ram", "kind": "state", "value": 16746846, "symbol": "SPELL_TARGET_PRIORITIES_LIST" },
+        { "id": "item-priorities", "space": "ram", "kind": "state", "value": 16746894, "symbol": "ITEM_TARGET_PRIORITIES_LIST" }
+      ],
+      "evidence": [
+        {
+          "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-action-choice-static-v1.json", "fixtureId": "sf2-battle-ai-action-choice-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+          "bindings": [{ "addressId": "entry", "fixtureField": "function.determineActionEntryAddress" }]
+        },
+        {
+          "level": "H3", "fixture": "tests/fixtures/h3/battle-ai-action-choice-v1.json", "fixtureId": "sf2-battle-ai-action-choice-runtime-v1", "verifier": "src/sf2tool/h3/battle_ai_action.py",
+          "bindings": [
+            { "addressId": "entry", "fixtureField": "function.entryAddress" },
+            { "addressId": "caller-return", "fixtureField": "function.callerReturnAddress" },
+            { "addressId": "random-seed", "fixtureField": "ram.seedAddress" },
+            { "addressId": "thinking-seed-copy", "fixtureField": "ram.thinkingSeedCopyAddress" },
+            { "addressId": "auto-battle", "fixtureField": "ram.autoBattleToggleAddress" },
+            { "addressId": "attack-count", "fixtureField": "ram.attackCountAddress" },
+            { "addressId": "spell-count", "fixtureField": "ram.spellCountAddress" },
+            { "addressId": "item-count", "fixtureField": "ram.itemCountAddress" },
+            { "addressId": "spell-entry", "fixtureField": "ram.spellEntryAddress" },
+            { "addressId": "attack-targets", "fixtureField": "ram.attackTargetsAddress" },
+            { "addressId": "spell-targets", "fixtureField": "ram.spellTargetsAddress" },
+            { "addressId": "item-targets", "fixtureField": "ram.itemTargetsAddress" },
+            { "addressId": "attack-movements", "fixtureField": "ram.attackMovementsAddress" },
+            { "addressId": "spell-movements", "fixtureField": "ram.spellMovementsAddress" },
+            { "addressId": "item-movements", "fixtureField": "ram.itemMovementsAddress" },
+            { "addressId": "attack-priorities", "fixtureField": "ram.attackPrioritiesAddress" },
+            { "addressId": "spell-priorities", "fixtureField": "ram.spellPrioritiesAddress" },
+            { "addressId": "item-priorities", "fixtureField": "ram.itemPrioritiesAddress" }
+          ]
+        }
+      ],
       "documents": ["docs/research/battle-ai.md"]
     },
     {

@@ -15,6 +15,7 @@ the locked ROM instruction bytes.
 | --- | --- | --- | --- |
 | RNG | `GenerateRandomNumber` | `0x1600..0x1628` | `code/common/tech/randomnumbergenerator.asm` |
 | debug-aware RNG | `GenerateRandomOrDebugNumber` | `0x1674..0x16BE` | same file |
+| thinking-AI RNG | `GenerateRandomNumberUnderD6` | `0x1AD0B4..0x1AD0DC` | `code/common/tech/thinkingairng.asm` |
 | derived-stat refresh | `UpdateCombatantStats` | `0x89CE..0x8A26` | `code/common/stats/updatecombatantstats.asm` |
 | level up | `LevelUp` | `0x9484` | `code/common/stats/levelup.asm` |
 | physical damage | `battlesceneScript_CalculateDamage` | `0xABBE..0xAC4E` | `code/gameflow/battle/battleactions/calculatedamage.asm` |
@@ -88,6 +89,22 @@ and every case preserves the caller's full D6/D7 values. The executable contract
 This is original debug tooling, not a player-facing combat rule or an automatic remake requirement.
 It remains valuable harness evidence because many battle-action callers use the wrapper and because
 the override explains controller-dependent results observed in the built-in Battle Test.
+
+## Confirmed: Thinking-AI RNG in Final Action Choice
+
+The AI's spell-versus-item branch uses a separate generator, not either RNG above. It updates only
+the low byte of `RANDOM_SEED_COPY` with `(seed * 541 + 12345) & 0xFF`, retrying until the unsigned
+byte is below the requested range. The final action caller requests range two, so accepted values are
+0 for spell and 1 for item; physical attack is ignored whenever both special target lists are
+non-empty.
+
+The fourteen-case Battle AI action-choice H3 writes controlled starting bytes 51 and 104, observes 0
+and 1 respectively, and confirms that `RANDOM_SEED` is not consumed on this branch. The same single
+emulator launch also covers the base-RNG physical/spell and physical/item branches.
+
+```powershell
+uv run sf2 h3 battle-ai-action
+```
 
 ## Confirmed Statically and at Runtime: Stat-Gain Randomization
 

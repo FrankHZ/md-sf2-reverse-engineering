@@ -1,7 +1,8 @@
 # Battle AI Static Inventory and Decision Contracts
 
 - Status: **Confirmed** for the pinned-source inventory, call metadata, action-filter, attack-priority,
-  healing/support/final-action/movement decision code shape, constants, and H1 symbol addresses
+  healing/support/final-action/movement decision code shape, constants, H1 symbol addresses, and the
+  final attack action/ordinary-priority target runtime matrix
 - Status: **Inferred** for caller-visible behavior not already reproduced by an H3 fixture
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -12,6 +13,7 @@
 
 ```powershell
 uv run sf2 h2 battle-ai
+uv run sf2 h3 battle-ai-action
 ```
 
 The Python-owned rail scans the complete
@@ -245,7 +247,7 @@ can call the helper routes directly is outside the original command contract.
 
 ## Final Attack Action and Target Choice
 
-`DetermineBattleactionForAttackAiCommand` first records whether physical, spell, and item target
+**Confirmed at runtime:** `DetermineBattleactionForAttackAiCommand` first records whether physical, spell, and item target
 lists are non-empty. With no option it returns Stay; physical alone always attacks. When physical and
 one special option coexist, `RNG(6)` gives the special option two rolls and physical four:
 
@@ -254,9 +256,12 @@ one special option coexist, `RNG(6)` gives the special option two rolls and phys
 | spell | 0, 1, 3, 5 | 2, 4 |
 | item | 0, 1, 2, 4 | 3, 5 |
 
-If physical is unavailable, the sole spell/item is always used. AQUA bypasses the 2/6 spell roll and
-is always cast when spell and physical are the only viable categories. When both spell and item are
-viable, `RNG(2)` chooses spell on 0 and item on 1; physical is ignored even if viable.
+If physical is unavailable, the sole spell/item is always used, but the ordinary spell/item path
+still consumes its `RNG(6)` result before noticing that physical is unavailable. AQUA alone bypasses
+that roll and is always cast when spell and physical are the only viable categories. When both spell and item are
+viable, physical is ignored even if viable. This branch does not use the base RNG: the thinking-AI
+generator repeatedly updates the low byte of `RANDOM_SEED_COPY` as
+`(seed * 541 + 12345) & 0xFF` until the result is below two, choosing spell on 0 and item on 1.
 
 Target priorities are byte values compared as **signed bytes**, starting from maximum zero. Values
 128–255 therefore act negative and can be ignored rather than outranking ordinary scores. The
@@ -268,7 +273,11 @@ movement values, the branch direction selects the **largest** stored movement va
 smallest, and equal values select the later collected target. For an enemy with critical priority
 15+, the command first applies one of four 32-class order tables selected by movement type; a spell
 forces the mage table. Only the earliest represented class cohort survives before movement tie-break.
-The 16 movement-type pointers and all four class arrays are preserved in canonical output.
+The 16 movement-type pointers and all four class arrays are preserved in canonical output. One
+BizHawk launch replays 14 cases from a natural Battle 01 entry and confirms all seven non-empty viability
+shapes represented by the matrix, both outcomes of each RNG family, AQUA bypass, ordinary priority,
+largest-movement selection, and equal-movement later-target selection. Signed priority boundaries,
+movement values above 127, and critical class cohorts remain queued.
 
 ## Move and Move-Order Commands
 
@@ -334,15 +343,13 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     no-fallback behavior when the selected target has no valid attack position;
 15. first-slot unsupported spell shadowing a later MUDDLE 2/DISPEL, plus direct helper probes showing
     the dormant ATTACK score 255 and BOOST 2/DISPEL 2 entry mismatch.
-16. all seven viability masks, confirming the 4:2 physical/special rolls, 1:1 spell/item roll, AQUA
-    bypass, and physical suppression when both special lists are present;
-17. priority bytes 127/128/255, critical class-order cohorts, reversed collection order, and movement
-    values below/above 128 to confirm the signed comparison and largest-value selection.
-18. empty normal-move target lists, confused first-side targets that are dead/off-map, neighbor class
+16. priority bytes 127/128/255, critical class-order cohorts, and movement values above 127 to confirm
+    the remaining signed-comparison boundaries;
+17. empty normal-move target lists, confused first-side targets that are dead/off-map, neighbor class
     swaps, Kraken costs, and radius 0/1 post-move fallback;
-19. Move Order ally-mode stack value, attack-before-move behavior, Stay-with-move-string semantics,
+18. Move Order ally-mode stack value, attack-before-move behavior, Stay-with-move-string semantics,
     and radius 0–3 exhaustion in the builder.
-20. dispatcher reserved/unknown no-op values, standby 3/8 immediate-stay distribution, the duplicated
+19. dispatcher reserved/unknown no-op values, standby 3/8 immediate-stay distribution, the duplicated
     X-to-Y move-order coordinate, and eligibility helper/caller polarity.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible

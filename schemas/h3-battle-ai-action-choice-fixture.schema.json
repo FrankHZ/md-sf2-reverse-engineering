@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battle AI action-choice runtime fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "battleId", "observationBoundary", "sharedHarnessFixture", "function", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-action-choice-runtime-v1" },
+    "romSha256": { "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object" },
+    "battleId": { "const": 1 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "type": "string" },
+    "function": { "type": "object" },
+    "ram": { "type": "object" },
+    "cases": {
+      "type": "array", "minItems": 14, "maxItems": 14,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "seed", "thinkingSeed", "spellEntry", "attack", "spell", "item"],
+        "properties": {
+          "id": { "type": "string" }, "seed": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "thinkingSeed": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "spellEntry": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "attack": { "$ref": "#/definitions/list" }, "spell": { "$ref": "#/definitions/list" }, "item": { "$ref": "#/definitions/list" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "list": {
+      "type": "object", "additionalProperties": false,
+      "required": ["targets", "movements", "priorities"],
+      "properties": {
+        "targets": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "movements": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "priorities": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } }
+      }
+    }
+  }
+}

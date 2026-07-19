@@ -24,8 +24,8 @@ It says that the file has been reached, not that every instruction in the file i
 | Indexed source files | 56 | 52 code files and 4 data files |
 | Executable code-file reach | 13.44% | 52 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.24% | 4 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H3 fixture files | 52 | Runtime contracts, often containing multiple cases |
-| Address bindings | 455 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 53 | Runtime contracts, often containing multiple cases |
+| Address bindings | 473 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -63,7 +63,7 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 99 records; its
-verifier reports 52 H3 fixtures and 455 bindings. The default `uv run sf2 verify` checks those
+verifier reports 53 H3 fixtures and 473 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -84,13 +84,14 @@ Phase 2 now works in subsystem batches:
 
 A one-case emulator fixture is now exceptional: use it only when the scenario cannot share setup or
 observation points safely. The normal batch target is one launch for a coherent branch matrix, as
-already demonstrated by the eight-case muddled ally/enemy action-guard fixture.
+demonstrated by the eight-case muddled ally/enemy action guard and fourteen-case final action-choice
+fixtures.
 
 ## Next Batch
 
 The `battle.ai` inventory, five action filters, potential-damage model, attack priority scripts,
 healing, support, final action choice, movement, dispatcher, and standby commands are now parsed, and
-all 26 battle-AI files have an H2 foothold. The next step freezes the consolidated ambiguity matrix
-and runs it in a small number of BizHawk launches while deeper special helpers continue statically.
-Runtime work remains deferred until the remaining audit produces a compact ambiguity matrix, then
-the matrix will run in one or a small number of BizHawk launches.
+all 26 battle-AI files have an H2 foothold. The first concentrated H3 matrix confirms final
+action/target choice in one launch. Static work now continues into deeper special helpers while the
+remaining signed-priority, critical-class, movement, dispatcher, and standby ambiguities accumulate
+for the next small set of shared-boundary launches.
