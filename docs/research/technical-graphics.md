@@ -3,7 +3,8 @@
 - Status: **Confirmed** for the pinned 11-file layout-owned inventory, H1 entry addresses, the two
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
-  battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
+  battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, the
+  complete ally/enemy battle-sprite animation sequence corpus, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
   special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora, plus the
   complete icon-storage/copy/highlight corpus and map-palette/effective-color-zero boundaries
@@ -75,6 +76,24 @@ containers provide 153 frames across three to six frames each; enemy containers 
 two to seven. Every ally frame decodes to 4,608 bytes (12×12 tiles) and every enemy frame to 6,144
 bytes (16×12 tiles), totaling 2,271,744 decoded bytes. The rail validates both pointer tables, all 86
 payloads, all 167 palettes, and all 408 streams against ROM boundaries without tracking image bytes.
+
+The corresponding sequence corpus is separate from those graphical frames. Its 87 ally and 121
+enemy pointers address 208 unique payloads totaling 3,800 bytes. Ally payloads have an eight-byte
+header followed by 2-10 eight-byte entries; enemy payloads have a four-byte header followed by 1-4
+four-byte entries. The parser validates both size formulas, both pointer tables, both top-level
+pointers, every payload, and all 421 entries against source, H1, and ROM.
+
+For allies, entry zero also supplies the optional second idle frame and weapon placement, so the
+attack consumer skips it and plays 147 of 234 entries. Enemy attacks play all 187 entries. Across both
+sides, frame index 15 means keep the previous battlesprite frame and appears 43 times; seven headers
+embed a non-`0xFF` spell-animation index, while all 208 terminate-spell bytes are zero. Ally entries
+also retain weapon frame/flip bits, layer 1/2, and signed offsets. These are format and consumer facts,
+not rendered timing or placement parity.
+
+Selectors use the combatant's base animation for ordinary attacks, add 40/60 for ally/enemy dodge,
+and accept direct special indices from 80/118. Ally regular spear attacks additionally remap KNTE,
+PLDN, and PGNT to 80-82. Static parsing does not yet prove the reachable base-index set for every
+combatant/weapon combination.
 
 The fifth corpus closes the remaining battle-scene weapon and ground layers. All 23 weapon streams
 decode to 8,192 bytes (four 64-tile views) and use 42 contiguous four-byte palette entries. The
@@ -239,6 +258,7 @@ uv run sf2 h2 tech-graphics
 uv run sf2 h2 battle-terrain
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
+uv run sf2 h2 battle-sprite-animations
 uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
 uv run sf2 h2 map-sprites
@@ -255,7 +275,8 @@ uv run sf2 research-index test
 
 Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
-`battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
+`battle-sprite-decode.json`, `battle-sprite-animation-static.json`,
+`battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
 `special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
 `icon-graphics-static.json`, `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and

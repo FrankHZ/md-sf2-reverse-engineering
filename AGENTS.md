@@ -138,7 +138,8 @@ and safe to rerun. It currently implements design-contract
 traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
 promotion/enemy/enemy-gold/enemy-drop, Battle 01 scene extraction, and the complete battle-AI source
 inventory/action-filter/attack-priority contracts, the complete Stack-compressed battle-terrain,
-battle-background, battle-sprite, weapon/ground, and portrait corpora, the complete Basic-compressed
+battle-background, battle-sprite, weapon/ground, and portrait corpora, the complete 208-table
+battle-sprite animation sequence corpus, the complete Basic-compressed
 map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
 the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
 the complete base/diamond-menu/yes-no Stack-compressed UI corpus, plus

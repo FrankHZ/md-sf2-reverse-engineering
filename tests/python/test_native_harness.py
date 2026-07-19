@@ -32,9 +32,9 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1450
-    assert result["H2Fixtures"] == 59
+    assert result["H2Fixtures"] == 60
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 1912
+    assert result["AddressBindings"] == 1914
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -258,6 +258,13 @@ def test_battle_backgrounds_have_a_static_rom_parity_command() -> None:
 def test_battle_sprites_have_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "battle-sprites"])
     assert args.h2_command == "battle-sprites"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_battle_sprite_animations_have_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-sprite-animations"])
+    assert args.h2_command == "battle-sprite-animations"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 

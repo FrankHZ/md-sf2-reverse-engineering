@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-battle-sprite-animation-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "table", "constants", "summary", "selectorRules", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-sprite-animation-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }, "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "constants": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": {
+      "type": "object", "additionalProperties": false, "required": ["combined", "ally", "enemy"],
+      "properties": {
+        "combined": { "type": "object", "minProperties": 10, "maxProperties": 10, "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "ally": { "type": "object", "minProperties": 15, "maxProperties": 15, "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "enemy": { "type": "object", "minProperties": 15, "maxProperties": 15, "additionalProperties": { "type": "integer", "minimum": 0 } }
+      }
+    },
+    "selectorRules": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "type": "string" } },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

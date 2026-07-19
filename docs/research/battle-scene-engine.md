@@ -4,7 +4,7 @@
   21-command scene-script dispatch, scene initialization order, actor/weapon/background selectors,
   complete 32-entry spell setup/update source pairing, battle-background container loader,
   complete 56-stream battle-effect graphics corpus, and ally/enemy battle-sprite plus weapon/ground
-  property, palette, frame, and DMA loaders
+  property, palette, frame, and DMA loaders, plus all 208 ally/enemy battle-sprite animation sequences
 - Status: **Inferred** for the player-visible intent of named tint and graphics helpers where only
   static call structure has been reproduced
 - Status: **Unknown** for exact frame timing, interrupt/VDP effects, and rendered visual output
@@ -46,6 +46,19 @@ words from the selected 32-byte palette. Frame paths resolve a self-relative wor
 frames and `0xC00` words for enemy frames, matching the H2 corpus's 4,608- and 6,144-byte outputs.
 Animation sequencing and rendered placement remain outside this container contract.
 
+The separate animation-sequence tables now have full source/H1/ROM parity: 87 ally payloads and 121
+enemy payloads contain 421 frame entries. Ally headers are eight bytes and entries are eight bytes;
+their first entry doubles as the optional second idle frame, so attack playback skips it and consumes
+147 remaining entries. Enemy headers/entries are four bytes each and all 187 entries are attack
+frames. Forty-three entries use frame value 15 to preserve the previous battlesprite frame; seven
+headers request a default spell animation; all terminate-spell flags are zero.
+
+`GetAllyAnimation` and `GetEnemyAnimation` use the combatant base index for normal attacks, add 40 or
+60 for dodge, and treat indices from 80 or 118 as direct specials. The ally selector also remaps
+KNTE/PLDN/PGNT spear attacks to direct entries 80-82. Frame duration, signed actor offsets, and ally
+weapon frame/flip/layer/offset fields are preserved in canonical output. Their rendered interpretation
+and the reachable base-index set remain outside static confirmation.
+
 `LoadWeaponPalette` selects one contiguous four-byte entry and writes the final two colors of the
 ally battle-sprite palette. `LoadWeaponsprite` Stack-decodes one 8,192-byte tileset; the source format
 contains four 64-tile views. `LoadBattlesceneGroundToVram` applies three palette words to base color
@@ -76,10 +89,10 @@ referenced by at least one of the 32 setup/update pairs.
 
 ## Runtime Queue
 
-Exact frame duration, palette-transition appearance, VInt/VDP write effects, and the rendered result
-of each setup/update pair cannot be established from names or call graphs alone. Now that static
-pairing is complete, they remain one grouped presentation matrix rather than 32 isolated emulator
-cases. These two static batches add no emulator launch.
+Exact sequence timing, palette-transition appearance, weapon placement, VInt/VDP write effects, and
+the rendered result of each setup/update pair cannot be established from names or call graphs alone.
+Now that static pairing and sequence parsing are complete, they remain one grouped presentation
+matrix rather than per-animation emulator cases. These static batches add no emulator launch.
 
 ## Reproduction
 
@@ -88,10 +101,12 @@ uv run sf2 h2 battle-scene-engine
 uv run sf2 h2 battle-scene-animations
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
+uv run sf2 h2 battle-sprite-animations
 uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/battle-scene-*-static.json` and
+Generated JSON stays under ignored `local/derived/battle-scene-*-static.json`,
+`local/derived/battle-sprite-animation-static.json`, and
 `local/derived/battle-effect-graphics-decode.json`.

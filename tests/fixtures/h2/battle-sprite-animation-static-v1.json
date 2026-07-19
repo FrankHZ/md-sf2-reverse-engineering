@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-sprite-animation-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": { "GetAllyAnimation": 104392, "GetEnemyAnimation": 104504 },
+  "table": {
+    "p_pt_AllyAnimations": 1572884,
+    "p_pt_EnemyAnimations": 1572888,
+    "pt_AllyAnimations": 1748026,
+    "pt_EnemyAnimations": 1750942
+  },
+  "constants": {
+    "BATTLEANIMATION_DODGE": 1,
+    "ALLYBATTLEANIMATION_DODGES_START": 40,
+    "ALLYBATTLEANIMATION_SPECIALS_START": 80,
+    "ENEMYBATTLEANIMATION_DODGES_START": 60,
+    "ENEMYBATTLEANIMATION_SPECIALS_START": 118
+  },
+  "summary": {
+    "combined": {
+      "animationCount": 208, "pointerTableByteCount": 832, "payloadByteCount": 3800,
+      "frameEntryCount": 421, "playedAttackFrameCount": 334, "holdPreviousFrameCount": 43,
+      "defaultSpellAnimationCount": 7, "nonzeroTerminateCount": 0,
+      "pointerRomParityCount": 208, "payloadRomParityCount": 208
+    },
+    "ally": {
+      "animationCount": 87, "pointerTableByteCount": 348, "payloadByteCount": 2568,
+      "frameEntryCount": 234, "playedAttackFrameCount": 147, "minimumFrameCount": 2,
+      "maximumFrameCount": 10, "holdPreviousFrameCount": 40, "defaultSpellAnimationCount": 3,
+      "nonzeroTerminateCount": 0, "triggerEqualsFrameCount": 86, "triggerBeforeFrameCount": 1,
+      "triggerAfterFrameCount": 0, "pointerRomParityCount": 87, "payloadRomParityCount": 87
+    },
+    "enemy": {
+      "animationCount": 121, "pointerTableByteCount": 484, "payloadByteCount": 1232,
+      "frameEntryCount": 187, "playedAttackFrameCount": 187, "minimumFrameCount": 1,
+      "maximumFrameCount": 4, "holdPreviousFrameCount": 3, "defaultSpellAnimationCount": 4,
+      "nonzeroTerminateCount": 0, "triggerEqualsFrameCount": 120, "triggerBeforeFrameCount": 0,
+      "triggerAfterFrameCount": 1, "pointerRomParityCount": 121, "payloadRomParityCount": 121
+    }
+  },
+  "selectorRules": [
+    "non-special attacks use the combatant base animation index",
+    "dodge adds the side-specific dodge-table start to the base animation index",
+    "indices at or above the side-specific specials start are direct table indices",
+    "ally regular spear attacks remap KNTE, PLDN, and PGNT to direct indices 80-82",
+    "ally attack playback skips frame entry zero because it doubles as idle frame two",
+    "enemy attack playback consumes every frame entry"
+  ],
+  "runtimeQuestions": [
+    "Which base animation indices are reachable for every ally/enemy battlesprite and weapon combination?",
+    "Do display-frame timing, hold-frame value 15, spell triggers, weapon flips/layers/offsets, and rendered frames reproduce the original presentation?"
+  ]
+}

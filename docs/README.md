@@ -58,7 +58,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-functions.md`](./research/battle-functions.md)：共享战斗函数 7 文件 inventory、单回合控制、
   Kiwi 火焰、EGRESS/Angel Wing、battle load 和移动音效合同。
 - [`battle-scene-engine.md`](./research/battle-scene-engine.md)：battle scene 根引擎 12 文件和动画
-  实现 55 文件、21 条 scene-script 命令、初始化/选择器，以及 32×2 setup/update 配对。
+  实现 55 文件、21 条 scene-script 命令、初始化/选择器、32×2 setup/update 配对，以及完整
+  87 ally/121 enemy battle-sprite sequence 和 421 条 frame entry 合同。
 - [`battle-cutscenes.md`](./research/battle-cutscenes.md)：战前/开战/战后/败敌/区域 cutscene 的
   10 文件路由、flag 准入、leader-death position 准备和 map-script 调度。
 - [`common-scripting.md`](./research/common-scripting.md)：entity/map/text/credits 的 29 文件
@@ -76,8 +77,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   battle terrain/background/sprite/weapon/ground/portrait/special-sprite 完整 Stack corpus、flash
   script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
   special-screen、8 条 base/menu UI、56 条 battle-effect、115 条 map-tileset
-  Stack-compression corpus、163 槽 icon storage/menu-copy/highlight 合同、16 套 map palette/79-map
-  使用与有效 color-zero 合同，以及 46/46
+  Stack-compression corpus、208 张 battle-sprite animation table、163 槽 icon
+  storage/menu-copy/highlight 合同、16 套 map palette/79-map 使用与有效 color-zero 合同，以及 46/46
   direct named compression consumer 的 owner inventory。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
@@ -121,8 +122,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
   sprite-dialogue 的 65 文件边界、63 个 H1 binding、两个 alternate，以及 56 槽/52 payload 的
   portrait header、动画元数据、palette 与 Stack 图形解码合同和 30 槽/27 payload 的 battle
-  background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个 frame，以及 weapon/ground
-  graphics/palette、670 个 regular map-sprite payload、6 个 special-sprite stream 与 9 个
+  background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个图形 frame、208 个 animation
+  sequence/421 个 frame entry，以及 weapon/ground graphics/palette、670 个 regular map-sprite
+  payload、6 个 special-sprite stream 与 9 个
   special-screen tile stream、8 个 base/menu UI stream，以及 56 条 spell/invocation/status/
   transition stream、115 条 map-tileset stream、163 个 assembled icon/4 个 source-only icon 例外
   和 16 套 map palette/79 个 header reference 的完整 parity。

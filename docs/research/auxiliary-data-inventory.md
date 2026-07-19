@@ -2,8 +2,8 @@
 
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
   two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
-  and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
-  corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
+  and the complete battle-background, battle-sprite, battle-sprite-animation, weapon/ground, and
+  portrait container/decode corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
   and complete map-tileset decode/usage, map-palette/header-usage, and icon-storage corpora
 - Status: **Inferred** for presentation timing and scripting consumers
@@ -54,6 +54,12 @@ array, and 1-4 palettes. The 86 payloads contain 167 palettes and 408 Stack-comp
 153 ally frames decode to 4,608 bytes and all 255 enemy frames to 6,144 bytes. Pointer tables,
 payloads, header boundaries, and stream output sizes are ROM-checked; image and palette bytes remain
 private.
+
+The two battle-sprite animation tables add 87 ally and 121 enemy payloads. Their 832 pointer-table
+bytes and 3,800 payload bytes match ROM and parse into 421 frame entries. Ally sequences contain
+eight-byte weapon-aware entries and reserve entry zero as idle frame two; enemy sequences use
+four-byte entries and play all of them. The tracked contract keeps field values, counts, addresses,
+and hashes while the full original sequence bytes remain private.
 
 The weapon/ground rail covers both remaining battle-layer families. It validates 23 weapon pointers
 and Stack streams, 42 contiguous four-byte weapon palettes, 30 ground pointers, 27 ground palette/
@@ -142,6 +148,7 @@ launches.
 uv run sf2 h2 auxiliary-data
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
+uv run sf2 h2 battle-sprite-animations
 uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
 uv run sf2 h2 map-sprites

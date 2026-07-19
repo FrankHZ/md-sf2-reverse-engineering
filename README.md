@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,450 条 confirmed finding、59 个 H2 fixture、58 个 H3 fixture
-和 1,912 个地址绑定。
+截至 2026-07-19，研究索引有 1,450 条 confirmed finding、60 个 H2 fixture、58 个 H3 fixture
+和 1,914 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -290,6 +290,12 @@ battle sprite rail 随后闭合 32 个 ally 与 54 个 enemy 容器、167 份 pa
 palette、27 个 ground header/10 个共享 ground stream，新增 203,776 个解压字节。其余
 嵌套 compression corpus 和渲染帧继续归入静态批量 parity 与集中 presentation 矩阵，五个 Stack 解压
 批次都没有模拟器启动。
+battle-sprite animation rail 随后闭合 87 个 ally 与 121 个 enemy sequence：两张 pointer table、
+208 个 payload 的 3,800 bytes 和 421 个 frame entry 全部通过 source/H1/ROM parity。ally payload
+使用 8-byte header + 8-byte entry，首 entry 兼作第二 idle frame，攻击实际播放其余 147 条；enemy
+使用 4-byte header + 4-byte entry并播放全部 187 条。43 条 frame 使用索引 15 保持上一画面，7 个
+header 带默认 spell animation，全部 208 个 terminate flag 为零；normal/dodge/direct-special 与
+KNTE/PLDN/PGNT spear remap 的 selector 规则已固化，60 Hz 呈现与 weapon placement 留给集中矩阵。
 独立的 Basic decoder 随后闭合 map-sprite 表的 720 个指针槽、670 个唯一 payload 和 50 个 alias：
 其中 669 个有效 payload 全部解出 576 bytes，共 385,344 bytes；最后一个 `0xFFFF` placeholder 被
 9 个 free-spot 槽复用并保持为显式未解码边界。

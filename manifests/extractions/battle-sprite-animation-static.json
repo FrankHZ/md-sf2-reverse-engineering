@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-sprite-animation-static-v1",
+  "outputSha256": "31619115E74F561B95FD1EB8F545C39D4DBC664B11A5117E7601F005A2A4A9CC",
+  "summary": {
+    "combined": {
+      "animationCount": 208, "pointerTableByteCount": 832, "payloadByteCount": 3800,
+      "frameEntryCount": 421, "playedAttackFrameCount": 334, "holdPreviousFrameCount": 43,
+      "defaultSpellAnimationCount": 7, "nonzeroTerminateCount": 0,
+      "pointerRomParityCount": 208, "payloadRomParityCount": 208
+    },
+    "ally": {
+      "animationCount": 87, "pointerTableByteCount": 348, "payloadByteCount": 2568,
+      "frameEntryCount": 234, "playedAttackFrameCount": 147, "minimumFrameCount": 2,
+      "maximumFrameCount": 10, "holdPreviousFrameCount": 40, "defaultSpellAnimationCount": 3,
+      "nonzeroTerminateCount": 0, "triggerEqualsFrameCount": 86, "triggerBeforeFrameCount": 1,
+      "triggerAfterFrameCount": 0, "pointerRomParityCount": 87, "payloadRomParityCount": 87
+    },
+    "enemy": {
+      "animationCount": 121, "pointerTableByteCount": 484, "payloadByteCount": 1232,
+      "frameEntryCount": 187, "playedAttackFrameCount": 187, "minimumFrameCount": 1,
+      "maximumFrameCount": 4, "holdPreviousFrameCount": 3, "defaultSpellAnimationCount": 4,
+      "nonzeroTerminateCount": 0, "triggerEqualsFrameCount": 120, "triggerBeforeFrameCount": 0,
+      "triggerAfterFrameCount": 1, "pointerRomParityCount": 121, "payloadRomParityCount": 121
+    }
+  }
+}
