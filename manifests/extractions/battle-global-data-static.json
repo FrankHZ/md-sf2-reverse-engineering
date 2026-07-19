@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-global-data-static-v1",
+  "outputSha256": "974DE1B788BAD2005DB5FAD4D64DF3A34041C71B35AF8F2E4A650629BC1ED820",
+  "summary": {
+    "fileCount": 18,
+    "sourceLineCount": 1512,
+    "statementCount": 1233,
+    "globalLabelCount": 59,
+    "layoutIncludedFileCount": 17,
+    "layoutExcludedFileCount": 1,
+    "representativeAddressCount": 17,
+    "indexedRecordCount": 26,
+    "indexedFileCount": 17
+  }
+}

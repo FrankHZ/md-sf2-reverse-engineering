@@ -20,12 +20,12 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 458
-    assert result["H2Fixtures"] == 28
+    assert result["Records"] == 469
+    assert result["H2Fixtures"] == 29
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 854
+    assert result["AddressBindings"] == 865
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 8
+    assert result["IndexedDataFiles"] == 19
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -177,6 +177,13 @@ def test_special_screens_has_a_source_only_inventory_command() -> None:
 def test_remaining_core_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "remaining-core"])
     assert args.h2_command == "remaining-core"
+    assert args.output_path is None
+
+
+def test_battle_global_data_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-global-data"])
+    assert args.h2_command == "battle-global-data"
+    assert not hasattr(args, "rom_path")
     assert args.output_path is None
     assert not hasattr(args, "rom_path")
 

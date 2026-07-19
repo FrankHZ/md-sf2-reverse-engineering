@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-global-data-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "table": {
+    "table_AfterBattlePositions": 294508,
+    "pt_AiCommandsets": 57772,
+    "table_HealPriorityMovetypes": 55540,
+    "pt_StandbyAiMovements": 63370,
+    "table_BackgroundEnemySwitch": 129720,
+    "table_BattleMapCoordinates": 31286,
+    "table_NeutralBattleEntities": 280772,
+    "table_CustomBackgrounds": 129674,
+    "table_EnemyItemDrops": 48722,
+    "table_EnemyLeaderPresentFlags": 294030,
+    "table_HalvedExpEarnedBattles": 43120,
+    "table_KrakenMoveCosts": 63924,
+    "table_LandEffectSettingsAndMoveCosts": 55332,
+    "list_BattlesWithLasers": 1755576,
+    "list_RandomBattles": 1797552,
+    "list_SwarmBattles": 57947,
+    "table_TerrainBackgrounds": 106078
+  },
+  "expected": {
+    "factSummary": {
+      "afterBattle": {
+        "excludedUnusedJoinByteCount": 52,
+        "excludedUnusedJoinNonzeroCount": 0,
+        "positionBattleCount": 1,
+        "positionEntryCount": 3,
+        "positionEntrySizeBytes": 4
+      },
+      "battleMaps": {
+        "rowCount": 45,
+        "fieldCount": 7,
+        "distinctMapCount": 33,
+        "triggerOverrideBattleIndexes": [11, 25, 41]
+      },
+      "neutralEntities": {
+        "battleCount": 11,
+        "entityCount": 17,
+        "distinctScriptCount": 4
+      },
+      "backgrounds": {
+        "customBattleCount": 45,
+        "customDistinctCount": 24,
+        "enemySwitchEntryCount": 30,
+        "enemySwitchEnabledIndexes": [3, 11, 18, 27],
+        "terrainEntryCount": 16,
+        "terrainDistinctCount": 7
+      },
+      "enemyLeaders": {
+        "battleCount": 45,
+        "presentBattleCount": 28
+      },
+      "experience": {
+        "halvedBattleCount": 1,
+        "halvedBattles": ["INSIDE_ANCIENT_TOWER"]
+      },
+      "movement": {
+        "moveTypeCount": 13,
+        "terrainSlotCount": 16,
+        "entryCount": 208,
+        "obstructedEntryCount": 127
+      },
+      "lasers": {
+        "battleCount": 3,
+        "enemyFacingRowLengths": [24, 16, 12],
+        "activeFacingCounts": [8, 2, 2]
+      },
+      "randomBattles": {
+        "battleCount": 11,
+        "upgradeCategoryCount": 5,
+        "excludedEnemyCounts": [6, 0, 2, 1, 1]
+      },
+      "existingRailOwnership": {
+        "aicommandsets.asm": "battle-ai",
+        "aipriority.asm": "battle-ai",
+        "aistandbymovements.asm": "battle-ai",
+        "enemyitemdrops.asm": "enemy-drops",
+        "krakenmovecosts.asm": "battle-ai",
+        "swarmbattles.asm": "battle-ai"
+      }
+    },
+    "runtimeQuestions": [
+      "after-battle-position-consumer-and-ignored-byte-behavior",
+      "neutral-entity-script-timing-and-presentation",
+      "background-switch-visual-orientation",
+      "random-battle-upgrade-caller-boundaries"
+    ]
+  }
+}

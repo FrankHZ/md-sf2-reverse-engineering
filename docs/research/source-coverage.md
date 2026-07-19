@@ -20,15 +20,15 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 458 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 389 | 381 code files and 8 data files |
+| Indexed findings | 469 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 400 | 381 code files and 19 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
-| Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| Indexed data-file reach | 1.12% | 19 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 854 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 865 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
-The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
+The H2 surface is broader than the 19 indexed data files. It currently includes 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, and the Battle 01 placement/scene
@@ -98,6 +98,12 @@ The current evidence is deep but narrow:
   The ROM header, window engine, battle test, configuration mode, and debug battle actions close the
   final five primary layout sources. Header/vector, eight-slot window, and debug route shapes are
   static contracts; window/debug presentation remains queued.
+  The first complete data-directory batch now inventories all 18 files under `data/battles/global`.
+  Seventeen are layout-owned and H1-addressed; the unused all-zero `global/afterbattlejoins.asm`
+  alternate is hashed but excluded rather than borrowing the cutscene table's same-named symbol.
+  Existing battle-AI/drop owners are preserved while eleven new tables cover battle coordinates,
+  neutral entities, backgrounds, leader flags, halved EXP, movement costs, lasers, random upgrades,
+  and after-battle positions. Caller-dependent behavior remains four grouped runtime questions.
 - **Minimal or unindexed:** individual event-script content, conversations,
   detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
   graphics/audio runtime output, and most content tables.
@@ -127,8 +133,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 458 records; its
-verifier reports 381 unique code files, 8 unique data files, 54 H3 fixtures, and 854 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 469 records; its
+verifier reports 381 unique code files, 19 unique data files, 54 H3 fixtures, and 865 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -185,4 +191,7 @@ closes the cold-start-to-map control spine; all nineteen special-screen files an
 primary core files then raise strict reach to 98.45%. The remaining six are fully enumerated H2
 exceptions, so code-file discovery has reached its honest symbol-index ceiling. Static work now moves
 to data tables and individual map/event content, while UI, SRAM hardware, and VDP/Z80 questions stay
-grouped into shared runtime matrices.
+grouped into shared runtime matrices. The first data batch closes `data/battles/global` at 17/18 strict
+symbol reach and 18/18 H2 inventory, raising overall data reach to 19/1,690 without an emulator launch.
+The next static batches should reuse the existing core-data parsers for ally/class/item/spell tables,
+then move through battle entries before tackling the much larger hierarchical map-entry denominator.

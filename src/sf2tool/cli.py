@@ -12,6 +12,7 @@ from sf2tool.h2.battle_ai import verify_battle_ai_inventory
 from sf2tool.h2.battle_control import verify_battle_control_inventory
 from sf2tool.h2.battle_cutscenes import verify_battle_cutscene_inventory
 from sf2tool.h2.battle_functions import verify_battle_functions_inventory
+from sf2tool.h2.battle_global_data import verify_battle_global_data_inventory
 from sf2tool.h2.battle_loop import verify_battle_loop_inventory
 from sf2tool.h2.battle_scene_animations import verify_battle_scene_animation_inventory
 from sf2tool.h2.battle_scene_engine import verify_battle_scene_engine_inventory
@@ -263,6 +264,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_remaining_core, rom=False)
     h2_remaining_core.add_argument("--output-path", type=_path)
+    h2_battle_global_data = h2_commands.add_parser(
+        "battle-global-data", help="inventory global battle data tables and layout ownership"
+    )
+    _add_local_paths(h2_battle_global_data, rom=False)
+    h2_battle_global_data.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -625,6 +631,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "remaining-core":
         print_record(
             verify_remaining_core_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "battle-global-data":
+        print_record(
+            verify_battle_global_data_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )
