@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II auxiliary graphics, scripting, and technical data inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "inventoryPaths",
+    "layoutOwnedPaths", "excludedPaths", "exclusions", "indexedRecordIds",
+    "indexedSourcePaths", "representativeSymbols", "representativeAddresses",
+    "facts", "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-auxiliary-data-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "layoutOwnedFileCount", "alternateFileCount", "representativeAddressCount",
+        "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 65 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 65 },
+        "layoutOwnedFileCount": { "const": 63 },
+        "alternateFileCount": { "const": 2 },
+        "representativeAddressCount": { "const": 63 },
+        "indexedRecordCount": { "const": 63 },
+        "indexedFileCount": { "const": 63 }
+      }
+    },
+    "inventoryPaths": { "type": "array", "minItems": 65, "maxItems": 65, "uniqueItems": true },
+    "layoutOwnedPaths": {
+      "type": "array", "minItems": 63, "maxItems": 63, "uniqueItems": true
+    },
+    "excludedPaths": { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true },
+    "exclusions": { "type": "object", "minProperties": 2, "maxProperties": 2 },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 63, "maxItems": 63, "uniqueItems": true
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 63, "maxItems": 63, "uniqueItems": true
+    },
+    "representativeSymbols": { "type": "object", "minProperties": 63, "maxProperties": 63 },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 63, "maxProperties": 63,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "facts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 65, "maxItems": 65 }
+  }
+}

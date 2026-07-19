@@ -8,6 +8,7 @@ from typing import Any
 
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.ally_data import verify_ally_data_inventory
+from sf2tool.h2.auxiliary_data import verify_auxiliary_data_inventory
 from sf2tool.h2.battle_actions import verify_battle_actions_inventory
 from sf2tool.h2.battle_ai import verify_battle_ai_inventory
 from sf2tool.h2.battle_control import verify_battle_control_inventory
@@ -305,6 +306,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_data, rom=False)
     h2_map_data.add_argument("--output-path", type=_path)
+    h2_auxiliary_data = h2_commands.add_parser(
+        "auxiliary-data", help="inventory graphics, scripting, tech, and sprite-dialogue data"
+    )
+    _add_local_paths(h2_auxiliary_data, rom=False)
+    h2_auxiliary_data.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -716,6 +722,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-data":
         print_record(
             verify_map_data_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "auxiliary-data":
+        print_record(
+            verify_auxiliary_data_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

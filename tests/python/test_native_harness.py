@@ -20,12 +20,12 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1367
-    assert result["H2Fixtures"] == 35
+    assert result["Records"] == 1430
+    assert result["H2Fixtures"] == 36
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 1763
+    assert result["AddressBindings"] == 1826
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 917
+    assert result["IndexedDataFiles"] == 980
 
 
 def test_listing_symbol_addresses_indexes_once_and_rejects_conflicts() -> None:
@@ -233,6 +233,13 @@ def test_battle_routing_data_has_a_source_only_inventory_command() -> None:
 def test_map_data_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "map-data"])
     assert args.h2_command == "map-data"
+    assert not hasattr(args, "rom_path")
+    assert args.output_path is None
+
+
+def test_auxiliary_data_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "auxiliary-data"])
+    assert args.h2_command == "auxiliary-data"
     assert not hasattr(args, "rom_path")
     assert args.output_path is None
 

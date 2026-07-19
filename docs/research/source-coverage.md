@@ -20,15 +20,15 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,367 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 1,298 | 381 code files and 917 data files |
+| Indexed findings | 1,430 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
-| Indexed data-file reach | 54.26% | 917 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,763 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,826 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
-The H2 surface is broader than the 917 indexed data files. It currently includes the complete
+The H2 surface is broader than the 980 indexed data files. It currently includes the complete
 1,390-file map ASM build graph plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
@@ -148,8 +148,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,367 records; its
-verifier reports 381 unique code files, 917 unique data files, 54 H3 fixtures, and 1,763 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,430 records; its
+verifier reports 381 unique code files, 980 unique data files, 54 H3 fixtures, and 1,826 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -216,5 +216,7 @@ cutscene directory follows with 59 honest symbol bindings plus two explicit exce
 The following eight-file routing/terrain batch adds seven honest bindings and one excluded legacy
 aggregate, reaching 190/1,690. The complete 1,390-file map ASM graph then adds 727 honest internal
 symbol bindings while keeping 662 include-site-only bodies and one unlabeled container explicit,
-reaching 917/1,690 without an emulator launch. Next move through the remaining non-map data trees
-while the map runtime questions stay consolidated.
+reaching 917/1,690 without an emulator launch. The following 65-file auxiliary graphics, scripting,
+technical, and sprite-dialogue batch adds 63 honest bindings and two explicit alternates, reaching
+980/1,690. Next move through sound data while the presentation and map runtime questions stay
+consolidated.
