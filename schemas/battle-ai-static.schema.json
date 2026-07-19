@@ -4,7 +4,7 @@
   "title": "Shining Force II battle AI static source inventory",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "healing", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "actionFilters", "attackPriority", "healing", "support", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-battle-ai-static-v1" },
@@ -22,6 +22,7 @@
     "actionFilters": { "$ref": "#/definitions/actionFilters" },
     "attackPriority": { "$ref": "#/definitions/attackPriority" },
     "healing": { "$ref": "#/definitions/healing" },
+    "support": { "$ref": "#/definitions/support" },
     "indexedRecordIds": {
       "type": "array",
       "uniqueItems": true,
@@ -368,6 +369,101 @@
             "aoePerTargetBase": { "const": 4 },
             "aoeScore": { "const": "sum-movetype-priority-plus-four-per-target" },
             "storedAsByte": { "const": true }
+          }
+        }
+      }
+    },
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePaths", "command", "reachableRoutes", "unreachableRoutes"],
+      "properties": {
+        "sourcePaths": {
+          "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^code/gameflow/battle/ai/.+\\.asm$" }
+        },
+        "command": {
+          "type": "object", "additionalProperties": false,
+          "required": ["function", "enemyCastersOnly", "confusedCasterStays", "firstSupportSpellOnly", "acceptedSpellEntries", "otherSupportSpellStaysWithoutScanningLaterSlots", "usesDefinitionMpCost", "targetSideUsesSpellTargetingProperty", "highestPriorityTieBreak", "failedPositionAfterSelection"],
+          "properties": {
+            "function": { "const": "aiCommand_Support" },
+            "enemyCastersOnly": { "const": true },
+            "confusedCasterStays": { "const": true },
+            "firstSupportSpellOnly": { "const": true },
+            "acceptedSpellEntries": {
+              "type": "array", "minItems": 2, "maxItems": 2,
+              "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["name", "value"],
+                "properties": {
+                  "name": { "enum": ["SPELL_MUDDLE_LV2", "SPELL_DISPEL_LV1"] },
+                  "value": { "enum": [6, 71] }
+                }
+              }
+            },
+            "otherSupportSpellStaysWithoutScanningLaterSlots": { "const": true },
+            "usesDefinitionMpCost": { "const": true },
+            "targetSideUsesSpellTargetingProperty": { "const": true },
+            "highestPriorityTieBreak": { "const": "later-candidate-wins" },
+            "failedPositionAfterSelection": { "const": "stay-without-next-target-fallback" }
+          }
+        },
+        "reachableRoutes": {
+          "type": "object", "additionalProperties": false,
+          "required": ["muddle2", "dispel1"],
+          "properties": {
+            "muddle2": {
+              "type": "object", "additionalProperties": false,
+              "required": ["centerScore", "minimumScore", "filtersCentersBelowMinimum"],
+              "properties": {
+                "centerScore": { "const": "area-target-count" },
+                "minimumScore": { "const": 3 },
+                "filtersCentersBelowMinimum": { "const": true }
+              }
+            },
+            "dispel1": {
+              "type": "object", "additionalProperties": false,
+              "required": ["perTargetScore", "attackSpellTakesPrecedenceOverHealingCheck", "minimumCenterScore", "filtersCentersBelowMinimum"],
+              "properties": {
+                "perTargetScore": { "const": "one-if-has-attack-or-healing-spell" },
+                "attackSpellTakesPrecedenceOverHealingCheck": { "const": true },
+                "minimumCenterScore": { "const": 2 },
+                "filtersCentersBelowMinimum": { "const": true }
+              }
+            }
+          }
+        },
+        "unreachableRoutes": {
+          "type": "object", "additionalProperties": false,
+          "required": ["reason", "attack", "boost2"],
+          "properties": {
+            "reason": { "const": "command-admission-accepts-only-muddle2-or-dispel1" },
+            "attack": {
+              "type": "object", "additionalProperties": false,
+              "required": ["routePresent", "reachableSpellEntry", "areaSpellEntryUsed", "areaSpellMismatch", "eligibleTarget", "scoreWhenAnyEligibleTarget", "scoreSaturationCause"],
+              "properties": {
+                "routePresent": { "const": true },
+                "reachableSpellEntry": { "const": 5 },
+                "areaSpellEntryUsed": { "const": 70 },
+                "areaSpellMismatch": { "const": true },
+                "eligibleTarget": { "const": "no-attack-spell-and-live-last-target" },
+                "scoreWhenAnyEligibleTarget": { "const": 255 },
+                "scoreSaturationCause": { "const": "addi-overwrites-cmpi-flags-before-ble" }
+              }
+            },
+            "boost2": {
+              "type": "object", "additionalProperties": false,
+              "required": ["routePresent", "intendedSpellEntry", "reachableAndAreaSpellEntryUsed", "spellEntryMismatch", "eligibleTarget", "minimumEligibleTargets", "score"],
+              "properties": {
+                "routePresent": { "const": true },
+                "intendedSpellEntry": { "const": 67 },
+                "reachableAndAreaSpellEntryUsed": { "const": 70 },
+                "spellEntryMismatch": { "const": true },
+                "eligibleTarget": { "const": "no-attack-spell-and-live-last-target" },
+                "minimumEligibleTargets": { "const": 2 },
+                "score": { "const": "eligible-target-count-or-zero" }
+              }
+            }
           }
         }
       }

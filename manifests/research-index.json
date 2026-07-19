@@ -1982,6 +1982,110 @@
         "bindings": [{ "addressId": "entry", "fixtureField": "function.movetypePriorityTableAddress" }]
       }],
       "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.command",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "aiCommand_Support",
+      "sourcePath": "code/gameflow/battle/ai/command/support.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 60324 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.supportCommandEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.prioritize-attack",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "PrioritizeTargetsForSupportSpell_Attack",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54368 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeAttackEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.prioritize-boost2",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "PrioritizeTargetsForSupportSpell_Boost2",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54496 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeBoost2EntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.prioritize-dispel",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "PrioritizeTargetsForSupportSpell_Dispel",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54624 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeDispelEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.prioritize-muddle2",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "PrioritizeTargetsForSupportSpell_Muddle2",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54828 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeMuddle2EntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.calculate-dispel",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "CalculateTargetPriorityForSpell_Dispel",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55026 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDispelEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.calculate-boost",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "CalculateTargetPriorityForSpell_Boost",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55106 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateBoostEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.support.calculate-attack",
+      "subsystem": "battle.ai.support",
+      "status": "confirmed",
+      "symbol": "CalculateTargetPriorityForSpell_Attack",
+      "sourcePath": "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55210 }],
+      "evidence": [{
+        "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
+        "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateAttackEntryAddress" }]
+      }],
+      "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }

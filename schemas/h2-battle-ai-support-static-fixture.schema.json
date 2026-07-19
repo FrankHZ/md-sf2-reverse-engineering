@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 battle AI support static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-ai-support-static-v1" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportCommandEntryAddress", "prioritizeAttackEntryAddress", "prioritizeBoost2EntryAddress", "prioritizeDispelEntryAddress", "prioritizeMuddle2EntryAddress", "calculateDispelEntryAddress", "calculateBoostEntryAddress", "calculateAttackEntryAddress"],
+      "properties": {
+        "supportCommandEntryAddress": { "const": 60324 },
+        "prioritizeAttackEntryAddress": { "const": 54368 },
+        "prioritizeBoost2EntryAddress": { "const": 54496 },
+        "prioritizeDispelEntryAddress": { "const": 54624 },
+        "prioritizeMuddle2EntryAddress": { "const": 54828 },
+        "calculateDispelEntryAddress": { "const": 55026 },
+        "calculateBoostEntryAddress": { "const": 55106 },
+        "calculateAttackEntryAddress": { "const": 55210 }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enemyCastersOnly", "confusedCasterStays", "firstSupportSpellOnly", "acceptedSpellEntries", "otherSupportSpellStaysWithoutScanningLaterSlots", "usesDefinitionMpCost", "targetSideUsesSpellTargetingProperty", "highestPriorityTieBreak", "failedPositionAfterSelection", "muddle2", "dispel1", "unreachableReason", "unreachableAttack", "unreachableBoost2"],
+      "properties": {
+        "enemyCastersOnly": { "const": true },
+        "confusedCasterStays": { "const": true },
+        "firstSupportSpellOnly": { "const": true },
+        "acceptedSpellEntries": { "const": [{ "name": "SPELL_MUDDLE_LV2", "value": 71 }, { "name": "SPELL_DISPEL_LV1", "value": 6 }] },
+        "otherSupportSpellStaysWithoutScanningLaterSlots": { "const": true },
+        "usesDefinitionMpCost": { "const": true },
+        "targetSideUsesSpellTargetingProperty": { "const": true },
+        "highestPriorityTieBreak": { "const": "later-candidate-wins" },
+        "failedPositionAfterSelection": { "const": "stay-without-next-target-fallback" },
+        "muddle2": { "const": { "centerScore": "area-target-count", "minimumScore": 3, "filtersCentersBelowMinimum": true } },
+        "dispel1": { "const": { "perTargetScore": "one-if-has-attack-or-healing-spell", "attackSpellTakesPrecedenceOverHealingCheck": true, "minimumCenterScore": 2, "filtersCentersBelowMinimum": true } },
+        "unreachableReason": { "const": "command-admission-accepts-only-muddle2-or-dispel1" },
+        "unreachableAttack": { "const": { "routePresent": true, "reachableSpellEntry": 5, "areaSpellEntryUsed": 70, "areaSpellMismatch": true, "eligibleTarget": "no-attack-spell-and-live-last-target", "scoreWhenAnyEligibleTarget": 255, "scoreSaturationCause": "addi-overwrites-cmpi-flags-before-ble" } },
+        "unreachableBoost2": { "const": { "routePresent": true, "intendedSpellEntry": 67, "reachableAndAreaSpellEntryUsed": 70, "spellEntryMismatch": true, "eligibleTarget": "no-attack-spell-and-live-last-target", "minimumEligibleTargets": 2, "score": "eligible-target-count-or-zero" } }
+      }
+    }
+  }
+}

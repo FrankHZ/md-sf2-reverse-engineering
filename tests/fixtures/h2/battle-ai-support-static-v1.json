@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-ai-support-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "supportCommandEntryAddress": 60324,
+    "prioritizeAttackEntryAddress": 54368,
+    "prioritizeBoost2EntryAddress": 54496,
+    "prioritizeDispelEntryAddress": 54624,
+    "prioritizeMuddle2EntryAddress": 54828,
+    "calculateDispelEntryAddress": 55026,
+    "calculateBoostEntryAddress": 55106,
+    "calculateAttackEntryAddress": 55210
+  },
+  "expected": {
+    "enemyCastersOnly": true,
+    "confusedCasterStays": true,
+    "firstSupportSpellOnly": true,
+    "acceptedSpellEntries": [
+      { "name": "SPELL_MUDDLE_LV2", "value": 71 },
+      { "name": "SPELL_DISPEL_LV1", "value": 6 }
+    ],
+    "otherSupportSpellStaysWithoutScanningLaterSlots": true,
+    "usesDefinitionMpCost": true,
+    "targetSideUsesSpellTargetingProperty": true,
+    "highestPriorityTieBreak": "later-candidate-wins",
+    "failedPositionAfterSelection": "stay-without-next-target-fallback",
+    "muddle2": {
+      "centerScore": "area-target-count",
+      "minimumScore": 3,
+      "filtersCentersBelowMinimum": true
+    },
+    "dispel1": {
+      "perTargetScore": "one-if-has-attack-or-healing-spell",
+      "attackSpellTakesPrecedenceOverHealingCheck": true,
+      "minimumCenterScore": 2,
+      "filtersCentersBelowMinimum": true
+    },
+    "unreachableReason": "command-admission-accepts-only-muddle2-or-dispel1",
+    "unreachableAttack": {
+      "routePresent": true,
+      "reachableSpellEntry": 5,
+      "areaSpellEntryUsed": 70,
+      "areaSpellMismatch": true,
+      "eligibleTarget": "no-attack-spell-and-live-last-target",
+      "scoreWhenAnyEligibleTarget": 255,
+      "scoreSaturationCause": "addi-overwrites-cmpi-flags-before-ble"
+    },
+    "unreachableBoost2": {
+      "routePresent": true,
+      "intendedSpellEntry": 67,
+      "reachableAndAreaSpellEntryUsed": 70,
+      "spellEntryMismatch": true,
+      "eligibleTarget": "no-attack-spell-and-live-last-target",
+      "minimumEligibleTargets": 2,
+      "score": "eligible-target-count-or-zero"
+    }
+  }
+}

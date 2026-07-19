@@ -23,6 +23,10 @@ HEALING_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-healing-static-v1.json"
 HEALING_FIXTURE_SCHEMA = repo_path(
     "schemas/h2-battle-ai-healing-static-fixture.schema.json"
 )
+SUPPORT_FIXTURE = repo_path("tests/fixtures/h2/battle-ai-support-static-v1.json")
+SUPPORT_FIXTURE_SCHEMA = repo_path(
+    "schemas/h2-battle-ai-support-static-fixture.schema.json"
+)
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
@@ -589,6 +593,129 @@ def _parse_healing(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _parse_support(disasm: Path) -> dict[str, Any]:
+    command_path = SOURCE_ROOT / "command/support.asm"
+    priority_path = SOURCE_ROOT / "command/support/prioritizetargetsforsupportspells.asm"
+    command_source = (disasm / command_path).read_text(encoding="utf-8")
+    priority_source = (disasm / priority_path).read_text(encoding="utf-8")
+    command = _function_block(command_source, "aiCommand_Support")
+    prioritizers = {
+        name: _function_block(priority_source, name)
+        for name in (
+            "PrioritizeTargetsForSupportSpell_Attack",
+            "PrioritizeTargetsForSupportSpell_Boost2",
+            "PrioritizeTargetsForSupportSpell_Dispel",
+            "PrioritizeTargetsForSupportSpell_Muddle2",
+        )
+    }
+    calculators = {
+        name: _function_block(priority_source, name)
+        for name in (
+            "CalculateTargetPriorityForSpell_Dispel",
+            "CalculateTargetPriorityForSpell_Boost",
+            "CalculateTargetPriorityForSpell_Attack",
+        )
+    }
+    equates = _equates(disasm)
+
+    required_fragments = (
+        (command, "btst    #COMBATANT_BIT_ENEMY,d0"),
+        (command, "bsr.w   IsCombatantConfused"),
+        (command, "bsr.w   GetNextSupportSpell"),
+        (command, "cmpi.w  #SPELL_MUDDLE|SPELL_LV2,d1"),
+        (command, "cmpi.w  #SPELL_DISPEL,d1"),
+        (command, "move.b  SPELLDEF_OFFSET_MP_COST(a0),d2"),
+        (command, "btst    #SPELLPROPS_BIT_TARGETING,d5"),
+        (command, "bsr.w   PrioritizeTargetsForSupportSpell_Attack"),
+        (command, "bsr.w   PrioritizeTargetsForSupportSpell_Boost2"),
+        (command, "bsr.w   PrioritizeTargetsForSupportSpell_Muddle2"),
+        (command, "bsr.w   PrioritizeTargetsForSupportSpell_Dispel"),
+        (command, "cmp.b   d1,d3"),
+        (command, "move.b  (a0,d2.w),d0"),
+        (command, "bsr.w   DetermineAttackPosition"),
+        (
+            prioritizers["PrioritizeTargetsForSupportSpell_Attack"],
+            "move.w  #SPELL_ATTACK,d1",
+        ),
+        (
+            prioritizers["PrioritizeTargetsForSupportSpell_Attack"],
+            "move.w  #SPELL_DISPEL|SPELL_LV2,d1",
+        ),
+        (
+            prioritizers["PrioritizeTargetsForSupportSpell_Boost2"],
+            "move.w  #SPELL_DISPEL|SPELL_LV2,d1",
+        ),
+        (prioritizers["PrioritizeTargetsForSupportSpell_Dispel"], "cmpi.b  #2,d0"),
+        (prioritizers["PrioritizeTargetsForSupportSpell_Muddle2"], "cmpi.b  #3,d0"),
+        (calculators["CalculateTargetPriorityForSpell_Dispel"], "bsr.w   GetNextUsableAttackSpell"),
+        (calculators["CalculateTargetPriorityForSpell_Dispel"], "bsr.w   GetNextHealingSpell"),
+        (calculators["CalculateTargetPriorityForSpell_Boost"], "cmpi.w  #2,d5"),
+        (calculators["CalculateTargetPriorityForSpell_Attack"], "move.w  #255,d0"),
+        (calculators["CalculateTargetPriorityForSpell_Attack"], "cmpi.w  #255,d5"),
+        (calculators["CalculateTargetPriorityForSpell_Attack"], "addi.w  #1,d5"),
+        (calculators["CalculateTargetPriorityForSpell_Attack"], "ble.s   @Next"),
+        (calculators["CalculateTargetPriorityForSpell_Attack"], "move.w  #255,d5"),
+    )
+    if any(fragment not in block for block, fragment in required_fragments):
+        raise ValueError("battle AI support source contract drift")
+
+    muddle2 = equates["SPELL_MUDDLE"] | equates["SPELL_LV2"]
+    dispel1 = equates["SPELL_DISPEL"]
+    dispel2 = dispel1 | equates["SPELL_LV2"]
+    return {
+        "sourcePaths": [command_path.as_posix(), priority_path.as_posix()],
+        "command": {
+            "function": "aiCommand_Support",
+            "enemyCastersOnly": True,
+            "confusedCasterStays": True,
+            "firstSupportSpellOnly": True,
+            "acceptedSpellEntries": [
+                {"name": "SPELL_MUDDLE_LV2", "value": muddle2},
+                {"name": "SPELL_DISPEL_LV1", "value": dispel1},
+            ],
+            "otherSupportSpellStaysWithoutScanningLaterSlots": True,
+            "usesDefinitionMpCost": True,
+            "targetSideUsesSpellTargetingProperty": True,
+            "highestPriorityTieBreak": "later-candidate-wins",
+            "failedPositionAfterSelection": "stay-without-next-target-fallback",
+        },
+        "reachableRoutes": {
+            "muddle2": {
+                "centerScore": "area-target-count",
+                "minimumScore": 3,
+                "filtersCentersBelowMinimum": True,
+            },
+            "dispel1": {
+                "perTargetScore": "one-if-has-attack-or-healing-spell",
+                "attackSpellTakesPrecedenceOverHealingCheck": True,
+                "minimumCenterScore": 2,
+                "filtersCentersBelowMinimum": True,
+            },
+        },
+        "unreachableRoutes": {
+            "reason": "command-admission-accepts-only-muddle2-or-dispel1",
+            "attack": {
+                "routePresent": True,
+                "reachableSpellEntry": equates["SPELL_ATTACK"],
+                "areaSpellEntryUsed": dispel2,
+                "areaSpellMismatch": True,
+                "eligibleTarget": "no-attack-spell-and-live-last-target",
+                "scoreWhenAnyEligibleTarget": 255,
+                "scoreSaturationCause": "addi-overwrites-cmpi-flags-before-ble",
+            },
+            "boost2": {
+                "routePresent": True,
+                "intendedSpellEntry": equates["SPELL_BOOST"] | equates["SPELL_LV2"],
+                "reachableAndAreaSpellEntryUsed": dispel2,
+                "spellEntryMismatch": True,
+                "eligibleTarget": "no-attack-spell-and-live-last-target",
+                "minimumEligibleTargets": 2,
+                "score": "eligible-target-count-or-zero",
+            },
+        },
+    }
+
+
 def _resolve_upstream(upstream_path: Path) -> tuple[Path, str, dict[str, Any]]:
     upstream_path = upstream_path.resolve(strict=True)
     toolchain = load_json(TOOLCHAIN)
@@ -669,6 +796,7 @@ def build_battle_ai_inventory(upstream_path: Path) -> dict[str, Any]:
         "actionFilters": _parse_action_filters(disasm),
         "attackPriority": _parse_attack_priority(disasm),
         "healing": _parse_healing(disasm),
+        "support": _parse_support(disasm),
         "indexedRecordIds": indexed_records,
         "indexedSourcePaths": indexed_files,
         "internalDirectCallTargets": internal_targets,
@@ -790,6 +918,32 @@ def _healing_facts(healing: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _support_facts(support: dict[str, Any]) -> dict[str, Any]:
+    command = support["command"]
+    routes = support["reachableRoutes"]
+    unreachable = support["unreachableRoutes"]
+    return {
+        "enemyCastersOnly": command["enemyCastersOnly"],
+        "confusedCasterStays": command["confusedCasterStays"],
+        "firstSupportSpellOnly": command["firstSupportSpellOnly"],
+        "acceptedSpellEntries": command["acceptedSpellEntries"],
+        "otherSupportSpellStaysWithoutScanningLaterSlots": command[
+            "otherSupportSpellStaysWithoutScanningLaterSlots"
+        ],
+        "usesDefinitionMpCost": command["usesDefinitionMpCost"],
+        "targetSideUsesSpellTargetingProperty": command[
+            "targetSideUsesSpellTargetingProperty"
+        ],
+        "highestPriorityTieBreak": command["highestPriorityTieBreak"],
+        "failedPositionAfterSelection": command["failedPositionAfterSelection"],
+        "muddle2": routes["muddle2"],
+        "dispel1": routes["dispel1"],
+        "unreachableReason": unreachable["reason"],
+        "unreachableAttack": unreachable["attack"],
+        "unreachableBoost2": unreachable["boost2"],
+    }
+
+
 def verify_battle_ai_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -807,6 +961,12 @@ def verify_battle_ai_inventory(
         healing_fixture,
         HEALING_FIXTURE_SCHEMA,
         owner=str(HEALING_FIXTURE),
+    )
+    support_fixture = load_json(SUPPORT_FIXTURE)
+    validate_json(
+        support_fixture,
+        SUPPORT_FIXTURE_SCHEMA,
+        owner=str(SUPPORT_FIXTURE),
     )
     rom_manifest = load_json(ROM_MANIFEST)
     output = build_battle_ai_inventory(upstream_path)
@@ -832,6 +992,13 @@ def verify_battle_ai_inventory(
         raise ValueError("battle AI healing fixture provenance drift")
     if _healing_facts(output["healing"]) != healing_fixture["expected"]:
         raise ValueError("battle AI healing facts disagree with fixture")
+    if (
+        support_fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or support_fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("battle AI support fixture provenance drift")
+    if _support_facts(output["support"]) != support_fixture["expected"]:
+        raise ValueError("battle AI support facts disagree with fixture")
     if output["summary"] != manifest["summary"]:
         raise ValueError(
             "battle AI static summary drift: "

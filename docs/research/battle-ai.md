@@ -1,7 +1,7 @@
 # Battle AI Static Inventory and Decision Contracts
 
 - Status: **Confirmed** for the pinned-source inventory, call metadata, action-filter, attack-priority,
-  healing-decision code shape, constants, and H1 symbol addresses
+  healing/support decision code shape, constants, and H1 symbol addresses
 - Status: **Inferred** for caller-visible behavior not already reproduced by an H3 fixture
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
@@ -17,11 +17,11 @@ uv run sf2 h2 battle-ai
 The Python-owned rail scans the complete
 `disasm/code/gameflow/battle/ai` subtree, validates the pinned Git commit, hashes every source file,
 extracts global/local labels and direct/indirect call metadata, parses the action filters, attack
-priority, and healing command, checks their fixtures and schemas, and writes canonical output to ignored
+priority, healing, and support commands, checks their fixtures and schemas, and writes canonical output to ignored
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`9E83A0CBB10C73A43F474698EC0D00C3A6E18A00A4ED1AD29A800D57FD0FD9AE`.
+`8917B28CF030D55B405625F0FCCD8DDC8C127D91BCB56822DF45D779C28B166F`.
 
 ## Complete Subtree Inventory
 
@@ -42,8 +42,8 @@ This is an inventory denominator, not a claim that all 82 labels are behaviorall
 this batch, the research index reached only `IsCombatantConfused`, `DetermineMuddledBattleaction`, and
 `aiCommand_Attack` across three files. It now also binds the five action getters, for eight indexed
 records across four files in the first batch. Attack priority raised the subtree total to 18 records
-across seven files; healing raises it to 23 records across 12 files. Two linked data-table symbols
-live outside the subtree.
+across seven files; healing raised it to 23 across 12; support raises it to 31 across 14. Two linked
+data-table symbols live outside the subtree.
 
 ## Action Getter Addresses
 
@@ -210,6 +210,37 @@ stores the total as a byte, sorts centers descending, and selects the first one 
 cast/item position exists. The byte store makes overflow a queued runtime boundary rather than an
 assumed wide-integer score.
 
+## Support Admission and Reachable Scoring
+
+**Confirmed static model:** `aiCommand_Support` is enemy-only; allies and confused enemies stay.
+It asks for the first support-type spell from slot zero and does not continue if that entry is not
+exactly MUDDLE 2 (`0x47`) or DISPEL 1 (`0x06`). Accepted spells use their definition MP cost. Their
+target side comes from the spell targeting-property bit.
+
+MUDDLE 2 scores an AOE center only by affected target count and removes centers below three. DISPEL
+adds one per affected target that has at least one usable attack spell or healing spell, checking the
+healing list only if no attack spell was found, and removes centers below two. The final scan chooses
+the later candidate on equal byte priority. If `DetermineAttackPosition` fails for that winner, the
+command stays; it does not try the next ranked center.
+
+## Unreachable ATTACK and BOOST 2 Support Routes
+
+The command contains ATTACK and BOOST 2 dispatch branches after its admission gate, but that gate
+accepts only MUDDLE 2 and DISPEL 1. With normal entry through `aiCommand_Support`, both branches are
+therefore unreachable.
+
+Their dormant code also contains independent defects:
+
+- ATTACK finds reachable centers with ATTACK but populates each AOE using DISPEL 2 (`0x46`). Its
+  intended lower-ATT score executes `cmpi #255`, then `addi #1` overwrites the condition flags before
+  `ble`; consequently any eligible target saturates the center to 255. Eligibility requires no
+  attack spell plus a recorded, still-living last target.
+- BOOST 2 uses DISPEL 2 for both reach and AOE instead of BOOST 2 (`0x43`). It counts the same kind of
+  eligible target and retains a center only at count two or greater.
+
+These are confirmed source/control-flow properties. Whether any debug, patch, or unintended entry
+can call the helper routes directly is outside the original command contract.
+
 ## Runtime Question Queue
 
 The next BizHawk batch should share one derived-ROM seam and one result buffer for at least:
@@ -230,6 +261,10 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     five-bit packed-entry lookup bug and the caller's level-2 override;
 13. Healing Rain first-enemy gate, item fallback/precedence, byte-priority overflow, and first-reachable
     target selection.
+14. MUDDLE 2 count-three and DISPEL count-two gates, equal-priority later-target selection, and
+    no-fallback behavior when the selected target has no valid attack position;
+15. first-slot unsupported spell shadowing a later MUDDLE 2/DISPEL, plus direct helper probes showing
+    the dormant ATTACK score 255 and BOOST 2/DISPEL 2 entry mismatch.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible
 with a small number of case tables; split only when the action-getter and priority seams cannot be
@@ -237,7 +272,6 @@ shared safely.
 
 ## Remaining Static Batches
 
-- support target eligibility and scoring;
 - final attack/item/spell action choice and RNG weighting after the three priority lists are populated;
 - movement orders, standby movement, path obstruction, line-attacker/exploder special AI;
 - command dispatcher and swarm/activation control.
