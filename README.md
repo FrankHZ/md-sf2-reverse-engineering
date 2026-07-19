@@ -3,7 +3,7 @@
 这是一个从原版 Mega Drive/Genesis ROM 出发，系统拆解 **Shining Force II**，形成可验证的
 逆向研究、游戏设计文档和结构化数据，并最终在现代引擎中重建其玩法的长期工程。
 
-仓库本身是项目的耐久记录，不依赖外部 agent memory 或旧聊天才能继续。接续工作先读本页、
+仓库本身是项目的耐久记录；本项目已停用外部 agent memory，也不依赖旧聊天才能继续。接续工作先读本页、
 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)、
 [`docs/README.md`](./docs/README.md) 和当前主题文档，再检查 `git status` 与近期提交；详细结论、
 未知项、复现命令和当前 frontier 必须回写到各自的仓库所有者。
@@ -17,7 +17,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,437 条 confirmed finding、45 个 H2 fixture、57 个 H3 fixture
+截至 2026-07-19，研究索引有 1,437 条 confirmed finding、45 个 H2 fixture、58 个 H3 fixture
 和 1,865 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build

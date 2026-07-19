@@ -18,8 +18,11 @@ without a previous chat transcript or external memory store:
 
 Topic documents own detailed findings and unknowns, decision records own durable tool/architecture
 choices, and Git history owns completed-slice chronology. External agent memory is neither required
-nor authoritative. When a session discovers a durable fact or changes the frontier, update the
-owning repository document in the same slice.
+nor authoritative, and it is disabled for routine work on this repository. Do not read or update a
+personal/global memory store to resume the project. If the user explicitly requests a one-time
+migration audit, move only still-valid, project-specific facts into the appropriate tracked owner and
+then stop synchronizing against the external store. When a session discovers a durable fact or
+changes the frontier, update the owning repository document in the same slice.
 
 ## Research
 

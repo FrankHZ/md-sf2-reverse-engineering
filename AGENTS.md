@@ -30,6 +30,11 @@ decision, current frontier, evidence counter, reproduction command, and unresolv
 to continue. Do not leave an important project fact only in a chat summary, local agent memory, or
 an ignored generated report.
 
+External agent memory is disabled for this repository. Do not consult or update a personal/global
+memory store for routine work. If the user explicitly requests a one-time migration audit, copy only
+still-valid, project-specific facts into their owning tracked documents; do not make the memory store
+a continuing synchronization target.
+
 Within the accepted Phase 2 direction, continue autonomously through plan, reverse engineering,
 documentation, focused verification, private-artifact scan, and commit. Do not pause for approval or
 produce a user report after every ordinary slice. Ask before a phase change, modern-engine choice,
