@@ -29,6 +29,8 @@ last-set-flag-wins 选择规则，以及 126 张六指针 setup table/756 个 sl
 地图 entity 层又闭合 125 个 source、980 条物理记录和 9 个跨文件 fallthrough（其中 map 17
 复用七条 variant suffix）；entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
 1,451 次 setup-level record reference，并保留两个 direct-`rts` stub 与 map 44 错误指针例外。
+description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stub 和 227 条物理 entry，并从
+唯一正常调用链确认三个 `d6` 条件函数会被跳过。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
 data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
@@ -362,10 +364,10 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 源码“找文件”阶段已经收口：code 是 381/387 strict reach，剩余 6 个都有明确 H2 所有权；data
 是 1,690/1,690 H2 inventory，980/1,690 strict H1 reach 的差额也全部归因于 include-site-only、
 unlabeled/alternate 或独立 Z80 地址空间。地图 setup 的 flag selection、六指针 layout、四类 event
-dispatcher 结构、全部 entity stream 以及 263 个 entity/zone/item event source 也已静态闭合。
-下一步继续解析 75 个 description section 和 binary block consumers，形成 Python-owned canonical
-合同。只有 direct-`rts` stub reachability、description
-`d6` 条件、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
+dispatcher 结构、全部 entity stream、263 个 entity/zone/item event source 和 75 个 description
+target 也已静态闭合。下一步继续解析 84 个 initialization section、47 个相邻 setup script 和
+binary block consumers，形成 Python-owned canonical 合同。只有 direct-`rts` stub reachability、
+非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与
 VDP/Z80/audio timing 继续留在各自的共享矩阵队列，不拆成单案例模拟。
 

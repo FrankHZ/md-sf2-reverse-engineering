@@ -233,6 +233,7 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
             "mapContentParsed": False,
             "mapSetupSemanticsParsed": True,
             "mapEventTablesParsed": True,
+            "mapDescriptionTablesParsed": True,
         },
         "runtimeQuestions": [
             "area-description-byte2-d6-condition-meaning",

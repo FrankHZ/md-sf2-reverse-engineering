@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/map-descriptions-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "sourceMacroCounts", "physicalEntryKinds", "setupReferenceEntryKinds", "duplicatePointerTargets", "conditionedFunctions", "consumerFacts", "runtimeQuestions", "sourceFiles"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-descriptions-static-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "scope": { "type": "string" },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["RunMapSetupAreaDescription", "DisplayAreaDescription"],
+      "properties": {
+        "RunMapSetupAreaDescription": { "type": "integer", "minimum": 0 },
+        "DisplayAreaDescription": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "summary": { "type": "object", "minProperties": 19, "maxProperties": 19, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "sourceMacroCounts": { "$ref": "#/definitions/countMap" },
+    "physicalEntryKinds": { "$ref": "#/definitions/countMap" },
+    "setupReferenceEntryKinds": { "$ref": "#/definitions/countMap" },
+    "duplicatePointerTargets": { "type": "array", "items": { "type": "object" } },
+    "conditionedFunctions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/entry" } },
+    "consumerFacts": { "type": "object" },
+    "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "string" }, "uniqueItems": true },
+    "sourceFiles": { "type": "array", "minItems": 75, "maxItems": 75, "items": { "$ref": "#/definitions/sourceFile" } }
+  },
+  "definitions": {
+    "countMap": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "entry": {
+      "type": "object",
+      "required": ["address", "kind", "x", "y", "conditionByte", "payloadKind"],
+      "properties": {
+        "wrapperSymbol": { "type": "string" },
+        "tableSymbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "kind": { "enum": ["text", "function", "conditionedFunction"] },
+        "x": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "y": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "conditionByte": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "payloadKind": { "type": "integer", "minimum": 0, "maximum": 1 },
+        "investigationTextOffset": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "investigationTextIndex": { "type": "integer", "minimum": 0 },
+        "descriptionTextOffset": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "descriptionTextIndex": { "type": "integer", "minimum": 0 },
+        "relativeOffset": { "type": "integer", "minimum": -32768, "maximum": 32767 },
+        "resolvedTargetAddress": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol", "address", "directReturnStub", "tableSymbol", "tableAddress", "descriptionTextBase", "entryCount", "macroCounts", "entries", "terminatorAddress"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "directReturnStub": { "type": "boolean" },
+        "tableSymbol": { "type": ["string", "null"] },
+        "tableAddress": { "type": ["integer", "null"], "minimum": 0 },
+        "descriptionTextBase": { "type": ["integer", "null"], "minimum": 0 },
+        "entryCount": { "type": "integer", "minimum": 0 },
+        "macroCounts": { "$ref": "#/definitions/countMap" },
+        "entries": { "type": "array", "items": { "$ref": "#/definitions/entry" } },
+        "terminatorAddress": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    }
+  }
+}

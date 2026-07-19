@@ -38,7 +38,8 @@ persists the bit barrel plus previous symbol across calls. Symbols `$EE` and abo
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
-entity record streams, and the complete entity/zone/item event-table boundary are source/H1/ROM-verified by
+entity record streams, the complete entity/zone/item event-table boundary, and all area-description
+wrappers/tables are source/H1/ROM-verified by
 [`map-data-inventory.md`](./map-data-inventory.md). This inventory still owns the file boundary and
 general scripting engine; the map-data document owns setup-table semantics.
 
@@ -56,6 +57,7 @@ uv run sf2 h2 common-scripting
 uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
+uv run sf2 h2 map-descriptions
 uv run sf2 research-index test
 ```
 

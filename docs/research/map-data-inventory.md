@@ -3,11 +3,12 @@
 - Status: **Confirmed** for the complete 1,390-file ASM boundary, build reachability, internal-symbol
   addresses, map/setup file classes, pointer/include counts, global table row counts, all 64 setup
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
-  all 125 entity-list sources/980 physical entity records, and all 263 entity/zone/item event sources
-  with 1,134 physical records
+  all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
+  1,134 physical records, and all 75 area-description targets/227 physical entries
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
-- Status: **Unknown** for direct-`rts` entity-event reachability, the description `d6` condition,
-  sequenced-orientation consumption, presentation timing, and binary consumers
+- Status: **Unknown** for direct-`rts` entity-event reachability, sequenced-orientation consumption,
+  nonstandard description callers, presentation timing, and
+  binary consumers
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -148,20 +149,54 @@ The complete tables and decoded branch targets stay in ignored
 `local/derived/map-events-static.json`. The tracked fixture keeps category totals, dispatcher rules,
 macro counts, and both exception families without redistributing event content.
 
+## Area-Description Wrappers and Tables
+
+The 126 description-slot references resolve to 75 unique callable targets, not directly to record
+tables. Thirty-eight targets are two-byte `rts` stubs. The other 37 are identical-shape 16-byte
+wrappers: load a per-map description-text base into `d3`, load an internal table into `a0`, execute
+`nop`, and jump to `DisplayAreaDescription`. All 75 callable bodies, the wrapper immediates and target
+addresses, and the 37 internal `$FD00`-terminated tables byte-match the ROM.
+
+| Payload | Physical entries | Setup-level references |
+| --- | ---: | ---: |
+| text offsets | 206 | 426 |
+| relative function | 18 | 31 |
+| `d6`-conditioned relative function | 3 | 4 |
+| **Total** | **227** | **461** |
+
+Text entries add byte 4 to global investigation-text base 423 and byte 5 to the wrapper's `d3`
+description base. Function entries add their signed word to the internal table base. There are 37
+two-byte terminators, 1,436 physical table bytes, and at most 23 entries in one table. Thirty-five
+callable targets are reused; across all setups, 67 references select a wrapper and 59 select an
+empty direct-return stub.
+
+The formerly unknown byte-2 check is now closed for the normal exploration call graph. The sole
+assembled `j_RunMapSetupAreaDescription` call is reached after `explorationvints.asm` executes
+`moveq #1,d6` with the source comment “No entity event.” `DisplayAreaDescription` skips a matching
+entry when byte 2 is nonzero and `d6` is nonzero. Therefore the three `msDescFunctionD6` entries
+(map 31 byte 1, maps 41/42 byte `$FF`) are **Confirmed** unreachable through that one normal call
+path. Their behavior under a direct or deliberately mutated `d6=0` caller remains **Unknown**; no
+emulator case is justified until such a caller is found or intentionally isolated.
+
+Complete decoded text indices and function targets remain in ignored
+`local/derived/map-descriptions-static.json`; the tracked fixture retains counts, the three
+conditioned entries, wrapper/dispatcher rules, and call-graph evidence.
+
 ## Concentrated Queue
 
 No emulator was launched. Setup priority and dispatcher order are now closed by source/H1/ROM
 evidence. Remaining questions are grouped as:
 
-1. the 75 area-description sections, their byte-2/`d6` condition, and sequenced-entity orientation;
-2. direct-`rts` entity-event reachability, follower/map-entity collision state, selected event-script
+1. sequenced-entity orientation, direct-`rts` entity-event reachability, and description functions
+   under nonstandard or mutated callers;
+2. follower/map-entity collision state, selected event/description-script
    side effects, transition persistence,
    and roof/step/warp precedence;
 3. walking/special-sprite, portrait/text/entity-facing presentation timing, and binary consumers.
 
-Entity streams plus entity/zone/item event tables are now closed statically. Continue with the 75
-description sections and binary consumers; only ambiguities that survive those passes should share
-the prepared map initialization/event-dispatch runtime matrix.
+Entity streams and all four setup interaction families are now closed statically. Continue with the
+84 initialization sections, 47 adjacent setup scripts, and binary consumers; only ambiguities that
+survive those passes should share the prepared map initialization/event-dispatch runtime matrix.
 
 ## Harness Performance
 
@@ -177,5 +212,6 @@ uv run sf2 h2 map-data
 uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
+uv run sf2 h2 map-descriptions
 uv run sf2 research-index test
 ```

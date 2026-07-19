@@ -8,6 +8,7 @@ import pytest
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
+from sf2tool.h2.map_descriptions import _decode_entry
 from sf2tool.h2.map_entities import _record_kind
 from sf2tool.h2.map_events import _decode_event_record
 from sf2tool.h2.map_setup import _parse_routes, _select_route
@@ -24,7 +25,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 39
+    assert result["H2Fixtures"] == 40
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
     assert result["AddressBindings"] == 1833
     assert result["IndexedCodeFiles"] == 381
@@ -290,6 +291,20 @@ def test_map_event_relative_offsets_resolve_from_table_base() -> None:
         "x": 0xFD,
         "y": 0,
     }
+
+
+def test_map_descriptions_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-descriptions"])
+    assert args.h2_command == "map-descriptions"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_description_text_indices_use_global_and_wrapper_bases() -> None:
+    record = _decode_entry(0x1000, 0x1006, bytes.fromhex("010200000304"), 0x200)
+    assert record["kind"] == "text"
+    assert record["investigationTextIndex"] == 426
+    assert record["descriptionTextIndex"] == 0x204
 
 
 def test_auxiliary_data_has_a_source_only_inventory_command() -> None:

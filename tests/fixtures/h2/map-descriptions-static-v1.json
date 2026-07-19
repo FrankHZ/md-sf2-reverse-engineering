@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-descriptions-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "RunMapSetupAreaDescription": 292610,
+    "DisplayAreaDescription": 292642
+  },
+  "expected": {
+    "summary": {
+      "sourceFileCount": 75,
+      "setupPointerReferenceCount": 126,
+      "uniqueTargetCount": 75,
+      "aliasedTargetCount": 35,
+      "wrapperCount": 37,
+      "directReturnStubCount": 38,
+      "wrapperSetupReferenceCount": 67,
+      "directReturnStubReferenceCount": 59,
+      "physicalEntryCount": 227,
+      "textPhysicalEntryCount": 206,
+      "functionPhysicalEntryCount": 18,
+      "conditionedFunctionPhysicalEntryCount": 3,
+      "setupEntryReferenceCount": 461,
+      "textSetupEntryReferenceCount": 426,
+      "functionSetupEntryReferenceCount": 31,
+      "conditionedFunctionSetupEntryReferenceCount": 4,
+      "terminatorCount": 37,
+      "physicalTableByteCount": 1436,
+      "maximumTableEntryCount": 23
+    },
+    "sourceMacroCounts": {
+      "msDesc": 206,
+      "msDescEnd": 37,
+      "msDescFunction": 18,
+      "msDescFunctionD6": 3
+    },
+    "physicalEntryKinds": {
+      "conditionedFunction": 3,
+      "function": 18,
+      "text": 206
+    },
+    "setupReferenceEntryKinds": {
+      "conditionedFunction": 4,
+      "function": 31,
+      "text": 426
+    },
+    "conditionedFunctions": [
+      {
+        "wrapperSymbol": "ms_map31_AreaDescriptions",
+        "tableSymbol": "byte_5D584",
+        "address": 382376,
+        "kind": "conditionedFunction",
+        "x": 8,
+        "y": 3,
+        "conditionByte": 1,
+        "payloadKind": 1,
+        "relativeOffset": 58,
+        "resolvedTargetAddress": 382398
+      },
+      {
+        "wrapperSymbol": "ms_map41_AreaDescriptions",
+        "tableSymbol": "byte_5F41E",
+        "address": 390174,
+        "kind": "conditionedFunction",
+        "x": 6,
+        "y": 7,
+        "conditionByte": 255,
+        "payloadKind": 1,
+        "relativeOffset": 14,
+        "resolvedTargetAddress": 390188
+      },
+      {
+        "wrapperSymbol": "ms_map42_AreaDescriptions",
+        "tableSymbol": "byte_5FE34",
+        "address": 392756,
+        "kind": "conditionedFunction",
+        "x": 39,
+        "y": 2,
+        "conditionByte": 255,
+        "payloadKind": 1,
+        "relativeOffset": 52,
+        "resolvedTargetAddress": 392808
+      }
+    ],
+    "consumerFacts": {
+      "setupTargetKind": "callable-wrapper-or-direct-return-stub",
+      "wrapperBytes": 16,
+      "entryBytes": 6,
+      "terminatorBytes": 2,
+      "terminatorFirstByte": 253,
+      "coordinateMatch": "packed-x-y-word",
+      "matchOrder": "first-matching-entry",
+      "textInvestigationIndexBase": 423,
+      "textDescriptionIndexBaseRegister": "d3",
+      "functionRelativeOffsetsResolveFromTableBase": true,
+      "nonzeroConditionByteRequiresZeroD6": true,
+      "normalExplorationCallCount": 1,
+      "normalExplorationD6Value": 1,
+      "normalExplorationD6Meaning": "no-entity-event",
+      "conditionedFunctionsSkippedInNormalExploration": true
+    },
+    "runtimeQuestions": [
+      "description-conditioned-functions-under-direct-or-mutated-d6-callers",
+      "description-function-side-effects-and-transition-persistence",
+      "description-text-portrait-and-window-timing"
+    ]
+  }
+}
