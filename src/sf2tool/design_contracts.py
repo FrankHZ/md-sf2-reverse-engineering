@@ -13,6 +13,9 @@ CONTRACTS = {
         "tests/fixtures/h3/map-setup-selection-v1.json": (
             "sf2-map-setup-selection-runtime-v1"
         ),
+        "tests/fixtures/h3/map-init-dispatch-v1.json": (
+            "sf2-map-init-dispatch-runtime-v1"
+        ),
     },
     "docs/design/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (

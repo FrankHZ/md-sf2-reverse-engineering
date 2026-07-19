@@ -100,7 +100,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   setup table 的 ROM parity、125 个 entity-list source/980 个物理记录与 suffix fallthrough、完整
   263 个 entity/zone/item event source/1,134 个物理记录，以及 75 个 description target/227 个物理
   entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone
-  script/8,058 条语句；十案例单启动 H3 另确认 missing/default、last-set-flag-wins 与 alias route。
+  script/8,058 条语句；十案例 selector 与六案例 init-dispatch 单启动 H3 另确认 missing/default、
+  last-set-flag-wins、alias route 及 active/scripted/direct-return init 调用。
 - [`map-content.md`](./research/map-content.md)：79 个 46-byte map entry、662 个 source-form content
   section、154 个私有 blocks/layout payload 的完整 source/H1/ROM parity，77 组 bitstream 的
   canonical Python 解码、1,859-resource/79-map engine-neutral import（含 64 route、126 setup、

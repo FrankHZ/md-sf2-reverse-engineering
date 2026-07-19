@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 map initialization dispatch runtime matrix fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "mapTestIndex", "observationBoundary", "sharedHarnessFixture", "function", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-init-dispatch-runtime-v1" },
+    "romSha256": { "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "core"],
+      "properties": {
+        "name": { "const": "BizHawk" },
+        "version": { "const": "2.11.1" },
+        "core": { "const": "Genesis Plus GX" }
+      }
+    },
+    "mapTestIndex": { "const": 0 },
+    "observationBoundary": { "type": "string", "minLength": 1 },
+    "sharedHarnessFixture": { "const": "tests/fixtures/h3/spell-damage-resistance-v1.json" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entryAddress", "callAddress", "returnAddress"],
+      "properties": {
+        "entryAddress": { "type": "integer", "minimum": 0 },
+        "callAddress": { "type": "integer", "minimum": 0 },
+        "returnAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["currentMapAddress", "gameFlagsAddress"],
+      "properties": {
+        "currentMapAddress": { "type": "integer", "minimum": 0 },
+        "gameFlagsAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 6, "maxItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "map", "setFlags", "expected"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "map": { "type": "integer", "minimum": 0, "maximum": 78 },
+          "setFlags": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 1023 } },
+          "expected": {
+            "type": "object", "additionalProperties": false,
+            "required": ["setupSymbol", "calledSymbol", "calledAddress", "targetKind"],
+            "properties": {
+              "setupSymbol": { "type": ["string", "null"] },
+              "calledSymbol": { "type": ["string", "null"] },
+              "calledAddress": { "type": ["integer", "null"], "minimum": 0 },
+              "targetKind": { "enum": ["skipped", "direct-return", "active"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -138,7 +138,9 @@ boundary without redistributing the original maps.
 
 The ten-case setup-selector H3 matrix now confirms default, missing-map, last-set-flag-wins, and
 alias-pointer selection through the natural debug Map Test exploration path. It does not close map
-transition or presentation behavior. Static evidence leaves three coherent later matrices:
+transition or presentation behavior. A following six-case init-dispatch matrix confirms missing-map
+skip and exactly one modeled indirect init target for active, scripted, and direct-return setups.
+Static evidence leaves three coherent later matrices:
 
 1. transition event precedence and state persistence across flag, step, roof, and warp processing;
 2. VInt/VDP frame timing for animation table updates;

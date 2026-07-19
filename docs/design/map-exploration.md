@@ -36,7 +36,9 @@ Evidence is executable through:
 - `sf2-canonical-map-import-v1` in
   `tests/fixtures/h2/canonical-map-import-v1.json`;
 - `sf2-map-setup-selection-runtime-v1` in
-  `tests/fixtures/h3/map-setup-selection-v1.json`.
+  `tests/fixtures/h3/map-setup-selection-v1.json`;
+- `sf2-map-init-dispatch-runtime-v1` in
+  `tests/fixtures/h3/map-init-dispatch-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -50,6 +52,10 @@ The ten-case H3 matrix confirms the selector itself returns the H2-modeled point
 default routes, single and multiple set flags, last-set-flag-wins, and later aliases that restore a
 default pointer. It replays one natural debug Map Test prompt and changes only `CURRENT_MAP` plus the
 game-flag bitset at selector entry; the original scan and return execute unchanged.
+The six-case init-dispatch matrix separately confirms that a missing map skips the indirect init
+call, while five default/flag-selected setups each call their H2-modeled init target exactly once and
+return through the original wrapper. It covers active, scripted, and direct-return targets without
+claiming that synthetic map/flag combinations reproduce their story side effects.
 Initialization resources retain ordered operations and complete branch targets, including the one
 confirmed cross-function return edge. A remake importer MAY translate recognized operations into a
 typed command IR, but MUST retain unknown operand text and MUST NOT infer script persistence or frame

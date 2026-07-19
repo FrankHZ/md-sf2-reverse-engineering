@@ -283,6 +283,15 @@ callback; the rejected first attempt exposed that exception and is not part of t
 observer therefore requests the snapshot from the outer frame loop rather than weakening the
 natural-call boundary or invoking the selector synthetically.
 
+The second runtime slice reuses that natural Map Test prompt boundary for six
+`RunMapSetupInitFunction` cases. At wrapper entry it changes only `CURRENT_MAP` and the same flag
+bitset, observes the original `jsr (a0)` at ROM `0x47512`, and requires the common wrapper return at
+`0x47514`. The missing-map case executes no indirect call. Map 0 and map 3 default/609/506/543 cases
+each execute exactly one H2-modeled target and return, covering two direct-`rts` targets, three active
+targets, and the flag-506 target that runs a map script. These dispatch facts are **Confirmed** in one
+BizHawk launch. Story, entity, audio, fade, and persistence effects under the controlled map/flag
+combinations remain outside this fixture and are not promoted from opcode names or successful return.
+
 ## Harness Performance
 
 This batch more than doubles the research-index record count. The index verifier now parses the H1
@@ -302,5 +311,6 @@ uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts
 uv run sf2 h2 map-content
 uv run sf2 h3 map-setup-selection
+uv run sf2 h3 map-init-dispatch
 uv run sf2 research-index test
 ```

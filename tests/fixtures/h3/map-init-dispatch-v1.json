@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-init-dispatch-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "mapTestIndex": 0,
+  "observationBoundary": "Six cases replay the debug Map Test 0 number prompt from one shared core state and reach RunMapSetupInitFunction naturally. Lua changes only CURRENT_MAP and the 128-byte GAME_FLAGS bitset at wrapper entry, observes the original indirect JSR target, and requires the wrapper to reach its common return in one BizHawk launch.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": { "entryAddress": 292092, "callAddress": 292114, "returnAddress": 292116 },
+  "ram": { "currentMapAddress": 16774929, "gameFlagsAddress": 16774790 },
+  "cases": [
+    { "id": "missing-map-skips-call", "map": 32, "setFlags": [], "expected": { "setupSymbol": null, "calledSymbol": null, "calledAddress": null, "targetKind": "skipped" } },
+    { "id": "map0-direct-return", "map": 0, "setFlags": [], "expected": { "setupSymbol": "ms_map0", "calledSymbol": "ms_map0_InitFunction", "calledAddress": 386600, "targetKind": "direct-return" } },
+    { "id": "map3-default-active", "map": 3, "setFlags": [], "expected": { "setupSymbol": "ms_map3", "calledSymbol": "ms_map3_InitFunction", "calledAddress": 332674, "targetKind": "active" } },
+    { "id": "map3-flag609-active", "map": 3, "setFlags": [609], "expected": { "setupSymbol": "ms_map3_flag609", "calledSymbol": "ms_map3_flag609_InitFunction", "calledAddress": 332736, "targetKind": "active" } },
+    { "id": "map3-flag506-scripted", "map": 3, "setFlags": [609, 506], "expected": { "setupSymbol": "ms_map3_flag506", "calledSymbol": "ms_map3_flag506_InitFunction", "calledAddress": 332640, "targetKind": "active" } },
+    { "id": "map3-flag543-direct-return", "map": 3, "setFlags": [609, 506, 543], "expected": { "setupSymbol": "ms_map3_flag543", "calledSymbol": "ms_map3_flag543_InitFunction", "calledAddress": 403654, "targetKind": "direct-return" } }
+  ]
+}
