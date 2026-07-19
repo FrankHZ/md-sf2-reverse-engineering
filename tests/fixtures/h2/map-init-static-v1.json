@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-init-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": { "RunMapSetupInitFunction": 292092 },
+  "expected": {
+    "summary": {
+      "sourceFileCount": 84,
+      "setupPointerReferenceCount": 126,
+      "uniqueTargetCount": 90,
+      "internalEntryTargetCount": 6,
+      "aliasedTargetCount": 28,
+      "activeFunctionCount": 56,
+      "directReturnStubCount": 34,
+      "activeSetupReferenceCount": 82,
+      "directReturnStubReferenceCount": 44,
+      "sourceStatementCount": 597,
+      "setupStatementReferenceCount": 973,
+      "maximumFunctionStatementCount": 58,
+      "flagCheckCount": 101,
+      "flagSetCount": 32,
+      "flagClearCount": 3,
+      "scriptCallCount": 80,
+      "uniqueScriptTargetCount": 75,
+      "directCallCount": 45,
+      "uniqueDirectCallTargetCount": 6,
+      "moveEntityOutOfMapCallCount": 35
+    },
+    "entryTokenCounts": {
+      "bcc.s": 1, "beq.s": 59, "bne.s": 44, "bne.w": 1, "bra.s": 13, "bra.w": 12,
+      "chkFlg": 101, "clrFlg": 3, "clsTxt": 1, "cmp.l": 1, "cmpi.l": 2, "csc": 14,
+      "divs.w": 2, "ext.l": 4, "jmp": 1, "jsr": 45, "move.b": 7, "move.l": 8,
+      "move.w": 38, "moveq": 2, "nop": 1, "rts": 88, "script": 80, "setFlg": 32,
+      "setPos": 12, "setStoryFlag": 1, "sndCom": 6, "swap": 2, "tst.w": 1, "txt": 13,
+      "warp": 2
+    },
+    "directCallTargetCounts": {
+      "ChangeEntityFacing": 1,
+      "FadeInFromBlack": 5,
+      "InitializeNazcaShipForceMembers": 2,
+      "MoveEntityOutOfMap": 35,
+      "j_FadeOut_WaitForP1Input": 1,
+      "j_alt_YesNoPrompt": 1
+    },
+    "scriptTargetCounts": {
+      "cs_4FF5A": 1, "cs_503A6": 1, "cs_50806": 1, "cs_51374": 1,
+      "cs_5137A": 1, "cs_513A0": 1, "cs_513BA": 1, "cs_513CE": 1,
+      "cs_51742": 1, "cs_51750": 1, "cs_5247C": 1, "cs_5249E": 1,
+      "cs_53104": 2, "cs_53176": 1, "cs_53996": 1, "cs_53B60": 1,
+      "cs_53F2A": 1, "cs_53FD8": 4, "cs_540C0": 1, "cs_54570": 1,
+      "cs_54E70": 1, "cs_54E78": 1, "cs_55832": 1, "cs_570B0": 1,
+      "cs_57D22": 1, "cs_58310": 1, "cs_58FA4": 1, "cs_59656": 1,
+      "cs_5996E": 1, "cs_59E04": 1, "cs_5A30C": 1, "cs_5A31E": 1,
+      "cs_5ABA8": 1, "cs_5ABCC": 1, "cs_5ABE6": 1, "cs_5AC04": 1,
+      "cs_5AC1C": 1, "cs_5AC34": 1, "cs_5AC4C": 1, "cs_5B016": 1,
+      "cs_5C3D8": 1, "cs_5CA5E": 1, "cs_5D3AA": 1, "cs_5D63C": 1,
+      "cs_5DD8E": 1, "cs_5DD9C": 1, "cs_5E0EE": 1, "cs_5E320": 1,
+      "cs_5E346": 1, "cs_5EB26": 1, "cs_5EB44": 1, "cs_5EBFC": 1,
+      "cs_5ED06": 1, "cs_5EDB8": 1, "cs_5EF60": 1, "cs_5F4AE": 1,
+      "cs_5FA9C": 1, "cs_5FABC": 1, "cs_600B2": 1, "cs_6060E": 1,
+      "cs_60656": 1, "cs_606AC": 1, "cs_606E0": 1, "cs_606EA": 1,
+      "cs_607DE": 1, "cs_60C42": 1, "cs_60CA4": 1, "cs_60EB2": 1,
+      "cs_612BE": 1, "cs_615E6": 1, "cs_62D06": 1, "cs_62D0E": 1,
+      "cs_633B2": 1, "cs_LeaveSpecialBattle": 2, "cs_StartSpecialBattle": 1
+    },
+    "consumerFacts": {
+      "pointerOffset": 20,
+      "selectedSetupCallsExactlyOneInitTarget": true,
+      "missingMapVoidSkipsInitCall": true,
+      "directReturnTargetsAreNoOpCallables": true
+    },
+    "runtimeQuestions": [
+      "init-script-side-effects-and-transition-persistence",
+      "init-entity-mutation-order-and-visibility-timing",
+      "init-fade-audio-and-presentation-sequencing"
+    ]
+  }
+}

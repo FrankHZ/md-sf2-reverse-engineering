@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-init-static-v1",
+  "outputSha256": "40A0942B4215A02CCC3D7136D3D540C1033D1575EC354A43928761EA74052E8B",
+  "summary": {
+    "sourceFileCount": 84,
+    "setupPointerReferenceCount": 126,
+    "uniqueTargetCount": 90,
+    "internalEntryTargetCount": 6,
+    "aliasedTargetCount": 28,
+    "activeFunctionCount": 56,
+    "directReturnStubCount": 34,
+    "activeSetupReferenceCount": 82,
+    "directReturnStubReferenceCount": 44,
+    "sourceStatementCount": 597,
+    "setupStatementReferenceCount": 973,
+    "maximumFunctionStatementCount": 58,
+    "flagCheckCount": 101,
+    "flagSetCount": 32,
+    "flagClearCount": 3,
+    "scriptCallCount": 80,
+    "uniqueScriptTargetCount": 75,
+    "directCallCount": 45,
+    "uniqueDirectCallTargetCount": 6,
+    "moveEntityOutOfMapCallCount": 35
+  }
+}

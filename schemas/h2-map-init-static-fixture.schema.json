@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h2-map-init-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-init-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "type": "object", "minProperties": 1, "maxProperties": 1 },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["summary", "entryTokenCounts", "directCallTargetCounts", "scriptTargetCounts", "consumerFacts", "runtimeQuestions"],
+      "properties": {
+        "summary": { "type": "object", "minProperties": 20, "maxProperties": 20 },
+        "entryTokenCounts": { "type": "object" },
+        "directCallTargetCounts": { "type": "object" },
+        "scriptTargetCounts": { "type": "object" },
+        "consumerFacts": { "type": "object" },
+        "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true }
+      }
+    }
+  }
+}

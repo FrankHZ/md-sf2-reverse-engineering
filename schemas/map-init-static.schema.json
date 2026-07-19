@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/map-init-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "entryTokenCounts", "directCallTargetCounts", "scriptTargetCounts", "duplicatePointerTargets", "consumerFacts", "runtimeQuestions", "sourceFiles"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-init-static-v1" },
+    "upstream": { "type": "object" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "scope": { "type": "string" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["RunMapSetupInitFunction"],
+      "properties": { "RunMapSetupInitFunction": { "type": "integer", "minimum": 0 } }
+    },
+    "summary": { "type": "object", "minProperties": 20, "maxProperties": 20, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "entryTokenCounts": { "$ref": "#/definitions/countMap" },
+    "directCallTargetCounts": { "$ref": "#/definitions/countMap" },
+    "scriptTargetCounts": { "$ref": "#/definitions/countMap" },
+    "duplicatePointerTargets": { "type": "array", "items": { "type": "object" } },
+    "consumerFacts": { "type": "object" },
+    "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true },
+    "sourceFiles": { "type": "array", "minItems": 90, "maxItems": 90, "items": { "$ref": "#/definitions/sourceFile" } }
+  },
+  "definitions": {
+    "countMap": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "sourceFile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "symbol", "address", "primarySourceEntry", "directReturnStub", "statementCount", "bodySha256", "tokenCounts", "flagCheckCount", "flagSetCount", "flagClearCount", "scriptTargets", "callTargets"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "primarySourceEntry": { "type": "boolean" },
+        "directReturnStub": { "type": "boolean" },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "bodySha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "tokenCounts": { "$ref": "#/definitions/countMap" },
+        "flagCheckCount": { "type": "integer", "minimum": 0 },
+        "flagSetCount": { "type": "integer", "minimum": 0 },
+        "flagClearCount": { "type": "integer", "minimum": 0 },
+        "scriptTargets": { "type": "array", "items": { "type": "string" } },
+        "callTargets": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

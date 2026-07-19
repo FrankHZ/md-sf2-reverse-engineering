@@ -4,7 +4,8 @@
   addresses, map/setup file classes, pointer/include counts, global table row counts, all 64 setup
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
-  1,134 physical records, and all 75 area-description targets/227 physical entries
+  1,134 physical records, all 75 area-description targets/227 physical entries, and all 84 init
+  sources/90 setup-callable entry points
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
 - Status: **Unknown** for direct-`rts` entity-event reachability, sequenced-orientation consumption,
   nonstandard description callers, presentation timing, and
@@ -182,20 +183,39 @@ Complete decoded text indices and function targets remain in ignored
 `local/derived/map-descriptions-static.json`; the tracked fixture retains counts, the three
 conditioned entries, wrapper/dispatcher rules, and call-graph evidence.
 
+## Initialization Callables
+
+Setup slot 20 contains 126 references to 90 unique callable entries spread across 84
+`s6_initfunction*.asm` sources. Six pointers intentionally enter internal labels inside their owning
+function rather than the file's primary entry, so equating one source file with one callable would
+miss valid suffix routes. Twenty-eight targets are reused by multiple setup tables.
+
+Of the 90 callables, 56 are active and 34 are direct-`rts` no-ops. At setup-reference level that is
+82 active calls and 44 no-op calls. The primary 84 entry bodies contain 597 normalized statements;
+following the 126 selected targets yields 973 statement references, with at most 58 statements in
+one entry path. The static operation inventory contains 101 flag checks, 32 flag sets, three flag
+clears, 80 `script` calls to 75 distinct targets, and 45 direct calls to six targets. Thirty-five of
+those direct calls remove an entity from the map.
+
+These are **Confirmed** source/H1/pointer and no-op ROM-shape facts. They do not claim the story or
+presentation semantics of the called scripts. Full per-entry normalized-body hashes, token maps,
+script targets, and direct-call targets stay in ignored `local/derived/map-init-static.json`; the
+tracked fixture keeps the complete aggregate operation maps and dispatcher rules.
+
 ## Concentrated Queue
 
 No emulator was launched. Setup priority and dispatcher order are now closed by source/H1/ROM
 evidence. Remaining questions are grouped as:
 
-1. sequenced-entity orientation, direct-`rts` entity-event reachability, and description functions
+1. sequenced-entity orientation, direct-`rts` entity-event reachability, and description/init functions
    under nonstandard or mutated callers;
 2. follower/map-entity collision state, selected event/description-script
    side effects, transition persistence,
    and roof/step/warp precedence;
 3. walking/special-sprite, portrait/text/entity-facing presentation timing, and binary consumers.
 
-Entity streams and all four setup interaction families are now closed statically. Continue with the
-84 initialization sections, 47 adjacent setup scripts, and binary consumers; only ambiguities that
+Entity streams, all four setup interaction families, and initialization callables are now closed
+statically. Continue with the 47 standalone setup script files and binary consumers; only ambiguities that
 survive those passes should share the prepared map initialization/event-dispatch runtime matrix.
 
 ## Harness Performance
@@ -213,5 +233,6 @@ uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
 uv run sf2 h2 map-descriptions
+uv run sf2 h2 map-init
 uv run sf2 research-index test
 ```

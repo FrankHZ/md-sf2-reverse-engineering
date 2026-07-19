@@ -184,9 +184,9 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage:
 
-1. parse the remaining 84 initialization sections and 47 adjacent setup scripts now that all four
-   interaction families are source/H1/ROM-confirmed, including 75 description targets/227 entries;
-2. turn initialization, script-routing, and binary-block consumers into canonical Python-owned output
+1. parse the remaining 47 standalone setup script files now that all four interaction families and
+   84 init sources/90 callable entries are source/H1/ROM-confirmed;
+2. turn script-routing and binary-block consumers into canonical Python-owned output
    without committing extracted copyrighted content;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as

@@ -33,6 +33,7 @@ from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
 from sf2tool.h2.map_entities import verify_map_entities_contract
 from sf2tool.h2.map_events import verify_map_events_contract
+from sf2tool.h2.map_init import verify_map_init_contract
 from sf2tool.h2.map_setup import verify_map_setup_contract
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
@@ -331,6 +332,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_descriptions)
     h2_map_descriptions.add_argument("--output-path", type=_path)
+    h2_map_init = h2_commands.add_parser(
+        "map-init", help="inventory setup initialization entry points and static operation routes"
+    )
+    _add_local_paths(h2_map_init)
+    h2_map_init.add_argument("--output-path", type=_path)
     h2_auxiliary_data = h2_commands.add_parser(
         "auxiliary-data", help="inventory graphics, scripting, tech, and sprite-dialogue data"
     )
@@ -783,6 +789,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-descriptions":
         print_record(
             verify_map_descriptions_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-init":
+        print_record(
+            verify_map_init_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

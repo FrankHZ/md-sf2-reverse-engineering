@@ -25,7 +25,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 40
+    assert result["H2Fixtures"] == 41
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
     assert result["AddressBindings"] == 1833
     assert result["IndexedCodeFiles"] == 381
@@ -305,6 +305,13 @@ def test_map_description_text_indices_use_global_and_wrapper_bases() -> None:
     assert record["kind"] == "text"
     assert record["investigationTextIndex"] == 426
     assert record["descriptionTextIndex"] == 0x204
+
+
+def test_map_init_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-init"])
+    assert args.h2_command == "map-init"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
 
 
 def test_auxiliary_data_has_a_source_only_inventory_command() -> None:
