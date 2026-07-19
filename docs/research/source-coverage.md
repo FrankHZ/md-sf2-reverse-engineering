@@ -192,7 +192,8 @@ and 126 six-pointer definitions resolve entity/event/description/init ownership;
 content remains ignored and only aggregate evidence is tracked:
 
 1. keep the completed ten-case setup-selector and six-case init-dispatch matrices as the runtime
-   selection/call boundary, then run the grouped entity/zone/item event-dispatch matrix;
+   selection/call boundary; the event H2 rail now owns nine exact/wildcard/default selection cases,
+   which become the input for one grouped entity/zone/item event-dispatch H3 matrix;
 2. compare rendered output through one graphics/VDP matrix;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as

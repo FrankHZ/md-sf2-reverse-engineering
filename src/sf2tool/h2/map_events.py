@@ -51,6 +51,35 @@ FUNCTION_SYMBOLS = (
     "RunMapSetupZoneEvent",
     "RunMapSetupItemEvent",
 )
+SELECTION_INPUTS = (
+    ("entity-specific-after-scan", "entityEvents", 3, (), {"entity": 128}),
+    ("entity-default", "entityEvents", 3, (), {"entity": 254}),
+    ("zone-exact", "zoneEvents", 3, (), {"x": 27, "y": 5}),
+    ("zone-wildcard-y", "zoneEvents", 3, (), {"x": 2, "y": 42}),
+    ("zone-first-overlapping-match", "zoneEvents", 3, (609,), {"x": 2, "y": 23}),
+    ("zone-default", "zoneEvents", 3, (), {"x": 10, "y": 10}),
+    (
+        "item-index-mask",
+        "itemEvents",
+        8,
+        (),
+        {"x": 15, "y": 19, "facing": 1, "item": 240},
+    ),
+    (
+        "item-facing-mismatch-default",
+        "itemEvents",
+        8,
+        (),
+        {"x": 15, "y": 19, "facing": 2, "item": 112},
+    ),
+    (
+        "item-wildcard-facing",
+        "itemEvents",
+        22,
+        (),
+        {"x": 35, "y": 24, "facing": 3, "item": 125},
+    ),
+)
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -91,6 +120,79 @@ def _instruction_tokens(source: str) -> list[str]:
         if line:
             tokens.append(line)
     return tokens
+
+
+def _event_matches(category: str, record: dict[str, Any], query: dict[str, int]) -> bool:
+    if record["kind"] == "default":
+        return True
+    if category == "entityEvents":
+        return record["entity"] == (query["entity"] & 0xFF)
+    if category == "zoneEvents":
+        return all(
+            record[field] == 0xFF or record[field] == (query[field] & 0xFF)
+            for field in ("x", "y")
+        )
+    if category == "itemEvents":
+        coordinates_match = all(
+            record[field] == 0xFF or record[field] == (query[field] & 0xFF)
+            for field in ("x", "y", "facing")
+        )
+        return coordinates_match and record["item"] == (query["item"] & 0x7F)
+    raise ValueError(f"unknown map event category: {category}")
+
+
+def _selected_setup_symbol(
+    setup: dict[str, Any], map_index: int, set_flags: set[int]
+) -> str | None:
+    route = next((row for row in setup["routes"] if row["map"] == map_index), None)
+    if route is None:
+        return None
+    selected = route["defaultPointer"]
+    for variant in route["flagVariants"]:
+        if variant["flag"] in set_flags:
+            selected = variant["pointer"]
+    return selected
+
+
+def _selection_cases(
+    setup: dict[str, Any], categories: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    pointer_tables = {row["symbol"]: row for row in setup["pointerTables"]}
+    event_tables = {
+        category: {row["symbol"]: row for row in value["tables"]}
+        for category, value in categories.items()
+    }
+    cases: list[dict[str, Any]] = []
+    for case_id, category, map_index, flags, query in SELECTION_INPUTS:
+        setup_symbol = _selected_setup_symbol(setup, map_index, set(flags))
+        if setup_symbol is None:
+            raise ValueError(f"selection case unexpectedly uses a missing map: {case_id}")
+        table_symbol = pointer_tables[setup_symbol]["targets"][category]["symbol"]
+        table = event_tables[category].get(table_symbol)
+        if table is None:
+            raise ValueError(f"selection case uses a direct-return event stub: {case_id}")
+        selected = next(
+            (row for row in table["records"] if _event_matches(category, row, query)),
+            None,
+        )
+        if selected is None:
+            raise ValueError(f"selection case has no default record: {case_id}")
+        cases.append(
+            {
+                "id": case_id,
+                "category": category,
+                "map": map_index,
+                "setFlags": list(flags),
+                "query": query,
+                "selectedSetup": setup_symbol,
+                "selectedTable": table_symbol,
+                "selectedRecordAddress": selected["address"],
+                "selectedRecordKind": selected["kind"],
+                "eventFlags": selected.get("flags"),
+                "resolvedTargetAddress": selected["resolvedTargetAddress"],
+            }
+        )
+    return cases
 
 
 def _source_rows(
@@ -269,7 +371,7 @@ def _consumer_facts(setup: dict[str, Any]) -> dict[str, Any]:
         "firstMatchingEntryWins": True,
         "entityEvents": dispatch["entityEvent"],
         "zoneEvents": dispatch["zoneEvent"],
-        "itemEvents": dispatch["itemEvent"],
+        "itemEvents": {**dispatch["itemEvent"], "itemIndexMask": 0x7F},
     }
 
 
@@ -377,7 +479,9 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         "maximumTableRecordCount": max(
             row["maximumTableRecordCount"] for row in category_summaries.values()
         ),
+        "selectionCaseCount": len(SELECTION_INPUTS),
     }
+    selection_cases = _selection_cases(setup, categories)
     return {
         "schemaVersion": 1,
         "id": ID,
@@ -393,6 +497,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         "consumerFacts": _consumer_facts(setup),
         "directReturnStubs": direct_return_stubs,
         "rawZoneDefaultException": raw_zone_default,
+        "selectionCases": selection_cases,
         "runtimeQuestions": [
             "entity-event-direct-return-stub-unreachability-under-mutated-state",
             "event-script-side-effects-and-transition-persistence",
@@ -423,6 +528,7 @@ def verify_map_events_contract(
         "consumerFacts",
         "directReturnStubs",
         "rawZoneDefaultException",
+        "selectionCases",
         "runtimeQuestions",
     ):
         if fixture["expected"][field] != output[field]:
@@ -441,5 +547,6 @@ def verify_map_events_contract(
         "UniqueTables": output["summary"]["uniqueTargetCount"],
         "PhysicalRecords": output["summary"]["physicalRecordCount"],
         "SetupReferences": output["summary"]["setupRecordReferenceCount"],
+        "SelectionCases": output["summary"]["selectionCaseCount"],
         "Status": "PASS",
     }

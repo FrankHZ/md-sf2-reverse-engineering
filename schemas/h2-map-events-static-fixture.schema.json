@@ -13,14 +13,15 @@
     "expected": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "runtimeQuestions"],
+      "required": ["summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "selectionCases", "runtimeQuestions"],
       "properties": {
-        "summary": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+        "summary": { "type": "object", "minProperties": 14, "maxProperties": 14 },
         "categorySummaries": { "type": "object", "minProperties": 3, "maxProperties": 3 },
         "sourceMacroCounts": { "type": "object", "minProperties": 3, "maxProperties": 3 },
         "consumerFacts": { "type": "object" },
         "directReturnStubs": { "type": "array", "minItems": 2, "maxItems": 2 },
         "rawZoneDefaultException": { "type": "object" },
+        "selectionCases": { "type": "array", "minItems": 9, "maxItems": 9 },
         "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true }
       }
     }

@@ -10,6 +10,7 @@ CONTRACTS = {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
         "tests/fixtures/h2/canonical-map-import-v1.json": "sf2-canonical-map-import-v1",
+        "tests/fixtures/h2/map-events-static-v1.json": "sf2-map-events-static-v1",
         "tests/fixtures/h3/map-setup-selection-v1.json": (
             "sf2-map-setup-selection-runtime-v1"
         ),

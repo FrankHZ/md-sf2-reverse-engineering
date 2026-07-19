@@ -98,7 +98,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`map-data-inventory.md`](./research/map-data-inventory.md)：完整 1,390-file map ASM build graph、
   727 个内部 H1 binding、662 个 include-site-only body、64+66 setup selection rows、126 张六指针
   setup table 的 ROM parity、125 个 entity-list source/980 个物理记录与 suffix fallthrough、完整
-  263 个 entity/zone/item event source/1,134 个物理记录，以及 75 个 description target/227 个物理
+  263 个 entity/zone/item event source/1,134 个物理记录与 9 个 first-match 选择案例，以及 75 个 description target/227 个物理
   entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone
   script/8,058 条语句；十案例 selector 与六案例 init-dispatch 单启动 H3 另确认 missing/default、
   last-set-flag-wins、alias route 及 active/scripted/direct-return init 调用。

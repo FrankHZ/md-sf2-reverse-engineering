@@ -11,7 +11,7 @@ from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h2.map_content import _encode_source
 from sf2tool.h2.map_descriptions import _decode_entry
 from sf2tool.h2.map_entities import _record_kind
-from sf2tool.h2.map_events import _decode_event_record
+from sf2tool.h2.map_events import _decode_event_record, _event_matches
 from sf2tool.h2.map_layouts import decode_map_blocks
 from sf2tool.h2.map_setup import _parse_routes, _select_route
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
@@ -317,6 +317,18 @@ def test_map_events_has_a_static_rom_parity_command() -> None:
     assert args.h2_command == "map-events"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
+
+
+def test_map_event_matcher_handles_wildcards_defaults_and_item_mask() -> None:
+    assert _event_matches(
+        "zoneEvents", {"kind": "specific", "x": 0xFF, "y": 12}, {"x": 7, "y": 12}
+    )
+    assert _event_matches(
+        "itemEvents",
+        {"kind": "specific", "x": 1, "y": 2, "facing": 0xFF, "item": 112},
+        {"x": 1, "y": 2, "facing": 3, "item": 240},
+    )
+    assert _event_matches("entityEvents", {"kind": "default"}, {"entity": 254})
 
 
 def test_map_event_relative_offsets_resolve_from_table_base() -> None:

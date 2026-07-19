@@ -385,7 +385,8 @@ operation 与全部 130 条 branch 也已结构化。完整输出保持 ignored�
 规划的 map initialization/event-dispatch runtime matrix。首个十案例 setup-selector H3 已在单次
 BizHawk 启动中确认 missing/default、last-set-flag-wins 与 alias route，
 随后六案例 init-dispatch H3 又确认 missing map 跳过调用，以及 active/scripted/direct-return setup
-各自只调用一个 H2 目标并返回；下一步集中验证 entity/zone/item event dispatch，
+各自只调用一个 H2 目标并返回；entity/zone/item rail 也已新增 9 个 exact/wildcard/default H2
+选择案例，下一步据此集中验证实际 event dispatch，
 同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义

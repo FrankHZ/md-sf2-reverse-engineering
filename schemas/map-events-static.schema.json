@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/map-events-static.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "runtimeQuestions", "categories"],
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "categorySummaries", "sourceMacroCounts", "consumerFacts", "directReturnStubs", "rawZoneDefaultException", "selectionCases", "runtimeQuestions", "categories"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-map-events-static-v1" },
@@ -19,7 +19,7 @@
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
     "scope": { "type": "string", "minLength": 1 },
     "function": { "$ref": "#/definitions/functionMap" },
-    "summary": { "type": "object", "minProperties": 13, "maxProperties": 13, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 14, "maxProperties": 14, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "categorySummaries": {
       "type": "object",
       "additionalProperties": false,
@@ -34,6 +34,7 @@
     "consumerFacts": { "type": "object" },
     "directReturnStubs": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "object" } },
     "rawZoneDefaultException": { "type": "object" },
+    "selectionCases": { "type": "array", "minItems": 9, "maxItems": 9, "items": { "type": "object" } },
     "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "string" }, "uniqueItems": true },
     "categories": {
       "type": "object",

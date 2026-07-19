@@ -35,6 +35,8 @@ Evidence is executable through:
   `tests/fixtures/h2/map-layout-decode-v1.json`;
 - `sf2-canonical-map-import-v1` in
   `tests/fixtures/h2/canonical-map-import-v1.json`;
+- `sf2-map-events-static-v1` in
+  `tests/fixtures/h2/map-events-static-v1.json`;
 - `sf2-map-setup-selection-runtime-v1` in
   `tests/fixtures/h3/map-setup-selection-v1.json`;
 - `sf2-map-init-dispatch-runtime-v1` in
@@ -119,6 +121,11 @@ Event arrays preserve source order because original dispatch is order-sensitive:
 - coordinate `$FF` values remain explicit wildcards where the owning consumer confirms them;
 - `$FFFF` terminators are serialization details and do not become gameplay records;
 - searchable items keep coordinate, flag, item identity, and chest/non-chest ownership.
+
+The event fixture includes nine executable selection cases over the complete decoded tables:
+entity-specific/default, zone exact/wildcard/overlapping-first/default, and item index-mask,
+facing-mismatch/default, and wildcard-facing behavior. A remake event selector MUST reproduce those
+cases before presentation or story scripts are connected.
 
 Flag, step, and roof records describe rectangular block copies into the working layout. Warp records
 retain trigger coordinates, scroll mode, target map, target coordinates, and facing. The exact order

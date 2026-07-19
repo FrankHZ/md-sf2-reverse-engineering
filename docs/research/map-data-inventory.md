@@ -163,6 +163,14 @@ The complete tables and decoded branch targets stay in ignored
 `local/derived/map-events-static.json`. The tracked fixture keeps category totals, dispatcher rules,
 macro counts, and both exception families without redistributing event content.
 
+The H2 rail now evaluates nine representative queries directly against those complete decoded tables.
+Entity cases cover a late specific match and the default; zone cases cover exact coordinates,
+`$FF` Y wildcard, an exact row that precedes an overlapping wildcard row, and the default; item cases
+cover the `$7F` index mask, a facing mismatch that falls through to default, and `$FF` facing. Every
+case retains its selected setup/table, physical record address, record kind, flags where applicable,
+and resolved target address. These are **Confirmed** static first-match contracts and the input table
+for the next grouped H3, not claims about the called script's side effects.
+
 ## Area-Description Wrappers and Tables
 
 The 126 description-slot references resolve to 75 unique callable targets, not directly to record
