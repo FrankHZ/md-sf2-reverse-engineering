@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-sprite-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "loadEnemyPropertiesAddress": 104816,
+    "loadEnemyFrameAddress": 104862,
+    "loadAllyPropertiesAddress": 104926,
+    "loadAllyFrameAddress": 104972
+  },
+  "table": {
+    "allyBattlespriteTableAddress": 1572892,
+    "enemyBattlespriteTableAddress": 1245188
+  },
+  "summary": {
+    "pointerCount": 86, "payloadCount": 86, "payloadByteCount": 499270,
+    "headerByteCount": 1332, "paletteCount": 167, "paletteByteCount": 5344,
+    "frameCount": 408, "compressedByteCount": 492594, "decodedByteCount": 2271744,
+    "commandGroupCount": 15889, "literalWordCount": 204635,
+    "copyCommandCount": 46243, "copiedWordCount": 931237,
+    "maximumCopyOffsetWords": 2007, "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32, "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 86, "payloadRomParityCount": 86
+  },
+  "sideSummaries": [
+    {
+      "side": "ally", "pointerCount": 32, "payloadCount": 32,
+      "payloadByteCount": 172242, "headerByteCount": 498,
+      "paletteCount": 59, "paletteByteCount": 1888, "frameCount": 153,
+      "compressedByteCount": 169856, "decodedByteCount": 705024,
+      "minimumFramesPerPayload": 3, "maximumFramesPerPayload": 6,
+      "minimumPalettesPerPayload": 1, "maximumPalettesPerPayload": 4,
+      "minimumAnimationSpeed": 8, "maximumAnimationSpeed": 26,
+      "minimumStatusOffsetX": 32, "maximumStatusOffsetX": 62,
+      "minimumStatusOffsetY": 26, "maximumStatusOffsetY": 64,
+      "commandGroupCount": 5772, "literalWordCount": 75450,
+      "copyCommandCount": 15713, "copiedWordCount": 277062,
+      "maximumCopyOffsetWords": 1987, "maximumCopyLengthWords": 33,
+      "minimumTrailingBits": 32, "maximumTrailingBits": 47,
+      "pointerTableRomParityCount": 32, "payloadRomParityCount": 32
+    },
+    {
+      "side": "enemy", "pointerCount": 54, "payloadCount": 54,
+      "payloadByteCount": 327028, "headerByteCount": 834,
+      "paletteCount": 108, "paletteByteCount": 3456, "frameCount": 255,
+      "compressedByteCount": 322738, "decodedByteCount": 1566720,
+      "minimumFramesPerPayload": 2, "maximumFramesPerPayload": 7,
+      "minimumPalettesPerPayload": 1, "maximumPalettesPerPayload": 4,
+      "minimumAnimationSpeed": 12, "maximumAnimationSpeed": 30,
+      "minimumStatusOffsetX": 45, "maximumStatusOffsetX": 74,
+      "minimumStatusOffsetY": 12, "maximumStatusOffsetY": 89,
+      "commandGroupCount": 10117, "literalWordCount": 129185,
+      "copyCommandCount": 30530, "copiedWordCount": 654175,
+      "maximumCopyOffsetWords": 2007, "maximumCopyLengthWords": 33,
+      "minimumTrailingBits": 32, "maximumTrailingBits": 47,
+      "pointerTableRomParityCount": 54, "payloadRomParityCount": 54
+    }
+  ],
+  "runtimeQuestions": []
+}

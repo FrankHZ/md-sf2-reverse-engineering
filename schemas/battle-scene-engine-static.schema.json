@@ -6,8 +6,8 @@
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-scene-engine-static-v1" },
     "upstream": { "type": "object" }, "scope": { "const": "code/gameflow/battle/battlescenes" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 12 }, "indexedRecordCount": { "const": 16 }, "indexedFileCount": { "const": 12 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 16, "maxItems": 16, "uniqueItems": true },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 12 }, "indexedRecordCount": { "const": 20 }, "indexedFileCount": { "const": 12 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 20, "maxItems": 20, "uniqueItems": true },
     "indexedSourcePaths": { "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true },
     "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
     "externalDirectCallTargets": { "type": "array", "uniqueItems": true },

@@ -183,6 +183,7 @@ def _graphics_facts(disasm: Path) -> dict[str, Any]:
             "unusedDisplayAndGraphicsHelpersInventoried": True,
             "battleTerrainStackCorpusConfirmed": True,
             "battleBackgroundStackCorpusConfirmed": True,
+            "battleSpriteStackCorpusConfirmed": True,
             "portraitStackCorpusConfirmed": True,
             "remainingDecompressionCorporaRemainQueued": True,
             "visualAndVdpTimingRemainQueued": True,

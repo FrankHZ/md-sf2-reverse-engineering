@@ -2,7 +2,7 @@
 
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
   two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
-  and the complete battle-background and portrait container/decode corpora
+  and the complete battle-background, battle-sprite, and portrait container/decode corpora
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -45,6 +45,13 @@ Stack-compressed tile stream. All 52 streams decode to exactly 2,048 bytes; the 
 eye entries and 218 mouth entries with coordinates limited to the 8×8 portrait tile grid. The four
 aliases are portrait 35→33 and portraits 53-55→52.
 
+The battle-sprite tables contain 32 ally and 54 enemy containers without pointer aliases. Header
+offsets deterministically separate animation speed, two status-icon bytes, a 2-7-entry frame-offset
+array, and 1-4 palettes. The 86 payloads contain 167 palettes and 408 Stack-compressed frames; all
+153 ally frames decode to 4,608 bytes and all 255 enemy frames to 6,144 bytes. Pointer tables,
+payloads, header boundaries, and stream output sizes are ROM-checked; image and palette bytes remain
+private.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -68,6 +75,7 @@ launches.
 ```powershell
 uv run sf2 h2 auxiliary-data
 uv run sf2 h2 battle-backgrounds
+uv run sf2 h2 battle-sprites
 uv run sf2 h2 portraits
 uv run sf2 research-index test
 ```

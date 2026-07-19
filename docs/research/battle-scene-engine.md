@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for the pinned twelve-file root inventory, 55-file animation inventory,
   21-command scene-script dispatch, scene initialization order, actor/weapon/background selectors,
-  complete 32-entry spell setup/update source pairing, and the battle-background container loader
+  complete 32-entry spell setup/update source pairing, battle-background container loader, and
+  ally/enemy battle-sprite property/palette/frame loaders
 - Status: **Inferred** for the player-visible intent of named tint and graphics helpers where only
   static call structure has been reproduced
 - Status: **Unknown** for exact frame timing, interrupt/VDP effects, and rendered visual output
@@ -36,6 +37,14 @@ always produce exactly that 6,144-byte span. It then clears palette word 0 and c
 words from the container's 32-byte palette. This establishes the container and load order but does
 not claim how the two tilesets are arranged into rendered frames.
 
+The ally and enemy battle-sprite loaders resolve separate 32- and 54-entry pointer tables. Their
+property paths store the animation-speed word and the following X/Y status-icon bytes, resolve the
+palette boundary relative to header word 2, clear destination color 0, and copy the remaining 15
+words from the selected 32-byte palette. Frame paths resolve a self-relative word beginning at byte
+6 and call the shared Stack decoder before DMA. The fixed DMA lengths are `0x900` words for ally
+frames and `0xC00` words for enemy frames, matching the H2 corpus's 4,608- and 6,144-byte outputs.
+Animation sequencing and rendered placement remain outside this container contract.
+
 Spell animation setup and update each have 32 dispatch entries. Setup preserves the mirror bit and
 stores the decoded variant as one-based; both disabled setup and index `-1` return without dispatch.
 The update path requires its toggle and phase state before jumping to the selected updater.
@@ -62,6 +71,7 @@ cases. These two static batches add no emulator launch.
 uv run sf2 h2 battle-scene-engine
 uv run sf2 h2 battle-scene-animations
 uv run sf2 h2 battle-backgrounds
+uv run sf2 h2 battle-sprites
 uv run sf2 research-index test
 ```
 

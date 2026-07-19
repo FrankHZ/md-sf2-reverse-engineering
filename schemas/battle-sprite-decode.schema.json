@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/battle-sprite-decode.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "sideSummaries", "payloads", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-sprite-decode-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/$defs/counts" },
+    "table": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "sideSummaries": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {
+        "type": "object", "required": ["side"],
+        "properties": { "side": { "enum": ["ally", "enemy"] } },
+        "additionalProperties": { "type": ["integer", "string"] }
+      }
+    },
+    "payloads": {
+      "type": "array", "minItems": 86, "maxItems": 86,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["side", "index", "symbol", "sourcePath", "sourceAddress", "payloadBytes", "animationSpeed", "statusOffsetX", "statusOffsetY", "headerBytes", "frameCount", "paletteCount", "paletteBytes", "paletteSha256", "decodedBytesPerFrame", "frames"],
+        "properties": {
+          "side": { "enum": ["ally", "enemy"] },
+          "index": { "type": "integer", "minimum": 0, "maximum": 53 },
+          "symbol": { "type": "string", "pattern": "^(Ally|Enemy)Battlesprite[0-9]{2}$" },
+          "sourcePath": { "type": "string" },
+          "sourceAddress": { "type": "integer", "minimum": 0 },
+          "payloadBytes": { "type": "integer", "minimum": 1 },
+          "animationSpeed": { "type": "integer", "minimum": 0 },
+          "statusOffsetX": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "statusOffsetY": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "headerBytes": { "type": "integer", "minimum": 10 },
+          "frameCount": { "type": "integer", "minimum": 2, "maximum": 7 },
+          "paletteCount": { "type": "integer", "minimum": 1, "maximum": 4 },
+          "paletteBytes": { "type": "integer", "minimum": 32, "maximum": 128, "multipleOf": 32 },
+          "paletteSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "decodedBytesPerFrame": { "enum": [4608, 6144] },
+          "frames": {
+            "type": "array", "minItems": 2, "maxItems": 7,
+            "items": { "$ref": "#/$defs/frame" }
+          }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "frame": {
+      "type": "object", "additionalProperties": false,
+      "required": ["frame", "sourceOffset", "compressedBytes", "inputBitsConsumed", "trailingBits", "decodedBytes", "decodedSha256", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords"],
+      "properties": {
+        "frame": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "sourceOffset": { "type": "integer", "minimum": 1 },
+        "compressedBytes": { "type": "integer", "minimum": 1 },
+        "inputBitsConsumed": { "type": "integer", "minimum": 1 },
+        "trailingBits": { "type": "integer", "minimum": 0 },
+        "decodedBytes": { "enum": [4608, 6144] },
+        "decodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "commandGroupCount": { "type": "integer", "minimum": 1 },
+        "literalWordCount": { "type": "integer", "minimum": 0 },
+        "copyCommandCount": { "type": "integer", "minimum": 0 },
+        "copiedWordCount": { "type": "integer", "minimum": 0 },
+        "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 },
+        "maximumCopyLengthWords": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

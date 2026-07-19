@@ -3,7 +3,7 @@
 - Status: **Confirmed** for the pinned 11-file layout-owned inventory, H1 entry addresses, the two
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
-  battle-background, and portrait Stack-compression corpora
+  battle-background, battle-sprite, and portrait Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining Basic and embedded Stack-compression corpora, exact VDP timing,
@@ -56,6 +56,14 @@ using coordinates 0-7; portrait 35 aliases payload 33 and slots 53-55 alias payl
 payload bytes are ROM-checked, while tracked output retains only metadata/palette/decoded hashes and
 aggregate codec facts.
 
+The fourth complete corpus joins all 32 ally and 54 enemy battle-sprite containers. A container
+starts with animation speed and two status-icon offsets, followed by a relative palette boundary,
+one self-relative word per frame, one to four 32-byte palettes, and the Stack streams. Ally
+containers provide 153 frames across three to six frames each; enemy containers provide 255 across
+two to seven. Every ally frame decodes to 4,608 bytes (12×12 tiles) and every enemy frame to 6,144
+bytes (16×12 tiles), totaling 2,271,744 decoded bytes. The rail validates both pointer tables, all 86
+payloads, all 167 palettes, and all 408 streams against ROM boundaries without tracking image bytes.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -79,8 +87,8 @@ screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 
 ## Concentrated Verification Queue
 
-This batch starts no emulator. The same decoder should next expand through the structured Stack
-containers for battle sprites and special screens, while a separate Basic decoder owns map sprites.
+This batch starts no emulator. The same decoder should next expand through remaining embedded Stack
+containers such as special screens, while a separate Basic decoder owns map sprites.
 Rendered behavior joins the shared presentation matrix: display
 initialization, palette interpolation frames, parallax/autoscroll axes, special-sprite updates, and
 flash duration can share VDP/RAM observation points.
@@ -91,10 +99,11 @@ flash duration can share VDP/RAM observation points.
 uv run sf2 h2 tech-graphics
 uv run sf2 h2 battle-terrain
 uv run sf2 h2 battle-backgrounds
+uv run sf2 h2 battle-sprites
 uv run sf2 h2 portraits
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
-`portrait-graphics-decode.json`.
+`battle-sprite-decode.json`, plus `portrait-graphics-decode.json`.

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-sprite-decode-v1",
+  "outputSha256": "A3DE6651BD0616D986F123566A2AD5B5C14012C9CE2E7B9CA4875BEA71C61E74",
+  "summary": {
+    "pointerCount": 86,
+    "payloadCount": 86,
+    "payloadByteCount": 499270,
+    "headerByteCount": 1332,
+    "paletteCount": 167,
+    "paletteByteCount": 5344,
+    "frameCount": 408,
+    "compressedByteCount": 492594,
+    "decodedByteCount": 2271744,
+    "commandGroupCount": 15889,
+    "literalWordCount": 204635,
+    "copyCommandCount": 46243,
+    "copiedWordCount": 931237,
+    "maximumCopyOffsetWords": 2007,
+    "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 86,
+    "payloadRomParityCount": 86
+  }
+}

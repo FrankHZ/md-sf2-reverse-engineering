@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-battle-scene-engine-static-v1",
-  "outputSha256": "461E984AF22E104B5645909EA1B632F3802DF9B7DF1A0F4E5710B442378A554A",
+  "outputSha256": "66E6A2DBCDF81755973A64B74A070BF337DF8830EEBECA3E74AEE8F3E3EB0561",
   "summary": {
     "fileCount": 12,
     "sourceLineCount": 6261,
@@ -13,7 +13,7 @@
     "uniqueDirectTargetCount": 137,
     "internalDirectTargetCount": 92,
     "externalDirectTargetCount": 45,
-    "indexedRecordCount": 16,
+    "indexedRecordCount": 20,
     "indexedFileCount": 12
   }
 }
