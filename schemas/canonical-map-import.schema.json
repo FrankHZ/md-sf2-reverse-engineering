@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/canonical-map-import.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "romSha256", "geometry", "table", "summary",
+    "resourceCounts", "recordCounts", "referenceFacts", "maps", "resources",
+    "runtimeQuestions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-canonical-map-import-v1" },
+    "upstream": {
+      "type": "object",
+      "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "geometry": { "$ref": "#/$defs/counts" },
+    "table": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "resourceCounts": { "$ref": "#/$defs/counts" },
+    "recordCounts": { "$ref": "#/$defs/counts" },
+    "referenceFacts": { "type": "object" },
+    "maps": {
+      "type": "array", "minItems": 79, "maxItems": 79,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "sourceSymbol", "palette", "tilesets", "references"],
+        "properties": {
+          "id": { "type": "integer", "minimum": 0, "maximum": 78 },
+          "sourceSymbol": { "type": "string" },
+          "palette": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "tilesets": {
+            "type": "array", "minItems": 5, "maxItems": 5,
+            "items": { "type": "integer", "minimum": 0, "maximum": 255 }
+          },
+          "references": { "type": "object", "minProperties": 10, "maxProperties": 10 }
+        }
+      }
+    },
+    "resources": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "blocksets", "layouts", "areaTables", "flagEventTables", "stepEventTables",
+        "roofEventTables", "warpEventTables", "itemTables", "animationTables"
+      ],
+      "properties": {
+        "blocksets": { "$ref": "#/$defs/resources" },
+        "layouts": { "$ref": "#/$defs/resources" },
+        "areaTables": { "$ref": "#/$defs/resources" },
+        "flagEventTables": { "$ref": "#/$defs/resources" },
+        "stepEventTables": { "$ref": "#/$defs/resources" },
+        "roofEventTables": { "$ref": "#/$defs/resources" },
+        "warpEventTables": { "$ref": "#/$defs/resources" },
+        "itemTables": { "$ref": "#/$defs/resources" },
+        "animationTables": { "$ref": "#/$defs/resources" }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "address"],
+        "properties": {
+          "id": { "type": "string" },
+          "address": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-canonical-map-import-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "pt_MapData": 609162
+  },
+  "geometry": {
+    "layoutWidth": 64,
+    "layoutHeight": 64,
+    "blockWidthTiles": 3,
+    "blockHeightTiles": 3,
+    "rawWordBits": 16,
+    "layoutBlockIndexMask": 1023,
+    "layoutFlagsMask": 64512
+  },
+  "summary": {
+    "mapCount": 79,
+    "resourceCount": 737,
+    "nonNullReferenceCount": 752,
+    "absentReferenceCount": 38,
+    "sharedReferenceCount": 15,
+    "decodedBlockCount": 19771,
+    "decodedBlockWordCount": 177939,
+    "decodedLayoutWordCount": 315392,
+    "logicalRecordCount": 1027
+  },
+  "resourceCounts": {
+    "blocksets": 77,
+    "layouts": 77,
+    "areaTables": 79,
+    "flagEventTables": 79,
+    "stepEventTables": 79,
+    "roofEventTables": 79,
+    "warpEventTables": 79,
+    "itemTables": 156,
+    "animationTables": 32
+  },
+  "recordCounts": {
+    "areas": 135,
+    "flagEvents": 71,
+    "stepEvents": 94,
+    "roofEvents": 114,
+    "warpEvents": 409,
+    "items": 96,
+    "animationEntries": 108
+  },
+  "referenceFacts": {
+    "blockLayoutAliases": [
+      { "map": 24, "ownerMap": 23 },
+      { "map": 46, "ownerMap": 7 }
+    ],
+    "animationReferenceCount": 41,
+    "animationResourceCount": 32,
+    "nullAnimationReferenceCount": 38,
+    "otherItemTableAliases": [
+      { "map": 47, "resource": "Map47s7_ChestItems" },
+      { "map": 58, "resource": "Map58s7_ChestItems" }
+    ],
+    "rawFlagsPreserved": true
+  },
+  "runtimeQuestions": [
+    "map-transition-event-precedence-and-state-persistence",
+    "map-animation-vdp-frame-timing",
+    "canonical-map-rendered-vdp-parity"
+  ]
+}

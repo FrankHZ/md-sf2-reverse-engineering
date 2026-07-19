@@ -12,7 +12,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,437 条 confirmed finding、54 个 H3 fixture 和 1,833 个地址绑定。
+截至 2026-07-19，研究索引有 1,437 条 confirmed finding、45 个 H2 fixture、54 个 H3 fixture
+和 1,834 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -370,8 +371,10 @@ dispatcher 结构、全部 entity stream、263 个 entity/zone/item event source
 target、84 个 initialization source 与全部 47 个 standalone setup script 也已静态闭合。79 个
 map entry、662 个 source-form map-content section 和 154 个私有 blocks/layout payload 现已全部完成
 source/H1/ROM parity；77 组压缩 blocks/layout 也已由 Python 全量解码为 19,771 个 3x3 block 与
-77 个 64x64 layout，并验证所有 layout 索引不越界。下一步把解码结果接到实现无关的 map data
-contract，同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
+77 个 64x64 layout，并验证所有 layout 索引不越界。解码结果现已接入包含 79 个 map definition、
+737 个共享资源和 1,027 个逻辑记录的实现无关 canonical import；完整输出保持 ignored，仓库仅追踪
+schema、digest 和聚合 fixture。下一步把 map setup/entity/event selection 接到同一 map definition，
+同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

@@ -759,6 +759,7 @@
       },
       "mapContentParsed": true,
       "mapBinaryPayloadsDecoded": true,
+      "canonicalMapImportBuilt": true,
       "mapSetupSemanticsParsed": true,
       "mapEventTablesParsed": true,
       "mapDescriptionTablesParsed": true,

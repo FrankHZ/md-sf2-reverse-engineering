@@ -26,7 +26,7 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,833 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,834 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -150,7 +150,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,437 records; its
-verifier reports 381 unique code files, 980 unique data files, 54 H3 fixtures, and 1,833 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 45 H2 fixtures, 54 H3 fixtures, and
+1,834 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -185,15 +186,17 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks
-and 77 complete 64x64 layouts with every block reference in range:
+and 77 complete 64x64 layouts with every block reference in range. Those structures now join into a
+deterministic 79-map, 737-resource canonical import with 1,027 logical records; complete generated
+content remains ignored and only aggregate evidence is tracked:
 
-1. define the implementation-neutral map import contract over the decoded structures without
-   committing extracted copyrighted content;
+1. connect map setup selection and entity/event contracts to the canonical map definitions without
+   inventing runtime transition semantics;
 2. compare rendered output through one graphics/VDP matrix;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as
    `Inferred` or `Unknown` until stronger evidence exists;
-4. run the already grouped map initialization/event-dispatch matrix only after deeper static parsing
+4. run the already grouped map initialization/event-dispatch matrix only after this integration
    leaves a concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in
    their own later shared matrices.
 

@@ -232,6 +232,7 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
             "globalTables": global_facts,
             "mapContentParsed": True,
             "mapBinaryPayloadsDecoded": True,
+            "canonicalMapImportBuilt": True,
             "mapSetupSemanticsParsed": True,
             "mapEventTablesParsed": True,
             "mapDescriptionTablesParsed": True,

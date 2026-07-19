@@ -146,7 +146,8 @@ and explicit full-parity requests.
 
 Phase 2 research is static-first and subsystem-batched. Inventory the complete source scope, parse
 stable tables and control-flow rules, and record a runtime-question queue before creating H3 work.
-Static source/ROM shape may be confirmed by deterministic parsers; caller-dependent behavioral
+Static source/ROM shape and canonical map imports may be confirmed by deterministic parsers;
+caller-dependent behavioral
 meaning stays inferred until observed. Group related runtime questions into one generated case table
 and one BizHawk launch whenever setup and observation points can be shared. Do not add a one-case
 emulator fixture without a concrete isolation reason. The detailed cadence and coverage denominator

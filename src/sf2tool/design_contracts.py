@@ -9,6 +9,7 @@ CONTRACTS = {
     "docs/design/map-exploration.md": {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
+        "tests/fixtures/h2/canonical-map-import-v1.json": "sf2-canonical-map-import-v1",
     },
     "docs/design/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (

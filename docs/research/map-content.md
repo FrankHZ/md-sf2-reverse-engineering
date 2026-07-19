@@ -1,7 +1,8 @@
 # Map Content Tables and Binary Payload Parity
 
 - Status: **Confirmed** for all 79 map entries, all 662 source-form content sections, all 154
-  private block/layout payloads, record sizes, aggregate record counts, and their canonical ROM bytes
+  private block/layout payloads, record sizes, aggregate record counts, their canonical ROM bytes,
+  and the deterministic engine-neutral import assembled from them
 - Status: **Inferred** for transition-time ordering and persistence across flag/step/roof/warp consumers
 - Status: **Unknown** for rendered layout parity and exact VDP animation frame timing
 - Evidence date: 2026-07-19
@@ -97,6 +98,24 @@ and relative/absolute values with reused or new flags. The layout decoder covers
 block, left/upper run copy, left/upper four-entry MRU history, and fixed-width literal commands. Full
 decoded hashes and per-map command counts remain ignored local metadata, not tracked map content.
 
+## Canonical Engine-Neutral Import
+
+`sf2-canonical-map-import-v1` now joins the pointer graph, decoded blocksets/layouts, and logical
+source-form records into one deterministic JSON data contract. It contains 79 map definitions and
+737 identity-preserving resources: 77 blocksets, 77 layouts, five families of 79 event/content
+tables, 156 item tables, and 32 animation tables. The resources contain 19,771 blocks, 315,392
+layout words, and 1,027 logical records. Every non-null reference resolves to exactly one resource.
+
+The import does not inline shared resources into each map. Maps 24 and 46 retain their original
+block/layout aliases; 41 animation references resolve to 32 tables; maps 47 and 58 deliberately use
+their chest tables for the other-item slot. All 38 null animation pointers stay null. Layout and
+block words retain their raw 16-bit values, so unknown flags are not lost through premature naming.
+
+The verifier builds the full 8.7 MB output twice and requires byte-identical canonical JSON, then
+checks its tracked digest and schema. The full output remains under ignored `local/derived/`; the
+tracked fixture stores only geometry, counts, alias facts, and provenance. This closes the data-import
+boundary without redistributing the original maps.
+
 ## Concentrated Runtime Queue
 
 No emulator was launched for this batch. Static evidence leaves three coherent later matrices:
@@ -113,9 +132,11 @@ graphics/VDP batch; neither justifies a one-map runtime fixture now.
 ```powershell
 uv run sf2 h2 map-content
 uv run sf2 h2 map-layouts
+uv run sf2 h2 map-import
 uv run sf2 h2 map-data
 uv run sf2 research-index test
 ```
 
-The detailed output is written to ignored `local/derived/map-content-static.json`. The tracked
-fixture is `tests/fixtures/h2/map-content-static-v1.json`.
+Detailed outputs are written to ignored `local/derived/map-content-static.json`,
+`local/derived/map-layout-decode.json`, and `local/derived/canonical-map-import.json`. The tracked
+fixtures contain only compact non-content evidence.

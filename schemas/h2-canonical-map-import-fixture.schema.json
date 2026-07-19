@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-canonical-map-import-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstreamCommit", "romSha256", "table", "geometry",
+    "summary", "resourceCounts", "recordCounts", "referenceFacts", "runtimeQuestions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-canonical-map-import-v1" },
+    "upstreamCommit": { "type": "string" },
+    "romSha256": { "type": "string" },
+    "table": { "type": "object" },
+    "geometry": { "type": "object" },
+    "summary": { "type": "object" },
+    "resourceCounts": { "type": "object" },
+    "recordCounts": { "type": "object" },
+    "referenceFacts": { "type": "object" },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  }
+}
