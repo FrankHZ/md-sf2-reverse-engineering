@@ -22,7 +22,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
   合同索引、校验规则和新增发现的落地流程。
-- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、46.51% 可执行代码文件
+- [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、49.10% 可执行代码文件
   reach 的严格边界，以及静态优先、集中运行 H3 的子系统批处理节奏。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
   治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
@@ -36,6 +36,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   Kiwi 火焰、EGRESS/Angel Wing、battle load 和移动音效合同。
 - [`battle-scene-engine.md`](./research/battle-scene-engine.md)：battle scene 根引擎 12 文件和动画
   实现 55 文件、21 条 scene-script 命令、初始化/选择器，以及 32×2 setup/update 配对。
+- [`battle-cutscenes.md`](./research/battle-cutscenes.md)：战前/开战/战后/败敌/区域 cutscene 的
+  10 文件路由、flag 准入、leader-death position 准备和 map-script 调度。
 
 ## Design
 

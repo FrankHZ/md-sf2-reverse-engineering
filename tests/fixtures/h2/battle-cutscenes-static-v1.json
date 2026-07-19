@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-cutscenes-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "afterBattleEndAddress": 294228,
+    "afterBattleStartAddress": 294076,
+    "leaderDeathPositionsAddress": 294302,
+    "battleEndAddress": 293960,
+    "battleEndStartAddress": 293778,
+    "battleStartEndAddress": 293772,
+    "battleStartAddress": 293614,
+    "beforeBattleEndAddress": 293608,
+    "beforeBattleAddress": 293456,
+    "regionCutsceneAddress": 294530
+  },
+  "expected": {
+    "representativeSymbols": {
+      "afterbattlecutscenesend.asm": "EndAfterBattleCutscene",
+      "afterbattlecutscenesstart.asm": "ExecuteAfterBattleCutscene",
+      "afterenemyleaderdeathpositions.asm": "ApplyPositionsAfterEnemyLeaderDies",
+      "battleendcutscenesend.asm": "loc_47C48",
+      "battleendcutscenesstart.asm": "ExecuteBattleCutscene_Defeated",
+      "battlestartcutscenesend.asm": "loc_47B8C",
+      "battlestartcutscenesstart.asm": "ExecuteBattleStartCutscene",
+      "beforebattlecutscenesend.asm": "loc_47AE8",
+      "beforebattlecutscenesstart.asm": "ExecuteBeforeBattleCutscene",
+      "regionactivatedcutscenes.asm": "ExecuteBattleRegionCutscene"
+    },
+    "cutsceneFacts": {
+      "intro": { "beforeBattleChecksSharedIntroFlag": true, "beforeBattleSetsFlag": false, "battleStartChecksSharedIntroFlag": true, "battleStartSetsFlagBeforeScript": true, "dispatchesByCurrentBattle": true },
+      "afterBattle": { "skipsScriptWhenBattleCompleted": true, "dispatchesByCurrentBattle": true, "joinTableRunsAtSharedEnd": true },
+      "enemyDefeated": { "requiresBowieAlive": true, "requiresLeaderSlotDead": true, "skipsScriptWhenBattleCompleted": true, "queuesLivingEnemiesWhenLeaderPresent": true, "deadListEntryTerminator": 255 },
+      "leaderDeathPositions": { "requiresBowieAliveAndLeaderDead": true, "battleTableEntryBytes": 6, "movesAllSlotsOffscreen": true, "setsAllEnemyHpToZero": true, "positionEntryBytes": 4, "positionTerminator": -1, "unreachableDeadListWritePresent": true },
+      "region": { "tableEntryBytes": 8, "terminator": -1, "checksBattleThenPlayedFlagThenRegion": true, "setsPlayedFlagBeforeMapScript": true, "scriptDispatch": "MAPSCRIPT trap" }
+    }
+  }
+}

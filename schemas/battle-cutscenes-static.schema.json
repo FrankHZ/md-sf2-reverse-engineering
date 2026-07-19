@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II battle cutscenes static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "cutsceneFacts", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-cutscenes-static-v1" },
+    "upstream": { "type": "object" }, "scope": { "const": "code/gameflow/battle/cutscenes" },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 10 }, "indexedRecordCount": { "const": 10 }, "indexedFileCount": { "const": 10 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 10, "maxItems": 10, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 10, "maxItems": 10, "uniqueItems": true },
+    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
+    "cutsceneFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+    "files": { "type": "array", "minItems": 10, "maxItems": 10 }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-cutscenes-static-v1",
+  "outputSha256": "592E5D60A4C449F183D7113159AD6B1A033A92FC1B4169D678DCD1CD8208AC72",
+  "summary": {
+    "fileCount": 10,
+    "sourceLineCount": 328,
+    "statementCount": 173,
+    "globalLabelCount": 14,
+    "localLabelCount": 9,
+    "directCallSiteCount": 26,
+    "indirectCallSiteCount": 0,
+    "uniqueDirectTargetCount": 9,
+    "internalDirectTargetCount": 0,
+    "externalDirectTargetCount": 9,
+    "indexedRecordCount": 10,
+    "indexedFileCount": 10
+  }
+}
