@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-common-stats-static-v1",
-  "outputSha256": "80DF5670817C87897B8DB124CC2D175455839D6DCEFAF7FD0EC52F88648E5ADA",
+  "outputSha256": "A1D59714EAE2EB74A310B90EE94BFC641329E1A2232D7BFCC7E346094A973E39",
   "summary": {
     "fileCount": 20,
     "sourceLineCount": 5149,
@@ -13,8 +13,8 @@
     "uniqueDirectTargetCount": 108,
     "internalDirectTargetCount": 72,
     "externalDirectTargetCount": 36,
-    "indexedRecordCount": 23,
-    "indexedFileCount": 19,
-    "excludedDuplicateFileCount": 1
+    "indexedRecordCount": 21,
+    "indexedFileCount": 17,
+    "excludedAlternateFileCount": 3
   }
 }

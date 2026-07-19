@@ -7,7 +7,7 @@
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-stats-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 14, "maxProperties": 14, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "expected": { "type": "object", "additionalProperties": false, "required": ["representativeSymbols", "statsFacts", "duplicateSource"], "properties": { "representativeSymbols": { "type": "object", "minProperties": 20, "maxProperties": 20 }, "statsFacts": { "type": "object", "minProperties": 8, "maxProperties": 8 }, "duplicateSource": { "type": "object" } } }
+    "function": { "type": "object", "minProperties": 12, "maxProperties": 12, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "expected": { "type": "object", "additionalProperties": false, "required": ["representativeSymbols", "statsFacts", "alternateSources"], "properties": { "representativeSymbols": { "type": "object", "minProperties": 20, "maxProperties": 20 }, "statsFacts": { "type": "object", "minProperties": 7, "maxProperties": 7 }, "alternateSources": { "type": "array", "minItems": 3, "maxItems": 3 } } }
   }
 }

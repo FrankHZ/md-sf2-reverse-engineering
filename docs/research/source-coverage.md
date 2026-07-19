@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 315 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 247 | 239 code files and 8 data files |
-| Executable code-file reach | 61.76% | 239 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 313 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 245 | 237 code files and 8 data files |
+| Executable code-file reach | 61.24% | 237 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 711 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 709 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -69,14 +69,14 @@ The current evidence is deep but narrow:
   Huffman state; one unlabeled 288-byte data blob is H2-verified but excluded from symbol reach.
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
   8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
-  Common stats now inventories all 20 files and models flags, party/inventory services, field items,
-  spell learning, and new-game order. Nineteen have independent evidence; one unassembled alternate
-  item source is tracked but excluded from strict reach rather than borrowing its canonical twin.
+  Common stats now inventories all 20 files and models flags, party/inventory services, spell
+  learning, and new-game order. Seventeen have independent evidence; three unassembled alternate
+  item sources are tracked but excluded from strict reach rather than borrowing their canonical twins.
 - **Minimal or unindexed:** exploration/world state, individual event-script content, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 61.76% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 61.24% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -89,8 +89,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 315 records; its
-verifier reports 54 H3 fixtures and 711 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 313 records; its
+verifier reports 54 H3 fixtures and 709 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence

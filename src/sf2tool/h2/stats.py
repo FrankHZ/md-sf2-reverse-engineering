@@ -15,8 +15,15 @@ from sf2tool.paths import display_path, repo_path
 
 ID = "sf2-common-stats-static-v1"
 SOURCE_ROOT = Path("code/common/stats")
-DUPLICATE_SOURCE = SOURCE_ROOT / "items/itemfunctions_s7_0.asm"
-CANONICAL_ITEM_INVENTORY = SOURCE_ROOT / "iteminventory.asm"
+ALTERNATE_SOURCES = {
+    SOURCE_ROOT / "items/itemfunctions_s7_0.asm": SOURCE_ROOT / "iteminventory.asm",
+    SOURCE_ROOT / "items/fielditemeffects.asm": Path(
+        "code/common/menus/item/fielditemeffects.asm"
+    ),
+    SOURCE_ROOT / "items/itemactions_1.asm": Path(
+        "code/common/menus/item/isitemusableonfield.asm"
+    ),
+}
 MANIFEST = repo_path("manifests/extractions/common-stats-static.json")
 SCHEMA = repo_path("schemas/common-stats-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/common-stats-static-v1.json")
@@ -52,63 +59,43 @@ def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
 
 
-def _field_item_pairs(path: Path) -> list[dict[str, str]]:
-    lines = path.read_text(encoding="utf-8").splitlines()
-    start = next(
-        index for index, line in enumerate(lines) if line.strip() == "rjt_FieldItemEffects:"
-    )
-    values: list[str] = []
-    for line in lines[start + 1 :]:
-        if re.match(r"^[A-Za-z0-9_@]+:", line):
-            break
-        match = re.search(r"dc\.w\s+([^\s;]+)", line)
-        if match:
-            values.append(match.group(1))
-    if values[-1] != "-1" or (len(values) - 1) % 2:
-        raise ValueError("field item dispatch table shape drift")
-    pairs = []
-    for index in range(0, len(values) - 1, 2):
-        effect = values[index + 1].split("-")[0]
-        pairs.append({"item": values[index], "effect": effect})
-    return pairs
-
-
-def _duplicate_fact(disasm: Path) -> dict[str, Any]:
-    canonical = disasm / CANONICAL_ITEM_INVENTORY
-    duplicate = disasm / DUPLICATE_SOURCE
+def _alternate_source_fact(
+    disasm: Path, alternate_path: Path, canonical_path: Path, layout: str
+) -> dict[str, Any]:
+    canonical = disasm / canonical_path
+    alternate = disasm / alternate_path
     canonical_bytes = canonical.read_bytes()
-    duplicate_bytes = duplicate.read_bytes()
+    alternate_bytes = alternate.read_bytes()
     range_pattern = re.compile(rb"; 0x([0-9A-F]+)\.\.0x([0-9A-F]+)")
     canonical_range = range_pattern.search(canonical_bytes)
-    duplicate_range = range_pattern.search(duplicate_bytes)
-    if not canonical_range or canonical_range.groups() != duplicate_range.groups():
-        raise ValueError("alternate item inventory ROM range drift")
+    alternate_range = range_pattern.search(alternate_bytes)
+    if not canonical_range or canonical_range.groups() != alternate_range.groups():
+        raise ValueError(f"alternate source ROM range drift: {alternate_path}")
     canonical_labels = set(
-        _parse_source_file(canonical, CANONICAL_ITEM_INVENTORY.as_posix())["globalLabels"]
+        _parse_source_file(canonical, canonical_path.as_posix())["globalLabels"]
     )
-    duplicate_labels = set(
-        _parse_source_file(duplicate, DUPLICATE_SOURCE.as_posix())["globalLabels"]
+    alternate_labels = set(
+        _parse_source_file(alternate, alternate_path.as_posix())["globalLabels"]
     )
-    layout = (disasm / "layout/sf2-07-0x044000-0x064000.asm").read_text(encoding="utf-8")
-    canonical_include = 'include "code\\common\\stats\\iteminventory.asm"'
-    duplicate_include = 'include "code\\common\\stats\\items\\itemfunctions_s7_0.asm"'
-    if canonical_include not in layout or duplicate_include in layout:
-        raise ValueError("item inventory layout inclusion drift")
+    canonical_include = f'include "{str(canonical_path).replace("/", chr(92))}"'
+    alternate_include = f'include "{str(alternate_path).replace("/", chr(92))}"'
+    if canonical_include not in layout or alternate_include in layout:
+        raise ValueError(f"alternate source layout inclusion drift: {alternate_path}")
     return {
-        "canonicalPath": CANONICAL_ITEM_INVENTORY.as_posix(),
-        "alternatePath": DUPLICATE_SOURCE.as_posix(),
+        "canonicalPath": canonical_path.as_posix(),
+        "alternatePath": alternate_path.as_posix(),
         "sameAnnotatedRomRange": True,
-        "sourceByteIdentical": canonical_bytes == duplicate_bytes,
-        "sharedGlobalSymbols": sorted(canonical_labels & duplicate_labels),
+        "sourceByteIdentical": canonical_bytes == alternate_bytes,
+        "sharedGlobalSymbols": sorted(canonical_labels & alternate_labels),
         "canonicalIncludedByLayout": True,
         "alternateIncludedByLayout": False,
         "alternateExcludedFromStrictReach": True,
         "canonicalSha256": hashlib.sha256(canonical_bytes).hexdigest().upper(),
-        "alternateSha256": hashlib.sha256(duplicate_bytes).hexdigest().upper(),
+        "alternateSha256": hashlib.sha256(alternate_bytes).hexdigest().upper(),
     }
 
 
-def _stats_facts(disasm: Path, field_item_pairs: list[dict[str, str]]) -> dict[str, Any]:
+def _stats_facts(disasm: Path) -> dict[str, Any]:
     root = disasm / SOURCE_ROOT
     _require_ordered_fragments(
         root / "gameflags.asm",
@@ -213,15 +200,6 @@ def _stats_facts(disasm: Path, field_item_pairs: list[dict[str, str]]) -> dict[s
             "move.b  #2,((MESSAGE_SPEED-$1000000)).w",
         ],
     )
-    _require_ordered_fragments(
-        root / "items/itemactions_1.asm",
-        [
-            "lea     table_UsableOnFieldItems(pc), a0",
-            "cmp.b   (a0)+,d1",
-            "cmpi.b  #-1,(a0)",
-            "moveq   #-1,d2",
-        ],
-    )
     return {
         "flags": {
             "flagIndexMasked": True,
@@ -248,13 +226,6 @@ def _stats_facts(disasm: Path, field_item_pairs: list[dict[str, str]]) -> dict[s
             "allyEncodesClassTypeTimesAllyCountPlusIndex": True,
             "enemyReturnsEnemyIndex": True,
             "upstreamMarksFeatureUnused": True,
-        },
-        "fieldItems": {
-            "dispatchPairCount": len(field_item_pairs),
-            "pairs": field_item_pairs,
-            "terminator": -1,
-            "usabilityListTerminator": -1,
-            "unlistedItemResult": -1,
         },
         "spells": {
             "definitionMissDefaultsToFirstEntry": True,
@@ -300,7 +271,10 @@ def build_stats_inventory(upstream_path: Path) -> dict[str, Any]:
         for record in load_json(RESEARCH_INDEX)["records"]
         if Path(record["sourcePath"]).is_relative_to(SOURCE_ROOT)
     ]
-    field_item_pairs = _field_item_pairs(disasm / SOURCE_ROOT / "items/fielditemeffects.asm")
+    layout = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((disasm / "layout").glob("*.asm"))
+    )
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -314,7 +288,7 @@ def build_stats_inventory(upstream_path: Path) -> dict[str, Any]:
         "externalDirectTargetCount": sum(target not in labels for target in calls),
         "indexedRecordCount": len(records),
         "indexedFileCount": len({record["sourcePath"] for record in records}),
-        "excludedDuplicateFileCount": 1,
+        "excludedAlternateFileCount": len(ALTERNATE_SOURCES),
     }
     return {
         "schemaVersion": 1,
@@ -326,8 +300,11 @@ def build_stats_inventory(upstream_path: Path) -> dict[str, Any]:
         "indexedSourcePaths": sorted({record["sourcePath"] for record in records}),
         "internalDirectCallTargets": sorted(target for target in calls if target in labels),
         "externalDirectCallTargets": sorted(target for target in calls if target not in labels),
-        "statsFacts": _stats_facts(disasm, field_item_pairs),
-        "duplicateSource": _duplicate_fact(disasm),
+        "statsFacts": _stats_facts(disasm),
+        "alternateSources": [
+            _alternate_source_fact(disasm, alternate, canonical, layout)
+            for alternate, canonical in ALTERNATE_SOURCES.items()
+        ],
         "files": files,
     }
 
@@ -355,8 +332,8 @@ def verify_stats_inventory(
             raise ValueError(f"common stats symbol drift: {relative}::{symbol}")
     if output["statsFacts"] != fixture["expected"]["statsFacts"]:
         raise ValueError("common stats model drift")
-    if output["duplicateSource"] != fixture["expected"]["duplicateSource"]:
-        raise ValueError("common stats duplicate-source drift")
+    if output["alternateSources"] != fixture["expected"]["alternateSources"]:
+        raise ValueError("common stats alternate-source drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("common stats canonical hash drift")
@@ -369,7 +346,6 @@ def verify_stats_inventory(
         "SHA256": digest,
         "Files": output["summary"]["fileCount"],
         "IndexedFiles": output["summary"]["indexedFileCount"],
-        "FieldItemPairs": output["statsFacts"]["fieldItems"]["dispatchPairCount"],
-        "ExcludedDuplicates": output["summary"]["excludedDuplicateFileCount"],
+        "ExcludedAlternates": output["summary"]["excludedAlternateFileCount"],
         "Status": "PASS",
     }

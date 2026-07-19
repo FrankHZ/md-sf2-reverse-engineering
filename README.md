@@ -12,9 +12,9 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 315 条 confirmed finding、54 个 H3 fixture 和 711 个地址绑定。
-按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 239 个文件，即
-**61.76% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+截至 2026-07-19，研究索引有 313 条 confirmed finding、54 个 H3 fixture 和 709 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 237 个文件，即
+**61.24% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -241,8 +241,9 @@ common maps rail 再覆盖全部 7 个文件、2,199 行，固定 flag-switched 
 egress/savepoint、8 KiB layout 输出边界和 VInt gate，使严格 reach 升到 58.14%；camera/VDP 时序
 继续留在集中 presentation 队列，本批没有启动模拟器。
 common stats rail 再 inventory 全部 20 个文件、5,149 行，固定 flags、party、caravan/deals、
-九组 field-item dispatch、spell learning 和 new-game 顺序。19 个文件具有独立证据；未被 layout
-include 的 alternate item source 不借用 canonical 地址，因此严格 reach 只增 14 个至 61.76%。
+spell learning 和 new-game 顺序。17 个文件具有独立证据；三个未被 layout include 的 alternate
+item source 不借用 canonical 地址，因此严格 reach 只增 12 个至 61.24%。field-item dispatch 由
+实际 layout include 的 common-menu 文件继续承接。
 H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在
