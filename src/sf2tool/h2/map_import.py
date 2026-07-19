@@ -338,6 +338,7 @@ def _setup_resources(
             for symbol, row in sorted(init_functions_by_symbol.items())
         ],
         "standaloneScriptPrograms": scripts["programs"],
+        "initSourcePrograms": init["embeddedPrograms"],
     }
     setup_record_count = (
         sum(len(row["records"]) for row in entity_lists)
@@ -353,6 +354,10 @@ def _setup_resources(
     standalone_init_targets = init_script_targets & standalone_program_ids
     if standalone_init_targets != set(scripts["standaloneOwnedInitScriptTargets"]):
         raise ValueError("canonical map init/standalone script ownership drift")
+    embedded_program_ids = {row["id"] for row in init["embeddedPrograms"]}
+    embedded_init_targets = init_script_targets & embedded_program_ids
+    if standalone_init_targets | embedded_init_targets != init_script_targets:
+        raise ValueError("canonical map import does not resolve every init script target")
     facts = {
         "routeCount": len(setup_routes),
         "flagVariantCount": sum(len(row["flagVariants"]) for row in setup_routes),
@@ -371,6 +376,14 @@ def _setup_resources(
         ),
         "standaloneOwnedInitScriptTargetCount": len(standalone_init_targets),
         "embeddedInitScriptTargetCount": len(init_script_targets - standalone_program_ids),
+        "initSourceProgramCount": len(init["embeddedPrograms"]),
+        "initSourceOperationCount": sum(len(row["operations"]) for row in init["embeddedPrograms"]),
+        "initSourceTargetReferenceCount": sum(
+            len(operation["targetSymbols"])
+            for row in init["embeddedPrograms"]
+            for operation in row["operations"]
+        ),
+        "allInitScriptTargetsResolved": True,
         "missingMapSetupRouteCount": 79 - len(setup_routes),
         "lastSetFlagWins": True,
         "directReturnHandlersPreserved": True,
@@ -447,11 +460,13 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "logicalRecordCount": sum(record_counts.values()),
         "setupLogicalRecordCount": setup_facts["setupRecordCount"]
         + setup_facts["initOperationCount"]
-        + setup_facts["standaloneOperationCount"],
+        + setup_facts["standaloneOperationCount"]
+        + setup_facts["initSourceOperationCount"],
         "allLogicalRecordCount": sum(record_counts.values())
         + setup_facts["setupRecordCount"]
         + setup_facts["initOperationCount"]
-        + setup_facts["standaloneOperationCount"],
+        + setup_facts["standaloneOperationCount"]
+        + setup_facts["initSourceOperationCount"],
     }
     expected_resource_counts = {
         "blocksets": 77,
@@ -472,6 +487,7 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "areaDescriptionHandlers": 75,
         "initFunctions": 90,
         "standaloneScriptPrograms": 178,
+        "initSourcePrograms": 201,
     }
     if resource_counts != expected_resource_counts:
         raise ValueError(f"canonical map resource cardinality drift: {resource_counts}")

@@ -51,6 +51,8 @@ timing from opcode names alone.
 Standalone script resources likewise retain ordered commands, operand text, and resolved references
 between all 178 labels. These are importable command graphs, not proof that a modern engine may skip
 the original interpreter's state, wait, camera, dialogue, or presentation sequencing.
+The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
+an init `script` command resolve across the two resource families.
 
 ## Geometry and Block Data
 

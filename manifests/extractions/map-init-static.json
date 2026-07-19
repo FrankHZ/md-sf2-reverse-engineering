@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-map-init-static-v1",
-  "outputSha256": "72995B9ECEF4BD44BBD1CF865594A7AF397992807916852B86F81873E50822AE",
+  "outputSha256": "7A11341E40DBF6871852FB6E4167DAC127A791A02F9C536DABAC3B1A46870AFC",
   "summary": {
     "sourceFileCount": 84,
     "setupPointerReferenceCount": 126,
@@ -27,6 +27,11 @@
     "branchOperationCount": 130,
     "resolvedLocalBranchCount": 129,
     "resolvedBranchTargetCount": 130,
-    "externalBranchTargetCount": 1
+    "externalBranchTargetCount": 1,
+    "sourceGlobalLabelCount": 291,
+    "embeddedProgramCount": 201,
+    "embeddedOperationCount": 3718,
+    "embeddedTargetReferenceCount": 135,
+    "embeddedScriptTargetCount": 63
   }
 }

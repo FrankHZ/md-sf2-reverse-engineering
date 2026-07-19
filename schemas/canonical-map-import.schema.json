@@ -48,7 +48,7 @@
         "roofEventTables", "warpEventTables", "itemTables", "animationTables", "setupRoutes",
         "setupDefinitions", "entityLists", "entityEventHandlers", "zoneEventHandlers",
         "itemEventHandlers", "areaDescriptionHandlers", "initFunctions",
-        "standaloneScriptPrograms"
+        "standaloneScriptPrograms", "initSourcePrograms"
       ],
       "properties": {
         "blocksets": { "$ref": "#/$defs/resources" },
@@ -68,7 +68,8 @@
         "itemEventHandlers": { "$ref": "#/$defs/resources" },
         "areaDescriptionHandlers": { "$ref": "#/$defs/resources" },
         "initFunctions": { "$ref": "#/$defs/resources" },
-        "standaloneScriptPrograms": { "$ref": "#/$defs/resources" }
+        "standaloneScriptPrograms": { "$ref": "#/$defs/resources" },
+        "initSourcePrograms": { "$ref": "#/$defs/resources" }
       }
     },
     "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }

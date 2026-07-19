@@ -30,7 +30,12 @@
       "branchOperationCount": 130,
       "resolvedLocalBranchCount": 129,
       "resolvedBranchTargetCount": 130,
-      "externalBranchTargetCount": 1
+      "externalBranchTargetCount": 1,
+      "sourceGlobalLabelCount": 291,
+      "embeddedProgramCount": 201,
+      "embeddedOperationCount": 3718,
+      "embeddedTargetReferenceCount": 135,
+      "embeddedScriptTargetCount": 63
     },
     "entryTokenCounts": {
       "bcc.s": 1, "beq.s": 59, "bne.s": 44, "bne.w": 1, "bra.s": 13, "bra.w": 12,

@@ -14,7 +14,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["summary", "entryTokenCounts", "directCallTargetCounts", "scriptTargetCounts", "consumerFacts", "runtimeQuestions"],
       "properties": {
-        "summary": { "type": "object", "minProperties": 25, "maxProperties": 25 },
+        "summary": { "type": "object", "minProperties": 30, "maxProperties": 30 },
         "entryTokenCounts": { "type": "object" },
         "directCallTargetCounts": { "type": "object" },
         "scriptTargetCounts": { "type": "object" },

@@ -84,8 +84,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   script/8,058 条语句。
 - [`map-content.md`](./research/map-content.md)：79 个 46-byte map entry、662 个 source-form content
   section、154 个私有 blocks/layout payload 的完整 source/H1/ROM parity，77 组 bitstream 的
-  canonical Python 解码、1,658-resource/79-map engine-neutral import（含 64 route、126 setup 与
-  178 个 standalone script program）、
+  canonical Python 解码、1,859-resource/79-map engine-neutral import（含 64 route、126 setup、
+  178 个 standalone 与 201 个 init-source program）、
   record/consumer 规则与
   `MAPDATA_OFFSET_LAYOUT` 上游常量缺陷。
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/

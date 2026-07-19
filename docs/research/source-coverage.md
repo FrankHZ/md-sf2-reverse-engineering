@@ -187,12 +187,12 @@ The next work is semantic depth, not another sweep for filenames or artificial i
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks
 and 77 complete 64x64 layouts with every block reference in range. Those structures now join into a
-deterministic 79-map, 1,658-resource canonical import with 12,087 logical records/operations. Its 64 setup routes
+deterministic 79-map, 1,859-resource canonical import with 15,805 logical records/operations. Its 64 setup routes
 and 126 six-pointer definitions resolve entity/event/description/init ownership; complete generated
 content remains ignored and only aggregate evidence is tracked:
 
-1. parse the 63 init-called script labels embedded in init sources into the same command graph without
-   inventing runtime transition semantics;
+1. run the grouped map initialization/event-dispatch matrix now that all 75 init script targets are
+   statically resolved;
 2. compare rendered output through one graphics/VDP matrix;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as

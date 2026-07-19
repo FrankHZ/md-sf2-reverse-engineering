@@ -217,6 +217,11 @@ targets resolve: 129 within the same callable view, while `ms_map52_InitFunction
 branches to `return_5C4EC` in the adjacent `sub_5C4DC`. That cross-function edge is preserved by
 symbol and H1 address instead of being treated as an unresolved branch.
 
+The same 84 sources contain 291 H1 labels in total. After excluding the 90 setup-callable entries,
+201 embedded programs remain with 3,718 operations and 135 intra-source symbol references. They own
+all 63 init `script` targets that are not in standalone script files. Combined with the 12 standalone-
+owned targets, every one of the 75 distinct init script targets now resolves to a canonical program.
+
 These are **Confirmed** source/H1/pointer and no-op ROM-shape facts. They do not claim the story or
 presentation semantics of the called scripts. Full per-entry operations, normalized-body hashes,
 token maps, script targets, and direct-call targets stay in ignored `local/derived/map-init-static.json`; the
@@ -257,10 +262,10 @@ evidence. Remaining questions are grouped as:
 3. walking/special-sprite and portrait/text/entity-facing presentation timing;
 4. rendered block/layout parity and animation VDP frame timing in the later graphics matrix.
 
-Entity streams, init control flow, standalone labeled command flow, every source-form setup/content
+Entity streams, init and standalone labeled command flow, every source-form setup/content
 family, and both private block/layout bitstreams are now closed statically, including 77 complete
-decoder passes. The next static depth target is the 63 init-called script labels embedded inside init
-sources; only runtime state and presentation ambiguities should share the prepared matrices.
+decoder passes. The map script target graph is now statically closed; remaining state persistence,
+nonstandard callers, and presentation behavior belong in the prepared grouped runtime matrices.
 
 ## Harness Performance
 

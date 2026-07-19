@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
+from sf2tool.h2.map_scripts import _script_programs
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
@@ -207,6 +208,19 @@ def build_map_init_contract(rom_path: Path, upstream_path: Path) -> dict[str, An
     if set(target_counts) != {row["symbol"] for row in files}:
         raise ValueError("setup pointers do not own the complete map init source boundary")
     by_symbol = {row["symbol"]: row for row in files}
+    init_paths = sorted({row["path"] for row in files})
+    init_sources = {path: read_upstream_text(disasm / path) for path in init_paths}
+    init_definitions = {
+        label: path
+        for path, source in init_sources.items()
+        for label in re.findall(r"^([A-Za-z_][A-Za-z0-9_]*):", source, re.MULTILINE)
+    }
+    source_programs = [
+        program
+        for path in init_paths
+        for program in _script_programs(path, init_sources[path], init_definitions, addresses)
+    ]
+    embedded_programs = [row for row in source_programs if row["id"] not in by_symbol]
     token_counts: Counter[str] = Counter()
     call_counts: Counter[str] = Counter()
     script_counts: Counter[str] = Counter()
@@ -220,6 +234,8 @@ def build_map_init_contract(rom_path: Path, upstream_path: Path) -> dict[str, An
     primary_operations = [
         operation for row in files if row["primarySourceEntry"] for operation in row["operations"]
     ]
+    embedded_program_ids = {row["id"] for row in embedded_programs}
+    embedded_script_targets = set(script_counts) & embedded_program_ids
     summary = {
         "sourceFileCount": sum(row["primarySourceEntry"] for row in files),
         "setupPointerReferenceCount": len(targets),
@@ -263,6 +279,15 @@ def build_map_init_contract(rom_path: Path, upstream_path: Path) -> dict[str, An
             row["localBranchTargetIndex"] is None and row["branchTargetAddress"] is not None
             for row in primary_operations
         ),
+        "sourceGlobalLabelCount": len(source_programs),
+        "embeddedProgramCount": len(embedded_programs),
+        "embeddedOperationCount": sum(len(row["operations"]) for row in embedded_programs),
+        "embeddedTargetReferenceCount": sum(
+            len(operation["targetSymbols"])
+            for row in embedded_programs
+            for operation in row["operations"]
+        ),
+        "embeddedScriptTargetCount": len(embedded_script_targets),
     }
     return {
         "schemaVersion": 1,
@@ -287,6 +312,7 @@ def build_map_init_contract(rom_path: Path, upstream_path: Path) -> dict[str, An
             "init-fade-audio-and-presentation-sequencing",
         ],
         "sourceFiles": files,
+        "embeddedPrograms": embedded_programs,
     }
 
 

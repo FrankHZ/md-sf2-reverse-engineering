@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/map-init-static.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "entryTokenCounts", "directCallTargetCounts", "scriptTargetCounts", "duplicatePointerTargets", "consumerFacts", "runtimeQuestions", "sourceFiles"],
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "entryTokenCounts", "directCallTargetCounts", "scriptTargetCounts", "duplicatePointerTargets", "consumerFacts", "runtimeQuestions", "sourceFiles", "embeddedPrograms"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-map-init-static-v1" },
@@ -15,14 +15,15 @@
       "required": ["RunMapSetupInitFunction"],
       "properties": { "RunMapSetupInitFunction": { "type": "integer", "minimum": 0 } }
     },
-    "summary": { "type": "object", "minProperties": 25, "maxProperties": 25, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 30, "maxProperties": 30, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "entryTokenCounts": { "$ref": "#/definitions/countMap" },
     "directCallTargetCounts": { "$ref": "#/definitions/countMap" },
     "scriptTargetCounts": { "$ref": "#/definitions/countMap" },
     "duplicatePointerTargets": { "type": "array", "items": { "type": "object" } },
     "consumerFacts": { "type": "object" },
     "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true },
-    "sourceFiles": { "type": "array", "minItems": 90, "maxItems": 90, "items": { "$ref": "#/definitions/sourceFile" } }
+    "sourceFiles": { "type": "array", "minItems": 90, "maxItems": 90, "items": { "$ref": "#/definitions/sourceFile" } },
+    "embeddedPrograms": { "type": "array", "minItems": 201, "maxItems": 201 }
   },
   "definitions": {
     "countMap": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
