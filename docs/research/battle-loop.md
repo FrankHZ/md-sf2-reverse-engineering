@@ -1,6 +1,7 @@
 # Battle Loop and Combatant Lifecycle
 
-- Status: **Confirmed** for the pinned 18-file source inventory, representative entry symbols,
+- Status: **Confirmed** for the pinned 18-file lifecycle and 9-file top-level control inventories,
+  representative entry symbols,
   source hashes, static call edges, roster scans, AI-memory reset, remaining-combatant counting,
   forced enemy deaths, between-battle healing, terrain loading, spawn admission, and killed-combatant
   cleanup order
@@ -14,11 +15,11 @@
 
 ## Scope and Inventory
 
-This rail inventories every ASM file under `code/gameflow/battle/battleloop`. It pins each file hash,
-global/local labels, direct calls, and one H1-listed representative symbol per file. Existing H3
-contracts already own turn order, region activation, and after-turn status behavior; the new H2
-inventory connects the remaining lifecycle files without pretending that one symbol means every
-instruction is semantically complete.
+The two rails inventory every ASM file under `code/gameflow/battle/battleloop` plus all nine ASM files
+directly under `code/gameflow/battle`. They pin each file hash, global/local labels, direct calls, and
+one H1-listed representative symbol per file. Existing H3 contracts already own turn order, region
+activation, and after-turn status behavior; H2 connects the remaining control/lifecycle files without
+pretending that one symbol means every instruction is semantically complete.
 
 The directory covers battle initialization, ally/enemy placement, terrain loading, enemy spawn and
 upgrade paths, trigger regions, turn order, status processing, death cleanup, victory/egress helpers,
@@ -49,18 +50,46 @@ the Stack codec into `0xFF5F00`. Spawn admission scans all 32 enemy slots and re
 modes `0x0100` (respawn), `0x0200` (hidden/region-triggered), and `0x0300` (both). Successful reset
 candidates are written to `TARGETS_LIST`; a reset carry/failure skips the candidate.
 
+## Top-Level Battle Control
+
+`BattleLoop` has separate suspended and new-battle entries. A suspended battle restores the saved
+seconds counter, clears flag 88 and AI memory, reloads state, and resumes the individual-turn loop.
+A new battle clears elapsed seconds, runs the before/start cutscenes, clears region flags 90–105,
+heals the living/immortal party, initializes both rosters, and loads the battle. Each round then runs
+enemy activation, the region cutscene, spawn admission/animation, and turn-order generation.
+
+After an action, the loop processes deaths and checks both factions before applying after-turn
+effects; it processes deaths and checks both factions again afterward. A `0xFF` turn-order entry
+restarts the round. Victory heals the party, runs the after-battle cutscene, clears the unlocked flag,
+sets the completed flag at offset +100, and returns `D4=1`. Defeat restores the leader's HP, halves
+gold with unsigned floor division, obtains the egress position, and normally returns `D4=-1`; the
+hardcoded battle-4 loss path completes/upgrades that battle and returns `D4=0`.
+
+Difficulty is the weighted sum of flags 78 and 79 (weights 1 and 2), producing 0–3. Battle spriteset
+subsections are sizes, allies, enemies, regions, and AI points; entity and region entries are both 12
+bytes. An absent combatant starting entry returns `(-1,-1)`. Battle VInt setup clears the previous
+list and installs seven ordered map/entity/view/scroll/sprite/window/animation updates.
+
+Map music is preserved outside battle. In battle, music IDs 0/8/14 map to battle theme 3, while
+40/38 map to battle theme 1. The laser helper rejects non-laser battles or facing `-1`; otherwise it
+marks a ray to the map edge and appends every occupying combatant. The function at `0x1B120A` is
+tracked as unused/debug evidence and ends in a self-loop; it is not a gameplay contract.
+
 ## Evidence Limits and Runtime Queue
 
 The inventory confirms source shape and instruction order, not display timing or every caller state.
 Turn order, primary/secondary region activation, and after-turn status branches already have focused
-H3 fixtures. Upgrade selection, Jaro/egress special cases, spawn reset failures, and death/spawn visual
-sequencing remain static or unknown until several questions can share a concentrated runtime matrix.
+H3 fixtures. Upgrade selection, Jaro/egress special cases, spawn reset failures, suspended-battle
+persistence, laser table content, and death/spawn visual sequencing remain static or unknown until
+several questions can share a concentrated runtime matrix.
 
 ## Reproduction
 
 ```powershell
 uv run sf2 h2 battle-loop
+uv run sf2 h2 battle-control
 uv run sf2 research-index test
 ```
 
-Generated inventory JSON is written only to ignored `local/derived/battle-loop-static.json`.
+Generated inventory JSON is written only to ignored `local/derived/battle-loop-static.json` and
+`local/derived/battle-control-static.json`.

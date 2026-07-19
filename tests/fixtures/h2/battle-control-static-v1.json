@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-control-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "debugFunctionAddress": 1774090,
+    "battleLoopAddress": 146052,
+    "victoryAddress": 146618,
+    "playMapMusicAddress": 17732,
+    "setBaseVintAddress": 154260,
+    "spritesetSubsectionAddress": 1775152,
+    "startingPositionAddress": 1775262,
+    "difficultyAddress": 54280,
+    "laserFacingAddress": 1755296
+  },
+  "expected": {
+    "representativeSymbols": {
+      "battledebugfunction1B120A.asm": "BattleDebugFunction1B120A",
+      "battleloop_1.asm": "BattleLoop",
+      "battleloop_2.asm": "BattleLoop_Victory",
+      "battlemusic.asm": "PlayMapMusic",
+      "battlevints.asm": "SetBaseVIntFunctions",
+      "getbattlespritesetsubsection.asm": "GetBattleSpritesetSubsection",
+      "getcombatantstartingposition.asm": "GetCombatantStartingPosition",
+      "getdifficulty.asm": "GetDifficulty",
+      "getlaserfacing.asm": "GetLaserFacing"
+    },
+    "controlFacts": {
+      "mainLoop": { "suspendFlag": 88, "newBattleClearsSeconds": true, "suspendRestoresSavedSeconds": true, "newBattleClearsRegionFlagRange": [90,105], "roundOrder": ["activate-enemies","region-cutscene","spawn-enemies","generate-turn-order"], "turnEndOrder": ["defeated-cutscene","process-killed","count-remaining","process-after-turn","process-killed","count-remaining","advance-turn-index"], "turnOrderTerminator": 255 },
+      "outcomes": { "victoryReturn": 1, "defeatReturn": -1, "victoryHealsParty": true, "victoryClearsUnlockedAndSetsCompleted": true, "completedFlagOffset": 100, "defeatRestoresLeaderHp": true, "defeatGoldOperation": "unsigned floor divide by 2", "defeatUsesEgressPosition": true, "battle4DefeatReturn": 0, "battle4DefeatUpgradesBattle": true },
+      "difficulty": { "flagIndexes": [78,79], "weights": [1,2], "resultRange": [0,3] },
+      "spriteset": { "subsections": ["sizes","allies","enemies","regions","ai-points"], "entityEntryBytes": 12, "regionEntryBytes": 12, "invalidStartingPosition": [-1,-1], "startingCoordinatesAreUnsignedBytes": true },
+      "music": { "outsideBattlePreservesMapMusic": true, "battleTheme3Inputs": [0,8,14], "battleTheme1Inputs": [40,38] },
+      "vint": { "clearsExistingFunctions": true, "functions": ["VInt_UpdateMapPlanes","VInt_UpdateEntities","VInt_UpdateViewData","VInt_UpdateScrollingData","VInt_UpdateSprites","VInt_UpdateWindows","VInt_UpdateMapAnimations"] },
+      "laser": { "nonLaserBattleTargetCount": 0, "facingMinusOneTargetCount": 0, "marksEverySpaceUntilMapEdge": true, "collectsEveryOccupiedSpace": true, "output": "TARGETS_LIST plus TARGETS_LIST_LENGTH" },
+      "debugFunction": { "upstreamMarksUnused": true, "endsInSelfLoop": true, "mustNotBeTreatedAsReachableGameplay": true }
+    }
+  }
+}
