@@ -20,15 +20,15 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 587 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 518 | 381 code files and 137 data files |
+| Indexed findings | 633 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 564 | 381 code files and 183 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
-| Indexed data-file reach | 8.11% | 137 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| Indexed data-file reach | 10.83% | 183 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 983 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,029 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
-The H2 surface is broader than the 137 indexed data files. It currently includes 281 fixed
+The H2 surface is broader than the 183 indexed data files. It currently includes 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, and the Battle 01 placement/scene
@@ -147,8 +147,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 587 records; its
-verifier reports 381 unique code files, 137 unique data files, 54 H3 fixtures, and 983 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 633 records; its
+verifier reports 381 unique code files, 183 unique data files, 54 H3 fixtures, and 1,029 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -210,6 +210,7 @@ symbol reach and 18/18 H2 inventory, raising overall data reach to 19/1,690 with
 The following ally/class batch reuses the existing core-data parsers and closes all 42 files under
 `data/stats/allies`, including the 30 transitive stat includes. The next combined items/spells/enemies
 batch closes another 19 files while reusing existing core-data and H3 parsers. The 61-file battle
-cutscene directory follows with 59 honest symbol bindings plus two explicit exceptions, raising data
-reach to 137/1,690 without an emulator launch. Next move through battle spritesets/global scripting
-tables before tackling the much larger hierarchical map-entry denominator.
+cutscene directory follows with 59 honest symbol bindings plus two explicit exceptions. The complete
+46-file battle spriteset boundary then raises data reach to 183/1,690 without an emulator launch.
+Next move through battle/global scripting tables before tackling the much larger hierarchical
+map-entry denominator.

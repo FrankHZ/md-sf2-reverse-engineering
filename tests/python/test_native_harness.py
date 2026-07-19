@@ -20,12 +20,12 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 587
-    assert result["H2Fixtures"] == 32
+    assert result["Records"] == 633
+    assert result["H2Fixtures"] == 33
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 983
+    assert result["AddressBindings"] == 1029
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 137
+    assert result["IndexedDataFiles"] == 183
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -206,7 +206,13 @@ def test_battle_cutscene_data_has_a_source_only_inventory_command() -> None:
     assert args.h2_command == "battle-cutscene-data"
     assert not hasattr(args, "rom_path")
     assert args.output_path is None
+
+
+def test_battle_spriteset_data_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-spriteset-data"])
+    assert args.h2_command == "battle-spriteset-data"
     assert not hasattr(args, "rom_path")
+    assert args.output_path is None
 
 
 def test_battle_ai_inventory_classifies_calls(tmp_path: Path) -> None:

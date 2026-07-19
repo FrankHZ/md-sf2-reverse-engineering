@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II battle spriteset data static inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "entriesPath",
+    "nestedSpritesetPaths", "indexedRecordIds", "indexedSourcePaths",
+    "representativeSymbols", "representativeAddresses", "facts", "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-spriteset-data-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "const": "data/battles/spritesets" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "directLayoutFileCount", "nestedSpritesetFileCount", "representativeAddressCount",
+        "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 46 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "const": 46 },
+        "directLayoutFileCount": { "const": 1 },
+        "nestedSpritesetFileCount": { "const": 45 },
+        "representativeAddressCount": { "const": 46 },
+        "indexedRecordCount": { "const": 46 },
+        "indexedFileCount": { "const": 46 }
+      }
+    },
+    "entriesPath": { "const": "data/battles/spritesets/entries.asm" },
+    "nestedSpritesetPaths": {
+      "type": "array", "minItems": 45, "maxItems": 45, "uniqueItems": true
+    },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 46, "maxItems": 46, "uniqueItems": true
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 46, "maxItems": 46, "uniqueItems": true
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 46, "maxProperties": 46
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 46, "maxProperties": 46,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "facts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 46, "maxItems": 46 }
+  }
+}

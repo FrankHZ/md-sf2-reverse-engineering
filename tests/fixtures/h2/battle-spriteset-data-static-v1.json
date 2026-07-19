@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-spriteset-data-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "table": {
+    "pt_BattleSpritesets": 1781998,
+    "BattleSpriteset00": 1782178,
+    "BattleSpriteset01": 1782498,
+    "BattleSpriteset02": 1782646,
+    "BattleSpriteset03": 1782772,
+    "BattleSpriteset04": 1783004,
+    "BattleSpriteset05": 1783202,
+    "BattleSpriteset06": 1783388,
+    "BattleSpriteset07": 1783584,
+    "BattleSpriteset08": 1783842,
+    "BattleSpriteset09": 1784184,
+    "BattleSpriteset10": 1784488,
+    "BattleSpriteset11": 1784818,
+    "BattleSpriteset12": 1785136,
+    "BattleSpriteset13": 1785478,
+    "BattleSpriteset14": 1785856,
+    "BattleSpriteset15": 1786220,
+    "BattleSpriteset16": 1786586,
+    "BattleSpriteset17": 1786866,
+    "BattleSpriteset18": 1787206,
+    "BattleSpriteset19": 1787582,
+    "BattleSpriteset20": 1787948,
+    "BattleSpriteset21": 1788240,
+    "BattleSpriteset22": 1788580,
+    "BattleSpriteset23": 1788922,
+    "BattleSpriteset24": 1789228,
+    "BattleSpriteset25": 1789606,
+    "BattleSpriteset26": 1789970,
+    "BattleSpriteset27": 1790336,
+    "BattleSpriteset28": 1790726,
+    "BattleSpriteset29": 1791104,
+    "BattleSpriteset30": 1791484,
+    "BattleSpriteset31": 1791874,
+    "BattleSpriteset32": 1792252,
+    "BattleSpriteset33": 1792618,
+    "BattleSpriteset34": 1792972,
+    "BattleSpriteset35": 1793398,
+    "BattleSpriteset36": 1793812,
+    "BattleSpriteset37": 1794238,
+    "BattleSpriteset38": 1794640,
+    "BattleSpriteset39": 1795066,
+    "BattleSpriteset40": 1795384,
+    "BattleSpriteset41": 1795822,
+    "BattleSpriteset42": 1796272,
+    "BattleSpriteset43": 1796698,
+    "BattleSpriteset44": 1797054
+  },
+  "expected": {
+    "facts": {
+      "battleSlotCount": 45,
+      "battleSlotRange": { "first": 0, "last": 44 },
+      "headerTotals": { "allies": 500, "enemies": 627, "aiRegions": 133, "aiPoints": 37 },
+      "headerRanges": {
+        "allies": { "minimum": 3, "maximum": 13 },
+        "enemies": { "minimum": 6, "maximum": 20 },
+        "aiRegions": { "minimum": 0, "maximum": 14 },
+        "aiPoints": { "minimum": 0, "maximum": 2 }
+      },
+      "combatantMacroCounts": {
+        "allyCombatant": 500,
+        "enemyCombatant": 627,
+        "combatantAiAndItem": 1127,
+        "combatantBehavior": 1127
+      },
+      "rowContentTracked": false,
+      "existingBattle01Owner": {
+        "verifier": "src/sf2tool/h2/battle01.py",
+        "document": "docs/research/battle01-placement.md"
+      }
+    },
+    "runtimeQuestions": [
+      "non-battle01-roster-placement-and-ai-region-integration",
+      "battle-slot-selection-across-map-and-story-routing",
+      "hidden-delayed-spawn-and-follow-target-state-transitions"
+    ]
+  }
+}

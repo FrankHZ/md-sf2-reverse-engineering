@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-spriteset-data-static-v1",
+  "outputSha256": "73FC286D5848BF3E2101E38FFBA0A7AD9C7741AA20ADD10271AAB311DA1509D7",
+  "summary": {
+    "fileCount": 46,
+    "sourceLineCount": 6628,
+    "statementCount": 4752,
+    "globalLabelCount": 46,
+    "directLayoutFileCount": 1,
+    "nestedSpritesetFileCount": 45,
+    "representativeAddressCount": 46,
+    "indexedRecordCount": 46,
+    "indexedFileCount": 46
+  }
+}
