@@ -23,7 +23,7 @@ priority, healing, support, final action choice, and movement, checks their fixt
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`D8B22F5F59EB471CE66BFB158D33EF10D73259101A8F51F923BA2A69C6C150EA`.
+`C337F1FEC12CF2A4459A9EFB72EF3086207D0A134B285F04308A4DDC2DF9EF56`.
 
 ## Complete Subtree Inventory
 
@@ -48,8 +48,9 @@ across seven files; healing raised it to 23 across 12; support raised it to 31 a
 choice raised it to 32 across 15; movement raised it to 35 across 18. The final control batch now
 indexes at least one representative entry in all 26 files, for 43 subtree records. Four linked
 data-table symbols live outside the subtree. The movement-helper deepening adds seven functions and
-five coordinate tables, bringing the subtree to 55 indexed records. This is full file reach plus
-selected function semantics, not full instruction coverage.
+five coordinate tables, bringing the subtree to 55 indexed records. The control batch adds three
+more code functions and seven commandset/swarm data symbols, for 58 subtree records and 11 linked
+data symbols. This is full file reach plus selected function semantics, not full instruction coverage.
 
 ## Action Getter Addresses
 
@@ -323,6 +324,31 @@ which clears rings 0 through 4. The five parsed coordinate tables contain exactl
 16 entries and are address-bound individually. These are source/control-flow and table facts; map
 edge effects and caller-visible path choices remain candidates for a later shared runtime matrix.
 
+## Top-Level Control, Swarm, and Special Attackers
+
+**Confirmed static model:** AI-controlled allies always use commandset 6. Enemies use one of 16
+pointer-selected commandsets; IDs 10/11 share the one-command Stay set and 13/14 share the same
+critical/leader set. Each commandset is now an ordered array of numeric command IDs, and execution
+stops at the first command returning success. The 18-entry pathfinding table maps commandsets 2, 3,
+9, and 12 to block-non-movable; 4, 5, 13, and 14 to block-and-carve; all other entries to regular.
+Every exit clears temporary terrain obstruction flags, including swarm waits and special attackers.
+
+Swarm commandset 15 waits only while the unit is at full HP and the battle is Kraken (16), Harpies'
+Pond (20), or Chessboard (22). Each battle has an 11-, 12-, or 16-byte threshold table indexed by
+enemy slot. Zero bypasses the wait; otherwise the unit activates when the counted defeated enemies
+reach the threshold. `CountDefeatedEnemies` incorrectly asks for the ally spriteset subsection length
+while iterating enemy combatants, so the caller-visible count can be bounded by the wrong side.
+
+Before ordinary activation, the control loop clears `NEWLY_TRIGGERED_BATTLE_REGIONS`; an enemy with
+no trigger regions starts active, while an inactive one runs standby and is then forced to Stay. A
+dead primary follow order is replaced with its secondary and the secondary is cleared.
+
+Prism Flower (enemy 93) and Zeon Guard (38) bypass commandsets. With a facing target they select
+Prism Laser action 6 and the first target; otherwise they Stay, and both paths clear the move string.
+Burst Rock (32) constructs B.ROCK (spell 25) targets and explodes only when at least one exists and
+thinking-AI `RNG(6)` returns 4, selecting action 4 against itself. Every other case executes Move 1,
+then forces the action field to Stay while retaining the movement result.
+
 ## Dispatcher and Standby Control
 
 The dispatcher handles command values 0–7, 10–14, and 16–19. Reserved 8, 9, and 15—and any unknown
@@ -373,6 +399,8 @@ The next BizHawk batch should share one derived-ROM seam and one result buffer f
     and radius 0–3 exhaustion in the builder.
 19. dispatcher reserved/unknown no-op values, standby 3/8 immediate-stay distribution, the duplicated
     X-to-Y move-order coordinate, and eligibility helper/caller polarity.
+20. swarm full-HP/threshold transitions with the ally-subsection count bug, line-attacker facing
+    targets, and Burst Rock thinking-RNG 4/6 boundaries at the shared top-level control seam.
 
 Do not split these into one emulator startup per question. Static setup and outputs are compatible
 with a small number of case tables; split only when the action-getter and priority seams cannot be
@@ -380,7 +408,7 @@ shared safely.
 
 ## Remaining Static Batches
 
-- line-attacker/exploder, swarm/activation, and unused-helper semantics.
+- unused healing/slot helpers and deeper standby-memory semantics.
 
 These remain **Unknown** at subsystem-contract level even though their files and calls are now
 inventoried.

@@ -1000,6 +1000,125 @@ def _parse_movement_helpers(source: str) -> dict[str, Any]:
     }
 
 
+def _parse_ai_commandsets(source: str, equates: dict[str, int]) -> list[dict[str, Any]]:
+    pointers = DC_LONG_TARGET_PATTERN.findall(_label_block(source, "pt_AiCommandsets"))
+    if len(pointers) != 16:
+        raise ValueError("battle AI commandset pointer count drift")
+    parsed: dict[str, list[int]] = {}
+    for label in set(pointers):
+        block = " ".join(
+            statement
+            for line in _label_block(source, label).splitlines()
+            if (statement := _strip_comment(line).strip())
+        )
+        match = re.search(r"\baiCommandset\s+(.+)", block)
+        if not match:
+            raise ValueError(f"battle AI commandset body is missing: {label}")
+        names = re.findall(r"[A-Z][A-Z0-9_]+", match.group(1))
+        parsed[label] = [equates[f"AI_COMMAND_{name}"] for name in names]
+    return [
+        {"id": index, "label": label, "commands": parsed[label]}
+        for index, label in enumerate(pointers)
+    ]
+
+
+def _parse_control(disasm: Path, source: str) -> dict[str, Any]:
+    equates = _equates(disasm)
+    commandsets_source = (disasm / "data/battles/global/aicommandsets.asm").read_text(
+        encoding="utf-8"
+    )
+    swarm_source = (disasm / "data/battles/global/swarmbattles.asm").read_text(encoding="utf-8")
+    start = _function_block(source, "StartAiControl")
+    defeated = _function_block(source, "CountDefeatedEnemies")
+    line_attacker = _function_block(source, "ProcessLineAttackerAi")
+    exploder = _function_block(source, "ProcessExploderAi")
+    required = (
+        (start, "move.w  #AICOMMANDSET_ATTACKER1,d5"),
+        (start, "cmpi.b  #AICOMMANDSET_SWARM,d1"),
+        (start, "move.w  #0,(a0)"),
+        (start, "cmpi.w  #ENEMY_PRISM_FLOWER,d1"),
+        (start, "cmpi.w  #ENEMY_ZEON_GUARD,d1"),
+        (start, "cmpi.w  #ENEMY_BURST_ROCK,d1"),
+        (start, "move.w  d2,d1"),
+        (start, "move.w  #AIORDER_NONE,d2"),
+        (start, "jsr     j_ClearAllTemporaryObstructionFlags"),
+        (defeated, "move.w  #BATTLESPRITESET_SUBSECTION_ALLIES,d1"),
+        (line_attacker, "move.w  #BATTLEACTION_PRISM_LASER,(a0)"),
+        (exploder, "move.w  #6,d6"),
+        (exploder, "cmpi.b  #4,d7"),
+        (exploder, "move.w  #BATTLEACTION_BURST_ROCK,(a0)"),
+        (exploder, "move.w  #AI_COMMAND_MOVE1,d1"),
+    )
+    if any(fragment not in block for block, fragment in required):
+        raise ValueError("battle AI control source contract drift")
+
+    battle_match = re.search(r"^\s*battles\s+(.+)$", swarm_source, re.MULTILINE)
+    if not battle_match:
+        raise ValueError("battle AI swarm battle list is missing")
+    battle_names = [name.strip() for name in battle_match.group(1).split(",")]
+    battles = _named_values([f"BATTLE_{name}" for name in battle_names], equates)
+    swarm_tables = []
+    for index in range(3):
+        values = [
+            int(value)
+            for value in DC_BYTE_INTEGER_PATTERN.findall(
+                _label_block(swarm_source, f"table_SwarmAiEnemyCounts{index}")
+            )
+        ]
+        swarm_tables.append(values)
+    if [len(values) for values in swarm_tables] != [11, 12, 16]:
+        raise ValueError("battle AI swarm threshold table length drift")
+
+    pathfinding_names = DC_BYTE_VALUE_PATTERN.findall(
+        _label_block(commandsets_source, "table_PathfindingModesForAiCommandset")
+    )
+    if len(pathfinding_names) != 18:
+        raise ValueError("battle AI pathfinding-mode table length drift")
+    return {
+        "sourcePaths": [
+            "code/gameflow/battle/ai/startaicontrol.asm",
+            "data/battles/global/aicommandsets.asm",
+            "data/battles/global/swarmbattles.asm",
+        ],
+        "allyCommandset": equates["AICOMMANDSET_ATTACKER1"],
+        "swarm": {
+            "commandset": equates["AICOMMANDSET_SWARM"],
+            "requiresFullHp": True,
+            "battles": battles,
+            "activationThresholdsByEnemySlot": swarm_tables,
+            "zeroThresholdBypassesWait": True,
+            "activatesWhenDefeatedCountReachesThreshold": True,
+            "defeatedCountIncorrectlyUsesAllySubsectionLength": True,
+        },
+        "activation": {
+            "clearsNewlyTriggeredRegionsBeforeRead": True,
+            "noTriggerRegionsStartsActivated": True,
+            "inactiveCombatantRunsStandbyThenStays": True,
+            "deadPrimaryFollowOrderPromotesSecondary": True,
+        },
+        "specialAttackers": {
+            "lineEnemyIds": [
+                equates["ENEMY_PRISM_FLOWER"],
+                equates["ENEMY_ZEON_GUARD"],
+            ],
+            "lineAction": equates["BATTLEACTION_PRISM_LASER"],
+            "lineTarget": "first-facing-target",
+            "lineNoTargetAction": equates["BATTLEACTION_STAY"],
+            "exploderEnemyId": equates["ENEMY_BURST_ROCK"],
+            "exploderSpell": equates["SPELL_B_ROCK"],
+            "exploderThinkingRngRange": 6,
+            "exploderRoll": 4,
+            "exploderAction": equates["BATTLEACTION_BURST_ROCK"],
+            "exploderTarget": "self",
+            "exploderFallback": "execute-move1-then-force-stay",
+        },
+        "pathfindingModes": [equates[name] for name in pathfinding_names],
+        "commandsets": _parse_ai_commandsets(commandsets_source, equates),
+        "commandLoopStopsOnFirstSuccess": True,
+        "alwaysClearsTemporaryObstructionOnExit": True,
+    }
+
+
 def _parse_remaining(disasm: Path) -> dict[str, Any]:
     entries = {
         "unusedHealingMp": (SOURCE_ROOT / "command/heal/unusedfunctions_D3CA.asm", "sub_D3CA"),
@@ -1075,6 +1194,7 @@ def _parse_remaining(disasm: Path) -> dict[str, Any]:
             "noAffordableResult": 63,
         },
         "movementHelpers": _parse_movement_helpers(sources["movementHelpers"]),
+        "control": _parse_control(disasm, sources["controlLoop"]),
     }
 
 
@@ -1333,6 +1453,7 @@ def _remaining_facts(remaining: dict[str, Any]) -> dict[str, Any]:
             "standby",
             "highestSpellLevel",
             "movementHelpers",
+            "control",
         )
     }
 

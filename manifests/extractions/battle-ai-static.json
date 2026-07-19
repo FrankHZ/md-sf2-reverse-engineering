@@ -3,7 +3,7 @@
   "id": "sf2-battle-ai-static-v1",
   "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
   "outputPath": "local/derived/battle-ai-static.json",
-  "outputSha256": "D8B22F5F59EB471CE66BFB158D33EF10D73259101A8F51F923BA2A69C6C150EA",
+  "outputSha256": "C337F1FEC12CF2A4459A9EFB72EF3086207D0A134B285F04308A4DDC2DF9EF56",
   "summary": {
     "fileCount": 26,
     "sourceLineCount": 5991,
@@ -15,7 +15,7 @@
     "uniqueDirectTargetCount": 118,
     "internalDirectTargetCount": 46,
     "externalDirectTargetCount": 72,
-    "indexedRecordCount": 55,
+    "indexedRecordCount": 58,
     "indexedFileCount": 26
   }
 }

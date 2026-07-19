@@ -2262,6 +2262,46 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57084 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.controlLoopAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },
     {
+      "id": "battle.ai.control.count-defeated", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "CountDefeatedEnemies", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57526 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.countDefeatedEnemiesAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.line-attacker", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "ProcessLineAttackerAi", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57582 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.lineAttackerAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.exploder", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "ProcessExploderAi", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57668 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.exploderAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.commandset-pointers", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "pt_AiCommandsets", "sourcePath": "data/battles/global/aicommandsets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57772 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.commandsetPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.pathfinding-modes", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_PathfindingModesForAiCommandset", "sourcePath": "data/battles/global/aicommandsets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57929 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.pathfindingModesAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.swarm-battles", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "list_SwarmBattles", "sourcePath": "data/battles/global/swarmbattles.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57947 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmBattlesAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.swarm-count-pointers", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "pt_SwarmAiEnemyCounts", "sourcePath": "data/battles/global/swarmbattles.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57952 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCountPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.swarm-counts-0", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_SwarmAiEnemyCounts0", "sourcePath": "data/battles/global/swarmbattles.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57964 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts0Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.swarm-counts-1", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_SwarmAiEnemyCounts1", "sourcePath": "data/battles/global/swarmbattles.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57975 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts1Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.control.swarm-counts-2", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_SwarmAiEnemyCounts2", "sourcePath": "data/battles/global/swarmbattles.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57987 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts2Address" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
       "id": "battle.ai.remaining.unused-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingSpell", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53006 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     }

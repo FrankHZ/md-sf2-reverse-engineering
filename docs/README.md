@@ -25,7 +25,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`source-coverage.md`](./research/source-coverage.md)：当前源码覆盖分母、13.44% 可执行代码文件
   reach 的严格边界，以及静态优先、集中运行 H3 的子系统批处理节奏。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
-  治疗、支援与最终行动/目标选择，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
+  治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
 
 ## Design
 

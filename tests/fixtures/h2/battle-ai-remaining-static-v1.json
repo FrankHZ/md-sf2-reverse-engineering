@@ -22,6 +22,16 @@
     "radius2Address": 1755220,
     "radius3Address": 1755237,
     "radius4Address": 1755262,
+    "countDefeatedEnemiesAddress": 57526,
+    "lineAttackerAddress": 57582,
+    "exploderAddress": 57668,
+    "commandsetPointersAddress": 57772,
+    "pathfindingModesAddress": 57929,
+    "swarmBattlesAddress": 57947,
+    "swarmCountPointersAddress": 57952,
+    "swarmCounts0Address": 57964,
+    "swarmCounts1Address": 57975,
+    "swarmCounts2Address": 57987,
     "controlLoopAddress": 57084,
     "unusedSlotLookupAddress": 53006
   },
@@ -100,6 +110,71 @@
         { "radius": 3, "count": 12, "coordinates": [[0, -3], [-1, -2], [-2, -1], [-3, 0], [-2, 1], [-1, 2], [0, 3], [1, 2], [2, 1], [3, 0], [2, -1], [1, -2]] },
         { "radius": 4, "count": 16, "coordinates": [[0, -4], [-1, -3], [-2, -2], [-3, -1], [-4, 0], [-3, 1], [-2, 2], [-1, 3], [0, 4], [1, 3], [2, 2], [3, 1], [4, 0], [3, -1], [2, -2], [1, -3]] }
       ]
+    },
+    "control": {
+      "sourcePaths": [
+        "code/gameflow/battle/ai/startaicontrol.asm",
+        "data/battles/global/aicommandsets.asm",
+        "data/battles/global/swarmbattles.asm"
+      ],
+      "allyCommandset": 6,
+      "swarm": {
+        "commandset": 15,
+        "requiresFullHp": true,
+        "battles": [
+          { "name": "BATTLE_VERSUS_KRAKEN", "value": 16 },
+          { "name": "BATTLE_HARPIES_POND", "value": 20 },
+          { "name": "BATTLE_CHESSBOARD", "value": 22 }
+        ],
+        "activationThresholdsByEnemySlot": [
+          [5, 4, 2, 2, 3, 0, 0, 4, 1, 3, 0],
+          [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+          [0, 0, 0, 6, 1, 3, 0, 1, 3, 6, 6, 1, 0, 3, 3, 0]
+        ],
+        "zeroThresholdBypassesWait": true,
+        "activatesWhenDefeatedCountReachesThreshold": true,
+        "defeatedCountIncorrectlyUsesAllySubsectionLength": true
+      },
+      "activation": {
+        "clearsNewlyTriggeredRegionsBeforeRead": true,
+        "noTriggerRegionsStartsActivated": true,
+        "inactiveCombatantRunsStandbyThenStays": true,
+        "deadPrimaryFollowOrderPromotesSecondary": true
+      },
+      "specialAttackers": {
+        "lineEnemyIds": [93, 38],
+        "lineAction": 6,
+        "lineTarget": "first-facing-target",
+        "lineNoTargetAction": 3,
+        "exploderEnemyId": 32,
+        "exploderSpell": 25,
+        "exploderThinkingRngRange": 6,
+        "exploderRoll": 4,
+        "exploderAction": 4,
+        "exploderTarget": "self",
+        "exploderFallback": "execute-move1-then-force-stay"
+      },
+      "pathfindingModes": [0, 0, 1, 1, 2, 2, 0, 0, 0, 1, 0, 0, 1, 2, 2, 0, 0, 0],
+      "commandsets": [
+        { "id": 0, "label": "AiCommandset00", "commands": [0, 7, 3, 11, 14] },
+        { "id": 1, "label": "AiCommandset01", "commands": [10, 0, 7, 3, 12, 14] },
+        { "id": 2, "label": "AiCommandset02", "commands": [1, 18, 7, 5, 12, 14] },
+        { "id": 3, "label": "AiCommandset03", "commands": [1, 18, 7, 5, 11, 14] },
+        { "id": 4, "label": "AiCommandset04", "commands": [2, 19, 7, 4, 13, 14] },
+        { "id": 5, "label": "AiCommandset05", "commands": [2, 19, 7, 4, 13, 14] },
+        { "id": 6, "label": "AiCommandset06", "commands": [3, 0, 7, 11, 14] },
+        { "id": 7, "label": "AiCommandset07", "commands": [10, 3, 0, 7, 11, 14] },
+        { "id": 8, "label": "AiCommandset08", "commands": [3, 0, 7, 14] },
+        { "id": 9, "label": "AiCommandset09", "commands": [17, 5, 1, 7, 18, 12, 14] },
+        { "id": 10, "label": "AiCommandset10", "commands": [14] },
+        { "id": 11, "label": "AiCommandset10", "commands": [14] },
+        { "id": 12, "label": "AiCommandset12", "commands": [18, 7, 5, 1, 11, 12, 14] },
+        { "id": 13, "label": "AiCommandset13", "commands": [19, 4, 2, 7, 16, 13, 14] },
+        { "id": 14, "label": "AiCommandset13", "commands": [19, 4, 2, 7, 16, 13, 14] },
+        { "id": 15, "label": "AiCommandset15", "commands": [10, 5, 1, 7, 16, 12, 14] }
+      ],
+      "commandLoopStopsOnFirstSuccess": true,
+      "alwaysClearsTemporaryObstructionOnExit": true
     }
   }
 }

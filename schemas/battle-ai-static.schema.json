@@ -555,14 +555,15 @@
     },
     "remaining": {
       "type": "object", "additionalProperties": false,
-      "required": ["sourcePaths", "representativeSymbols", "dispatcher", "standby", "highestSpellLevel", "movementHelpers"],
+      "required": ["sourcePaths", "representativeSymbols", "dispatcher", "standby", "highestSpellLevel", "movementHelpers", "control"],
       "properties": {
         "sourcePaths": { "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true, "items": { "type": "string", "pattern": "^code/gameflow/battle/ai/.+\\.asm$" } },
         "representativeSymbols": { "type": "object", "minProperties": 8, "maxProperties": 8, "additionalProperties": { "type": "string" } },
         "dispatcher": { "type": "object" },
         "standby": { "type": "object" },
         "highestSpellLevel": { "type": "object" },
-        "movementHelpers": { "type": "object" }
+        "movementHelpers": { "type": "object" },
+        "control": { "type": "object" }
       }
     },
     "classAdjustmentTable": {
