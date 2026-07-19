@@ -38,7 +38,7 @@
           "subsystem": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
           "status": { "enum": ["confirmed", "inferred", "unknown"] },
           "symbol": { "type": "string", "pattern": "^[A-Za-z_@][A-Za-z0-9_@.]*$" },
-          "sourcePath": { "type": "string", "pattern": "^(?:code|data)/.+\\.asm$" },
+          "sourcePath": { "type": "string", "pattern": "^(?:code|data|layout)/.+\\.asm$" },
           "addresses": {
             "type": "array",
             "minItems": 1,

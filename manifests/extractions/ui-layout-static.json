@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-ui-layout-static-v1",
+  "outputSha256": "F3D2F46FAE27C281B7FFE9C2BD11BA536CBC8E0ADBCBE6FA66F1369A46CB7C34",
+  "summary": {
+    "assembledSourceFileCount": 19,
+    "assembledSourceByteCount": 5116,
+    "excludedSourceFileCount": 2,
+    "layoutCount": 27,
+    "layoutWordCount": 2394,
+    "layoutByteCount": 4788,
+    "uniqueLayoutWordCount": 640,
+    "uniqueTileIndexCount": 580,
+    "priorityWordCount": 1889,
+    "mirrorWordCount": 181,
+    "flipWordCount": 194,
+    "palette1WordCount": 121,
+    "palette2WordCount": 96,
+    "palette3WordCount": 1793,
+    "palette4WordCount": 384,
+    "spellPointerCount": 16,
+    "spellPointerUniqueTargetCount": 10,
+    "pointerTableByteCount": 64,
+    "borderVariantCount": 4,
+    "borderByteCount": 192,
+    "assetCount": 4,
+    "assetByteCount": 570,
+    "sourceFileRomParityCount": 19,
+    "assetRomParityCount": 4,
+    "trackedUniqueByteCount": 5614
+  }
+}

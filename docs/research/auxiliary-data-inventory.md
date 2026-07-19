@@ -5,7 +5,8 @@
   and the complete battle-background, battle-sprite, battle-sprite-animation, weapon/ground, and
   portrait container/decode corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
-  and complete map-tileset decode/usage, map-palette/header-usage, and icon-storage corpora
+  and complete map-tileset decode/usage, map-palette/header-usage, icon-storage, and assembled
+  UI-layout/direct-asset corpora
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -26,8 +27,8 @@ Two graphics files are explicit exceptions:
 - `data/graphics/tech/windowlayouts/fighterministatuswindowlayout.asm` is an unassembled alternate
   whose `layout_MiniStatusWindow` symbol is owned in H1 by the built mini-status layout file.
 
-Both are H2-hashed but receive no borrowed address. This yields 65/65 inventory and 63/65 strict
-indexed-file reach.
+Both are H2-hashed but receive no borrowed address. This yields 65/65 inventory, 63/65 strict
+indexed-file reach, and 77 indexed symbols after the data-owned UI-layout leaf records are expanded.
 
 ## Static Shape and Copyright Boundary
 
@@ -119,6 +120,13 @@ and the 192-byte highlight mask match ROM. The four files absent from the build 
 spell 16-18; the built slots at those logical positions instead encode nothing and three named
 special icons. Tracked output retains paths, counts, addresses, and hashes, never pixel bytes.
 
+The built graphics/tech UI boundary contains 19 ASM owners, 27 leaf layouts, 2,394 VDP words, four
+diamond-border variants, a sixteen-entry spell-level pointer table, and four direct tile payloads.
+All 5,614 unique layout/pointer/border/asset bytes match source, H1, and ROM. The two already-known
+window-border and fighter-mini-status alternates remain outside the vanilla build and receive no
+borrowed address. Tracked output keeps dimensions, attributes, addresses, counts, and hashes rather
+than original layout or pixel bytes.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -156,6 +164,7 @@ uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
+uv run sf2 h2 ui-layouts
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-palettes

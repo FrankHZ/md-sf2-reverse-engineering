@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-ui-layout-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "table", "summary", "layoutShapes", "spellLevelPointerTargets", "assetSizes", "excludedSources", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-ui-layout-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }, "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 36, "maxProperties": 36, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 25, "maxProperties": 25, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "layoutShapes": {
+      "type": "array", "minItems": 27, "maxItems": 27,
+      "items": { "type": "object", "additionalProperties": false, "required": ["symbol", "width", "height", "wordCount"], "properties": { "symbol": { "type": "string" }, "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 }, "wordCount": { "type": "integer", "minimum": 1 } } }
+    },
+    "spellLevelPointerTargets": { "type": "array", "minItems": 16, "maxItems": 16, "items": { "type": "string" } },
+    "assetSizes": { "type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "excludedSources": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" }, "uniqueItems": true },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

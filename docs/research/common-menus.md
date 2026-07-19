@@ -3,7 +3,8 @@
 - Status: **Confirmed** for the pinned 42-file inventory, 41 layout-owned source files, H1 entry
   addresses, prompt input/return rules, text controls, the nine field-item dispatches, and portrait
   header/palette/tile loading boundaries, plus the complete diamond-menu/yes-no compressed graphics
-  and uncompressed item/spell/other icon storage/copy/highlight corpora
+  and uncompressed item/spell/other icon storage/copy/highlight corpora, and the complete assembled
+  UI/window layout, spell-level pointer, diamond-border, and direct menu-tile corpus
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -71,6 +72,27 @@ mask, base pointer, all assembled icon bytes, copy sizes, and mutation offsets a
 reserved/colliding indices can reach these loaders and the visible palette/DMA sequence remain in the
 shared UI presentation queue.
 
+## Complete Static UI Layout Corpus
+
+The vanilla layout assembles 19 graphics/tech ASM owners into 27 leaf layouts. The maintained parser
+independently expands `vdpTile`, `vdpBaseTile`, `dc.b`, `dc.l`, and `incbin`, then checks every local
+label offset against the H1 listing and all 5,116 assembled source bytes against the ROM. The 27
+layouts contain 2,394 VDP words (4,788 bytes), 640 unique attribute words, and 580 unique tile
+indices. Their grids include the three 12×9 diamond menus, ten 3×2 spell-level indicators, regular
+and mirrored 8×10 portrait windows, the 28×7 alphabet, 26×21 member status, 32×12 battle background,
+and all remaining built menu/window layouts.
+
+The sixteen-entry spell-level table resolves to ten unique layouts and its 64 pointer bytes are
+source/H1/ROM identical. Four 48-byte diamond-border variants and four direct tile payloads—price-tag
+blank, price-tag numbers, shop-item highlight, and alphabet highlight—add 762 bytes. Across layouts,
+pointers, borders, and assets the rail covers 5,614 unique original bytes without committing raw tile
+or layout data.
+
+`data/graphics/tech/windowborder/entries.asm` and the fighter mini-status layout remain explicit
+unassembled alternatives. They receive no borrowed address from the vanilla window resources. Static
+layout parity does not prove window allocation, runtime text/tile overwrites, palette selection, DMA
+ordering, movement, or final rendered frames; those stay in the shared UI presentation matrix.
+
 ## Field Items and Service Boundary
 
 The layout-owned field-item table has nine index/effect pairs, for item indices 3, 5, and 9 through
@@ -96,8 +118,10 @@ uv run sf2 h2 common-menus
 uv run sf2 h2 portraits
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
+uv run sf2 h2 ui-layouts
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/common-menus-static.json`,
-`local/derived/ui-graphics-decode.json`, and `local/derived/icon-graphics-static.json`.
+`local/derived/ui-graphics-decode.json`, `local/derived/icon-graphics-static.json`, and
+`local/derived/ui-layout-static.json`.

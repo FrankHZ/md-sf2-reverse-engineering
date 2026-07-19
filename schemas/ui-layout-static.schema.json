@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/ui-layout-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "table", "summary", "sourceFiles", "layouts", "spellLevelPointers", "menuBorders", "assets", "excludedSources", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-ui-layout-static-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 36, "maxProperties": 36, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 25, "maxProperties": 25, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "sourceFiles": {
+      "type": "array", "minItems": 19, "maxItems": 19,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["sourcePath", "baseAddress", "byteCount", "labelCount", "directives", "sha256"],
+        "properties": {
+          "sourcePath": { "type": "string" }, "baseAddress": { "type": "integer", "minimum": 0 },
+          "byteCount": { "type": "integer", "minimum": 1 }, "labelCount": { "type": "integer", "minimum": 1 },
+          "directives": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 1 } },
+          "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+        }
+      }
+    },
+    "layouts": {
+      "type": "array", "minItems": 27, "maxItems": 27,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["symbol", "sourcePath", "sourceAddress", "width", "height", "wordCount", "byteCount", "sha256"],
+        "properties": {
+          "symbol": { "type": "string" }, "sourcePath": { "type": "string" },
+          "sourceAddress": { "type": "integer", "minimum": 0 }, "width": { "type": "integer", "minimum": 1 },
+          "height": { "type": "integer", "minimum": 1 }, "wordCount": { "type": "integer", "minimum": 1 },
+          "byteCount": { "type": "integer", "minimum": 2 }, "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+        }
+      }
+    },
+    "spellLevelPointers": {
+      "type": "array", "minItems": 16, "maxItems": 16,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["index", "symbol", "address"],
+        "properties": { "index": { "type": "integer", "minimum": 0, "maximum": 15 }, "symbol": { "type": "string" }, "address": { "type": "integer", "minimum": 0 } }
+      }
+    },
+    "menuBorders": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["index", "symbol", "sourceAddress", "byteCount", "sha256"],
+        "properties": { "index": { "type": "integer", "minimum": 0, "maximum": 3 }, "symbol": { "type": "string" }, "sourceAddress": { "type": "integer", "minimum": 0 }, "byteCount": { "const": 48 }, "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" } }
+      }
+    },
+    "assets": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["symbol", "sourcePath", "ownerPath", "sourceAddress", "byteCount", "sha256"],
+        "properties": { "symbol": { "type": "string" }, "sourcePath": { "type": "string" }, "ownerPath": { "type": "string" }, "sourceAddress": { "type": "integer", "minimum": 0 }, "byteCount": { "type": "integer", "minimum": 1 }, "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" } }
+      }
+    },
+    "excludedSources": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" }, "uniqueItems": true },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

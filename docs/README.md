@@ -77,7 +77,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   field-item dispatch、spell learning、新游戏顺序和未 include 的 alternate source 边界。
 - [`common-menus.md`](./research/common-menus.md)：共享菜单 42 文件、提示框/文本控制、field-item
   dispatch、商店/教堂/车队等服务入口、diamond/yes-no 压缩图形、完整 icon storage/copy/highlight
-  合同及 alternate 边界。
+  合同、27 个 leaf UI layout/2,394 个 VDP word、spell-level pointer 与 diamond-border 合同及
+  alternate 边界。
 - [`technical-interrupts.md`](./research/technical-interrupts.md)：VInt、DMA、fade、输入重复、wait/sleep
   handshake、trap 路由和待集中验证的硬件时序。
 - [`technical-graphics.md`](./research/technical-graphics.md)：解压、显示初始化、sprite/palette、视差、
@@ -85,8 +86,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
   special-screen、8 条 base/menu UI、56 条 battle-effect、115 条 map-tileset
   Stack-compression corpus、208 张 battle-sprite animation table、163 槽 icon
-  storage/menu-copy/highlight 合同、16 套 map palette/79-map 使用与有效 color-zero 合同，以及 46/46
-  direct named compression consumer 的 owner inventory。
+  storage/menu-copy/highlight 合同、19 个 vanilla-built UI-layout owner 与 5,614-byte 静态 corpus、
+  16 套 map palette/79-map 使用与有效 color-zero 合同，以及 46/46 direct named compression
+  consumer 的 owner inventory。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
@@ -127,14 +129,15 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   record/consumer 规则与
   `MAPDATA_OFFSET_LAYOUT` 上游常量缺陷。
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
-  sprite-dialogue 的 65 文件边界、63 个 H1 binding、两个 alternate，以及 56 槽/52 payload 的
-  portrait header、动画元数据、palette 与 Stack 图形解码合同和 30 槽/27 payload 的 battle
-  background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个图形 frame、208 个 animation
+  sprite-dialogue 的 65 文件边界、77 个 indexed symbol/63 个 source file、两个 alternate，以及
+  56 槽/52 payload 的 portrait header、动画元数据、palette 与 Stack 图形解码合同和 30 槽/27
+  payload 的 battle background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个图形 frame、208 个 animation
   sequence/421 个 frame entry，以及 weapon/ground graphics/palette、670 个 regular map-sprite
   payload、6 个 special-sprite stream 与 9 个
   special-screen tile stream、8 个 base/menu UI stream，以及 56 条 spell/invocation/status/
-  transition stream、115 条 map-tileset stream、163 个 assembled icon/4 个 source-only icon 例外
-  和 16 套 map palette/79 个 header reference 的完整 parity。
+  transition stream、115 条 map-tileset stream、163 个 assembled icon/4 个 source-only icon 例外、
+  27 个 UI layout/16 槽 spell pointer/4 套 border/4 个 direct tile payload，以及 16 套 map
+  palette/79 个 header reference 的完整 parity。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

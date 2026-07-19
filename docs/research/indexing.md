@@ -44,7 +44,9 @@ JSON Schema cannot express:
 4. fixture IDs and ROM hashes agree with the index;
 5. every indexed binding equals the concrete ROM/RAM address stored in its fixture;
 6. every `*Address` field under every current H3 fixture's `function` or `ram` object is bound;
-7. when the ignored upstream checkout exists, code/data source files and symbol labels are checked;
+7. when the ignored upstream checkout exists, code/data/layout source files and symbol labels are
+   checked; `layout/` is accepted only when the section layout itself defines a symbol beside a
+   direct payload rather than merely including an owning `code/` or `data/` file;
 8. when the H1 listing exists, each symbol address is compared with the assembled listing, including
    labels that share a line with their first data directive.
 
@@ -77,8 +79,8 @@ index verifier proves every copy still agrees.
 
 ## Current Boundary
 
-As of 2026-07-19, the index contains 1,450 confirmed findings and 1,914 checked address bindings. It
-connects all 58 H3 fixture files plus 60 H2 fixtures needed by the completed code and
+As of 2026-07-19, the index contains 1,467 confirmed findings and 1,950 checked address bindings. It
+connects all 58 H3 fixture files plus 61 H2 fixtures needed by the completed code and
 data inventories. This produces 381/387 strict code-file reach and 980/1,690 strict data-file reach.
 
 Those strict counters deliberately require a named symbol in the claimed source file and a matching

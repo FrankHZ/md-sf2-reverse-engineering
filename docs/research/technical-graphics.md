@@ -7,7 +7,8 @@
   complete ally/enemy battle-sprite animation sequence corpus, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
   special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora, plus the
-  complete icon-storage/copy/highlight corpus and map-palette/effective-color-zero boundaries
+  complete icon-storage/copy/highlight corpus, map-palette/effective-color-zero boundaries, and
+  assembled UI/window layout, spell-pointer, border, and direct menu-tile corpus
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -212,6 +213,19 @@ receive those three IDs.
 with bitwise `source AND tiles_IconHighlight`; the mask itself is ROM-checked. Rendered palette,
 highlight timing, and DMA ordering remain presentation questions rather than inferred pixel parity.
 
+The fourteenth graphics corpus closes the uncompressed UI layout surface used by the vanilla build.
+Nineteen ASM owners expand to 5,116 source bytes, including 27 leaf tilemaps with 2,394 Genesis VDP
+words, a 16-entry spell-level pointer table with ten unique targets, four 48-byte diamond-border
+variants, and the 72-byte alphabet highlight. Three adjacent direct `incbin` resources add 498 bytes
+for price tags and shop highlighting, bringing the unique tracked layout/asset boundary to 5,614
+bytes. Every local label, pointer, macro-expanded word, byte directive, and payload matches H1 and ROM.
+
+The tilemaps span palettes 1-4 and retain priority, mirror, and flip attributes; the parser records
+shapes and hashes rather than redistributing raw layouts. The unused window-border aggregate and
+fighter mini-status alternate are absent from the original section layouts and stay excluded rather
+than inheriting canonical addresses. Runtime tile overwrites, DMA, palette, window motion, and final
+composition remain presentation questions.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -266,6 +280,7 @@ uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
+uv run sf2 h2 ui-layouts
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-palettes
@@ -278,7 +293,7 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `battle-sprite-decode.json`, `battle-sprite-animation-static.json`,
 `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
-`special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
-`icon-graphics-static.json`, `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
+`special-screen-graphics-decode.json`, `ui-graphics-decode.json`, `icon-graphics-static.json`, and
+`ui-layout-static.json`, `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
 `map-palette-static.json`.
 The consumer map stays under ignored `local/derived/compression-consumers-static.json`.

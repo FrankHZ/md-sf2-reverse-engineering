@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-auxiliary-data-static-v1",
-  "outputSha256": "3D9B9D4405B0360E8BBF7E961487C87ED94C335206970766E296D5988A27F8EA",
+  "outputSha256": "7DC28BF04922049EA236C5B9A33776D349132C34B15CD2BB17FF2AC562B58EBA",
   "summary": {
     "fileCount": 65,
     "sourceLineCount": 11234,
@@ -10,7 +10,7 @@
     "layoutOwnedFileCount": 63,
     "alternateFileCount": 2,
     "representativeAddressCount": 63,
-    "indexedRecordCount": 63,
+    "indexedRecordCount": 77,
     "indexedFileCount": 63
   }
 }

@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,450 条 confirmed finding、60 个 H2 fixture、58 个 H3 fixture
-和 1,914 个地址绑定。
+截至 2026-07-19，研究索引有 1,467 条 confirmed finding、61 个 H2 fixture、58 个 H3 fixture
+和 1,950 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -319,6 +319,12 @@ icon-graphics rail 接着闭合连续的原版 icon storage：目录中有 167 �
 和 cracks overlay 占据，同时与 `ICON_SPELLS_START + 16..18` 碰撞。成员/商店 loader 的 192-byte
 复制及四角强制色、highlight loader 的 192-byte mask/384-byte 双帧输出均形成静态合同；最终 UI
 palette、DMA 与可达性进入集中 presentation matrix。
+UI-layout rail 随后闭合 vanilla build 的 19 个 graphics/tech ASM owner：27 个 leaf layout、
+2,394 个 VDP word、16 槽/10 个唯一目标的 spell-level pointer table、4 套 48-byte diamond border
+和 4 个 direct tile payload，共 5,614 个唯一字节。全部 local label、macro 展开值、pointer 和
+payload 通过 source/H1/ROM parity；window-border aggregate 与 fighter mini-status alternate
+继续明确排除。运行时 tile overwrite、palette/DMA、window motion 和最终渲染进入共享
+presentation matrix。
 battle-effect graphics rail 接着闭合 23 个 spell container、4 个 invocation container 的 15 frame/
 30 stream、1 条 status animation 与 2 条 battle-transition stream，共 56 条 Stack stream、46,364
 个压缩字节和 200,992 个解压字节。所有 30 个资源、4 个顶层 pointer 和 3 张 pointer table 与 ROM

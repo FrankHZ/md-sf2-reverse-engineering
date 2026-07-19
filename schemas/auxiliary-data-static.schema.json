@@ -30,7 +30,7 @@
         "layoutOwnedFileCount": { "const": 63 },
         "alternateFileCount": { "const": 2 },
         "representativeAddressCount": { "const": 63 },
-        "indexedRecordCount": { "const": 63 },
+        "indexedRecordCount": { "const": 77 },
         "indexedFileCount": { "const": 63 }
       }
     },
@@ -41,7 +41,7 @@
     "excludedPaths": { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true },
     "exclusions": { "type": "object", "minProperties": 2, "maxProperties": 2 },
     "indexedRecordIds": {
-      "type": "array", "minItems": 63, "maxItems": 63, "uniqueItems": true
+      "type": "array", "minItems": 77, "maxItems": 77, "uniqueItems": true
     },
     "indexedSourcePaths": {
       "type": "array", "minItems": 63, "maxItems": 63, "uniqueItems": true

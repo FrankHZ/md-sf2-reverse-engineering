@@ -62,6 +62,7 @@ from sf2tool.h2.special_screen_graphics import verify_special_screen_graphics_co
 from sf2tool.h2.special_sprites import verify_special_sprite_contract
 from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h2.ui_graphics import verify_ui_graphics_contract
+from sf2tool.h2.ui_layouts import verify_ui_layout_contract
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_ai_action import verify_battle_ai_action_choice
@@ -403,6 +404,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_ui_graphics)
     h2_ui_graphics.add_argument("--output-path", type=_path)
+    h2_ui_layouts = h2_commands.add_parser(
+        "ui-layouts",
+        help="verify all assembled UI/window layouts, pointer routes, borders, and direct assets",
+    )
+    _add_local_paths(h2_ui_layouts)
+    h2_ui_layouts.add_argument("--output-path", type=_path)
     h2_icon_graphics = h2_commands.add_parser(
         "icon-graphics",
         help="verify the complete icon storage corpus and menu copy/highlight boundaries",
@@ -1009,6 +1016,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "ui-graphics":
         print_record(
             verify_ui_graphics_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "ui-layouts":
+        print_record(
+            verify_ui_layout_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
