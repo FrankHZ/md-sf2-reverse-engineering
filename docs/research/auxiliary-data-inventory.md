@@ -1,7 +1,8 @@
 # Auxiliary Graphics, Scripting, and Technical Data Inventory
 
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
-  two alternates, file-category counts, private incbin reference counts, and sprite-dialogue row shape
+  two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
+  and the complete portrait container/decode corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -29,7 +30,15 @@ indexed-file reach.
 
 The sources reference 1,495 unique private binary payloads across battle graphics, map tiles and
 palettes, sprites, portraits, icons, menu/window layouts, and special screens. The verifier records
-only target-path counts and source hashes; it does not read, copy, or commit those payloads.
+only target-path counts and source hashes. The separate portrait rail reads its 52 local payloads to
+validate structure and ROM parity, but commits only counts and hashes—never palettes or decoded tile
+data.
+
+The 56-entry portrait pointer table has 52 unique containers and four aliases. Each container holds
+counted four-byte eye entries, counted four-byte mouth entries, one 32-byte palette, and a
+Stack-compressed tile stream. All 52 streams decode to exactly 2,048 bytes; the corpus contains 261
+eye entries and 218 mouth entries with coordinates limited to the 8×8 portrait tile grid. The four
+aliases are portrait 35→33 and portraits 53-55→52.
 
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
@@ -53,5 +62,6 @@ launches.
 
 ```powershell
 uv run sf2 h2 auxiliary-data
+uv run sf2 h2 portraits
 uv run sf2 research-index test
 ```

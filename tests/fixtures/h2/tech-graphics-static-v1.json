@@ -63,6 +63,7 @@
       "inventoryBoundary": {
         "unusedDisplayAndGraphicsHelpersInventoried": true,
         "battleTerrainStackCorpusConfirmed": true,
+        "portraitStackCorpusConfirmed": true,
         "remainingDecompressionCorporaRemainQueued": true,
         "visualAndVdpTimingRemainQueued": true,
         "specialSpriteFramePresentationRemainsQueued": true

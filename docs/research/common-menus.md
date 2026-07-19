@@ -1,7 +1,8 @@
 # Common Menu Engines and Services
 
 - Status: **Confirmed** for the pinned 42-file inventory, 41 layout-owned source files, H1 entry
-  addresses, prompt input/return rules, text controls, and the nine field-item dispatches
+  addresses, prompt input/return rules, text controls, the nine field-item dispatches, and portrait
+  header/palette/tile loading boundaries
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -42,6 +43,12 @@ The common text writer has regular and orange entry points, formats numbers thro
 and handles move-down, font-toggle, and newline control codes. Presentation timing and exact VDP tile
 results remain outside the static claim.
 
+`LoadPortrait` resolves one of 56 pointer slots, copies counted four-byte blink entries, then counted
+mouth entries, and copies eight palette longwords into current/base/backup palette state. The
+remaining Stack stream deterministically expands to 2,048 bytes before a `0x400`-word VInt VRAM DMA
+submission. The complete source/ROM corpus confirms 52 unique payloads and four aliases; blink/mouth
+frame timing and visible composition remain presentation questions.
+
 ## Field Items and Service Boundary
 
 The layout-owned field-item table has nine index/effect pairs, for item indices 3, 5, and 9 through
@@ -64,6 +71,7 @@ because they share VInt/VDP observation points. This static batch starts no emul
 
 ```powershell
 uv run sf2 h2 common-menus
+uv run sf2 h2 portraits
 uv run sf2 research-index test
 ```
 

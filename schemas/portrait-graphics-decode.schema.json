@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/portrait-graphics-decode.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "aliases", "payloads", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-portrait-graphics-decode-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/$defs/counts" },
+    "table": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["portrait", "payloadOwnerPortrait"],
+        "properties": {
+          "portrait": { "type": "integer", "minimum": 0, "maximum": 55 },
+          "payloadOwnerPortrait": { "type": "integer", "minimum": 0, "maximum": 52 }
+        }
+      }
+    },
+    "payloads": {
+      "type": "array",
+      "minItems": 52,
+      "maxItems": 52,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["portrait", "symbol", "sourcePath", "sourceAddress", "payloadBytes", "headerBytes", "eyeEntryCount", "mouthEntryCount", "metadataSha256", "paletteSha256", "compressedBytes", "inputBitsConsumed", "trailingBits", "decodedBytes", "decodedSha256", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords"],
+        "properties": {
+          "portrait": { "type": "integer", "minimum": 0, "maximum": 52 },
+          "symbol": { "type": "string", "pattern": "^Portrait[0-9]{2}$" },
+          "sourcePath": { "type": "string" },
+          "sourceAddress": { "type": "integer", "minimum": 0 },
+          "payloadBytes": { "type": "integer", "minimum": 1 },
+          "headerBytes": { "type": "integer", "minimum": 36 },
+          "eyeEntryCount": { "type": "integer", "minimum": 0 },
+          "mouthEntryCount": { "type": "integer", "minimum": 0 },
+          "metadataSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "paletteSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "compressedBytes": { "type": "integer", "minimum": 1 },
+          "inputBitsConsumed": { "type": "integer", "minimum": 1 },
+          "trailingBits": { "type": "integer", "minimum": 0 },
+          "decodedBytes": { "const": 2048 },
+          "decodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "commandGroupCount": { "type": "integer", "minimum": 1 },
+          "literalWordCount": { "type": "integer", "minimum": 0 },
+          "copyCommandCount": { "type": "integer", "minimum": 0 },
+          "copiedWordCount": { "type": "integer", "minimum": 0 },
+          "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 },
+          "maximumCopyLengthWords": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    }
+  }
+}

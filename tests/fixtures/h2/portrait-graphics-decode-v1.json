@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-portrait-graphics-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "loadPortraitAddress": 87594
+  },
+  "table": {
+    "portraitTableAddress": 1867780
+  },
+  "summary": {
+    "portraitPointerCount": 56,
+    "uniquePayloadCount": 52,
+    "aliasPointerCount": 4,
+    "payloadByteCount": 64834,
+    "headerByteCount": 3788,
+    "paletteByteCount": 1664,
+    "compressedByteCount": 61046,
+    "decodedByteCount": 106496,
+    "decodedBytesPerPortrait": 2048,
+    "eyeEntryCount": 261,
+    "mouthEntryCount": 218,
+    "minimumHeaderBytes": 36,
+    "maximumHeaderBytes": 100,
+    "commandGroupCount": 2510,
+    "literalWordCount": 37017,
+    "copyCommandCount": 2665,
+    "copiedWordCount": 16231,
+    "maximumCopyOffsetWords": 950,
+    "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 56,
+    "payloadRomParityCount": 52
+  },
+  "aliases": [
+    { "portrait": 35, "payloadOwnerPortrait": 33 },
+    { "portrait": 53, "payloadOwnerPortrait": 52 },
+    { "portrait": 54, "payloadOwnerPortrait": 52 },
+    { "portrait": 55, "payloadOwnerPortrait": 52 }
+  ],
+  "runtimeQuestions": []
+}

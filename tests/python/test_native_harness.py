@@ -31,10 +31,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1438
-    assert result["H2Fixtures"] == 46
+    assert result["Records"] == 1439
+    assert result["H2Fixtures"] == 47
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 1868
+    assert result["AddressBindings"] == 1871
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -263,6 +263,13 @@ def test_stack_decoder_handles_literal_overlap_copy_and_terminator() -> None:
     assert result.copied_word_count == 2
     assert result.maximum_copy_offset_words == 1
     assert result.maximum_copy_length_words == 2
+
+
+def test_portraits_have_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "portraits"])
+    assert args.h2_command == "portraits"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
 
 
 def test_map_data_has_a_source_only_inventory_command() -> None:

@@ -42,6 +42,7 @@ from sf2tool.h2.map_scripts import verify_map_scripts_inventory
 from sf2tool.h2.map_setup import verify_map_setup_contract
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
+from sf2tool.h2.portraits import verify_portrait_graphics_contract
 from sf2tool.h2.remaining_core import verify_remaining_core_inventory
 from sf2tool.h2.screens import verify_special_screen_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
@@ -321,6 +322,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_battle_terrain)
     h2_battle_terrain.add_argument("--output-path", type=_path)
+    h2_portraits = h2_commands.add_parser(
+        "portraits", help="decode all portrait metadata, palettes, and Stack-compressed tiles"
+    )
+    _add_local_paths(h2_portraits)
+    h2_portraits.add_argument("--output-path", type=_path)
     h2_map_data = h2_commands.add_parser(
         "map-data", help="inventory the complete map ASM include graph and internal symbols"
     )
@@ -818,6 +824,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "battle-terrain":
         print_record(
             verify_battle_terrain_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "portraits":
+        print_record(
+            verify_portrait_graphics_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

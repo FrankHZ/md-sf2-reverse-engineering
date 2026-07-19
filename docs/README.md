@@ -113,7 +113,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   record/consumer 规则与
   `MAPDATA_OFFSET_LAYOUT` 上游常量缺陷。
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
-  sprite-dialogue 的 65 文件边界、63 个 H1 binding 与两个 alternate。
+  sprite-dialogue 的 65 文件边界、63 个 H1 binding、两个 alternate，以及 56 槽/52 payload 的
+  portrait header、动画元数据、palette 与 Stack 图形解码合同。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

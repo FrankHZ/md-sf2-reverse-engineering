@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-common-menus-static-v1",
-  "outputSha256": "C677F6FD821D72BFB802E112A018F57361A1F5A109BDFC0C704887334579F810",
+  "outputSha256": "C7EBBDCB95DC0E46577B15DA0DCE31B43FF5E4902260A6D5549ED1795FCF7D1B",
   "summary": {
     "fileCount": 42,
     "sourceLineCount": 14827,
@@ -14,7 +14,7 @@
     "internalDirectTargetCount": 151,
     "externalDirectTargetCount": 128,
     "layoutIncludedFileCount": 41,
-    "indexedRecordCount": 41,
+    "indexedRecordCount": 42,
     "indexedFileCount": 41,
     "excludedAlternateFileCount": 1
   }
