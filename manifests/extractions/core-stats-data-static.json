@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-core-stats-data-static-v1",
+  "outputSha256": "C3C8784B40CCDE2DEAA744A9B7C2E7914E8D1CD815541F149CEA6969D47CEE01",
+  "summary": {
+    "fileCount": 19,
+    "itemFileCount": 10,
+    "spellFileCount": 4,
+    "enemyFileCount": 5,
+    "sourceLineCount": 6067,
+    "statementCount": 5340,
+    "globalLabelCount": 24,
+    "layoutIncludedFileCount": 19,
+    "representativeAddressCount": 19,
+    "indexedRecordCount": 19,
+    "indexedFileCount": 19
+  }
+}

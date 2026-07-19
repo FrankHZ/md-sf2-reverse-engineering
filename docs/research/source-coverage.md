@@ -20,15 +20,15 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 511 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 442 | 381 code files and 61 data files |
+| Indexed findings | 528 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 459 | 381 code files and 78 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
-| Indexed data-file reach | 3.61% | 61 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| Indexed data-file reach | 4.62% | 78 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 907 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 924 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
-The H2 surface is broader than the 61 indexed data files. It currently includes 281 fixed
+The H2 surface is broader than the 78 indexed data files. It currently includes 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, and the Battle 01 placement/scene
@@ -110,6 +110,10 @@ The current evidence is deep but narrow:
   30 allies, 32 start definitions, 32 classes, five growth curves, 59 class-growth blocks, seven
   inherited spell lists, and 122 learned-spell rows. Only trailing start records and battle-sprite
   `NONE` presentation stay queued.
+  The adjacent ten item, four spell, and five enemy data files are now completely indexed as well.
+  Their 128 item records, 44 spell names/elements and 89 level definitions, 103 enemy definitions,
+  166 enemy map-sprite rows, shops, mithril, weapon graphics, range rings, and gold used/unused split
+  are structurally rechecked while existing core/enemy/battlefield rails retain semantic ownership.
 - **Minimal or unindexed:** individual event-script content, conversations,
   detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
   graphics/audio runtime output, and most content tables.
@@ -139,8 +143,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 511 records; its
-verifier reports 381 unique code files, 61 unique data files, 54 H3 fixtures, and 907 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 528 records; its
+verifier reports 381 unique code files, 78 unique data files, 54 H3 fixtures, and 924 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -200,6 +204,7 @@ to data tables and individual map/event content, while UI, SRAM hardware, and VD
 grouped into shared runtime matrices. The first data batch closes `data/battles/global` at 17/18 strict
 symbol reach and 18/18 H2 inventory, raising overall data reach to 19/1,690 without an emulator launch.
 The following ally/class batch reuses the existing core-data parsers and closes all 42 files under
-`data/stats/allies`, including the 30 transitive stat includes, raising data reach to 61/1,690 without
-an emulator launch. Next move through adjacent item/spell/enemy tables and battle entries before
-tackling the much larger hierarchical map-entry denominator.
+`data/stats/allies`, including the 30 transitive stat includes. The next combined items/spells/enemies
+batch closes another 19 files while reusing existing core-data and H3 parsers, raising data reach to
+78/1,690 without an emulator launch. Next move through battle entries and remaining compact stats
+tables before tackling the much larger hierarchical map-entry denominator.

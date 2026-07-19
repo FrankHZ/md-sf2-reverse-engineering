@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II item, spell, and enemy data static inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scopes", "summary", "layoutPaths",
+    "indexedRecordIds", "indexedSourcePaths", "representativeSymbols",
+    "representativeAddresses", "facts", "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-core-stats-data-static-v1" },
+    "upstream": { "type": "object" },
+    "scopes": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "itemFileCount", "spellFileCount", "enemyFileCount", "sourceLineCount",
+        "statementCount", "globalLabelCount", "layoutIncludedFileCount",
+        "representativeAddressCount", "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 19 },
+        "itemFileCount": { "const": 10 },
+        "spellFileCount": { "const": 4 },
+        "enemyFileCount": { "const": 5 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 19 },
+        "layoutIncludedFileCount": { "const": 19 },
+        "representativeAddressCount": { "const": 19 },
+        "indexedRecordCount": { "const": 19 },
+        "indexedFileCount": { "const": 19 }
+      }
+    },
+    "layoutPaths": { "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 19, "maxProperties": 19
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 19, "maxProperties": 19,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "facts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 19, "maxItems": 19 }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-core-stats-data-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "table": {
+    "table_EnemyBattlesprites": 129300,
+    "table_EnemyDefinitions": 1776230,
+    "table_EnemyGold": 48844,
+    "table_EnemyMapsprites": 281252,
+    "table_EnemyNames": 64394,
+    "table_ChestGoldAmounts": 145838,
+    "list_DebugShopInventory": 133505,
+    "table_ItemBreakMessages": 48368,
+    "table_ItemDefinitions": 93862,
+    "table_ItemNames": 96622,
+    "list_MithrilWeaponClasses": 139106,
+    "list_ShopInventories": 133240,
+    "table_SpecialCaravanDescriptions": 141474,
+    "table_UsableOnFieldItems": 141794,
+    "table_WeaponGraphics": 129506,
+    "table_SpellDefinitions": 95910,
+    "table_SpellElements": 49742,
+    "table_SpellNames": 63940,
+    "pt_SpellRanges": 50576
+  },
+  "expected": {
+    "facts": {
+      "items": {
+        "definitionCount": 128,
+        "nameCount": 128,
+        "shopInventoryCount": 30,
+        "debugShopItemCount": 128,
+        "chestGoldTierCount": 13,
+        "breakMessageCount": 25,
+        "mithrilClassGroupCount": 9,
+        "mithrilWeaponRowCount": 8,
+        "mithrilPicksPerRow": [4, 4, 4, 4, 4, 4, 4, 4],
+        "specialCaravanDescriptionCount": 1,
+        "usableOutsideBattleCount": 9,
+        "weaponGraphicsCount": 84
+      },
+      "spells": {
+        "nameCount": 44,
+        "elementCount": 44,
+        "levelDefinitionCount": 89,
+        "rangePointerCount": 4,
+        "rangeRingSizes": [1, 4, 8, 12]
+      },
+      "enemies": {
+        "nameCount": 103,
+        "definitionCount": 103,
+        "battleSpriteCount": 103,
+        "mapSpriteCount": 166,
+        "goldWordCount": 172,
+        "usedGoldWordCount": 103,
+        "unusedGoldTailWordCount": 69
+      },
+      "existingRailOwnership": {
+        "static-core-data": {
+          "manifest": "manifests/extractions/static-data.json",
+          "ownsItemAndSpellDefinitions": true
+        },
+        "enemy-promotions": {
+          "manifest": "manifests/extractions/enemy-promotion-data.json",
+          "ownsEnemyNamesAndDefinitions": true
+        },
+        "enemy-gold": {
+          "manifest": "manifests/extractions/enemy-gold-data.json",
+          "ownsUsedAndUnusedGoldBoundary": true
+        },
+        "battlefield": {
+          "manifest": "manifests/extractions/battlefield-static.json",
+          "ownsSpellRangeSemantics": true
+        }
+      }
+    },
+    "runtimeQuestions": [
+      "enemy-map-sprite-entries-beyond-definition-count",
+      "special-caravan-description-presentation",
+      "shop-and-debug-shop-admission-and-ordering"
+    ]
+  }
+}
