@@ -12,7 +12,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-18，研究索引有 121 条 confirmed finding、53 个 H3 fixture 和 495 个地址绑定。
+截至 2026-07-18，研究索引有 124 条 confirmed finding、53 个 H3 fixture 和 498 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 52 个文件，即
 **13.44% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和

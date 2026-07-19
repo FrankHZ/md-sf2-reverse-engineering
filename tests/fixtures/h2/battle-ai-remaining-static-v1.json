@@ -32,6 +32,9 @@
     "swarmCounts0Address": 57964,
     "swarmCounts1Address": 57975,
     "swarmCounts2Address": 57987,
+    "unusedHealingInputMaxAddress": 54240,
+    "unusedHealingInputCurrentAddress": 54256,
+    "unusedItemSlotLookupAddress": 53056,
     "controlLoopAddress": 57084,
     "unusedSlotLookupAddress": 53006
   },
@@ -175,6 +178,22 @@
       ],
       "commandLoopStopsOnFirstSuccess": true,
       "alwaysClearsTemporaryObstructionOnExit": true
+    },
+    "unusedHelpers": {
+      "directCallSitesInsideBattleAi": 0,
+      "mpComparisons": [
+        "max-mp-vs-three-times-current-mp",
+        "max-mp-vs-three-times-input",
+        "current-mp-vs-three-times-input"
+      ],
+      "mpResultChannel": "condition-codes-only",
+      "slotLookup": {
+        "slotCount": 4,
+        "comparesBaseIndexOnly": true,
+        "spellNoMatch": { "entry": 63, "slot": 4 },
+        "itemNoMatch": { "entry": 127, "slot": 4 },
+        "matchReturnsStoredEntryAndSlot": true
+      }
     }
   }
 }

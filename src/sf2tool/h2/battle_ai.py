@@ -1119,6 +1119,64 @@ def _parse_control(disasm: Path, source: str) -> dict[str, Any]:
     }
 
 
+def _parse_unused_helpers(disasm: Path, healing_source: str, slot_source: str) -> dict[str, Any]:
+    equates = _equates(disasm)
+    mp_current_vs_max = _function_block(healing_source, "sub_D3CA")
+    mp_input_vs_max = _function_block(healing_source, "sub_D3E0")
+    mp_input_vs_current = _function_block(healing_source, "sub_D3F0")
+    spell_slot = _function_block(slot_source, "GetSlotContainingSpell")
+    item_slot = _function_block(slot_source, "GetSlotContainingItem")
+    required = (
+        (mp_current_vs_max, "jsr     GetCurrentMp"),
+        (mp_current_vs_max, "jsr     GetMaxMp"),
+        (mp_input_vs_max, "jsr     GetMaxMp"),
+        (mp_input_vs_current, "jsr     GetCurrentMp"),
+        (mp_input_vs_current, "mulu.w  #3,d2"),
+        (mp_input_vs_current, "cmp.w   d2,d1"),
+        (spell_slot, "andi.b  #SPELLENTRY_MASK_INDEX,d1"),
+        (spell_slot, "cmpi.w  #4,d3"),
+        (spell_slot, "moveq   #SPELL_NOTHING,d1"),
+        (item_slot, "andi.w  #ITEMENTRY_MASK_INDEX,d1"),
+        (item_slot, "cmpi.w  #4,d3"),
+        (item_slot, "move.w  #ITEM_NOTHING,d1"),
+    )
+    if any(fragment not in block for block, fragment in required):
+        raise ValueError("battle AI unused-helper source contract drift")
+    symbols = (
+        "sub_D3CA",
+        "sub_D3E0",
+        "sub_D3F0",
+        "GetSlotContainingSpell",
+        "GetSlotContainingItem",
+    )
+    all_ai_source = "\n".join(
+        path.read_text(encoding="utf-8") for path in (disasm / SOURCE_ROOT).rglob("*.asm")
+    )
+    called = [
+        symbol
+        for symbol in symbols
+        if re.search(rf"\b(?:bsr|jsr)(?:\.[bwl])?\s+{symbol}\b", all_ai_source)
+    ]
+    if called:
+        raise ValueError(f"battle AI unused helpers gained call sites: {called}")
+    return {
+        "directCallSitesInsideBattleAi": 0,
+        "mpComparisons": [
+            "max-mp-vs-three-times-current-mp",
+            "max-mp-vs-three-times-input",
+            "current-mp-vs-three-times-input",
+        ],
+        "mpResultChannel": "condition-codes-only",
+        "slotLookup": {
+            "slotCount": 4,
+            "comparesBaseIndexOnly": True,
+            "spellNoMatch": {"entry": equates["SPELL_NOTHING"], "slot": 4},
+            "itemNoMatch": {"entry": equates["ITEM_NOTHING"], "slot": 4},
+            "matchReturnsStoredEntryAndSlot": True,
+        },
+    }
+
+
 def _parse_remaining(disasm: Path) -> dict[str, Any]:
     entries = {
         "unusedHealingMp": (SOURCE_ROOT / "command/heal/unusedfunctions_D3CA.asm", "sub_D3CA"),
@@ -1195,6 +1253,9 @@ def _parse_remaining(disasm: Path) -> dict[str, Any]:
         },
         "movementHelpers": _parse_movement_helpers(sources["movementHelpers"]),
         "control": _parse_control(disasm, sources["controlLoop"]),
+        "unusedHelpers": _parse_unused_helpers(
+            disasm, sources["unusedHealingMp"], sources["unusedSlotLookup"]
+        ),
     }
 
 
@@ -1454,6 +1515,7 @@ def _remaining_facts(remaining: dict[str, Any]) -> dict[str, Any]:
             "highestSpellLevel",
             "movementHelpers",
             "control",
+            "unusedHelpers",
         )
     }
 

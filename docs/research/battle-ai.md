@@ -23,7 +23,7 @@ priority, healing, support, final action choice, and movement, checks their fixt
 `local/derived/battle-ai-static.json`.
 
 The canonical SHA-256 is
-`C337F1FEC12CF2A4459A9EFB72EF3086207D0A134B285F04308A4DDC2DF9EF56`.
+`ADB7A154FD66F809228D6261C9879AD808199F1D1273898656AD1AD44B791F34`.
 
 ## Complete Subtree Inventory
 
@@ -50,7 +50,8 @@ indexes at least one representative entry in all 26 files, for 43 subtree record
 data-table symbols live outside the subtree. The movement-helper deepening adds seven functions and
 five coordinate tables, bringing the subtree to 55 indexed records. The control batch adds three
 more code functions and seven commandset/swarm data symbols, for 58 subtree records and 11 linked
-data symbols. This is full file reach plus selected function semantics, not full instruction coverage.
+data symbols. The unused-helper batch binds the final three global functions for 61 subtree records.
+This is full file reach plus selected function semantics, not full instruction coverage.
 
 ## Action Getter Addresses
 
@@ -363,9 +364,14 @@ branches, so caller-visible permission semantics remain in the runtime queue.
 
 `GetHighestUsableSpellLevel` is the correct comparison point for the broken healing helper: it masks
 the base entry, shifts levels by six, and walks from known level down to zero until MP is sufficient,
-returning `SPELL_NOTHING` when none is affordable. The remaining unused healing/slot helpers,
-movement-helper entry, and top-level control loop are now source-hashed and address-bound so every
-battle-AI file has a reproducible H2 foothold; their deeper semantics are not claimed complete.
+returning `SPELL_NOTHING` when none is affordable.
+
+All five explicitly unused helpers have zero direct call sites inside the battle-AI subtree. The
+three MP helpers compare max MP against three times current MP, max MP against three times an input,
+or current MP against three times an input; they restore their data registers and communicate only
+through condition codes. Spell/item slot lookup masks off level/equipment bits, scans exactly four
+slots, and returns the stored entry plus slot on success. Failure returns `SPELL_NOTHING`/slot 4 or
+`ITEM_NOTHING`/slot 4. These routines are preserved as original code facts, not remake requirements.
 
 ## Runtime Question Queue
 
@@ -408,7 +414,7 @@ shared safely.
 
 ## Remaining Static Batches
 
-- unused healing/slot helpers and deeper standby-memory semantics.
+- deeper standby-memory semantics and its caller-visible eligibility polarity.
 
 These remain **Unknown** at subsystem-contract level even though their files and calls are now
 inventoried.

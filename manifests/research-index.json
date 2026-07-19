@@ -2190,6 +2190,14 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54218 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingMpAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },
     {
+      "id": "battle.ai.remaining.unused-healing-input-max", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "sub_D3E0", "sourcePath": "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54240 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingInputMaxAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.unused-healing-input-current", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "sub_D3F0", "sourcePath": "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54256 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingInputCurrentAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
       "id": "battle.ai.remaining.standby", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "DetermineAiStandbyMovement", "sourcePath": "code/gameflow/battle/ai/determineaistandbymovement_1.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 62754 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     },
@@ -2304,6 +2312,10 @@
     {
       "id": "battle.ai.remaining.unused-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingSpell", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53006 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battle.ai.remaining.unused-item-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingItem", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedItemSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
     }
   ]
 }
