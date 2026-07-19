@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-screens-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "DisplayEndingKissPicture": 181622,
+    "palette_EndingKissPicture": 1797594,
+    "layout_EndingJewels": 2025776,
+    "DisplaySegaLogo": 163916,
+    "VInt_CheckDebugModeCheat": 167884,
+    "palette_SuspendString": 2028730,
+    "SuspendGame": 162076,
+    "WitchSuspend": 28724,
+    "palette_TitleScreen": 1049278,
+    "LoadTitleScreenFont": 182076,
+    "StartTitleScreen": 1048584,
+    "palette_Witch": 1853122,
+    "j_SoundTest": 32676,
+    "InitializeWitchSuspendVIntFunctions": 31710,
+    "ExecuteWitchMainMenu": 91736,
+    "StartWitchScreen": 29262,
+    "palette_EndingWitch": 1861572,
+    "EndGame": 162264,
+    "WitchEnd": 28820
+  },
+  "expected": {
+    "screenFacts": {
+      "groupFileCounts": { "endkiss": 2, "jewelend": 1, "segalogo": 2, "suspend": 3, "title": 3, "witch": 5, "witchend": 3 },
+      "resourceEntryCount": 18,
+      "standaloneGraphicsResourceCount": 15,
+      "embeddedSegaLogoResourceCount": 3,
+      "segaLogoComputesRomChecksum": true,
+      "segaLogoSupportsConfigurationAndDebugCheats": true,
+      "segaLogoCanReturnEarlyOnStart": true,
+      "titleScrollLoopCount": 2,
+      "titleHasBoundedStartPolling": true,
+      "witchMenuActions": ["witchMenuAction_New", "witchMenuAction_Load", "witchMenuAction_Copy", "witchMenuAction_Del"],
+      "witchChecksSramBeforeMenu": true,
+      "usSoundTestIsReturnOnly": true,
+      "suspendInitialSleepFrames": 60,
+      "suspendRestartWaitFrames": 600,
+      "suspendRestartCanExitEarlyOnStart": true,
+      "suspendResetsThroughStartVector": true,
+      "endingUsesPixelFillAndFallingJewels": true
+    },
+    "resourceTargets": {
+      "SegaLogoColors": "data/graphics/tech/segalogocolors.bin",
+      "layout_EndingJewels": "data/graphics/specialscreens/endingjewels/endingjewelslayout.bin",
+      "layout_EndingWitch": "data/graphics/specialscreens/witchscreen/endingwitchlayout.bin",
+      "layout_Witch": "data/graphics/specialscreens/witchscreen/witchlayout.bin",
+      "palette_EndingJewels": "data/graphics/specialscreens/endingjewels/endingjewelspalette.bin",
+      "palette_EndingKissPicture": "data/graphics/specialscreens/endingkiss/endingkisspicturepalette.bin",
+      "palette_EndingWitch": "data/graphics/specialscreens/witchscreen/endingwitchpalette.bin",
+      "palette_SegaLogo": "data/graphics/tech/segalogopalette.bin",
+      "palette_SuspendString": "data/graphics/specialscreens/suspendscreen/suspendstringpalette.bin",
+      "palette_TitleScreen": "data/graphics/specialscreens/titlescreen/titlescreenpalettes.bin",
+      "palette_Witch": "data/graphics/specialscreens/witchscreen/witchpalette.bin",
+      "tiles_EndingJewels": "data/graphics/specialscreens/endingjewels/endingjewelstiles.bin",
+      "tiles_EndingKissPicture": "data/graphics/specialscreens/endingkiss/endingkisspicturetiles.bin",
+      "tiles_EndingWitch": "data/graphics/specialscreens/witchscreen/endingwitchtiles.bin",
+      "tiles_SegaLogo": "data/graphics/tech/segalogotiles.bin",
+      "tiles_SuspendString": "data/graphics/specialscreens/suspendscreen/suspendstringtiles.bin",
+      "tiles_TitleScreen": "data/graphics/specialscreens/titlescreen/titlescreentiles.bin",
+      "tiles_Witch": "data/graphics/specialscreens/witchscreen/witchtiles.bin"
+    },
+    "runtimeQuestions": [
+      "logo-title-cheat-and-input-presentation",
+      "witch-save-menu-and-suspend-presentation",
+      "ending-kiss-jewels-and-witch-presentation"
+    ]
+  }
+}

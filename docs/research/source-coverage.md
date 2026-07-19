@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 434 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 365 | 357 code files and 8 data files |
-| Executable code-file reach | 92.25% | 357 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 453 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 384 | 376 code files and 8 data files |
+| Executable code-file reach | 97.16% | 376 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 830 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 849 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -92,11 +92,14 @@ The current evidence is deep but narrow:
   initialization, region admission, battle/exploration routing, six map-event types, entity/area
   interaction, and item handoff. Reset hardware, simultaneous input/event priority, and visible map
   transitions remain grouped runtime questions.
+  All nineteen special-screen files are inventoried across logo, title, witch, suspend, and ending
+  groups. Eighteen resource routes and the save/reset/cheat/effect control structure are static
+  contracts; rendered parity is queued as three presentation matrices.
 - **Minimal or unindexed:** individual event-script content, conversations,
   detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
   graphics/audio runtime output, and most content tables.
 
-Therefore 92.25% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 97.16% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -109,8 +112,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 434 records; its
-verifier reports 357 unique code files, 8 unique data files, 54 H3 fixtures, and 830 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 453 records; its
+verifier reports 376 unique code files, 8 unique data files, 54 H3 fixtures, and 849 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -163,6 +166,8 @@ alternate. The 21-file technical interrupt, 11-file technical graphics, and 25-f
 boundaries follow with complete static reach. The twelve-file remaining-services batch then closes
 resource incbins, input, byte copy, SRAM, music bridge, base/thinking RNG, and the auxiliary Z80
 build without an emulator launch. The following thirteen-file startup/main-loop/exploration batch
-closes the cold-start-to-map control spine and raises strict reach to 92.25%. Of the 30 files still
-outside strict symbol reach, the next coherent static batch targets all nineteen special-screen
+closes the cold-start-to-map control spine, then all nineteen special-screen files raise strict reach
+to 97.16%. Of the eleven files still outside strict symbol reach, five are primary layout sources:
+ROM header, window engine, and three special/debug gameflow files. The other six are already-known
+alternate, unlabeled, or auxiliary-build exceptions. The next static batch closes those five primary
 files; UI, SRAM hardware, and VDP/Z80 runtime queues remain grouped.
