@@ -24,6 +24,7 @@ from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
+from sf2tool.h2.remaining_core import verify_remaining_core_inventory
 from sf2tool.h2.screens import verify_special_screen_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
 from sf2tool.h2.services import verify_service_inventory
@@ -257,6 +258,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_special_screens, rom=False)
     h2_special_screens.add_argument("--output-path", type=_path)
+    h2_remaining_core = h2_commands.add_parser(
+        "remaining-core", help="inventory ROM header, window engine, and special debug flows"
+    )
+    _add_local_paths(h2_remaining_core, rom=False)
+    h2_remaining_core.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -612,6 +618,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "special-screens":
         print_record(
             verify_special_screen_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "remaining-core":
+        print_record(
+            verify_remaining_core_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

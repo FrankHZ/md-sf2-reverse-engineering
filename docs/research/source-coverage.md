@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 453 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 384 | 376 code files and 8 data files |
-| Executable code-file reach | 97.16% | 376 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 458 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 389 | 381 code files and 8 data files |
+| Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 849 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 854 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -95,12 +95,27 @@ The current evidence is deep but narrow:
   All nineteen special-screen files are inventoried across logo, title, witch, suspend, and ending
   groups. Eighteen resource routes and the save/reset/cheat/effect control structure are static
   contracts; rendered parity is queued as three presentation matrices.
+  The ROM header, window engine, battle test, configuration mode, and debug battle actions close the
+  final five primary layout sources. Header/vector, eight-slot window, and debug route shapes are
+  static contracts; window/debug presentation remains queued.
 - **Minimal or unindexed:** individual event-script content, conversations,
   detailed shops/church flows, save payload semantics, maps beyond the Battle 01 slice,
   graphics/audio runtime output, and most content tables.
 
-Therefore 97.16% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 98.45% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
+
+The six files outside strict symbol reach are explicit exceptions, not uninspected backlog:
+
+- `code/common/stats/items/fielditemeffects.asm`, `itemactions_1.asm`, and
+  `itemfunctions_s7_0.asm` are unassembled alternate item implementations covered by the stats H2
+  inventory;
+- `code/common/menus/writememberlisttext.asm` overlaps its canonical assembled implementation and is
+  covered by the menus H2 inventory;
+- `code/common/scripting/text/unused_textfunctionsdata.asm` is an unlabeled byte range covered by the
+  scripting H2 inventory but cannot satisfy a named-symbol index contract;
+- `code/common/tech/sound/sounddriver.asm` is separately assembled for the Z80 and H2-hashed by the
+  technical-services inventory, so its labels do not exist in the 68000 H1 listing.
 
 ## Reproduction
 
@@ -112,8 +127,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 453 records; its
-verifier reports 376 unique code files, 8 unique data files, 54 H3 fixtures, and 849 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 458 records; its
+verifier reports 381 unique code files, 8 unique data files, 54 H3 fixtures, and 854 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -166,8 +181,8 @@ alternate. The 21-file technical interrupt, 11-file technical graphics, and 25-f
 boundaries follow with complete static reach. The twelve-file remaining-services batch then closes
 resource incbins, input, byte copy, SRAM, music bridge, base/thinking RNG, and the auxiliary Z80
 build without an emulator launch. The following thirteen-file startup/main-loop/exploration batch
-closes the cold-start-to-map control spine, then all nineteen special-screen files raise strict reach
-to 97.16%. Of the eleven files still outside strict symbol reach, five are primary layout sources:
-ROM header, window engine, and three special/debug gameflow files. The other six are already-known
-alternate, unlabeled, or auxiliary-build exceptions. The next static batch closes those five primary
-files; UI, SRAM hardware, and VDP/Z80 runtime queues remain grouped.
+closes the cold-start-to-map control spine; all nineteen special-screen files and the final five
+primary core files then raise strict reach to 98.45%. The remaining six are fully enumerated H2
+exceptions, so code-file discovery has reached its honest symbol-index ceiling. Static work now moves
+to data tables and individual map/event content, while UI, SRAM hardware, and VDP/Z80 questions stay
+grouped into shared runtime matrices.

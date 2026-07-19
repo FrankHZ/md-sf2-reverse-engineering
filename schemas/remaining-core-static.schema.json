@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II remaining primary core static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "headerFacts", "windowFacts", "debugFacts", "runtimeQuestions", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-remaining-core-static-v1" },
+    "upstream": { "type": "object" },
+    "scopes": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true },
+    "summary": {
+      "type": "object",
+      "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"],
+      "properties": {
+        "fileCount": { "const": 5 }, "layoutIncludedFileCount": { "const": 5 },
+        "indexedRecordCount": { "const": 5 }, "indexedFileCount": { "const": 5 }
+      }
+    },
+    "indexedRecordIds": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true },
+    "representativeSymbols": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+    "representativeAddresses": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "internalDirectCallTargets": { "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true },
+    "externalDirectCallTargets": { "type": "array", "minItems": 35, "maxItems": 35, "uniqueItems": true },
+    "headerFacts": { "type": "object", "minProperties": 10, "maxProperties": 10 },
+    "windowFacts": { "type": "object", "minProperties": 8, "maxProperties": 8 },
+    "debugFacts": { "type": "object", "minProperties": 12, "maxProperties": 12 },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true },
+    "files": { "type": "array", "minItems": 5, "maxItems": 5 }
+  }
+}

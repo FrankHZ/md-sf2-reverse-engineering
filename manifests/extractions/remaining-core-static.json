@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-remaining-core-static-v1",
+  "outputSha256": "3C4237DAB44E6D7C304C3268C699A54F06158F8178497C2B009EC4A017B69EB0",
+  "summary": {
+    "fileCount": 5,
+    "sourceLineCount": 1210,
+    "statementCount": 796,
+    "globalLabelCount": 69,
+    "localLabelCount": 31,
+    "directCallSiteCount": 107,
+    "uniqueDirectTargetCount": 47,
+    "internalDirectTargetCount": 12,
+    "externalDirectTargetCount": 35,
+    "layoutIncludedFileCount": 5,
+    "indexedRecordCount": 5,
+    "indexedFileCount": 5
+  }
+}

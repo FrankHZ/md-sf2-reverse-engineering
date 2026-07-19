@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-remaining-core-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "InitialStack": 0,
+    "InitializeWindowProperties": 18374,
+    "DebugModeBattleTest": 30364,
+    "CheatModeConfiguration": 32314,
+    "DebugModeActionSelect": 39578
+  },
+  "expected": {
+    "headerFacts": {
+      "vectorEntryCount": 64,
+      "horizontalInterruptLevel": 4,
+      "verticalInterruptLevel": 6,
+      "namedTrapRange": [0, 9],
+      "productCode": "GM MK-1315 -00",
+      "headerChecksum": 35105,
+      "romEndAddress": 2097151,
+      "sramStartAddress": 2097153,
+      "sramEndAddress": 2113535,
+      "regionCode": "U"
+    },
+    "windowFacts": {
+      "windowSlotCount": 8,
+      "windowEntrySizeBytes": 16,
+      "createFailureSentinel": -1,
+      "specialTurboAnimationLength": 1,
+      "movementUsesPerSlotBitfield": true,
+      "movementUsesLinearIntegerInterpolation": true,
+      "vintOwnsWindowAnimationAndDma": true,
+      "windowTileAddressUsesPackedCoordinates": true
+    },
+    "debugFacts": {
+      "battleTestJoinedAllyCount": 29,
+      "battleTestWholeForceCount": 30,
+      "battleTestMaxBattleIndex": 49,
+      "battleTestMaxShopIndex": 100,
+      "battleTestBowieStatValue": 99,
+      "configurationToggleCount": 4,
+      "configurationToggles": ["special-turbo", "control-opponent", "auto-battle", "game-completed"],
+      "soundTestRequiresStartUpAndCompletedFlag": true,
+      "debugBattleActionTargets": ["Attack", "Magic", "Item", "EndTurn", "BurstRock", "Muddle", "PrismLaser"],
+      "debugBattleActionCount": 7,
+      "debugHitOverrideCount": 4,
+      "debugHitOverrides": ["dodge", "critical", "double", "counter"]
+    },
+    "runtimeQuestions": [
+      "window-animation-hide-scroll-and-dma-frames",
+      "debug-configuration-input-and-menu-presentation"
+    ]
+  }
+}
