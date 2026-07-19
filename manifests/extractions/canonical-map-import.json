@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-canonical-map-import-v1",
-  "outputSha256": "207A18A223262321AA7B91FD017E6C5E38900C0A99CE2D5D8C1B88D832ACDC1B",
+  "outputSha256": "CB8E1BE473F040B63AA7ED016B44D4981A766E7224AC17B2902CAB02844C312F",
   "summary": {
     "mapCount": 79,
     "resourceCount": 1480,
@@ -12,7 +12,7 @@
     "decodedBlockWordCount": 177939,
     "decodedLayoutWordCount": 315392,
     "logicalRecordCount": 1027,
-    "setupLogicalRecordCount": 2348,
-    "allLogicalRecordCount": 3375
+    "setupLogicalRecordCount": 3002,
+    "allLogicalRecordCount": 4029
   }
 }

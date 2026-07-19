@@ -37,22 +37,60 @@ def _function_body(source: str, symbol: str, owner_symbol: str) -> str:
     return source[start.end() : end]
 
 
-def _statement_rows(body: str) -> list[str]:
-    rows: list[str] = []
+def _operation_rows(body: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    pending_labels: list[str] = []
     for raw_line in body.splitlines():
         line = raw_line.split(";", 1)[0].strip()
-        line = re.sub(r"^(?:@?[A-Za-z_][A-Za-z0-9_]*):\s*", "", line).strip()
-        if line and not line.endswith(":"):
-            rows.append(line)
+        while line and (label_match := re.match(r"^(@?[A-Za-z_][A-Za-z0-9_]*):\s*", line)):
+            pending_labels.append(label_match.group(1))
+            line = line[label_match.end() :].strip()
+        if not line:
+            continue
+        parts = line.split(None, 1)
+        opcode = parts[0]
+        operand_text = parts[1] if len(parts) == 2 else ""
+        rows.append(
+            {
+                "index": len(rows),
+                "labels": pending_labels,
+                "opcode": opcode,
+                "operandText": operand_text.strip(),
+                "branchTargetSymbol": None,
+                "branchTargetAddress": None,
+                "localBranchTargetIndex": None,
+            }
+        )
+        pending_labels = []
+    if pending_labels:
+        raise ValueError(f"map init labels have no following operation: {pending_labels}")
+    label_indices: dict[str, int] = {}
+    for row in rows:
+        for label in row["labels"]:
+            if label in label_indices:
+                raise ValueError(f"duplicate map init local label: {label}")
+            label_indices[label] = row["index"]
+    for row in rows:
+        if not re.fullmatch(r"b(?!sr)[a-z]{2}(?:\.[bswl])?", row["opcode"]):
+            continue
+        target = row["operandText"].rsplit(",", 1)[-1].strip()
+        target = re.sub(r"\(pc\)$", "", target)
+        row["branchTargetSymbol"] = target
+        row["localBranchTargetIndex"] = label_indices.get(target)
     return rows
+
+
+def _statement_rows(body: str) -> list[str]:
+    return [
+        row["opcode"] + (f" {row['operandText']}" if row["operandText"] else "")
+        for row in _operation_rows(body)
+    ]
 
 
 def _call_targets(statements: list[str]) -> list[str]:
     targets: list[str] = []
     for statement in statements:
-        match = re.match(
-            r"(?:jsr|bsr)(?:\.[bwl])?\s+\(?([A-Za-z_][A-Za-z0-9_]*)", statement
-        )
+        match = re.match(r"(?:jsr|bsr)(?:\.[bwl])?\s+\(?([A-Za-z_][A-Za-z0-9_]*)", statement)
         if match:
             targets.append(match.group(1))
     return targets
@@ -84,13 +122,21 @@ def _source_rows(
         for symbol in owned_targets:
             address = addresses[symbol]
             body = _function_body(source, symbol, owner_symbol)
-            statements = _statement_rows(body)
+            operations = _operation_rows(body)
+            for operation in operations:
+                target = operation["branchTargetSymbol"]
+                if target is not None:
+                    operation["branchTargetAddress"] = addresses.get(target)
+            statements = [
+                row["opcode"] + (f" {row['operandText']}" if row["operandText"] else "")
+                for row in operations
+            ]
             if not statements:
                 raise ValueError(f"map init function has no statements: {symbol}")
             direct_return_stub = statements == ["rts"]
-            if direct_return_stub and rom[address : address + 2] != b"\x4E\x75":
+            if direct_return_stub and rom[address : address + 2] != b"\x4e\x75":
                 raise ValueError(f"map init direct-return stub ROM drift: {symbol}")
-            if not direct_return_stub and rom[address : address + 2] == b"\x4E\x75":
+            if not direct_return_stub and rom[address : address + 2] == b"\x4e\x75":
                 raise ValueError(f"active map init unexpectedly starts with rts: {symbol}")
             tokens = [re.match(r"([A-Za-z.]+)", row).group(1) for row in statements]
             script_targets = [
@@ -106,15 +152,16 @@ def _source_rows(
                     "primarySourceEntry": symbol == owner_symbol,
                     "directReturnStub": direct_return_stub,
                     "statementCount": len(statements),
-                    "bodySha256": hashlib.sha256(
-                        ("\n".join(statements) + "\n").encode()
-                    ).hexdigest().upper(),
+                    "bodySha256": hashlib.sha256(("\n".join(statements) + "\n").encode())
+                    .hexdigest()
+                    .upper(),
                     "tokenCounts": dict(sorted(Counter(tokens).items())),
                     "flagCheckCount": tokens.count("chkFlg"),
                     "flagSetCount": tokens.count("setFlg"),
                     "flagClearCount": tokens.count("clrFlg"),
                     "scriptTargets": script_targets,
                     "callTargets": _call_targets(statements),
+                    "operations": operations,
                 }
             )
     return files
@@ -169,9 +216,10 @@ def build_map_init_contract(rom_path: Path, upstream_path: Path) -> dict[str, An
         token_counts.update(row["tokenCounts"])
         call_counts.update(row["callTargets"])
         script_counts.update(row["scriptTargets"])
-    setup_statement_count = sum(
-        by_symbol[target["symbol"]]["statementCount"] for target in targets
-    )
+    setup_statement_count = sum(by_symbol[target["symbol"]]["statementCount"] for target in targets)
+    primary_operations = [
+        operation for row in files if row["primarySourceEntry"] for operation in row["operations"]
+    ]
     summary = {
         "sourceFileCount": sum(row["primarySourceEntry"] for row in files),
         "setupPointerReferenceCount": len(targets),
@@ -199,6 +247,22 @@ def build_map_init_contract(rom_path: Path, upstream_path: Path) -> dict[str, An
         "directCallCount": sum(call_counts.values()),
         "uniqueDirectCallTargetCount": len(call_counts),
         "moveEntityOutOfMapCallCount": call_counts["MoveEntityOutOfMap"],
+        "labeledOperationCount": sum(bool(row["labels"]) for row in primary_operations),
+        "branchOperationCount": sum(
+            bool(re.fullmatch(r"b(?!sr)[a-z]{2}(?:\.[bswl])?", row["opcode"]))
+            for row in primary_operations
+        ),
+        "resolvedLocalBranchCount": sum(
+            row["localBranchTargetIndex"] is not None for row in primary_operations
+        ),
+        "resolvedBranchTargetCount": sum(
+            row["localBranchTargetIndex"] is not None or row["branchTargetAddress"] is not None
+            for row in primary_operations
+        ),
+        "externalBranchTargetCount": sum(
+            row["localBranchTargetIndex"] is None and row["branchTargetAddress"] is not None
+            for row in primary_operations
+        ),
     }
     return {
         "schemaVersion": 1,

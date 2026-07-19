@@ -25,8 +25,8 @@
     "decodedBlockWordCount": 177939,
     "decodedLayoutWordCount": 315392,
     "logicalRecordCount": 1027,
-    "setupLogicalRecordCount": 2348,
-    "allLogicalRecordCount": 3375
+    "setupLogicalRecordCount": 3002,
+    "allLogicalRecordCount": 4029
   },
   "resourceCounts": {
     "blocksets": 77,
@@ -62,6 +62,7 @@
     "setupDefinitionCount": 126,
     "setupDefinitionReferenceCount": 756,
     "setupRecordCount": 2348,
+    "initOperationCount": 654,
     "missingMapSetupRouteCount": 15,
     "lastSetFlagWins": true,
     "directReturnHandlersPreserved": true

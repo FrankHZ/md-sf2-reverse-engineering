@@ -210,9 +210,16 @@ one entry path. The static operation inventory contains 101 flag checks, 32 flag
 clears, 80 `script` calls to 75 distinct targets, and 45 direct calls to six targets. Thirty-five of
 those direct calls remove an entity from the map.
 
+The rail now retains a normalized operation list for every callable rather than only its body hash.
+Across the 90 unique targets that is 654 operations, with labels attached to their following
+operation. The 84 primary entries contain 119 labeled operations and 130 branches. All 130 branch
+targets resolve: 129 within the same callable view, while `ms_map52_InitFunction` intentionally
+branches to `return_5C4EC` in the adjacent `sub_5C4DC`. That cross-function edge is preserved by
+symbol and H1 address instead of being treated as an unresolved branch.
+
 These are **Confirmed** source/H1/pointer and no-op ROM-shape facts. They do not claim the story or
-presentation semantics of the called scripts. Full per-entry normalized-body hashes, token maps,
-script targets, and direct-call targets stay in ignored `local/derived/map-init-static.json`; the
+presentation semantics of the called scripts. Full per-entry operations, normalized-body hashes,
+token maps, script targets, and direct-call targets stay in ignored `local/derived/map-init-static.json`; the
 tracked fixture keeps the complete aggregate operation maps and dispatcher rules.
 
 ## Standalone Setup Scripts
@@ -247,10 +254,10 @@ evidence. Remaining questions are grouped as:
 3. walking/special-sprite and portrait/text/entity-facing presentation timing;
 4. rendered block/layout parity and animation VDP frame timing in the later graphics matrix.
 
-Entity streams, every source-form setup family, every source-form content family, and both private
-block/layout bitstreams are now closed statically, including 77 complete decoder passes. Continue
-with an implementation-neutral map import contract; only presentation ambiguities should share the
-prepared runtime matrices.
+Entity streams, init control flow, every source-form setup family, every source-form content family,
+and both private block/layout bitstreams are now closed statically, including 77 complete decoder
+passes. Continue with standalone script control/data flow; only runtime state and presentation
+ambiguities should share the prepared matrices.
 
 ## Harness Performance
 

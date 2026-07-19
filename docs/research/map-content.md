@@ -105,8 +105,9 @@ source-form records, and setup selection graph into one deterministic JSON data 
 79 map definitions and 1,480 identity-preserving resources. The content side owns 77 blocksets, 77
 layouts, five families of 79 event/content tables, 156 item tables, and 32 animation tables. The setup
 side adds 64 routes, 126 six-pointer definitions, 125 entity lists, 263 event handlers, 75 area-
-description handlers, and 90 init-function identities. Together they contain 19,771 blocks, 315,392
-layout words, and 3,375 logical records. Every non-null map/setup reference resolves to a resource.
+description handlers, and 90 init functions with normalized operation lists. Together they contain
+19,771 blocks, 315,392 layout words, and 4,029 logical records/operations. Every non-null map/setup
+reference resolves to a resource.
 
 The import does not inline shared resources into each map. Maps 24 and 46 retain their original
 block/layout aliases; 41 animation references resolve to 32 tables; maps 47 and 58 deliberately use
@@ -119,7 +120,11 @@ references its entity list, entity/zone/item event handlers, description handler
 Direct-`rts` handlers remain explicit resources with no invented event records; their runtime
 reachability remains an open question.
 
-The verifier builds the full 9.4 MB output twice and requires byte-identical canonical JSON, then
+Each init-function resource retains ordered opcodes/operands, labels, script/direct-call targets,
+and resolved local or H1-addressed branch edges. This is syntax and control-flow evidence only: an
+opcode name does not by itself prove its persistent story-state or presentation effect.
+
+The verifier builds the full 9.6 MB output twice and requires byte-identical canonical JSON, then
 checks its tracked digest and schema. The full output remains under ignored `local/derived/`; the
 tracked fixture stores only geometry, counts, alias facts, and provenance. This closes the data-import
 boundary without redistributing the original maps.

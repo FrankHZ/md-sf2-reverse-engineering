@@ -16,6 +16,7 @@ from sf2tool.h2.map_content import (
 from sf2tool.h2.map_descriptions import build_map_descriptions_contract
 from sf2tool.h2.map_entities import build_map_entities_contract
 from sf2tool.h2.map_events import build_map_events_contract
+from sf2tool.h2.map_init import build_map_init_contract
 from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
@@ -264,11 +265,13 @@ def _setup_resources(
     entities = build_map_entities_contract(rom_path, upstream_path)
     events = build_map_events_contract(rom_path, upstream_path)
     descriptions = build_map_descriptions_contract(rom_path, upstream_path)
+    init = build_map_init_contract(rom_path, upstream_path)
     for owner, contract in (
         ("setup", setup),
         ("entities", entities),
         ("events", events),
         ("descriptions", descriptions),
+        ("init", init),
     ):
         if contract["upstream"]["commit"] != commit:
             raise ValueError(f"canonical map {owner} provenance drift")
@@ -310,11 +313,7 @@ def _setup_resources(
         }
         for row in descriptions["sourceFiles"]
     ]
-    init_functions_by_symbol = {
-        target["symbol"]: target["address"]
-        for row in setup["pointerTables"]
-        for target in (row["targets"]["initFunction"],)
-    }
+    init_functions_by_symbol = {row["symbol"]: row for row in init["sourceFiles"]}
     resources = {
         "setupRoutes": setup_routes,
         "setupDefinitions": setup_definitions,
@@ -324,8 +323,16 @@ def _setup_resources(
         "itemEventHandlers": _event_handler_resources(events, "itemEvents"),
         "areaDescriptionHandlers": description_handlers,
         "initFunctions": [
-            {"id": symbol, "address": address}
-            for symbol, address in sorted(init_functions_by_symbol.items())
+            {
+                "id": symbol,
+                "address": row["address"],
+                "kind": "directReturn" if row["directReturnStub"] else "operationList",
+                "bodySha256": row["bodySha256"],
+                "scriptTargets": row["scriptTargets"],
+                "callTargets": row["callTargets"],
+                "operations": row["operations"],
+            }
+            for symbol, row in sorted(init_functions_by_symbol.items())
         ],
     }
     setup_record_count = (
@@ -343,6 +350,9 @@ def _setup_resources(
         "setupDefinitionCount": len(setup_definitions),
         "setupDefinitionReferenceCount": len(setup_definitions) * 6,
         "setupRecordCount": setup_record_count,
+        "initOperationCount": sum(
+            len(row["operations"]) for row in init_functions_by_symbol.values()
+        ),
         "missingMapSetupRouteCount": 79 - len(setup_routes),
         "lastSetFlagWins": True,
         "directReturnHandlersPreserved": True,
@@ -417,8 +427,11 @@ def build_canonical_map_import(rom_path: Path, upstream_path: Path) -> dict[str,
         "decodedBlockWordCount": sum(len(block) for row in blocksets for block in row["blocks"]),
         "decodedLayoutWordCount": sum(len(row["words"]) for row in layouts),
         "logicalRecordCount": sum(record_counts.values()),
-        "setupLogicalRecordCount": setup_facts["setupRecordCount"],
-        "allLogicalRecordCount": sum(record_counts.values()) + setup_facts["setupRecordCount"],
+        "setupLogicalRecordCount": setup_facts["setupRecordCount"]
+        + setup_facts["initOperationCount"],
+        "allLogicalRecordCount": sum(record_counts.values())
+        + setup_facts["setupRecordCount"]
+        + setup_facts["initOperationCount"],
     }
     expected_resource_counts = {
         "blocksets": 77,

@@ -25,7 +25,12 @@
       "uniqueScriptTargetCount": 75,
       "directCallCount": 45,
       "uniqueDirectCallTargetCount": 6,
-      "moveEntityOutOfMapCallCount": 35
+      "moveEntityOutOfMapCallCount": 35,
+      "labeledOperationCount": 119,
+      "branchOperationCount": 130,
+      "resolvedLocalBranchCount": 129,
+      "resolvedBranchTargetCount": 130,
+      "externalBranchTargetCount": 1
     },
     "entryTokenCounts": {
       "bcc.s": 1, "beq.s": 59, "bne.s": 44, "bne.w": 1, "bra.s": 13, "bra.w": 12,

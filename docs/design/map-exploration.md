@@ -44,6 +44,10 @@ references six independently shared resources: entities, entity events, zone eve
 descriptions, item events, and initialization function. The 15 map IDs with no original route keep a
 null route. Selection scans every flag variant in source order and retains the last set flag; direct
 return handlers remain explicit empty handlers rather than being replaced by guessed defaults.
+Initialization resources retain ordered operations and complete branch targets, including the one
+confirmed cross-function return edge. A remake importer MAY translate recognized operations into a
+typed command IR, but MUST retain unknown operand text and MUST NOT infer script persistence or frame
+timing from opcode names alone.
 
 ## Geometry and Block Data
 
