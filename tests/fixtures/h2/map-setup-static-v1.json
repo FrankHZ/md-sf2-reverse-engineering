@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-setup-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "RunMapSetupInitFunction": 292092,
+    "RunMapSetupZoneEvent": 292122,
+    "RunMapSetupItemEvent": 292230,
+    "RunMapSetupEntityEvent": 292378,
+    "RunMapSetupAreaDescription": 292610,
+    "DisplayAreaDescription": 292642,
+    "GetMapSetupEntityList": 292752,
+    "GetCurrentMapSetup": 292766
+  },
+  "table": {
+    "MapSetups": 325346
+  },
+  "expected": {
+    "summary": {
+      "mapRowCount": 64,
+      "flagRowCount": 66,
+      "missingMapCount": 15,
+      "routePointerReferenceCount": 130,
+      "uniquePointerTableCount": 126,
+      "aliasFlagRouteCount": 4,
+      "pointerSlotCount": 756,
+      "mapRoutingByteCount": 910,
+      "pointerTableByteCount": 3024,
+      "mapRoutingRomParityCount": 1,
+      "pointerTableRomParityCount": 126
+    },
+    "sourceFacts": {
+      "selector": {
+        "mapTableEndWord": 65535,
+        "mapRowEndWord": 65533,
+        "defaultPointerLoadedBeforeFlags": true,
+        "allFlagRowsAreScanned": true,
+        "setFlagOverwritesCandidate": true,
+        "winner": "last-set-flag-in-source-order",
+        "missingMapResult": "ms_Void"
+      },
+      "pointerLayout": [
+        { "name": "entities", "offset": 0 },
+        { "name": "entityEvents", "offset": 4 },
+        { "name": "zoneEvents", "offset": 8 },
+        { "name": "areaDescriptions", "offset": 12 },
+        { "name": "itemEvents", "offset": 16 },
+        { "name": "initFunction", "offset": 20 }
+      ],
+      "dispatch": {
+        "initFunction": {
+          "pointerOffset": 20,
+          "voidSetupSkipsCall": true
+        },
+        "zoneEvent": {
+          "pointerOffset": 8,
+          "entryBytes": 4,
+          "defaultMarker": 253,
+          "wildcardFields": ["x", "y"],
+          "wildcardValue": 255,
+          "matchOrder": "first-matching-entry"
+        },
+        "itemEvent": {
+          "pointerOffset": 16,
+          "entryBytes": 6,
+          "defaultMarker": 253,
+          "wildcardFields": ["x", "y", "facing"],
+          "wildcardValue": 255,
+          "itemIndexMaskedBeforeMatch": true,
+          "matchOrder": "first-matching-entry"
+        },
+        "entityEvent": {
+          "pointerOffset": 4,
+          "entryBytes": 4,
+          "defaultMarker": 253,
+          "flagsByteOffset": 1,
+          "turnTowardActorBit": 0,
+          "restoreFacingAfterScriptBit": 1,
+          "matchOrder": "first-matching-entry"
+        },
+        "areaDescription": {
+          "pointerOffset": 12,
+          "entryBytes": 6,
+          "endMarker": 253,
+          "coordinateBytes": 2,
+          "d6ConditionByteOffset": 2,
+          "payloadKindByteOffset": 3,
+          "zeroPayloadKindUsesTwoTextIndices": true,
+          "nonzeroPayloadKindUsesRelativeFunction": true,
+          "matchOrder": "first-matching-entry"
+        }
+      }
+    },
+    "aliasFlagRoutes": [
+      { "map": 7, "flag": 702, "pointer": "ms_map7" },
+      { "map": 33, "flag": 783, "pointer": "ms_map33" },
+      { "map": 33, "flag": 22, "pointer": "ms_map33" },
+      { "map": 40, "flag": 507, "pointer": "ms_map40" }
+    ],
+    "selectionCases": [
+      { "id": "missing-map", "map": 32, "setFlags": [], "selectedPointer": "ms_Void" },
+      { "id": "map3-default", "map": 3, "setFlags": [], "selectedPointer": "ms_map3" },
+      { "id": "map3-first-flag", "map": 3, "setFlags": [609], "selectedPointer": "ms_map3_flag609" },
+      { "id": "map3-later-flag-wins", "map": 3, "setFlags": [609, 506], "selectedPointer": "ms_map3_flag506" },
+      { "id": "map3-last-flag-wins", "map": 3, "setFlags": [609, 506, 543], "selectedPointer": "ms_map3_flag543" },
+      { "id": "map7-alias-restores-default", "map": 7, "setFlags": [701, 702], "selectedPointer": "ms_map7" },
+      { "id": "map7-final-variant-wins", "map": 7, "setFlags": [701, 702, 805], "selectedPointer": "ms_map7_flag805" },
+      { "id": "map19-sixth-variant-wins", "map": 19, "setFlags": [501, 609, 506, 507, 543, 982], "selectedPointer": "ms_map19_flag982" },
+      { "id": "map33-late-alias-restores-default", "map": 33, "setFlags": [523, 784, 786, 22], "selectedPointer": "ms_map33" },
+      { "id": "map40-late-alias-restores-default", "map": 40, "setFlags": [506, 507], "selectedPointer": "ms_map40" }
+    ],
+    "runtimeQuestions": [
+      "area-description-byte2-d6-condition-meaning",
+      "event-script-side-effects-and-transition-state-persistence",
+      "portrait-text-and-entity-facing-presentation-timing"
+    ]
+  }
+}

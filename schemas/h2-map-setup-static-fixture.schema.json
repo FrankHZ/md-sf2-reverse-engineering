@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h2-map-setup-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "table", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-setup-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/definitions/addressMap" },
+    "table": { "$ref": "#/definitions/addressMap" },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "sourceFacts", "aliasFlagRoutes", "selectionCases", "runtimeQuestions"],
+      "properties": {
+        "summary": { "type": "object" },
+        "sourceFacts": { "type": "object" },
+        "aliasFlagRoutes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/flagVariantWithMap" }
+        },
+        "selectionCases": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/selectionCase" }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "definitions": {
+    "addressMap": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 2097151 },
+      "minProperties": 1
+    },
+    "flagVariantWithMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["map", "flag", "pointer"],
+      "properties": {
+        "map": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "flag": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "pointer": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+      }
+    },
+    "selectionCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "map", "setFlags", "selectedPointer"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "map": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "setFlags": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "uniqueItems": true
+        },
+        "selectedPointer": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+      }
+    }
+  }
+}

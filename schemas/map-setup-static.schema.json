@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/map-setup-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "sources", "function", "table", "summary", "sourceFacts", "mapOrder", "routes", "pointerTables", "aliasFlagRoutes", "selectionCases", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-setup-static-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routing", "dispatch", "macros", "enums"],
+      "properties": {
+        "routing": { "type": "string" },
+        "dispatch": { "type": "string" },
+        "macros": { "type": "string" },
+        "enums": { "type": "string" }
+      }
+    },
+    "function": { "$ref": "#/definitions/addressMap" },
+    "table": { "$ref": "#/definitions/addressMap" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mapRowCount", "flagRowCount", "missingMapCount", "routePointerReferenceCount", "uniquePointerTableCount", "aliasFlagRouteCount", "pointerSlotCount", "mapRoutingByteCount", "pointerTableByteCount", "mapRoutingRomParityCount", "pointerTableRomParityCount"],
+      "properties": {
+        "mapRowCount": { "type": "integer", "minimum": 1 },
+        "flagRowCount": { "type": "integer", "minimum": 0 },
+        "missingMapCount": { "type": "integer", "minimum": 0 },
+        "routePointerReferenceCount": { "type": "integer", "minimum": 1 },
+        "uniquePointerTableCount": { "type": "integer", "minimum": 1 },
+        "aliasFlagRouteCount": { "type": "integer", "minimum": 0 },
+        "pointerSlotCount": { "type": "integer", "minimum": 1 },
+        "mapRoutingByteCount": { "type": "integer", "minimum": 1 },
+        "pointerTableByteCount": { "type": "integer", "minimum": 1 },
+        "mapRoutingRomParityCount": { "type": "integer", "minimum": 1 },
+        "pointerTableRomParityCount": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "sourceFacts": { "type": "object" },
+    "mapOrder": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 0, "maximum": 255 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/route" }
+    },
+    "pointerTables": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/pointerTable" }
+    },
+    "aliasFlagRoutes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/flagVariantWithMap" }
+    },
+    "selectionCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/selectionCase" }
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "definitions": {
+    "addressMap": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 2097151 },
+      "minProperties": 1
+    },
+    "flagVariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flag", "pointer"],
+      "properties": {
+        "flag": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "pointer": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+      }
+    },
+    "flagVariantWithMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["map", "flag", "pointer"],
+      "properties": {
+        "map": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "flag": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "pointer": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["map", "defaultPointer", "flagVariants"],
+      "properties": {
+        "map": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "defaultPointer": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+        "flagVariants": { "type": "array", "items": { "$ref": "#/definitions/flagVariant" } }
+      }
+    },
+    "pointerTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "address"],
+      "properties": {
+        "symbol": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+        "address": { "type": "integer", "minimum": 0, "maximum": 2097151 }
+      }
+    },
+    "pointerTable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol", "address", "targets"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^data/maps/entries/.+\\.asm$" },
+        "symbol": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+        "address": { "type": "integer", "minimum": 0, "maximum": 2097151 },
+        "targets": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["entities", "entityEvents", "zoneEvents", "areaDescriptions", "itemEvents", "initFunction"],
+          "properties": {
+            "entities": { "$ref": "#/definitions/pointerTarget" },
+            "entityEvents": { "$ref": "#/definitions/pointerTarget" },
+            "zoneEvents": { "$ref": "#/definitions/pointerTarget" },
+            "areaDescriptions": { "$ref": "#/definitions/pointerTarget" },
+            "itemEvents": { "$ref": "#/definitions/pointerTarget" },
+            "initFunction": { "$ref": "#/definitions/pointerTarget" }
+          }
+        }
+      }
+    },
+    "selectionCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "map", "setFlags", "selectedPointer"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "map": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "setFlags": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0, "maximum": 65535 },
+          "uniqueItems": true
+        },
+        "selectedPointer": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+      }
+    }
+  }
+}

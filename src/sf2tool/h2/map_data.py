@@ -231,11 +231,10 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
             },
             "globalTables": global_facts,
             "mapContentParsed": False,
-            "mapSetupSemanticsParsed": False,
+            "mapSetupSemanticsParsed": True,
         },
         "runtimeQuestions": [
-            "map-setup-flag-priority-and-fallback-selection",
-            "entity-event-zone-event-and-description-dispatch-order",
+            "area-description-byte2-d6-condition-meaning",
             "map-transition-state-persistence-and-roof-step-warp-precedence",
             "binary-block-layout-and-animation-runtime-consumers",
         ],

@@ -758,11 +758,10 @@
         "savePointRows": 23
       },
       "mapContentParsed": false,
-      "mapSetupSemanticsParsed": false
+      "mapSetupSemanticsParsed": true
     },
     "runtimeQuestions": [
-      "map-setup-flag-priority-and-fallback-selection",
-      "entity-event-zone-event-and-description-dispatch-order",
+      "area-description-byte2-d6-condition-meaning",
       "map-transition-state-persistence-and-roof-step-warp-precedence",
       "binary-block-layout-and-animation-runtime-consumers"
     ]

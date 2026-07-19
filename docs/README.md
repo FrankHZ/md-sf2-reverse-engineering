@@ -77,7 +77,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-routing-data.md`](./research/battle-routing-data.md)：cutscene slots、region routes、terrain
   aliases、unused joins 和旧 aggregate 边界。
 - [`map-data-inventory.md`](./research/map-data-inventory.md)：完整 1,390-file map ASM build graph、
-  727 个内部 H1 binding、662 个 include-site-only body 和集中 map/event 问题队列。
+  727 个内部 H1 binding、662 个 include-site-only body、64+66 setup selection rows、126 张六指针
+  setup table 的 ROM parity，以及 entity/zone/item/description dispatch 结构。
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
   sprite-dialogue 的 65 文件边界、63 个 H1 binding 与两个 alternate。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、

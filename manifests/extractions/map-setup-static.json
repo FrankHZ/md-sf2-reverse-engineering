@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-setup-static-v1",
+  "outputSha256": "DFD9BE7323894A2738FE5D00C4197BD0A36CA825CDB787A2391B31EFF76DF438",
+  "summary": {
+    "mapRowCount": 64,
+    "flagRowCount": 66,
+    "missingMapCount": 15,
+    "routePointerReferenceCount": 130,
+    "uniquePointerTableCount": 126,
+    "aliasFlagRouteCount": 4,
+    "pointerSlotCount": 756,
+    "mapRoutingByteCount": 910,
+    "pointerTableByteCount": 3024,
+    "mapRoutingRomParityCount": 1,
+    "pointerTableRomParityCount": 126
+  }
+}

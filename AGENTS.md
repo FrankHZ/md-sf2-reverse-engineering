@@ -138,7 +138,8 @@ point as later rails become available:
 
 Use `uv run sf2 verify` as the normal commit gate. It owns Ruff, pytest, design-contract
 traceability, the research index, ROM identity, and toolchain provenance. Pair it with only the
-narrow H2/H3 command that owns the changed slice (for example, `uv run sf2 h3 battle-exp`). Do not
+narrow H2/H3 command that owns the changed slice (for example, `uv run sf2 h2 map-setup` or
+`uv run sf2 h3 battle-exp`). Do not
 run the 10+ minute `uv run sf2 verify --full` after every ordinary commit. Reserve the full gate for
 phase milestones, release/merge readiness, changes to shared harness orchestration or legacy rails,
 and explicit full-parity requests.

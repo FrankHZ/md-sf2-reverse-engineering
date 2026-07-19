@@ -36,6 +36,11 @@ state begins with previous symbol `$FE`, chooses its tree from the previous deco
 persists the bit barrel plus previous symbol across calls. Symbols `$EE` and above are control codes;
 `$FE` terminates the string.
 
+`map/mapsetupsfunctions_1.asm` now has a deeper cross-subsystem contract: setup selection, six-pointer
+layout, and entity/zone/item/description dispatcher shapes are source/H1/ROM-verified by
+[`map-data-inventory.md`](./map-data-inventory.md). This inventory still owns the file boundary and
+general scripting engine; the map-data document owns setup-table semantics.
+
 ## Runtime Queue
 
 Entity movement timing, dialogue typewriter/render timing, end-credit presentation, and contextual
@@ -47,6 +52,7 @@ run.
 
 ```powershell
 uv run sf2 h2 common-scripting
+uv run sf2 h2 map-setup
 uv run sf2 research-index test
 ```
 

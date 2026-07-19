@@ -12,7 +12,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,430 条 confirmed finding、54 个 H3 fixture 和 1,826 个地址绑定。
+截至 2026-07-19，研究索引有 1,437 条 confirmed finding、54 个 H3 fixture 和 1,833 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -24,7 +24,9 @@ items/spells/enemies 的 19 个布局文件也已完整盘点并复用既有深�
 alternate。完整 `data/maps` 树的 1,390 个 ASM 已全部进入 H2 构建图盘点，其中 727 个文件拥有
 文件内全局符号和真实 H1 地址；graphics/scripting/tech/sprite-dialogue 的 65 文件边界也已完成
 H2，其中 63 个拥有真实 H1 绑定。最后 41 个 Z80 music ASM 也完成 include 图与两组 32 KiB
-bank/ROM 字节一致性验证，因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
+bank/ROM 字节一致性验证；地图侧还进一步确认 64 个 setup map row、66 个 flag variant、
+last-set-flag-wins 选择规则，以及 126 张六指针 setup table/756 个 slot 的 ROM parity。因此
+**1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
 data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
@@ -356,11 +358,11 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 
 源码“找文件”阶段已经收口：code 是 381/387 strict reach，剩余 6 个都有明确 H2 所有权；data
 是 1,690/1,690 H2 inventory，980/1,690 strict H1 reach 的差额也全部归因于 include-site-only、
-unlabeled/alternate 或独立 Z80 地址空间。下一步不再为抬高索引百分比做横向扫目录，而是以
-**地图 setup/event 语义**为第一批深挖对象：静态解析 flag selection、entity/zone/item/description
-dispatch、transition/roof/step/warp precedence 和 binary block consumers，形成 Python-owned canonical
-合同。只有 caller ordering、持久状态或二进制消费者仍有歧义时，才启动已经规划为同一 observation
-seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与 VDP/Z80/audio timing 继续留在各自的
-共享矩阵队列，不拆成单案例模拟。
+unlabeled/alternate 或独立 Z80 地址空间。地图 setup 的 flag selection、六指针 layout 和四类 event
+dispatcher 结构也已静态闭合。下一步继续解析 720 个 setup section 的实际 entity/zone/item/
+description/script 结构与 binary block consumers，形成 Python-owned canonical 合同。只有 description
+`d6` 条件、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
+时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与
+VDP/Z80/audio timing 继续留在各自的共享矩阵队列，不拆成单案例模拟。
 
 参与工作前请阅读 [`AGENTS.md`](./AGENTS.md)。

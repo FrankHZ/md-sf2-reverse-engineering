@@ -20,13 +20,13 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,430 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed findings | 1,437 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,826 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,833 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -149,8 +149,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,430 records; its
-verifier reports 381 unique code files, 980 unique data files, 54 H3 fixtures, and 1,826 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,437 records; its
+verifier reports 381 unique code files, 980 unique data files, 54 H3 fixtures, and 1,833 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -184,12 +184,13 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage:
 
-1. parse map setup selection, event dispatch, transition state, and binary block consumers into
-   structured contracts, starting with source/ROM evidence;
-2. turn stable map/entity/zone/item/description tables and script shapes into canonical Python-owned
-   output without committing extracted copyrighted content;
-3. preserve caller-dependent ordering and persistence as `Inferred` or `Unknown` until observed;
-4. run the already grouped map initialization/event-dispatch matrix only after static parsing leaves a
+1. parse the 720 setup-section files into stable entity/zone/item/description/script structures now
+   that setup selection, all 126 pointer tables, and dispatcher record shapes are confirmed;
+2. turn those stable structures and binary-block consumers into canonical Python-owned output without
+   committing extracted copyrighted content;
+3. preserve script side effects, transition persistence, and the description `d6` condition as
+   `Inferred` or `Unknown` until stronger evidence exists;
+4. run the already grouped map initialization/event-dispatch matrix only after deeper static parsing leaves a
    concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in their own
    later shared matrices.
 

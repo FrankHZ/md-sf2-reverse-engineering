@@ -22,7 +22,7 @@
       "properties": {
         "facts": { "type": "object" },
         "runtimeQuestions": {
-          "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true
+          "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
         }
       }
     }
