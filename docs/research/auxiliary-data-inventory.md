@@ -6,7 +6,7 @@
   portrait container/decode corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
   and complete map-tileset decode/usage, map-palette/header-usage, icon-storage, and assembled
-  UI-layout/direct-asset corpora
+  UI-layout/direct-asset corpora, plus the ASCII-to-variable-width-font conversion table
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -133,6 +133,10 @@ scripting inventory proves build ownership and symbol placement without redistri
 staff strings, cutscene content, or entity-action bodies. Full detail remains under ignored
 `local/derived/auxiliary-data-static.json`.
 
+The 256-byte ASCII-to-text-symbol table is now independently source/ROM-checked by the variable-width
+font rail. It reaches 78 of 80 glyph IDs and maps 145 byte values to default glyph 1; Huffman symbols
+bypass this table, so the two absent IDs are not classified as unreachable.
+
 ## Concentrated Queue
 
 No emulator was launched. Remaining questions are grouped as:
@@ -165,6 +169,7 @@ uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
+uv run sf2 h2 variable-width-font
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-palettes

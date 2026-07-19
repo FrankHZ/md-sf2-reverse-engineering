@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for the complete 12-file source boundary, eleven main-ROM representative
   addresses, twenty technical-resource incbin mappings, byte-copy direction, input scan/wait shape,
-  SRAM slot/checksum structure, the 68000 music-wait command, and the Z80 driver build chain
+  SRAM slot/checksum structure, the complete variable-width-font payload/pointer boundary, the 68000
+  music-wait command, and the Z80 driver build chain
 - Status: **Inferred** for caller-visible thinking-RNG distribution and perceived delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
@@ -37,6 +38,11 @@ The five incbin files contain exactly twenty named entries across sections 3, 6,
 canonical mapping covers UI/font/title resources, Huffman text trees, witch-screen resources, and
 base tiles. This confirms ROM routing only; extracted copyrighted resource bytes remain local and
 their rendered meaning stays with the corresponding presentation subsystem.
+
+The variable-width-font rail now closes the font entry beyond routing: its 2,560-byte payload, the
+four-byte pointer, 256-byte ASCII conversion table, 80 record boundaries, width/padding shape, and
+three text consumer entry points all match H1 and ROM. Per-glyph output retains counts and hashes,
+not original pixels; presentation semantics remain owned by the graphics/text documents.
 
 `CopyBytes` compares destination and source. It copies backward when the destination address is
 higher and forward otherwise, preserving overlapping moves in the normal memmove cases.
@@ -75,6 +81,7 @@ driver instrumentation launch. Isolated one-case fixtures are not warranted by t
 
 ```powershell
 uv run sf2 h2 tech-services
+uv run sf2 h2 variable-width-font
 uv run sf2 research-index test
 ```
 

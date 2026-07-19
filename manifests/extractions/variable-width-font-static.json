@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-variable-width-font-static-v1",
+  "outputSha256": "124C4CFFFBDA22E377213261051693A341682ADF2BF1034F89DC2C6CD6A21B0E",
+  "summary": {
+    "fontByteCount": 2560,
+    "glyphCount": 80,
+    "glyphRecordByteCount": 32,
+    "glyphRowCount": 15,
+    "glyphPixelColumnCount": 12,
+    "blankGlyphCount": 1,
+    "setPixelCount": 1633,
+    "rowsWithPixelsCount": 746,
+    "minimumStoredWidth": 3,
+    "maximumStoredWidth": 9,
+    "distinctStoredWidthCount": 7,
+    "advanceOverhangGlyphCount": 5,
+    "headerPaddingViolationCount": 0,
+    "rowPaddingViolationCount": 0,
+    "pointerByteCount": 4,
+    "asciiMapEntryCount": 256,
+    "asciiMapUniqueGlyphCount": 78,
+    "asciiMapDefaultGlyphCount": 145,
+    "asciiMapMissingGlyphCount": 2,
+    "printableAsciiNonDefaultCount": 79,
+    "extendedAsciiNonDefaultCount": 32,
+    "sourceRomParityByteCount": 2820
+  }
+}

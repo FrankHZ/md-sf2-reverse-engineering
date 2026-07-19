@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for the pinned 29-file inventory, 90-slot map-script and 80-slot entity-script
   dispatch tables, interpreter admission/termination rules, text-bank selection, Huffman state, and
-  the regular entity map-sprite decode/DMA consumer shape
+  the regular entity map-sprite decode/DMA consumer shape, plus the complete variable-width font,
+  ASCII conversion, pointer, and glyph-loader data path
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, entity movement timing, text rendering timing,
   and individual script content
@@ -39,6 +40,18 @@ state begins with previous symbol `$FE`, chooses its tree from the previous deco
 persists the bit barrel plus previous symbol across calls. Symbols `$EE` and above are control codes;
 `$FE` terminates the string.
 
+The variable-width font has 80 fixed 32-byte glyph records. Each record stores a width field followed
+by fifteen rows of twelve usable pixel bits; all header and row padding bits are zero. Stored widths
+range from 3 through 9, and `LoadVariableWidthFont` uses `(symbolId - 1) * 32`, then advances zero
+pixels for stored zero or `storedWidth + 1` otherwise. The payload, pointer, and loader addresses all
+match H1 and ROM.
+
+When `CURRENT_DIALOGUE_ASCII_BYTE_ADDRESS` is nonzero, `GetNextTextSymbol` maps the input byte through
+the 256-entry ASCII table. That table reaches 78 of 80 glyph IDs, maps 145 inputs to the default
+glyph 1, and never emits IDs 70 or 71. The Huffman path bypasses this ASCII table, so absence from the
+ASCII mapping does not prove those two glyphs unreachable. Non-regular dialogue calls the glyph
+loader twice while regular dialogue calls it once; rendered overlap and timing remain runtime facts.
+
 `ChangeEntityMapsprite` and `DmaEntityMapsprite` convert one regular map-sprite ID plus facing into
 one of three pointers in `pt_Mapsprites`, call `LoadBasicCompressedData` into
 `FF8002_LOADING_SPACE`, and DMA `0x120` words (`0x240` bytes) to the entity's VRAM slot. IDs 240-255
@@ -74,7 +87,9 @@ uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts
 uv run sf2 h2 map-sprites
+uv run sf2 h2 variable-width-font
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/common-scripting-static.json`.
+Generated JSON stays under ignored `local/derived/common-scripting-static.json` and
+`local/derived/variable-width-font-static.json`.

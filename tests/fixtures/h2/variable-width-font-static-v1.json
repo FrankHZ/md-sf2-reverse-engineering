@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-variable-width-font-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "table_AsciiToTextSymbolMap": 26222,
+    "GetNextTextSymbol": 25422,
+    "SymbolsToGraphics": 27504,
+    "LoadVariableWidthFont": 27558,
+    "p_font_VariableWidth": 163852,
+    "font_VariableWidth": 167938
+  },
+  "summary": {
+    "fontByteCount": 2560,
+    "glyphCount": 80,
+    "glyphRecordByteCount": 32,
+    "glyphRowCount": 15,
+    "glyphPixelColumnCount": 12,
+    "blankGlyphCount": 1,
+    "setPixelCount": 1633,
+    "rowsWithPixelsCount": 746,
+    "minimumStoredWidth": 3,
+    "maximumStoredWidth": 9,
+    "distinctStoredWidthCount": 7,
+    "advanceOverhangGlyphCount": 5,
+    "headerPaddingViolationCount": 0,
+    "rowPaddingViolationCount": 0,
+    "pointerByteCount": 4,
+    "asciiMapEntryCount": 256,
+    "asciiMapUniqueGlyphCount": 78,
+    "asciiMapDefaultGlyphCount": 145,
+    "asciiMapMissingGlyphCount": 2,
+    "printableAsciiNonDefaultCount": 79,
+    "extendedAsciiNonDefaultCount": 32,
+    "sourceRomParityByteCount": 2820
+  },
+  "storedWidthHistogram": {
+    "3": 5,
+    "4": 6,
+    "5": 6,
+    "6": 25,
+    "7": 28,
+    "8": 6,
+    "9": 4
+  },
+  "fontHashes": {
+    "fontSha256": "2B6866AF86381545496C58AC7C5B7B515B461AE4C642ECC790641C331B4EF55A",
+    "formatNoteSha256": "F49DAE046BB3FBAACDE6954BFBFC39FD305327B1DF49AB6832F85973FA18F36A",
+    "pointerSha256": "F34C3F98D4F2678294FABFC07462D282708191B6C57E30363670E3A20F28FF68",
+    "asciiMapSha256": "0644F0D663D7B3BBCE15C4C2A1A846D015CD1A0FB753CB7BE32E62AB3E8357B8"
+  },
+  "asciiMapFacts": {
+    "entryCount": 256,
+    "uniqueGlyphCount": 78,
+    "defaultGlyphId": 1,
+    "defaultGlyphCount": 145,
+    "missingGlyphIds": [70, 71]
+  },
+  "consumerFacts": {
+    "asciiPathFunction": "GetNextTextSymbol",
+    "asciiPathUsesMapOnlyWhenRamAsciiPointerIsNonzero": true,
+    "huffmanPathBypassesAsciiMap": true,
+    "renderFunction": "SymbolsToGraphics",
+    "glyphLoaderFunction": "LoadVariableWidthFont",
+    "glyphAddressFormula": "font_VariableWidth + (symbolId - 1) * 32",
+    "storedWidthZeroAdvance": 0,
+    "storedWidthNonzeroAdvanceAdjustment": 1,
+    "regularDialogueFontLoadCount": 1,
+    "nonRegularDialogueFontLoadCount": 2
+  },
+  "runtimeQuestions": [
+    "Do direct Huffman symbols make glyph IDs 70 and 71 reachable even though the ASCII conversion table never emits them?",
+    "Do glyph overlap, palette choice, typewriter timing, and DMA reproduce the original rendered dialogue for every mapped symbol?"
+  ]
+}
