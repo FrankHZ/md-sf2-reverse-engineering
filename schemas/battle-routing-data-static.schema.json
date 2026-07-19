@@ -48,7 +48,7 @@
     },
     "facts": { "type": "object" },
     "runtimeQuestions": {
-      "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true
+      "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true
     },
     "files": { "type": "array", "minItems": 8, "maxItems": 8 }
   }

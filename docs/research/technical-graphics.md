@@ -2,11 +2,12 @@
 
 - Status: **Confirmed** for the pinned 11-file layout-owned inventory, H1 entry addresses, the two
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
-  special-sprite routing, view parallax gates, and flash-script words
+  special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain
+  Stack-compression corpus
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
-- Status: **Unknown** for decompressor corpus parity, exact VDP timing, palette presentation, and
-  special-sprite frame output
+- Status: **Unknown** for remaining Basic and embedded Stack-compression corpora, exact VDP timing,
+  palette presentation, and special-sprite frame output
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -23,9 +24,20 @@ unused display/graphics helpers.
 
 `LoadBasicCompressedData` and `LoadStackCompressedData` both accept source in `a0`, destination in
 `a1`, and return bytes written in `d0`. The stack decoder reserves a 32-byte history area and seeds it
-with words 4 through 15. This proves the calling convention and core history shape, but not yet that a
-project-owned decoder reproduces every upstream compressed asset. That belongs in a later corpus-wide
-source/output parity rail rather than eleven separate emulator cases.
+with words 4 through 15 while keeping the four hottest values 0 through 3 in registers.
+
+The maintained Python decoder now models the full bitstream grammar rather than only this calling
+convention. Each command group expands four variable-length command nibbles into sixteen literal/copy
+bits. A literal word takes four nibbles from a sixteen-value move-to-front history. A section copy uses
+an eleven-bit backwards word offset; its length starts at two words, adds two per `00`, optionally adds
+one for `01`, and a zero offset terminates the stream.
+
+The first complete corpus is all 43 `data/battles/entries/battle*/terrain.bin` payloads. Their 16,466
+compressed bytes deterministically decode to 99,072 bytes: one 48×48 grid for each unique payload. Every
+decoded byte is one of terrain types 0 through 8 or the obstructed value `0xFF`. The rail validates all
+45 pointer-table entries and every compressed payload against the original ROM; battles 4 and 32
+retain their source aliases to payloads 3 and 27. Only decoded hashes, counts, and codec statistics are
+tracked; the private grids stay under `local/derived/`.
 
 ## Display, Sprite, and Palette State
 
@@ -50,16 +62,19 @@ screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 
 ## Concentrated Verification Queue
 
-This batch starts no emulator. Decompression should next be validated statically against a broad,
-hash-only corpus of existing compressed inputs and outputs. Rendered behavior joins the shared
-presentation matrix: display initialization, palette interpolation frames, parallax/autoscroll axes,
-special-sprite updates, and flash duration can share VDP/RAM observation points.
+This batch starts no emulator. The same decoder should next expand through the structured Stack
+containers for portraits, battle sprites, backgrounds, and special screens, while a separate Basic
+decoder owns map sprites. Rendered behavior joins the shared presentation matrix: display
+initialization, palette interpolation frames, parallax/autoscroll axes, special-sprite updates, and
+flash duration can share VDP/RAM observation points.
 
 ## Reproduction
 
 ```powershell
 uv run sf2 h2 tech-graphics
+uv run sf2 h2 battle-terrain
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/tech-graphics-static.json`.
+Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
+`local/derived/battle-terrain-decode.json`.

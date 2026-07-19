@@ -76,6 +76,18 @@ reachable counts, costs, and expansion order in the original ROM. The source use
 the controlled runtime case confirms that this flat neighbor becomes reachable. Whether shipped
 battle terrain and caller setup always mask it in ordinary play remains unknown.
 
+## Shipped Terrain Corpus
+
+The complete 45-entry battle-terrain pointer table resolves to 43 unique Stack-compressed payloads;
+battles 4 and 32 alias payloads 3 and 27. A maintained Python decoder verifies the pointer table and
+compressed bytes against the ROM, then produces exactly 2,304 bytes per unique payload. Across all
+99,072 decoded bytes, the only values are terrain types 0-8 and `0xFF` obstruction. This establishes
+the shipped input domain for the 48×48 battlefield array without committing any decoded grid.
+
+This corpus proof closes initial terrain selection/decompression and the alias behavior. It does not
+close the existing gameplay-reachability question for flat row crossing: that depends on where the
+shipped obstruction boundaries and combatant origins meet during actual battle states.
+
 Occupancy updates scan 30 ally or 32 enemy slots, skipping dead combatants and unsigned coordinates
 outside `[0, 48)`. Terrain byte `0xFF` is never changed. Setting occupancy sets bit 7; clearing it is
 suppressed when impassable bit 6 is set, preserving temporary/combined obstructions. The fixture
@@ -175,6 +187,7 @@ otherwise irreducible ambiguities will enter a shared BizHawk matrix.
 
 ```powershell
 uv run sf2 h2 battlefield
+uv run sf2 h2 battle-terrain
 uv run sf2 h3 battlefield-matrix
 uv run sf2 research-index test
 ```

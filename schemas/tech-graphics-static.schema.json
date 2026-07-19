@@ -6,8 +6,8 @@
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-graphics-static-v1" },
     "upstream": { "type": "object" }, "scope": { "const": "code/common/tech/graphics" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 11 }, "layoutIncludedFileCount": { "const": 11 }, "indexedRecordCount": { "const": 11 }, "indexedFileCount": { "const": 11 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 11, "maxItems": 11, "uniqueItems": true },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 11 }, "layoutIncludedFileCount": { "const": 11 }, "indexedRecordCount": { "const": 12 }, "indexedFileCount": { "const": 11 } } },
+    "indexedRecordIds": { "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true },
     "indexedSourcePaths": { "type": "array", "minItems": 11, "maxItems": 11, "uniqueItems": true },
     "representativeSymbols": { "type": "object", "minProperties": 11, "maxProperties": 11 },
     "representativeAddresses": { "type": "object", "minProperties": 11, "maxProperties": 11 },

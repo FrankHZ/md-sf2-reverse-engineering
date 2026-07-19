@@ -62,7 +62,8 @@
       "flashScreen": { "scriptWords": [65, 30, 65535] },
       "inventoryBoundary": {
         "unusedDisplayAndGraphicsHelpersInventoried": true,
-        "decompressionOutputParityRemainsQueued": true,
+        "battleTerrainStackCorpusConfirmed": true,
+        "remainingDecompressionCorporaRemainQueued": true,
         "visualAndVdpTimingRemainQueued": true,
         "specialSpriteFramePresentationRemainsQueued": true
       }

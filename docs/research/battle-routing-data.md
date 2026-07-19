@@ -1,9 +1,10 @@
 # Battle Routing and Terrain Data Inventory
 
 - Status: **Confirmed** for the eight-file inventory, seven layout-owned files and H1 addresses,
-  cutscene slot counts, region routes, unused joins, terrain aliases, and excluded legacy aggregate
-- Status: **Inferred** for route admission, flag lifecycle, and terrain consumers
-- Status: **Unknown** for three grouped runtime questions
+  cutscene slot counts, region routes, unused joins, terrain aliases, the complete terrain decode
+  corpus, and excluded legacy aggregate
+- Status: **Inferred** for cutscene route admission and flag lifecycle
+- Status: **Unknown** for two grouped runtime questions
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -27,12 +28,16 @@ cutscene inventory. The region table contains four longword routes followed by i
 unused after-battle join table has 52 byte slots and every slot is zero.
 
 The terrain pointer table has 45 battle slots backed by 43 binary payloads. Slot 4 reuses terrain 3,
-and slot 32 reuses terrain 27. The tracked fixture records only these structural facts and H1
-addresses; binary terrain and legacy spriteset payloads remain private under the local upstream
-checkout and are never copied into the repository.
+and slot 32 reuses terrain 27. The project-owned Stack decoder now resolves every pointer, verifies
+the pointer table and all 43 compressed payloads against the ROM, and produces exactly one 48×48
+grid (2,304 bytes) from each unique payload. Across the corpus, all 99,072 decoded bytes are terrain
+types 0-8 or the obstructed value `0xFF`. The private terrain grids and legacy spriteset payloads
+remain under the local checkout/output root and are never copied into the repository.
 
-Static routing does not prove caller admission, empty-slot fallback, flag persistence, repeatability,
-or how terrain aliases affect runtime state. Those meanings remain inferred or unknown.
+`LoadBattleTerrainData` indexes the table directly with `CURRENT_BATTLE * 4`, writes to the fixed
+battle-terrain array, and calls the same Stack decoder. This closes alias selection and initial grid
+construction statically. It does not prove cutscene caller admission, empty-slot fallback, flag
+persistence, or repeatability; those meanings remain inferred or unknown.
 
 ## Concentrated Queue
 
@@ -40,14 +45,15 @@ No emulator was launched. Remaining questions are grouped as:
 
 1. cutscene route admission and empty-slot fallback;
 2. region-cutscene flag lifecycle and repeatability;
-3. terrain-alias selection and its runtime consumers.
 
-The first two share the cutscene dispatcher boundary and should be exercised in one generated
-matrix. Terrain aliasing should join the later battle initialization/map-data matrix.
+The two questions share the cutscene dispatcher boundary and should be exercised in one generated
+matrix. Terrain no longer needs an emulator case merely to restate deterministic pointer selection
+or decompression.
 
 ## Reproduction
 
 ```powershell
 uv run sf2 h2 battle-routing-data
+uv run sf2 h2 battle-terrain
 uv run sf2 research-index test
 ```

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/battle-terrain-decode.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "aliases", "aggregateValueCounts", "historyIndexCounts", "payloads", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-terrain-decode-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": { "$ref": "#/$defs/counts" },
+    "table": { "$ref": "#/$defs/counts" },
+    "summary": { "$ref": "#/$defs/counts" },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["battle", "terrainOwnerBattle"],
+        "properties": {
+          "battle": { "type": "integer", "minimum": 0, "maximum": 44 },
+          "terrainOwnerBattle": { "type": "integer", "minimum": 0, "maximum": 44 }
+        }
+      }
+    },
+    "aggregateValueCounts": { "$ref": "#/$defs/counts" },
+    "historyIndexCounts": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "payloads": {
+      "type": "array",
+      "minItems": 43,
+      "maxItems": 43,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["battle", "symbol", "sourcePath", "sourceAddress", "compressedBytes", "inputBitsConsumed", "trailingBits", "decodedBytes", "decodedSha256", "commandGroupCount", "literalWordCount", "copyCommandCount", "copiedWordCount", "maximumCopyOffsetWords", "maximumCopyLengthWords", "valueCounts"],
+        "properties": {
+          "battle": { "type": "integer", "minimum": 0, "maximum": 44 },
+          "symbol": { "type": "string", "pattern": "^BattleTerrain[0-9]{2}$" },
+          "sourcePath": { "type": "string" },
+          "sourceAddress": { "type": "integer", "minimum": 0 },
+          "compressedBytes": { "type": "integer", "minimum": 1 },
+          "inputBitsConsumed": { "type": "integer", "minimum": 1 },
+          "trailingBits": { "type": "integer", "minimum": 0 },
+          "decodedBytes": { "const": 2304 },
+          "decodedSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+          "commandGroupCount": { "type": "integer", "minimum": 1 },
+          "literalWordCount": { "type": "integer", "minimum": 0 },
+          "copyCommandCount": { "type": "integer", "minimum": 0 },
+          "copiedWordCount": { "type": "integer", "minimum": 0 },
+          "maximumCopyOffsetWords": { "type": "integer", "minimum": 0 },
+          "maximumCopyLengthWords": { "type": "integer", "minimum": 0 },
+          "valueCounts": { "$ref": "#/$defs/counts" }
+        }
+      }
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    }
+  }
+}

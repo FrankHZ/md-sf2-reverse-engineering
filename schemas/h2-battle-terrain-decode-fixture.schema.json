@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-battle-terrain-decode-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "table", "summary", "aliases", "aggregateValueCounts", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-terrain-decode-v1" },
+    "upstreamCommit": { "type": "string" },
+    "romSha256": { "type": "string" },
+    "function": { "type": "object" },
+    "table": { "type": "object" },
+    "summary": { "type": "object" },
+    "aliases": { "type": "array" },
+    "aggregateValueCounts": { "type": "object" },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  }
+}

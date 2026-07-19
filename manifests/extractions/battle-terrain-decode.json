@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-terrain-decode-v1",
+  "outputSha256": "1B41D80BA23D38170F9F21B47525A532B50B34BF7A0C80C6EF80BEA031F6BBD9",
+  "summary": {
+    "battlePointerCount": 45,
+    "uniquePayloadCount": 43,
+    "aliasPointerCount": 2,
+    "compressedByteCount": 16466,
+    "decodedByteCount": 99072,
+    "decodedGridWidth": 48,
+    "decodedGridHeight": 48,
+    "commandGroupCount": 459,
+    "literalWordCount": 2353,
+    "copyCommandCount": 4648,
+    "copiedWordCount": 47183,
+    "maximumCopyOffsetWords": 1128,
+    "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 45,
+    "payloadRomParityCount": 43
+  }
+}

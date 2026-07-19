@@ -193,7 +193,6 @@ def build_battle_routing_data_inventory(upstream_path: Path) -> dict[str, Any]:
         "runtimeQuestions": [
             "cutscene-route-admission-and-empty-slot-fallback",
             "region-cutscene-flag-lifecycle-and-repeatability",
-            "battle-terrain-alias-selection-and-runtime-consumers",
         ],
         "files": files,
     }

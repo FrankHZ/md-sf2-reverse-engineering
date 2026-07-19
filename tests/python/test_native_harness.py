@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from sf2tool.cli import build_parser, full_verify_requested
+from sf2tool.compression import decode_stack_compressed
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
 from sf2tool.h2.map_content import _encode_source
@@ -30,10 +31,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 45
+    assert result["Records"] == 1438
+    assert result["H2Fixtures"] == 46
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 1865
+    assert result["AddressBindings"] == 1868
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -238,6 +239,30 @@ def test_battle_routing_data_has_a_source_only_inventory_command() -> None:
     assert args.h2_command == "battle-routing-data"
     assert not hasattr(args, "rom_path")
     assert args.output_path is None
+
+
+def test_battle_terrain_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-terrain"])
+    assert args.h2_command == "battle-terrain"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_stack_decoder_handles_literal_overlap_copy_and_terminator() -> None:
+    def packed(bits: str) -> bytes:
+        bits += "0" * (-len(bits) % 8)
+        return int(bits, 2).to_bytes(len(bits) // 8, "big")
+
+    # Custom command nibble 6 followed by three zero nibbles gives command word 0x6000:
+    # literal zero, offset-one copy of two words, then the zero-offset terminator.
+    stream = packed("11110110" + "000" + "00" * 4 + f"{1:011b}" + "1" + "0" * 11)
+    result = decode_stack_compressed(stream, expected_output_bytes=6)
+    assert result.output == bytes(6)
+    assert result.literal_word_count == 1
+    assert result.copy_command_count == 1
+    assert result.copied_word_count == 2
+    assert result.maximum_copy_offset_words == 1
+    assert result.maximum_copy_length_words == 2
 
 
 def test_map_data_has_a_source_only_inventory_command() -> None:

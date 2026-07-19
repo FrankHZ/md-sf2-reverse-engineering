@@ -97,7 +97,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-spriteset-data.md`](./research/battle-spriteset-data.md)：46 文件 spriteset pointer/include
   图、header ranges 与 combatant macro 计数。
 - [`battle-routing-data.md`](./research/battle-routing-data.md)：cutscene slots、region routes、terrain
-  aliases、unused joins 和旧 aggregate 边界。
+  aliases、43 个 Stack-compressed terrain payload 的完整解码/ROM parity、unused joins 和旧
+  aggregate 边界。
 - [`map-data-inventory.md`](./research/map-data-inventory.md)：完整 1,390-file map ASM build graph、
   727 个内部 H1 binding、662 个 include-site-only body、64+66 setup selection rows、126 张六指针
   setup table 的 ROM parity、125 个 entity-list source/980 个物理记录与 suffix fallthrough、完整

@@ -37,8 +37,7 @@
     },
     "runtimeQuestions": [
       "cutscene-route-admission-and-empty-slot-fallback",
-      "region-cutscene-flag-lifecycle-and-repeatability",
-      "battle-terrain-alias-selection-and-runtime-consumers"
+      "region-cutscene-flag-lifecycle-and-repeatability"
     ]
   }
 }

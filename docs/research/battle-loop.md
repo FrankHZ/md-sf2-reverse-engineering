@@ -46,7 +46,9 @@ rebuilds combatant stats. This is a between-battle lifecycle rule, not evidence 
 spells behave the same way.
 
 Battle terrain is selected from a four-byte pointer table by current battle ID and decompressed with
-the Stack codec into `0xFF5F00`. Spawn admission scans all 32 enemy slots and recognizes initialization
+the Stack codec into `0xFF5F00`. The project-owned decoder confirms all 45 selections, including the
+two aliases, and all 43 unique payloads as fixed 48×48 grids containing only terrain 0-8 or `0xFF`.
+Spawn admission scans all 32 enemy slots and recognizes initialization
 modes `0x0100` (respawn), `0x0200` (hidden/region-triggered), and `0x0300` (both). Successful reset
 candidates are written to `TARGETS_LIST`; a reset carry/failure skips the candidate.
 
@@ -88,6 +90,7 @@ several questions can share a concentrated runtime matrix.
 ```powershell
 uv run sf2 h2 battle-loop
 uv run sf2 h2 battle-control
+uv run sf2 h2 battle-terrain
 uv run sf2 research-index test
 ```
 

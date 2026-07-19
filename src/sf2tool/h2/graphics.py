@@ -181,7 +181,8 @@ def _graphics_facts(disasm: Path) -> dict[str, Any]:
         "flashScreen": {"scriptWords": [65, 30, 65535]},
         "inventoryBoundary": {
             "unusedDisplayAndGraphicsHelpersInventoried": True,
-            "decompressionOutputParityRemainsQueued": True,
+            "battleTerrainStackCorpusConfirmed": True,
+            "remainingDecompressionCorporaRemainQueued": True,
             "visualAndVdpTimingRemainQueued": True,
             "specialSpriteFramePresentationRemainsQueued": True,
         },

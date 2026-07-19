@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-terrain-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "loadTerrainAddress": 1757404
+  },
+  "table": {
+    "terrainTableAddress": 1757444
+  },
+  "summary": {
+    "battlePointerCount": 45,
+    "uniquePayloadCount": 43,
+    "aliasPointerCount": 2,
+    "compressedByteCount": 16466,
+    "decodedByteCount": 99072,
+    "decodedGridWidth": 48,
+    "decodedGridHeight": 48,
+    "commandGroupCount": 459,
+    "literalWordCount": 2353,
+    "copyCommandCount": 4648,
+    "copiedWordCount": 47183,
+    "maximumCopyOffsetWords": 1128,
+    "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 45,
+    "payloadRomParityCount": 43
+  },
+  "aliases": [
+    { "battle": 4, "terrainOwnerBattle": 3 },
+    { "battle": 32, "terrainOwnerBattle": 27 }
+  ],
+  "aggregateValueCounts": {
+    "0": 7279,
+    "1": 8277,
+    "2": 2196,
+    "3": 1557,
+    "4": 4059,
+    "5": 1271,
+    "6": 1302,
+    "7": 4113,
+    "8": 2720,
+    "255": 66298
+  },
+  "runtimeQuestions": []
+}
