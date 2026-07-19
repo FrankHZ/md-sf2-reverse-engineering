@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-services-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "CopyBytes": 5846,
+    "tiles_IconHighlight": 67978,
+    "font_VariableWidth": 167938,
+    "TextBankTreeOffsets": 188822,
+    "tiles_UnusedCloud": 182176,
+    "palette_UnusedBase": 2028966,
+    "UpdatePlayerInputs": 5390,
+    "GenerateRandomNumber": 5632,
+    "PlayMusicAfterCurrentOne": 5822,
+    "CheckSram": 28326,
+    "GenerateRandomValueSigned": 1757328
+  },
+  "expected": {
+    "resourceFacts": {
+      "incbinDirectiveCount": 20,
+      "layoutSectionNumbers": [3, 6, 17],
+      "targets": {
+        "TextBankTreeData": "data/scripting/text/huffmantrees.bin",
+        "TextBankTreeOffsets": "data/scripting/text/huffmantreeoffsets.bin",
+        "font_TitleScreen": "data/graphics/tech/fonts/titlescreenfont.bin",
+        "font_VariableWidth": "data/graphics/tech/fonts/variablewidthfont.bin",
+        "palette_TitleScreenFont": "data/graphics/specialscreens/titlescreen/titlescreenfontpalette.bin",
+        "palette_UnusedBase": "data/graphics/tech/unusedbasepalettes.bin",
+        "palette_WitchChoice": "data/graphics/specialscreens/witchscreen/witchchoicepalette.bin",
+        "table_WitchBubbleAnimation": "data/graphics/specialscreens/witchscreen/witchbubbleanimation.bin",
+        "tiles_Base": "data/graphics/tech/basetiles.bin",
+        "tiles_BattleFieldMenu": "data/graphics/tech/menus/battlefieldmenutiles.bin",
+        "tiles_CaravanMenu": "data/graphics/tech/menus/caravanmenutiles.bin",
+        "tiles_ChurchMenu": "data/graphics/tech/menus/churchmenutiles.bin",
+        "tiles_DepotMenu": "data/graphics/tech/menus/depotmenutiles.bin",
+        "tiles_IconHighlight": "data/graphics/tech/iconhighlighttiles.bin",
+        "tiles_ItemMenu": "data/graphics/tech/menus/itemmenutiles.bin",
+        "tiles_MainMenu": "data/graphics/tech/menus/mainmenutiles.bin",
+        "tiles_ShopMenu": "data/graphics/tech/menus/shopmenutiles.bin",
+        "tiles_SpeechBalloon": "data/graphics/specialscreens/witchscreen/speechballoontiles.bin",
+        "tiles_UnusedCloud": "data/graphics/tech/unusedcloudtiles.bin",
+        "tiles_YesNoPrompt": "data/graphics/tech/menus/yesnoprompttiles.bin"
+      }
+    },
+    "soundDriverFacts": {
+      "sourceCpu": "z80",
+      "sourceEncoding": "latin-1",
+      "assembler": "asw",
+      "binaryPath": "data/sound/sounddriver.bin",
+      "binarySize": 8192,
+      "binarySha256": "670BE6CBBEFFA649E14127979A29896451AC8411049E1F48A19613E465AD0E7E",
+      "buildRangeStart": 0,
+      "buildRangeEndInclusive": 8191,
+      "romBlobSymbol": "SoundDriver",
+      "romBlobAddress": 2015232,
+      "mainLayoutUsesGeneratedBinary": true
+    },
+    "serviceFacts": {
+      "byteCopyChoosesBackwardWhenDestinationIsHigher": true,
+      "byteCopyChoosesForwardOtherwise": true,
+      "inputControllerPortCount": 2,
+      "inputStateBytesPerController": 2,
+      "inputWaitFrameCounts": [60, 180],
+      "musicWaitSleepFrameCount": 3,
+      "sramSaveSlotCount": 2,
+      "sramUsesInterleavedPhysicalBytes": true,
+      "sramChecksumBits": 8,
+      "sramClearsInvalidOccupiedSlotFlags": true,
+      "thinkingRngMultiplier": 541,
+      "thinkingRngIncrement": 12345,
+      "thinkingRngStoredStateBits": 8
+    },
+    "runtimeQuestions": [
+      "input-hardware-and-repeat-timing",
+      "sram-persistence-and-corruption-matrix",
+      "z80-mailbox-channel-and-audio-timing",
+      "thinking-rng-caller-distribution-and-delay"
+    ]
+  }
+}

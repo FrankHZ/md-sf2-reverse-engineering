@@ -10,6 +10,7 @@ from typing import Any
 
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
+from sf2tool.source_text import decode_upstream_text
 
 ID = "sf2-battle-ai-static-v1"
 SOURCE_ROOT = Path("code/gameflow/battle/ai")
@@ -68,7 +69,9 @@ def _direct_target(operand: str) -> str | None:
 
 def _parse_source_file(path: Path, relative_path: str) -> dict[str, Any]:
     raw = path.read_bytes()
-    text = raw.decode("utf-8")
+    # Hash the original bytes while accepting the pinned sound driver's one
+    # legacy single-byte comment data.
+    text = decode_upstream_text(raw)
     lines = text.splitlines()
     global_labels: list[str] = []
     local_label_count = 0

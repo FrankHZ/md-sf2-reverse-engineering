@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-services-static-v1",
+  "outputSha256": "976735018CA9592B867D47D102E0BEF05792E3EB0B1267A1F809FB0A8E1E4D93",
+  "summary": {
+    "fileCount": 12,
+    "incbinFileCount": 5,
+    "soundFileCount": 2,
+    "sramFileCount": 1,
+    "coreServiceFileCount": 4,
+    "sourceLineCount": 6986,
+    "statementCount": 5410,
+    "globalLabelCount": 550,
+    "localLabelCount": 29,
+    "mainLayoutIncludedFileCount": 11,
+    "auxiliaryBuildFileCount": 1,
+    "m68kDirectCallSiteCount": 12,
+    "m68kInternalDirectTargetCount": 4,
+    "m68kExternalDirectTargetCount": 2,
+    "indexedRecordCount": 12,
+    "indexedFileCount": 11
+  }
+}

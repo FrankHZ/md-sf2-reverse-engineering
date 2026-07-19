@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II remaining technical services static inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "resourceFacts", "soundDriverFacts", "serviceFacts", "runtimeQuestions", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-services-static-v1" },
+    "upstream": { "type": "object" },
+    "scopes": { "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true },
+    "summary": {
+      "type": "object",
+      "required": ["fileCount", "incbinFileCount", "soundFileCount", "sramFileCount", "coreServiceFileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "mainLayoutIncludedFileCount", "auxiliaryBuildFileCount", "m68kDirectCallSiteCount", "m68kInternalDirectTargetCount", "m68kExternalDirectTargetCount", "indexedRecordCount", "indexedFileCount"],
+      "properties": {
+        "fileCount": { "const": 12 }, "incbinFileCount": { "const": 5 },
+        "soundFileCount": { "const": 2 }, "sramFileCount": { "const": 1 },
+        "coreServiceFileCount": { "const": 4 }, "mainLayoutIncludedFileCount": { "const": 11 },
+        "auxiliaryBuildFileCount": { "const": 1 }, "indexedRecordCount": { "const": 12 },
+        "indexedFileCount": { "const": 11 }
+      }
+    },
+    "indexedRecordIds": { "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true },
+    "indexedSourcePaths": { "type": "array", "minItems": 11, "maxItems": 11, "uniqueItems": true },
+    "representativeSymbols": { "type": "object", "minProperties": 11, "maxProperties": 11 },
+    "representativeAddresses": { "type": "object", "minProperties": 11, "maxProperties": 11, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "resourceFacts": { "type": "object", "required": ["incbinDirectiveCount", "layoutSectionNumbers", "targets"] },
+    "soundDriverFacts": { "type": "object", "minProperties": 11, "maxProperties": 11 },
+    "serviceFacts": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+    "runtimeQuestions": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true },
+    "files": { "type": "array", "minItems": 12, "maxItems": 12 }
+  }
+}

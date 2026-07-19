@@ -6,6 +6,7 @@ from typing import Any
 
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import REPO_ROOT, repo_path
+from sf2tool.source_text import read_upstream_text
 
 INDEX_PATH = repo_path("manifests/research-index.json")
 SCHEMA_PATH = repo_path("schemas/research-index.schema.json")
@@ -77,7 +78,7 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
             source_path = source_root / record["sourcePath"]
             if not source_path.is_file():
                 raise ValueError(f"missing indexed upstream source: {record['sourcePath']}")
-            source_text = source_path.read_text(encoding="utf-8")
+            source_text = read_upstream_text(source_path)
             if not re.search(rf"^{re.escape(record['symbol'])}:", source_text, re.MULTILINE):
                 raise ValueError(
                     f"indexed symbol {record['symbol']} is absent from {record['sourcePath']}"

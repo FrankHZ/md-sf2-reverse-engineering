@@ -24,6 +24,7 @@ from sf2tool.h2.interrupts import verify_interrupt_inventory
 from sf2tool.h2.maps import verify_map_inventory
 from sf2tool.h2.menus import verify_menu_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
+from sf2tool.h2.services import verify_service_inventory
 from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
@@ -239,6 +240,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_tech_interfaces, rom=False)
     h2_tech_interfaces.add_argument("--output-path", type=_path)
+    h2_tech_services = h2_commands.add_parser(
+        "tech-services", help="inventory remaining resources, sound, SRAM, input, copy, and RNG"
+    )
+    _add_local_paths(h2_tech_services, rom=False)
+    h2_tech_services.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -573,6 +579,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "tech-interfaces":
         print_record(
             verify_interface_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "tech-services":
+        print_record(
+            verify_service_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

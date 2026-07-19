@@ -20,11 +20,11 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 411
-    assert result["H2Fixtures"] == 24
+    assert result["Records"] == 421
+    assert result["H2Fixtures"] == 25
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 807
-    assert result["IndexedCodeFiles"] == 334
+    assert result["AddressBindings"] == 817
+    assert result["IndexedCodeFiles"] == 344
     assert result["IndexedDataFiles"] == 8
 
 
@@ -153,6 +153,13 @@ def test_tech_interfaces_has_a_source_only_inventory_command() -> None:
     assert not hasattr(args, "rom_path")
 
 
+def test_tech_services_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "tech-services"])
+    assert args.h2_command == "tech-services"
+    assert args.output_path is None
+    assert not hasattr(args, "rom_path")
+
+
 def test_battle_ai_inventory_classifies_calls(tmp_path: Path) -> None:
     source = tmp_path / "sample.asm"
     source.write_text(
@@ -173,6 +180,16 @@ def test_battle_ai_inventory_classifies_calls(tmp_path: Path) -> None:
     ]
     assert parsed["indirectCallSiteCount"] == 1
     assert _direct_target("4(a0)") is None
+
+
+def test_source_inventory_accepts_legacy_single_byte_comments(tmp_path: Path) -> None:
+    source = tmp_path / "legacy.asm"
+    source.write_bytes(b"Entry: and 80h ; '\x80\x90'\r\n        rts\r\n")
+
+    parsed = _parse_source_file(source, "code/common/tech/sound/legacy.asm")
+
+    assert parsed["globalLabels"] == ["Entry"]
+    assert parsed["statementCount"] == 2
 
 
 def test_kill_exp_has_a_dedicated_narrow_runtime_command() -> None:
