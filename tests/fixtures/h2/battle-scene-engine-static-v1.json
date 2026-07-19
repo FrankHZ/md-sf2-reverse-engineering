@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-scene-engine-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "enemyAnimationAddress": 104504,
+    "groundAddress": 106094,
+    "spellFlashAddress": 107174,
+    "graphicsVintAddress": 126508,
+    "allyAnimationAddress": 104392,
+    "backgroundAddress": 105982,
+    "weaponGraphicsAddress": 105904,
+    "initializeSceneAddress": 98322,
+    "nullSubAddress": 98320,
+    "tintPaletteAddress": 106536,
+    "updateSpellAnimationAddress": 112560
+  },
+  "expected": {
+    "representativeSymbols": {
+      "battlesceneengine_0.asm": "ExecuteBattlesceneScript",
+      "battlesceneengine_1.asm": "GetEnemyAnimation",
+      "battlesceneengine_2.asm": "GetBattlesceneGround",
+      "battlesceneengine_3.asm": "ExecuteSpellcastFlashEffect",
+      "battlesceneengine_4.asm": "VInt_UpdateBattlesceneGraphics",
+      "getallyanimation.asm": "GetAllyAnimation",
+      "getbattlescenebackground.asm": "GetBattlesceneBackground",
+      "getweaponspriteandpalette.asm": "GetWeaponspriteAndPalette",
+      "initializebattlescene.asm": "InitializeBattlescene",
+      "nullsub_18010.asm": "nullsub_18010",
+      "tintscreen.asm": "StoreBattlespritePalette",
+      "updatespellanimation.asm": "UpdateSpellanimation"
+    },
+    "sceneFacts": {
+      "scriptInterpreter": {
+        "commandBuffer": 16711680,
+        "terminator": 65535,
+        "commandCount": 21,
+        "commands": [
+          "bsc00_animateEnemyAction", "bsc01_animateAllyAction", "bsc02_moveEnemyBattlesprite",
+          "bsc03_moveAllyBattlesprite", "bsc04_makeEnemyIdle", "bsc05_makeAllyIdle",
+          "bsc06_switchEnemies", "bsc07_switchAllies", "bsc08_switchToEnemyAlone",
+          "bsc09_switchToAllyAlone", "bsc0A_executeEnemyReaction", "bsc0B_executeAllyReaction",
+          "bsc0C_makeActorIdleAndEndAnimation", "bsc0D_endAnimation", "bsc0E_sleep",
+          "bsc0F_giveExp", "bsc10_displayMessage", "bsc11_displayMessageWithNoWait",
+          "bsc12_closeTextBox", "bsc13_waitForPlayerInput", "bsc14_nullCommand"
+        ],
+        "clearsDeadListLength": true,
+        "seedsDeadListFirstEntry": 255,
+        "returnValue": 0
+      },
+      "initialization": {
+        "clearsSceneDataBlock": true,
+        "loadsEnemyThenAllyGraphics": true,
+        "backgroundActorPreference": ["enemy", "ally"],
+        "clearsExistingVints": true,
+        "addsVints": ["VInt_UpdateBattlesceneGraphics", "VInt_UpdateWindows"],
+        "optionalLayers": ["enemy", "ally", "ground", "weapon"],
+        "loadsStatusAnimationTiles": true,
+        "appliesStatusAnimationsBeforeFadeIn": true
+      },
+      "selectors": {
+        "weaponGraphicsAlliesOnly": true,
+        "invalidWeaponSpritePalette": [-1, -1],
+        "backgroundPriority": ["Zeon", "battle-custom", "terrain"],
+        "missingBackgroundActorFallback": "saved actor then combatant 0",
+        "allyDefaultAnimation": "regular attack",
+        "allyDodgeUsesDodgeBlock": true,
+        "centaurSpearJavelinSpecials": ["KNTE", "PLDN", "PGNT"]
+      },
+      "spellAnimation": {
+        "setupCount": 32,
+        "updateCount": 32,
+        "setupTargets": [
+          "spellanimationSetup_Nothing", "spellanimationSetup_Blaze", "spellanimationSetup_Freeze",
+          "spellanimationSetup_Desoul", "spellanimationSetup_HealingFairy", "spellanimationSetup_Blast",
+          "spellanimationSetup_Detox", "spellanimationSetup_Bolt", "spellanimationSetup_Buff1",
+          "spellanimationSetup_Debuff1", "spellanimationSetup_Absorb", "spellanimationSetup_DemonBreath",
+          "spellanimationSetup_FlameBreath", "spellanimationSetup_ArrowsAndSpears",
+          "spellanimationSetup_CannonFire", "spellanimationSetup_ShotFire",
+          "spellanimationSetup_GunnerBlast", "spellanimationSetup_Dao", "spellanimationSetup_Apollo",
+          "spellanimationSetup_Neptun", "spellanimationSetup_Atlas", "spellanimationSetup_PrismLaser",
+          "spellanimationSetup_BubbleBreath", "spellanimationSetup_SnowBreath",
+          "spellanimationSetup_CutOffAndDodge", "spellanimationSetup_Buff2",
+          "spellanimationSetup_AttackSpell", "spellanimationSetup_Debuff2",
+          "spellanimationSetup_Debuff3", "spellanimationSetup_PhoenixAttack",
+          "spellanimationSetup_BurstRockExplosion", "spellanimationSetup_OddEyeBeam"
+        ],
+        "updateTargets": [
+          "spellanimationUpdate_Nothing", "spellanimationUpdate_Blaze", "spellanimationUpdate_Freeze",
+          "spellanimationUpdate_Desoul", "spellanimationUpdate_HealingFairy", "spellanimationUpdate_Blast",
+          "spellanimationUpdate_Detox", "spellanimationUpdate_Bolt", "spellanimationUpdate_Buff",
+          "spellanimationUpdate_Debuff", "spellanimationUpdate_Absorb",
+          "spellanimationUpdate_DemonBreath", "spellanimationUpdate_FlameBreath",
+          "spellanimationUpdate_ArrowsAndSpears", "spellanimationUpdate_CannonFire",
+          "spellanimationUpdate_ShotFire", "spellanimationUpdate_GunnerBlast",
+          "spellanimationUpdate_Dao", "spellanimationUpdate_Apollo", "spellanimationUpdate_Neptun",
+          "spellanimationUpdate_Atlas", "spellanimationUpdate_PrismLaser",
+          "spellanimationUpdate_BubbleBreath", "spellanimationUpdate_SnowBreath",
+          "spellanimationUpdate_Absorb", "spellanimationUpdate_Buff",
+          "spellanimationUpdate_AttackSpell", "spellanimationUpdate_Debuff",
+          "spellanimationUpdate_Debuff", "spellanimationUpdate_PhoenixAttack",
+          "spellanimationUpdate_BurstRockExplosion", "spellanimationUpdate_OddEyeBeam"
+        ],
+        "disabledOrMinusOneSetupReturns": true,
+        "variantStoredAsOneBased": true,
+        "mirroredBitPreserved": true,
+        "updateRequiresToggleAndPhase": true
+      },
+      "presentationBoundary": {
+        "paletteTintDispatchInventoried": true,
+        "graphicsVintInventoried": true,
+        "enemyGroundAndPaletteHelpersInventoried": true,
+        "nullSubTracked": true,
+        "frameTimingAndVdpEffectsRemainQueued": true
+      }
+    }
+  }
+}

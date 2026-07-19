@@ -2636,6 +2636,50 @@
     {
       "id": "battlefield.range.spell-rings", "subsystem": "battlefield.range", "status": "confirmed", "symbol": "pt_SpellRanges", "sourcePath": "data/stats/spells/spellranges.asm",
       "addresses": [{ "id": "table", "space": "rom", "kind": "symbol", "value": 50576 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "table", "fixtureField": "function.spellRangesTableAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battle.scene.enemy-animation", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "GetEnemyAnimation", "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_1.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 104504 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.enemyAnimationAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.ground", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "GetBattlesceneGround", "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 106094 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.groundAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.spell-flash", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "ExecuteSpellcastFlashEffect", "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_3.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 107174 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.spellFlashAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.graphics-vint", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "VInt_UpdateBattlesceneGraphics", "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_4.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 126508 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.graphicsVintAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.ally-animation", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "GetAllyAnimation", "sourcePath": "code/gameflow/battle/battlescenes/getallyanimation.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 104392 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.allyAnimationAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.background", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "GetBattlesceneBackground", "sourcePath": "code/gameflow/battle/battlescenes/getbattlescenebackground.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 105982 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.backgroundAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.weapon-graphics", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "GetWeaponspriteAndPalette", "sourcePath": "code/gameflow/battle/battlescenes/getweaponspriteandpalette.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 105904 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.weaponGraphicsAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.initialize", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "InitializeBattlescene", "sourcePath": "code/gameflow/battle/battlescenes/initializebattlescene.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 98322 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.initializeSceneAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.null-sub", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "nullsub_18010", "sourcePath": "code/gameflow/battle/battlescenes/nullsub_18010.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 98320 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.nullSubAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.tint", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "StoreBattlespritePalette", "sourcePath": "code/gameflow/battle/battlescenes/tintscreen.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 106536 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.tintPaletteAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
+    },
+    {
+      "id": "battle.scene.update-spell-animation", "subsystem": "battle.scene.engine", "status": "confirmed", "symbol": "UpdateSpellanimation", "sourcePath": "code/gameflow/battle/battlescenes/updatespellanimation.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 112560 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-scene-engine-static-v1.json", "fixtureId": "sf2-battle-scene-engine-static-v1", "verifier": "src/sf2tool/h2/battle_scene_engine.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.updateSpellAnimationAddress" }] }], "documents": ["docs/research/battle-scene-engine.md"]
     }
   ]
 }

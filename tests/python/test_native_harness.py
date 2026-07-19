@@ -20,10 +20,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 190
-    assert result["H2Fixtures"] == 14
+    assert result["Records"] == 201
+    assert result["H2Fixtures"] == 15
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 586
+    assert result["AddressBindings"] == 597
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -77,6 +77,13 @@ def test_enemy_drops_has_a_dedicated_narrow_extraction_command() -> None:
 def test_battle_ai_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "battle-ai"])
     assert args.h2_command == "battle-ai"
+    assert args.output_path is None
+    assert not hasattr(args, "rom_path")
+
+
+def test_battle_scene_engine_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-scene-engine"])
+    assert args.h2_command == "battle-scene-engine"
     assert args.output_path is None
     assert not hasattr(args, "rom_path")
 
