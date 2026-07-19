@@ -2,9 +2,11 @@
 
 - Status: **Confirmed** for the complete 1,390-file ASM boundary, build reachability, internal-symbol
   addresses, map/setup file classes, pointer/include counts, global table row counts, all 64 setup
-  routing rows, last-set-flag selection, 126 six-pointer setup tables, and event dispatcher record shapes
-- Status: **Inferred** for event-script side effects and transition-state persistence
-- Status: **Unknown** for the description `d6` condition, presentation timing, and binary consumers
+  routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
+  and all 125 entity-list sources/980 physical entity records
+- Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
+- Status: **Unknown** for the description `d6` condition, sequenced-orientation consumption,
+  presentation timing, and binary consumers
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -87,17 +89,47 @@ Initialization calls slot 20 unless the selector returned `ms_Void`; entity-list
 description byte-2/`d6` check remains **Unknown**, as do side effects inside the selected scripts and
 their visible timing.
 
+## Entity List Streams
+
+The 126 setup tables contain 126 entity-pointer references but only 125 unique targets:
+`ms_map21_Entities` is deliberately reused. The source boundary likewise contains 125
+`s1_entities*.asm` files. Decoding from each unique pointer until the consumer's `$FF` first-byte
+terminator reaches every source-owned record and no bytes outside that record set.
+
+The physical source contains 980 eight-byte entity records:
+
+| Encoding | Physical records | Per-list references |
+| --- | ---: | ---: |
+| fixed action pointer | 803 | 808 |
+| `$FF` walking payload | 174 | 175 |
+| `$FE` sequenced-action pointer | 3 | 4 |
+| **Total** | **980** | **987** |
+
+The seven-reference difference is intentional suffix sharing. Nine entity source fragments omit
+their own `msEntitiesEnd`: eight fall directly into an adjacent terminator-only variant, while
+`ms_map17_Entities` contributes five prefix records and falls into the seven-record
+`ms_map17_flag505_Entities` suffix before their shared terminator. A per-file parser would either
+invent nine missing terminators or lose this variant composition.
+
+There are 116 unique terminator addresses, 30 empty selected lists, and at most 31 records in one
+selected list. `InitializeMapEntities` consumes records in stream order, masks X/Y to six bits,
+scales them by `MAP_TILE_SIZE`, and routes special mapsprites through the special-entity declaration
+path. The complete numeric records stay in ignored `local/derived/map-entities-static.json`; the
+tracked fixture contains only counts, encodings, fallthrough relationships, addresses, and rules.
+
 ## Concentrated Queue
 
 No emulator was launched. Setup priority and dispatcher order are now closed by source/H1/ROM
 evidence. Remaining questions are grouped as:
 
-1. the area-description byte-2/`d6` condition;
-2. selected event-script side effects, transition-state persistence, and roof/step/warp precedence;
-3. portrait/text/entity-facing presentation timing and binary block/layout/animation consumers.
+1. the area-description byte-2/`d6` condition and sequenced-entity orientation stream consumption;
+2. follower/map-entity collision state, selected event-script side effects, transition persistence,
+   and roof/step/warp precedence;
+3. walking/special-sprite, portrait/text/entity-facing presentation timing, and binary consumers.
 
-Continue parsing the actual setup sections statically. Only ambiguities that survive that pass should
-share the prepared map initialization/event-dispatch runtime matrix.
+Entity streams are now closed statically. Continue with entity/zone/item/description tables and their
+default/fallthrough exceptions; only ambiguities that survive that pass should share the prepared map
+initialization/event-dispatch runtime matrix.
 
 ## Harness Performance
 
@@ -111,5 +143,6 @@ source file and at the fixture/index address in the H1 listing.
 ```powershell
 uv run sf2 h2 map-data
 uv run sf2 h2 map-setup
+uv run sf2 h2 map-entities
 uv run sf2 research-index test
 ```

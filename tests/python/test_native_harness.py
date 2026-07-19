@@ -8,6 +8,7 @@ import pytest
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
+from sf2tool.h2.map_entities import _record_kind
 from sf2tool.h2.map_setup import _parse_routes, _select_route
 from sf2tool.h3.bizhawk import bizhawk_contract, validate_lua_syntax
 from sf2tool.research_index import listing_symbol_addresses, verify_index
@@ -22,7 +23,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 37
+    assert result["H2Fixtures"] == 38
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
     assert result["AddressBindings"] == 1833
     assert result["IndexedCodeFiles"] == 381
@@ -256,6 +257,19 @@ def test_map_setup_selection_uses_the_last_set_flag_in_source_order() -> None:
     assert _select_route(routes, 3, set()) == "ms_map3"
     assert _select_route(routes, 3, {10, 20}) == "ms_map3_flag20"
     assert _select_route(routes, 4, {10, 20}) == "ms_Void"
+
+
+def test_map_entities_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-entities"])
+    assert args.h2_command == "map-entities"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_entity_payload_prefix_classifies_record_encoding() -> None:
+    assert _record_kind(bytes.fromhex("0102030400001234")) == "fixed"
+    assert _record_kind(bytes.fromhex("01020304FF050607")) == "walking"
+    assert _record_kind(bytes.fromhex("01020304FE001234")) == "sequenced"
 
 
 def test_auxiliary_data_has_a_source_only_inventory_command() -> None:

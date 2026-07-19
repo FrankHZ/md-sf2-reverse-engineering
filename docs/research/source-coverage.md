@@ -184,15 +184,16 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage:
 
-1. parse the 720 setup-section files into stable entity/zone/item/description/script structures now
-   that setup selection, all 126 pointer tables, and dispatcher record shapes are confirmed;
-2. turn those stable structures and binary-block consumers into canonical Python-owned output without
+1. parse the 105 entity-event, 84 zone-event, 75 description, and 74 item-event sections now that
+   setup selection, all 126 pointer tables, dispatcher shapes, and all 125 entity-list sources are
+   confirmed;
+2. turn those event structures and binary-block consumers into canonical Python-owned output without
    committing extracted copyrighted content;
 3. preserve script side effects, transition persistence, and the description `d6` condition as
    `Inferred` or `Unknown` until stronger evidence exists;
-4. run the already grouped map initialization/event-dispatch matrix only after deeper static parsing leaves a
-   concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in their own
-   later shared matrices.
+4. run the already grouped map initialization/event-dispatch matrix only after deeper static parsing
+   leaves a concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in
+   their own later shared matrices.
 
 Historical subsystem closure details live in the owning research documents and Git history. This
 section intentionally states only the active frontier so it cannot masquerade as a stale roadmap.

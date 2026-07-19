@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-entities-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "InitializeMapEntities": 278732
+  },
+  "expected": {
+    "summary": {
+      "sourceFileCount": 125,
+      "entityPointerReferenceCount": 126,
+      "uniqueEntityListCount": 125,
+      "sourcePhysicalRecordCount": 980,
+      "listRecordReferenceCount": 987,
+      "sharedSuffixRecordReferenceCount": 7,
+      "uniqueTerminatorAddressCount": 116,
+      "unterminatedSourceFragmentCount": 9,
+      "terminatorOnlySuffixCount": 8,
+      "recordBearingSuffixCount": 1,
+      "emptyListCount": 30,
+      "maximumListRecordCount": 31,
+      "fixedPhysicalRecordCount": 803,
+      "walkingPhysicalRecordCount": 174,
+      "sequencedPhysicalRecordCount": 3,
+      "fixedRecordReferenceCount": 808,
+      "walkingRecordReferenceCount": 175,
+      "sequencedRecordReferenceCount": 4
+    },
+    "sourceMacroCounts": {
+      "entity": 9,
+      "entityRandomWalk": 5,
+      "msFixedEntity": 794,
+      "msSequencedEntity": 3,
+      "msWalkingEntity": 169
+    },
+    "physicalRecordKinds": {
+      "fixed": 803,
+      "sequenced": 3,
+      "walking": 174
+    },
+    "referenceRecordKinds": {
+      "fixed": 808,
+      "sequenced": 4,
+      "walking": 175
+    },
+    "duplicatePointerTargets": ["ms_map21_Entities"],
+    "fallthroughFragments": [
+      { "path": "data/maps/entries/map17/mapsetups/s1_entities.asm", "symbol": "ms_map17_Entities", "recordCount": 5, "fallthroughAddress": 336604, "fallthroughSymbol": "ms_map17_flag505_Entities", "suffixRecordCount": 7 },
+      { "path": "data/maps/entries/map20/mapsetups/s1_entities_609.asm", "symbol": "ms_map20_flag609_Entities", "recordCount": 8, "fallthroughAddress": 341856, "fallthroughSymbol": "ms_map20_flag506_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map21/mapsetups/s1_entities_609.asm", "symbol": "ms_map21_flag609_Entities", "recordCount": 1, "fallthroughAddress": 343690, "fallthroughSymbol": "ms_map21_flag506_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map27/mapsetups/s1_entities.asm", "symbol": "ms_map27_Entities", "recordCount": 3, "fallthroughAddress": 368522, "fallthroughSymbol": "ms_map27_flag523_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map34/mapsetups/s1_entities.asm", "symbol": "ms_map34_Entities", "recordCount": 21, "fallthroughAddress": 374414, "fallthroughSymbol": "ms_map34_flag784_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map40/mapsetups/s1_entities_506.asm", "symbol": "ms_map40_flag506_Entities", "recordCount": 3, "fallthroughAddress": 343952, "fallthroughSymbol": "ms_map40_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map43/mapsetups/s1_entities.asm", "symbol": "ms_map43_Entities", "recordCount": 3, "fallthroughAddress": 344134, "fallthroughSymbol": "ms_map43_flag612_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map61/mapsetups/s1_entities.asm", "symbol": "ms_map61_Entities", "recordCount": 1, "fallthroughAddress": 378480, "fallthroughSymbol": "ms_map61_flag729_Entities", "suffixRecordCount": 0 },
+      { "path": "data/maps/entries/map63/mapsetups/s1_entities.asm", "symbol": "ms_map63_Entities", "recordCount": 1, "fallthroughAddress": 379272, "fallthroughSymbol": "ms_map63_flag29_Entities", "suffixRecordCount": 0 }
+    ],
+    "consumerFacts": {
+      "recordBytes": 8,
+      "terminatorFirstByte": 255,
+      "coordinateMask": 63,
+      "coordinatesScaleByMapTileSize": true,
+      "recordFieldOrder": ["x", "y", "facing", "mapSprite", "actionOrWalkingPayload"],
+      "specialMapSpritesUseSpecialEntityDeclaration": true,
+      "recordsAreDeclaredInStreamOrder": true
+    },
+    "runtimeQuestions": [
+      "sequenced-entity-orientation-stream-consumption",
+      "follower-and-map-entity-declaration-collision-state",
+      "walking-special-sprite-and-entity-presentation-timing"
+    ]
+  }
+}

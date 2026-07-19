@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/map-entities-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "sourceMacroCounts", "physicalRecordKinds", "referenceRecordKinds", "duplicatePointerTargets", "fallthroughFragments", "consumerFacts", "runtimeQuestions", "sourceFiles", "lists"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-entities-static-v1" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "scope": { "type": "string", "minLength": 1 },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["InitializeMapEntities"],
+      "properties": { "InitializeMapEntities": { "type": "integer", "minimum": 0 } }
+    },
+    "summary": { "type": "object", "minProperties": 18, "maxProperties": 18, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "sourceMacroCounts": { "$ref": "#/definitions/countMap" },
+    "physicalRecordKinds": { "$ref": "#/definitions/countMap" },
+    "referenceRecordKinds": { "$ref": "#/definitions/countMap" },
+    "duplicatePointerTargets": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "fallthroughFragments": { "type": "array", "items": { "$ref": "#/definitions/fallthrough" } },
+    "consumerFacts": { "type": "object" },
+    "runtimeQuestions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "sourceFiles": { "type": "array", "minItems": 125, "maxItems": 125, "items": { "$ref": "#/definitions/sourceFile" } },
+    "lists": { "type": "array", "minItems": 125, "maxItems": 125, "items": { "$ref": "#/definitions/entityList" } }
+  },
+  "definitions": {
+    "countMap": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "fallthrough": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol", "recordCount", "fallthroughAddress", "fallthroughSymbol", "suffixRecordCount"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "recordCount": { "type": "integer", "minimum": 0 },
+        "fallthroughAddress": { "type": "integer", "minimum": 0 },
+        "fallthroughSymbol": { "type": "string" },
+        "suffixRecordCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol", "address", "recordCount", "recordKinds", "macroCounts", "hasTerminator"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "recordCount": { "type": "integer", "minimum": 0 },
+        "recordKinds": { "$ref": "#/definitions/countMap" },
+        "macroCounts": { "$ref": "#/definitions/countMap" },
+        "hasTerminator": { "type": "boolean" }
+      }
+    },
+    "record": {
+      "type": "object",
+      "required": ["address", "kind", "rawX", "rawY", "x", "y", "facing", "mapSprite"],
+      "properties": {
+        "address": { "type": "integer", "minimum": 0 },
+        "kind": { "enum": ["fixed", "walking", "sequenced"] },
+        "rawX": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "rawY": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "x": { "type": "integer", "minimum": 0, "maximum": 63 },
+        "y": { "type": "integer", "minimum": 0, "maximum": 63 },
+        "facing": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "mapSprite": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "walking": { "type": "object" },
+        "actionValue": { "type": "integer", "minimum": 0, "maximum": 4294967295 }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["walking"], "not": { "required": ["actionValue"] } },
+        { "required": ["actionValue"], "not": { "required": ["walking"] } }
+      ]
+    },
+    "entityList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "address", "recordCount", "terminatorAddress", "records"],
+      "properties": {
+        "symbol": { "type": "string" },
+        "address": { "type": "integer", "minimum": 0 },
+        "recordCount": { "type": "integer", "minimum": 0 },
+        "terminatorAddress": { "type": "integer", "minimum": 0 },
+        "records": { "type": "array", "items": { "$ref": "#/definitions/record" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/h2-map-entities-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-entities-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["InitializeMapEntities"],
+      "properties": { "InitializeMapEntities": { "type": "integer", "minimum": 0 } }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "sourceMacroCounts", "physicalRecordKinds", "referenceRecordKinds", "duplicatePointerTargets", "fallthroughFragments", "consumerFacts", "runtimeQuestions"],
+      "properties": {
+        "summary": { "type": "object", "minProperties": 18, "maxProperties": 18 },
+        "sourceMacroCounts": { "type": "object" },
+        "physicalRecordKinds": { "type": "object" },
+        "referenceRecordKinds": { "type": "object" },
+        "duplicatePointerTargets": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "fallthroughFragments": { "type": "array", "minItems": 9, "maxItems": 9 },
+        "consumerFacts": { "type": "object" },
+        "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true }
+      }
+    }
+  }
+}
