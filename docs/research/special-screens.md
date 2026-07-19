@@ -3,7 +3,8 @@
 - Status: **Confirmed** for all 19 layout-owned files, representative H1 addresses, seven screen
   groups, eighteen resource routes, title/logo input structure, witch save actions, suspend/reset
   flow, ending-effect ownership, the complete nine-resource Stack-compressed tile corpus, and the
-  complete witch choice-palette/bubble-animation data path
+  complete witch choice-palette/bubble-animation data path, plus all twelve uncompressed palette/
+  layout presentation resources
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
 - Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
   transfer tails
@@ -40,6 +41,18 @@ without a comparable fixed DMA length.
 
 The rail deliberately calls these excess regions transfer tails, not padding. Static evidence does
 not prove whether their staging memory is cleared, stable, overwritten, or visibly consumed.
+
+## Uncompressed Presentation Corpus
+
+The complementary rail closes every non-compressed palette and layout payload used by these screens:
+seven palettes contain 240 color words (107 unique, 25 zero), and five layouts contain 4,176 words.
+The twelve resources total 8,832 bytes, all source/H1/ROM identical. Compressed tiles remain owned by
+the nine-resource decoder rail and are not counted again.
+
+Title layouts A and B are the only two assembled from `vdpTile` source rather than a direct `incbin`.
+Their 1,792- and 768-byte expansions concatenate to 2,560 bytes and exactly match both upstream
+editor binary mirrors. This confirms source and storage shape, not palette upload order, fades,
+layout mutations, scrolling, or final frame composition.
 
 ## Logo and Title
 
@@ -105,10 +118,12 @@ creating a separate fixture per animation.
 ```powershell
 uv run sf2 h2 special-screens
 uv run sf2 h2 special-screen-graphics
+uv run sf2 h2 special-screen-presentation
 uv run sf2 h2 witch-menu-graphics
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/special-screens-static.json` and
 `local/derived/special-screen-graphics-decode.json`, plus
+`local/derived/special-screen-presentation-static.json` and
 `local/derived/witch-menu-graphics-static.json`.

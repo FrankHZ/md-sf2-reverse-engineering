@@ -9,7 +9,7 @@
   special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora, plus the
   complete icon-storage/copy/highlight corpus, map-palette/effective-color-zero boundaries, and
   assembled UI/window layout, spell-pointer, border, direct menu-tile, variable-width-font, and
-  witch-menu palette/bubble-animation corpora
+  witch-menu palette/bubble-animation corpora, plus all uncompressed special-screen palettes/layouts
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -248,6 +248,13 @@ The selected timer maps states 1-20 to frame phases 0→1→2→1, while unselec
 zero. Static source proves this phase table and the four source/destination offsets, not exact CRAM,
 redraw, window-motion, or visible timing; those remain in the shared witch presentation matrix.
 
+The seventeenth graphics corpus closes the uncompressed presentation payloads across title, witch,
+ending witch, ending jewels, ending kiss, and suspend screens. Seven palettes contribute 480 bytes/
+240 color words; five layouts contribute 8,352 bytes/4,176 words. All twelve resource addresses and
+8,832 bytes match H1 and ROM. Title A/B additionally prove their `vdpTile` ASM expansion equals the
+two upstream binary mirrors. Runtime palette order, fades, layout changes, scroll, and composition
+remain grouped presentation questions.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -300,6 +307,7 @@ uv run sf2 h2 portraits
 uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
+uv run sf2 h2 special-screen-presentation
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
@@ -317,7 +325,8 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `battle-sprite-decode.json`, `battle-sprite-animation-static.json`,
 `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
-`special-screen-graphics-decode.json`, `ui-graphics-decode.json`, `icon-graphics-static.json`, and
+`special-screen-graphics-decode.json`, `special-screen-presentation-static.json`,
+`ui-graphics-decode.json`, `icon-graphics-static.json`, and
 `ui-layout-static.json`, `variable-width-font-static.json`, `witch-menu-graphics-static.json`,
 `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
 `map-palette-static.json`.

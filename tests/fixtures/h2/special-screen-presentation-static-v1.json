@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-screen-presentation-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "palette_TitleScreen": 1049278, "palette_TitleScreenFont": 188558,
+    "layout_TitleScreenA": 1053920, "layout_TitleScreenB": 1055712,
+    "palette_Witch": 1853122, "layout_Witch": 1853186,
+    "palette_EndingWitch": 1861572, "layout_EndingWitch": 1861604,
+    "layout_EndingJewels": 2025776, "palette_EndingJewels": 2027778,
+    "palette_EndingKissPicture": 1797594, "palette_SuspendString": 2028730
+  },
+  "summary": {
+    "resourceCount": 12, "resourceByteCount": 8832, "h1AddressCount": 12,
+    "directIncbinResourceCount": 10, "asmExpandedResourceCount": 2,
+    "asmBinaryMirrorByteCount": 2560, "paletteCount": 7, "paletteByteCount": 480,
+    "paletteColorCount": 240, "paletteUniqueColorCount": 107, "paletteZeroColorCount": 25,
+    "layoutCount": 5, "layoutByteCount": 8352, "layoutWordCount": 4176,
+    "sourceRomParityByteCount": 8832
+  },
+  "resourceFacts": [
+    { "symbol": "palette_TitleScreen", "kind": "palette", "byteCount": 128, "wordCount": 64, "sha256": "994EAFFB6725DB2B11E51ABF526442F098AC735B33B96179A0DEF09A84EDFBB5" },
+    { "symbol": "palette_TitleScreenFont", "kind": "palette", "byteCount": 128, "wordCount": 64, "sha256": "20C6AEC09D3546815D97BDF7E6D2937DFA555AB34D46B132292C7C6CF31EC9D0" },
+    { "symbol": "layout_TitleScreenA", "kind": "layout", "byteCount": 1792, "wordCount": 896, "sha256": "873AC0BB47D06601B2BADD5F42788E7A4BD604FCFB7F928AB872F566D1A118F5" },
+    { "symbol": "layout_TitleScreenB", "kind": "layout", "byteCount": 768, "wordCount": 384, "sha256": "5FC9946D82DACFEF0804B1E0F39EA57612C784D9EEF026588FFB437F2AF76EAA" },
+    { "symbol": "palette_Witch", "kind": "palette", "byteCount": 64, "wordCount": 32, "sha256": "6433D83B4554849066116D9C4D209F0BAC8CF56E9A8610EAD5FFD734FED1D057" },
+    { "symbol": "layout_Witch", "kind": "layout", "byteCount": 1926, "wordCount": 963, "sha256": "C0E6217C1143EBD27251F949614E869FF33E34A84297D317842415082D96C913" },
+    { "symbol": "palette_EndingWitch", "kind": "palette", "byteCount": 32, "wordCount": 16, "sha256": "9ED894BC136698D3F36A021A1B1CC297610FA7EB083C85DE32743797B6823399" },
+    { "symbol": "layout_EndingWitch", "kind": "layout", "byteCount": 1864, "wordCount": 932, "sha256": "8803410241CCC44852816B5113B8E6653E5EC226DF207A462C72A7A1E4BD96EB" },
+    { "symbol": "layout_EndingJewels", "kind": "layout", "byteCount": 2002, "wordCount": 1001, "sha256": "2F6DF598209E2575DB2AFC73077408810C1F828E425F83E22ABE2523D31D057E" },
+    { "symbol": "palette_EndingJewels", "kind": "palette", "byteCount": 64, "wordCount": 32, "sha256": "3354E37B1274560449DA78A896CC4312789E962176A27F299DE2192BCFE2D1E1" },
+    { "symbol": "palette_EndingKissPicture", "kind": "palette", "byteCount": 32, "wordCount": 16, "sha256": "86DC54823DA14E15D529E7C86AE5714D09CE5435283428CE823CCF043E5CA899" },
+    { "symbol": "palette_SuspendString", "kind": "palette", "byteCount": 32, "wordCount": 16, "sha256": "8FEBE074C13B25B9B9E4B3D6D66C7C824F680B07AD075868898C3E72DCE44197" }
+  ],
+  "titleLayoutFacts": {
+    "sourcePath": "data/graphics/specialscreens/titlescreen/titlescreenlayouts.asm",
+    "sourceByteCount": 2560, "layoutAByteCount": 1792, "layoutBByteCount": 768,
+    "binaryMirrorsMatchAsm": true
+  },
+  "runtimeQuestions": [
+    "Do palette upload order, fades, and per-screen CRAM state reproduce all seven tracked palettes?",
+    "Do layout transfer, mutation, scrolling, and pixel composition reproduce all five tracked layouts?"
+  ]
+}

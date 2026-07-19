@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 63 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 64 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,962 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,974 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -107,6 +107,11 @@ The current evidence is deep but narrow:
   one 960-byte table of twelve unique 5×8 bubble frames, and two source pointers. All 1,000 bytes
   match source, H1, and ROM. Static control flow proves four option groups, three frames each, and the
   selected 20-state 0→1→2→1 phase; exact CRAM/window timing remains in the shared witch matrix.
+  The complete uncompressed special-screen presentation rail adds seven palettes (240 color words)
+  and five layouts (4,176 words): all twelve resources and 8,832 bytes match H1 and ROM. Title A/B's
+  2,560-byte ASM expansion also matches both editor binary mirrors. Compressed tile streams stay with
+  their existing owner; palette upload, layout mutation/scrolling, and pixels remain grouped runtime
+  questions.
   The adjacent UI rail closes all eight base/diamond-menu/yes-no Stack streams: 23,168 decoded bytes,
   eight source pointers, and the complete nine-entry menu table match ROM. Its first three high-bit
   entries select uncompressed main-menu icon combinations; only the remaining six are indirect
@@ -215,8 +220,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,467 records; its
-verifier reports 381 unique code files, 980 unique data files, 63 H2 fixtures, 58 H3 fixtures, and
-1,962 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 64 H2 fixtures, 58 H3 fixtures, and
+1,974 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

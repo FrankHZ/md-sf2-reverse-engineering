@@ -89,8 +89,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   Stack-compression corpus、208 张 battle-sprite animation table、163 槽 icon
   storage/menu-copy/highlight 合同、19 个 vanilla-built UI-layout owner 与 5,614-byte 静态 corpus、
   80-glyph variable-width font/ASCII map/loader 合同、witch menu 16-color palette/12-frame bubble
-  table、16 套 map palette/79-map 使用与有效 color-zero 合同，以及 46/46 direct named
-  compression consumer 的 owner inventory。
+  table、12-resource/8,832-byte special-screen palette/layout corpus、16 套 map palette/79-map
+  使用与有效 color-zero 合同，以及 46/46 direct named compression consumer 的 owner inventory。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
@@ -99,7 +99,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   map event、交互和物品 handoff。
 - [`special-screens.md`](./research/special-screens.md)：logo/title、witch save、suspend/reset、ending
   等 19 文件特殊画面边界，以及全部 9 条压缩 tile stream、DMA transfer/tail、choice palette 与
-  4×3 bubble-animation 合同。
+  4×3 bubble-animation、7 套 palette/5 个 layout 合同。
 - [`remaining-core.md`](./research/remaining-core.md)：ROM header/vector、window engine、battle test、
   configuration 与 debug action 的最后主代码边界。
 

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-screen-presentation-static-v1",
+  "outputSha256": "56E0FBEC2B6F917AD8916B2ABC9226EE24A9732F25D408D7876A460651A57E84",
+  "summary": {
+    "resourceCount": 12, "resourceByteCount": 8832, "h1AddressCount": 12,
+    "directIncbinResourceCount": 10, "asmExpandedResourceCount": 2,
+    "asmBinaryMirrorByteCount": 2560, "paletteCount": 7, "paletteByteCount": 480,
+    "paletteColorCount": 240, "paletteUniqueColorCount": 107, "paletteZeroColorCount": 25,
+    "layoutCount": 5, "layoutByteCount": 8352, "layoutWordCount": 4176,
+    "sourceRomParityByteCount": 8832
+  }
+}

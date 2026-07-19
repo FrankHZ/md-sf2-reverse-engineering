@@ -143,6 +143,7 @@ battle-sprite animation sequence corpus, the complete Basic-compressed
 map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
 the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
 the complete witch-menu choice palette, bubble-animation table, and timer-phase corpus, plus
+the complete uncompressed special-screen palette/layout presentation corpus, plus
 the complete base/diamond-menu/yes-no Stack-compressed UI corpus, plus
 the complete 163-entry icon storage corpus and menu copy/highlight boundaries, plus
 the complete assembled UI/window layout, spell-pointer, border, and direct-asset corpus, plus
