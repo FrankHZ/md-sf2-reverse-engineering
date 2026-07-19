@@ -5,11 +5,11 @@
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
   1,134 physical records, all 75 area-description targets/227 physical entries, and all 84 init
-  sources/90 setup-callable entry points, and all 47 standalone setup-script files/8,058 statements
+  sources/90 setup-callable entry points, all 47 standalone setup-script files/8,058 statements,
+  all 662 source-form content sections, and all 154 private blocks/layout payloads
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
 - Status: **Unknown** for direct-`rts` entity-event reachability, sequenced-orientation consumption,
-  nonstandard description callers, presentation timing, and
-  binary consumers
+  nonstandard description callers, presentation timing, rendered layout parity, and VDP timing
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -42,8 +42,21 @@ setup selector contains 64 map rows, 66 flag rows, and 64 map terminators.
 The five global tables contain 57 debug-map slots, three flag-switched map rows, 13 overworld-map
 rows, four raft-reset rows, and 23 save-point rows. These are table-shape facts only. The inventory
 fixture does not reproduce map layouts, dialogue, entity lists, event scripts, descriptions, item
-placements, or binary payloads. Full file hashes and include edges remain in ignored
-`local/derived/map-data-static.json`.
+placements, or binary payloads. The separate map-content rail now re-encodes all 662 source-form
+sections and locally byte-compares all 154 private payloads without tracking their content. Full file
+hashes and include edges remain in ignored `local/derived/map-data-static.json`.
+
+## Map Content Closure
+
+All 79 map entries are 46-byte records: six palette/tileset bytes followed by ten longword slots at
+offsets 6 through 42. All entries and the 79-pointer `pt_MapData` table byte-match the ROM. The 662
+source-form sections re-encode to 12,576 matching bytes, while the 77 block and 77 layout payloads
+total 193,678 locally verified bytes. The tracked fixture contains only aggregate counts and sizes.
+
+The actual layout pointer is at offset 10. Upstream declares the unused `MAPDATA_OFFSET_LAYOUT` as 8;
+the entry encoding and sequential loader both prove 10, and no code references the bad constant.
+Record layouts, consumer evidence, content counts, private-data handling, and the remaining grouped
+runtime queue are owned by [map-content.md](./map-content.md).
 
 ## Setup Selection and ROM Parity
 
@@ -231,11 +244,12 @@ evidence. Remaining questions are grouped as:
 2. follower/map-entity collision state, selected event/description-script
    side effects, transition persistence,
    and roof/step/warp precedence;
-3. walking/special-sprite, portrait/text/entity-facing presentation timing, and binary consumers.
+3. walking/special-sprite and portrait/text/entity-facing presentation timing;
+4. rendered block/layout parity and animation VDP frame timing in the later graphics matrix.
 
-Entity streams and every source-form setup family are now closed statically. Continue with map-content
-binary consumers and parsed layout/animation formats; only ambiguities that
-survive those passes should share the prepared map initialization/event-dispatch runtime matrix.
+Entity streams, every source-form setup family, every source-form content family, and the private
+block/layout input bytes are now closed statically. Continue with a canonical Python layout decoder;
+only ambiguities that survive it should share the prepared runtime matrices.
 
 ## Harness Performance
 
@@ -254,5 +268,6 @@ uv run sf2 h2 map-events
 uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts
+uv run sf2 h2 map-content
 uv run sf2 research-index test
 ```

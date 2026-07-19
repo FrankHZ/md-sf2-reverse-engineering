@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/map-content-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstream",
+    "romSha256",
+    "sources",
+    "table",
+    "summary",
+    "sectionCounts",
+    "recordCounts",
+    "sourceFacts",
+    "mapEntries",
+    "sourceSections",
+    "binaryPayloads",
+    "runtimeQuestions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-content-static-v1" },
+    "upstream": { "$ref": "#/$defs/upstream" },
+    "romSha256": { "$ref": "#/$defs/sha256" },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries", "macros", "enums", "mapLoader", "animations", "exploration"],
+      "properties": {
+        "entries": { "type": "string" },
+        "macros": { "type": "string" },
+        "enums": { "type": "string" },
+        "mapLoader": { "type": "string" },
+        "animations": { "type": "string" },
+        "exploration": { "type": "string" }
+      }
+    },
+    "table": { "$ref": "#/$defs/integerMap" },
+    "summary": { "$ref": "#/$defs/integerMap" },
+    "sectionCounts": { "$ref": "#/$defs/integerMap" },
+    "recordCounts": { "$ref": "#/$defs/integerMap" },
+    "sourceFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryBytes",
+        "tilesetBytes",
+        "pointerLayout",
+        "recordBytes",
+        "flagEventsAppliedDuringLayoutLoad",
+        "areaSelectionSkipsRemaining22Bytes",
+        "animationRunsFromVInt",
+        "declaredLayoutOffset",
+        "actualLayoutPointerOffset",
+        "declaredLayoutOffsetReferenceCount"
+      ],
+      "properties": {
+        "entryBytes": { "type": "integer", "minimum": 0 },
+        "tilesetBytes": { "type": "integer", "minimum": 0 },
+        "pointerLayout": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "offset"],
+            "properties": {
+              "name": { "type": "string" },
+              "offset": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "recordBytes": { "$ref": "#/$defs/integerMap" },
+        "flagEventsAppliedDuringLayoutLoad": { "type": "boolean" },
+        "areaSelectionSkipsRemaining22Bytes": { "type": "boolean" },
+        "animationRunsFromVInt": { "type": "boolean" },
+        "declaredLayoutOffset": { "type": "integer", "minimum": 0 },
+        "actualLayoutPointerOffset": { "type": "integer", "minimum": 0 },
+        "declaredLayoutOffsetReferenceCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "mapEntries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["map", "symbol", "address", "tilesets", "pointers"],
+        "properties": {
+          "map": { "type": "integer", "minimum": 0 },
+          "symbol": { "type": "string" },
+          "address": { "type": "integer", "minimum": 0 },
+          "tilesets": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 255 }
+          },
+          "pointers": {
+            "type": "object",
+            "minProperties": 10,
+            "maxProperties": 10,
+            "additionalProperties": { "$ref": "#/$defs/pointer" }
+          }
+        }
+      }
+    },
+    "sourceSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "map",
+          "kind",
+          "path",
+          "symbol",
+          "address",
+          "byteCount",
+          "recordCount",
+          "trailingRts",
+          "romParity"
+        ],
+        "properties": {
+          "map": { "type": "integer", "minimum": 0 },
+          "kind": { "type": "string" },
+          "path": { "type": "string" },
+          "symbol": { "type": "string" },
+          "address": { "type": "integer", "minimum": 0 },
+          "byteCount": { "type": "integer", "minimum": 0 },
+          "recordCount": { "type": "integer", "minimum": 0 },
+          "trailingRts": { "type": "boolean" },
+          "romParity": { "type": "boolean" }
+        }
+      }
+    },
+    "binaryPayloads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["map", "kind", "path", "symbol", "address", "byteCount", "sha256", "romParity"],
+        "properties": {
+          "map": { "type": "integer", "minimum": 0 },
+          "kind": { "enum": ["blocks", "layout"] },
+          "path": { "type": "string" },
+          "symbol": { "type": "string" },
+          "address": { "type": "integer", "minimum": 0 },
+          "byteCount": { "type": "integer", "minimum": 0 },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "romParity": { "type": "boolean" }
+        }
+      }
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "integerMap": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "address"],
+      "properties": {
+        "symbol": { "type": ["string", "null"] },
+        "address": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

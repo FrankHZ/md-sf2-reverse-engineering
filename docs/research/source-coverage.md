@@ -182,12 +182,13 @@ remaining files are explicitly owned H2 exceptions. Data-file discovery is also 
 deterministic H2 inventory; its lower 980/1,690 strict reach reflects include-site-only map bodies,
 alternates, unlabeled storage, and the separate Z80 address space rather than unknown files.
 
-The next work is semantic depth, not another sweep for filenames or artificial index percentage:
+The next work is semantic depth, not another sweep for filenames or artificial index percentage.
+Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
+private blocks/layout payloads:
 
-1. parse map-content binary consumers and source-form layout/animation formats now that all 47
-   standalone setup scripts, 178 labels, and 8,058 statements are source/H1-confirmed;
-2. turn binary-block consumers into canonical Python-owned output
-   without committing extracted copyrighted content;
+1. implement canonical Python decoders for the confirmed blocks/layout byte inputs without committing
+   extracted copyrighted content;
+2. compare decoded layout structure and eventually rendered output through one graphics/VDP matrix;
 3. preserve direct-`rts` event reachability, nonstandard description callers, script side effects,
    and transition persistence as
    `Inferred` or `Unknown` until stronger evidence exists;

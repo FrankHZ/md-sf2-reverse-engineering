@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-content-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "pt_MapData": 609162
+  },
+  "summary": {
+    "mapCount": 79,
+    "mapEntryRomParityCount": 79,
+    "nullPointerCount": 38,
+    "mapEntryByteCount": 3634,
+    "pointerTableByteCount": 316,
+    "sourceSectionCount": 662,
+    "sourceSectionByteCount": 12576,
+    "sourceSectionRomParityCount": 662,
+    "binaryPayloadCount": 154,
+    "binaryPayloadByteCount": 193678,
+    "binaryPayloadRomParityCount": 154,
+    "blockPayloadCount": 77,
+    "blockPayloadByteCount": 130598,
+    "blockPayloadMinBytes": 144,
+    "blockPayloadMaxBytes": 4492,
+    "layoutPayloadCount": 77,
+    "layoutPayloadByteCount": 63080,
+    "layoutPayloadMinBytes": 94,
+    "layoutPayloadMaxBytes": 2114,
+    "trailingRtsSectionCount": 3
+  },
+  "sectionCounts": {
+    "tilesets": 79,
+    "areas": 79,
+    "flagEvents": 79,
+    "stepEvents": 79,
+    "roofEvents": 79,
+    "warpEvents": 79,
+    "chestItems": 79,
+    "otherItems": 77,
+    "animations": 32
+  },
+  "recordCounts": {
+    "tilesets": 474,
+    "areas": 135,
+    "flagEvents": 71,
+    "stepEvents": 94,
+    "roofEvents": 114,
+    "warpEvents": 409,
+    "chestItems": 50,
+    "otherItems": 46,
+    "animations": 108,
+    "animationTables": 32
+  },
+  "sourceFacts": {
+    "entryBytes": 46,
+    "tilesetBytes": 6,
+    "pointerLayout": [
+      { "name": "blocks", "offset": 6 },
+      { "name": "layout", "offset": 10 },
+      { "name": "areas", "offset": 14 },
+      { "name": "flagEvents", "offset": 18 },
+      { "name": "stepEvents", "offset": 22 },
+      { "name": "roofEvents", "offset": 26 },
+      { "name": "warpEvents", "offset": 30 },
+      { "name": "chestItems", "offset": 34 },
+      { "name": "otherItems", "offset": 38 },
+      { "name": "animations", "offset": 42 }
+    ],
+    "recordBytes": {
+      "area": 30,
+      "flagEvent": 8,
+      "stepEvent": 8,
+      "roofEvent": 8,
+      "warpEvent": 8,
+      "item": 4,
+      "animationHeader": 4,
+      "animationEntry": 8,
+      "terminator": 2
+    },
+    "flagEventsAppliedDuringLayoutLoad": true,
+    "areaSelectionSkipsRemaining22Bytes": true,
+    "animationRunsFromVInt": true,
+    "declaredLayoutOffset": 8,
+    "actualLayoutPointerOffset": 10,
+    "declaredLayoutOffsetReferenceCount": 0
+  },
+  "runtimeQuestions": [
+    "map-transition-event-precedence-and-state-persistence",
+    "map-animation-vdp-frame-timing",
+    "map-block-layout-rendered-parity"
+  ]
+}

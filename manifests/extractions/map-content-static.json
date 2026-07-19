@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-content-static-v1",
+  "outputSha256": "3E5741361526594BFB15090DC8B34127A0AC2339A1893CCAF302FB1CC16A22E8",
+  "summary": {
+    "mapCount": 79,
+    "mapEntryRomParityCount": 79,
+    "nullPointerCount": 38,
+    "mapEntryByteCount": 3634,
+    "pointerTableByteCount": 316,
+    "sourceSectionCount": 662,
+    "sourceSectionByteCount": 12576,
+    "sourceSectionRomParityCount": 662,
+    "binaryPayloadCount": 154,
+    "binaryPayloadByteCount": 193678,
+    "binaryPayloadRomParityCount": 154,
+    "blockPayloadCount": 77,
+    "blockPayloadByteCount": 130598,
+    "blockPayloadMinBytes": 144,
+    "blockPayloadMaxBytes": 4492,
+    "layoutPayloadCount": 77,
+    "layoutPayloadByteCount": 63080,
+    "layoutPayloadMinBytes": 94,
+    "layoutPayloadMaxBytes": 2114,
+    "trailingRtsSectionCount": 3
+  }
+}

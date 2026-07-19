@@ -367,8 +367,10 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 是 1,690/1,690 H2 inventory，980/1,690 strict H1 reach 的差额也全部归因于 include-site-only、
 unlabeled/alternate 或独立 Z80 地址空间。地图 setup 的 flag selection、六指针 layout、四类 event
 dispatcher 结构、全部 entity stream、263 个 entity/zone/item event source 和 75 个 description
-target、84 个 initialization source 与全部 47 个 standalone setup script 也已静态闭合。下一步
-继续解析 map-content binary consumers 和 layout/animation 格式，形成 Python-owned canonical 合同。
+target、84 个 initialization source 与全部 47 个 standalone setup script 也已静态闭合。79 个
+map entry、662 个 source-form map-content section 和 154 个私有 blocks/layout payload 现已全部完成
+source/H1/ROM parity；下一步实现 blocks/layout 的 Python canonical decoder，并把渲染、VDP animation
+timing 与 transition persistence 保持为集中运行矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

@@ -230,7 +230,7 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
                 "mapEndRows": _statement_count(setup_source, "msMapEnd"),
             },
             "globalTables": global_facts,
-            "mapContentParsed": False,
+            "mapContentParsed": True,
             "mapSetupSemanticsParsed": True,
             "mapEventTablesParsed": True,
             "mapDescriptionTablesParsed": True,
@@ -240,7 +240,6 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
         "runtimeQuestions": [
             "area-description-byte2-d6-condition-meaning",
             "map-transition-state-persistence-and-roof-step-warp-precedence",
-            "binary-block-layout-and-animation-runtime-consumers",
         ],
         "files": files,
     }

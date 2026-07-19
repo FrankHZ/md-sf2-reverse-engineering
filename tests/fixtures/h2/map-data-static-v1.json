@@ -757,7 +757,7 @@
         "raftResetRows": 4,
         "savePointRows": 23
       },
-      "mapContentParsed": false,
+      "mapContentParsed": true,
       "mapSetupSemanticsParsed": true,
       "mapEventTablesParsed": true,
       "mapDescriptionTablesParsed": true,
@@ -766,8 +766,7 @@
     },
     "runtimeQuestions": [
       "area-description-byte2-d6-condition-meaning",
-      "map-transition-state-persistence-and-roof-step-warp-precedence",
-      "binary-block-layout-and-animation-runtime-consumers"
+      "map-transition-state-persistence-and-roof-step-warp-precedence"
     ]
   }
 }

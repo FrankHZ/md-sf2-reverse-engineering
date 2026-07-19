@@ -8,6 +8,7 @@ import pytest
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.design_contracts import verify_design_contracts
 from sf2tool.h2.battle_ai import _direct_target, _parse_source_file
+from sf2tool.h2.map_content import _encode_source
 from sf2tool.h2.map_descriptions import _decode_entry
 from sf2tool.h2.map_entities import _record_kind
 from sf2tool.h2.map_events import _decode_event_record
@@ -25,7 +26,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1437
-    assert result["H2Fixtures"] == 42
+    assert result["H2Fixtures"] == 43
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
     assert result["AddressBindings"] == 1833
     assert result["IndexedCodeFiles"] == 381
@@ -266,6 +267,29 @@ def test_map_entities_has_a_static_rom_parity_command() -> None:
     assert args.h2_command == "map-entities"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
+
+
+def test_map_content_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-content"])
+    assert args.h2_command == "map-content"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_content_encoder_keeps_item_terminator_and_trailing_rts(tmp_path: Path) -> None:
+    source = tmp_path / "8-other-items.asm"
+    source.write_text(
+        "mapItem 1, 2, 3, HEALING_SEED\nendWord\nrts\n",
+        encoding="utf-8",
+    )
+    encoded, records, trailing_rts = _encode_source(
+        source,
+        "otherItems",
+        {"ITEM_HEALING_SEED": 1},
+    )
+    assert encoded == bytes.fromhex("01020301FFFF4E75")
+    assert records == 1
+    assert trailing_rts is True
 
 
 def test_map_entity_payload_prefix_classifies_record_encoding() -> None:

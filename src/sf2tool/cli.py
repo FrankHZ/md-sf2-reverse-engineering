@@ -29,6 +29,7 @@ from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
+from sf2tool.h2.map_content import verify_map_content_contract
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
 from sf2tool.h2.map_entities import verify_map_entities_contract
@@ -313,6 +314,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_data, rom=False)
     h2_map_data.add_argument("--output-path", type=_path)
+    h2_map_content = h2_commands.add_parser(
+        "map-content",
+        help="re-encode all map content tables and byte-compare private blocks/layouts with ROM",
+    )
+    _add_local_paths(h2_map_content)
+    h2_map_content.add_argument("--output-path", type=_path)
     h2_map_setup = h2_commands.add_parser(
         "map-setup", help="parse map setup selection and verify all six-pointer tables against ROM"
     )
@@ -765,6 +772,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-data":
         print_record(
             verify_map_data_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-content":
+        print_record(
+            verify_map_content_contract(
+                args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
             )

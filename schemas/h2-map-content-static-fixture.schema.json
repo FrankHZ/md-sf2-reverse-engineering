@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-map-content-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstreamCommit",
+    "romSha256",
+    "table",
+    "summary",
+    "sectionCounts",
+    "recordCounts",
+    "sourceFacts",
+    "runtimeQuestions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-content-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object" },
+    "summary": { "type": "object" },
+    "sectionCounts": { "type": "object" },
+    "recordCounts": { "type": "object" },
+    "sourceFacts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}
