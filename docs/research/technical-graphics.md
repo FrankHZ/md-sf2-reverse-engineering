@@ -8,7 +8,8 @@
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
   special-screen, base/menu UI, battle-effect, and map-tileset Stack-compression corpora, plus the
   complete icon-storage/copy/highlight corpus, map-palette/effective-color-zero boundaries, and
-  assembled UI/window layout, spell-pointer, border, direct menu-tile, and variable-width-font corpus
+  assembled UI/window layout, spell-pointer, border, direct menu-tile, variable-width-font, and
+  witch-menu palette/bubble-animation corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -237,6 +238,16 @@ but Huffman-decoded symbols bypass this table, so static ASCII absence is not a 
 Glyph overlap, palette selection, one-versus-two-load rendering, typewriter timing, DMA, and final
 frames remain one shared text-presentation matrix.
 
+The sixteenth graphics corpus closes the two direct witch-menu resources beside that font. The
+32-byte choice palette is copied as one 16-color CRAM palette. The 960-byte bubble table divides into
+four options × three distinct frames × forty words, and the two longword pointers make 1,000 checked
+source bytes. After the consumer's `-$5D00` adjustment, all 480 words are priority palette-2 tiles;
+240 mirror, 240 flip, and 60 unique tile indices span 1024-1083.
+
+The selected timer maps states 1-20 to frame phases 0→1→2→1, while unselected options remain on frame
+zero. Static source proves this phase table and the four source/destination offsets, not exact CRAM,
+redraw, window-motion, or visible timing; those remain in the shared witch presentation matrix.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -293,6 +304,7 @@ uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
 uv run sf2 h2 variable-width-font
+uv run sf2 h2 witch-menu-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
 uv run sf2 h2 map-palettes
@@ -306,7 +318,7 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
 `special-screen-graphics-decode.json`, `ui-graphics-decode.json`, `icon-graphics-static.json`, and
-`ui-layout-static.json`, `variable-width-font-static.json`, `battle-effect-graphics-decode.json`,
-plus `map-tileset-decode.json` and
+`ui-layout-static.json`, `variable-width-font-static.json`, `witch-menu-graphics-static.json`,
+`battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
 `map-palette-static.json`.
 The consumer map stays under ignored `local/derived/compression-consumers-static.json`.

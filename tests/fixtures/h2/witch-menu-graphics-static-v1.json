@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-witch-menu-graphics-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "ExecuteWitchMainMenu": 91736,
+    "DrawWitchMenuBubble": 92170,
+    "p_palette_WitchChoice": 163888,
+    "p_table_WitchBubbleAnimation": 163892,
+    "palette_WitchChoice": 180254,
+    "table_WitchBubbleAnimation": 180286
+  },
+  "summary": {
+    "resourceCount": 2,
+    "resourceByteCount": 992,
+    "pointerCount": 2,
+    "pointerByteCount": 8,
+    "sourceRomParityByteCount": 1000,
+    "paletteByteCount": 32,
+    "paletteColorCount": 16,
+    "paletteUniqueColorCount": 15,
+    "paletteZeroColorCount": 2,
+    "animationByteCount": 960,
+    "optionCount": 4,
+    "framesPerOption": 3,
+    "frameCount": 12,
+    "frameWidthTiles": 8,
+    "frameHeightTiles": 5,
+    "frameWordCount": 40,
+    "animationWordCount": 480,
+    "uniqueSourceWordCount": 240,
+    "uniqueAdjustedWordCount": 240,
+    "uniqueTileIndexCount": 60,
+    "priorityWordCount": 480,
+    "mirrorWordCount": 240,
+    "flipWordCount": 240,
+    "palette2WordCount": 480
+  },
+  "resourceHashes": {
+    "palette_WitchChoice": "614675E563618DE840AFB6D4C5FAE24E3ABF2B4AE1C23322B2E4C29773369038",
+    "table_WitchBubbleAnimation": "78E0E32ED9999E04D1E6FCAE007B3186F788A784A302158B8047C8C0B7C7CA29"
+  },
+  "paletteFacts": {
+    "destination": "PALETTE_2_CURRENT",
+    "copyByteCount": 32,
+    "queuesCramDma": true,
+    "colorCount": 16,
+    "uniqueColorCount": 15,
+    "zeroColorCount": 2,
+    "maximumChannelNibble": 15
+  },
+  "animationFacts": {
+    "optionSourceOffsets": [0, 240, 480, 720],
+    "optionDestinationOffsets": [392, 4, 36, 432],
+    "selectedTimerReset": 20,
+    "selectedTimerPhases": [
+      { "timerMinimum": 1, "timerMaximum": 4, "frameIndex": 0 },
+      { "timerMinimum": 5, "timerMaximum": 9, "frameIndex": 1 },
+      { "timerMinimum": 10, "timerMaximum": 14, "frameIndex": 2 },
+      { "timerMinimum": 15, "timerMaximum": 20, "frameIndex": 1 }
+    ],
+    "unselectedFrameIndex": 0,
+    "writeWordAdjustment": -23808,
+    "adjustedPaletteIndex": 2,
+    "adjustedTileIndexMinimum": 1024,
+    "adjustedTileIndexMaximum": 1083,
+    "allAdjustedWordsHavePriority": true
+  },
+  "frameHashes": [
+    "8CB370E957BBF3304E22F17BE926DCCAB872CE8F60D35834EAE94E4F8082C714",
+    "29C421D2666C39D914F0B85611C7AC97E7C9B5575D4C740FCB524DB988279A1B",
+    "5E612D413E7930CFEA3C304A405DB7ACA10462F657E75D4C5EB6828B1EEC04B2",
+    "0D7B142829783CD38FA83178D0B29C2FB19B6EEE05F31B496D6B131CF0B0DD8C",
+    "2CD25B30618F9F4A6C4547DEB5C466E5883AFDE3ECF472673E899E466A2BA4AE",
+    "9FD85F1F07145C3792C834FA71F9C7891776D407C1579511D8642A8903E69C1F",
+    "869681CE98C01EB76A2BE48EAD029E04821EAAC657F02BFE8774263CFF8D9E33",
+    "DAA539EEB16C91E96B7FA60DBDA11D79C417C441D58228D0F959F84722C06378",
+    "D09DD7B54EDEB4E9E40C770454B2A3C0BD6D543A51A3AF2290568D986F6082B2",
+    "A6E0845F31BC6D6B529CF171C30149E2C629970587D4EE71B69DE888D0CA910F",
+    "74A777BD80A99CD929A84EBD6BA980F1F28CFE858D0CBAB555492226EC05E6A9",
+    "AA3C38F09743751D48F7F66F268CC4AF955F61AD709BB54902761AEB0E329EAB"
+  ],
+  "runtimeQuestions": [
+    "Do the 20 timer states, menu redraws, and window motion present the four bubbles with original frame timing?",
+    "Does palette-2 CRAM upload plus the adjusted priority/mirror/flip tilemap reproduce the original witch menu pixels?"
+  ]
+}

@@ -64,6 +64,7 @@ from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h2.ui_graphics import verify_ui_graphics_contract
 from sf2tool.h2.ui_layouts import verify_ui_layout_contract
 from sf2tool.h2.variable_width_font import verify_variable_width_font_contract
+from sf2tool.h2.witch_menu_graphics import verify_witch_menu_graphics_contract
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
 from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_ai_action import verify_battle_ai_action_choice
@@ -417,6 +418,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_variable_width_font)
     h2_variable_width_font.add_argument("--output-path", type=_path)
+    h2_witch_menu_graphics = h2_commands.add_parser(
+        "witch-menu-graphics",
+        help="verify witch choice palette, bubble frames, pointers, and timer phases",
+    )
+    _add_local_paths(h2_witch_menu_graphics)
+    h2_witch_menu_graphics.add_argument("--output-path", type=_path)
     h2_icon_graphics = h2_commands.add_parser(
         "icon-graphics",
         help="verify the complete icon storage corpus and menu copy/highlight boundaries",
@@ -1039,6 +1046,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "variable-width-font":
         print_record(
             verify_variable_width_font_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "witch-menu-graphics":
+        print_record(
+            verify_witch_menu_graphics_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

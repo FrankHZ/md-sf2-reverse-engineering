@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-witch-menu-graphics-static-v1",
+  "outputSha256": "12C8B6818CDE7A8F8A808893AB32711F9DC7DA7A9380DC3999C3991A97B2DE15",
+  "summary": {
+    "resourceCount": 2,
+    "resourceByteCount": 992,
+    "pointerCount": 2,
+    "pointerByteCount": 8,
+    "sourceRomParityByteCount": 1000,
+    "paletteByteCount": 32,
+    "paletteColorCount": 16,
+    "paletteUniqueColorCount": 15,
+    "paletteZeroColorCount": 2,
+    "animationByteCount": 960,
+    "optionCount": 4,
+    "framesPerOption": 3,
+    "frameCount": 12,
+    "frameWidthTiles": 8,
+    "frameHeightTiles": 5,
+    "frameWordCount": 40,
+    "animationWordCount": 480,
+    "uniqueSourceWordCount": 240,
+    "uniqueAdjustedWordCount": 240,
+    "uniqueTileIndexCount": 60,
+    "priorityWordCount": 480,
+    "mirrorWordCount": 240,
+    "flipWordCount": 240,
+    "palette2WordCount": 480
+  }
+}

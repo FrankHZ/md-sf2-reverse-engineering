@@ -2,8 +2,8 @@
 
 - Status: **Confirmed** for the complete 12-file source boundary, eleven main-ROM representative
   addresses, twenty technical-resource incbin mappings, byte-copy direction, input scan/wait shape,
-  SRAM slot/checksum structure, the complete variable-width-font payload/pointer boundary, the 68000
-  music-wait command, and the Z80 driver build chain
+  SRAM slot/checksum structure, the complete variable-width-font and witch-menu direct payload/
+  pointer boundaries, the 68000 music-wait command, and the Z80 driver build chain
 - Status: **Inferred** for caller-visible thinking-RNG distribution and perceived delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
@@ -44,6 +44,10 @@ four-byte pointer, 256-byte ASCII conversion table, 80 record boundaries, width/
 three text consumer entry points all match H1 and ROM. Per-glyph output retains counts and hashes,
 not original pixels; presentation semantics remain owned by the graphics/text documents.
 
+The same section-6 owner also supplies the witch menu's 32-byte choice palette and 960-byte bubble
+table. Their two pointers, resource adjacency, consumer addresses, and 1,000 total bytes match H1 and
+ROM. The owning special-screen/graphics documents retain the palette, frame-grid, and timer semantics.
+
 `CopyBytes` compares destination and source. It copies backward when the destination address is
 higher and forward otherwise, preserving overlapping moves in the normal memmove cases.
 
@@ -82,6 +86,7 @@ driver instrumentation launch. Isolated one-case fixtures are not warranted by t
 ```powershell
 uv run sf2 h2 tech-services
 uv run sf2 h2 variable-width-font
+uv run sf2 h2 witch-menu-graphics
 uv run sf2 research-index test
 ```
 

@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for all 19 layout-owned files, representative H1 addresses, seven screen
   groups, eighteen resource routes, title/logo input structure, witch save actions, suspend/reset
-  flow, ending-effect ownership, and the complete nine-resource Stack-compressed tile corpus
+  flow, ending-effect ownership, the complete nine-resource Stack-compressed tile corpus, and the
+  complete witch choice-palette/bubble-animation data path
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
 - Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
   transfer tails
@@ -64,6 +65,19 @@ speech-bubble/menu presentation. The suspend path sleeps 60 frames before presen
 After the witch dialogue it waits at most 600 frames for Start, fades out, and resets through the
 original start vector; Start can end that wait early.
 
+The witch menu's direct presentation data is now independently closed. A 32-byte palette contains
+16 colors (15 unique, two zero entries) and is copied to `PALETTE_2_CURRENT` before queued CRAM DMA.
+The adjacent 960-byte table contains four option groups, three unique 80-byte frames per option, and
+each frame is a 5×8 tile-word grid. Both resources, their two longword pointers, and all 1,000 source
+bytes match H1 and ROM; the compressed speech-balloon stream remains owned by the existing graphics
+rail rather than being counted twice.
+
+`DrawWitchMenuBubble` applies `-$5D00` to every table word. All 480 adjusted words select palette 2
+with priority, half use mirror, half use flip, and their 60 tile indices span 1024-1083. Unselected
+options use frame zero. For the selected option, timer states 1-4/5-9/10-14/15-20 select frames
+0/1/2/1, then the menu loop resets the timer to 20. This is a confirmed control-flow phase table;
+perceived pacing, CRAM timing, window motion, and final pixels remain runtime questions.
+
 ## Ending Screens
 
 The ending-witch path owns the falling-jewels and witch-blink VInt functions and connects to the end
@@ -91,8 +105,10 @@ creating a separate fixture per animation.
 ```powershell
 uv run sf2 h2 special-screens
 uv run sf2 h2 special-screen-graphics
+uv run sf2 h2 witch-menu-graphics
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/special-screens-static.json` and
-`local/derived/special-screen-graphics-decode.json`.
+`local/derived/special-screen-graphics-decode.json`, plus
+`local/derived/witch-menu-graphics-static.json`.
