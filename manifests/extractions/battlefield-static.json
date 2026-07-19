@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battlefield-static-v1",
+  "outputSha256": "D6047F2E6968E3B6BA897C5BA934FD3DCA31B2EE880533FFA30B5AE0FE6080B4",
+  "summary": {
+    "fileCount": 17,
+    "sourceLineCount": 2299,
+    "statementCount": 1167,
+    "globalLabelCount": 126,
+    "localLabelCount": 94,
+    "directCallSiteCount": 116,
+    "indirectCallSiteCount": 0,
+    "uniqueDirectTargetCount": 45,
+    "internalDirectTargetCount": 26,
+    "externalDirectTargetCount": 19,
+    "indexedRecordCount": 18,
+    "indexedFileCount": 17
+  }
+}

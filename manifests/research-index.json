@@ -2328,6 +2328,74 @@
     {
       "id": "battle.ai.remaining.unused-item-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingItem", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedItemSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+    },
+    {
+      "id": "battlefield.inventory.move-string-destination", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetMoveStringDestination", "sourcePath": "code/gameflow/battle/battlefield/getmovestringdestination.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49188 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getMoveStringDestinationAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.engine", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "ConvertCoordinatesToAddress", "sourcePath": "code/gameflow/battle/battlefield/battlefieldengine.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49306 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.convertCoordinatesAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.initialize-arrays", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "InitializeMovementArrays", "sourcePath": "code/gameflow/battle/battlefield/initializemovementarrays.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49864 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.initializeMovementArraysAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.action-range", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetAttackRange", "sourcePath": "code/gameflow/battle/battlefield/getactionrange.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49926 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getAttackRangeAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.action-range-grid", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "BuildMovementRangeGrid", "sourcePath": "code/gameflow/battle/battlefield/buildactionrangegrids.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 50142 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.buildMovementRangeGridAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.populate-targets", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "PopulateTargetsListForItemUse", "sourcePath": "code/gameflow/battle/battlefield/populatetargetslist.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 50646 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.populateTargetsForItemAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.attack-position", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "DetermineAttackPosition", "sourcePath": "code/gameflow/battle/battlefield/determineattackposition.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 50970 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.determineAttackPositionAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.targets-array", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "BuildTargetsArrayWithTeammatesOfTarget", "sourcePath": "code/gameflow/battle/battlefield/buildtargetsarray.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 51186 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.buildTargetsWithTeammatesAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.occupied-terrain", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "UpdateOccupiedByOpponentsTerrain", "sourcePath": "code/gameflow/battle/battlefield/updateoccupiedterrainfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 51322 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.updateOccupiedByOpponentsAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.movable-grid", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "UpdateMovableGrid", "sourcePath": "code/gameflow/battle/battlefield/updatemovablegrid.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 51456 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.updateMovableGridAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.move-order-attack-position", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "DetermineAttackPositionForMoveOrder", "sourcePath": "code/gameflow/battle/battlefield/determineattackpositionformoveorder.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52886 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.determineAttackPositionForMoveOrderAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.reachable-targets", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetTargetsReachableByAttack", "sourcePath": "code/gameflow/battle/battlefield/getreachabletargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53708 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getReachableAttackTargetsAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.move-order-terrain", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetCurrentTerrainTypeForMoveOrder", "sourcePath": "code/gameflow/battle/battlefield/getcurrentterraintypeformoveorder.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54320 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getCurrentTerrainForMoveOrderAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.movement-arrays", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "BuildMovementArrays", "sourcePath": "code/gameflow/battle/battlefield/buildmovementarrays.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 55938 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.buildMovementArraysAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.move-string", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "BuildCancelMoveString", "sourcePath": "code/gameflow/battle/battlefield/buildmovestringfunctions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 56218 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.buildCancelMoveStringAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.move-order-position", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetMoveOrderPosition", "sourcePath": "code/gameflow/battle/battlefield/getmoveorderposition.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775096 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getMoveOrderPositionAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+    },
+    {
+      "id": "battlefield.inventory.trapped-chest", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "CheckForTrappedChest", "sourcePath": "code/gameflow/battle/battlefield/checkfortrappedchest.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775358 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.checkForTrappedChestAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
     }
   ]
 }

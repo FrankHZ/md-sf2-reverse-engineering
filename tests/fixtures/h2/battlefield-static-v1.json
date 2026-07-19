@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battlefield-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "getMoveStringDestinationAddress": 49188,
+    "convertCoordinatesAddress": 49306,
+    "initializeMovementArraysAddress": 49864,
+    "getAttackRangeAddress": 49926,
+    "buildMovementRangeGridAddress": 50142,
+    "populateTargetsForItemAddress": 50646,
+    "determineAttackPositionAddress": 50970,
+    "buildTargetsWithTeammatesAddress": 51186,
+    "updateOccupiedByOpponentsAddress": 51322,
+    "updateMovableGridAddress": 51456,
+    "determineAttackPositionForMoveOrderAddress": 52886,
+    "getReachableAttackTargetsAddress": 53708,
+    "getCurrentTerrainForMoveOrderAddress": 54320,
+    "buildMovementArraysAddress": 55938,
+    "buildCancelMoveStringAddress": 56218,
+    "getMoveOrderPositionAddress": 1775096,
+    "checkForTrappedChestAddress": 1775358
+  },
+  "expected": {
+    "representativeSymbols": {
+      "battlefieldengine.asm": "ConvertCoordinatesToAddress",
+      "buildactionrangegrids.asm": "BuildMovementRangeGrid",
+      "buildmovementarrays.asm": "BuildMovementArrays",
+      "buildmovestringfunctions.asm": "BuildCancelMoveString",
+      "buildtargetsarray.asm": "BuildTargetsArrayWithTeammatesOfTarget",
+      "checkfortrappedchest.asm": "CheckForTrappedChest",
+      "determineattackposition.asm": "DetermineAttackPosition",
+      "determineattackpositionformoveorder.asm": "DetermineAttackPositionForMoveOrder",
+      "getactionrange.asm": "GetAttackRange",
+      "getcurrentterraintypeformoveorder.asm": "GetCurrentTerrainTypeForMoveOrder",
+      "getmoveorderposition.asm": "GetMoveOrderPosition",
+      "getmovestringdestination.asm": "GetMoveStringDestination",
+      "getreachabletargets.asm": "GetTargetsReachableByAttack",
+      "initializemovementarrays.asm": "InitializeMovementArrays",
+      "populatetargetslist.asm": "PopulateTargetsListForItemUse",
+      "updatemovablegrid.asm": "UpdateMovableGrid",
+      "updateoccupiedterrainfunctions.asm": "UpdateOccupiedByOpponentsTerrain"
+    }
+  }
+}

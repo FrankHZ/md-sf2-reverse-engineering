@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 127 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 59 | 52 code files and 7 data files |
-| Executable code-file reach | 13.44% | 52 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 144 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 76 | 69 code files and 7 data files |
+| Executable code-file reach | 17.83% | 69 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.41% | 7 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 53 | Runtime contracts, often containing multiple cases |
-| Address bindings | 501 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 518 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -44,13 +44,15 @@ The current evidence is deep but narrow:
   healing/support decisions, final attack action/target selection, movement/move-order contracts,
   terrain obstruction/carving helpers, top-level commandsets, swarm activation, and special attackers,
   plus at least one indexed entry in every one of its 26 files; dispatcher/standby are parsed but
-  deeper special-helper semantics remain open. Other battle systems still cover selected
+  deeper special-helper semantics remain open. Battlefield/pathfinding now has a complete 17-file
+  inventory and representative address binding in every file, while its movement-array, range,
+  target, and move-string semantics remain shallow. Other battle systems still cover selected
   boundaries rather than every caller and state transition.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 13.44% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 17.83% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -63,8 +65,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 127 records; its
-verifier reports 53 H3 fixtures and 501 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 144 records; its
+verifier reports 53 H3 fixtures and 518 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -100,4 +102,7 @@ matrix confirms final action/target choice in one launch. Standby memory now als
 tables, its full 16-configuration eligibility matrix, and one-past-map precheck recorded. Static work
 next moves across the boundary into battlefield/pathfinding, while the remaining signed-priority,
 critical-class, movement, dispatcher, and standby ambiguities accumulate for the next small set of
-shared-boundary launches.
+shared-boundary launches. The adjacent battlefield/pathfinding directory now also has all 17 files
+inventoried (2,299 lines, 126 global labels, 116 direct call sites); the next static batches model
+movement-array layout/initialization, occupancy and propagation, target/range construction, and
+move-string reconstruction before any new runtime launch.
