@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-common-menus-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "BuildBattlefieldSettingsScreen": 88174,
+    "BlacksmithMenu": 137786,
+    "PickMithrilWeapon": 138966,
+    "CaravanMenu": 139218,
+    "DisplayCaravanMessageWithPortrait": 141480,
+    "ChurchMenu": 133634,
+    "CountPromotableMembers": 135282,
+    "DebugSetFlag": 91068,
+    "ExecuteDiamondMenu": 66038,
+    "PlayEndingKissSequence": 77292,
+    "OpenBattleEquipWindow": 70598,
+    "GetAllyPortrait": 87862,
+    "GetCombatantPortrait": 75322,
+    "GetPlayerEntityPosition": 142432,
+    "OpenGoldWindow": 77586,
+    "UseItemOnField": 141804,
+    "IsItemUsableOnField": 141770,
+    "ExecuteBattlefieldItemMenu": 66950,
+    "OpenLandEffectWindow": 87922,
+    "LoadHighlightableSpellIcon": 67904,
+    "ExecuteBattlefieldMagicMenu": 68170,
+    "FieldMenu": 135806,
+    "BuildMemberScreen": 72746,
+    "ExecuteMembersListScreenOnMainSummaryPage": 77798,
+    "WriteTilesFromAsciiWithOrangeFont": 65736,
+    "pt_MenuOptionNames": 70016,
+    "pt_tiles_Menu": 69980,
+    "BuildMinimapScreen": 75918,
+    "OpenBattlefieldMiniStatusWindow": 71026,
+    "NameAlly": 89008,
+    "OpenNameUnderPortraitWindow": 92590,
+    "NumberPrompt": 90754,
+    "ClosePortraitEyes": 87286,
+    "OpenPortraitWindow": 72518,
+    "ShopMenu": 131172,
+    "ExecuteShopScreen": 83962,
+    "OpenTimerWindow": 91404,
+    "sub_12606": 75270,
+    "sub_15268": 86632,
+    "sub_156A8": 87720,
+    "YesNoPrompt": 86660
+  },
+  "expected": {
+    "menuFacts": {
+      "diamondMenu": {
+        "choiceByDirection": { "up": 0, "left": 1, "right": 2, "down": 3 },
+        "confirmButtons": ["A", "C"],
+        "cancelButton": "B",
+        "cancelResult": -1,
+        "optionalCallbackOnOpenAndSelectionChange": true,
+        "idleRngRange": 256,
+        "waitsOneVintPerIdleIteration": true
+      },
+      "yesNoPrompt": {
+        "initialResult": 0,
+        "yesResult": 0,
+        "noResult": -1,
+        "cancelResult": -1,
+        "leftSelectsYes": true,
+        "rightSelectsNo": true,
+        "confirmButtons": ["A", "C"],
+        "movesDialogueAndGoldWindowsWhenPresent": true
+      },
+      "numberPrompt": {
+        "directionDeltas": { "right": 1, "left": -1, "down": 10, "up": -10 },
+        "clampsToCallerMinimum": true,
+        "clampsToCallerMaximum": true,
+        "confirmButtons": ["A", "C"],
+        "cancelButton": "B",
+        "cancelResult": -1,
+        "idleRngRange": 256,
+        "waitsOneVintPerIdleIteration": true
+      },
+      "textRendering": {
+        "separateRegularAndOrangeEntryPoints": true,
+        "numbersUseLoadedNumberBuffer": true,
+        "supportsMoveDownControl": true,
+        "supportsFontToggleControl": true,
+        "supportsNewlineControl": true
+      },
+      "fieldItems": {
+        "dispatchPairCount": 9,
+        "pairs": [
+          { "itemIndex": 3, "effect": "fieldItem_CurePoison" },
+          { "itemIndex": 5, "effect": "fieldItem_CurePoisonAndParalysis" },
+          { "itemIndex": 9, "effect": "fieldItem_IncreaseAtt" },
+          { "itemIndex": 10, "effect": "fieldItem_IncreaseDef" },
+          { "itemIndex": 11, "effect": "fieldItem_IncreaseAgi" },
+          { "itemIndex": 12, "effect": "fieldItem_IncreaseMov" },
+          { "itemIndex": 13, "effect": "fieldItem_IncreaseHp" },
+          { "itemIndex": 14, "effect": "fieldItem_IncreaseMp" },
+          { "itemIndex": 15, "effect": "fieldItem_LevelUp" }
+        ],
+        "terminator": 65535,
+        "masksItemEntryToIndex": true,
+        "usabilityListTerminator": -1,
+        "unlistedItemResult": -1
+      },
+      "serviceEntries": [
+        "BlacksmithMenu",
+        "CaravanMenu",
+        "ChurchMenu",
+        "FieldMenu",
+        "ShopMenu"
+      ],
+      "inventoryBoundary": {
+        "battlefieldAndFieldMenusInventoried": true,
+        "shopsChurchCaravanAndBlacksmithInventoried": true,
+        "portraitMemberMinimapAndEndingPresentationInventoried": true,
+        "windowMovementPortraitAndAnimationTimingRemainQueued": true,
+        "serviceCallerStateAndUiSequencesRemainQueued": true
+      }
+    },
+    "alternateSource": {
+      "canonicalPath": "code/common/menus/memberslistscreen.asm",
+      "canonicalSymbol": "BuildMembersListWindow",
+      "alternatePath": "code/common/menus/writememberlisttext.asm",
+      "alternateSymbol": "WriteMembersListText",
+      "sameFunctionStartAddress": true,
+      "startAddress": 79270,
+      "endAddressExclusive": 79788,
+      "sourceByteIdentical": false,
+      "canonicalIncludedByLayout": true,
+      "alternateIncludedByLayout": false,
+      "alternateExcludedFromStrictReach": true,
+      "canonicalSha256": "7F28C28195ABF23BFF5B382DFFCD67DF62F5DF00AC908903ECFB9FBAAFA3474C",
+      "alternateSha256": "82DF423E7351DF0A8B337FE88F57A6C6FB0FAE3C327C4D685A9B3E783339181A"
+    }
+  }
+}

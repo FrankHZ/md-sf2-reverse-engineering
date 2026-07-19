@@ -6,15 +6,15 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
-H2、成长曲线与法术学习合同、battle AI、battlefield、battle-loop、顶层 battle control、battle actions、shared battle functions、battle scene 根引擎/动画实现、battle cutscene、common scripting、common maps 与 common stats 全目录 inventory 和静态决策/生命周期合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
+H2、成长曲线与法术学习合同、battle AI、battlefield、battle-loop、顶层 battle control、battle actions、shared battle functions、battle scene 根引擎/动画实现、battle cutscene、common scripting、common maps、common stats 与 common menus 全目录 inventory 和静态决策/生命周期合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
 职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、完整击杀 EXP 等级差矩阵、行动顺序、区域激活、物理伤害计算链和
 BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门、敌人物品稀有/必掉/重复 flag、四种临时状态的回合后过期/继续/属性刷新、MUDDLE confusion 谓词与双边行动保护矩阵，以及单次启动 14 case 的 AI 最终行动/目标选择矩阵和单次启动 5 case 的战场移动边界矩阵的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 313 条 confirmed finding、54 个 H3 fixture 和 709 个地址绑定。
-按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 237 个文件，即
-**61.24% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+截至 2026-07-19，研究索引有 354 条 confirmed finding、54 个 H3 fixture 和 750 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 278 个文件，即
+**71.83% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -244,6 +244,10 @@ common stats rail 再 inventory 全部 20 个文件、5,149 行，固定 flags�
 spell learning 和 new-game 顺序。17 个文件具有独立证据；三个未被 layout include 的 alternate
 item source 不借用 canonical 地址，因此严格 reach 只增 12 个至 61.24%。field-item dispatch 由
 实际 layout include 的 common-menu 文件继续承接。
+common menus rail 随后 inventory 42 个文件、14,827 行，其中 41 个 layout-owned 文件各自绑定
+H1 地址；唯一 member-list alternate source 仅做 range/hash 对照。diamond、yes/no、number prompt、
+文本控制、九组 field-item dispatch 以及五个 service menu 入口形成静态合同，使严格 reach 升到
+71.83%。窗口/portrait/动画时序合并进入 UI/presentation 模拟矩阵，本批未启动模拟器。
 H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在
