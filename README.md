@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,449 条 confirmed finding、54 个 H2 fixture、58 个 H3 fixture
-和 1,901 个地址绑定。
+截至 2026-07-19，研究索引有 1,450 条 confirmed finding、55 个 H2 fixture、58 个 H3 fixture
+和 1,906 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -306,6 +306,11 @@ UI graphics rail 再闭合 base tiles、6 套 compressed diamond-menu tiles 和 
 Stack stream：7,848 个压缩字节解出 23,168 bytes，8 个资源、8 个 source pointer 与 9 槽 menu
 table 全部通过 source/H1/ROM parity。menu table 的前 3 槽保留为 high-bit packed main-menu icon
 组合，后 6 槽才是压缩资源二级指针；两条路径不会混作同一种格式。
+battle-effect graphics rail 接着闭合 23 个 spell container、4 个 invocation container 的 15 frame/
+30 stream、1 条 status animation 与 2 条 battle-transition stream，共 56 条 Stack stream、46,364
+个压缩字节和 200,992 个解压字节。所有 30 个资源、4 个顶层 pointer 和 3 张 pointer table 与 ROM
+一致；每条 invocation stream 解出 4,096 bytes，却固定传输 4,608 bytes，30 条流共留下 15,360-byte
+staging tail，保持为集中运行时观察问题。
 technical interfaces rail 将 10 个 jump-interface 与 15 个 pointer 文件合并盘点，完整锁定 331
 个 PC-relative jump stub 和 60 个 longword pointer 的 canonical mapping，使严格 reach 升到
 86.30%。该结构完全由 source/H1 决定，不产生运行时问题，也没有模拟器启动。

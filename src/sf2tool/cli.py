@@ -15,6 +15,7 @@ from sf2tool.h2.battle_backgrounds import verify_battle_background_contract
 from sf2tool.h2.battle_control import verify_battle_control_inventory
 from sf2tool.h2.battle_cutscene_data import verify_battle_cutscene_data_inventory
 from sf2tool.h2.battle_cutscenes import verify_battle_cutscene_inventory
+from sf2tool.h2.battle_effect_graphics import verify_battle_effect_graphics_contract
 from sf2tool.h2.battle_functions import verify_battle_functions_inventory
 from sf2tool.h2.battle_global_data import verify_battle_global_data_inventory
 from sf2tool.h2.battle_loop import verify_battle_loop_inventory
@@ -391,6 +392,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_ui_graphics)
     h2_ui_graphics.add_argument("--output-path", type=_path)
+    h2_battle_effect_graphics = h2_commands.add_parser(
+        "battle-effect-graphics",
+        help="decode spell, invocation, status, and battle-transition graphics corpora",
+    )
+    _add_local_paths(h2_battle_effect_graphics)
+    h2_battle_effect_graphics.add_argument("--output-path", type=_path)
     h2_map_import = h2_commands.add_parser(
         "map-import", help="build the complete canonical engine-neutral map import"
     )
@@ -959,6 +966,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "ui-graphics":
         print_record(
             verify_ui_graphics_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "battle-effect-graphics":
+        print_record(
+            verify_battle_effect_graphics_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

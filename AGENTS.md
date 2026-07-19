@@ -142,6 +142,7 @@ battle-background, battle-sprite, weapon/ground, and portrait corpora, the compl
 map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
 the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
 the complete base/diamond-menu/yes-no Stack-compressed UI corpus, plus
+the complete spell/invocation/status/transition battle-effect graphics corpus, plus
 BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,

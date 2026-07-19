@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-effect-graphics-decode-v1",
+  "outputSha256": "829D041876776E81B7F6C4A0F708C8F35225C67432FD95D8B625A4990B8BACE6",
+  "summary": {
+    "spellContainerCount": 23,
+    "invocationContainerCount": 4,
+    "invocationFrameCount": 15,
+    "invocationStreamCount": 30,
+    "statusStreamCount": 1,
+    "transitionStreamCount": 2,
+    "totalStreamCount": 56,
+    "compressedStreamByteCount": 46364,
+    "decodedByteCount": 200992,
+    "invocationTransferByteCount": 138240,
+    "invocationTransferTailByteCount": 15360,
+    "resourceRomParityCount": 30,
+    "pointerRomParityCount": 4,
+    "tableRomParityCount": 3,
+    "commandGroupCount": 1630,
+    "literalWordCount": 19091,
+    "copyCommandCount": 6480,
+    "copiedWordCount": 81405,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 53,
+    "maximumCopyOffsetWords": 1998,
+    "maximumCopyLengthWords": 33
+  }
+}

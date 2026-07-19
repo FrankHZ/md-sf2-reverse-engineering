@@ -4,7 +4,7 @@
   two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
   and the complete battle-background, battle-sprite, weapon/ground, and portrait container/decode
   corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
-  pointer/decode corpora
+  pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -88,6 +88,12 @@ decoded bytes, eight source pointers, and the nine-entry heterogeneous menu tabl
 The table's first three high-bit values select uncompressed main-menu icon combinations; its last
 six are compressed-resource pointer indirections.
 
+Battle effects add 23 spell containers, four invocation containers with 15 frames and 30 streams,
+one status-animation stream, and two battle-transition streams. All 56 streams decode to 200,992
+bytes; 30 resource containers, four top-level pointers, and three pointer tables match the ROM. Each
+invocation stream produces 4,096 bytes but its consumer transfers 4,608, leaving a 512-byte tail per
+stream whose runtime contents are not inferred from static shape.
+
 The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
 the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
 scripting inventory proves build ownership and symbol placement without redistributing text banks,
@@ -123,5 +129,6 @@ uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
+uv run sf2 h2 battle-effect-graphics
 uv run sf2 research-index test
 ```

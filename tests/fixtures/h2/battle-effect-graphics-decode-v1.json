@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-effect-graphics-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "LoadInvocationSpriteFrameToVram": 105458,
+    "LoadSpellTileset": 105636,
+    "LoadSpellTilesetForInvocation": 105704,
+    "InitializeBattlescene": 98322,
+    "bsc06_switchEnemies": 100670
+  },
+  "table": {
+    "pt_SpellGraphics": 1830624,
+    "pt_InvocationSprites": 1221368,
+    "tiles_StatusAnimation": 1745262,
+    "pt_BattlesceneTransitionTiles": 1745686,
+    "p_pt_SpellGraphics": 1802252,
+    "p_pt_InvocationSprites": 1048580,
+    "p_tiles_StatusAnimation": 1572868,
+    "p_pt_tiles_BattlesceneTransition": 1572872
+  },
+  "summary": {
+    "spellContainerCount": 23, "invocationContainerCount": 4, "invocationFrameCount": 15,
+    "invocationStreamCount": 30, "statusStreamCount": 1, "transitionStreamCount": 2,
+    "totalStreamCount": 56, "compressedStreamByteCount": 46364, "decodedByteCount": 200992,
+    "invocationTransferByteCount": 138240, "invocationTransferTailByteCount": 15360,
+    "resourceRomParityCount": 30, "pointerRomParityCount": 4, "tableRomParityCount": 3,
+    "commandGroupCount": 1630, "literalWordCount": 19091, "copyCommandCount": 6480,
+    "copiedWordCount": 81405, "minimumTrailingBits": 32, "maximumTrailingBits": 53,
+    "maximumCopyOffsetWords": 1998, "maximumCopyLengthWords": 33
+  },
+  "runtimeQuestions": [
+    "What bytes occupy the 512-byte tail of each 4,608-byte invocation-sprite transfer after a 4,096-byte decode, and are those bytes stable or visible?",
+    "Do spell, invocation, status, and transition tiles render with original palettes, layer ordering, frame timing, and transition composition?"
+  ]
+}

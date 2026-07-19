@@ -2,8 +2,9 @@
 
 - Status: **Confirmed** for the pinned twelve-file root inventory, 55-file animation inventory,
   21-command scene-script dispatch, scene initialization order, actor/weapon/background selectors,
-  complete 32-entry spell setup/update source pairing, battle-background container loader, and
-  ally/enemy battle-sprite plus weapon/ground property, palette, frame, and DMA loaders
+  complete 32-entry spell setup/update source pairing, battle-background container loader,
+  complete 56-stream battle-effect graphics corpus, and ally/enemy battle-sprite plus weapon/ground
+  property, palette, frame, and DMA loaders
 - Status: **Inferred** for the player-visible intent of named tint and graphics helpers where only
   static call structure has been reproduced
 - Status: **Unknown** for exact frame timing, interrupt/VDP effects, and rendered visual output
@@ -56,6 +57,14 @@ Spell animation setup and update each have 32 dispatch entries. Setup preserves 
 stores the decoded variant as one-based; both disabled setup and index `-1` return without dispatch.
 The update path requires its toggle and phase state before jumping to the selected updater.
 
+The battle-effect data rail resolves 23 spell graphics containers, four invocation containers, one
+status-animation payload, and two battle-transition payloads. Spell headers' decoded byte counts
+match all 23 streams. Invocation headers expose 15 frames with two streams per frame; every stream
+decodes to 4,096 bytes, while both rendering paths transfer 4,608 bytes. The resulting 512-byte tail
+per stream is a confirmed consumer boundary but its contents and visibility remain **Unknown**.
+Across all four families, 56 streams decode to 200,992 bytes and all resources, top-level pointers,
+and pointer tables match the original ROM.
+
 ## Confirmed Animation Pairing
 
 All 32 setup slots resolve into the 29 setup files. Buff slots 8/25 share `buff.asm`; Debuff slots
@@ -80,7 +89,9 @@ uv run sf2 h2 battle-scene-animations
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
 uv run sf2 h2 battle-weapon-ground
+uv run sf2 h2 battle-effect-graphics
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/battle-scene-*-static.json`.
+Generated JSON stays under ignored `local/derived/battle-scene-*-static.json` and
+`local/derived/battle-effect-graphics-decode.json`.

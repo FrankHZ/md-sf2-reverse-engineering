@@ -5,7 +5,7 @@
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
   complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
-  special-screen plus base/menu UI Stack-compression corpora
+  special-screen, base/menu UI, and battle-effect Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
@@ -139,6 +139,18 @@ resources. The consumer clears and branches on bit 31 before choosing `LoadMainM
 Stack decoder, so the tracked contract preserves the two formats instead of treating the packed
 values as malformed addresses.
 
+The tenth corpus closes battle-scene effects. Twenty-three spell containers each carry a decoded
+byte-count word, three palette colors, and one Stack stream; every decoded size matches its header.
+Four invocation containers contribute 15 logical frames and two streams per frame. Status animation
+adds one stream and battle-scene transitions add two, producing 56 streams total. Their 46,364
+compressed bytes decode to 200,992 bytes, with all 30 resource containers, four top-level pointers,
+and three pointer tables matching source, H1, and ROM.
+
+Every invocation stream decodes to 4,096 bytes, while both consumer paths transfer 4,608 bytes. The
+30 transfers therefore expose a consistent 512-byte tail each, or 15,360 bytes in aggregate. As with
+the five special-screen over-transfers, this is a confirmed transfer boundary but not evidence that
+the tail is zeroed, stable, or invisible.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -182,6 +194,7 @@ uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 ui-graphics
+uv run sf2 h2 battle-effect-graphics
 uv run sf2 research-index test
 ```
 
@@ -189,4 +202,5 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
 `portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
-`special-screen-graphics-decode.json`, plus `ui-graphics-decode.json`.
+`special-screen-graphics-decode.json`, `ui-graphics-decode.json`, and
+`battle-effect-graphics-decode.json`.
