@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/map-scripts-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "representativeSymbols", "representativeAddresses", "labelKindCounts", "commandCounts", "mostFrequentCommands", "standaloneOwnedInitScriptTargets", "runtimeQuestions", "files", "labelAddresses", "references"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-scripts-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "type": "string" },
+    "summary": { "type": "object", "minProperties": 16, "maxProperties": 16, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "representativeSymbols": { "type": "object", "minProperties": 47, "maxProperties": 47 },
+    "representativeAddresses": { "type": "object", "minProperties": 47, "maxProperties": 47, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "labelKindCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "commandCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "mostFrequentCommands": { "type": "array", "minItems": 12, "maxItems": 12 },
+    "standaloneOwnedInitScriptTargets": { "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true },
+    "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true },
+    "files": { "type": "array", "minItems": 47, "maxItems": 47 },
+    "labelAddresses": { "type": "object", "minProperties": 178, "maxProperties": 178 },
+    "references": { "type": "array", "minItems": 178, "maxItems": 178 }
+  }
+}

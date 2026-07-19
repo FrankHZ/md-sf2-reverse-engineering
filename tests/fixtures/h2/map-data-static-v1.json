@@ -761,7 +761,8 @@
       "mapSetupSemanticsParsed": true,
       "mapEventTablesParsed": true,
       "mapDescriptionTablesParsed": true,
-      "mapInitFunctionsParsed": true
+      "mapInitFunctionsParsed": true,
+      "standaloneMapScriptsParsed": true
     },
     "runtimeQuestions": [
       "area-description-byte2-d6-condition-meaning",

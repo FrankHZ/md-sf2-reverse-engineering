@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-scripts-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "cs_4FFDA": 327642, "cs_513D6": 332758, "eas_FallInEarthquakeCrack": 333888,
+    "cs_51F88": 335752, "cs_52530": 337200, "cs_53176": 340342,
+    "cs_53B66": 342886, "cs_53FE0": 344032, "cs_54578": 345464,
+    "cs_54E86": 347782, "cs_55A36": 350774, "cs_563B2": 353202,
+    "cs_568F6": 354550, "cs_570B0": 356528, "cs_57AAA": 359082,
+    "cs_58330": 361264, "cs_58F5C": 364380, "cs_58FA4": 364452,
+    "cs_5994E": 366926, "cs_59F20": 368416, "cs_59FB8": 368568,
+    "cs_5A33A": 369466, "cs_5AC58": 371800, "cs_5B6C0": 374464,
+    "cs_5C4EE": 378094, "cs_5C6CA": 378570, "cs_5C876": 378998,
+    "cs_5CA6E": 379502, "cs_5D04E": 381006, "cs_5D3B8": 381880,
+    "cs_5D644": 382532, "cs_5DA28": 383528, "cs_5DE2E": 384558,
+    "cs_5E0F8": 385272, "cs_5E27C": 385660, "cs_5E772": 386930,
+    "cs_5F3A2": 390050, "cs_5F4B8": 390328, "cs_5FB30": 391984,
+    "cs_5FE9A": 392858, "cs_600CE": 393422, "cs_6060E": 394766,
+    "cs_60708": 395016, "cs_6143C": 398396, "cs_6150A": 398602,
+    "cs_628C8": 403656, "cs_EndingKiss": 406468
+  },
+  "expected": {
+    "summary": {
+      "fileCount": 47,
+      "sourceLineCount": 8398,
+      "statementCount": 8058,
+      "uniqueCommandCount": 139,
+      "globalLabelCount": 178,
+      "representativeAddressCount": 47,
+      "externallyReferencedLabelCount": 127,
+      "internalOnlyLabelCount": 51,
+      "unreferencedLabelCount": 0,
+      "sameFileReferenceCount": 92,
+      "externalReferenceCount": 146,
+      "initScriptTargetCount": 75,
+      "standaloneOwnedInitScriptTargetCount": 12,
+      "nonStandaloneInitScriptTargetCount": 63,
+      "cutsceneEndCommandCount": 122,
+      "returnStatementCount": 16
+    },
+    "labelKindCounts": {
+      "cutscene": 141,
+      "cutscene-entity": 4,
+      "cutscene-subroutine": 6,
+      "entity-action-script": 2,
+      "local-control-flow": 8,
+      "other": 2,
+      "palette-data": 2,
+      "subroutine": 13
+    },
+    "mostFrequentCommands": [
+      { "command": "nextSingleText", "count": 923 },
+      { "command": "setFacing", "count": 733 },
+      { "command": "endActions", "count": 703 },
+      { "command": "csWait", "count": 596 },
+      { "command": "entityActionsWait", "count": 478 },
+      { "command": "setActscriptWait", "count": 388 },
+      { "command": "nextText", "count": 297 },
+      { "command": "moveDown", "count": 275 },
+      { "command": "moveUp", "count": 244 },
+      { "command": "entityActions", "count": 225 },
+      { "command": "setPos", "count": 211 },
+      { "command": "moveLeft", "count": 198 }
+    ],
+    "standaloneOwnedInitScriptTargets": [
+      "cs_53176", "cs_570B0", "cs_58FA4", "cs_5996E", "cs_5B016", "cs_5E320",
+      "cs_5E346", "cs_6060E", "cs_607DE", "cs_60C42", "cs_60CA4", "cs_60EB2"
+    ],
+    "runtimeQuestions": [
+      "map-script-story-side-effects-and-transition-persistence",
+      "map-script-entity-camera-text-and-wait-timing",
+      "map-script-custom-subroutine-and-palette-rendering"
+    ]
+  }
+}

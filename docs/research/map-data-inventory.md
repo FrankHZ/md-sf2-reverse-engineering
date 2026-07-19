@@ -5,7 +5,7 @@
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
   1,134 physical records, all 75 area-description targets/227 physical entries, and all 84 init
-  sources/90 setup-callable entry points
+  sources/90 setup-callable entry points, and all 47 standalone setup-script files/8,058 statements
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
 - Status: **Unknown** for direct-`rts` entity-event reachability, sequenced-orientation consumption,
   nonstandard description callers, presentation timing, and
@@ -202,6 +202,25 @@ presentation semantics of the called scripts. Full per-entry normalized-body has
 script targets, and direct-call targets stay in ignored `local/derived/map-init-static.json`; the
 tracked fixture keeps the complete aggregate operation maps and dispatcher rules.
 
+## Standalone Setup Scripts
+
+The final 47 non-pointer-table files under `mapsetups` are `scripts*.asm`. They contain 8,398 source
+lines, 8,058 normalized statements, 139 distinct command names, and 178 global labels. Every file's
+representative label and every global label resolve in the pinned H1 listing. The label families are
+141 cutscene labels, six cutscene subroutines, four cutscene-entity blocks, two entity-action scripts,
+13 ordinary subroutines, eight local control-flow labels, two palette blocks, and two other labels.
+
+Across the complete 720-file setup source boundary, 127 of those labels are referenced from another
+file and 51 only from their defining file. The graph contains 146 cross-file and 92 same-file lexical
+references; no label is unreferenced. Of the 75 distinct targets called by init `script` operations,
+12 live in these standalone files and 63 live in their owning `s6_initfunction*.asm` sources.
+
+The most frequent commands are text, facing/action, waits, movement, and positioning; the exact
+command map includes 122 `csc_end` markers and 16 `rts` statements. These counts and reference edges
+are **Confirmed** static structure, not story semantics or frame timing. Full command counts, all 178
+H1 addresses, body hashes, and reference-source lists remain in ignored
+`local/derived/map-scripts-static.json`.
+
 ## Concentrated Queue
 
 No emulator was launched. Setup priority and dispatcher order are now closed by source/H1/ROM
@@ -214,8 +233,8 @@ evidence. Remaining questions are grouped as:
    and roof/step/warp precedence;
 3. walking/special-sprite, portrait/text/entity-facing presentation timing, and binary consumers.
 
-Entity streams, all four setup interaction families, and initialization callables are now closed
-statically. Continue with the 47 standalone setup script files and binary consumers; only ambiguities that
+Entity streams and every source-form setup family are now closed statically. Continue with map-content
+binary consumers and parsed layout/animation formats; only ambiguities that
 survive those passes should share the prepared map initialization/event-dispatch runtime matrix.
 
 ## Harness Performance
@@ -234,5 +253,6 @@ uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
 uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
+uv run sf2 h2 map-scripts
 uv run sf2 research-index test
 ```

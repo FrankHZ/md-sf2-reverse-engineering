@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-scripts-static-v1",
+  "outputSha256": "22588290141BE2E3C799CE19BBD1BF93795CD9963EF6D49BE349C9C74EB0C8F4",
+  "summary": {
+    "fileCount": 47,
+    "sourceLineCount": 8398,
+    "statementCount": 8058,
+    "uniqueCommandCount": 139,
+    "globalLabelCount": 178,
+    "representativeAddressCount": 47,
+    "externallyReferencedLabelCount": 127,
+    "internalOnlyLabelCount": 51,
+    "unreferencedLabelCount": 0,
+    "sameFileReferenceCount": 92,
+    "externalReferenceCount": 146,
+    "initScriptTargetCount": 75,
+    "standaloneOwnedInitScriptTargetCount": 12,
+    "nonStandaloneInitScriptTargetCount": 63,
+    "cutsceneEndCommandCount": 122,
+    "returnStatementCount": 16
+  }
+}
