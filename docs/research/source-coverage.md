@@ -20,13 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,439 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed findings | 1,440 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
+| H2 fixture files | 48 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,871 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,874 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -82,9 +83,10 @@ The current evidence is deep but narrow:
   remains queued for one technical runtime matrix.
   Technical graphics now binds all 11 layout-owned decompression/display/palette/special-sprite files.
   Calling conventions and state routing are static contracts. The project-owned Stack decoder now
-  covers all 43 battle-terrain payloads/45 pointer slots and 52 portrait payloads/56 pointer slots,
-  including portrait eye/mouth metadata and palette boundaries. Remaining Basic/embedded Stack
-  corpora and rendered frames remain queued.
+  covers all 43 battle-terrain payloads/45 pointer slots, 27 battle-background payloads/30 pointer
+  slots with two 6,144-byte tilesets each, and 52 portrait payloads/56 pointer slots, including
+  background/portrait palette boundaries and portrait eye/mouth metadata. Remaining Basic/embedded
+  Stack corpora and rendered frames remain queued.
   Technical interfaces bind all 25 jump/pointer files and hash the complete 331-stub/60-pointer map;
   this routing structure requires no runtime replay.
   Remaining technical services inventory all twelve resource/sound/SRAM/input/copy/RNG files. Eleven
@@ -151,9 +153,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,439 records; its
-verifier reports 381 unique code files, 980 unique data files, 47 H2 fixtures, 58 H3 fixtures, and
-1,871 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,440 records; its
+verifier reports 381 unique code files, 980 unique data files, 48 H2 fixtures, 58 H3 fixtures, and
+1,874 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

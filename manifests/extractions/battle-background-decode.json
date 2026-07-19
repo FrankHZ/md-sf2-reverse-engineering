@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-background-decode-v1",
+  "outputSha256": "B46BF901D0557A623E75CDDFB93EE8B186965B5912776732AA5A9D4EFAB886D1",
+  "summary": {
+    "backgroundPointerCount": 30,
+    "uniquePayloadCount": 27,
+    "aliasPointerCount": 3,
+    "payloadByteCount": 164768,
+    "headerByteCount": 1026,
+    "paletteByteCount": 864,
+    "compressedStreamCount": 54,
+    "compressedByteCount": 163742,
+    "decodedByteCount": 331776,
+    "decodedBytesPerTileset": 6144,
+    "commandGroupCount": 7002,
+    "literalWordCount": 93129,
+    "copyCommandCount": 18472,
+    "copiedWordCount": 72759,
+    "maximumCopyOffsetWords": 2014,
+    "maximumCopyLengthWords": 33,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 47,
+    "pointerTableRomParityCount": 30,
+    "payloadRomParityCount": 27
+  }
+}

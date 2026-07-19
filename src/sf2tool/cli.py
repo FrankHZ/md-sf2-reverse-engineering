@@ -11,6 +11,7 @@ from sf2tool.h2.ally_data import verify_ally_data_inventory
 from sf2tool.h2.auxiliary_data import verify_auxiliary_data_inventory
 from sf2tool.h2.battle_actions import verify_battle_actions_inventory
 from sf2tool.h2.battle_ai import verify_battle_ai_inventory
+from sf2tool.h2.battle_backgrounds import verify_battle_background_contract
 from sf2tool.h2.battle_control import verify_battle_control_inventory
 from sf2tool.h2.battle_cutscene_data import verify_battle_cutscene_data_inventory
 from sf2tool.h2.battle_cutscenes import verify_battle_cutscene_inventory
@@ -322,6 +323,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_battle_terrain)
     h2_battle_terrain.add_argument("--output-path", type=_path)
+    h2_battle_backgrounds = h2_commands.add_parser(
+        "battle-backgrounds",
+        help="decode every battle background palette and pair of Stack-compressed tilesets",
+    )
+    _add_local_paths(h2_battle_backgrounds)
+    h2_battle_backgrounds.add_argument("--output-path", type=_path)
     h2_portraits = h2_commands.add_parser(
         "portraits", help="decode all portrait metadata, palettes, and Stack-compressed tiles"
     )
@@ -824,6 +831,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "battle-terrain":
         print_record(
             verify_battle_terrain_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "battle-backgrounds":
+        print_record(
+            verify_battle_background_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
