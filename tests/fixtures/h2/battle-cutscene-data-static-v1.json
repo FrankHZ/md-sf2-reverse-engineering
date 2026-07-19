@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-cutscene-data-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "abcs_battle00": 324730,
+    "abcs_battle01": 300764,
+    "bbcs_01": 300220,
+    "bbcs_03": 301070,
+    "abcs_battle04": 301294,
+    "bbcs_04": 301086,
+    "abcs_battle05": 301896,
+    "edcs_battle5": 301746,
+    "bbcs_06": 302026,
+    "abcs_battle07": 302974,
+    "bbcs_07": 302306,
+    "abcs_battle08": 305780,
+    "bbcs_08": 305490,
+    "bbcs_11": 306174,
+    "abcs_battle12": 306412,
+    "edcs_battle12": 306376,
+    "abcs_battle13": 306424,
+    "abcs_battle15": 306802,
+    "bbcs_15": 306598,
+    "abcs_battle16": 307644,
+    "bbcs_16": 307134,
+    "abcs_battle18": 307954,
+    "bbcs_18": 307672,
+    "abcs_battle20": 308942,
+    "abcs_battle21": 309388,
+    "bbcs_21": 309136,
+    "abcs_battle26": 310442,
+    "bbcs_26": 309592,
+    "bscs_battle27": 310890,
+    "abcs_battle28": 311420,
+    "bbcs_28": 310924,
+    "bbcs_29": 312284,
+    "abcs_battle30": 313000,
+    "bbcs_30": 312806,
+    "bbcs_31": 313748,
+    "abcs_battle32": 314804,
+    "bbcs_32": 314338,
+    "rbcs_battle32": 314640,
+    "abcs_battle33": 315546,
+    "bbcs_33": 315148,
+    "abcs_battle34": 316598,
+    "bbcs_34": 316226,
+    "bbcs_35": 317134,
+    "abcs_battle36": 317860,
+    "bbcs_36": 317578,
+    "abcs_battle37": 318356,
+    "bbcs_37": 318054,
+    "abcs_battle38": 319116,
+    "bbcs_38": 318884,
+    "bbcs_39": 320466,
+    "abcs_battle40": 322196,
+    "bbcs_40": 320732,
+    "rbcs_battle40_1": 321704,
+    "rbcs_battle40_2": 321970,
+    "bbcs_41": 322830,
+    "abcs_battle42": 323332,
+    "bbcs_42": 322958,
+    "abcs_battle43": 324446,
+    "edcs_battle43": 324440
+  },
+  "expected": {
+    "facts": {
+      "builtBattleCount": 34,
+      "builtBattleIndexes": [
+        0, 1, 3, 4, 5, 6, 7, 8, 11, 12, 13, 15, 16, 18, 20, 21, 26, 27, 28,
+        29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43
+      ],
+      "cutsceneTypeCounts": {
+        "after-battle": 25,
+        "battle-end": 3,
+        "battle-start": 1,
+        "before-battle": 27,
+        "region-triggered": 3
+      },
+      "commands": {
+        "statementCount": 5672,
+        "uniqueCommandCount": 87,
+        "endCommandCount": 59,
+        "mostFrequentCommands": [
+          { "command": "nextSingleText", "count": 643 },
+          { "command": "csWait", "count": 473 },
+          { "command": "setFacing", "count": 429 },
+          { "command": "endActions", "count": 375 },
+          { "command": "setActscriptWait", "count": 348 },
+          { "command": "entityActionsWait", "count": 245 },
+          { "command": "entity", "count": 235 },
+          { "command": "setPos", "count": 227 }
+        ]
+      },
+      "storyContentParsed": false,
+      "existingRoutingOwner": {
+        "verifier": "src/sf2tool/h2/battle_cutscenes.py",
+        "document": "docs/research/battle-cutscenes.md"
+      }
+    },
+    "runtimeQuestions": [
+      "battle01-orphan-region-cutscene-provenance-and-reachability",
+      "cutscene-command-presentation-and-timing",
+      "story-side-effects-across-map-entity-and-battle-state"
+    ]
+  }
+}

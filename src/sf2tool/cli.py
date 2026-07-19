@@ -11,6 +11,7 @@ from sf2tool.h2.ally_data import verify_ally_data_inventory
 from sf2tool.h2.battle_actions import verify_battle_actions_inventory
 from sf2tool.h2.battle_ai import verify_battle_ai_inventory
 from sf2tool.h2.battle_control import verify_battle_control_inventory
+from sf2tool.h2.battle_cutscene_data import verify_battle_cutscene_data_inventory
 from sf2tool.h2.battle_cutscenes import verify_battle_cutscene_inventory
 from sf2tool.h2.battle_functions import verify_battle_functions_inventory
 from sf2tool.h2.battle_global_data import verify_battle_global_data_inventory
@@ -281,6 +282,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_core_stats_data, rom=False)
     h2_core_stats_data.add_argument("--output-path", type=_path)
+    h2_battle_cutscene_data = h2_commands.add_parser(
+        "battle-cutscene-data", help="inventory built and orphaned battle cutscene data"
+    )
+    _add_local_paths(h2_battle_cutscene_data, rom=False)
+    h2_battle_cutscene_data.add_argument("--output-path", type=_path)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -664,6 +670,13 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "core-stats-data":
         print_record(
             verify_core_stats_data_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "battle-cutscene-data":
+        print_record(
+            verify_battle_cutscene_data_inventory(
                 args.upstream_path,
                 output_path=args.output_path,
             )

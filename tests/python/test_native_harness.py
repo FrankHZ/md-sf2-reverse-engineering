@@ -20,12 +20,12 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 528
-    assert result["H2Fixtures"] == 31
+    assert result["Records"] == 587
+    assert result["H2Fixtures"] == 32
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 924
+    assert result["AddressBindings"] == 983
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 78
+    assert result["IndexedDataFiles"] == 137
 
 
 def test_mega_drive_checksum_handles_an_odd_trailing_byte() -> None:
@@ -197,6 +197,13 @@ def test_ally_data_has_a_source_only_inventory_command() -> None:
 def test_core_stats_data_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "core-stats-data"])
     assert args.h2_command == "core-stats-data"
+    assert not hasattr(args, "rom_path")
+    assert args.output_path is None
+
+
+def test_battle_cutscene_data_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "battle-cutscene-data"])
+    assert args.h2_command == "battle-cutscene-data"
     assert not hasattr(args, "rom_path")
     assert args.output_path is None
     assert not hasattr(args, "rom_path")
