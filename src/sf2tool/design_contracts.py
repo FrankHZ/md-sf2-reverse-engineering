@@ -6,6 +6,10 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/map-exploration.md": {
+        "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
+        "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
+    },
     "docs/design/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (
             "sf2-muddle-action-guard-both-sides-v1"
