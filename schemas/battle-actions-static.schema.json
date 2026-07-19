@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II battle actions static source inventory",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "actionFacts", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-actions-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "const": "code/gameflow/battle/battleactions" },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"],
+      "properties": {
+        "fileCount": { "const": 29 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 29 },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 1 },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectTargetCount": { "type": "integer", "minimum": 1 },
+        "internalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "externalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "indexedRecordCount": { "type": "integer", "minimum": 29 },
+        "indexedFileCount": { "const": 29 }
+      }
+    },
+    "indexedRecordIds": { "type": "array", "minItems": 29, "uniqueItems": true, "items": { "type": "string" } },
+    "indexedSourcePaths": { "type": "array", "minItems": 29, "maxItems": 29, "uniqueItems": true, "items": { "type": "string" } },
+    "internalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "externalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "actionFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
+    "files": {
+      "type": "array", "minItems": 29, "maxItems": 29,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "sha256", "sourceLineCount", "statementCount", "globalLabels", "localLabelCount", "directCalls", "indirectCallSiteCount"],
+        "properties": {
+          "path": { "type": "string" }, "sha256": { "pattern": "^[0-9A-F]{64}$" },
+          "sourceLineCount": { "type": "integer" }, "statementCount": { "type": "integer" },
+          "globalLabels": { "type": "array", "items": { "type": "string" } },
+          "localLabelCount": { "type": "integer" }, "directCalls": { "type": "array" },
+          "indirectCallSiteCount": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

@@ -6,15 +6,15 @@
 项目已完成 **Phase 1：可复现原版基线**，正在推进 **Phase 2：发现与数据合同**。本地环境
 已经固定 ROM 身份、社区反汇编提交和工具 hash，能非交互地重建出逐字节一致的原版 ROM，
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
-H2、成长曲线与法术学习合同、battle AI、battlefield、battle-loop 与顶层 battle control 全目录 inventory 和静态决策/生命周期合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
+H2、成长曲线与法术学习合同、battle AI、battlefield、battle-loop、顶层 battle control 与 battle actions 全目录 inventory 和静态决策/生命周期合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
 职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、完整击杀 EXP 等级差矩阵、行动顺序、区域激活、物理伤害计算链和
 BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门、敌人物品稀有/必掉/重复 flag、四种临时状态的回合后过期/继续/属性刷新、MUDDLE confusion 谓词与双边行动保护矩阵，以及单次启动 14 case 的 AI 最终行动/目标选择矩阵和单次启动 5 case 的战场移动边界矩阵的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-18，研究索引有 168 条 confirmed finding、54 个 H3 fixture 和 564 个地址绑定。
-按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 92 个文件，即
-**23.77% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
+截至 2026-07-18，研究索引有 183 条 confirmed finding、54 个 H3 fixture 和 579 个地址绑定。
+按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 107 个文件，即
+**27.65% code-file reach**；这不是行/函数覆盖率，也不表示这些文件已全部理解。H2 的 14 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -221,7 +221,9 @@ global label 和 116 个直接调用点，并将每个文件的代表入口绑�
 并将 roster 扫描、AI memory reset、terrain 解压、spawn admission、死亡清理和战后恢复固化为合同；
 顶层 battle-control rail 再覆盖 9 个文件、618 行、18 个 global label 和 60 个直接调用点，将主循环、
 胜负出口、difficulty、spriteset、music/VInt 和 laser ray 固化为静态合同。两批均未增加模拟器启动；
-尚未静态闭合的问题继续积累到后续共享模拟矩阵。
+battle-actions rail 接着覆盖 29 个文件、4,375 行、130 个 global label 和 274 个直接调用点，补齐动作
+engine、物理分支顺序、item use/break、Taros 特例和目标排序。三批均未增加模拟器启动；尚未静态
+闭合的问题继续积累到后续共享模拟矩阵。
 H3 以 7 组受控 seed 验证 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在

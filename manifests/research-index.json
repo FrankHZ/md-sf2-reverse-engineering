@@ -156,6 +156,66 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755296 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.laserFacingAddress" }] }], "documents": ["docs/research/battle-loop.md"]
     },
     {
+      "id": "battle.actions.animate", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_AnimateAction", "sourcePath": "code/gameflow/battle/battleactions/animateaction.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 42728 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.animateActionAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.attack", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_Attack", "sourcePath": "code/gameflow/battle/battleactions/attack.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 43702 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.attackAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.engine", "subsystem": "battle.actions", "status": "confirmed", "symbol": "WriteBattlesceneScript", "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 39826 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.engineAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.break-used-item", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_BreakUsedItem", "sourcePath": "code/gameflow/battle/battleactions/breakuseditem.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 48102 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.breakUsedItemAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.perform-animation", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_PerformAnimation", "sourcePath": "code/gameflow/battle/battleactions/createbattlesceneanimation.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 41472 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.performAnimationAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.display-message", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_DisplayActionMessage", "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 41052 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.displayActionMessageAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.ineffective-taros", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_DetermineIneffectiveAttack", "sourcePath": "code/gameflow/battle/battleactions/determineineffectiveattack.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 40644 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.ineffectiveAttackAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.display-death", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_DisplayDeathMessage", "sourcePath": "code/gameflow/battle/battleactions/displaydeathmessage.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 45184 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.displayDeathMessageAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.spell-animation", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_GetSpellanimation", "sourcePath": "code/gameflow/battle/battleactions/getspellanimation.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 42318 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getSpellAnimationAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.inflict-ailment", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_InflictAilment", "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 44594 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.inflictAilmentAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.inflict-curse-damage", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_InflictCurseDamage", "sourcePath": "code/gameflow/battle/battleactions/inflictcursedamage.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 44912 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.inflictCurseDamageAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.null-sub", "subsystem": "battle.actions", "status": "confirmed", "symbol": "nullsub_BBE4", "sourcePath": "code/gameflow/battle/battleactions/nullsub_BBE4.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 48100 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.nullSubAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.sort-targets", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_SortTargets", "sourcePath": "code/gameflow/battle/battleactions/sorttargets.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 43468 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.sortTargetsAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.unused-helpers", "subsystem": "battle.actions", "status": "confirmed", "symbol": "OneSecondSleep", "sourcePath": "code/gameflow/battle/battleactions/unused_battleactions.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 43672 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHelpersAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
+      "id": "battle.actions.use-item", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_UseItem", "sourcePath": "code/gameflow/battle/battleactions/useitem.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 48056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.useItemAddress" }] }], "documents": ["docs/research/battle-actions.md"]
+    },
+    {
       "id": "battle.combatant.get-enemy",
       "subsystem": "battle.combatant",
       "status": "confirmed",

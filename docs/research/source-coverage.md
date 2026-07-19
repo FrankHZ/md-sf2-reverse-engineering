@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 168 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 100 | 92 code files and 8 data files |
-| Executable code-file reach | 23.77% | 92 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 183 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 115 | 107 code files and 8 data files |
+| Executable code-file reach | 27.65% | 107 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 564 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 579 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -54,12 +54,14 @@ The current evidence is deep but narrow:
   battle-loop directory now has complete static inventory plus roster, terrain, spawn, death cleanup,
   and between-battle healing contracts. All nine top-level battle-control files are inventoried too,
   with main-loop, victory/defeat, difficulty, spriteset, music/VInt, and laser-ray contracts;
-  upgrade/egress, suspended persistence, table content, and visual sequencing remain partial.
+  upgrade/egress, suspended persistence, table content, and visual sequencing remain partial. All 29
+  battle-action files now have static/H3 reach, with engine sequencing, item break/use, Taros gating,
+  and target sorting modeled; presentation and remaining ailment subroutes are still partial.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 23.77% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 27.65% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -72,8 +74,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 168 records; its
-verifier reports 54 H3 fixtures and 564 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 183 records; its
+verifier reports 54 H3 fixtures and 579 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -109,5 +111,6 @@ occupancy, neighbor admission, range rings, target admission, attack-position se
 backtracking, move orders, trapped chests, and weighted propagation. Its first concentrated runtime
 batch confirms five movement/boundary cases in one launch. Remaining battle-AI signed-priority,
 critical-class, dispatcher/standby questions and the attack-position comment conflict stay queued
-until they form another coherent shared-boundary matrix; static work proceeds toward the remaining
-15 unindexed `battleactions` files and then the smaller battle-function boundary.
+until they form another coherent shared-boundary matrix. The 29-file battle-actions directory is now
+fully reached without another emulator launch; static work proceeds into the seven-file
+`battlefunctions` boundary and then battle-scene presentation helpers.
