@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 ally data static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "table", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-ally-data-static-v1" },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
+    "table": {
+      "type": "object", "minProperties": 42, "maxProperties": 42,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factSummary", "runtimeQuestions"],
+      "properties": {
+        "factSummary": { "type": "object" },
+        "runtimeQuestions": {
+          "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true
+        }
+      }
+    }
+  }
+}

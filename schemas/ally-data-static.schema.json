@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II ally data static inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "directLayoutPaths",
+    "nestedIncludePaths", "transitiveLayoutPaths", "indexedRecordIds", "indexedSourcePaths",
+    "representativeSymbols", "representativeAddresses", "factSummary", "facts",
+    "runtimeQuestions", "files"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-ally-data-static-v1" },
+    "upstream": { "type": "object" },
+    "scope": { "const": "data/stats/allies" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "directLayoutIncludeCount", "nestedIncludeCount", "transitiveLayoutFileCount",
+        "representativeAddressCount", "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 42 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "const": 42 },
+        "directLayoutIncludeCount": { "const": 12 },
+        "nestedIncludeCount": { "const": 30 },
+        "transitiveLayoutFileCount": { "const": 42 },
+        "representativeAddressCount": { "const": 42 },
+        "indexedRecordCount": { "const": 42 },
+        "indexedFileCount": { "const": 42 }
+      }
+    },
+    "directLayoutPaths": {
+      "type": "array", "minItems": 12, "maxItems": 12, "uniqueItems": true
+    },
+    "nestedIncludePaths": {
+      "type": "array", "minItems": 30, "maxItems": 30, "uniqueItems": true
+    },
+    "transitiveLayoutPaths": {
+      "type": "array", "minItems": 42, "maxItems": 42, "uniqueItems": true
+    },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 42, "maxItems": 42, "uniqueItems": true
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 42, "maxItems": 42, "uniqueItems": true
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 42, "maxProperties": 42
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 42, "maxProperties": 42,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "factSummary": { "type": "object" },
+    "facts": { "type": "object" },
+    "runtimeQuestions": {
+      "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true
+    },
+    "files": { "type": "array", "minItems": 42, "maxItems": 42 }
+  }
+}

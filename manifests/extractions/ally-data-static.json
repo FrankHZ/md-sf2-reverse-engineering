@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-ally-data-static-v1",
+  "outputSha256": "5B1A35F1AF079FA625BA92B7233C4E1B8DC30CDF79D72EA96E9DA1CF802473EC",
+  "summary": {
+    "fileCount": 42,
+    "sourceLineCount": 1737,
+    "statementCount": 1335,
+    "globalLabelCount": 42,
+    "directLayoutIncludeCount": 12,
+    "nestedIncludeCount": 30,
+    "transitiveLayoutFileCount": 42,
+    "representativeAddressCount": 42,
+    "indexedRecordCount": 42,
+    "indexedFileCount": 42
+  }
+}
