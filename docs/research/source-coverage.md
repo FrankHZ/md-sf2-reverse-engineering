@@ -47,8 +47,8 @@ The current evidence is deep but narrow:
   deeper special-helper semantics remain open. Battlefield/pathfinding now has a complete 17-file
   inventory and representative address binding in every file; its 48×48 RAM grids, initialization,
   occupancy, movement-neighbor admission, range rings, target admission, attack-position selection,
-  and move-string backtracking are modeled, while full propagation and late move-order/chest semantics
-  remain shallow. Other battle systems cover selected
+  move-string backtracking, move-order, and trapped-chest semantics are modeled, while full weighted
+  propagation remains shallow. Other battle systems cover selected
   boundaries rather than every caller and state transition.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
@@ -107,6 +107,6 @@ critical-class, movement, dispatcher, and standby ambiguities accumulate for the
 shared-boundary launches. The adjacent battlefield/pathfinding directory now also has all 17 files
 inventoried (2,299 lines, 126 global labels, 116 direct call sites), with grid layout,
 initialization, occupancy, neighbor admission, range rings, target admission, attack-position, and
-move-string backtracking modeled. The next static batches finish propagation/tie-break behavior and
-late move-order/chest handling before
+move-string backtracking, move-order, and trapped-chest handling modeled. The next static batch
+finishes weighted propagation/tie-break behavior before
 any new runtime launch.

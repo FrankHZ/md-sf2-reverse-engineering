@@ -215,7 +215,7 @@ ATTACK/BOOST 2 路由、最终 action/target tie-break、move/move-order、dispa
 绑定到 H1 地址。battlefield/pathfinding 静态 rail 另覆盖该目录全部 17 个文件、2,299 行、126 个
 global label 和 116 个直接调用点，并将每个文件的代表入口绑定到 H1 地址；48×48 RAM 数组、
 初始化/占用规则、移动邻格准入、四层 Manhattan range、目标阵营/准入、攻击站位和 move-string
-回溯已形成静态合同，完整传播与 move-order/chest 边界继续分批加深。H3 以 7 组受控 seed 验证
+回溯、move-order 和 trapped-chest 已形成静态合同，完整 weighted propagation 继续加深。H3 以 7 组受控 seed 验证
 `GenerateRandomNumber` 的原版 ROM 指令、RAM seed
 更新和 D7 输出，并以 18 个自然启动调用验证 curve-none、两次 RNG 随机成长、返回 gain 和一次
 最低成长补偿分支。完整升级 H3 进一步确认 Kazin 的普通基础职业路径，以及 Kiwi/TORT 在

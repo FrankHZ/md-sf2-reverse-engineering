@@ -12,12 +12,13 @@
     "ram": { "type": "object", "minProperties": 6, "maxProperties": 6, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "expected": {
       "type": "object", "additionalProperties": false,
-      "required": ["representativeSymbols", "coreModel", "targetingFacts", "pathSelectionFacts"],
+      "required": ["representativeSymbols", "coreModel", "targetingFacts", "pathSelectionFacts", "lateHelperFacts"],
       "properties": {
         "representativeSymbols": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "string" } },
         "coreModel": { "type": "object", "minProperties": 5, "maxProperties": 5 },
         "targetingFacts": { "type": "object", "minProperties": 7, "maxProperties": 7 },
-        "pathSelectionFacts": { "type": "object", "minProperties": 2, "maxProperties": 2 }
+        "pathSelectionFacts": { "type": "object", "minProperties": 2, "maxProperties": 2 },
+        "lateHelperFacts": { "type": "object", "minProperties": 3, "maxProperties": 3 }
       }
     }
   }

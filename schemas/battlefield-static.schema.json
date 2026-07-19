@@ -30,7 +30,7 @@
     "indexedSourcePaths": { "type": "array", "minItems": 17, "maxItems": 17, "uniqueItems": true, "items": { "type": "string" } },
     "internalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
     "externalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-    "coreModel": { "type": "object", "minProperties": 7, "maxProperties": 7 },
+    "coreModel": { "type": "object", "minProperties": 8, "maxProperties": 8 },
     "files": {
       "type": "array", "minItems": 17, "maxItems": 17,
       "items": {

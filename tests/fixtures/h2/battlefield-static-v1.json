@@ -192,6 +192,34 @@
           "destination": { "x": 2, "y": 2 }
         }
       }
+    },
+    "lateHelperFacts": {
+      "moveOrderPosition": {
+        "moveToBit": 6,
+        "bitClearMeaning": "follow combatant index",
+        "bitSetMeaning": "AI point",
+        "aiPointSubsection": 4,
+        "aiPointIndexMask": 15,
+        "aiPointEntryBytes": 2
+      },
+      "moveOrderTerrain": {
+        "targetTypeArgumentUnused": true,
+        "testsTerrainBit": 7,
+        "clearResult": 0,
+        "setResult": 255,
+        "doesNotTestImpassableBitSeparately": true
+      },
+      "trappedChest": {
+        "enemySubsection": 2,
+        "firstCombatant": 128,
+        "entryBytes": 12,
+        "coordinateComparisonUsesLowBytes": true,
+        "activationBitfieldMustEqual": 512,
+        "bothTriggerRegionsMustEqual": 15,
+        "maximumHpMustEqual": 0,
+        "matchResetsSpawningEnemyStats": true,
+        "noMatchResult": 65535
+      }
     }
   }
 }

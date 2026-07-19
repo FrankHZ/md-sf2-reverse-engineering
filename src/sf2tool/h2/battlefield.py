@@ -291,6 +291,33 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
             "sub.w   d3,d6",
         ],
     )
+    _require_ordered_fragments(
+        source_root / "getmoveorderposition.asm",
+        [
+            "btst    #AIORDER_BIT_MOVE_TO,d0",
+            "jsr     j_GetCombatantY",
+            "jsr     j_GetCombatantX",
+            "moveq   #BATTLESPRITESET_SUBSECTION_AI_POINTS,d1",
+            "andi.w  #BYTE_LOWER_NIBBLE_MASK,d0",
+            "add.w   d0,d0",
+            "move.b  (a0),d1",
+            "move.b  1(a0),d2",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "checkfortrappedchest.asm",
+        [
+            "move.w  #BATTLESPRITESET_SUBSECTION_ENEMIES,d1",
+            "move.w  #COMBATANT_ENEMIES_START,d0",
+            "cmp.b   d1,d6",
+            "cmp.b   d2,d7",
+            "cmpi.w  #AIBITFIELD_HIDDEN,d1",
+            "cmpi.w  #AI_TRIGGER_REGION_NONE,d1",
+            "cmpi.w  #AI_TRIGGER_REGION_NONE,d2",
+            "jsr     j_GetMaxHp",
+            "bsr.w   ResetSpawningEnemyStats",
+        ],
+    )
 
     width = constant("MAP_SIZE_MAX_TILEWIDTH")
     height = constant("MAP_SIZE_MAX_TILEHEIGHT")
@@ -449,6 +476,34 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
                 },
             },
         },
+        "lateHelpers": {
+            "moveOrderPosition": {
+                "moveToBit": constant("AIORDER_BIT_MOVE_TO"),
+                "bitClearMeaning": "follow combatant index",
+                "bitSetMeaning": "AI point",
+                "aiPointSubsection": constant("BATTLESPRITESET_SUBSECTION_AI_POINTS"),
+                "aiPointIndexMask": 15,
+                "aiPointEntryBytes": 2,
+            },
+            "moveOrderTerrain": {
+                "targetTypeArgumentUnused": True,
+                "testsTerrainBit": constant("TERRAIN_BIT_OCCUPIED"),
+                "clearResult": 0,
+                "setResult": 255,
+                "doesNotTestImpassableBitSeparately": True,
+            },
+            "trappedChest": {
+                "enemySubsection": constant("BATTLESPRITESET_SUBSECTION_ENEMIES"),
+                "firstCombatant": constant("COMBATANT_ENEMIES_START"),
+                "entryBytes": constant("BATTLESPRITESET_ENTITY_ENTRY_SIZE"),
+                "coordinateComparisonUsesLowBytes": True,
+                "activationBitfieldMustEqual": constant("AIBITFIELD_HIDDEN"),
+                "bothTriggerRegionsMustEqual": constant("AI_TRIGGER_REGION_NONE"),
+                "maximumHpMustEqual": 0,
+                "matchResetsSpawningEnemyStats": True,
+                "noMatchResult": 65535,
+            },
+        },
     }
 
 
@@ -569,6 +624,8 @@ def verify_battlefield_inventory(
         raise ValueError("battlefield range and targeting model drift")
     if output["coreModel"]["pathSelection"] != fixture["expected"]["pathSelectionFacts"]:
         raise ValueError("battlefield attack-position or move-string model drift")
+    if output["coreModel"]["lateHelpers"] != fixture["expected"]["lateHelperFacts"]:
+        raise ValueError("battlefield move-order or trapped-chest model drift")
     for name, address in output["coreModel"]["arrays"].items():
         if fixture["ram"][name] != address:
             raise ValueError(f"battlefield RAM address binding drift: {name}")

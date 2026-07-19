@@ -106,6 +106,19 @@ One static hazard is now queued for concentrated runtime work: neighbor bytes ar
 2,304-byte bounds check, so border paths can touch the adjacent RAM byte even though the candidate is
 then rejected. No runtime effect is claimed yet.
 
+## Move Orders and Trapped Chests
+
+Move-order bit 6 selects the coordinate source. Clear treats the command value as the combatant to
+follow; set uses the low nibble as an index into two-byte AI-point coordinates. The terrain helper's
+nominal target-type argument is unused: it returns `0xFF` only when current terrain bit 7 is set and
+does not test impassable bit 6 separately.
+
+The trapped-chest helper scans 12-byte entries in the battle's enemy subsection starting at combatant
+128. A match requires low-byte X/Y equality, activation bitfield exactly `0x0200`, both trigger
+regions exactly 15 (“none”), and maximum HP zero. It resets spawning-enemy stats and returns that
+combatant index; empty/no-match cases return `0xFFFF`. These are conjunctions, not loose hidden-bit
+or dead-enemy tests.
+
 ## Evidence Limits
 
 - **Confirmed:** directory/file set, source metrics, named entry addresses, source hashes, and
@@ -129,10 +142,9 @@ uv run sf2 research-index test
 The H2 command validates the source inventory and fixture schemas, pinned upstream commit, ROM
 provenance, representative labels, summary counts, and canonical output hash. Generated JSON is
 written only to ignored `local/derived/battlefield-static.json`; the accepted SHA-256 is
-`3E22603768377E9585B5F9CBF61463A7CA8230F911D0C067347380D73ED4910A`.
+`7A881F09BC13A5FAFCE5056A85DAD57EFCA2B156953ACD231D5CDB913FF0A98C`.
 
 ## Next Static Batches
 
-The next passes will model complete bucket propagation, move-order positioning, and trapped-chest
-handling. Runtime questions remain a queue until those models expose a compact branch matrix worth
-launching together.
+The next pass will model complete weighted bucket propagation. Runtime questions remain a queue until
+that model exposes a compact branch matrix worth launching together.
