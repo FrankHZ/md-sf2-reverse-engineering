@@ -2331,7 +2331,13 @@
     },
     {
       "id": "battlefield.inventory.move-string-destination", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetMoveStringDestination", "sourcePath": "code/gameflow/battle/battlefield/getmovestringdestination.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49188 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getMoveStringDestinationAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 49188 },
+        { "id": "move-string", "space": "ram", "kind": "state", "value": 16750596 }
+      ], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [
+        { "addressId": "entry", "fixtureField": "function.getMoveStringDestinationAddress" },
+        { "addressId": "move-string", "fixtureField": "ram.moveString" }
+      ] }], "documents": ["docs/research/battlefield-pathfinding.md"]
     },
     {
       "id": "battlefield.inventory.engine", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "ConvertCoordinatesToAddress", "sourcePath": "code/gameflow/battle/battlefield/battlefieldengine.asm",

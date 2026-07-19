@@ -4,8 +4,8 @@
   source hashes, static call-edge counts, core grid/RAM layout, initialization, occupancy rules,
   movement-neighbor admission, Manhattan range rings, and target-side/admission rules
 - Status: **Inferred** for algorithm names and roles that currently rely on upstream labels/comments
-- Status: **Unknown** for full propagation/tie-break behavior, range/target construction, move-string
-  reconstruction, and runtime edge cases until later focused models and the queued H3 matrix are complete
+- Status: **Unknown** for complete bucket propagation, edge-memory effects, and runtime ambiguities
+  until later focused models and the queued H3 matrix are complete
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -85,14 +85,35 @@ combatant but not applying the neutral-bit filter. Reachable-target enumeration 
 opposing roster; confusion flips the actor affiliation first. Each accepted target stores the low
 byte of total movement cost in a parallel 48-byte list.
 
+## Attack Position and Move Strings
+
+`DetermineAttackPosition` scans a Manhattan annulus from top to bottom and left to right. It returns
+immediately if the actor already stands at an in-range zero-cost position; otherwise it rejects
+word-bit-15 obstruction, occupied destinations, and out-of-map candidates. Candidate cost starts at
+`0xFF`, and the instruction comparison replaces it only with a strictly lower unsigned low byte, so
+equal costs retain the first scanned coordinate. This conflicts with the upstream prose saying that
+the function prefers higher move cost; the executable comparison is preserved as the Confirmed fact
+and the prose disagreement remains explicit.
+
+Move strings at `0xFF9804` use direction bytes right=0, up=1, left=2, down=3 and `0xFF` as terminator;
+any other code also stops destination replay. Backtracking checks right, left, up, down and keeps the
+lowest combined grid cost no greater than current minus one. When equal-cost alternatives exist it
+avoids repeating the previous backtrack direction. The AI form reverses the constructed string and
+maps each byte to its opposite with XOR 2. The partial builder stops at
+`max(destinationCost - movementBudget, 0)`.
+
+One static hazard is now queued for concentrated runtime work: neighbor bytes are read before the
+2,304-byte bounds check, so border paths can touch the adjacent RAM byte even though the candidate is
+then rejected. No runtime effect is claimed yet.
+
 ## Evidence Limits
 
 - **Confirmed:** directory/file set, source metrics, named entry addresses, source hashes, and
   syntactic direct-call relationships reproduced by the Python rail.
 - **Inferred:** broad grouping above, because it follows instruction flow and the pinned upstream
   symbol vocabulary but is not yet represented as a project-owned behavioral model.
-- **Unknown:** grid dimensions and memory ownership at every caller, sentinel meanings, neighbor
-  visitation order, equal-cost tie-breaking, overflow/signedness edges, and whether late helpers
+- **Unknown:** full budget-bucket propagation for competing weighted paths, the observable effect of
+  pre-check border reads, overflow/signedness edges outside normal stats, and whether late helpers
   have reachable original-game callers.
 
 Static parsing owns those questions first. Only timing, persistence, caller-context, hardware, or
@@ -108,10 +129,10 @@ uv run sf2 research-index test
 The H2 command validates the source inventory and fixture schemas, pinned upstream commit, ROM
 provenance, representative labels, summary counts, and canonical output hash. Generated JSON is
 written only to ignored `local/derived/battlefield-static.json`; the accepted SHA-256 is
-`7A5198CAB11E7DD86C4EDDA892D4EB6D0094ECF0C0F61D1556CE75E8B8777E08`.
+`3E22603768377E9585B5F9CBF61463A7CA8230F911D0C067347380D73ED4910A`.
 
 ## Next Static Batches
 
-The next passes will model the complete bucket propagation and tie-break behavior, attack-position
-selection, and move-string reconstruction. Runtime questions remain a queue until those models expose
-a compact branch matrix worth launching together.
+The next passes will model complete bucket propagation, move-order positioning, and trapped-chest
+handling. Runtime questions remain a queue until those models expose a compact branch matrix worth
+launching together.

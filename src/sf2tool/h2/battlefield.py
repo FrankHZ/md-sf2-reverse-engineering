@@ -176,6 +176,26 @@ def _targeting_facts(targeting: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _annulus_offsets(maximum: int, minimum: int) -> list[list[int]]:
+    return [
+        [x, y]
+        for y in range(-maximum, maximum + 1)
+        for x in range(-(maximum - abs(y)), maximum - abs(y) + 1)
+        if abs(x) + abs(y) >= minimum
+    ]
+
+
+def _replay_move_string(x: int, y: int, directions: list[int]) -> dict[str, int]:
+    deltas = {0: (1, 0), 1: (0, -1), 2: (-1, 0), 3: (0, 1)}
+    for direction in directions:
+        if direction not in deltas:
+            break
+        dx, dy = deltas[direction]
+        x += dx
+        y += dy
+    return {"x": x, "y": y}
+
+
 def _build_core_model(disasm: Path) -> dict[str, Any]:
     definitions = _load_equates(disasm / "sf2const.asm", disasm / "sf2enums.asm")
     memo: dict[str, int] = {}
@@ -232,6 +252,43 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
             "jsr     GetCombatantY",
             "jsr     GetCombatantX",
             "move.b  d0,(a0)",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "determineattackposition.asm",
+        [
+            "move.b  #-1,candidateMoveCost(a6)",
+            "neg.b   d6",
+            "cmp.b   d4,d0",
+            "bsr.w   GetMoveCostToDestination",
+            "tst.w   d0",
+            "btst    #15,d0",
+            "cmp.b   candidateMoveCost(a6),d0",
+            "bcc.w   @Next",
+            "bsr.w   GetCombatantOccupyingSpace",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "getmovestringdestination.asm",
+        [
+            "cmpi.b  #-1,d0",
+            "addq.w  #1,d1",
+            "subq.w  #1,d2",
+            "subq.w  #1,d1",
+            "addq.w  #1,d2",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "buildmovestringfunctions.asm",
+        [
+            "subq.w  #1,d4",
+            "addq.w  #1,d2",
+            "subq.w  #1,d2",
+            "subi.w  #48,d2",
+            "addi.w  #48,d2",
+            "eori.b  #2,d1",
+            "eori.b  #2,d0",
+            "sub.w   d3,d6",
         ],
     )
 
@@ -359,6 +416,39 @@ def _build_core_model(disasm: Path) -> dict[str, Any]:
                 - constant("TARGETS_REACHABLE_BY_ATTACK_LIST"),
             },
         },
+        "pathSelection": {
+            "attackPosition": {
+                "candidateInitialMoveCost": 255,
+                "scanOrder": "top-to-bottom then left-to-right within Manhattan annulus",
+                "radius2Minimum1Offsets": _annulus_offsets(2, 1),
+                "invalidCoordinates": 255,
+                "standingCostZeroReturnsImmediately": True,
+                "obstructedSignalWordBit": 15,
+                "acceptedCostRelation": "unsigned low byte less than current best",
+                "equalCostTieBreak": "first scanned",
+                "requiresUnoccupiedDestination": True,
+                "upstreamHigherCostCommentConflictsWithInstructionComparison": True,
+                "moveOrderFallbackRanges": [[0, 0], [1, 1]],
+            },
+            "moveString": {
+                "ramAddress": constant("BATTLE_ENTITY_MOVE_STRING"),
+                "directionCodes": {"right": 0, "up": 1, "left": 2, "down": 3},
+                "terminator": 255,
+                "otherCodeAlsoStopsReplay": True,
+                "backtrackNeighborOrder": ["right", "left", "up", "down"],
+                "boundsCheckOccursAfterNeighborRead": True,
+                "backtrackChoosesLowestCostAtMostCurrentMinusOne": True,
+                "avoidsRepeatingPreviousBacktrackDirectionWhenAlternativeExists": True,
+                "aiReversesBuiltString": True,
+                "aiOppositeDirectionXor": 2,
+                "partialPathStopCost": "max(destinationCost - movementBudget, 0)",
+                "replayExample": {
+                    "start": {"x": 2, "y": 2},
+                    "directions": [0, 1, 2, 3, 255],
+                    "destination": _replay_move_string(2, 2, [0, 1, 2, 3, 255]),
+                },
+            },
+        },
     }
 
 
@@ -477,8 +567,16 @@ def verify_battlefield_inventory(
             raise ValueError(f"battlefield core array model drift: {key}")
     if _targeting_facts(output["coreModel"]["targeting"]) != fixture["expected"]["targetingFacts"]:
         raise ValueError("battlefield range and targeting model drift")
-    if output["coreModel"]["arrays"] != fixture["ram"]:
-        raise ValueError("battlefield RAM address binding drift")
+    if output["coreModel"]["pathSelection"] != fixture["expected"]["pathSelectionFacts"]:
+        raise ValueError("battlefield attack-position or move-string model drift")
+    for name, address in output["coreModel"]["arrays"].items():
+        if fixture["ram"][name] != address:
+            raise ValueError(f"battlefield RAM address binding drift: {name}")
+    if (
+        output["coreModel"]["pathSelection"]["moveString"]["ramAddress"]
+        != fixture["ram"]["moveString"]
+    ):
+        raise ValueError("battlefield move-string RAM address binding drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError(

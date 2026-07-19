@@ -28,7 +28,8 @@
     "movableGrid": 16731392,
     "targets": 16733696,
     "battleTerrain": 16736000,
-    "moveCostsTable": 16758466
+    "moveCostsTable": 16758466,
+    "moveString": 16750596
   },
   "expected": {
     "representativeSymbols": {
@@ -154,6 +155,42 @@
         "requiresAttackPosition": true,
         "storesTotalMoveCostLowByte": true,
         "listCapacityFromRamLayout": 48
+      }
+    },
+    "pathSelectionFacts": {
+      "attackPosition": {
+        "candidateInitialMoveCost": 255,
+        "scanOrder": "top-to-bottom then left-to-right within Manhattan annulus",
+        "radius2Minimum1Offsets": [
+          [0, -2], [-1, -1], [0, -1], [1, -1], [-2, 0], [-1, 0],
+          [1, 0], [2, 0], [-1, 1], [0, 1], [1, 1], [0, 2]
+        ],
+        "invalidCoordinates": 255,
+        "standingCostZeroReturnsImmediately": true,
+        "obstructedSignalWordBit": 15,
+        "acceptedCostRelation": "unsigned low byte less than current best",
+        "equalCostTieBreak": "first scanned",
+        "requiresUnoccupiedDestination": true,
+        "upstreamHigherCostCommentConflictsWithInstructionComparison": true,
+        "moveOrderFallbackRanges": [[0, 0], [1, 1]]
+      },
+      "moveString": {
+        "ramAddress": 16750596,
+        "directionCodes": { "right": 0, "up": 1, "left": 2, "down": 3 },
+        "terminator": 255,
+        "otherCodeAlsoStopsReplay": true,
+        "backtrackNeighborOrder": ["right", "left", "up", "down"],
+        "boundsCheckOccursAfterNeighborRead": true,
+        "backtrackChoosesLowestCostAtMostCurrentMinusOne": true,
+        "avoidsRepeatingPreviousBacktrackDirectionWhenAlternativeExists": true,
+        "aiReversesBuiltString": true,
+        "aiOppositeDirectionXor": 2,
+        "partialPathStopCost": "max(destinationCost - movementBudget, 0)",
+        "replayExample": {
+          "start": { "x": 2, "y": 2 },
+          "directions": [0, 1, 2, 3, 255],
+          "destination": { "x": 2, "y": 2 }
+        }
       }
     }
   }
