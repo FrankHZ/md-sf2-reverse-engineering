@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
+import re
 import subprocess
 from collections import Counter
 from pathlib import Path
@@ -40,6 +42,198 @@ REPRESENTATIVE_SYMBOLS = {
     "updatemovablegrid.asm": "UpdateMovableGrid",
     "updateoccupiedterrainfunctions.asm": "UpdateOccupiedByOpponentsTerrain",
 }
+
+EQUATE_RE = re.compile(
+    r"^\s*([A-Za-z_][A-Za-z0-9_]*):?\s+equ\s+(.+?)(?:\s*;.*)?$",
+    re.IGNORECASE,
+)
+
+
+def _load_equates(*paths: Path) -> dict[str, str]:
+    definitions: dict[str, str] = {}
+    for path in paths:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = EQUATE_RE.match(line)
+            if match:
+                definitions[match.group(1)] = match.group(2).strip()
+    return definitions
+
+
+def _evaluate_equate(name: str, definitions: dict[str, str], memo: dict[str, int]) -> int:
+    if name in memo:
+        return memo[name]
+    if name not in definitions:
+        raise ValueError(f"missing upstream equate: {name}")
+    expression = re.sub(r"\$([0-9A-Fa-f]+)", r"0x\1", definitions[name])
+
+    def evaluate(node: ast.AST) -> int:
+        if isinstance(node, ast.Expression):
+            return evaluate(node.body)
+        if isinstance(node, ast.Constant) and isinstance(node.value, int):
+            return node.value
+        if isinstance(node, ast.Name):
+            return _evaluate_equate(node.id, definitions, memo)
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+            return -evaluate(node.operand)
+        if isinstance(node, ast.BinOp):
+            left = evaluate(node.left)
+            right = evaluate(node.right)
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Div):
+                return left // right
+        raise ValueError(f"unsupported equate expression for {name}: {expression}")
+
+    value = evaluate(ast.parse(expression, mode="eval"))
+    memo[name] = value
+    return value
+
+
+def _require_ordered_fragments(path: Path, fragments: list[str]) -> None:
+    source = path.read_text(encoding="utf-8")
+    position = 0
+    for fragment in fragments:
+        found = source.find(fragment, position)
+        if found < 0:
+            raise ValueError(f"battlefield instruction sequence drift in {path.name}: {fragment}")
+        position = found + len(fragment)
+
+
+def _occupied_entry(entry: int, *, set_flag: bool) -> int:
+    if entry == 0xFF or (not set_flag and entry & 0x40):
+        return entry
+    return entry | 0x80 if set_flag else entry & 0x7F
+
+
+def _neighbor_outcome(
+    *, terrain_entry: int, move_cost: int, budget: int, expansion_depth: int
+) -> dict[str, int | str | bool]:
+    if terrain_entry & 0x80:
+        return {"status": "rejected-occupied"}
+    if move_cost < 0 or move_cost > budget:
+        return {"status": "rejected-unaffordable"}
+    if move_cost == budget:
+        total = expansion_depth + move_cost
+        return {
+            "status": "marked-final",
+            "totalMoveCost": total & 0xFF,
+            "movableGrid": (total >> 8) & 0xFF,
+            "queued": False,
+        }
+    return {
+        "status": "queued",
+        "remainingBudgetBucket": (budget - move_cost) & 0x1F,
+        "queued": True,
+    }
+
+
+def _build_core_model(disasm: Path) -> dict[str, Any]:
+    definitions = _load_equates(disasm / "sf2const.asm", disasm / "sf2enums.asm")
+    memo: dict[str, int] = {}
+
+    def constant(name: str) -> int:
+        return _evaluate_equate(name, definitions, memo)
+
+    source_root = disasm / SOURCE_ROOT
+    _require_ordered_fragments(
+        source_root / "battlefieldengine.asm",
+        [
+            "mulu.w  #MAP_SIZE_MAX_TILEWIDTH,d2",
+            "add.w   d1,d2",
+            "adda.l  d2,a0",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "buildmovementarrays.asm",
+        [
+            "tst.b   1(a3,d5.w)",
+            "tst.b   -1(a3,d5.w)",
+            "tst.b   -MAP_SIZE_MAX_TILEWIDTH(a3,d5.w)",
+            "tst.b   MAP_SIZE_MAX_TILEWIDTH(a3,d5.w)",
+            "btst    #TERRAIN_BIT_OCCUPIED,d1",
+            "andi.w  #BATTLEFIELD_TERRAIN_ENTRY_MASK,d1",
+            "cmp.w   d2,d0",
+        ],
+    )
+    _require_ordered_fragments(
+        source_root / "updateoccupiedterrainfunctions.asm",
+        [
+            "cmpi.b  #TERRAIN_OBSTRUCTED,d4",
+            "btst    #TERRAIN_BIT_IMPASSABLE,d4",
+            "bclr    #TERRAIN_BIT_OCCUPIED,(a0)",
+            "bset    #TERRAIN_BIT_OCCUPIED,(a0)",
+        ],
+    )
+
+    width = constant("MAP_SIZE_MAX_TILEWIDTH")
+    height = constant("MAP_SIZE_MAX_TILEHEIGHT")
+    array_bytes = constant("MAP_ARRAY_BYTESIZE")
+    if array_bytes != width * height:
+        raise ValueError("battlefield map-array dimension drift")
+    return {
+        "grid": {
+            "width": width,
+            "height": height,
+            "bytes": array_bytes,
+            "longwords": constant("MAP_ARRAY_LONGSIZE"),
+            "coordinateFormula": "y * 48 + x",
+            "coordinateExamples": [
+                {"x": 0, "y": 0, "offset": 0},
+                {"x": 47, "y": 0, "offset": 47},
+                {"x": 0, "y": 47, "offset": 2256},
+                {"x": 47, "y": 47, "offset": 2303},
+            ],
+        },
+        "arrays": {
+            "totalMoveCosts": constant("FF4400_LOADING_SPACE"),
+            "movableGrid": constant("FF4D00_LOADING_SPACE"),
+            "targets": constant("FF5600_LOADING_SPACE"),
+            "battleTerrain": constant("BATTLE_TERRAIN_ARRAY"),
+            "moveCostsTable": constant("MOVECOSTS_TABLE"),
+        },
+        "initialization": {
+            "clearFillByte": 255,
+            "clearBytesPerGrid": array_bytes,
+            "moveBudgetMultiplier": 2,
+            "terrainTypeCount": constant("TERRAIN_TYPES_COUNTER") + 1,
+            "obstructedMoveCostStoredAs": 255,
+        },
+        "movementExpansion": {
+            "stackBytes": constant("BUILD_MOVEMENT_ARRAYS_STACK_BYTESIZE"),
+            "budgetBucketCount": constant("BATTLEFIELD_MOVE_BUDGET_MASK") + 1,
+            "initialBucketWord": constant("BUILD_MOVEMENT_ARRAYS_STACK_INITIAL_PATTERN") >> 16,
+            "processedBit": constant("BATTLEFIELD_PROCESSED_SPACE_BIT"),
+            "budgetMask": constant("BATTLEFIELD_MOVE_BUDGET_MASK"),
+            "terrainMask": constant("BATTLEFIELD_TERRAIN_ENTRY_MASK"),
+            "neighborOrder": ["right", "left", "up", "down"],
+            "rejects": ["outside-array", "occupied", "unaffordable"],
+            "examples": [
+                _neighbor_outcome(terrain_entry=0x80, move_cost=1, budget=4, expansion_depth=2),
+                _neighbor_outcome(terrain_entry=0, move_cost=5, budget=4, expansion_depth=2),
+                _neighbor_outcome(terrain_entry=0, move_cost=4, budget=4, expansion_depth=2),
+                _neighbor_outcome(terrain_entry=0, move_cost=3, budget=4, expansion_depth=2),
+            ],
+        },
+        "occupancy": {
+            "alliesScanned": constant("COMBATANT_ALLIES_COUNTER") + 1,
+            "enemiesScanned": constant("COMBATANT_ENEMIES_COUNTER") + 1,
+            "coordinateUpperBoundExclusive": width,
+            "occupiedBit": constant("TERRAIN_BIT_OCCUPIED"),
+            "impassableBit": constant("TERRAIN_BIT_IMPASSABLE"),
+            "obstructedByte": constant("TERRAIN_OBSTRUCTED") & 0xFF,
+            "examples": [
+                {"entry": 0x03, "set": True, "result": _occupied_entry(0x03, set_flag=True)},
+                {"entry": 0x83, "set": False, "result": _occupied_entry(0x83, set_flag=False)},
+                {"entry": 0x43, "set": False, "result": _occupied_entry(0x43, set_flag=False)},
+                {"entry": 0x43, "set": True, "result": _occupied_entry(0x43, set_flag=True)},
+                {"entry": 0xFF, "set": False, "result": _occupied_entry(0xFF, set_flag=False)},
+            ],
+        },
+    }
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -124,6 +318,7 @@ def build_battlefield_inventory(upstream_path: Path) -> dict[str, Any]:
         "externalDirectCallTargets": sorted(
             target for target in direct_calls if target not in all_labels
         ),
+        "coreModel": _build_core_model(disasm),
         "files": files,
     }
 
@@ -151,6 +346,10 @@ def verify_battlefield_inventory(
     for filename, symbol in fixture["expected"]["representativeSymbols"].items():
         if symbol not in by_name[filename]["globalLabels"]:
             raise ValueError(f"battlefield representative symbol drift: {filename}::{symbol}")
+    if output["coreModel"] != fixture["expected"]["coreModel"]:
+        raise ValueError("battlefield core array model drift")
+    if output["coreModel"]["arrays"] != fixture["ram"]:
+        raise ValueError("battlefield RAM address binding drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError(

@@ -22,6 +22,13 @@
     "getMoveOrderPositionAddress": 1775096,
     "checkForTrappedChestAddress": 1775358
   },
+  "ram": {
+    "totalMoveCosts": 16729088,
+    "movableGrid": 16731392,
+    "targets": 16733696,
+    "battleTerrain": 16736000,
+    "moveCostsTable": 16758466
+  },
   "expected": {
     "representativeSymbols": {
       "battlefieldengine.asm": "ConvertCoordinatesToAddress",
@@ -41,6 +48,66 @@
       "populatetargetslist.asm": "PopulateTargetsListForItemUse",
       "updatemovablegrid.asm": "UpdateMovableGrid",
       "updateoccupiedterrainfunctions.asm": "UpdateOccupiedByOpponentsTerrain"
+    },
+    "coreModel": {
+      "grid": {
+        "width": 48,
+        "height": 48,
+        "bytes": 2304,
+        "longwords": 576,
+        "coordinateFormula": "y * 48 + x",
+        "coordinateExamples": [
+          { "x": 0, "y": 0, "offset": 0 },
+          { "x": 47, "y": 0, "offset": 47 },
+          { "x": 0, "y": 47, "offset": 2256 },
+          { "x": 47, "y": 47, "offset": 2303 }
+        ]
+      },
+      "arrays": {
+        "totalMoveCosts": 16729088,
+        "movableGrid": 16731392,
+        "targets": 16733696,
+        "battleTerrain": 16736000,
+        "moveCostsTable": 16758466
+      },
+      "initialization": {
+        "clearFillByte": 255,
+        "clearBytesPerGrid": 2304,
+        "moveBudgetMultiplier": 2,
+        "terrainTypeCount": 16,
+        "obstructedMoveCostStoredAs": 255
+      },
+      "movementExpansion": {
+        "stackBytes": 64,
+        "budgetBucketCount": 32,
+        "initialBucketWord": 16384,
+        "processedBit": 14,
+        "budgetMask": 31,
+        "terrainMask": 31,
+        "neighborOrder": ["right", "left", "up", "down"],
+        "rejects": ["outside-array", "occupied", "unaffordable"],
+        "examples": [
+          { "status": "rejected-occupied" },
+          { "status": "rejected-unaffordable" },
+          { "status": "marked-final", "totalMoveCost": 6, "movableGrid": 0, "queued": false },
+          { "status": "queued", "remainingBudgetBucket": 1, "queued": true }
+        ]
+      },
+      "occupancy": {
+        "alliesScanned": 30,
+        "enemiesScanned": 32,
+        "coordinateUpperBoundExclusive": 48,
+        "occupiedBit": 7,
+        "impassableBit": 6,
+        "obstructedByte": 255,
+        "examples": [
+          { "entry": 3, "set": true, "result": 131 },
+          { "entry": 131, "set": false, "result": 3 },
+          { "entry": 67, "set": false, "result": 67 },
+          { "entry": 67, "set": true, "result": 195 },
+          { "entry": 255, "set": false, "result": 255 }
+        ]
+      }
     }
   }
 }

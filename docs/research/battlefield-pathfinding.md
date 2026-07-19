@@ -1,10 +1,11 @@
 # Battlefield and Pathfinding
 
 - Status: **Confirmed** for the pinned 17-file source inventory, representative entry symbols,
-  source hashes, and static call-edge counts
+  source hashes, static call-edge counts, core grid/RAM layout, initialization, occupancy rules,
+  and movement-neighbor admission
 - Status: **Inferred** for algorithm names and roles that currently rely on upstream labels/comments
-- Status: **Unknown** for exact movement-array layouts, propagation/tie-break semantics, and runtime
-  edge cases until the focused static models and queued H3 matrix are complete
+- Status: **Unknown** for full propagation/tie-break behavior, range/target construction, move-string
+  reconstruction, and runtime edge cases until later focused models and the queued H3 matrix are complete
 - Evidence date: 2026-07-18
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
@@ -38,6 +39,32 @@ The tracked fixture binds representative ROM entries ranging from
 `CheckForTrappedChest` at `0x1B16FE`. The inventory verifier also pins each source file's SHA-256,
 so upstream label, call-graph, or file-set drift fails deterministically.
 
+## Core Grid and Movement Contract
+
+The battlefield arrays share a fixed 48×48 row-major grid: offset = `y * 48 + x`, for 2,304 bytes
+or 576 longwords per array. The core RAM bases are:
+
+| Array | Address | Initialization/use |
+| --- | ---: | --- |
+| total move costs | `0xFF4400` | cleared to `0xFF`; origin and accepted destinations receive costs |
+| movable grid | `0xFF4D00` | cleared to `0xFF`; non-negative bytes mark processed/reachable spaces |
+| targets grid | `0xFF5600` | cleared to `0xFF`; stores occupying combatant indexes |
+| battle terrain | `0xFF5F00` | terrain type plus impassable/occupied flag bits |
+| current move-cost table | `0xFFB6C2` | 16 terrain-type costs for the moving combatant |
+
+`InitializeMovementArrays` exposes these pointers and doubles current MOV to form the pathfinder's
+budget. `BuildMovementArrays` clears both 2,304-byte movement grids, uses 32 remaining-budget
+buckets in a 64-byte stack frame, and inspects neighbors in right, left, up, down order. A neighbor
+is rejected when its offset is outside the 2,304-byte array, terrain bit 7 is set, or its signed
+move cost is negative/greater than the remaining budget. Spending the budget exactly writes the
+final cost without queueing another candidate; otherwise the candidate goes into
+`(remainingBudget - moveCost) & 0x1F`.
+
+Occupancy updates scan 30 ally or 32 enemy slots, skipping dead combatants and unsigned coordinates
+outside `[0, 48)`. Terrain byte `0xFF` is never changed. Setting occupancy sets bit 7; clearing it is
+suppressed when impassable bit 6 is set, preserving temporary/combined obstructions. The fixture
+contains explicit transformations for ordinary, impassable, and fully obstructed terrain bytes.
+
 ## Evidence Limits
 
 - **Confirmed:** directory/file set, source metrics, named entry addresses, source hashes, and
@@ -61,10 +88,10 @@ uv run sf2 research-index test
 The H2 command validates the source inventory and fixture schemas, pinned upstream commit, ROM
 provenance, representative labels, summary counts, and canonical output hash. Generated JSON is
 written only to ignored `local/derived/battlefield-static.json`; the accepted SHA-256 is
-`D6047F2E6968E3B6BA897C5BA934FD3DCA31B2EE880533FFA30B5AE0FE6080B4`.
+`E4CB5515B404D16700DB1FD2A4759DAB7EA7924A081BB3FFEAFC4AB54721B3D5`.
 
 ## Next Static Batches
 
-The next passes will model movement-array initialization and layouts, occupancy updates and grid
-propagation, target/range construction, and move-string reconstruction. Runtime questions remain a
-queue until those models expose a compact branch matrix worth launching together.
+The next passes will model the complete bucket propagation and tie-break behavior, target/range
+construction, and move-string reconstruction. Runtime questions remain a queue until those models
+expose a compact branch matrix worth launching together.

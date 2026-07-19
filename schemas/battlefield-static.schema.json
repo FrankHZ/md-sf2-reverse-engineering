@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II battlefield static source inventory",
   "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "coreModel", "files"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-battlefield-static-v1" },
@@ -30,6 +30,7 @@
     "indexedSourcePaths": { "type": "array", "minItems": 17, "maxItems": 17, "uniqueItems": true, "items": { "type": "string" } },
     "internalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
     "externalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "coreModel": { "type": "object", "minProperties": 5, "maxProperties": 5 },
     "files": {
       "type": "array", "minItems": 17, "maxItems": 17,
       "items": {

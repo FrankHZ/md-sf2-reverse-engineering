@@ -2335,7 +2335,21 @@
     },
     {
       "id": "battlefield.inventory.engine", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "ConvertCoordinatesToAddress", "sourcePath": "code/gameflow/battle/battlefield/battlefieldengine.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49306 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.convertCoordinatesAddress" }] }], "documents": ["docs/research/battlefield-pathfinding.md"]
+      "addresses": [
+        { "id": "entry", "space": "rom", "kind": "symbol", "value": 49306 },
+        { "id": "total-move-costs", "space": "ram", "kind": "state", "value": 16729088 },
+        { "id": "movable-grid", "space": "ram", "kind": "state", "value": 16731392 },
+        { "id": "targets-grid", "space": "ram", "kind": "state", "value": 16733696 },
+        { "id": "battle-terrain", "space": "ram", "kind": "state", "value": 16736000 },
+        { "id": "move-cost-table", "space": "ram", "kind": "state", "value": 16758466 }
+      ], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battlefield-static-v1.json", "fixtureId": "sf2-battlefield-static-v1", "verifier": "src/sf2tool/h2/battlefield.py", "bindings": [
+        { "addressId": "entry", "fixtureField": "function.convertCoordinatesAddress" },
+        { "addressId": "total-move-costs", "fixtureField": "ram.totalMoveCosts" },
+        { "addressId": "movable-grid", "fixtureField": "ram.movableGrid" },
+        { "addressId": "targets-grid", "fixtureField": "ram.targets" },
+        { "addressId": "battle-terrain", "fixtureField": "ram.battleTerrain" },
+        { "addressId": "move-cost-table", "fixtureField": "ram.moveCostsTable" }
+      ] }], "documents": ["docs/research/battlefield-pathfinding.md"]
     },
     {
       "id": "battlefield.inventory.initialize-arrays", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "InitializeMovementArrays", "sourcePath": "code/gameflow/battle/battlefield/initializemovementarrays.asm",
