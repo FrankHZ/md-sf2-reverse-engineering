@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-interfaces-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "j_GetCombatantName": 32768,
+    "j_ExecuteDiamondMenu": 65536,
+    "j_NumberPrompt": 65684,
+    "j_nullsub_18010": 98304,
+    "j_ShopMenu": 131072,
+    "j_InitializeHuffmanDecoder": 163844,
+    "j_DisplaySegaLogo": 163900,
+    "j_DisplayEndingKissPicture": 163908,
+    "sub_44000": 278528,
+    "j_LoadBattleTerrainData": 1753088,
+    "p_table_SpellNames": 33476,
+    "p_layout_MemberStatusWindow": 65732,
+    "p_table_ItemNames": 65668,
+    "p_table_GameStaff": 163904,
+    "p_font_VariableWidth": 163852,
+    "p_pt_TextBanks": 163840,
+    "p_pt_MapTilesets": 409600,
+    "p_pt_Backgrounds": 1048576,
+    "p_pt_EnemyBattlesprites": 1245184,
+    "p_pt_AllyBattlesprites": 1572864,
+    "p_palette_EndingKiss": 1753184,
+    "p_pt_Grounds": 1802240,
+    "p_pt_Portraits": 1867776,
+    "p_Icons": 1933312,
+    "p_table_StatGrowthCurves": 2023424
+  },
+  "expected": {
+    "interfaceFacts": {
+      "jumpStubCount": 331,
+      "prefixedJumpStubCount": 326,
+      "nonPrefixedJumpStubCount": 5,
+      "pointerEntryCount": 60,
+      "allJumpEntriesAreSinglePcRelativeJumps": true,
+      "allPointerEntriesAreSingleLongwordTargets": true,
+      "jumpSections": [2, 3, 4, 5, 6, 7, 13],
+      "pointerSections": [2, 3, 6, 8, 10, 11, 12, 13, 14, 15, 16, 17],
+      "runtimeQuestionsRequired": false
+    }
+  }
+}

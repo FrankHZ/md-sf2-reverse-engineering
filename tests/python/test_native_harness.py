@@ -20,11 +20,11 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 386
-    assert result["H2Fixtures"] == 23
+    assert result["Records"] == 411
+    assert result["H2Fixtures"] == 24
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 54
-    assert result["AddressBindings"] == 782
-    assert result["IndexedCodeFiles"] == 309
+    assert result["AddressBindings"] == 807
+    assert result["IndexedCodeFiles"] == 334
     assert result["IndexedDataFiles"] == 8
 
 
@@ -142,6 +142,13 @@ def test_tech_interrupts_has_a_source_only_inventory_command() -> None:
 def test_tech_graphics_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "tech-graphics"])
     assert args.h2_command == "tech-graphics"
+    assert args.output_path is None
+    assert not hasattr(args, "rom_path")
+
+
+def test_tech_interfaces_has_a_source_only_inventory_command() -> None:
+    args = build_parser().parse_args(["h2", "tech-interfaces"])
+    assert args.h2_command == "tech-interfaces"
     assert args.output_path is None
     assert not hasattr(args, "rom_path")
 

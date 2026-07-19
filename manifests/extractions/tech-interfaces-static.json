@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-tech-interfaces-static-v1",
+  "outputSha256": "4663B9B7AED939AAB005B23F6C218DB65C066999F9AAF92D5BFF0E979C614D76",
+  "summary": {
+    "fileCount": 25,
+    "jumpInterfaceFileCount": 10,
+    "pointerFileCount": 15,
+    "sourceLineCount": 3575,
+    "statementCount": 391,
+    "globalLabelCount": 391,
+    "localLabelCount": 0,
+    "directCallSiteCount": 0,
+    "indirectCallSiteCount": 0,
+    "uniqueDirectTargetCount": 0,
+    "internalDirectTargetCount": 0,
+    "externalDirectTargetCount": 0,
+    "layoutIncludedFileCount": 25,
+    "indexedRecordCount": 25,
+    "indexedFileCount": 25
+  }
+}
