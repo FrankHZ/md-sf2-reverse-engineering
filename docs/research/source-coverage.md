@@ -20,12 +20,12 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 145 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 77 | 69 code files and 8 data files |
-| Executable code-file reach | 17.83% | 69 indexed code files / 387 pinned code files; **not** line or function coverage |
+| Indexed findings | 159 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed source files | 91 | 83 code files and 8 data files |
+| Executable code-file reach | 21.45% | 83 indexed code files / 387 pinned code files; **not** line or function coverage |
 | Indexed data-file reach | 0.47% | 8 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H3 fixture files | 54 | Runtime contracts, often containing multiple cases |
-| Address bindings | 537 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 555 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface is much broader than the three indexed data files. It currently includes 281 fixed
@@ -50,12 +50,14 @@ The current evidence is deep but narrow:
   move-string backtracking, move-order, trapped-chest semantics, and 32-bucket weighted propagation
   are modeled. One five-case/one-launch H3 matrix confirms weighted propagation, budget-128 bucket
   wrap, controlled flat row crossing, and pre-check out-of-range helper entries. Other battle systems
-  cover selected boundaries rather than every caller and state transition.
+  cover selected boundaries rather than every caller and state transition. The adjacent 18-file
+  battle-loop directory now has complete static inventory plus roster, terrain, spawn, death cleanup,
+  and between-battle healing contracts; upgrade/egress and visual sequencing remain partial.
 - **Minimal or unindexed:** exploration/world state, event scripting, conversations, menus/UI,
   shops/church flows beyond selected consumers, save format, maps beyond the Battle 01 slice,
   graphics/audio engines, and most content tables.
 
-Therefore 17.83% is the useful current code-file-reach snapshot, while whole-game semantic and remake
+Therefore 21.45% is the useful current code-file-reach snapshot, while whole-game semantic and remake
 completion remain **Unknown**. Any later percentage must name its denominator and evidence level.
 
 ## Reproduction
@@ -68,8 +70,8 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 145 records; its
-verifier reports 54 H3 fixtures and 537 bindings. The default `uv run sf2 verify` checks those
+files and the corresponding `data` query yields 1,690. The index summary reports 159 records; its
+verifier reports 54 H3 fixtures and 555 bindings. The default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
 ## Static-First Cadence
@@ -96,10 +98,13 @@ fixtures.
 ## Next Batch
 
 The `battle.ai` and adjacent `battlefield/pathfinding` directories now have complete 26-file and
-17-file static inventories respectively. The battlefield slice models grid layout, initialization,
+17-file static inventories respectively. The 18-file `battleloop` directory is now complete at the
+inventory level as well, raising strict code-file reach by 14 files without adding emulator starts.
+Its first lifecycle model covers roster scans, AI-memory reset, forced enemy deaths, between-battle
+healing, terrain decompression, spawn admission, and killed-combatant cleanup. The battlefield slice models grid layout, initialization,
 occupancy, neighbor admission, range rings, target admission, attack-position selection, move-string
 backtracking, move orders, trapped chests, and weighted propagation. Its first concentrated runtime
 batch confirms five movement/boundary cases in one launch. Remaining battle-AI signed-priority,
 critical-class, dispatcher/standby questions and the attack-position comment conflict stay queued
-until they form another coherent shared-boundary matrix; static work proceeds to the next source
-subsystem in the meantime.
+until they form another coherent shared-boundary matrix; static work proceeds toward the remaining
+15 unindexed `battleactions` files and then the smaller battle-function boundary.

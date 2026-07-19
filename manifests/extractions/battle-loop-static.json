@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-loop-static-v1",
+  "outputSha256": "F0BA2EFE864B6BF5D8E3BE976B3DEBC75935D9B794F93116C850B67E544FEAFD",
+  "summary": {
+    "fileCount": 18,
+    "sourceLineCount": 2692,
+    "statementCount": 1572,
+    "globalLabelCount": 48,
+    "localLabelCount": 203,
+    "directCallSiteCount": 216,
+    "indirectCallSiteCount": 0,
+    "uniqueDirectTargetCount": 76,
+    "internalDirectTargetCount": 18,
+    "externalDirectTargetCount": 58,
+    "indexedRecordCount": 18,
+    "indexedFileCount": 18
+  }
+}

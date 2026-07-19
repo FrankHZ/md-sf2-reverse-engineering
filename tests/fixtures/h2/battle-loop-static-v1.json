@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-battle-loop-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": {
+    "activateEnemiesAddress": 152844,
+    "clearAiMemoryAddress": 49264,
+    "clearDeadListAddress": 148754,
+    "countRemainingAddress": 146520,
+    "getEgressPositionAddress": 147024,
+    "hasJaroJoinedAddress": 1776168,
+    "healLivingAlliesAddress": 146428,
+    "initializeAlliesAddress": 1774194,
+    "killRemainingEnemiesAddress": 146356,
+    "loadTerrainAddress": 1757404,
+    "populateEnemySpawnsAddress": 1756976,
+    "printDefConsAddress": 153386,
+    "processAfterTurnAddress": 148034,
+    "processKilledAddress": 148760,
+    "spawnEnemyAddress": 148618,
+    "triggerRegionsAddress": 1756746,
+    "generateTurnOrderAddress": 152900,
+    "isBattleUpgradableAddress": 1775488
+  },
+  "expected": {
+    "representativeSymbols": {
+      "activateenemies.asm": "ActivateEnemies",
+      "clearaimemory.asm": "ClearAiMemory",
+      "cleardeadcombatantslist.asm": "ClearDeadCombatantsListLength",
+      "countremainingcombatants.asm": "CountRemainingCombatants",
+      "getegresspositionforbattle.asm": "GetEgressPositionForBattle",
+      "hasjarojoined.asm": "HasJaroJoinedTheForce",
+      "heallivingandimmortalallies.asm": "HealLivingAndImmortalAllies",
+      "initializecombatants.asm": "InitializeAllAlliesBattlePositions",
+      "killallenemies.asm": "KillRemainingEnemies",
+      "loadbattleterraindata.asm": "LoadBattleTerrainData",
+      "populateenemyspawns.asm": "PopulateTargetsListWithSpawningEnemies",
+      "printdefcons.asm": "PrintAllActivatedDefCons",
+      "processafterturneffects.asm": "ProcessAfterTurnEffects",
+      "processkilledcombatants.asm": "ProcessKilledCombatants",
+      "spawnenemy.asm": "SpawnEnemySkipCamera",
+      "triggerregions.asm": "TriggerRegionsAndActivateEnemies",
+      "turnorderfunctions.asm": "GenerateBattleTurnOrder",
+      "upgradeenemies.asm": "IsBattleUpgradable"
+    },
+    "lifecycleFacts": {
+      "rosters": { "allySlots": 30, "enemySlots": 32, "enemyStart": 128 },
+      "aiMemoryReset": { "entryCount": 48, "lastTargetFill": 255, "memoryFill": 0 },
+      "remainingCombatants": { "requiresPlacedX": true, "requiresPositiveHp": true, "leaderDeathForcesAllyCountZero": true, "allyResultRegister": "d2.w", "enemyResultRegister": "d3.w" },
+      "killRemainingEnemies": { "requiresPlacedXAndY": true, "requiresPositiveHp": true, "clearsDeadListFirst": true, "appendsCombatantBeforeSettingHpZero": true },
+      "betweenBattleHealing": { "immortalAllies": [7, 28], "otherDeadAlliesSkipped": true, "restoresHpAndMpToMaximum": true, "preservedStatusMask": 7, "updatesDerivedStats": true },
+      "terrainLoad": { "pointerStrideBytes": 4, "destination": 16736000, "compression": "Stack" },
+      "enemySpawnSelection": { "enemySlots": 32, "initializationModes": [512, 256, 768], "output": "TARGETS_LIST plus TARGETS_LIST_LENGTH", "resetFailureSkipped": true },
+      "killedCombatants": { "zeroLengthReturnsImmediately": true, "allyDeathIncrementsDefeats": true, "enemyDeathCreditsBattlesceneFirstAlly": true, "clearsCoordinatesToMinusOne": true, "clearsStatus": true, "updatesDerivedStats": true, "movesEntityOffMap": 28672 }
+    }
+  }
+}
