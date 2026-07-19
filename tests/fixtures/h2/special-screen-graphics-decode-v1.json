@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-screen-graphics-decode-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "loadStackAddress": 7752,
+    "StartTitleScreen": 1048584,
+    "LoadTitleScreenFont": 182076,
+    "SuspendGame": 162076,
+    "DisplayEndingKissPicture": 181622,
+    "EndGame": 162264,
+    "BuildWitchScreen": 31838,
+    "StartWitchScreen": 29262,
+    "DisplaySegaLogo": 163916
+  },
+  "table": {
+    "tiles_TitleScreen": 1049406,
+    "font_TitleScreen": 187870,
+    "tiles_SuspendString": 2028762,
+    "tiles_EndingKissPicture": 1797626,
+    "tiles_EndingWitch": 1863468,
+    "tiles_EndingJewels": 2027842,
+    "tiles_Witch": 1855112,
+    "tiles_SpeechBalloon": 181246,
+    "tiles_SegaLogo": 164428
+  },
+  "summary": {
+    "resourceCount": 9, "consumerFunctionCount": 8, "directStackCallResourceCount": 7,
+    "compressedDmaWrapperResourceCount": 2, "pixelFillResourceCount": 1,
+    "fixedTransferResourceCount": 8, "exactTransferResourceCount": 3,
+    "oversizedTransferResourceCount": 5, "compressedByteCount": 23296,
+    "decodedByteCount": 50176, "fixedTransferByteCount": 71680,
+    "transferPaddingByteCount": 27648, "commandGroupCount": 964,
+    "literalWordCount": 12185, "copyCommandCount": 3161, "copiedWordCount": 12903,
+    "minimumTrailingBits": 34, "maximumTrailingBits": 52,
+    "maximumCopyOffsetWords": 2008, "maximumCopyLengthWords": 33,
+    "resourceRomParityCount": 9, "pointerRomParityCount": 6
+  },
+  "transferBoundaries": [
+    { "symbol": "tiles_TitleScreen", "decodedBytes": 8192, "transferMethod": "direct-stack-immediate-dma", "transferBytes": 8192, "transferPaddingBytes": 0 },
+    { "symbol": "font_TitleScreen", "decodedBytes": 4096, "transferMethod": "direct-stack-immediate-dma", "transferBytes": 4096, "transferPaddingBytes": 0 },
+    { "symbol": "tiles_SuspendString", "decodedBytes": 448, "transferMethod": "direct-stack-queued-dma", "transferBytes": 2048, "transferPaddingBytes": 1600 },
+    { "symbol": "tiles_EndingKissPicture", "decodedBytes": 6144, "transferMethod": "direct-stack-pixel-fill-consumer", "transferBytes": null, "transferPaddingBytes": null },
+    { "symbol": "tiles_EndingWitch", "decodedBytes": 7808, "transferMethod": "direct-stack-immediate-dma", "transferBytes": 16384, "transferPaddingBytes": 8576 },
+    { "symbol": "tiles_EndingJewels", "decodedBytes": 1856, "transferMethod": "direct-stack-immediate-dma", "transferBytes": 16384, "transferPaddingBytes": 14528 },
+    { "symbol": "tiles_Witch", "decodedBytes": 13568, "transferMethod": "direct-stack-immediate-dma", "transferBytes": 16384, "transferPaddingBytes": 2816 },
+    { "symbol": "tiles_SpeechBalloon", "decodedBytes": 1920, "transferMethod": "compressed-immediate-dma-wrapper", "transferBytes": 2048, "transferPaddingBytes": 128 },
+    { "symbol": "tiles_SegaLogo", "decodedBytes": 6144, "transferMethod": "compressed-immediate-dma-wrapper", "transferBytes": 6144, "transferPaddingBytes": 0 }
+  ],
+  "runtimeQuestions": [
+    "What bytes occupy the fixed DMA tails for the five special-screen resources whose transfer length exceeds decoder output, and are those bytes cleared or stable?",
+    "Do decoded special-screen tiles, layouts, palettes, transitions, and pixel-fill order match rendered original frames?"
+  ]
+}

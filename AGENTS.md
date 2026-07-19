@@ -140,6 +140,7 @@ promotion/enemy/enemy-gold/enemy-drop, Battle 01 scene extraction, and the compl
 inventory/action-filter/attack-priority contracts, the complete Stack-compressed battle-terrain,
 battle-background, battle-sprite, weapon/ground, and portrait corpora, the complete Basic-compressed
 map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
+the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
 BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,

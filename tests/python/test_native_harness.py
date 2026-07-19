@@ -31,10 +31,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1448
-    assert result["H2Fixtures"] == 52
+    assert result["Records"] == 1449
+    assert result["H2Fixtures"] == 53
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 1896
+    assert result["AddressBindings"] == 1898
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -317,6 +317,13 @@ def test_map_sprites_have_a_static_rom_parity_command() -> None:
 def test_special_sprites_have_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "special-sprites"])
     assert args.h2_command == "special-sprites"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_special_screen_graphics_have_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "special-screen-graphics"])
+    assert args.h2_command == "special-screen-graphics"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 

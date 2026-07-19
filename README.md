@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,448 条 confirmed finding、52 个 H2 fixture、58 个 H3 fixture
-和 1,896 个地址绑定。
+截至 2026-07-19，研究索引有 1,449 条 confirmed finding、53 个 H2 fixture、58 个 H3 fixture
+和 1,898 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -297,6 +297,11 @@ special-sprite rail 又闭合 10 个指针槽、5 个初始 palette/container �
 16,704 bytes。它同时证明 route threshold 虽接纳 240–255，资源表仅覆盖 index 0–9，load/update
 dispatch 仅覆盖 index 0–8：原版符号引用只出现于 ID 251–255；ID 246 有 Kraken 指针但无 dispatch，
 240–245 无指针，237–239 也没有符号引用。动态或编码值能否选到这些保留 ID 仍保持 Unknown。
+special-screen graphics rail 随后闭合 `code/specialscreens` 消费的全部 9 条 Stack-compressed tile
+stream：23,296 个压缩字节确定性解出 50,176 bytes，9 个资源和 6 个可直接寻址的 source pointer
+均与 ROM 一致。8 个固定 transfer 中 3 个恰好匹配解压长度，另 5 个合计多传 27,648 bytes；这些
+DMA tail 当时由何种 staging bytes 占据仍为 Unknown，已与渲染、palette、transition 和 pixel-fill
+顺序一起进入集中 presentation 矩阵。
 technical interfaces rail 将 10 个 jump-interface 与 15 个 pointer 文件合并盘点，完整锁定 331
 个 PC-relative jump stub 和 60 个 longword pointer 的 canonical mapping，使严格 reach 升到
 86.30%。该结构完全由 source/H1 决定，不产生运行时问题，也没有模拟器启动。
@@ -313,7 +318,8 @@ reach 提到 92.25%。reset/TMSS、intro input 和 exploration transition 继续
 special-screens rail 一次覆盖 `code/specialscreens` 全部 19 个文件、3,225 行、119 个 global
 label 和 18 个资源入口，固定 Sega logo/checksum/cheat、title 两段 scroll、witch 的
 new/load/copy/delete、suspend reset，以及 ending pixel-fill/falling-jewels 所有权，使严格 reach
-升到 97.16%。视觉/输入时序合并成 3 个 presentation matrix，本批没有启动模拟器。
+升到 97.16%。其中全部 9 条压缩 tile stream 已由独立 rail 完成 source/H1/ROM parity 和解码边界；
+视觉/输入时序及 5 个 oversized transfer tail 合并成 3 个 presentation matrix，本批没有启动模拟器。
 remaining-core rail 最后覆盖 ROM header、8-slot window engine 和 3 个 debug/special 文件，共
 1,210 行、69 个 global label；64-vector/header、window VInt interpolation、30 人 battle test、
 4 个 configuration toggle、7 路 debug action 和 4 个 hit override 均成为静态合同。严格 reach

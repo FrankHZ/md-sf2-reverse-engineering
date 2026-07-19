@@ -73,7 +73,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   handshake、trap 路由和待集中验证的硬件时序。
 - [`technical-graphics.md`](./research/technical-graphics.md)：解压、显示初始化、sprite/palette、视差、
   battle terrain/background/sprite/weapon/ground/portrait/special-sprite 完整 Stack corpus、flash
-  script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression corpus。
+  script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
+  special-screen Stack-compression corpus。
 - [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
@@ -81,7 +82,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
   map event、交互和物品 handoff。
 - [`special-screens.md`](./research/special-screens.md)：logo/title、witch save、suspend/reset、ending
-  等 19 文件特殊画面边界。
+  等 19 文件特殊画面边界，以及全部 9 条压缩 tile stream、DMA transfer/tail 合同。
 - [`remaining-core.md`](./research/remaining-core.md)：ROM header/vector、window engine、battle test、
   configuration 与 debug action 的最后主代码边界。
 
@@ -117,7 +118,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   sprite-dialogue 的 65 文件边界、63 个 H1 binding、两个 alternate，以及 56 槽/52 payload 的
   portrait header、动画元数据、palette 与 Stack 图形解码合同和 30 槽/27 payload 的 battle
   background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个 frame，以及 weapon/ground
-  graphics/palette、670 个 regular map-sprite payload 与 6 个 special-sprite stream 的完整 parity。
+  graphics/palette、670 个 regular map-sprite payload、6 个 special-sprite stream 与 9 个
+  special-screen tile stream 的完整 parity。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

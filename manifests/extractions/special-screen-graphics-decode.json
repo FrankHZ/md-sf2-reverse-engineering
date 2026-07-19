@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-special-screen-graphics-decode-v1",
+  "outputSha256": "4FCD9DCA7ED4FA4D5D667B1E1A85FC0A6D1A786DA78D24699EC883062A55604C",
+  "summary": {
+    "resourceCount": 9, "consumerFunctionCount": 8, "directStackCallResourceCount": 7,
+    "compressedDmaWrapperResourceCount": 2, "pixelFillResourceCount": 1,
+    "fixedTransferResourceCount": 8, "exactTransferResourceCount": 3,
+    "oversizedTransferResourceCount": 5, "compressedByteCount": 23296,
+    "decodedByteCount": 50176, "fixedTransferByteCount": 71680,
+    "transferPaddingByteCount": 27648, "commandGroupCount": 964,
+    "literalWordCount": 12185, "copyCommandCount": 3161, "copiedWordCount": 12903,
+    "minimumTrailingBits": 34, "maximumTrailingBits": 52,
+    "maximumCopyOffsetWords": 2008, "maximumCopyLengthWords": 33,
+    "resourceRomParityCount": 9, "pointerRomParityCount": 6
+  }
+}

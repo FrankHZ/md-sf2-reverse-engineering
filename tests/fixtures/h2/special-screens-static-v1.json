@@ -42,7 +42,8 @@
       "suspendRestartWaitFrames": 600,
       "suspendRestartCanExitEarlyOnStart": true,
       "suspendResetsThroughStartVector": true,
-      "endingUsesPixelFillAndFallingJewels": true
+      "endingUsesPixelFillAndFallingJewels": true,
+      "compressedTileCorpusConfirmed": true
     },
     "resourceTargets": {
       "SegaLogoColors": "data/graphics/tech/segalogocolors.bin",

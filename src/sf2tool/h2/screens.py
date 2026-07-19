@@ -138,6 +138,7 @@ def _screen_facts(sources: dict[str, str], resource_targets: dict[str, str]) -> 
         "suspendRestartCanExitEarlyOnStart": True,
         "suspendResetsThroughStartVector": True,
         "endingUsesPixelFillAndFallingJewels": True,
+        "compressedTileCorpusConfirmed": True,
     }
 
 

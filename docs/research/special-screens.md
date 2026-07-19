@@ -2,9 +2,10 @@
 
 - Status: **Confirmed** for all 19 layout-owned files, representative H1 addresses, seven screen
   groups, eighteen resource routes, title/logo input structure, witch save actions, suspend/reset
-  flow, and ending-effect ownership
+  flow, ending-effect ownership, and the complete nine-resource Stack-compressed tile corpus
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
-- Status: **Unknown** for rendered frame parity and exact audio/VDP timing
+- Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
+  transfer tails
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -20,6 +21,24 @@ Each file has a representative source symbol bound to the H1 listing. The canoni
 maps eighteen named incbin resources: fifteen standalone screen graphics plus three Sega-logo
 resources embedded in the main logo source. Only paths and small metadata are tracked; original
 graphic bytes stay in the ignored local checkout.
+
+## Compressed Graphics Corpus
+
+All nine Stack-compressed tile resources consumed by the special-screen code are parsed by one
+deterministic rail. Seven call `LoadStackCompressedData` directly; speech-balloon and Sega-logo tiles
+use `LoadCompressedDataAndCopy`. Their 23,296 compressed bytes decode to 50,176 bytes. The rail checks
+all nine source ranges, six direct source pointers, H1 entry addresses, and ROM bytes while retaining
+only hashes, counts, transfer metadata, and codec statistics.
+
+Eight resources have a statically fixed VRAM transfer size. Title tiles (8,192 bytes), title font
+(4,096), and Sega logo (6,144) exactly match decoder output. Suspend string decodes 448 bytes but
+queues 2,048; ending witch 7,808→16,384; ending jewels 1,856→16,384; witch screen
+13,568→16,384; and speech balloon 1,920→2,048. These five overlong transfers total 27,648 bytes beyond
+decoder output. The ending-kiss stream decodes 6,144 bytes and is consumed by the pixel-fill path
+without a comparable fixed DMA length.
+
+The rail deliberately calls these excess regions transfer tails, not padding. Static evidence does
+not prove whether their staging memory is cleared, stable, overwritten, or visibly consumed.
 
 ## Logo and Title
 
@@ -61,6 +80,9 @@ matrices:
 2. witch save menu, blink/bubble presentation, and suspend/reset timing;
 3. ending kiss pixel fill, falling jewels, and ending-witch presentation.
 
+The same launches should sample the five fixed-transfer tails before DMA so their contents and
+stability are answered together with rendered parity.
+
 Each matrix should capture compact frame/state hashes for several phases in one launch instead of
 creating a separate fixture per animation.
 
@@ -68,7 +90,9 @@ creating a separate fixture per animation.
 
 ```powershell
 uv run sf2 h2 special-screens
+uv run sf2 h2 special-screen-graphics
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/special-screens-static.json`.
+Generated JSON stays under ignored `local/derived/special-screens-static.json` and
+`local/derived/special-screen-graphics-decode.json`.

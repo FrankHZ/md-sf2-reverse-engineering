@@ -4,10 +4,12 @@
   decompression entry contracts, display initialization order, sprite links, palette interpolation,
   special-sprite routing, view parallax gates, flash-script words, and the complete battle-terrain,
   battle-background, battle-sprite, weapon/ground, and portrait Stack-compression corpora, plus the
-  complete regular map-sprite Basic-compression and special-sprite Stack-compression corpora
+  complete regular map-sprite Basic-compression, special-sprite Stack-compression, and
+  special-screen Stack-compression corpora
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
-- Status: **Unknown** for remaining embedded compression corpora, exact VDP timing, palette
+- Status: **Unknown** for remaining embedded compression corpora outside the completed families,
+  exact VDP timing, palette
   presentation, portrait/map-sprite animation timing, special-sprite frame output, and whether the
   three regular-map-sprite free-spot IDs or seven incompletely routed special IDs can be selected
 - Evidence date: 2026-07-19
@@ -112,6 +114,19 @@ references only for IDs 251-255; IDs 240-250 and regular free-spot IDs 237-239 h
 enum definitions. This is strong source evidence, but dynamic byte writes or encoded script values
 remain capable of defeating a name-only scan, so runtime unreachability remains **Unknown**.
 
+The eighth corpus closes every Stack-compressed tile resource consumed by `code/specialscreens`.
+Seven call the Stack decoder directly; the speech balloon and Sega logo use the compressed-DMA
+wrapper. The nine streams occupy 23,296 compressed bytes and decode to 50,176 bytes. All nine source
+ranges, six directly addressable source pointers, and their H1 symbols match the ROM. Title tiles,
+title font, and Sega logo have exact fixed transfer sizes; the ending-kiss picture instead feeds its
+6,144 decoded bytes to a pixel-fill consumer.
+
+Five other fixed transfers are larger than decoder output: suspend string 448→2,048, ending witch
+7,808→16,384, ending jewels 1,856→16,384, witch screen 13,568→16,384, and speech balloon
+1,920→2,048 bytes. Their combined 27,648-byte transfer tail is not part of the compressed stream.
+Static code proves the transfer boundary but not which staging bytes occupy the tail at runtime, so
+tail contents and stability remain **Unknown** rather than being modeled as zero padding.
+
 ## Display, Sprite, and Palette State
 
 `InitializeDisplay` first deactivates contextual VInt functions, waits for VInt, disables display and
@@ -135,10 +150,10 @@ screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 
 ## Concentrated Verification Queue
 
-This batch starts no emulator. The Stack decoder should next expand through remaining embedded
-containers such as special screens. Rendered behavior joins the shared presentation matrix: display
+This batch starts no emulator. The Stack decoder should next expand through other remaining embedded
+containers. Rendered behavior joins the shared presentation matrix: display
 initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
-updates, and flash duration can share VDP/RAM observation points. Static symbolic search is now
+updates, special-screen transfer tails, and flash duration can share VDP/RAM observation points. Static symbolic search is now
 complete for reserved IDs 237-250; the next reachability step must inspect encoded records and
 runtime writes rather than repeating text search.
 
@@ -153,10 +168,12 @@ uv run sf2 h2 battle-weapon-ground
 uv run sf2 h2 portraits
 uv run sf2 h2 map-sprites
 uv run sf2 h2 special-sprites
+uv run sf2 h2 special-screen-graphics
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `local/derived/battle-terrain-decode.json`, `battle-background-decode.json`, and
 `battle-sprite-decode.json`, `battle-weapon-ground-decode.json`, plus
-`portrait-graphics-decode.json`, `map-sprite-decode.json`, and `special-sprite-decode.json`.
+`portrait-graphics-decode.json`, `map-sprite-decode.json`, `special-sprite-decode.json`, and
+`special-screen-graphics-decode.json`.

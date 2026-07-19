@@ -11,17 +11,17 @@
       "required": ["fileCount", "screenGroupCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"],
       "properties": {
         "fileCount": { "const": 19 }, "screenGroupCount": { "const": 7 },
-        "layoutIncludedFileCount": { "const": 19 }, "indexedRecordCount": { "const": 19 },
+        "layoutIncludedFileCount": { "const": 19 }, "indexedRecordCount": { "const": 20 },
         "indexedFileCount": { "const": 19 }
       }
     },
-    "indexedRecordIds": { "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true },
+    "indexedRecordIds": { "type": "array", "minItems": 20, "maxItems": 20, "uniqueItems": true },
     "indexedSourcePaths": { "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true },
     "representativeSymbols": { "type": "object", "minProperties": 19, "maxProperties": 19 },
     "representativeAddresses": { "type": "object", "minProperties": 19, "maxProperties": 19, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "internalDirectCallTargets": { "type": "array", "minItems": 18, "maxItems": 18, "uniqueItems": true },
     "externalDirectCallTargets": { "type": "array", "minItems": 50, "maxItems": 50, "uniqueItems": true },
-    "screenFacts": { "type": "object", "minProperties": 17, "maxProperties": 17 },
+    "screenFacts": { "type": "object", "minProperties": 18, "maxProperties": 18 },
     "resourceTargets": { "type": "object", "minProperties": 18, "maxProperties": 18 },
     "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true },
     "files": { "type": "array", "minItems": 19, "maxItems": 19 }

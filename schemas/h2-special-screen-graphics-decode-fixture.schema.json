@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-special-screen-graphics-decode-fixture.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "table", "summary", "transferBoundaries", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-special-screen-graphics-decode-v1" },
+    "upstreamCommit": { "type": "string" }, "romSha256": { "type": "string" },
+    "function": { "type": "object" }, "table": { "type": "object" },
+    "summary": { "type": "object" },
+    "transferBoundaries": { "type": "array", "minItems": 9, "maxItems": 9 },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" }, "uniqueItems": true }
+  }
+}

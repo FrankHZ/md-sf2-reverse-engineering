@@ -52,6 +52,7 @@ from sf2tool.h2.screens import verify_special_screen_inventory
 from sf2tool.h2.scripting import verify_scripting_inventory
 from sf2tool.h2.services import verify_service_inventory
 from sf2tool.h2.sound_data import verify_sound_data_inventory
+from sf2tool.h2.special_screen_graphics import verify_special_screen_graphics_contract
 from sf2tool.h2.special_sprites import verify_special_sprite_contract
 from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
@@ -377,6 +378,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_special_sprites)
     h2_special_sprites.add_argument("--output-path", type=_path)
+    h2_special_screen_graphics = h2_commands.add_parser(
+        "special-screen-graphics",
+        help="decode every Stack-compressed tile resource consumed by special-screen code",
+    )
+    _add_local_paths(h2_special_screen_graphics)
+    h2_special_screen_graphics.add_argument("--output-path", type=_path)
     h2_map_import = h2_commands.add_parser(
         "map-import", help="build the complete canonical engine-neutral map import"
     )
@@ -929,6 +936,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "special-sprites":
         print_record(
             verify_special_sprite_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "special-screen-graphics":
+        print_record(
+            verify_special_screen_graphics_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
