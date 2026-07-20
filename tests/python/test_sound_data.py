@@ -1,6 +1,7 @@
 from sf2tool.h2.sound_data import (
     _fixed_opcode_families,
     _music_bank_selection_contract,
+    _music_frequency_contract,
     _parse_music_macros,
     _song_command_row,
 )
@@ -116,3 +117,35 @@ def test_music_bank_selection_maps_all_command_slots() -> None:
     assert contract["slots"][0]["enumName"] == "MUSIC_MAIN_THEME"
     assert contract["slots"][-1]["bankRegisterValue"] == 0
     assert contract["slots"][-1]["commandId"] == 64
+
+
+def test_music_frequency_contract_parses_overlapping_ym_table() -> None:
+    note_names = [
+        f"{name}{octave}"
+        for octave in range(9)
+        for name in ("C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B")
+    ]
+    enum_source = "\n".join(f"{name}: equ {index}" for index, name in enumerate(note_names))
+    driver_source = (
+        "db 01h\n"
+        "t_YM_FREQUENCIES: db 02h\n"
+        + "dw 0100h\n" * 83
+        + "t_PSG_FREQUENCIES: dw 0200h\n"
+        + "dw 0200h\n" * 63
+        + "t_YM_LEVELS: db 0\n"
+    )
+    sources = {
+        "data/sound/musicenums.asm": enum_source,
+        "data/sound/musicbank0/music01.asm": "note C2\npsgNote C0\n",
+    }
+
+    contract = _music_frequency_contract(sources, driver_source)
+
+    assert contract["ym"]["entries"][0] == {
+        "index": 0,
+        "note": "C2",
+        "registerValue": 0x0201,
+    }
+    assert contract["ym"]["summary"]["rawIndexOutsideTableInvocationCount"] == 0
+    assert contract["psg"]["summary"]["rawIndexOutsideTableInvocationCount"] == 0
+    assert contract["macroInvocationCounts"] == {"note": 1, "psgNote": 1}

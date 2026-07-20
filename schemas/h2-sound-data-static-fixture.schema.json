@@ -27,7 +27,7 @@
       "required": ["facts", "commandModel", "strictIndexExclusion", "runtimeQuestions"],
       "properties": {
         "facts": { "type": "object" },
-        "commandModel": { "type": "object", "required": ["summary", "unusedMacros", "invocationCounts", "channelRoles", "musicHeaders", "driver", "bankSelection"] },
+        "commandModel": { "type": "object", "required": ["summary", "unusedMacros", "invocationCounts", "channelRoles", "musicHeaders", "frequencyModel", "driver", "bankSelection"] },
         "strictIndexExclusion": { "type": "string", "minLength": 1 },
         "runtimeQuestions": {
           "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true

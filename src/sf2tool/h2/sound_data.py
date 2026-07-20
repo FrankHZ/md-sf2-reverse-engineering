@@ -527,6 +527,129 @@ def _music_bank_selection_contract(
     }
 
 
+def _frequency_table_values(
+    driver_source: str, start_label: str, end_label: str, *, overlapping_first_word: bool
+) -> list[int]:
+    prefix, section_and_tail = driver_source.split(start_label, 1)
+    section = section_and_tail.split(end_label, 1)[0]
+    words = [
+        _parse_asm_int(value)
+        for value in re.findall(r"\bdw\s+([0-9A-F]+h|\d+)", section, re.IGNORECASE)
+    ]
+    if not overlapping_first_word:
+        return words
+    previous_bytes = re.findall(r"\bdb\s+([0-9A-F]+h|\d+)", prefix, re.IGNORECASE)
+    leading_bytes = re.findall(r"^\s*db\s+([0-9A-F]+h|\d+)", section, re.MULTILINE | re.IGNORECASE)
+    if not previous_bytes or not leading_bytes:
+        raise ValueError("YM frequency table overlap boundary drift")
+    first_word = (_parse_asm_int(leading_bytes[0]) << 8) | _parse_asm_int(previous_bytes[-1])
+    return [first_word, *words]
+
+
+def _music_frequency_contract(sources: dict[str, str], driver_source: str) -> dict[str, Any]:
+    enum_path = (SOURCE_ROOT / "musicenums.asm").as_posix()
+    enum_source = sources[enum_path]
+    note_rows = re.findall(
+        r"^([A-G](?:s)?\d):\s+equ\s+([0-9A-F]+h|\d+)\s*$",
+        enum_source,
+        re.MULTILINE | re.IGNORECASE,
+    )
+    note_names = {_parse_asm_int(value): name for name, value in note_rows}
+    if sorted(note_names) != list(range(108)):
+        raise ValueError("music note enum boundary drift")
+
+    ym_values = _frequency_table_values(
+        driver_source,
+        "t_YM_FREQUENCIES:",
+        "t_PSG_FREQUENCIES:",
+        overlapping_first_word=True,
+    )
+    psg_values = _frequency_table_values(
+        driver_source,
+        "t_PSG_FREQUENCIES:",
+        "t_YM_LEVELS:",
+        overlapping_first_word=False,
+    )
+    if len(ym_values) != 84 or len(psg_values) != 64:
+        raise ValueError("sound frequency table boundary drift")
+
+    uses: dict[str, Counter[int]] = {
+        "ym": Counter(),
+        "psg": Counter(),
+    }
+    macro_uses: Counter[str] = Counter()
+    for source_path, source in sources.items():
+        if not re.search(r"/music\d+\.asm$", source_path):
+            continue
+        for raw_line in source.splitlines():
+            line = raw_line.split(";", 1)[0]
+            match = re.match(r"^\s*(noteL?|psgNoteL?)\s+([^,\s]+)", line)
+            if match is None:
+                continue
+            macro, note_name = match.groups()
+            note_value = next(
+                (value for value, name in note_names.items() if name == note_name), None
+            )
+            if note_value is None:
+                raise ValueError(f"unknown music note enum use: {note_name}")
+            family = "psg" if macro.startswith("psg") else "ym"
+            uses[family][note_value] += 1
+            macro_uses[macro] += 1
+
+    ym_raw_indexes = Counter({value - 24: count for value, count in uses["ym"].items()})
+    psg_raw_indexes = uses["psg"]
+
+    def family_row(
+        values: list[int], raw_indexes: Counter[int], enum_offset: int
+    ) -> dict[str, Any]:
+        outside = [
+            {
+                "note": note_names[index + enum_offset],
+                "rawIndex": index,
+                "invocationCount": count,
+            }
+            for index, count in sorted(raw_indexes.items())
+            if not 0 <= index < len(values)
+        ]
+        return {
+            "summary": {
+                "tableEntryCount": len(values),
+                "sourceInvocationCount": sum(raw_indexes.values()),
+                "uniqueSourceNoteCount": len(raw_indexes),
+                "minimumRawIndex": min(raw_indexes),
+                "maximumRawIndex": max(raw_indexes),
+                "rawIndexOutsideTableInvocationCount": sum(
+                    row["invocationCount"] for row in outside
+                ),
+            },
+            "tableSha256": _sha256(b"".join(value.to_bytes(2, "big") for value in values)),
+            "entries": [
+                {
+                    "index": index,
+                    "note": note_names[index + enum_offset],
+                    "registerValue": value,
+                }
+                for index, value in enumerate(values)
+            ],
+            "rawOutsideTableUses": outside,
+        }
+
+    return {
+        "enumSourcePath": enum_path,
+        "enumSourceSha256": _sha256(enum_source.encode()),
+        "noteEnumCount": len(note_names),
+        "macroInvocationCounts": dict(sorted(macro_uses.items())),
+        "ym": family_row(ym_values, ym_raw_indexes, 24),
+        "psg": family_row(psg_values, psg_raw_indexes, 0),
+        "driverRules": {
+            "ymMacroIndexExpression": "note-enum-24",
+            "psgMacroIndexExpression": "note-enum",
+            "runtimeNoteShiftStateOffset": 28,
+            "ymFrequencyShiftStateOffset": 29,
+        },
+    }
+
+
 def _fixed_opcode_families(
     macro_definitions: list[dict[str, Any]],
 ) -> tuple[dict[str, list[str]], list[str]]:
@@ -778,6 +901,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
     command_model["bankSelection"] = _music_bank_selection_contract(
         sources, bank_payloads, enum_source
     )
+    command_model["frequencyModel"] = _music_frequency_contract(sources, driver_source)
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -885,6 +1009,21 @@ def verify_sound_data_inventory(
     for field in ("summary", "timerBValueCounts"):
         if output["commandModel"]["musicHeaders"][field] != expected_headers[field]:
             raise ValueError(f"sound data music-header {field} drift")
+    frequency = output["commandModel"]["frequencyModel"]
+    expected_frequency = fixture["expected"]["commandModel"]["frequencyModel"]
+    for field in (
+        "enumSourcePath",
+        "enumSourceSha256",
+        "noteEnumCount",
+        "macroInvocationCounts",
+        "driverRules",
+    ):
+        if frequency[field] != expected_frequency[field]:
+            raise ValueError(f"sound data frequency-model {field} drift")
+    for family in ("ym", "psg"):
+        for field in ("summary", "tableSha256", "rawOutsideTableUses"):
+            if frequency[family][field] != expected_frequency[family][field]:
+                raise ValueError(f"sound data {family}-frequency {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

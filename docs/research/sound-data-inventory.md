@@ -71,6 +71,20 @@ rows are part of the canonical fixture. This confirms the stored control fields 
 but not the wall-clock tempo produced by YM2612 Timer B, which remains in the concentrated timing
 matrix.
 
+## Static Note and Frequency Domains
+
+`musicenums.asm` defines 108 semitone names from C0 through B8. The driver owns an 84-entry YM table
+for C2–B8 and a 64-entry PSG table for C0–Ds5; their canonical register-word streams are hashed and
+the complete indexed rows are generated. The song corpus contains 16,636 YM note calls spanning raw
+table indices 1–71, all inside the YM table.
+
+The 5,205 PSG note calls span raw indices 21–69. Of those, 197 calls name E5–A5, above the unshifted
+64-entry table. This is not labeled malformed: both YM and PSG parsers add channel-state byte `$1C`
+before lookup, and the source uses `shifting` commands. Resolving those 197 effective indices requires
+interpreting per-channel control flow and shift state; the static inventory preserves the six note/
+count groups instead of assuming a zero shift. YM additionally applies byte `$1D` after table lookup
+as a frequency offset.
+
 ## Static Command Corpus
 
 `musicmacros.asm` defines 29 byte-emitting macros; every definition occurs in the song corpus and ten
@@ -125,9 +139,9 @@ file, the four symbol-less music support/entry sources, and explicit alternates/
 
 ## Concentrated Queue
 
-No emulator was launched. Remaining questions are grouped as effective shifted note/sample frequency
-plus live channel state, and Timer-B/loop/instrument timing. They should be tested together through
-the sound-command boundary rather than one launch per opcode.
+No emulator was launched. Remaining questions are grouped as the 197 effective shifted PSG indices,
+sample frequency plus live channel state, and Timer-B/loop/instrument timing. They should be tested
+together through the sound-command boundary rather than one launch per opcode.
 
 ## Reproduction
 

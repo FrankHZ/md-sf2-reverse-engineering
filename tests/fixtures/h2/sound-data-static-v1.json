@@ -139,6 +139,45 @@
           {"value":212,"entryCount":1}
         ]
       },
+      "frequencyModel": {
+        "enumSourcePath":"data/sound/musicenums.asm",
+        "enumSourceSha256":"BDCCA79005BC78BD24E1B5851166BD29AEFDDF3C8F196C254F418E862EA1BAB1",
+        "noteEnumCount":108,
+        "macroInvocationCounts": {
+          "note":9780, "noteL":6856, "psgNote":3763, "psgNoteL":1442
+        },
+        "ym": {
+          "summary": {
+            "tableEntryCount":84, "sourceInvocationCount":16636,
+            "uniqueSourceNoteCount":69, "minimumRawIndex":1, "maximumRawIndex":71,
+            "rawIndexOutsideTableInvocationCount":0
+          },
+          "tableSha256":"5B61B42A8AC81C86707079F8A14FAC5E7B2FF93FB19401E5DD4B02EB6FAE63B3",
+          "rawOutsideTableUses":[]
+        },
+        "psg": {
+          "summary": {
+            "tableEntryCount":64, "sourceInvocationCount":5205,
+            "uniqueSourceNoteCount":49, "minimumRawIndex":21, "maximumRawIndex":69,
+            "rawIndexOutsideTableInvocationCount":197
+          },
+          "tableSha256":"13F10C3AA14AEEB8743E4CCACCF1E5488DA637672934D512014851FB87232263",
+          "rawOutsideTableUses": [
+            {"note":"E5","rawIndex":64,"invocationCount":62},
+            {"note":"F5","rawIndex":65,"invocationCount":60},
+            {"note":"Fs5","rawIndex":66,"invocationCount":28},
+            {"note":"G5","rawIndex":67,"invocationCount":34},
+            {"note":"Gs5","rawIndex":68,"invocationCount":4},
+            {"note":"A5","rawIndex":69,"invocationCount":9}
+          ]
+        },
+        "driverRules": {
+          "ymMacroIndexExpression":"note-enum-24",
+          "psgMacroIndexExpression":"note-enum",
+          "runtimeNoteShiftStateOffset":28,
+          "ymFrequencyShiftStateOffset":29
+        }
+      },
       "bankSelection": {
         "enumSourcePath":"sf2enums.asm",
         "enumSourceSha256":"ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",
