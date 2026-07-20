@@ -158,24 +158,30 @@
         "psg": {
           "summary": {
             "tableEntryCount":64, "sourceInvocationCount":5205,
-            "uniqueSourceNoteCount":49, "minimumRawIndex":21, "maximumRawIndex":69,
-            "rawIndexOutsideTableInvocationCount":197
+            "uniqueSourceNoteCount":49, "minimumRawIndex":0, "maximumRawIndex":48,
+            "rawIndexOutsideTableInvocationCount":0
           },
           "tableSha256":"13F10C3AA14AEEB8743E4CCACCF1E5488DA637672934D512014851FB87232263",
-          "rawOutsideTableUses": [
-            {"note":"E5","rawIndex":64,"invocationCount":62},
-            {"note":"F5","rawIndex":65,"invocationCount":60},
-            {"note":"Fs5","rawIndex":66,"invocationCount":28},
-            {"note":"G5","rawIndex":67,"invocationCount":34},
-            {"note":"Gs5","rawIndex":68,"invocationCount":4},
-            {"note":"A5","rawIndex":69,"invocationCount":9}
-          ]
+          "rawOutsideTableUses":[],
+          "shiftAudit": {
+            "summary": {
+              "sourceInvocationCount":5205, "ambiguousShiftInvocationCount":0,
+              "minimumEffectiveIndex":0, "maximumEffectiveIndex":48,
+              "outOfRangeInvocationCount":0
+            },
+            "possibleShiftValues":[0], "violations":[]
+          }
         },
         "driverRules": {
           "ymMacroIndexExpression":"note-enum-24",
-          "psgMacroIndexExpression":"note-enum",
+          "psgMacroIndexExpression":"note-enum-21",
           "runtimeNoteShiftStateOffset":28,
-          "ymFrequencyShiftStateOffset":29
+          "ymFrequencyShiftStateOffset":29,
+          "shiftCommandArguments": [
+            {"argument":0,"invocationCount":71,"decodedNoteShift":0,"ymFrequencyShift":0,"psgFrequencyShift":0},
+            {"argument":16,"invocationCount":54,"decodedNoteShift":0,"ymFrequencyShift":2,"psgFrequencyShift":1},
+            {"argument":32,"invocationCount":93,"decodedNoteShift":0,"ymFrequencyShift":4,"psgFrequencyShift":2}
+          ]
         }
       },
       "sampleModel": {
@@ -268,7 +274,7 @@
     },
     "strictIndexExclusion": "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry files and two macro/enum sources remain outside symbol reach",
     "runtimeQuestions": [
-      "note-sample-frequency-and-channel-state-runtime-semantics",
+      "dac-sample-rate-and-live-channel-state-runtime-semantics",
       "tempo-loop-and-instrument-timing"
     ]
   }

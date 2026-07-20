@@ -578,11 +578,15 @@ def _music_frequency_contract(sources: dict[str, str], driver_source: str) -> di
         "psg": Counter(),
     }
     macro_uses: Counter[str] = Counter()
+    shift_arguments: Counter[int] = Counter()
     for source_path, source in sources.items():
         if not re.search(r"/music\d+\.asm$", source_path):
             continue
         for raw_line in source.splitlines():
             line = raw_line.split(";", 1)[0]
+            shift_match = re.match(r"^\s*shifting\s+([^,\s]+)", line)
+            if shift_match:
+                shift_arguments[_parse_asm_int(shift_match.group(1))] += 1
             match = re.match(r"^\s*(noteL?|psgNoteL?)\s+([^,\s]+)", line)
             if match is None:
                 continue
@@ -597,7 +601,9 @@ def _music_frequency_contract(sources: dict[str, str], driver_source: str) -> di
             macro_uses[macro] += 1
 
     ym_raw_indexes = Counter({value - 24: count for value, count in uses["ym"].items()})
-    psg_raw_indexes = uses["psg"]
+    psg_raw_indexes = Counter({value - 21: count for value, count in uses["psg"].items()})
+
+    shift_audit = _psg_note_shift_audit(sources, note_names, len(psg_values))
 
     def family_row(
         values: list[int], raw_indexes: Counter[int], enum_offset: int
@@ -640,13 +646,136 @@ def _music_frequency_contract(sources: dict[str, str], driver_source: str) -> di
         "noteEnumCount": len(note_names),
         "macroInvocationCounts": dict(sorted(macro_uses.items())),
         "ym": family_row(ym_values, ym_raw_indexes, 24),
-        "psg": family_row(psg_values, psg_raw_indexes, 0),
+        "psg": {
+            **family_row(psg_values, psg_raw_indexes, 21),
+            "shiftAudit": shift_audit,
+        },
         "driverRules": {
             "ymMacroIndexExpression": "note-enum-24",
-            "psgMacroIndexExpression": "note-enum",
+            "psgMacroIndexExpression": "note-enum-21",
             "runtimeNoteShiftStateOffset": 28,
             "ymFrequencyShiftStateOffset": 29,
+            "shiftCommandArguments": [
+                {
+                    "argument": value,
+                    "invocationCount": count,
+                    "decodedNoteShift": _decode_note_shift(value),
+                    "ymFrequencyShift": (value >> 3) & 0x0E,
+                    "psgFrequencyShift": ((value >> 3) & 0x0E) >> 1,
+                }
+                for value, count in sorted(shift_arguments.items())
+            ],
         },
+    }
+
+
+def _decode_note_shift(value: int) -> int:
+    masked = value & 0x8F
+    if masked & 0x80:
+        masked |= 0xF0
+    return masked - 0x100 if masked & 0x80 else masked
+
+
+def _psg_note_shift_audit(
+    sources: dict[str, str], note_names: dict[int, str], table_size: int
+) -> dict[str, Any]:
+    name_values = {name: value for value, name in note_names.items()}
+    occurrences = []
+    for source_path, source in sorted(sources.items()):
+        if not re.search(r"/music\d+\.asm$", source_path):
+            continue
+        labels = list(re.finditer(r"^(Music_\d+_Channel_\d+):.*$", source, re.MULTILINE))
+        for label_index, label_match in enumerate(labels):
+            end = labels[label_index + 1].start() if label_index + 1 < len(labels) else len(source)
+            body = label_match.group(0).split(":", 1)[1] + source[label_match.end() : end]
+            instructions = []
+            for line_number, raw_line in enumerate(body.splitlines(), start=1):
+                line = raw_line.split(";", 1)[0].strip()
+                match = re.match(r"^(\w+)(?:\s+([^,\s]+))?", line)
+                if match:
+                    instructions.append((match.group(1), match.group(2), line_number))
+            if not instructions:
+                continue
+
+            edges = {index: set() for index in range(len(instructions))}
+            main_start = None
+            counted_starts = []
+            repeat_start = None
+            repeat_sections = []
+            for index, (macro, _argument, _line_number) in enumerate(instructions):
+                if index + 1 < len(instructions) and macro not in {"channel_end", "mainLoopEnd"}:
+                    edges[index].add(index + 1)
+                if macro == "mainLoopStart":
+                    main_start = index
+                elif macro == "mainLoopEnd" and main_start is not None:
+                    edges[index].add(main_start + 1)
+                elif macro == "countedLoopStart":
+                    counted_starts.append(index)
+                elif macro == "countedLoopEnd" and counted_starts:
+                    edges[index].add(counted_starts.pop() + 1)
+                elif macro == "repeatStart":
+                    repeat_start = index
+                    repeat_sections = []
+                elif macro.startswith("repeatSection"):
+                    repeat_sections.append(index)
+                elif macro == "repeatEnd" and repeat_start is not None:
+                    for target in (repeat_start, *repeat_sections):
+                        if target + 1 < len(instructions):
+                            edges[index].add(target + 1)
+
+            states = [set() for _ in instructions]
+            states[0].add(0)
+            queue = [0]
+            while queue:
+                index = queue.pop()
+                macro, argument, _line_number = instructions[index]
+                output_states = states[index]
+                if macro == "shifting" and argument is not None:
+                    output_states = {_decode_note_shift(_parse_asm_int(argument))}
+                for target in edges[index]:
+                    new_states = output_states - states[target]
+                    if new_states:
+                        states[target].update(new_states)
+                        queue.append(target)
+
+            for index, (macro, argument, line_number) in enumerate(instructions):
+                if macro not in {"psgNote", "psgNoteL"} or argument is None:
+                    continue
+                base_index = name_values[argument] - 21
+                shifts = sorted(states[index])
+                effective = sorted({base_index + shift for shift in shifts})
+                occurrences.append(
+                    {
+                        "sourcePath": source_path,
+                        "channelLabel": label_match.group(1),
+                        "channelLine": line_number,
+                        "macro": macro,
+                        "note": argument,
+                        "baseIndex": base_index,
+                        "possibleNoteShifts": shifts,
+                        "effectiveIndexes": effective,
+                        "inRange": all(0 <= value < table_size for value in effective),
+                    }
+                )
+
+    violations = [row for row in occurrences if not row["inRange"]]
+    ambiguous = [row for row in occurrences if len(row["possibleNoteShifts"]) > 1]
+    return {
+        "summary": {
+            "sourceInvocationCount": len(occurrences),
+            "ambiguousShiftInvocationCount": len(ambiguous),
+            "minimumEffectiveIndex": min(
+                value for row in occurrences for value in row["effectiveIndexes"]
+            ),
+            "maximumEffectiveIndex": max(
+                value for row in occurrences for value in row["effectiveIndexes"]
+            ),
+            "outOfRangeInvocationCount": len(violations),
+        },
+        "possibleShiftValues": sorted(
+            {value for row in occurrences for value in row["possibleNoteShifts"]}
+        ),
+        "violations": violations,
     }
 
 
@@ -1006,7 +1135,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
             "files and two macro/enum sources remain outside symbol reach"
         ),
         "runtimeQuestions": [
-            "note-sample-frequency-and-channel-state-runtime-semantics",
+            "dac-sample-rate-and-live-channel-state-runtime-semantics",
             "tempo-loop-and-instrument-timing",
         ],
         "files": files,
@@ -1089,6 +1218,8 @@ def verify_sound_data_inventory(
         for field in ("summary", "tableSha256", "rawOutsideTableUses"):
             if frequency[family][field] != expected_frequency[family][field]:
                 raise ValueError(f"sound data {family}-frequency {field} drift")
+    if frequency["psg"]["shiftAudit"] != expected_frequency["psg"]["shiftAudit"]:
+        raise ValueError("sound data PSG note-shift audit drift")
     sample_model = output["commandModel"]["sampleModel"]
     expected_samples = fixture["expected"]["commandModel"]["sampleModel"]
     for field in ("summary", "musicInvocationCounts"):

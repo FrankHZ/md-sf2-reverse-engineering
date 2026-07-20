@@ -137,7 +137,9 @@ def test_music_frequency_contract_parses_overlapping_ym_table() -> None:
     )
     sources = {
         "data/sound/musicenums.asm": enum_source,
-        "data/sound/musicbank0/music01.asm": "note C2\npsgNote C0\n",
+        "data/sound/musicbank0/music01.asm": (
+            "Music_1_Channel_0:\nnote C2\npsgNote A1\nchannel_end\n"
+        ),
     }
 
     contract = _music_frequency_contract(sources, driver_source)
@@ -149,6 +151,7 @@ def test_music_frequency_contract_parses_overlapping_ym_table() -> None:
     }
     assert contract["ym"]["summary"]["rawIndexOutsideTableInvocationCount"] == 0
     assert contract["psg"]["summary"]["rawIndexOutsideTableInvocationCount"] == 0
+    assert contract["psg"]["shiftAudit"]["summary"]["outOfRangeInvocationCount"] == 0
     assert contract["macroInvocationCounts"] == {"note": 1, "psgNote": 1}
 
 
