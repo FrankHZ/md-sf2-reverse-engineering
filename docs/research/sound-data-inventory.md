@@ -3,7 +3,8 @@
 - Status: **Confirmed** for the complete 41-file directory, two bank entry points, include graph,
   bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, the 29-macro ABI and
   complete source invocation corpus, all 39 music headers, ten-slot channel-role shape and command
-  compatibility, canonical-ROM parity, and the four-command/12-checkpoint live Z80 state matrix
+  compatibility, the 56-entry embedded SFX command/header domain, canonical-ROM parity, and the
+  four-command/12-checkpoint live Z80 state matrix
 - Status: **Inferred** for audible instrument/envelope meaning
 - Status: **Unknown** for wall-clock YM2612 tempo, PCM sample rate, and hardware output fidelity
 - Evidence date: 2026-07-19
@@ -110,6 +111,27 @@ is source-bound; its 908 packed `psgInst` arguments split into a high-nibble ins
 level. The corpus uses seven instrument indices (0, 1, 2, 3, 7, 10, 15) and levels 0–14, with no
 table or nibble overflow. Audible envelopes and update timing remain runtime behavior rather than a
 claim derived from index validity.
+
+## Embedded SFX Command and Header Domain
+
+The separately assembled 8,192-byte `sounddriver.bin` byte-matches canonical ROM
+`0x1EC000..0x1EDFFF`. Inside its Z80 address space, the SFX pointer table occupies
+`0x15BD..0x162C`, the 56 headers/payload area occupies `0x162D..0x1F28`, and the 68000 startup copy
+boundary is `0x1F80`. The tracked model hashes the table/data region but commits no sound bytes.
+
+Commands `0x41..0x78` map contiguously to every named enum from `SFX_MENU_SWITCH` through
+`SFX_TINKLING` and every source header from `sfx_01` through `sfx_38`. Each little-endian table
+pointer lands on the matching header, and every header's source `byte_XXXX` expressions equal the
+assembled channel pointers. There are exactly 28 type-1 headers with ten pointers and 28 type-2
+headers with three pointers: 364 channel references to 115 unique targets.
+
+The target's first byte classifies 66 active and 298 immediate-`FF` inactive references. All 32
+active type-1 references preserve the music/SFX partition documented by the driver: 26 use PSG tone
+3 and six use PSG noise; none consumes YM1, YM2, PSG tone 1, or PSG tone 2. The 34 active type-2
+references borrow only YM4/YM5/YM6-DAC, with counts 8/19/7. This confirms command selection, header
+shape, pointer resolution, and channel ownership. It does not yet claim that every embedded SFX
+byte stream's branches/loops have been independently decoded; those streams feed the already-mapped
+YM/PSG parsers.
 
 ## Static Command Corpus
 

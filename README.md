@@ -29,7 +29,9 @@ loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro �
 17 项 DAC load table 也绑定 1,559 次音乐 sample 调用；另有 51 个已用 YM instrument、7 个
 已用 PSG instrument 及全部 8,376 次 instrument/volume 调用完成边界审计。单次启动的声音 H3
 进一步用 4 个 command、12 个 checkpoint 和 120 个声道快照确认命令清零、bank/DAC 状态、
-十槽初始 pointer、有效声道推进与 Music 32 全 inactive 控制；硬件采样率和可听输出仍未知。
+十槽初始 pointer、有效声道推进与 Music 32 全 inactive 控制。驱动内嵌 SFX 也已闭合完整
+`0x41–0x78`/56-command 域、28+28 两类 header、364 个 pointer 和 66 个 active channel 引用；
+硬件采样率和可听输出仍未知。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：

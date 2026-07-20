@@ -178,7 +178,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
   39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot
-  的 Z80 live-state H3 矩阵。
+  的 Z80 live-state H3 矩阵；同一 rail 还闭合驱动内嵌 56-entry SFX command/header 域。
 
 ## Design
 

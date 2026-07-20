@@ -38,6 +38,9 @@ all 39 four-byte music headers and the complete 64-slot/two-bank command-selecti
 cross-bank fallback, and the 84-entry YM/64-entry PSG frequency tables bound to 21,841 note calls,
 including a 218-command shift/loop CFG audit with zero invalid effective indices, plus the 17-entry
 DAC load table bound to 1,559 music sample calls and the complete 8,376-call instrument/level domain.
+The embedded driver now also has full 56-command SFX header coverage: 28 type-1 and 28 type-2
+entries, 364 source/binary pointers, 115 unique targets, and 66 active channel references, with the
+complete 8 KiB driver byte-matched at ROM `0x1EC000`.
 A single-launch four-command sound H3 now joins those static
 contracts to 12 checkpoints/120 live Z80 channel snapshots, confirming command clearing, bank/DAC
 header state, exact initial pointers, active-channel progression, and the silent control boundary.

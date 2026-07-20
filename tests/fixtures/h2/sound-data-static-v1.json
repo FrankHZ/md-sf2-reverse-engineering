@@ -244,6 +244,33 @@
           ]
         }
       },
+      "sfxModel": {
+        "driverBinary": {
+          "sourcePath":"data/sound/sounddriver.bin", "romOffset":2015232,
+          "sizeBytes":8192,
+          "sha256":"670BE6CBBEFFA649E14127979A29896451AC8411049E1F48A19613E465AD0E7E",
+          "romParity":true
+        },
+        "layout": {
+          "pointerTableStart":5565, "pointerTableEnd":5677,
+          "dataStart":5677, "dataEnd":7977, "dataSizeBytes":2300,
+          "driverCopyEndExclusive":8064,
+          "tableAndDataSha256":"0DE54F7995B58DBC9DA3C2F62779E6AD33A7C60F6446A84F508E92CD3ECD9582"
+        },
+        "summary": {
+          "commandCount":56, "minimumCommand":65, "maximumCommand":120,
+          "namedCommandCount":56, "type1EntryCount":28, "type2EntryCount":28,
+          "channelPointerCount":364, "uniqueChannelPointerCount":115,
+          "activeChannelPointerCount":66, "inactiveChannelPointerCount":298
+        },
+        "activeSlotCounts": [
+          {"slot":"ym2-4","entryCount":8},
+          {"slot":"ym2-5","entryCount":19},
+          {"slot":"ym2-6-dac","entryCount":7},
+          {"slot":"psg-tone-3","entryCount":26},
+          {"slot":"psg-noise","entryCount":6}
+        ]
+      },
       "bankSelection": {
         "enumSourcePath":"sf2enums.asm",
         "enumSourceSha256":"ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",

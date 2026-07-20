@@ -4,9 +4,31 @@ from sf2tool.h2.sound_data import (
     _music_frequency_contract,
     _music_instrument_contract,
     _music_sample_contract,
+    _parse_asm_int,
     _parse_music_macros,
+    _sfx_source_headers,
     _song_command_row,
 )
+
+
+def test_sound_asm_integer_parser_accepts_dollar_hex() -> None:
+    assert _parse_asm_int("$7F") == 0x7F
+
+
+def test_sfx_source_headers_parse_both_layouts() -> None:
+    source = (
+        "sfx_01: db 2\n"
+        " dw byte_1000\n dw byte_1003,byte_1006\n"
+        "byte_1000: db 0FFh\n"
+        "sfx_02: db 1\n"
+        + " dw byte_1010\n" * 10
+        + "byte_1010: db 0FFh\n"
+    )
+
+    assert _sfx_source_headers(source) == {
+        "sfx_01": {"type": 2, "targets": ["byte_1000", "byte_1003", "byte_1006"]},
+        "sfx_02": {"type": 1, "targets": ["byte_1010"] * 10},
+    }
 
 
 def test_music_macro_abi_and_song_invocations_are_parsed() -> None:

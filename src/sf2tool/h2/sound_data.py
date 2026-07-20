@@ -17,6 +17,8 @@ from sf2tool.source_text import read_upstream_text
 ID = "sf2-sound-data-static-v1"
 SOURCE_ROOT = Path("data/sound")
 DRIVER_SOURCE = Path("code/common/tech/sound/sounddriver.asm")
+SFX_REFERENCE_SOURCE = Path("code/common/tech/sound/sfx.txt")
+DRIVER_OUTPUT = Path("data/sound/sounddriver.bin")
 ENUM_SOURCE = Path("sf2enums.asm")
 BANK_SOURCES = {
     "bank0": SOURCE_ROOT / "musicbank0/musicbank0.asm",
@@ -29,6 +31,25 @@ BANK_OUTPUTS = {
 BANK_ROM_OFFSETS = {"bank1": 0x1F0000, "bank0": 0x1F8000}
 BANK_SIZE = 0x8000
 BANK_ORIGIN = 0x8000
+DRIVER_ROM_OFFSET = 0x1EC000
+SFX_POINTER_TABLE_ADDRESS = 0x15BD
+SFX_DATA_START_ADDRESS = 0x162D
+SFX_DATA_END_ADDRESS = 0x1F29
+SFX_COMMAND_START = 0x41
+SFX_ENTRY_COUNT = 56
+SFX_TYPE_1_SLOTS = (
+    "ym1-1",
+    "ym1-2",
+    "ym1-3",
+    "ym2-4",
+    "ym2-5",
+    "ym2-6-dac",
+    "psg-tone-1",
+    "psg-tone-2",
+    "psg-tone-3",
+    "psg-noise",
+)
+SFX_TYPE_2_SLOTS = ("ym2-4", "ym2-5", "ym2-6-dac")
 FLOW_MACROS = {
     "channel_end",
     "countedLoopEnd",
@@ -104,6 +125,8 @@ def _sha256(data: bytes) -> str:
 
 def _parse_asm_int(value: str) -> int:
     value = value.strip()
+    if value.startswith("$"):
+        return int(value[1:], 16)
     return int(value[:-1], 16) if value.lower().endswith("h") else int(value)
 
 
@@ -948,6 +971,177 @@ def _music_sample_contract(
     }
 
 
+def _sfx_source_headers(driver_source: str) -> dict[str, dict[str, Any]]:
+    lines = driver_source.splitlines()
+    headers: dict[str, dict[str, Any]] = {}
+    pattern = re.compile(r"^(sfx_([0-9A-F]{2})):\s*db\s+([12])\b")
+    for line_index, line in enumerate(lines):
+        match = pattern.match(line)
+        if not match:
+            continue
+        label, _, type_text = match.groups()
+        sfx_type = int(type_text)
+        pointer_count = 10 if sfx_type == 1 else 3
+        targets: list[str] = []
+        for following in lines[line_index + 1 :]:
+            statement = following.split(";", 1)[0].strip()
+            if not statement:
+                continue
+            pointer_match = re.match(r"^dw\s+(.+)$", statement)
+            if not pointer_match:
+                break
+            targets.extend(value.strip() for value in pointer_match.group(1).split(","))
+            if len(targets) >= pointer_count:
+                break
+        if len(targets) != pointer_count:
+            raise ValueError(f"SFX source header pointer-count drift: {label}")
+        if any(not re.fullmatch(r"byte_[0-9A-F]{4}", target) for target in targets):
+            raise ValueError(f"SFX source header target-label drift: {label}")
+        headers[label] = {"type": sfx_type, "targets": targets}
+    return headers
+
+
+def _sfx_contract(
+    driver_source: str,
+    reference_source: str,
+    enum_source: str,
+    driver_payload: bytes,
+    rom: bytes,
+) -> dict[str, Any]:
+    if len(driver_payload) != 0x2000:
+        raise ValueError(f"sound driver binary size drift: {len(driver_payload)}")
+    if rom[DRIVER_ROM_OFFSET : DRIVER_ROM_OFFSET + len(driver_payload)] != driver_payload:
+        raise ValueError("sound driver binary does not match the canonical ROM slice")
+
+    pointer_table_end = SFX_POINTER_TABLE_ADDRESS + SFX_ENTRY_COUNT * 2
+    if pointer_table_end != SFX_DATA_START_ADDRESS:
+        raise ValueError("SFX pointer-table/data boundary drift")
+    table_labels: list[str] = []
+    table_source = driver_source[
+        driver_source.index("pt_SFX:") : driver_source.index("sfx_01:")
+    ].replace("pt_SFX:", "", 1)
+    for statement in re.findall(r"^\s*dw\s+([^;\r\n]+)", table_source, re.MULTILINE):
+        table_labels.extend(value.strip() for value in statement.split(","))
+    expected_labels = [f"sfx_{index:02X}" for index in range(1, SFX_ENTRY_COUNT + 1)]
+    if table_labels != expected_labels:
+        raise ValueError("SFX source pointer-table order drift")
+
+    source_headers = _sfx_source_headers(driver_source)
+    if sorted(source_headers) != sorted(expected_labels):
+        raise ValueError("SFX source header inventory drift")
+    enums = {
+        _parse_asm_int(value): name
+        for name, value in re.findall(
+            r"^(SFX_[A-Z0-9_]+):\s+equ\s+([^\s;]+)", enum_source, re.MULTILINE
+        )
+        if SFX_COMMAND_START
+        <= _parse_asm_int(value)
+        < SFX_COMMAND_START + SFX_ENTRY_COUNT
+    }
+    if sorted(enums) != list(range(SFX_COMMAND_START, SFX_COMMAND_START + SFX_ENTRY_COUNT)):
+        raise ValueError("SFX enum command domain drift")
+
+    entries = []
+    all_targets: list[int] = []
+    active_slot_counts: Counter[str] = Counter()
+    for slot_index, label in enumerate(expected_labels):
+        table_offset = SFX_POINTER_TABLE_ADDRESS + slot_index * 2
+        header_address = int.from_bytes(driver_payload[table_offset : table_offset + 2], "little")
+        if not SFX_DATA_START_ADDRESS <= header_address < SFX_DATA_END_ADDRESS:
+            raise ValueError(f"SFX header outside data range: {label}")
+        sfx_type = driver_payload[header_address]
+        source_header = source_headers[label]
+        if sfx_type != source_header["type"]:
+            raise ValueError(f"SFX source/binary type drift: {label}")
+        slots = SFX_TYPE_1_SLOTS if sfx_type == 1 else SFX_TYPE_2_SLOTS
+        pointers = [
+            int.from_bytes(
+                driver_payload[header_address + 1 + index * 2 : header_address + 3 + index * 2],
+                "little",
+            )
+            for index in range(len(slots))
+        ]
+        source_targets = source_header["targets"]
+        source_addresses = [int(target.removeprefix("byte_"), 16) for target in source_targets]
+        if pointers != source_addresses:
+            raise ValueError(f"SFX source/binary channel-pointer drift: {label}")
+        if any(
+            not SFX_DATA_START_ADDRESS <= pointer < SFX_DATA_END_ADDRESS
+            for pointer in pointers
+        ):
+            raise ValueError(f"SFX channel pointer outside data range: {label}")
+        active_slots = [
+            slot
+            for slot, pointer in zip(slots, pointers, strict=True)
+            if driver_payload[pointer] != 0xFF
+        ]
+        if sfx_type == 1 and any(slot not in {"psg-tone-3", "psg-noise"} for slot in active_slots):
+            raise ValueError(f"type-1 SFX consumes a music-owned channel: {label}")
+        active_slot_counts.update(active_slots)
+        all_targets.extend(pointers)
+        command_id = SFX_COMMAND_START + slot_index
+        entries.append(
+            {
+                "sfxIndex": slot_index + 1,
+                "commandId": command_id,
+                "commandHex": f"{command_id:02X}",
+                "enumName": enums[command_id],
+                "sourceLabel": label,
+                "headerZ80Address": header_address,
+                "type": sfx_type,
+                "headerSizeBytes": 1 + len(slots) * 2,
+                "channelPointers": pointers,
+                "sourceTargets": source_targets,
+                "activeSlots": active_slots,
+            }
+        )
+
+    type_counts = Counter(row["type"] for row in entries)
+    active_pointer_count = sum(len(row["activeSlots"]) for row in entries)
+    return {
+        "driverSourcePath": DRIVER_SOURCE.as_posix(),
+        "driverSourceSha256": _sha256(driver_source.encode()),
+        "referenceSourcePath": SFX_REFERENCE_SOURCE.as_posix(),
+        "referenceSourceSha256": _sha256(reference_source.encode()),
+        "driverBinary": {
+            "sourcePath": DRIVER_OUTPUT.as_posix(),
+            "romOffset": DRIVER_ROM_OFFSET,
+            "sizeBytes": len(driver_payload),
+            "sha256": _sha256(driver_payload),
+            "romParity": True,
+        },
+        "layout": {
+            "pointerTableStart": SFX_POINTER_TABLE_ADDRESS,
+            "pointerTableEnd": pointer_table_end,
+            "dataStart": SFX_DATA_START_ADDRESS,
+            "dataEnd": SFX_DATA_END_ADDRESS,
+            "dataSizeBytes": SFX_DATA_END_ADDRESS - SFX_DATA_START_ADDRESS,
+            "driverCopyEndExclusive": 0x1F80,
+            "tableAndDataSha256": _sha256(
+                driver_payload[SFX_POINTER_TABLE_ADDRESS:SFX_DATA_END_ADDRESS]
+            ),
+        },
+        "summary": {
+            "commandCount": len(entries),
+            "minimumCommand": SFX_COMMAND_START,
+            "maximumCommand": SFX_COMMAND_START + len(entries) - 1,
+            "namedCommandCount": len(enums),
+            "type1EntryCount": type_counts[1],
+            "type2EntryCount": type_counts[2],
+            "channelPointerCount": len(all_targets),
+            "uniqueChannelPointerCount": len(set(all_targets)),
+            "activeChannelPointerCount": active_pointer_count,
+            "inactiveChannelPointerCount": len(all_targets) - active_pointer_count,
+        },
+        "activeSlotCounts": [
+            {"slot": slot, "entryCount": active_slot_counts[slot]}
+            for slot in SFX_TYPE_1_SLOTS
+            if active_slot_counts[slot]
+        ],
+        "entries": entries,
+    }
+
+
 def _fixed_opcode_families(
     macro_definitions: list[dict[str, Any]],
 ) -> tuple[dict[str, list[str]], list[str]]:
@@ -1202,6 +1396,15 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
     command_model["frequencyModel"] = _music_frequency_contract(sources, driver_source)
     command_model["instrumentModel"] = _music_instrument_contract(sources, driver_source, rom)
     command_model["sampleModel"] = _music_sample_contract(sources, driver_source, rom)
+    driver_payload = (disasm / DRIVER_OUTPUT).read_bytes()
+    reference_source = read_upstream_text(disasm / SFX_REFERENCE_SOURCE)
+    command_model["sfxModel"] = _sfx_contract(
+        driver_source,
+        reference_source,
+        enum_source,
+        driver_payload,
+        rom,
+    )
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -1340,6 +1543,11 @@ def verify_sound_data_inventory(
             raise ValueError(f"sound data YM instrument {field} drift")
     if instrument_model["psg"] != expected_instruments["psg"]:
         raise ValueError("sound data PSG instrument model drift")
+    sfx_model = output["commandModel"]["sfxModel"]
+    expected_sfx = fixture["expected"]["commandModel"]["sfxModel"]
+    for field in ("driverBinary", "layout", "summary", "activeSlotCounts"):
+        if sfx_model[field] != expected_sfx[field]:
+            raise ValueError(f"sound data SFX model {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")
