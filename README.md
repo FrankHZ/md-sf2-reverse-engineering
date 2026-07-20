@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,472 条 confirmed finding、71 个 H2 fixture、58 个 H3 fixture
-和 2,026 个地址绑定。
+截至 2026-07-19，研究索引有 1,472 条 confirmed finding、72 个 H2 fixture、58 个 H3 fixture
+和 2,027 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -37,7 +37,8 @@ last-set-flag-wins 选择规则，以及 126 张六指针 setup table/756 个 sl
 复用七条 variant suffix）；这些记录使用 113 个 map-sprite ID，且全部排除 237-250 的
 sentinel/unbacked 区间。后续 81 个脚本 sprite 赋值、5 个实际写入点、20 个
 `UpdateEntityProperties` caller 以及 ally/enemy 派生表也已全部分类，原版 built domain 同样不会
-写入 237-250。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
+写入 237-250；全局 entity-action source 也已解析为 49 labels、444 commands 和 7 条内部
+relative branch 的完整 1,730-byte corpus。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
 1,451 次 setup-level record reference，并保留两个 direct-`rts` stub 与 map 44 错误指针例外。
 description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stub 和 227 条物理 entry，并从
 唯一正常调用链确认三个 `d6` 条件函数会被跳过；init 层闭合 84 个 source、90 个 callable entry、

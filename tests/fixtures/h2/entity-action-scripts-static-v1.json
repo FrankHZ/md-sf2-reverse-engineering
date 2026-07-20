@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-entity-action-scripts-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": { "eas_Jump": 286276 },
+  "summary": {
+    "byteCount": 1730,
+    "labelCount": 49,
+    "entryLabelCount": 39,
+    "internalByteLabelCount": 3,
+    "internalWordLabelCount": 7,
+    "commandCount": 444,
+    "uniqueCommandMacroCount": 28,
+    "definedCommandMacroCount": 44,
+    "unusedCommandMacroCount": 16,
+    "directDisplacementWordCount": 7,
+    "absoluteJumpCount": 29,
+    "relativeBranchCount": 7,
+    "externalIdleJumpCount": 28,
+    "internalAbsoluteJumpCount": 1
+  },
+  "romRange": {
+    "sourcePath": "data/scripting/entity/eas_actions.asm",
+    "start": 286276,
+    "endExclusive": 288006,
+    "sha256": "788C7980245ABCC314F37FC6D6DC7C1A54D9A9285324BBE1EFC8947BEFB92E1E"
+  },
+  "commandCounts": {
+    "ac_accelFactors": 9,
+    "ac_acceleration": 8,
+    "ac_animSpeedX2": 1,
+    "ac_autoFacing": 21,
+    "ac_branch": 7,
+    "ac_deceleration": 8,
+    "ac_entityObstructable": 6,
+    "ac_entityUncollidable": 6,
+    "ac_immersed": 4,
+    "ac_jump": 29,
+    "ac_mapUncollidable": 6,
+    "ac_motion": 8,
+    "ac_moveRel": 34,
+    "ac_orientDown": 1,
+    "ac_orientLeft": 1,
+    "ac_orientRight": 1,
+    "ac_orientUp": 4,
+    "ac_resizable": 6,
+    "ac_setFacing": 59,
+    "ac_setPos": 3,
+    "ac_setSize": 34,
+    "ac_setSpeed": 6,
+    "ac_setSprite": 3,
+    "ac_soundCommand": 2,
+    "ac_transparency": 1,
+    "ac_updateSprite": 77,
+    "ac_wait": 87,
+    "ac_waitDest": 12
+  },
+  "controlFlowFacts": {
+    "relativeBranchTargets": ["eas_RotateRight", "eas_RotateRightHighSpeed", "byte_4622E", "byte_462AE", "byte_46282", "eas_ClockwiseMoveUpLeft", "eas_CounterClockwiseMoveUpRight"],
+    "absoluteJumpTargetCounts": { "eas_Idle": 28, "eas_Init": 1 },
+    "allRelativeBranchesStayInsideCorpus": true,
+    "onlyExternalAbsoluteTarget": "eas_Idle"
+  },
+  "runtimeQuestions": [
+    "What are the exact frame durations and collision effects of movement/action commands?",
+    "Which story routes invoke each of the 39 entry labels?"
+  ]
+}

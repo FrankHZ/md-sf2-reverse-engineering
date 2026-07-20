@@ -5,7 +5,7 @@
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
-  conversion, pointer, and glyph-loader data path
+  conversion, pointer, and glyph-loader data path, and the 1,730-byte global entity-action corpus
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, entity movement timing, text rendering timing,
   and individual script content
@@ -114,6 +114,13 @@ selection; enemy table values span 52-229. Consequently no original built input 
 237-250. Raw RAM, malformed scripts, and corrupt combatant state remain nonstandard injection cases,
 not normal-game reachability unknowns.
 
+The shared cutscene entity-action source is also parsed as a complete command corpus. It contains
+444 commands across 39 entry labels, uses 28 of 44 defined `ac_*` macro forms, and occupies exactly
+1,730 bytes once macro widths and seven explicit branch displacement words are summed. All seven
+relative branches stay within the file; 28 of 29 absolute jumps exit to `eas_Idle`, while the last
+jumps internally to `eas_Init`. This confirms command inventory and static control flow, but not
+frame timing, collision outcomes, or which story routes invoke each entry.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -136,6 +143,7 @@ injection behavior. This batch adds no emulator run.
 
 ```powershell
 uv run sf2 h2 common-scripting
+uv run sf2 h2 entity-action-scripts
 uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events

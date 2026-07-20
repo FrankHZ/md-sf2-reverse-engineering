@@ -33,6 +33,7 @@ from sf2tool.h2.core_stats_data import verify_core_stats_data_inventory
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h2.enemy_map_sprites import verify_enemy_map_sprites_contract
+from sf2tool.h2.entity_action_scripts import verify_entity_action_script_contract
 from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
@@ -338,6 +339,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_enemy_map_sprites)
     h2_enemy_map_sprites.add_argument("--output-path", type=_path)
+    h2_entity_action_scripts = h2_commands.add_parser(
+        "entity-action-scripts",
+        help="parse the global cutscene entity-action command and control-flow corpus",
+    )
+    _add_local_paths(h2_entity_action_scripts)
+    h2_entity_action_scripts.add_argument("--output-path", type=_path)
     h2_sprite_dialogue = h2_commands.add_parser(
         "sprite-dialogue",
         help="decode map-sprite portrait and speech-SFX properties against the ROM",
@@ -978,6 +985,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "enemy-map-sprites":
         print_record(
             verify_enemy_map_sprites_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "entity-action-scripts":
+        print_record(
+            verify_entity_action_script_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

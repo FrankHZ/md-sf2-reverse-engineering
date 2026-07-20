@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-entity-action-scripts-static-v1",
+  "summary": {
+    "byteCount": 1730,
+    "labelCount": 49,
+    "entryLabelCount": 39,
+    "internalByteLabelCount": 3,
+    "internalWordLabelCount": 7,
+    "commandCount": 444,
+    "uniqueCommandMacroCount": 28,
+    "definedCommandMacroCount": 44,
+    "unusedCommandMacroCount": 16,
+    "directDisplacementWordCount": 7,
+    "absoluteJumpCount": 29,
+    "relativeBranchCount": 7,
+    "externalIdleJumpCount": 28,
+    "internalAbsoluteJumpCount": 1
+  },
+  "outputSha256": "03464CA80B59D11F335D17CE27D24E18460FB9F479BF1FF6621C9CC7C10B173E"
+}

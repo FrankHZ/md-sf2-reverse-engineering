@@ -151,7 +151,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   palette/79 个 header reference 的完整 parity；并单独闭合 119 行 map-sprite/portrait/speech-SFX
   属性、`0xFFFF` sentinel、first-match 与 fallback 消费规则的完整 source/H1/ROM parity，以及
   5 个 sprite 写入点、81 个脚本赋值、20 个 property-update caller 和 ally/enemy 派生域的
-  237-250 排除审计。
+  237-250 排除审计，以及 1,730-byte global entity-action corpus 的 49 labels/444 commands/
+  7 个 relative branch 完整静态控制流。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 
