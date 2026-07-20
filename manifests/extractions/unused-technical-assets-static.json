@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-unused-technical-assets-static-v1",
+  "outputSha256": "E28FC7F30311411B9D1822CF810454674E02F4AB13A7292FE36AFAFFAC0F0F12",
+  "summary": {
+    "resourceCount": 2,
+    "addressCount": 6,
+    "cloudCompressedByteCount": 5694,
+    "cloudStreamCount": 4,
+    "cloudDecodedByteCount": 32768,
+    "cloudTileCount": 1024,
+    "cloudUniqueDecodedStreamCount": 4,
+    "cloudTrailingStorageBitCount": 158,
+    "paletteByteCount": 64,
+    "paletteCount": 2,
+    "paletteColorCount": 32,
+    "paletteUniqueColorCount": 17,
+    "paletteZeroColorCount": 4,
+    "paletteDifferenceCount": 2,
+    "pointerByteCount": 4,
+    "symbolicConsumerCount": 0,
+    "sourceRomParityByteCount": 5762
+  }
+}

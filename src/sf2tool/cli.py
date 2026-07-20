@@ -65,6 +65,7 @@ from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h2.text_huffman import verify_text_huffman_contract
 from sf2tool.h2.ui_graphics import verify_ui_graphics_contract
 from sf2tool.h2.ui_layouts import verify_ui_layout_contract
+from sf2tool.h2.unused_technical_assets import verify_unused_technical_assets_contract
 from sf2tool.h2.variable_width_font import verify_variable_width_font_contract
 from sf2tool.h2.witch_menu_graphics import verify_witch_menu_graphics_contract
 from sf2tool.h3.after_turn import verify_after_turn_status_lifecycle
@@ -432,6 +433,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_text_huffman)
     h2_text_huffman.add_argument("--output-path", type=_path)
+    h2_unused_technical_assets = h2_commands.add_parser(
+        "unused-tech-assets",
+        help="verify the unreferenced cloud streams and base palettes retained in the ROM",
+    )
+    _add_local_paths(h2_unused_technical_assets)
+    h2_unused_technical_assets.add_argument("--output-path", type=_path)
     h2_witch_menu_graphics = h2_commands.add_parser(
         "witch-menu-graphics",
         help="verify witch choice palette, bubble frames, pointers, and timer phases",
@@ -1076,6 +1083,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "text-huffman":
         print_record(
             verify_text_huffman_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "unused-tech-assets":
+        print_record(
+            verify_unused_technical_assets_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

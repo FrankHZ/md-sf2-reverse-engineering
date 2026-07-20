@@ -10,12 +10,14 @@
   complete icon-storage/copy/highlight corpus, map-palette/effective-color-zero boundaries, and
   assembled UI/window layout, spell-pointer, border, direct menu-tile, variable-width-font, and
   witch-menu palette/bubble-animation corpora, plus all uncompressed special-screen palettes/layouts
+  and the four-stream unused-cloud/two-palette unused-base payloads
 - Status: **Inferred** for visual intent where static state/register routing is clear but no rendered
   frame has been compared
 - Status: **Unknown** for remaining embedded compression corpora outside the completed families,
   exact VDP timing, palette
   presentation, portrait/map-sprite animation timing, special-sprite frame output, and whether the
-  three regular-map-sprite free-spot IDs or seven incompletely routed special IDs can be selected
+  three regular-map-sprite free-spot IDs, seven incompletely routed special IDs, or two nominally
+  unused technical resources can be selected
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -276,6 +278,20 @@ View destinations multiply each plane/axis by its own parallax factor. An enable
 keeps its current position; otherwise the calculated position becomes the destination. The flash
 screen script is the fixed word sequence `0x41, 0x1E, 0xFFFF`.
 
+## Nominally Unused Technical Assets
+
+The two named but nominally unused technical resources now have their own byte-level boundary. The
+5,694-byte `tiles_UnusedCloud` container has exactly four even-offset candidates that each decode as
+one 8,192-byte Stack stream: 32,768 decoded bytes, or 4 × 256 32-byte tiles. All four decoded hashes
+are distinct, and their stored spans retain 158 bits beyond the logical terminators. The 64-byte
+`palette_UnusedBase` payload is two valid 16-color Mega Drive palettes that differ only at color
+indices 1 and 5; its longword pointer also matches ROM.
+
+After comments are removed, the cloud symbol occurs only at its definition, the palette symbol only
+at its definition and pointer, and the pointer only at its definition. This confirms there is no
+symbolic ASM consumer, not that a raw address, computed pointer, or debug-only path is impossible.
+The names/comments likewise do not independently confirm clouds, animation order, or rendered use.
+
 ## Direct Consumer Denominator
 
 The complete pinned `disasm/code` tree contains 46 direct named compression calls in 23 files: 35
@@ -312,6 +328,7 @@ uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
 uv run sf2 h2 variable-width-font
+uv run sf2 h2 unused-tech-assets
 uv run sf2 h2 witch-menu-graphics
 uv run sf2 h2 battle-effect-graphics
 uv run sf2 h2 map-tilesets
@@ -328,6 +345,7 @@ Generated JSON stays under ignored `local/derived/tech-graphics-static.json` and
 `special-screen-graphics-decode.json`, `special-screen-presentation-static.json`,
 `ui-graphics-decode.json`, `icon-graphics-static.json`, and
 `ui-layout-static.json`, `variable-width-font-static.json`, `witch-menu-graphics-static.json`,
+`unused-technical-assets-static.json`,
 `battle-effect-graphics-decode.json`, plus `map-tileset-decode.json` and
 `map-palette-static.json`.
 The consumer map stays under ignored `local/derived/compression-consumers-static.json`.

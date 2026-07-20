@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,467 条 confirmed finding、64 个 H2 fixture、58 个 H3 fixture
-和 1,978 个地址绑定。
+截至 2026-07-19，研究索引有 1,467 条 confirmed finding、66 个 H2 fixture、58 个 H3 fixture
+和 1,984 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -344,6 +344,11 @@ color word，5 个 layout 共 4,176 个 word，12 个资源合计 8,832 bytes �
 其中 Title A/B 的 2,560-byte `vdpTile` ASM 展开还与两个编辑器 binary mirror 完全一致；压缩
 tile stream 仍归既有九资源 rail，不重复计数。palette upload、layout mutation/scroll 与最终画面
 继续集中进入 screen-presentation matrix。
+unused-tech-assets rail 又闭合构建中保留但没有符号化消费者的最后两个技术资源：5,694-byte
+cloud-named container 唯一解析为 4 条 Stack stream，每条解出 8,192 bytes/256 tiles，共 32,768
+decoded bytes；64-byte base palette payload 是两套合法 16 色 palette，只在 color index 1/5
+不同，其 longword pointer 同样通过 H1/ROM parity。源码 token 扫描只证明没有 symbolic consumer；
+raw/computed/debug reach、四流顺序、palette/VDP 目的地和最终画面继续保持 Unknown。
 battle-effect graphics rail 接着闭合 23 个 spell container、4 个 invocation container 的 15 frame/
 30 stream、1 条 status animation 与 2 条 battle-transition stream，共 56 条 Stack stream、46,364
 个压缩字节和 200,992 个解压字节。所有 30 个资源、4 个顶层 pointer 和 3 张 pointer table 与 ROM

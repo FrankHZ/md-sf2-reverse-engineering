@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 64 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 66 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 1,978 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 1,984 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -136,6 +136,10 @@ The current evidence is deep but narrow:
   the payload, all defined contexts are reachable from 254, and no emitted symbol selects one of the
   169 `$FFFF` entries. Combined Huffman and ASCII input still omits glyph IDs 70-71; only nonstandard
   direct injection and final typewriter presentation remain grouped questions.
+  The remaining nominally unused technical payloads are now byte-closed too: one 5,694-byte container
+  resolves into four unique 8,192-byte Stack streams, while one 64-byte payload contains two valid
+  16-color palettes differing at two indices and has a ROM-matching pointer. No symbolic ASM consumer
+  exists; raw/computed/debug reach and rendered meaning remain Unknown.
   Battle-effect graphics now covers 23 spell containers, four invocation containers with 15 frames/
   30 streams, one status stream, and two transition streams. The 56 streams decode to 200,992 bytes
   with complete resource/pointer/table ROM parity. Invocation output is consistently 4,096 bytes
@@ -223,8 +227,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,467 records; its
-verifier reports 381 unique code files, 980 unique data files, 65 H2 fixtures, 58 H3 fixtures, and
-1,978 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 66 H2 fixtures, 58 H3 fixtures, and
+1,984 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

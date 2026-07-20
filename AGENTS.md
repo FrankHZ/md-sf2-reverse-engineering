@@ -149,6 +149,7 @@ the complete 163-entry icon storage corpus and menu copy/highlight boundaries, p
 the complete assembled UI/window layout, spell-pointer, border, and direct-asset corpus, plus
 the complete variable-width font, ASCII-map, pointer, and loader corpus, plus
 the complete 255-entry context-Huffman offset table, 86 reachable trees, and 1,536 leaf-code corpus, plus
+the complete four-stream unused-cloud payload and two-palette unused-base corpus, plus
 the complete spell/invocation/status/transition battle-effect graphics corpus, plus
 the complete 115-stream map-tileset corpus and map/animation usage boundary, plus
 the complete 16-entry map-palette corpus, 79-map usage table, and effective color-zero boundary, plus

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-unused-technical-assets-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "tiles_UnusedCloud": 182176,
+    "tiles_UnusedCloudStream1": 183504,
+    "tiles_UnusedCloudStream2": 184872,
+    "tiles_UnusedCloudStream3": 186636,
+    "palette_UnusedBase": 2028966,
+    "p_palette_UnusedBase": 2023460
+  },
+  "summary": {
+    "resourceCount": 2,
+    "addressCount": 6,
+    "cloudCompressedByteCount": 5694,
+    "cloudStreamCount": 4,
+    "cloudDecodedByteCount": 32768,
+    "cloudTileCount": 1024,
+    "cloudUniqueDecodedStreamCount": 4,
+    "cloudTrailingStorageBitCount": 158,
+    "paletteByteCount": 64,
+    "paletteCount": 2,
+    "paletteColorCount": 32,
+    "paletteUniqueColorCount": 17,
+    "paletteZeroColorCount": 4,
+    "paletteDifferenceCount": 2,
+    "pointerByteCount": 4,
+    "symbolicConsumerCount": 0,
+    "sourceRomParityByteCount": 5762
+  },
+  "cloudFacts": {
+    "byteCount": 5694,
+    "sha256": "7FBBCFC4A0A4548AC63864E4F008B0D95D2792841B3489FB31AC0F05D641AAAB",
+    "streamBoundaryDiscovery": "all even offsets yielding exactly 8192 Stack-decoded bytes"
+  },
+  "streamFacts": [
+    { "index": 0, "address": 182176, "startOffset": 0, "endOffsetExclusive": 1328, "storedByteCount": 1328, "inputBitsConsumed": 10587, "trailingStorageBitCount": 37, "decodedByteCount": 8192, "tileCount": 256, "sourceSha256": "648BECD36FA5A25E8ECAB0E7F1E19306BBC609BDF7FA7B25C050552C98C977AE", "decodedSha256": "13011C91F3FEFF29A6417F7979C0F6C5D47822E45315703C39DA7C5E4B57FF63" },
+    { "index": 1, "address": 183504, "startOffset": 1328, "endOffsetExclusive": 2696, "storedByteCount": 1368, "inputBitsConsumed": 10900, "trailingStorageBitCount": 44, "decodedByteCount": 8192, "tileCount": 256, "sourceSha256": "ECDE269D0902DB7F394791B1BC48FA3ED5D03D04DDABA41E93006D4FE895CD9B", "decodedSha256": "5D1F93EDD8A75EC58AD4A5273FE7936AE0DFB187A793650DB421971FEFA9AD96" },
+    { "index": 2, "address": 184872, "startOffset": 2696, "endOffsetExclusive": 4460, "storedByteCount": 1764, "inputBitsConsumed": 14078, "trailingStorageBitCount": 34, "decodedByteCount": 8192, "tileCount": 256, "sourceSha256": "44E1D369585A0B043873A63B06C2DC1498B259DFB277843C10FC3715EBFE95DE", "decodedSha256": "5F819C23865E1E6CDA34282025614D23D189AFD3ED190439D8D99B2032CEA83B" },
+    { "index": 3, "address": 186636, "startOffset": 4460, "endOffsetExclusive": 5694, "storedByteCount": 1234, "inputBitsConsumed": 9829, "trailingStorageBitCount": 43, "decodedByteCount": 8192, "tileCount": 256, "sourceSha256": "21A966E50E711A7D0C8B9A24786547135D51696C3FE17FDFFC7674BF752E55FC", "decodedSha256": "AC215EDFF7D1966A5A8743F2E5DDE1B7B0C5EB5928F8EE3D11EF36A70A57E3A7" }
+  ],
+  "paletteFacts": {
+    "byteCount": 64,
+    "sha256": "354E669882715CB451BF97C7FA636FBDC18B6A3E53A517BABDDDD27FE80E0C83",
+    "paletteCount": 2,
+    "colorsPerPalette": 16,
+    "differences": [
+      { "colorIndex": 1, "first": 3822, "second": 1198 },
+      { "colorIndex": 5, "first": 1184, "second": 1728 }
+    ],
+    "pointerSha256": "C6DB60053C4A6A5496C2E81F7F56C3604AE695F35C59F9EF179DB70CF5F36763"
+  },
+  "reachabilityFacts": {
+    "asmTokenCounts": {
+      "tiles_UnusedCloud": 1,
+      "palette_UnusedBase": 2,
+      "p_palette_UnusedBase": 1
+    },
+    "cloudHasNoSymbolicConsumer": true,
+    "basePaletteHasOnlyItsPointerReference": true,
+    "basePalettePointerHasNoSymbolicConsumer": true,
+    "rawAddressOrComputedAccessExcludedFromStaticClaim": true,
+    "resourceNamesAndCommentsDoNotProveRenderedMeaning": true
+  },
+  "runtimeQuestions": [
+    "Can an original-game path reach either payload through a raw address, computed pointer, or debug-only state despite the absence of symbolic consumers?",
+    "If reached, what frame order, palette assignment, VDP destination, and rendered meaning apply to the four decoded tile streams?"
+  ]
+}
