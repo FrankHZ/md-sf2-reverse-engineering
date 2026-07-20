@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,496 条 confirmed finding、73 个 H2 fixture、59 个 H3 fixture
-和 2,064 个地址绑定。
+截至 2026-07-19，研究索引有 1,498 条 confirmed finding、73 个 H2 fixture、59 个 H3 fixture
+和 2,066 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -295,7 +295,8 @@ engine、物理分支顺序、item use/break、Taros 特例和目标排序。sha
 7 个文件、3,182 行、127 个 global label 和 394 个直接调用点，确认单回合控制、Kiwi 火焰、退出、
 battle load 与 move SFX；随后收口 6 个 player-control/cursor/menu 入口的 9 段源码，结构化
 1,039 条语句、231 个分支点、207 个直接调用点和 59 个全局状态，并固定 tile/target 确认、
-battle/item menu、取消回滚与 suspend 分支。四批均未增加模拟器启动；尚未静态
+battle/item menu、取消回滚与 suspend 分支；装备交换、give/drop 和 normal/trapped/gold/item
+chest 的静态结果也由同一 fixture 固定。四批均未增加模拟器启动；尚未静态
 闭合的问题继续积累到后续共享模拟矩阵。
 新一批 battle scene 根引擎 rail 覆盖 12 个文件、6,261 行、387 个 global label 和 376 个直接调用点，
 固定 21 条 scene-script 命令、初始化/资源选择顺序及 32×2 法术动画分发表；其中 11 个此前未触达

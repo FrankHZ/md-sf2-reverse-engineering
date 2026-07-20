@@ -5,9 +5,8 @@
   selection, and the selected player-input/cursor/menu control-flow contract
 - Status: **Inferred** for unmodeled pulsating-grid presentation helper roles based on upstream
   names/comments
-- Status: **Unknown** for runtime input timing, frame/presentation behavior, and remaining ailment
-  subroutes
-- Evidence date: 2026-07-18
+- Status: **Unknown** for runtime input timing and frame/presentation behavior
+- Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -52,6 +51,14 @@ Static instruction order confirms these implementation-neutral decisions:
 - the battlefield menu selects members, minimap, options, or suspend. Battle 0 rejects suspend;
   normal suspend copies the seconds counter, sets flag 88, saves, and transfers to `WitchSuspend`,
   while the debug Start path returns to the menu after saving.
+
+The item/equipment/chest branches are also statically closed. A cursed equipped item blocks both
+exchange and give/drop; transferred items have their equipped bit cleared, giving into a full
+inventory performs a trade, and a completed give consumes the turn as STAY. Dropping requires
+confirmation, and a dropped rare item is added to Deals. Chest search distinguishes no contents,
+empty, trapped, gold, and item results: traps commit `BATTLEACTION_TRAPPED_CHEST` and spawn the enemy,
+gold routes through `GetChestGoldAmount`/`IncreaseGold`, items go to the actor, and a full inventory
+closes the chest and returns to the menu. Resolved non-trap cases commit STAY.
 
 These are deterministic source-shape and branch-order facts, not emulator evidence about key-repeat
 cadence, animation duration, VInt timing, or on-screen presentation. Those questions remain grouped

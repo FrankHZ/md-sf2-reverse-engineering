@@ -268,6 +268,14 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 152718 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.aiTargetVisualAddress" }] }], "documents": ["docs/research/battle-functions.md"]
     },
     {
+      "id": "battle.functions.equip-in-battle", "subsystem": "battle.functions", "status": "confirmed", "symbol": "EquipNewItemInBattle", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 150676 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.equipInBattleAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.check-gold-chest", "subsystem": "battle.functions", "status": "confirmed", "symbol": "CheckGoldChest", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 151804 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.checkGoldChestAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
       "id": "battle.combatant.get-enemy",
       "subsystem": "battle.combatant",
       "status": "confirmed",

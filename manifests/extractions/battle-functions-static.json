@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-battle-functions-static-v1",
-  "outputSha256": "D2C63C926C80164D3627871B5A360A8BAAE599604D8C5619E12B53A50D04D0E1",
+  "outputSha256": "6BFD62087ECB7A9F7AC25E2574C5323DD505D527B8F4AD508FB075A186ACD368",
   "summary": {
     "fileCount": 7,
     "sourceLineCount": 3182,
@@ -13,7 +13,7 @@
     "uniqueDirectTargetCount": 145,
     "internalDirectTargetCount": 32,
     "externalDirectTargetCount": 113,
-    "indexedRecordCount": 13,
+    "indexedRecordCount": 15,
     "indexedFileCount": 7,
     "playerControlFunctionCount": 6,
     "playerControlStatementCount": 1039,

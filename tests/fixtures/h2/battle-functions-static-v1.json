@@ -16,7 +16,9 @@
     "setCursorTargetAddress": 144060,
     "processPlayerInputAddress": 149090,
     "battlefieldMenuAddress": 151966,
-    "aiTargetVisualAddress": 152718
+    "aiTargetVisualAddress": 152718,
+    "equipInBattleAddress": 150676,
+    "checkGoldChestAddress": 151804
   },
   "expected": {
     "representativeSymbols": {
@@ -53,7 +55,9 @@
       "cursorControl": { "confirmInputBits":["A","B","C"], "storesDestinationAsChosenTile":true, "hidesCursorAfterSelection":true },
       "targetSelection": { "emptyListReturn":-1, "cancelInput":"B", "confirmInputs":["A","C"], "directionInputsWrap":["UP","LEFT","DOWN","RIGHT"], "returnValueOnConfirm":"combatant-index" },
       "battleActionMenu": { "choiceOrder":["attack","magic","item","search-or-stay"], "cancelRestoresOriginalPosition":true, "movementCancelAction":-1, "itemChoiceOrder":["use","give","equip","drop"], "committedActions":["attack","cast-spell","use-item","stay","trapped-chest"] },
-      "battlefieldMenu": { "choiceOrder":["members","minimap","options","suspend"], "battleZeroRejectsSuspend":true, "suspendCopiesSecondsAndSetsFlag88":true, "debugStartReturnsToMenuAfterSave":true, "normalSuspendTransfersToWitchSuspend":true }
+      "battlefieldMenu": { "choiceOrder":["members","minimap","options","suspend"], "battleZeroRejectsSuspend":true, "suspendCopiesSecondsAndSetsFlag88":true, "debugStartReturnsToMenuAfterSave":true, "normalSuspendTransfersToWitchSuspend":true },
+      "equipmentAndItems": { "curseBlocksEquipmentExchange":true, "newCursedEquipmentShowsCurseDialogue":true, "equippedCursedItemCannotBeGivenOrDropped":true, "giveToFullInventoryTradesItems":true, "transferredItemsClearEquippedBit":true, "giveCommitsStayAction":true, "dropRequiresConfirmation":true, "droppedRareItemMovesToDeals":true },
+      "chestSearch": { "noChestContentsCommitsStay":true, "emptyChestCommitsStay":true, "trapCommitsTrappedChestActionAndSpawnsEnemy":true, "goldChestUsesThresholdAndIncreaseGold":true, "itemChestAddsToActor":true, "fullInventoryClosesChestAndReturnsToMenu":true, "resolvedNonTrapChestCommitsStay":true }
     },
     "playerControlInputBits": ["INPUT_BIT_A","INPUT_BIT_B","INPUT_BIT_C","INPUT_BIT_DOWN","INPUT_BIT_LEFT","INPUT_BIT_RIGHT","INPUT_BIT_START","INPUT_BIT_UP"],
     "playerControlBattleActions": ["BATTLEACTION_CAST_SPELL","BATTLEACTION_STAY","BATTLEACTION_TRAPPED_CHEST","BATTLEACTION_USE_ITEM"],
