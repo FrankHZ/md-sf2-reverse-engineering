@@ -87,6 +87,13 @@ A complete symbolic scan finds no source references to those enums, but whether 
 runtime writes exclude the three reserved IDs remains **Unknown** and is owned as one data-flow/
 runtime question rather than inferred from name absence.
 
+The combatant-specific route is now closed separately. `GetCombatantMapsprite` reads the enemy-index
+byte and performs an unchecked lookup into the 166-byte enemy map-sprite table. Rows 0-102 correspond
+to enemy definitions; rows 103-165 contain an NPC-sprite tail. All 627 built battle-spriteset inputs,
+the random-upgrade ranges, and the sole named `SetEnemyIndex` caller stay within 0-102, so normal
+battle initialization cannot enter the tail. Raw/debug/corrupt enemy-index state remains an explicit
+nonstandard reachability question.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -117,6 +124,7 @@ uv run sf2 h2 map-sprites
 uv run sf2 h2 variable-width-font
 uv run sf2 h2 text-huffman
 uv run sf2 h2 text-banks
+uv run sf2 h2 enemy-map-sprites
 uv run sf2 research-index test
 ```
 

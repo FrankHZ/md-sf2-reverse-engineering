@@ -32,6 +32,7 @@ from sf2tool.h2.compression_consumers import verify_compression_consumer_invento
 from sf2tool.h2.core_stats_data import verify_core_stats_data_inventory
 from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
+from sf2tool.h2.enemy_map_sprites import verify_enemy_map_sprites_contract
 from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
@@ -329,6 +330,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_item_auxiliary)
     h2_item_auxiliary.add_argument("--output-path", type=_path)
+    h2_enemy_map_sprites = h2_commands.add_parser(
+        "enemy-map-sprites",
+        help="verify all enemy map-sprite rows and the normal-vs-tail index boundary",
+    )
+    _add_local_paths(h2_enemy_map_sprites)
+    h2_enemy_map_sprites.add_argument("--output-path", type=_path)
     h2_battle_cutscene_data = h2_commands.add_parser(
         "battle-cutscene-data", help="inventory built and orphaned battle cutscene data"
     )
@@ -949,6 +956,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "item-auxiliary":
         print_record(
             verify_item_auxiliary_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "enemy-map-sprites":
+        print_record(
+            verify_enemy_map_sprites_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

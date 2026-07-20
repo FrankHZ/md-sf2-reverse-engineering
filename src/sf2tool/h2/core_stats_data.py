@@ -229,7 +229,7 @@ def build_core_stats_data_inventory(upstream_path: Path) -> dict[str, Any]:
         "representativeAddresses": representative_addresses,
         "facts": _source_facts(sources),
         "runtimeQuestions": [
-            "enemy-map-sprite-entries-beyond-definition-count",
+            "enemy-map-sprite-tail-raw-debug-reachability",
             "special-caravan-description-presentation",
             "shop-and-debug-shop-caller-admission",
         ],

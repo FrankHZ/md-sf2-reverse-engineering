@@ -25,10 +25,10 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 68 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 69 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,016 | Checked ROM/RAM relationships between fixtures and symbols/state |
-| H2 ROM table ranges | 23 | Deterministic source/ROM dual-path extraction ranges |
+| Address bindings | 2,018 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H2 ROM table ranges | 24 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
 graph, the 41-file Z80 music graph with two bank/ROM parity checks, plus 281 fixed
@@ -206,6 +206,12 @@ The current evidence is deep but narrow:
   match source, H1, and ROM. Static consumer flow proves that BRN/RDBN randomly choose mithril row 0
   or 2 instead of consuming a ninth weapon row; caller admission, persistence, presentation, and
   observed RNG frequency remain grouped runtime questions.
+  The enemy-map-sprite rail separately closes all 166 bytes of its table and the only consumer.
+  Rows 0-102 align with the 103 enemy definitions. Rows 103-165 are an NPC-sprite tail containing
+  values 167-229, except value 189 is absent and value 199 is duplicated. All 627 pinned battle-
+  spriteset references remain at 0-102, upgrade tables top out at 84, and the only named
+  `SetEnemyIndex` caller is combatant initialization. Normal battle construction therefore cannot
+  reach the tail; the unchecked lookup leaves only raw/debug/corrupt state as an explicit boundary.
   Battle cutscene data now has a complete 61-file inventory: 59 labeled cutscenes enter through one
   unlabeled storage include container and have H1 bindings; one Battle 01 region script is an orphan
   absent from the original build. Type/command shape is indexed, but story content and side effects
@@ -240,8 +246,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,468 records; its
-verifier reports 381 unique code files, 980 unique data files, 68 H2 fixtures, 58 H3 fixtures, and
-2,016 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 69 H2 fixtures, 58 H3 fixtures, and
+2,018 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

@@ -76,7 +76,7 @@
       }
     },
     "runtimeQuestions": [
-      "enemy-map-sprite-entries-beyond-definition-count",
+      "enemy-map-sprite-tail-raw-debug-reachability",
       "special-caravan-description-presentation",
       "shop-and-debug-shop-caller-admission"
     ]

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-map-sprites-static-v1",
+  "outputSha256": "C6C495576AD8B1C91F351914DADDCF0674AAF0C0F5D60E7A4E3746D004BAA67D",
+  "summary": {
+    "tableRowCount": 166,
+    "definitionRowCount": 103,
+    "tailRowCount": 63,
+    "tableByteCount": 166,
+    "battleSpritesetReferenceCount": 627,
+    "battleSpritesetUniqueEnemyCount": 102,
+    "battleSpritesetMaximumEnemyIndex": 102,
+    "upgradeRangeCount": 5,
+    "upgradeMaximumEnemyIndex": 84,
+    "namedSetterCallCount": 1,
+    "tailUniqueMapSpriteCount": 62,
+    "tailMinimumMapSprite": 167,
+    "tailMaximumMapSprite": 229,
+    "tailDefinitionSpriteOverlapCount": 0
+  }
+}

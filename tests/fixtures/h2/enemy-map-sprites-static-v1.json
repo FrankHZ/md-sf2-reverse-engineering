@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-enemy-map-sprites-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "table_EnemyMapsprites": 281252,
+    "GetCombatantMapsprite": 281212
+  },
+  "summary": {
+    "tableRowCount": 166,
+    "definitionRowCount": 103,
+    "tailRowCount": 63,
+    "tableByteCount": 166,
+    "battleSpritesetReferenceCount": 627,
+    "battleSpritesetUniqueEnemyCount": 102,
+    "battleSpritesetMaximumEnemyIndex": 102,
+    "upgradeRangeCount": 5,
+    "upgradeMaximumEnemyIndex": 84,
+    "namedSetterCallCount": 1,
+    "tailUniqueMapSpriteCount": 62,
+    "tailMinimumMapSprite": 167,
+    "tailMaximumMapSprite": 229,
+    "tailDefinitionSpriteOverlapCount": 0
+  },
+  "romRange": {
+    "sourcePath": "data/stats/enemies/enemymapsprites.asm",
+    "start": 281252,
+    "endExclusive": 281418,
+    "sha256": "1CA84692AFDE88BCB0B01FA556B33B6E424D46F523F7E4C26D663BEADA475BEA"
+  },
+  "tailFacts": {
+    "firstTableIndex": 103,
+    "lastTableIndex": 165,
+    "missingMapSpriteValuesInsideTailRange": [189],
+    "duplicateMapSpriteValues": { "199": 2 },
+    "normalBattleInitializationCanReachTail": false,
+    "consumerHasBoundsCheck": false,
+    "tailRequiresEnemyIndexRange": { "minimum": 103, "maximum": 165 }
+  },
+  "normalSourceDomainFacts": {
+    "enemyDefinitionIndexRange": { "minimum": 0, "maximum": 102 },
+    "battleSpritesetMissingEnemyIndexes": [100],
+    "onlyNamedSetterCaller": "code/gameflow/battle/battleloop/initializecombatants.asm"
+  },
+  "consumerRules": {
+    "enemyIndexSource": "GetEnemy reads the combatant enemy-index byte",
+    "lookup": "unsigned byte table_EnemyMapsprites[enemyIndex]",
+    "normalBoundary": "pinned battle spritesets and upgrade ranges remain within enemy definitions 0..102",
+    "tailBoundary": "rows 103..165 require a nonstandard raw/debug/corrupt enemy-index byte"
+  },
+  "runtimeQuestions": [
+    "Can any original debug, malformed save-state, or raw RAM path intentionally assign an enemy index in 103..165 and expose the NPC-sprite tail?"
+  ]
+}

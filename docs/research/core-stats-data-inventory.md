@@ -59,12 +59,29 @@ The consumer audit also fixes behavior that row counts alone could not express:
 The complete generated catalog stays under ignored `local/derived/item-auxiliary-static.json`; the
 tracked fixture stores counts, addresses, rules, questions, and canonical hashes.
 
+## Enemy Map-Sprite Tail
+
+The dedicated enemy-map-sprite rail expands all 166 source rows and byte-compares the complete
+`0x44AA4..0x44B4A` range with ROM. Rows 0-102 align one-for-one with the 103 enemy definitions. The
+remaining rows 103-165 are not additional enemies: they contain NPC map-sprite values 167-229. Value
+189 is absent because the corresponding source row uses `OLD_WOMAN` (199), which also appears again;
+the tail therefore has 63 rows but 62 unique values and no value overlap with the definition rows.
+
+Static data flow closes normal reachability. All 627 enemy references across the 45 pinned battle
+spritesets stay in range 0-102 and touch 102 unique definitions (index 100 is absent). The five random
+upgrade ranges top out at enemy 84. `InitializeEnemyStats` is the only named caller of
+`SetEnemyIndex`, and `GetCombatantMapsprite` uses that stored byte directly without a bounds check.
+Consequently normal built battle initialization cannot select the tail; an enemy index 103-165 would
+require raw/debug/corrupt state. Whether any original nonstandard path intentionally constructs that
+state remains Unknown rather than being promoted from the unchecked lookup alone.
+
 ## Runtime Queue
 
 No emulator was launched. Existing H3 spell, item, enemy, reward, and battlefield matrices remain the
 behavior owners. Later concentrated runs should answer:
 
-1. how the 63 enemy map-sprite rows beyond the 103 enemy definitions are selected;
+1. whether an original debug, malformed save-state, or raw RAM path intentionally reaches enemy
+   map-sprite tail indexes 103-165;
 2. special Caravan description presentation;
 3. story/debug caller admission for the 30 shop indexes, including gaps in named item-shop enums;
 4. blacksmith order persistence, presentation, and observed frequencies for the statically derived
@@ -75,5 +92,6 @@ behavior owners. Later concentrated runs should answer:
 ```powershell
 uv run sf2 h2 core-stats-data
 uv run sf2 h2 item-auxiliary
+uv run sf2 h2 enemy-map-sprites
 uv run sf2 research-index test
 ```
