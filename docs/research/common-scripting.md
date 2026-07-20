@@ -6,9 +6,9 @@
   the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
-  entity-action source corpus
+  entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
 - Status: **Inferred** for named helper intent where only call structure is modeled
-- Status: **Unknown** for caller-dependent story meaning, entity movement timing, text rendering timing,
+- Status: **Unknown** for caller-dependent story meaning, text rendering timing,
   and individual script content
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
@@ -230,26 +230,43 @@ wrappers/tables, setup initialization callables, and standalone setup scripts ar
 [`map-data-inventory.md`](./map-data-inventory.md). This inventory still owns the file boundary and
 general scripting engine; the map-data document owns setup-table semantics.
 
-## Runtime Queue
+## Entity Movement Runtime Matrix
 
-The static command/update/helper chain is now closed deeply enough to define one grouped movement
-runtime matrix. It should batch wait duration, unobstructed/blocked relative and absolute movement,
-acceleration/deceleration, destination snap, facing/animation progression, and immersed/layer arrival
-into shared setup and observation buffers. Story-route reachability remains a separate question.
-Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
-dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
-commands remain grouped runtime questions. They will share scenario setup and
-observation buffers rather than becoming one emulator launch per opcode. Reserved map-sprite IDs
-237-250 are now excluded from symbolic references, encoded entity records, built script payloads,
-combatant-derived tables, direct writers, and every property-update caller. A future shared
+One BizHawk launch now replays a stable debug Map Test 0 exploration state across 13 cases and 20
+original VInt ticks. Each case clears the other 48 entity slots and replaces only entity 0's 32-byte
+record, a small RAM action script, an optional blocker record, and the layout word consumed after
+arrival. The original `VInt_UpdateEntities`, `UpdateEntityData`, action dispatcher, destination-
+conflict helper, coordinate conversion, and next-entity transition execute unchanged.
+
+The observed state vectors exactly match the independent Python model. **Confirmed:** wait timer 2
+yields with counters 1 and 2, then advances and clears on tick 3; relative and absolute moves both
+retain their command pointer when a destination is within Manhattan distance 384 of an obstructing
+entity, and otherwise install destination/travel/signed velocity before movement begins on the next
+tick. Three acceleration ticks produce X velocity/position pairs `(20,20)`, `(24,44)`, `(28,72)`;
+two deceleration ticks produce `(24,324)`, `(16,340)`. A 16/64 diagonal selects facing 3 and adds two
+animation units, `-1` disables animation, and stationary counter 31 clamps to zero. Crossover snaps
+to destination and clears travel; controlled `$2000`, `$2400`, and `$3400` layout flags respectively
+select layer 2, layer 0, and immersed state.
+
+The RAM scripts terminate through dispatcher filler opcode `$24`, whose target yields to the next
+entity. `ac_pass` is not a terminator: its handler advances four bytes and redispatches. This was
+observed during harness development and agrees with its source flow; future synthetic scripts MUST
+not use `ac_pass` as a stop instruction.
+
+Story-route reachability remains a separate question. Dialogue typewriter/render timing, control-
+code side effects and inserted dynamic values, nonstandard direct symbol injection, end-credit
+presentation, and contextual meaning of script commands remain grouped runtime questions. Reserved
+map-sprite IDs 237-250 remain excluded from symbolic references, encoded entity records, built script
+payloads, combatant-derived tables, direct writers, and every property-update caller. A future shared
 entity-sprite matrix is only needed if the project chooses to document deliberately malformed/raw
-injection behavior. This batch adds no emulator run.
+injection behavior.
 
 ## Reproduction
 
 ```powershell
 uv run sf2 h2 common-scripting
 uv run sf2 h2 entity-action-scripts
+uv run sf2 h3 entity-movement
 uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events

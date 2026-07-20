@@ -2,7 +2,8 @@
 
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
-  dispatch rules, static transition-consumer priority, and load-path-specific layout persistence
+  dispatch rules, static transition-consumer priority, load-path-specific layout persistence, and
+  batched frame-level entity movement/action timing
 - **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
   hardware-level animation scanline timing, and final VDP-visible rendered parity
@@ -43,9 +44,11 @@ Evidence is executable through:
 - `sf2-map-init-dispatch-runtime-v1` in
   `tests/fixtures/h3/map-init-dispatch-v1.json`;
 - `sf2-map-event-dispatch-runtime-v1` in
-  `tests/fixtures/h3/map-event-dispatch-v1.json`.
+  `tests/fixtures/h3/map-event-dispatch-v1.json`;
 - `sf2-map-animation-vdp-runtime-v1` in
-  `tests/fixtures/h3/map-animation-vdp-v1.json`.
+  `tests/fixtures/h3/map-animation-vdp-v1.json`;
+- `sf2-entity-movement-runtime-v1` in
+  `tests/fixtures/h3/entity-movement-matrix-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -161,6 +164,32 @@ The exploration wait loop polls a pending map event before A/C, and the outer lo
 event before a player action. If both are visible in the same poll, the map event wins. Exact
 publication versus input-sampling timing at the original VInt boundary is presentation/runtime
 evidence and remains outside this static priority rule.
+
+## Entity Movement and Action Timing
+
+An original-fidelity entity update MUST keep position, velocity, original travel distance,
+destination, acceleration factors, motion flags, facing, layer, sprite flags, animation counter,
+wait timer, and action-script pointer as distinct state. Per enabled VInt, movement updates before
+the entity's action command is dispatched. A move command therefore installs its destination,
+travel, and signed velocity in one tick and position begins changing on the next.
+
+Acceleration applies in the outer three quarters of the original axis travel and deceleration in
+the final quarter. Velocity is integrated only for axes whose travel is nonzero. Dominant-axis
+facing uses the confirmed +/-8 magnitude boundary; animation advances by
+`(abs(xVelocity)+abs(yVelocity)) >> 5`, preserves byte `-1`, and clears positive counters above 30.
+Zero delta or sign crossover snaps an axis to its destination and clears that axis travel.
+
+Entity obstruction compares candidate destinations across all other non-empty slots. With the
+obstruction flag enabled, Manhattan distance below one 384-unit map tile blocks both relative and
+absolute move commands: the command pointer remains at the move and the entity yields. A clear
+destination advances to the following command and installs motion state. Wait commands likewise
+retain their pointer while counting and advance only after their threshold is reached. Synthetic or
+remake scripts MUST NOT treat `ac_pass` as a stop opcode; it advances four bytes and redispatches.
+
+After both travel words clear, layout marker `$2000` selects layer 2, `$2400` selects layer 0, and
+`$3400` sets immersed while other controlled markers clear it. A remake MAY represent those values
+as typed flags but MUST preserve the raw layout word and reproduce the 13-case/20-tick state vectors
+before adding interpolation or presentation adapters.
 
 ## Animation and Presentation
 

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h3-entity-movement-matrix-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "mapTestIndex", "observationBoundary", "sharedHarnessFixture", "function", "ram", "stateFields", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-entity-movement-runtime-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": { "type": "object" },
+    "mapTestIndex": { "const": 0 },
+    "observationBoundary": { "type": "string", "minLength": 80 },
+    "sharedHarnessFixture": { "type": "string" },
+    "stateFields": {
+      "const": ["tick", "x", "y", "xVelocity", "yVelocity", "xTravel", "yTravel", "xDest", "yDest", "facing", "layer", "flagsB", "animCounter", "waitTimer", "scriptOffset"]
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["updateAddress", "nextEntityAddress", "convertReturnAddress", "waitForEventAddress"],
+      "properties": {
+        "updateAddress": { "type": "integer", "minimum": 0 },
+        "nextEntityAddress": { "type": "integer", "minimum": 0 },
+        "convertReturnAddress": { "type": "integer", "minimum": 0 },
+        "waitForEventAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ram": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entityDataAddress", "entityCount", "entitySize", "scriptAddress", "mapBlockDataAddress", "spritesToLoadAddress"],
+      "properties": {
+        "entityDataAddress": { "const": 16754946 },
+        "entityCount": { "const": 49 },
+        "entitySize": { "const": 32 },
+        "scriptAddress": { "const": 16728064 },
+        "mapBlockDataAddress": { "const": 16711680 },
+        "spritesToLoadAddress": { "const": 16756583 }
+      }
+    },
+    "cases": {
+      "type": "array", "minItems": 10, "maxItems": 16,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "ticks", "entity", "script", "blocker", "arrivalTileWord", "expected"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "ticks": { "type": "integer", "minimum": 1, "maximum": 8 },
+          "entity": { "$ref": "#/$defs/entity" },
+          "script": { "$ref": "#/$defs/script" },
+          "blocker": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/blocker" }] },
+          "arrivalTileWord": { "oneOf": [{ "type": "null" }, { "type": "integer", "minimum": 0, "maximum": 65535 }] },
+          "expected": { "$ref": "#/$defs/expected" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "word": { "type": "integer", "minimum": -32768, "maximum": 65535 },
+    "byte": { "type": "integer", "minimum": 0, "maximum": 255 },
+    "entity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["x", "y", "xVelocity", "yVelocity", "xTravel", "yTravel", "xDest", "yDest", "facing", "layer", "entityNumber", "mapSprite", "xAccel", "yAccel", "xSpeed", "ySpeed", "flagsA", "flagsB", "animCounter", "waitTimer"],
+      "properties": {
+        "x": { "$ref": "#/$defs/word" }, "y": { "$ref": "#/$defs/word" },
+        "xVelocity": { "$ref": "#/$defs/word" }, "yVelocity": { "$ref": "#/$defs/word" },
+        "xTravel": { "$ref": "#/$defs/word" }, "yTravel": { "$ref": "#/$defs/word" },
+        "xDest": { "$ref": "#/$defs/word" }, "yDest": { "$ref": "#/$defs/word" },
+        "facing": { "$ref": "#/$defs/byte" }, "layer": { "$ref": "#/$defs/byte" },
+        "entityNumber": { "$ref": "#/$defs/byte" }, "mapSprite": { "$ref": "#/$defs/byte" },
+        "xAccel": { "$ref": "#/$defs/byte" }, "yAccel": { "$ref": "#/$defs/byte" },
+        "xSpeed": { "$ref": "#/$defs/byte" }, "ySpeed": { "$ref": "#/$defs/byte" },
+        "flagsA": { "$ref": "#/$defs/byte" }, "flagsB": { "$ref": "#/$defs/byte" },
+        "animCounter": { "$ref": "#/$defs/byte" }, "waitTimer": { "$ref": "#/$defs/byte" }
+      }
+    },
+    "script": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "x", "y", "timer"],
+      "properties": {
+        "kind": { "enum": ["none", "wait", "relative", "absolute"] },
+        "x": { "type": "integer", "minimum": -64, "maximum": 64 },
+        "y": { "type": "integer", "minimum": -64, "maximum": 64 },
+        "timer": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "blocker": {
+      "type": "object", "additionalProperties": false,
+      "required": ["x", "y", "xDest", "yDest"],
+      "properties": {
+        "x": { "$ref": "#/$defs/word" }, "y": { "$ref": "#/$defs/word" },
+        "xDest": { "$ref": "#/$defs/word" }, "yDest": { "$ref": "#/$defs/word" }
+      }
+    },
+    "state": {
+      "type": "array", "minItems": 15, "maxItems": 15,
+      "items": [
+        { "type": "integer", "minimum": 1 },
+        { "$ref": "#/$defs/word" }, { "$ref": "#/$defs/word" },
+        { "$ref": "#/$defs/word" }, { "$ref": "#/$defs/word" },
+        { "$ref": "#/$defs/word" }, { "$ref": "#/$defs/word" },
+        { "$ref": "#/$defs/word" }, { "$ref": "#/$defs/word" },
+        { "$ref": "#/$defs/byte" }, { "$ref": "#/$defs/byte" },
+        { "$ref": "#/$defs/byte" }, { "$ref": "#/$defs/byte" },
+        { "$ref": "#/$defs/byte" },
+        { "oneOf": [{ "type": "null" }, { "enum": [0, 4, 6] }] }
+      ],
+      "additionalItems": false
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "states"],
+      "properties": {
+        "id": { "type": "string" },
+        "states": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "$ref": "#/$defs/state" } }
+      }
+    }
+  }
+}

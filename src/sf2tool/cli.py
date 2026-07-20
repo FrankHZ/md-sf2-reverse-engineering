@@ -81,6 +81,7 @@ from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.battlefield_matrix import verify_battlefield_movement_matrix
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
+from sf2tool.h3.entity_movement import verify_entity_movement_matrix
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
 from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import (
@@ -645,6 +646,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_battlefield_matrix)
     h3_battlefield_matrix.add_argument("--timeout-seconds", type=int, default=120)
+    h3_entity_movement = h3_commands.add_parser(
+        "entity-movement", help="verify batched map-entity commands and frame movement"
+    )
+    _add_local_paths(h3_entity_movement)
+    h3_entity_movement.add_argument("--timeout-seconds", type=int, default=120)
     h3_map_setup_selection = h3_commands.add_parser(
         "map-setup-selection",
         help="verify map setup default, flag, alias, and missing-map selection",
@@ -1420,6 +1426,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "battlefield-matrix":
         print_record(
             verify_battlefield_movement_matrix(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "entity-movement":
+        print_record(
+            verify_entity_movement_matrix(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

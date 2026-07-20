@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-entity-movement-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "mapTestIndex": 0,
+  "observationBoundary": "Thirteen cases replay one stable debug Map Test 0 exploration state in one BizHawk launch. Lua clears the other 48 entity slots and replaces only entity 0's 32-byte record, a small RAM action script, an optional blocker record, and the map-layout word read after arrival. The original VInt entity loop, UpdateEntityData, action dispatcher, collision helper, coordinate conversion, and next-entity transition execute unchanged for 20 observed ticks.",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "function": { "updateAddress": 23916, "nextEntityAddress": 23906, "convertReturnAddress": 24384, "waitForEventAddress": 153884 },
+  "ram": { "entityDataAddress": 16754946, "entityCount": 49, "entitySize": 32, "scriptAddress": 16728064, "mapBlockDataAddress": 16711680, "spritesToLoadAddress": 16756583 },
+  "stateFields": ["tick", "x", "y", "xVelocity", "yVelocity", "xTravel", "yTravel", "xDest", "yDest", "facing", "layer", "flagsB", "animCounter", "waitTimer", "scriptOffset"],
+  "cases": [
+    {
+      "id": "wait-threshold-three-ticks", "ticks": 3,
+      "entity": { "x":384,"y":384,"xVelocity":0,"yVelocity":0,"xTravel":0,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"wait","x":0,"y":0,"timer":2 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"wait-threshold-three-ticks", "states":[[1,384,384,0,0,0,0,384,384,0,0,0,0,1,0],[2,384,384,0,0,0,0,384,384,0,0,0,0,2,0],[3,384,384,0,0,0,0,384,384,0,0,0,0,0,4]] }
+    },
+    {
+      "id": "relative-unblocked-start-and-step", "ticks": 2,
+      "entity": { "x":384,"y":384,"xVelocity":0,"yVelocity":0,"xTravel":0,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":32,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"relative","x":1,"y":-1,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"relative-unblocked-start-and-step", "states":[[1,384,384,16,-16,384,384,768,0,0,0,0,0,0,6],[2,400,368,16,-16,384,384,768,0,0,0,0,1,0,6]] }
+    },
+    {
+      "id": "relative-blocked-yields", "ticks": 1,
+      "entity": { "x":384,"y":384,"xVelocity":0,"yVelocity":0,"xTravel":0,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":32,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"relative","x":1,"y":-1,"timer":0 }, "blocker": { "x":768,"y":0,"xDest":768,"yDest":0 }, "arrivalTileWord": null,
+      "expected": { "id":"relative-blocked-yields", "states":[[1,384,384,0,0,0,0,384,384,0,0,0,0,0,0]] }
+    },
+    {
+      "id": "absolute-unblocked-start-and-step", "ticks": 2,
+      "entity": { "x":384,"y":384,"xVelocity":0,"yVelocity":0,"xTravel":0,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":24,"ySpeed":16,"flagsA":32,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"absolute","x":3,"y":2,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"absolute-unblocked-start-and-step", "states":[[1,384,384,24,16,768,384,1152,768,0,0,0,0,0,6],[2,408,400,24,16,768,384,1152,768,0,0,0,1,0,6]] }
+    },
+    {
+      "id": "absolute-blocked-yields", "ticks": 1,
+      "entity": { "x":384,"y":384,"xVelocity":0,"yVelocity":0,"xTravel":0,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":24,"ySpeed":16,"flagsA":32,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"absolute","x":3,"y":2,"timer":0 }, "blocker": { "x":1152,"y":768,"xDest":1152,"yDest":768 }, "arrivalTileWord": null,
+      "expected": { "id":"absolute-blocked-yields", "states":[[1,384,384,0,0,0,0,384,384,0,0,0,0,0,0]] }
+    },
+    {
+      "id": "x-acceleration-three-ticks", "ticks": 3,
+      "entity": { "x":0,"y":384,"xVelocity":16,"yVelocity":0,"xTravel":1536,"yTravel":0,"xDest":1536,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":4,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":1,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"x-acceleration-three-ticks", "states":[[1,20,384,20,0,1536,0,1536,384,0,0,0,0,0,null],[2,44,384,24,0,1536,0,1536,384,0,0,0,0,0,null],[3,72,384,28,0,1536,0,1536,384,0,0,0,0,0,null]] }
+    },
+    {
+      "id": "x-deceleration-two-ticks", "ticks": 2,
+      "entity": { "x":300,"y":384,"xVelocity":32,"yVelocity":0,"xTravel":384,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":8,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":4,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"x-deceleration-two-ticks", "states":[[1,324,384,24,0,384,0,384,384,0,0,0,0,0,null],[2,340,384,16,0,384,0,384,384,0,0,0,0,0,null]] }
+    },
+    {
+      "id": "diagonal-facing-animation", "ticks": 1,
+      "entity": { "x":0,"y":0,"xVelocity":16,"yVelocity":64,"xTravel":1000,"yTravel":1000,"xDest":1000,"yDest":1000,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":64,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"diagonal-facing-animation", "states":[[1,16,64,16,64,1000,1000,1000,1000,3,0,64,2,0,null]] }
+    },
+    {
+      "id": "animation-disabled-minus-one", "ticks": 1,
+      "entity": { "x":0,"y":384,"xVelocity":64,"yVelocity":0,"xTravel":1000,"yTravel":0,"xDest":1000,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":0,"animCounter":255,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"animation-disabled-minus-one", "states":[[1,64,384,64,0,1000,0,1000,384,0,0,0,255,0,null]] }
+    },
+    {
+      "id": "stationary-animation-clamp", "ticks": 1,
+      "entity": { "x":384,"y":384,"xVelocity":0,"yVelocity":0,"xTravel":0,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":0,"animCounter":31,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": null,
+      "expected": { "id":"stationary-animation-clamp", "states":[[1,384,384,0,0,0,0,384,384,0,0,0,0,0,null]] }
+    },
+    {
+      "id": "arrival-layer-two", "ticks": 1,
+      "entity": { "x":368,"y":384,"xVelocity":32,"yVelocity":0,"xTravel":384,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": 8192,
+      "expected": { "id":"arrival-layer-two", "states":[[1,384,384,32,0,0,0,384,384,0,2,0,1,0,null]] }
+    },
+    {
+      "id": "arrival-layer-zero", "ticks": 1,
+      "entity": { "x":368,"y":384,"xVelocity":32,"yVelocity":0,"xTravel":384,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":2,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": 9216,
+      "expected": { "id":"arrival-layer-zero", "states":[[1,384,384,32,0,0,0,384,384,0,0,0,1,0,null]] }
+    },
+    {
+      "id": "arrival-immersed-toggle", "ticks": 1,
+      "entity": { "x":368,"y":384,"xVelocity":32,"yVelocity":0,"xTravel":384,"yTravel":0,"xDest":384,"yDest":384,"facing":0,"layer":0,"entityNumber":0,"mapSprite":237,"xAccel":0,"yAccel":0,"xSpeed":16,"ySpeed":16,"flagsA":0,"flagsB":0,"animCounter":0,"waitTimer":0 },
+      "script": { "kind":"none","x":0,"y":0,"timer":0 }, "blocker": null, "arrivalTileWord": 13312,
+      "expected": { "id":"arrival-immersed-toggle", "states":[[1,384,384,32,0,0,0,384,384,0,0,32,1,0,null]] }
+    }
+  ]
+}

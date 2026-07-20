@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,489 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed findings | 1,490 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H2 fixture files | 72 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,047 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 59 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,056 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -257,9 +257,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,489 records; its
-verifier reports 381 unique code files, 980 unique data files, 72 H2 fixtures, 58 H3 fixtures, and
-2,047 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,490 records; its
+verifier reports 381 unique code files, 980 unique data files, 72 H2 fixtures, 59 H3 fixtures, and
+2,056 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -331,9 +331,10 @@ delta shift 5/-1 disable/>30 reset, axis crossover snapping, and arrival layer/i
 helpers are now closed too: four functions total 434 bytes/135 instructions with 22 call sites. The
 conflict helper proves a 49-slot, Manhattan-distance-below-384 test and exposes a source-comment error:
 conflict leaves Z clear, no conflict leaves Z set. Sprite auto-facing fallthrough, special/entity-32
-bypasses, effect/DMA calls, and the coordinate hash formula are also explicit. The remaining original
-behavior question is frame-by-frame progression, not collision predicate meaning; it should use one
-batched movement matrix. Normal-story reachability remains separate.
+bypasses, effect/DMA calls, and the coordinate hash formula are also explicit. A 13-case/20-tick,
+one-launch H3 matrix now confirms wait thresholds, blocked/unblocked relative and absolute setup,
+successive acceleration/deceleration, facing/animation rules, crossover snap, and three arrival-tile
+states against an independent model. Normal-story reachability remains separate.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks

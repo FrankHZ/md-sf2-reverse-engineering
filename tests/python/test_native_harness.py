@@ -31,10 +31,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1489
+    assert result["Records"] == 1490
     assert result["H2Fixtures"] == 72
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 2047
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 59
+    assert result["AddressBindings"] == 2056
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -498,6 +498,13 @@ def test_map_event_dispatch_has_one_batched_runtime_command() -> None:
 def test_map_animation_vdp_has_one_batched_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "map-animation-vdp"])
     assert args.h3_command == "map-animation-vdp"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 120
+
+
+def test_entity_movement_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "entity-movement"])
+    assert args.h3_command == "entity-movement"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 120
 

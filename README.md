@@ -13,12 +13,12 @@
 并已完成角色槽位、职业、物品、法术、转职、敌人定义与 Battle 01 scene 的 source/ROM 双路径
 H2、成长曲线与法术学习合同、battle AI、battlefield、battle-loop、顶层 battle control、battle actions、shared battle functions、battle scene 根引擎/动画实现、battle cutscene、startup/main-loop/exploration、special screens、ROM header/window/debug、common scripting、common maps、common stats、common menus、technical interrupts/graphics/interfaces/services 全目录 inventory 和静态决策/生命周期合同，以及基础/调试覆盖 RNG、成长计算/完整升级（含投影后成长、
 职业等级上限、继承法术升级与战斗 EXP 自然升级入口）、完整击杀 EXP 等级差矩阵、行动顺序、区域激活、物理伤害计算链和
-BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门、敌人物品稀有/必掉/重复 flag、四种临时状态的回合后过期/继续/属性刷新、MUDDLE confusion 谓词与双边行动保护矩阵，以及单次启动 14 case 的 AI 最终行动/目标选择矩阵和单次启动 5 case 的战场移动边界矩阵的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
+BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败/多目标 kill reward、SPOIT 空/截断/不截断及施法者满 MP 边界矩阵、BOOST 1 首次/重施回放、DISPEL 1、SILENCE 施法门、敌人物品稀有/必掉/重复 flag、四种临时状态的回合后过期/继续/属性刷新、MUDDLE confusion 谓词与双边行动保护矩阵，以及单次启动 14 case 的 AI 最终行动/目标选择矩阵、5 case 的战场移动边界矩阵和 13 case/20 tick 的地图实体移动矩阵的整机运行时 H3；尚未下载外部补丁、选择现代重制引擎或开始
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,489 条 confirmed finding、72 个 H2 fixture、58 个 H3 fixture
-和 2,047 个地址绑定。
+截至 2026-07-19，研究索引有 1,490 条 confirmed finding、72 个 H2 fixture、59 个 H3 fixture
+和 2,056 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -528,7 +528,10 @@ instructions/22 callers。目的地冲突实际扫描 49 slots，以
 `abs(dx)+abs(dy)<384` 判定；冲突留下 Z=0、无冲突留下 Z=1，明确推翻了源码注释中的 “zero-bit
 set if true”。sprite gate 的 auto-facing/facing-change/queue-limit fallthrough、special sprite 与
 entity 32 bypass、effect/DMA 链，以及 `(hash(Y>>7)<<6)+hash(X>>7)` 的 word-byte offset 均已结构化。
-现在只需把 wait/movement/accel/snap/facing/arrival 的逐帧进展集中到一次 BizHawk matrix；
+单次启动的 entity-movement H3 已把 13 个 case 合并为 20 个原始 VInt tick：wait 阈值、相对/
+绝对移动各自的阻挡与放行、连续加减速、facing dominance、动画推进/禁用/夹回、crossover snap
+以及 layer 2/layer 0/immersed 到达状态均逐字段匹配 Python 模型。RAM 脚本用 dispatcher 的
+yield-only filler 槽终止；`ac_pass` 会前进四字节并继续分发，不能当作停止命令。
 caller-dependent story reachability 仍单独保留。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
