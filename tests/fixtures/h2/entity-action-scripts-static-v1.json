@@ -4,7 +4,8 @@
   "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "function": {
-    "rjt_EntityScriptCommands": 20252
+    "rjt_EntityScriptCommands": 20252,
+    "UpdateEntityData": 23916
   },
   "table": {
     "eas_LyingLeft": 280954,
@@ -26,7 +27,8 @@
     "eas_5FFC8": 393160,
     "eas_5E2C4": 385732,
     "eas_5EF46": 388934,
-    "eas_493A2": 299938
+    "eas_493A2": 299938,
+    "table_5F9C": 24476
   },
   "summary": {
     "corpusCount": 3,
@@ -251,6 +253,34 @@
       "movement": 8,
       "wait": 3
     }
+  },
+  "updateCoreSummary": {
+    "functionByteCount": 560,
+    "statementCount": 190,
+    "phaseCount": 9,
+    "entityFieldCount": 15,
+    "entityReadFieldCount": 14,
+    "entityWriteFieldCount": 9,
+    "bitAccessCount": 5,
+    "directCallCount": 3,
+    "facingTableByteCount": 16
+  },
+  "updateCoreFacts": {
+    "phaseOrder": ["destination-delta", "axis-acceleration", "velocity-update", "position-integration", "facing-selection", "animation-and-sprite", "destination-snap", "arrival-tile-state", "animation-counter-clamp"],
+    "xAccelerationFlagBit": 0,
+    "yAccelerationFlagBit": 1,
+    "xDecelerationFlagBit": 2,
+    "yDecelerationFlagBit": 3,
+    "accelerationThresholdNumerator": 3,
+    "accelerationThresholdDenominator": 4,
+    "decelerationThresholdNumerator": 1,
+    "decelerationThresholdDenominator": 4,
+    "facingDominanceThreshold": 8,
+    "animationVelocityShift": 5,
+    "animationCounterDisabledValue": -1,
+    "animationCounterResetAbove": 30,
+    "allPhasesH1Bound": true,
+    "facingTableMatchesRom": true
   },
   "standaloneRomRanges": [
     { "id": "eas_452A4", "sourcePath": "code/common/scripting/map/vehiclefunctions.asm", "start": 283300, "endExclusive": 283426, "sha256": "FA243D870003484C1DAD46460708C8A7903BDC5A29190BCCE1035C9ECCA5F040" },

@@ -323,7 +323,12 @@ the predicates selecting dual outcomes are now closed too: all 46 declared param
 signed numeric, twenty unsigned numeric, fifteen boolean, and one ignored value, while all seven dual
 handlers retain their selecting source statements. `ac_randomWalk` is the only macro-comment/data-flow
 disagreement and remains explicit. The next static pass follows those commands into
-`UpdateEntityData` movement arithmetic and flag consumption. Frame
+`UpdateEntityData` movement arithmetic and flag consumption. That 560-byte/190-instruction core is
+now split into nine H1-bound phases with 15 entity fields (14 read, nine written), four motion flag
+consumers, three direct calls, and a ROM-matched 16-byte facing table. It confirms 3/4 acceleration
+and 1/4 deceleration thresholds, velocity-to-position integration, +/-8 facing dominance, animation
+delta shift 5/-1 disable/>30 reset, axis crossover snapping, and arrival layer/immersed updates. The
+next static pass follows its direct helpers and the destination-conflict CCR producer. Frame
 timing, collision outcomes, and normal-story reachability remain runtime questions and should be
 grouped only after that pass finds real ambiguity.
 

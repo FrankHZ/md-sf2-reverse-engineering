@@ -520,8 +520,11 @@ outcome 也已统一为 redispatch/yield：39 个可 redispatch、11 个可 yiel
 角色：10 signed numeric、20 unsigned numeric、15
 boolean、1 ignored；七个 dual handler 也全部绑定选择条件及源码语句。`ac_randomWalk` 是唯一
 显式源码注释冲突：宏称前两个 word 为 X/Y speed，handler 实际把它们作为 unsigned 中心 tile
-坐标，并把第三个 word 作为半径。下一步静态前沿下沉到 `UpdateEntityData` 的逐帧 velocity/
-travel/acceleration、flag consumer 和位置 snap，只把仍无法静态确认的帧时序、碰撞结果和 caller-dependent story
+坐标，并把第三个 word 作为半径。`UpdateEntityData` 也已闭合为 560 bytes/190 instructions/九个
+H1 阶段：15 个实体字段、FLAGS_A 0-3 的加减速、3/4 acceleration 与 1/4 deceleration、velocity
+积分、±8 facing dominance、动画 `>>5`/`-1` disable/`>30` reset、目的地 crossover snap 和到达
+tile 的 layer/immersed 更新均有源码与 ROM 合同。下一步静态前沿追踪它的三个 direct helper 与
+`HasSameDestinationAsOtherEntity` CCR producer，只把仍无法静态确认的帧时序、碰撞结果和 caller-dependent story
 reachability 留给集中 BizHawk 矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义

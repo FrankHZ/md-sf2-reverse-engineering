@@ -7,11 +7,12 @@
     "schemaVersion", "id", "upstream", "romSha256", "function", "table", "summary", "romRanges",
     "commandCounts", "referenceFacts", "distributedSummary",
     "distributedSourceFileCounts", "distributedCommandCounts", "distributedControlFlowFacts",
-    "distributedReferenceFacts", "handlerSummary", "handlerFacts", "standaloneRomRanges",
+    "distributedReferenceFacts", "handlerSummary", "handlerFacts", "updateCoreSummary",
+    "updateCoreFacts", "standaloneRomRanges",
     "corpora", "entryReferences",
     "distributedFiles", "inlinePrograms", "standalonePrograms", "distributedEntryReferences",
     "handlerDispatchTable", "handlerMacroBindings", "handlerOpcodeBindings", "handlerOnlyLayouts",
-    "handlers",
+    "handlers", "entityUpdateCore",
     "runtimeQuestions"
   ],
   "properties": {
@@ -27,13 +28,14 @@
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
     "function": {
       "type": "object", "additionalProperties": false,
-      "required": ["rjt_EntityScriptCommands"],
+      "required": ["rjt_EntityScriptCommands", "UpdateEntityData"],
       "properties": {
-        "rjt_EntityScriptCommands": { "type": "integer", "minimum": 0 }
+        "rjt_EntityScriptCommands": { "type": "integer", "minimum": 0 },
+        "UpdateEntityData": { "type": "integer", "minimum": 0 }
       }
     },
     "table": {
-      "type": "object", "minProperties": 20, "maxProperties": 20,
+      "type": "object", "minProperties": 21, "maxProperties": 21,
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "summary": {
@@ -164,6 +166,41 @@
         }
       }
     },
+    "updateCoreSummary": {
+      "type": "object", "minProperties": 9, "maxProperties": 9,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "updateCoreFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "phaseOrder", "xAccelerationFlagBit", "yAccelerationFlagBit",
+        "xDecelerationFlagBit", "yDecelerationFlagBit", "accelerationThresholdNumerator",
+        "accelerationThresholdDenominator", "decelerationThresholdNumerator",
+        "decelerationThresholdDenominator", "facingDominanceThreshold",
+        "animationVelocityShift", "animationCounterDisabledValue",
+        "animationCounterResetAbove", "allPhasesH1Bound", "facingTableMatchesRom"
+      ],
+      "properties": {
+        "phaseOrder": {
+          "type": "array", "minItems": 9, "maxItems": 9,
+          "items": { "type": "string" }
+        },
+        "xAccelerationFlagBit": { "const": 0 },
+        "yAccelerationFlagBit": { "const": 1 },
+        "xDecelerationFlagBit": { "const": 2 },
+        "yDecelerationFlagBit": { "const": 3 },
+        "accelerationThresholdNumerator": { "const": 3 },
+        "accelerationThresholdDenominator": { "const": 4 },
+        "decelerationThresholdNumerator": { "const": 1 },
+        "decelerationThresholdDenominator": { "const": 4 },
+        "facingDominanceThreshold": { "const": 8 },
+        "animationVelocityShift": { "const": 5 },
+        "animationCounterDisabledValue": { "const": -1 },
+        "animationCounterResetAbove": { "const": 30 },
+        "allPhasesH1Bound": { "const": true },
+        "facingTableMatchesRom": { "const": true }
+      }
+    },
     "standaloneRomRanges": {
       "type": "array", "minItems": 11, "maxItems": 11,
       "items": { "$ref": "#/$defs/romRange" }
@@ -212,6 +249,7 @@
       "type": "array", "minItems": 43, "maxItems": 43,
       "items": { "$ref": "#/$defs/handler" }
     },
+    "entityUpdateCore": { "$ref": "#/$defs/entityUpdateCore" },
     "runtimeQuestions": {
       "type": "array", "minItems": 2, "maxItems": 2,
       "items": { "type": "string" }
@@ -554,6 +592,79 @@
           }
         }
       ]
+    },
+    "entityUpdateCore": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "function", "phases", "entityFieldAccesses", "bitAccesses", "directCalls",
+        "facingTable", "evidenceStatements"
+      ],
+      "properties": {
+        "function": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "name", "address", "endExclusive", "sourcePath", "startLine", "endLine", "sha256"
+          ],
+          "properties": {
+            "name": { "const": "UpdateEntityData" },
+            "address": { "type": "integer", "minimum": 0 },
+            "endExclusive": { "type": "integer", "minimum": 1 },
+            "sourcePath": { "const": "code/common/scripting/entity/entityscriptengine_2.asm" },
+            "startLine": { "type": "integer", "minimum": 1 },
+            "endLine": { "type": "integer", "minimum": 1 },
+            "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+          }
+        },
+        "phases": {
+          "type": "array", "minItems": 9, "maxItems": 9,
+          "items": { "$ref": "#/$defs/entityUpdatePhase" }
+        },
+        "entityFieldAccesses": {
+          "type": "array", "minItems": 15, "maxItems": 15,
+          "items": { "$ref": "#/$defs/access" }
+        },
+        "bitAccesses": {
+          "type": "array", "minItems": 5, "maxItems": 5,
+          "items": { "$ref": "#/$defs/bitAccess" }
+        },
+        "directCalls": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "type": "string" }
+        },
+        "facingTable": {
+          "type": "object", "additionalProperties": false,
+          "required": ["label", "address", "values", "sha256"],
+          "properties": {
+            "label": { "const": "table_5F9C" },
+            "address": { "type": "integer", "minimum": 0 },
+            "values": {
+              "type": "array", "minItems": 16, "maxItems": 16,
+              "items": { "type": "integer", "minimum": -1, "maximum": 7 }
+            },
+            "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+          }
+        },
+        "evidenceStatements": {
+          "type": "array", "minItems": 8, "maxItems": 8,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "entityUpdatePhase": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "startLabel", "startAddress", "endExclusiveAddress"],
+      "properties": {
+        "id": {
+          "enum": [
+            "destination-delta", "axis-acceleration", "velocity-update",
+            "position-integration", "facing-selection", "animation-and-sprite",
+            "destination-snap", "arrival-tile-state", "animation-counter-clamp"
+          ]
+        },
+        "startLabel": { "type": "string" },
+        "startAddress": { "type": "integer", "minimum": 0 },
+        "endExclusiveAddress": { "type": "integer", "minimum": 1 }
+      }
     },
     "entryReference": {
       "type": "object", "additionalProperties": false,

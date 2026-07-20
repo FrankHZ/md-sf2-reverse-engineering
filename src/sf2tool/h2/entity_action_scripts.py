@@ -963,6 +963,170 @@ def _script_pointer_actions(statements: list[str]) -> list[dict[str, Any]]:
     return rows
 
 
+UPDATE_CORE_PHASES = (
+    ("destination-delta", "UpdateEntityData"),
+    ("axis-acceleration", "loc_5DA0"),
+    ("velocity-update", "loc_5E0E"),
+    ("position-integration", "loc_5E4A"),
+    ("facing-selection", "loc_5E64"),
+    ("animation-and-sprite", "loc_5EAA"),
+    ("destination-snap", "loc_5EE6"),
+    ("arrival-tile-state", "loc_5F28"),
+    ("animation-counter-clamp", "loc_5F8E"),
+)
+
+
+def _entity_update_core(
+    disasm: Path, addresses: dict[str, int], rom: bytes
+) -> dict[str, Any]:
+    source = read_upstream_text(disasm / HANDLER_SOURCE_PATH)
+    body_match = re.search(
+        r"^UpdateEntityData:\s*\n(?P<body>.*?)"
+        r"^\s*; End of function UpdateEntityData\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if body_match is None:
+        raise ValueError("entity update core function body is missing")
+    statements = []
+    for raw_line in body_match.group("body").splitlines():
+        code = raw_line.split(";", 1)[0].strip()
+        if not code or re.match(r"^[A-Za-z_@][A-Za-z0-9_@]*:$", code):
+            continue
+        if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwls])?(?:\s+|$)", code):
+            statements.append(re.sub(r"\s+", " ", code))
+
+    def evidence(pattern: str, expected_count: int = 1) -> str:
+        matches = [statement for statement in statements if re.match(pattern, statement)]
+        if len(matches) != expected_count:
+            raise ValueError(f"entity update core evidence drift: {pattern}")
+        return matches[0]
+
+    required_symbols = {
+        "UpdateEntityData",
+        "table_5F9C",
+        "sub_5FAC",
+        *(label for _, label in UPDATE_CORE_PHASES),
+    }
+    missing_symbols = required_symbols - addresses.keys()
+    if missing_symbols:
+        raise ValueError(f"entity update core H1 symbols missing: {sorted(missing_symbols)}")
+    start = addresses["UpdateEntityData"]
+    end = addresses["table_5F9C"]
+    table_start = end
+    table_end = addresses["sub_5FAC"]
+    if table_end - table_start != 16:
+        raise ValueError("entity update facing table size drift")
+
+    table_match = re.search(
+        r"^table_5F9C:\s*dc\.b\s+(-?\d+)\s*\n(?P<body>.*?)^; =+",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if table_match is None:
+        raise ValueError("entity update facing table source is missing")
+    facing_values = [int(table_match.group(1))] + [
+        int(value)
+        for value in re.findall(r"^\s*dc\.b\s+(-?\d+)\b", table_match.group("body"), re.MULTILINE)
+    ]
+    if len(facing_values) != 16:
+        raise ValueError(f"entity update facing table row drift: {len(facing_values)}")
+    if bytes(value & 0xFF for value in facing_values) != rom[table_start:table_end]:
+        raise ValueError("entity update facing table ROM parity drift")
+
+    entity_accesses = _access_rows(
+        statements,
+        re.compile(r"\b(ENTITYDEF_OFFSET_[A-Z0-9_]+)\b"),
+        implicit_entity_x=True,
+    )
+    bit_accesses = _bit_access_rows(statements)
+    direct_calls = sorted(
+        {
+            match.group(1)
+            for statement in statements
+            if (
+                match := re.match(
+                    r"^(?:bsr|jsr)(?:\.[bwls])?\s+\(?([A-Za-z_][A-Za-z0-9_]*)",
+                    statement,
+                )
+            )
+        }
+    )
+    phase_rows = []
+    for index, (phase_id, label) in enumerate(UPDATE_CORE_PHASES):
+        phase_rows.append(
+            {
+                "id": phase_id,
+                "startLabel": label,
+                "startAddress": addresses[label],
+                "endExclusiveAddress": (
+                    addresses[UPDATE_CORE_PHASES[index + 1][1]]
+                    if index + 1 < len(UPDATE_CORE_PHASES)
+                    else end
+                ),
+            }
+        )
+    return {
+        "summary": {
+            "functionByteCount": end - start,
+            "statementCount": len(statements),
+            "phaseCount": len(phase_rows),
+            "entityFieldCount": len(entity_accesses),
+            "entityReadFieldCount": sum(row["read"] for row in entity_accesses),
+            "entityWriteFieldCount": sum(row["write"] for row in entity_accesses),
+            "bitAccessCount": len(bit_accesses),
+            "directCallCount": len(direct_calls),
+            "facingTableByteCount": len(facing_values),
+        },
+        "facts": {
+            "phaseOrder": [row["id"] for row in phase_rows],
+            "xAccelerationFlagBit": 0,
+            "yAccelerationFlagBit": 1,
+            "xDecelerationFlagBit": 2,
+            "yDecelerationFlagBit": 3,
+            "accelerationThresholdNumerator": 3,
+            "accelerationThresholdDenominator": 4,
+            "decelerationThresholdNumerator": 1,
+            "decelerationThresholdDenominator": 4,
+            "facingDominanceThreshold": 8,
+            "animationVelocityShift": 5,
+            "animationCounterDisabledValue": -1,
+            "animationCounterResetAbove": 30,
+            "allPhasesH1Bound": True,
+            "facingTableMatchesRom": True,
+        },
+        "function": {
+            "name": "UpdateEntityData",
+            "address": start,
+            "endExclusive": end,
+            "sourcePath": HANDLER_SOURCE_PATH.as_posix(),
+            "startLine": source.count("\n", 0, body_match.start()) + 1,
+            "endLine": source.count("\n", 0, body_match.end()) + 1,
+            "sha256": hashlib.sha256(rom[start:end]).hexdigest().upper(),
+        },
+        "phases": phase_rows,
+        "entityFieldAccesses": entity_accesses,
+        "bitAccesses": bit_accesses,
+        "directCalls": direct_calls,
+        "facingTable": {
+            "label": "table_5F9C",
+            "address": table_start,
+            "values": facing_values,
+            "sha256": hashlib.sha256(rom[table_start:table_end]).hexdigest().upper(),
+        },
+        "evidenceStatements": [
+            evidence(r"^lsl\.w #2,d7$", 2),
+            evidence(r"^lsr\.w #2,d6$", 2),
+            evidence(r"^cmpi\.w #\$FFF8,d3$"),
+            evidence(r"^cmpi\.w #8,d3$"),
+            evidence(r"^lsr\.w #5,d0$"),
+            evidence(r"^cmpi\.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER\(a0\)$"),
+            evidence(r"^cmpi\.b #\$1E,ENTITYDEF_OFFSET_ANIMCOUNTER\(a0\)$"),
+            evidence(r"^bsr\.w ConvertMapPixelCoordinatesToOffset$"),
+        ],
+    }
+
+
 def _entity_action_handlers(
     disasm: Path,
     addresses: dict[str, int],
@@ -1575,6 +1739,7 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
     handler_contract = _entity_action_handlers(
         disasm, addresses, macro_contracts, all_command_counts
     )
+    update_core = _entity_update_core(disasm, addresses, rom)
     summary = {
         "corpusCount": len(corpora),
         "byteCount": sum(row["summary"]["byteCount"] for row in corpora),
@@ -1621,13 +1786,15 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
         "romSha256": rom_identity["sha256"],
         "function": {
-            "rjt_EntityScriptCommands": addresses["rjt_EntityScriptCommands"]
+            "rjt_EntityScriptCommands": addresses["rjt_EntityScriptCommands"],
+            "UpdateEntityData": addresses["UpdateEntityData"],
         },
         "table": {
             spec["bindingSymbol"]: addresses[spec["bindingSymbol"]]
             for spec in CORPORA
         }
-        | distributed_table,
+        | distributed_table
+        | {"table_5F9C": addresses["table_5F9C"]},
         "summary": summary,
         "romRanges": [
             {
@@ -1675,6 +1842,8 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         },
         "handlerSummary": handler_contract["summary"],
         "handlerFacts": handler_contract["facts"],
+        "updateCoreSummary": update_core["summary"],
+        "updateCoreFacts": update_core["facts"],
         "standaloneRomRanges": [
             {
                 key: program[key]
@@ -1699,6 +1868,18 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "handlerOpcodeBindings": handler_contract["opcodeBindings"],
         "handlerOnlyLayouts": handler_contract["handlerOnlyLayouts"],
         "handlers": handler_contract["handlers"],
+        "entityUpdateCore": {
+            key: update_core[key]
+            for key in (
+                "function",
+                "phases",
+                "entityFieldAccesses",
+                "bitAccesses",
+                "directCalls",
+                "facingTable",
+                "evidenceStatements",
+            )
+        },
         "runtimeQuestions": [
             "What are the exact frame durations and collision effects of movement/action commands?",
             "Which external references are reachable through normal story routes?",
@@ -1733,6 +1914,8 @@ def verify_entity_action_script_contract(
         "distributedReferenceFacts",
         "handlerSummary",
         "handlerFacts",
+        "updateCoreSummary",
+        "updateCoreFacts",
         "standaloneRomRanges",
         "runtimeQuestions",
     ):
@@ -1743,6 +1926,7 @@ def verify_entity_action_script_contract(
         output["summary"] != manifest["summary"]
         or output["distributedSummary"] != manifest["distributedSummary"]
         or output["handlerSummary"] != manifest["handlerSummary"]
+        or output["updateCoreSummary"] != manifest["updateCoreSummary"]
         or digest != manifest["outputSha256"]
     ):
         raise ValueError("entity-action script canonical manifest drift")

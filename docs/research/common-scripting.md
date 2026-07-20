@@ -191,6 +191,22 @@ timer threshold, current/other-entity destination deltas, raw CCR results from
 For the helper-CCR cases the contract deliberately says only whether BNE is taken; it does not infer
 collision meaning from the helper name or comment.
 
+The command layer now joins directly to the 560-byte `UpdateEntityData` core at `$5D6C..$5F9C`.
+Its 190 instructions divide into nine H1-bound phases: destination delta, per-axis acceleration,
+velocity update, position integration, facing selection, animation/sprite update, destination snap,
+arrival tile state, and animation-counter clamp. The function accesses 15 entity fields (14 read,
+nine written), consumes `FLAGS_A` bits 0/1 as X/Y acceleration enables and bits 2/3 as X/Y
+deceleration enables, and calls `UpdateEntitySprite`, `ConvertMapPixelCoordinatesToOffset`, and
+`ChangeEntityMapsprite`.
+
+The arithmetic shape is static and explicit. Acceleration begins in the outer three quarters of the
+original travel distance; deceleration is selected inside the final quarter. Velocity is then added
+to position only while the axis travel field is nonzero. A signed velocity-magnitude difference uses
+thresholds -8/+8 to index the 16-byte `$5F9C` facing table, whose bytes match the ROM. Animation adds
+`(abs(X velocity)+abs(Y velocity)) >> 5` unless its counter is -1, and resets the counter after 30.
+Each axis snaps to destination on zero delta or sign crossover. Once both travel words are zero, the
+destination tile can change layer/immersed state and trigger a sprite reload when immersed toggles.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -200,9 +216,10 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static entity-action batch moves below the command handlers into `UpdateEntityData`: per-frame
-velocity/travel/acceleration arithmetic, flag consumers, snapping, and the helper CCR boundary. Only
-timing or collision meaning still unresolved after that pass belongs in the grouped emulator matrix.
+The next static entity-action batch follows `UpdateEntityData` into its three direct helpers and the
+`HasSameDestinationAsOtherEntity` CCR producer, separating map-coordinate, sprite-refresh, and
+collision predicates before defining the grouped emulator matrix. Only timing or collision meaning
+still unresolved after that pass belongs in runtime.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

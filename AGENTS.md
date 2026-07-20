@@ -153,8 +153,9 @@ the complete 17-bank, 4,267-string static Huffman decode corpus, plus
 the complete nine-range shop/debug-shop/chest/break/mithril/Caravan/field-item/weapon-graphics corpus, plus
 the complete 166-row enemy map-sprite table and normal-vs-NPC-tail reachability boundary, plus
 the complete original built map-sprite assignment domains and reserved-ID exclusion audit, plus
-the complete shared/distributed entity-action command/control-flow/reference corpus and
-80-slot dispatcher/macro/handler access/state/flow and parameter-ABI inventory, plus
+the complete shared/distributed entity-action command/control-flow/reference corpus,
+80-slot dispatcher/macro/handler access/state/flow and parameter-ABI inventory, and the nine-phase
+`UpdateEntityData` movement core, plus
 the complete 119-row map-sprite/portrait/speech-SFX dialogue-property table and consumer contract, plus
 the complete four-stream unused-cloud payload and two-palette unused-base corpus, plus
 the complete spell/invocation/status/transition battle-effect graphics corpus, plus
