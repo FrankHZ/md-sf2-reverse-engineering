@@ -172,6 +172,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   348 个 label，303 个 `csc_end` 加一个 jump 终止，并解析 42 条同 program、20 条跨 program
   script jump 和 122 条 68000 subroutine call；全 2,077 个 code/data ASM 的引用图再区分 187 个
   跨文件可引用、110 个仅同文件可引用和 7 个零引用 program，347/348 label 有引用。
+  进一步闭合 89 个 program 的 story-state surface：51 条条件读取覆盖 6 个 flag，53 条直接写入、
+  22 条 prompt 写入和 20 条 battle-unlock 写入覆盖 56 个 flag，读写域仅交于 71/76/89。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

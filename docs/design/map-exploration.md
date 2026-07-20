@@ -88,6 +88,9 @@ The importer SHOULD retain reference status separately from address status: 297 
 incoming source reference, seven have none, and eight lack H1 entry addresses. A reference is useful
 for reachability planning but MUST NOT be promoted to proof that a normal save-state route executes
 the program.
+Story-state imports MUST preserve conditional flag polarity, direct set/clear operations, the
+yes/no result-to-flag-89 mapping, and battle-unlock translation `flag = 400 + battleIndex`. These are
+command-graph facts; global story ordering and save persistence remain outside the importer contract.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

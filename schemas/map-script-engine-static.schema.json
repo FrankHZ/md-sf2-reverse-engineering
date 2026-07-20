@@ -8,7 +8,7 @@
     "id": { "const": "sf2-map-script-engine-static-v1" },
     "upstream": { "type": "object" },
     "rom": { "type": "object" },
-    "summary": { "type": "object", "minProperties": 25 },
+    "summary": { "type": "object", "minProperties": 28 },
     "function": { "type": "object", "minProperties": 85, "maxProperties": 85, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "dispatcher": {
       "type": "object", "additionalProperties": false,
@@ -59,10 +59,11 @@
     },
     "programCorpus": {
       "type": "object", "additionalProperties": false,
-      "required": ["summary", "transferCounts", "referenceSummary", "unreferencedPrograms", "programReferences", "labelReferences", "sourceOnlyPrograms", "largestPrograms", "labelOwners", "transfers", "programs"],
+      "required": ["summary", "transferCounts", "referenceSummary", "storyState", "unreferencedPrograms", "programReferences", "labelReferences", "sourceOnlyPrograms", "largestPrograms", "labelOwners", "transfers", "programs"],
       "properties": {
         "summary": { "type": "object" }, "transferCounts": { "type": "object" },
         "referenceSummary": { "type": "object" }, "unreferencedPrograms": { "type": "array" },
+        "storyState": { "type": "object" },
         "programReferences": { "type": "array" }, "labelReferences": { "type": "array" },
         "sourceOnlyPrograms": { "type": "array" }, "largestPrograms": { "type": "array" },
         "labelOwners": { "type": "object" }, "transfers": { "type": "array" },

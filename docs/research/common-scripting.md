@@ -94,6 +94,19 @@ unlabeled debug fragments. Static references only prove that source contains an 
 do not prove normal-game caller state, flag combinations, save persistence, or rendered sequencing,
 which remain runtime/design questions.
 
+The story-state dependency surface is now explicit across 89 programs. Fifty-one conditional reads
+touch only six flags: 6 (four reads), 8 (one), 29 (one), 71 (one), 76 (22), and 89 (22). Direct
+`setF`/`clearF` commands contribute 53 deterministic writes. Twenty-two `yesNo` commands always write
+flag 89 after the prompt: a zero return sets it and a nonzero return clears it. Twenty
+`setStoryFlag n` commands add the pinned `BATTLE_UNLOCKED_FLAGS_START` value 400 and set the resulting
+battle flag. These commands collectively write 56 unique flags; the read/write domains overlap only
+at 71, 76, and 89.
+
+The canonical output retains every program/command index, raw flag operation, prompt-result mapping,
+and battle-to-flag translation, plus exact direct-set/direct-clear/battle-unlock domains. This proves
+state access and conditional-edge prerequisites. It does not prove a global story order, mutually
+exclusive save states, or persistence across transitions.
+
 The 83 handlers contain 955 parsed instructions and group into fourteen source-role families. Their
 source-shaped access catalog contains 16 entity fields, 25 global-state symbols, and 62 direct-call
 targets, while preserving every script-cursor statement. These facts define opcode topology and

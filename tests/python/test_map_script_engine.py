@@ -3,6 +3,7 @@ from sf2tool.h2.map_script_engine import (
     _emission_rows,
     _logical_source_lines,
     _program_corpus,
+    _story_state_facts,
     _substitute_alias_layout,
 )
 
@@ -60,6 +61,11 @@ def test_logical_source_lines_join_ampersand_continuations() -> None:
 def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) -> None:
     (tmp_path / "code").mkdir()
     (tmp_path / "data").mkdir()
+    (tmp_path / "sf2enums.asm").write_text(
+        "FLAG_INDEX_YES_NO_PROMPT: equ 89\n"
+        "BATTLE_UNLOCKED_FLAGS_START: equ 400\n",
+        encoding="utf-8",
+    )
     (tmp_path / "code" / "one.asm").write_text(
         "entry:\n  csc_end\n\n  csc_end\n", encoding="utf-8"
     )
@@ -86,3 +92,39 @@ def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) ->
     assert actual["referenceSummary"]["unreferencedProgramCount"] == 2
     assert actual["referenceSummary"]["referencedLabelCount"] == 1
     assert actual["referenceSummary"]["unreferencedLabelCount"] == 1
+
+
+def test_story_state_facts_resolve_prompt_and_battle_flag_domains(tmp_path) -> None:
+    (tmp_path / "sf2enums.asm").write_text(
+        "FLAG_INDEX_YES_NO_PROMPT: equ 89\n"
+        "BATTLE_UNLOCKED_FLAGS_START: equ 400\n",
+        encoding="utf-8",
+    )
+    programs = [
+        {
+            "id": "scene",
+            "commands": [
+                {
+                    "index": 0,
+                    "macro": "jumpIfFlagSet",
+                    "arguments": ["89", "target"],
+                    "targetSymbol": "target",
+                },
+                {"index": 1, "macro": "yesNo", "arguments": []},
+                {"index": 2, "macro": "setF", "arguments": ["70"]},
+                {"index": 3, "macro": "clearF", "arguments": ["71"]},
+                {"index": 4, "macro": "setStoryFlag", "arguments": ["4"]},
+            ],
+        }
+    ]
+
+    actual = _story_state_facts(tmp_path, programs)
+
+    assert actual["summary"]["conditionalReadCount"] == 1
+    assert actual["summary"]["uniqueWriteFlagCount"] == 4
+    assert actual["constants"] == {
+        "yesNoPromptFlag": 89,
+        "battleUnlockedFlagsStart": 400,
+    }
+    assert actual["readWriteOverlapFlags"] == [89]
+    assert actual["battleUnlockFlags"] == [404]

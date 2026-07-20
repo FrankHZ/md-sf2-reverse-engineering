@@ -79,6 +79,8 @@ The current evidence is deep but narrow:
   as 42 same-program and 20 cross-program edges, while 122 subroutine calls resolve to 68000 symbols.
   A complete 2,077-file token scan gives 297 referenced programs (187 cross-file, 110 same-file-only)
   and seven zero-reference programs; 347/348 program labels have a reference.
+  Story-state extraction adds 51 reads over six flags and 95 write-producing commands over 56 flags
+  across 89 programs, including prompt flag 89 and battle-unlock base 400.
   Story reachability and timing/presentation remain batched runtime questions.
   The entity-action source surface is additionally closed across three shared and 75
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
@@ -313,6 +315,9 @@ script jumps, and 122 resolved assembly-subroutine calls; none justifies a one-c
 The adjacent reference graph scans all 2,077 code/data files and separates 297 statically referenced
 programs from seven zero-reference source bodies. This is an input-selection bound, not proof that
 the corresponding caller state occurs during normal play.
+The same corpus now owns every explicit story-flag access: six read flags, 56 write flags, and only
+three read/write overlaps (71, 76, 89). Runtime work can therefore select complete flag cohorts rather
+than launching one case per command.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

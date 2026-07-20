@@ -528,6 +528,148 @@ def _program_references(
     }
 
 
+def _enum_value(source: str, name: str) -> int:
+    match = re.search(
+        rf"^{re.escape(name)}:\s+equ\s+(\$?[0-9A-Fa-f]+)\b",
+        source,
+        re.MULTILINE,
+    )
+    if match is None:
+        raise ValueError(f"map-script enum is missing: {name}")
+    return _literal(match.group(1))
+
+
+def _story_state_facts(disasm: Path, programs: list[dict[str, Any]]) -> dict[str, Any]:
+    enums = read_upstream_text(disasm / "sf2enums.asm")
+    yes_no_flag = _enum_value(enums, "FLAG_INDEX_YES_NO_PROMPT")
+    battle_flag_start = _enum_value(enums, "BATTLE_UNLOCKED_FLAGS_START")
+    reads = []
+    writes = []
+    prompt_writes = []
+    battle_unlock_writes = []
+    program_states = []
+    read_counts: Counter[int] = Counter()
+    write_counts: Counter[int] = Counter()
+    for program in programs:
+        program_reads: set[int] = set()
+        program_sets: set[int] = set()
+        program_clears: set[int] = set()
+        program_prompts: set[int] = set()
+        program_unlocks: set[int] = set()
+        for command in program["commands"]:
+            macro = command["macro"]
+            if macro in {"jumpIfFlagSet", "jumpIfFlagClear"}:
+                flag = _literal(command["arguments"][0])
+                condition = "set" if macro == "jumpIfFlagSet" else "clear"
+                read_counts[flag] += 1
+                program_reads.add(flag)
+                reads.append(
+                    {
+                        "program": program["id"],
+                        "commandIndex": command["index"],
+                        "flag": flag,
+                        "condition": condition,
+                        "targetSymbol": command["targetSymbol"],
+                    }
+                )
+            elif macro in {"setF", "clearF", "csc10"}:
+                flag = _literal(command["arguments"][0])
+                operation = (
+                    "set"
+                    if macro == "setF"
+                    else "clear"
+                    if macro == "clearF"
+                    else "set"
+                    if _literal(command["arguments"][1]) != 0
+                    else "clear"
+                )
+                write_counts[flag] += 1
+                (program_sets if operation == "set" else program_clears).add(flag)
+                writes.append(
+                    {
+                        "program": program["id"],
+                        "commandIndex": command["index"],
+                        "flag": flag,
+                        "operation": operation,
+                        "macro": macro,
+                    }
+                )
+            elif macro == "yesNo":
+                write_counts[yes_no_flag] += 1
+                program_prompts.add(yes_no_flag)
+                prompt_writes.append(
+                    {
+                        "program": program["id"],
+                        "commandIndex": command["index"],
+                        "flag": yes_no_flag,
+                        "zeroResultOperation": "set",
+                        "nonzeroResultOperation": "clear",
+                    }
+                )
+            elif macro == "setStoryFlag":
+                battle = _literal(command["arguments"][0])
+                flag = battle_flag_start + battle
+                write_counts[flag] += 1
+                program_unlocks.add(flag)
+                battle_unlock_writes.append(
+                    {
+                        "program": program["id"],
+                        "commandIndex": command["index"],
+                        "battle": battle,
+                        "flag": flag,
+                    }
+                )
+        if program_reads or program_sets or program_clears or program_prompts or program_unlocks:
+            program_states.append(
+                {
+                    "program": program["id"],
+                    "readFlags": sorted(program_reads),
+                    "setFlags": sorted(program_sets),
+                    "clearFlags": sorted(program_clears),
+                    "promptFlags": sorted(program_prompts),
+                    "battleUnlockFlags": sorted(program_unlocks),
+                }
+            )
+
+    read_flags = set(read_counts)
+    write_flags = set(write_counts)
+    return {
+        "summary": {
+            "conditionalReadCount": len(reads),
+            "uniqueReadFlagCount": len(read_flags),
+            "directWriteCount": len(writes),
+            "yesNoPromptWriteCount": len(prompt_writes),
+            "battleUnlockWriteCount": len(battle_unlock_writes),
+            "uniqueWriteFlagCount": len(write_flags),
+            "readWriteOverlapCount": len(read_flags & write_flags),
+            "statefulProgramCount": len(program_states),
+        },
+        "constants": {
+            "yesNoPromptFlag": yes_no_flag,
+            "battleUnlockedFlagsStart": battle_flag_start,
+        },
+        "readFlagCounts": {
+            str(flag): count for flag, count in sorted(read_counts.items())
+        },
+        "writeFlagCounts": {
+            str(flag): count for flag, count in sorted(write_counts.items())
+        },
+        "readWriteOverlapFlags": sorted(read_flags & write_flags),
+        "directSetFlags": sorted(
+            {row["flag"] for row in writes if row["operation"] == "set"}
+        ),
+        "directClearFlags": sorted(
+            {row["flag"] for row in writes if row["operation"] == "clear"}
+        ),
+        "battleUnlockFlags": sorted({row["flag"] for row in battle_unlock_writes}),
+        "conditionalReads": reads,
+        "directWrites": writes,
+        "yesNoPromptWrites": prompt_writes,
+        "battleUnlockWrites": battle_unlock_writes,
+        "programs": program_states,
+    }
+
+
 def _program_corpus(
     disasm: Path,
     source_paths: list[str],
@@ -637,6 +779,7 @@ def _program_corpus(
                 raise ValueError(f"duplicate map-script program label: {label}")
             label_owners[label] = program["id"]
     references = _program_references(disasm, label_owners, programs)
+    story_state = _story_state_facts(disasm, programs)
 
     transfer_counts: Counter[str] = Counter()
     transfers = []
@@ -727,6 +870,7 @@ def _program_corpus(
         },
         "transferCounts": dict(sorted(transfer_counts.items())),
         "referenceSummary": references["summary"],
+        "storyState": story_state,
         "unreferencedPrograms": references["unreferencedPrograms"],
         "programReferences": references["programs"],
         "labelReferences": references["labels"],
@@ -838,6 +982,15 @@ def build_map_script_engine_contract(
         "unreferencedProgramCount": program_corpus["referenceSummary"][
             "unreferencedProgramCount"
         ],
+        "statefulProgramCount": program_corpus["storyState"]["summary"][
+            "statefulProgramCount"
+        ],
+        "storyReadFlagCount": program_corpus["storyState"]["summary"][
+            "uniqueReadFlagCount"
+        ],
+        "storyWriteFlagCount": program_corpus["storyState"]["summary"][
+            "uniqueWriteFlagCount"
+        ],
     }
     return {
         "schemaVersion": 1,
@@ -918,6 +1071,31 @@ def verify_map_script_engine_contract(
         or any(output["function"][name] != address for name, address in fixture["function"].items())
     ):
         raise ValueError("map-script engine provenance/address drift")
+    program_fields = {
+        "programSummary": output["programCorpus"]["summary"],
+        "transferCounts": output["programCorpus"]["transferCounts"],
+        "referenceSummary": output["programCorpus"]["referenceSummary"],
+        "unreferencedPrograms": output["programCorpus"]["unreferencedPrograms"],
+        "sourceOnlyPrograms": output["programCorpus"]["sourceOnlyPrograms"],
+        "largestPrograms": output["programCorpus"]["largestPrograms"],
+        "storyStateSummary": output["programCorpus"]["storyState"]["summary"],
+        "storyStateConstants": output["programCorpus"]["storyState"]["constants"],
+        "storyReadFlagCounts": output["programCorpus"]["storyState"][
+            "readFlagCounts"
+        ],
+        "storyReadWriteOverlapFlags": output["programCorpus"]["storyState"][
+            "readWriteOverlapFlags"
+        ],
+        "storyDirectSetFlags": output["programCorpus"]["storyState"][
+            "directSetFlags"
+        ],
+        "storyDirectClearFlags": output["programCorpus"]["storyState"][
+            "directClearFlags"
+        ],
+        "storyBattleUnlockFlags": output["programCorpus"]["storyState"][
+            "battleUnlockFlags"
+        ],
+    }
     for field in (
         "summary",
         "dispatcherFacts",
@@ -929,40 +1107,35 @@ def verify_map_script_engine_contract(
         "unreferencedPrograms",
         "sourceOnlyPrograms",
         "largestPrograms",
+        "storyStateSummary",
+        "storyStateConstants",
+        "storyReadFlagCounts",
+        "storyReadWriteOverlapFlags",
+        "storyDirectSetFlags",
+        "storyDirectClearFlags",
+        "storyBattleUnlockFlags",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
     ):
-        actual = (
-            output["programCorpus"]["summary"]
-            if field == "programSummary"
-            else output["programCorpus"][field]
-            if field
-            in {
-                "transferCounts",
-                "referenceSummary",
-                "unreferencedPrograms",
-                "sourceOnlyPrograms",
-                "largestPrograms",
-            }
-            else
-            {
+        actual = program_fields.get(field)
+        if field == "dispatcherFacts":
+            actual = {
                 "sha256": output["dispatcher"]["sha256"],
                 "fillerTarget": output["dispatcher"]["fillerTarget"],
                 "fillerIndices": output["dispatcher"]["fillerIndices"],
                 "sourceRomParity": output["dispatcher"]["sourceRomParity"],
             }
-            if field == "dispatcherFacts"
-            else [
+        elif field == "mostUsedMacros":
+            actual = [
                 {"macro": name, "count": count}
                 for name, count in sorted(
                     output["macroSourceCounts"].items(),
                     key=lambda item: (-item[1], item[0]),
                 )[:12]
             ]
-            if field == "mostUsedMacros"
-            else output[field]
-        )
+        elif field not in program_fields:
+            actual = output[field]
         if fixture["expected"][field] != actual:
             raise ValueError(f"map-script engine {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
