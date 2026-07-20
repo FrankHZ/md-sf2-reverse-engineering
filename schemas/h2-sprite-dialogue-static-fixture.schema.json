@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-sprite-dialogue-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "table", "summary", "romRange", "tableFacts", "consumerRules", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-sprite-dialogue-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 10, "maxProperties": 10, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "romRange": { "type": "object", "minProperties": 4, "maxProperties": 4 },
+    "tableFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+    "consumerRules": { "type": "object", "minProperties": 6, "maxProperties": 6 },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

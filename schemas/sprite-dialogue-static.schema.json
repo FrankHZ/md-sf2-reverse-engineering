@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/sprite-dialogue-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "table", "summary", "romRange", "rows", "tableFacts", "consumerRules", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-sprite-dialogue-static-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 2, "maxProperties": 2, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 10, "maxProperties": 10, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "romRange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "start", "endExclusive", "sha256"],
+      "properties": {
+        "sourcePath": { "const": "data/spritedialogproperties.asm" },
+        "start": { "type": "integer", "minimum": 0 },
+        "endExclusive": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" }
+      }
+    },
+    "rows": { "type": "array", "minItems": 119, "maxItems": 119, "items": { "$ref": "#/$defs/row" } },
+    "tableFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+    "consumerRules": { "type": "object", "minProperties": 6, "maxProperties": 6 },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  },
+  "$defs": {
+    "namedValue": {
+      "type": "object", "additionalProperties": false, "required": ["code", "value"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "value": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "row": {
+      "type": "object", "additionalProperties": false,
+      "required": ["index", "mapSprite", "portrait", "speechSfx", "reserved"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0, "maximum": 118 },
+        "mapSprite": { "$ref": "#/$defs/namedValue" },
+        "portrait": { "$ref": "#/$defs/namedValue" },
+        "speechSfx": { "$ref": "#/$defs/namedValue" },
+        "reserved": { "const": 0 }
+      }
+    }
+  }
+}

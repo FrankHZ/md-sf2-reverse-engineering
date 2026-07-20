@@ -25,17 +25,18 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 69 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 70 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,018 | Checked ROM/RAM relationships between fixtures and symbols/state |
-| H2 ROM table ranges | 24 | Deterministic source/ROM dual-path extraction ranges |
+| Address bindings | 2,020 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
 graph, the 41-file Z80 music graph with two bank/ROM parity checks, plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
-103 used enemy-gold words plus the explicit 69-word unused tail, and the Battle 01 placement/scene
-slice. These heterogeneous structures must not be added into a fake “records completed” percentage.
+103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,
+and the Battle 01 placement/scene slice. These heterogeneous structures must not be added into a
+fake “records completed” percentage.
 
 ## Subsystem Boundary
 
@@ -246,8 +247,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,468 records; its
-verifier reports 381 unique code files, 980 unique data files, 69 H2 fixtures, 58 H3 fixtures, and
-2,018 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 70 H2 fixtures, 58 H3 fixtures, and
+2,020 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

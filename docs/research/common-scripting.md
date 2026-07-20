@@ -3,8 +3,9 @@
 - Status: **Confirmed** for the pinned 29-file inventory, 90-slot map-script and 80-slot entity-script
   dispatch tables, interpreter admission/termination rules, text-bank selection, complete context-
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
-  the regular entity map-sprite decode/DMA consumer shape, plus the complete variable-width font,
-  ASCII conversion, pointer, and glyph-loader data path
+  the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
+  property table and its lookup/default rules, plus the complete variable-width font, ASCII
+  conversion, pointer, and glyph-loader data path
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, entity movement timing, text rendering timing,
   and individual script content
@@ -94,6 +95,15 @@ the random-upgrade ranges, and the sole named `SetEnemyIndex` caller stay within
 battle initialization cannot enter the tail. Raw/debug/corrupt enemy-index state remains an explicit
 nonstandard reachability question.
 
+The dialogue-property route is also byte-closed. `GetEntityPortaitAndSpeechSfx` masks the character
+index, reads the entity map-sprite byte, then linearly scans 119 unique keys in four-byte records.
+On a match it sign-extends the portrait byte (`PORTRAIT_NONE` 255 therefore becomes `-1`) and returns
+the unsigned speech-SFX byte; the fourth byte is reserved, zero in every source row, and ignored.
+After a miss it advances four bytes and tests the next word for the `0xFFFF` sentinel. Exhausting the
+table returns portrait `-1` and normal bleep 6 (74). Source reconstruction and the input ROM agree
+for all 478 bytes. Which call paths use that fallback and the timing of portrait suppression/audio
+remain grouped presentation questions rather than guessed semantics.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -125,9 +135,11 @@ uv run sf2 h2 variable-width-font
 uv run sf2 h2 text-huffman
 uv run sf2 h2 text-banks
 uv run sf2 h2 enemy-map-sprites
+uv run sf2 h2 sprite-dialogue
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/common-scripting-static.json` and
 `local/derived/variable-width-font-static.json` and `local/derived/text-huffman-static.json`.
 The full decoded symbol corpus stays in ignored `local/derived/text-banks-static.json`.
+The full dialogue-property catalog stays in ignored `local/derived/sprite-dialogue-static.json`.

@@ -63,6 +63,7 @@ from sf2tool.h2.sound_data import verify_sound_data_inventory
 from sf2tool.h2.special_screen_graphics import verify_special_screen_graphics_contract
 from sf2tool.h2.special_screen_presentation import verify_special_screen_presentation_contract
 from sf2tool.h2.special_sprites import verify_special_sprite_contract
+from sf2tool.h2.sprite_dialogue import verify_sprite_dialogue_contract
 from sf2tool.h2.stats import verify_stats_inventory
 from sf2tool.h2.text_banks import verify_text_banks_contract
 from sf2tool.h2.text_huffman import verify_text_huffman_contract
@@ -336,6 +337,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_enemy_map_sprites)
     h2_enemy_map_sprites.add_argument("--output-path", type=_path)
+    h2_sprite_dialogue = h2_commands.add_parser(
+        "sprite-dialogue",
+        help="decode map-sprite portrait and speech-SFX properties against the ROM",
+    )
+    _add_local_paths(h2_sprite_dialogue)
+    h2_sprite_dialogue.add_argument("--output-path", type=_path)
     h2_battle_cutscene_data = h2_commands.add_parser(
         "battle-cutscene-data", help="inventory built and orphaned battle cutscene data"
     )
@@ -964,6 +971,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "enemy-map-sprites":
         print_record(
             verify_enemy_map_sprites_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "sprite-dialogue":
+        print_record(
+            verify_sprite_dialogue_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

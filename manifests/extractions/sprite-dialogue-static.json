@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-sprite-dialogue-static-v1",
+  "summary": {
+    "rowCount": 119,
+    "recordByteCount": 476,
+    "tableByteCount": 478,
+    "uniqueMapSpriteCount": 119,
+    "duplicateMapSpriteValueCount": 0,
+    "uniquePortraitValueCount": 51,
+    "portraitNoneRowCount": 39,
+    "portraitBearingRowCount": 80,
+    "uniqueSpeechSfxCount": 10,
+    "reservedZeroByteCount": 119
+  },
+  "outputSha256": "B1D5979F71C298F2805D88D223CC89581D198396812943EA4FF1E93A7BA2B185"
+}

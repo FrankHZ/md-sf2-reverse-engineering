@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-sprite-dialogue-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "table_MapspriteDialogueProperties": 284282,
+    "GetEntityPortaitAndSpeechSfx": 284216
+  },
+  "summary": {
+    "rowCount": 119,
+    "recordByteCount": 476,
+    "tableByteCount": 478,
+    "uniqueMapSpriteCount": 119,
+    "duplicateMapSpriteValueCount": 0,
+    "uniquePortraitValueCount": 51,
+    "portraitNoneRowCount": 39,
+    "portraitBearingRowCount": 80,
+    "uniqueSpeechSfxCount": 10,
+    "reservedZeroByteCount": 119
+  },
+  "romRange": {
+    "sourcePath": "data/spritedialogproperties.asm",
+    "start": 284282,
+    "endExclusive": 284760,
+    "sha256": "DA351FAB189D0AE07D1300152A02B5D214DE179CE89C2E802B27EA7D617CAACC"
+  },
+  "tableFacts": {
+    "recordSize": 4,
+    "terminatorWord": 65535,
+    "duplicateMapSpriteValues": {},
+    "speechSfxHistogram": {
+      "DIALOG_BLEEP_1": 7,
+      "DIALOG_BLEEP_2": 12,
+      "DIALOG_BLEEP_3": 9,
+      "DIALOG_BLEEP_4": 8,
+      "DIALOG_BLEEP_5": 33,
+      "DIALOG_BLEEP_6": 33,
+      "DIALOG_BLEEP_7": 9,
+      "DIALOG_BLEEP_8": 5,
+      "TAROS_DIALOG_BLEEP": 1,
+      "DEMON_BREATH": 2
+    },
+    "reservedByteIsAlwaysZero": true
+  },
+  "consumerRules": {
+    "lookupKey": "entity map-sprite byte after masking character index with COMBATANT_MASK_ALL",
+    "matchPolicy": "linear scan; first matching map-sprite row wins",
+    "portraitResult": "portrait byte is sign-extended, so PORTRAIT_NONE (255) returns -1",
+    "speechSfxResult": "speech-SFX byte is returned unsigned; the reserved byte is ignored",
+    "termination": "after each miss, advance four bytes and stop when the next word is 0xFFFF",
+    "fallback": "PORTRAIT_DEFAULT (-1) and SFX_DIALOG_BLEEP_6 (74)"
+  },
+  "runtimeQuestions": [
+    "Which dialogue call paths rely on fallback values for map sprites absent from this table?",
+    "How do portrait suppression and speech-SFX timing interact with the text presentation loop?"
+  ]
+}

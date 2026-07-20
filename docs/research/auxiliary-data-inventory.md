@@ -1,7 +1,8 @@
 # Auxiliary Graphics, Scripting, and Technical Data Inventory
 
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
-  two alternates, file-category counts, private incbin reference counts, sprite-dialogue row shape,
+  two alternates, file-category counts, private incbin reference counts, the complete sprite-dialogue
+  property catalog and lookup contract,
   and the complete battle-background, battle-sprite, battle-sprite-animation, weapon/ground, and
   portrait container/decode corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
@@ -127,11 +128,19 @@ window-border and fighter-mini-status alternates remain outside the vanilla buil
 borrowed address. Tracked output keeps dimensions, attributes, addresses, counts, and hashes rather
 than original layout or pixel bytes.
 
-The sprite-dialogue table has 119 aligned `mapsprite`, `portrait`, and `speechSfx` rows. This confirms
-the table shape, not the presentation behavior or the meaning of individual entries. Likewise, the
-scripting inventory proves build ownership and symbol placement without redistributing text banks,
-staff strings, cutscene content, or entity-action bodies. Full detail remains under ignored
-`local/derived/auxiliary-data-static.json`.
+The dedicated sprite-dialogue rail decodes all 119 aligned `mapsprite`, `portrait`, and `speechSfx`
+rows as 476 record bytes followed by a `0xFFFF` word sentinel. All 119 map-sprite keys are unique;
+80 rows carry a portrait and 39 encode `PORTRAIT_NONE`. The ten speech-SFX values comprise the eight
+regular dialogue bleeps, one Taros bleep, and demon breath in two rows. Every record's fourth byte is
+zero, and the complete 478-byte range matches source, H1, and ROM.
+
+`GetEntityPortaitAndSpeechSfx` performs a first-match linear scan by the entity's map-sprite byte,
+sign-extends the portrait byte so `PORTRAIT_NONE` becomes `-1`, returns the speech-SFX byte, and
+ignores the fourth byte. A miss returns portrait `-1` plus `SFX_DIALOG_BLEEP_6` (74). These are
+confirmed data and control-flow rules; portrait suppression, sound timing, and which dialogue paths
+exercise the fallback remain presentation/runtime questions. The broader scripting inventory still
+proves build ownership and symbol placement without redistributing text banks, staff strings,
+cutscene content, or entity-action bodies. Full catalogs remain under ignored `local/derived/`.
 
 The dedicated text-bank rail now goes beyond that routing boundary without tracking plaintext. All
 17 bank payloads, 4,267 length-prefixed records, 17-entry pointer table, and top-level pointer match
@@ -165,6 +174,7 @@ launches.
 
 ```powershell
 uv run sf2 h2 auxiliary-data
+uv run sf2 h2 sprite-dialogue
 uv run sf2 h2 text-banks
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites

@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,468 条 confirmed finding、69 个 H2 fixture、58 个 H3 fixture
-和 2,018 个地址绑定。
+截至 2026-07-19，研究索引有 1,468 条 confirmed finding、70 个 H2 fixture、58 个 H3 fixture
+和 2,020 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -41,8 +41,8 @@ description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stu
 597 条物理 statement 和 80 次 script 调用；最后 47 个 standalone setup script 也闭合为 178 个
 全局标签、8,058 条语句和 146 次跨文件引用。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
-data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 24 个 ROM
-table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表与 Battle 01 数据。完整口径、空白子系统和
+data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 25 个 ROM
+table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表、sprite-dialogue 与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
 ## 我们要交付什么
@@ -228,7 +228,7 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
-当前 H2 已覆盖 24 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
+当前 H2 已覆盖 25 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
 5 条成长曲线、59 个职业成长记录和 122 个学法术条目，以及 5 段转职表、103 个敌人名称和
 103 个 56-byte 敌人定义、30 条跨 22 场战斗的敌人掉落记录，以及 103 条敌人 gold word。
 drop rail 确认 flags 0-29、三个 `RNG(32)` 特例和 `0xFFFF` 终止；gold rail 还保留并拒绝误解释源码标记的
@@ -241,7 +241,10 @@ drop rail 确认 flags 0-29、三个 `RNG(32)` 特例和 `0xFFFF` 终止；gold 
 准入、blacksmith 持久化/呈现与实测频率保留到集中运行时矩阵。enemy-map-sprites rail 再闭合
 166-byte 表与唯一消费者：0-102 对应敌人定义，103-165 是 NPC sprite tail；627 个 spriteset
 引用和全部 upgrade range 都不会进入尾部，只有无 bounds check 的 raw/debug/corrupt enemy index
-仍保留为非标准边界。battle AI 静态 rail 另覆盖完整
+仍保留为非标准边界。sprite-dialogue rail 进一步闭合 119 个四字节记录与 `0xFFFF` sentinel：
+119 个 map sprite 全部唯一，80 行带 portrait、39 行返回 `PORTRAIT_NONE`，十种 speech SFX 的
+完整分布和 first-match/default 返回规则均通过 source/H1/ROM parity；实际 portrait 抑制与发声
+时序仍进入集中运行时队列。battle AI 静态 rail 另覆盖完整
 26 文件/5,991 行源码面、82 个 global label、
 388 个直接调用点、五类 action getter、四套 attack priority script、物理/法术 potential-damage
 模型、4×32 class adjustment 表，healing eligibility/spell-level/item precedence 与
