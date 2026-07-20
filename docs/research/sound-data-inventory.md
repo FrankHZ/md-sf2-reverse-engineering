@@ -1,11 +1,11 @@
-# Z80 Music-Bank Source and ROM-Parity Inventory
+# Z80 Music-Bank and Runtime-State Inventory
 
 - Status: **Confirmed** for the complete 41-file directory, two bank entry points, include graph,
   bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, the 29-macro ABI and
   complete source invocation corpus, all 39 music headers, ten-slot channel-role shape and command
-  compatibility, and canonical-ROM parity
-- Status: **Inferred** for music command playback semantics
-- Status: **Unknown** for two grouped runtime questions
+  compatibility, canonical-ROM parity, and the four-command/12-checkpoint live Z80 state matrix
+- Status: **Inferred** for audible instrument/envelope meaning
+- Status: **Unknown** for wall-clock YM2612 tempo, PCM sample rate, and hardware output fidelity
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -151,9 +151,43 @@ loops, release, and termination are accepted on every parser that implements the
 has zero incompatible role uses. This is a static source/dispatch guarantee; it does not establish
 audible timing, channel state, or hardware output.
 
-This closes source grammar, dispatch, loop state, table selection, and effective note-index bounds—not
-playback timing. DAC sample rate, live channel-state evolution, tempo, instruments, and scheduling
-remain `Inferred` or `Unknown` until the coherent runtime matrix is observed.
+This closes source grammar, dispatch, loop state, table selection, and effective note-index bounds.
+The runtime matrix below additionally closes command acceptance and bounded live channel-state
+evolution, but not wall-clock playback timing or audible output.
+
+## Concentrated Runtime Matrix
+
+The Z80 driver binary and its source layout place ten music-channel records at `0x1380`, with a
+fixed stride of `0x20`: YM1 channels 1-3, YM2 channels 4-5, YM2 channel 6/DAC, three PSG tone slots,
+and PSG noise. The tracked H3 observer reads only these source-named fields and adjacent globals:
+
+| Address | Source symbol/field | Runtime use |
+| ---: | --- | --- |
+| `0x1380 + n*0x20` | channel pointer bytes 0-1 | little-endian music-bank cursor |
+| `+0x02` | channel time counter | live wait/note countdown state |
+| `+0x03` | channel not-in-use flag | zero active, one inactive |
+| `0x152D` | `MUSIC_BANK_TO_LOAD` | bank register value selected by the command |
+| `0x1533` | `FADE_IN_TIMER` | counter incremented on driver Timer-B updates |
+| `0x1534` | `MUSIC_DOESNT_USE_SAMPLES` | music-header DAC-disable byte |
+| `0x1FF8` | `NEW_SAMPLE_TO_LOAD` | pending DAC sample request |
+| `0x1FFF` | `NEW_OPERATION` | command mailbox cleared by `Main` |
+
+One BizHawk 2.11.1 / Genesis Plus GX launch saves a core state after 180 frames, replays commands
+1, 8, 33, and 32 from that same state, and samples frames 1, 10, and 30. This covers bank 0 and bank
+1, DAC enabled and disabled headers, Timer-B values `C2/CB/C0/C8`, and the silent Music 32 target.
+The 12 checkpoints contain 120 channel snapshots.
+
+**Confirmed:** every command is consumed and `NEW_OPERATION` is zero at frame 1. The observed bank
+and DAC fields match the H2 header for every checkpoint, and all ten frame-1 cursors equal the exact
+little-endian pointers in the source/ROM-verified music header. Music 1, 8, and 33 start eight active
+channels plus the shared terminated PSG tone/noise pair; their active cursors and counters then
+advance independently. Music 32 points all ten slots at `Music_32_Channel_9`, marks every slot
+inactive by frame 1, and leaves all cursors/counters unchanged through frame 30.
+
+The `FADE_IN_TIMER` observations are respectively `0/9/26`, `0/10/31`, `0/8/26`, and `0/9/29`
+at frames 1/10/30. Music 33's pending sample byte changes from `0xFE` to zero before frame 10; the
+other three cases retain `0xFE` throughout this bounded window. These are deterministic emulator
+state facts, not a conversion from video frames to YM2612 timer frequency or PCM sample rate.
 
 ## Complete Data-ASM Discovery
 
@@ -163,14 +197,16 @@ domain-aware index is now 1,017/1,690: 980 files use H1 and 37 song files use th
 The remaining gap includes 662 map bodies labeled only at include sites, one unlabeled map storage
 file, the four symbol-less music support/entry sources, and explicit alternates/containers.
 
-## Concentrated Queue
+## Remaining Runtime Queue
 
-No emulator was launched. Remaining questions are now grouped as DAC frame-period/sample rate plus
-live channel state, and Timer-B/loop/instrument timing. They should be tested together through the
-sound-command boundary rather than one launch per opcode.
+The command/channel-state seam is now proven and reusable. A later sound matrix may attach YM2612
+register/audio observations to it for PCM frame-period/sample-rate calibration, wall-clock Timer-B
+tempo, and audible instrument/envelope behavior. Those questions should remain grouped; this fixture
+does not justify one emulator launch per opcode or song.
 
 ## Reproduction
 
 ```powershell
 uv run sf2 h2 sound-data
+uv run sf2 h3 sound-timing
 ```

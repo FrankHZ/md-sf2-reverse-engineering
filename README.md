@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,535 条 confirmed finding、74 个 H2 fixture、59 个 H3 fixture
-和 2,103 个地址绑定；其中 1,498 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
+截至 2026-07-19，研究索引有 1,535 条 confirmed finding、74 个 H2 fixture、60 个 H3 fixture
+和 2,109 个地址绑定；其中 1,498 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
 地址域校验。music rail 还静态闭合 29 个 byte-emitting macro、39 个 song entry、321 个 channel
 label 和 39,290 次 macro invocation，并将 `F8`–`FF`/`F0`/`70` 接到五个 YM/PSG parser 与共享
 loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro 调用的声道角色兼容性为
@@ -27,8 +27,9 @@ loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro �
 值。84 项 YM / 64 项 PSG 频率表已绑定全部 21,841 次 note 调用；驱动中的 `sub 15h` 与
 218 次 shifting 的 CFG 审计确认 note shift 始终为零，全部 PSG 有效索引稳定落在 0–48。
 17 项 DAC load table 也绑定 1,559 次音乐 sample 调用；另有 51 个已用 YM instrument、7 个
-已用 PSG instrument 及全部 8,376 次 instrument/volume 调用完成边界审计。实际播放时序仍
-留在集中运行矩阵。
+已用 PSG instrument 及全部 8,376 次 instrument/volume 调用完成边界审计。单次启动的声音 H3
+进一步用 4 个 command、12 个 checkpoint 和 120 个声道快照确认命令清零、bank/DAC 状态、
+十槽初始 pointer、有效声道推进与 Music 32 全 inactive 控制；硬件采样率和可听输出仍未知。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：

@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 59 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,103 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 60 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,109 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -37,8 +37,11 @@ loop state machine, with all 390 channel slots and zero incompatible macro/role 
 all 39 four-byte music headers and the complete 64-slot/two-bank command-selection map with no
 cross-bank fallback, and the 84-entry YM/64-entry PSG frequency tables bound to 21,841 note calls,
 including a 218-command shift/loop CFG audit with zero invalid effective indices, plus the 17-entry
-DAC load table bound to 1,559 music sample calls and the complete 8,376-call instrument/level domain,
-plus 281 fixed
+DAC load table bound to 1,559 music sample calls and the complete 8,376-call instrument/level domain.
+A single-launch four-command sound H3 now joins those static
+contracts to 12 checkpoints/120 live Z80 channel snapshots, confirming command clearing, bank/DAC
+header state, exact initial pointers, active-channel progression, and the silent control boundary.
+The remaining H2 surface includes 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,
@@ -280,8 +283,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,535 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 59 H3 fixtures, and
-2,103 bindings. Of the records, 1,498 use H1 and 37 use the restricted Z80 music-bank domain. The
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 60 H3 fixtures, and
+2,109 bindings. Of the records, 1,498 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

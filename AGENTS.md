@@ -173,8 +173,9 @@ BizHawk base/debug-aware RNG,
 stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
 final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
    turn-order, region-activation, physical-attack-chain, dodge, follow-up-validation, and grouped
-   map-animation VInt/DMA/VRAM behavior, plus the 13-case/20-tick entity movement/action matrix
-fixtures, plus the ten-case map setup selector and six-case map init dispatch runtime matrices;
+   map-animation VInt/DMA/VRAM behavior, the four-command Z80 music/live-channel-state matrix,
+   and the 13-case/20-tick entity movement/action matrix fixtures, plus the ten-case map setup
+   selector and six-case map init dispatch runtime matrices;
 extend the same entry
 point as later rails become available:
 

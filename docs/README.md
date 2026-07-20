@@ -176,8 +176,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   进一步闭合 89 个 program 的 story-state surface：51 条条件读取覆盖 6 个 flag，53 条直接写入、
   22 条 prompt 写入和 20 条 battle-unlock 写入覆盖 56 个 flag，读写域仅交于 71/76/89。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
-  两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding，以及 29-macro、
-  39,290-invocation 静态命令语料。
+  两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
+  39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot
+  的 Z80 live-state H3 矩阵。
 
 ## Design
 

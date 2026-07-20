@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h3-sound-timing-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "observationBoundary", "bootFrames", "checkpointFrames", "ram", "cases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-sound-timing-runtime-v1" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "core"],
+      "properties": {
+        "name": { "const": "BizHawk" },
+        "version": { "const": "2.11.1" },
+        "core": { "const": "Genesis Plus GX" }
+      }
+    },
+    "observationBoundary": { "type": "string", "minLength": 80 },
+    "bootFrames": { "const": 180 },
+    "checkpointFrames": {
+      "type": "array",
+      "items": [{ "const": 1 }, { "const": 10 }, { "const": 30 }],
+      "additionalItems": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "ram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["channelBaseAddress", "channelCount", "channelRecordSize", "newSampleAddress", "musicBankAddress", "fadeInTimerAddress", "musicDacModeAddress", "newOperationAddress"],
+      "properties": {
+        "channelBaseAddress": { "const": 4992 },
+        "channelCount": { "const": 10 },
+        "channelRecordSize": { "const": 32 },
+        "newSampleAddress": { "const": 8184 },
+        "musicBankAddress": { "const": 5421 },
+        "fadeInTimerAddress": { "const": 5427 },
+        "musicDacModeAddress": { "const": 5428 },
+        "newOperationAddress": { "const": 8191 }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/case" }
+    }
+  },
+  "$defs": {
+    "tenBytes": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": { "type": "integer", "minimum": 0, "maximum": 255 }
+    },
+    "tenPointers": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": { "type": "integer", "minimum": 32768, "maximum": 65535 }
+    },
+    "tenFlags": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": { "enum": [0, 1] }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame", "operation", "musicBank", "dacDisabled", "fadeInTimer", "newSample", "pointers", "timeCounters", "inactive"],
+      "properties": {
+        "frame": { "enum": [1, 10, 30] },
+        "operation": { "const": 0 },
+        "musicBank": { "enum": [0, 1] },
+        "dacDisabled": { "enum": [0, 1] },
+        "fadeInTimer": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "newSample": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "pointers": { "$ref": "#/$defs/tenPointers" },
+        "timeCounters": { "$ref": "#/$defs/tenBytes" },
+        "inactive": { "$ref": "#/$defs/tenFlags" }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "command", "entryLabel", "bank", "bankRegisterValue", "dacDisabled", "timerB", "expectedCheckpoints"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "command": { "enum": [1, 8, 32, 33] },
+        "entryLabel": { "enum": ["Music_1", "Music_8", "Music_32", "Music_33"] },
+        "bank": { "enum": ["bank0", "bank1"] },
+        "bankRegisterValue": { "enum": [0, 1] },
+        "dacDisabled": { "type": "boolean" },
+        "timerB": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "expectedCheckpoints": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/checkpoint" }
+        }
+      }
+    }
+  }
+}

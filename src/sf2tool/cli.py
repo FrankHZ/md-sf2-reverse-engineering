@@ -98,6 +98,7 @@ from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
 from sf2tool.h3.rng import verify_rng
+from sf2tool.h3.sound_timing import verify_sound_timing
 from sf2tool.h3.spell_attack import verify_spell_attack
 from sf2tool.h3.spell_boost import verify_spell_boost
 from sf2tool.h3.spell_damage import verify_spell_damage, verify_spell_summon
@@ -681,6 +682,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_animation_vdp)
     h3_map_animation_vdp.add_argument("--timeout-seconds", type=int, default=120)
+    h3_sound_timing = h3_commands.add_parser(
+        "sound-timing",
+        help="verify batched Z80 music command and live channel-state progression",
+    )
+    _add_local_paths(h3_sound_timing)
+    h3_sound_timing.add_argument("--timeout-seconds", type=int, default=120)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -1480,6 +1487,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-animation-vdp":
         print_record(
             verify_map_animation_vdp(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "sound-timing":
+        print_record(
+            verify_sound_timing(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

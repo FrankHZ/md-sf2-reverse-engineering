@@ -33,8 +33,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1535
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 59
-    assert result["AddressBindings"] == 2103
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 60
+    assert result["AddressBindings"] == 2109
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1498
@@ -507,6 +507,13 @@ def test_map_event_dispatch_has_one_batched_runtime_command() -> None:
 def test_map_animation_vdp_has_one_batched_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "map-animation-vdp"])
     assert args.h3_command == "map-animation-vdp"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 120
+
+
+def test_sound_timing_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "sound-timing"])
+    assert args.h3_command == "sound-timing"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 120
 

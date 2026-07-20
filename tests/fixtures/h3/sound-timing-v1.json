@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-sound-timing-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
+  "observationBoundary": "Four commands replay one 180-frame core state in one launch. Frame 1 confirms command acceptance, bank and DAC header state, and all ten source-derived channel pointers. Frames 10 and 30 record only Z80 driver pointer, time-counter, inactive, sample-request, and Timer-overflow-counter state. These emulator frame snapshots do not claim YM2612 wall-clock tempo, PCM sample rate, audible envelopes, or hardware output fidelity.",
+  "bootFrames": 180,
+  "checkpointFrames": [1, 10, 30],
+  "ram": {
+    "channelBaseAddress": 4992,
+    "channelCount": 10,
+    "channelRecordSize": 32,
+    "newSampleAddress": 8184,
+    "musicBankAddress": 5421,
+    "fadeInTimerAddress": 5427,
+    "musicDacModeAddress": 5428,
+    "newOperationAddress": 8191
+  },
+  "cases": [
+    {
+      "id": "music-1-bank0-dac", "command": 1, "entryLabel": "Music_1", "bank": "bank0", "bankRegisterValue": 1, "dacDisabled": false, "timerB": 194,
+      "expectedCheckpoints": [
+        { "frame": 1, "operation": 0, "musicBank": 1, "dacDisabled": 0, "fadeInTimer": 0, "newSample": 254, "pointers": [35297, 36212, 36636, 37670, 38732, 39642, 39982, 40433, 40870, 40870], "timeCounters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] },
+        { "frame": 10, "operation": 0, "musicBank": 1, "dacDisabled": 0, "fadeInTimer": 9, "newSample": 254, "pointers": [35305, 36220, 36644, 37678, 38738, 39646, 39992, 40437, 40870, 40870], "timeCounters": [12, 13, 13, 13, 13, 13, 1, 1, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] },
+        { "frame": 30, "operation": 0, "musicBank": 1, "dacDisabled": 0, "fadeInTimer": 26, "newSample": 254, "pointers": [35315, 36224, 36654, 37688, 38752, 39650, 40003, 40452, 40870, 40870], "timeCounters": [25, 19, 25, 25, 19, 19, 1, 1, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] }
+      ]
+    },
+    {
+      "id": "music-8-bank0-no-dac", "command": 8, "entryLabel": "Music_8", "bank": "bank0", "bankRegisterValue": 1, "dacDisabled": true, "timerB": 203,
+      "expectedCheckpoints": [
+        { "frame": 1, "operation": 0, "musicBank": 1, "dacDisabled": 1, "fadeInTimer": 0, "newSample": 254, "pointers": [50501, 51391, 51775, 52520, 53410, 54283, 54457, 54884, 55317, 55317], "timeCounters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] },
+        { "frame": 10, "operation": 0, "musicBank": 1, "dacDisabled": 1, "fadeInTimer": 10, "newSample": 254, "pointers": [50513, 51405, 51789, 52534, 53426, 54297, 54467, 54894, 55317, 55317], "timeCounters": [6, 54, 54, 54, 14, 54, 54, 54, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] },
+        { "frame": 30, "operation": 0, "musicBank": 1, "dacDisabled": 1, "fadeInTimer": 31, "newSample": 254, "pointers": [50516, 51405, 51789, 52534, 53429, 54297, 54467, 54894, 55317, 55317], "timeCounters": [1, 33, 33, 33, 9, 33, 33, 33, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] }
+      ]
+    },
+    {
+      "id": "music-33-bank1-dac", "command": 33, "entryLabel": "Music_33", "bank": "bank1", "bankRegisterValue": 0, "dacDisabled": false, "timerB": 192,
+      "expectedCheckpoints": [
+        { "frame": 1, "operation": 0, "musicBank": 0, "dacDisabled": 0, "fadeInTimer": 0, "newSample": 254, "pointers": [32856, 33262, 33834, 34481, 35084, 35884, 36202, 36661, 37128, 37128], "timeCounters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] },
+        { "frame": 10, "operation": 0, "musicBank": 0, "dacDisabled": 0, "fadeInTimer": 8, "newSample": 0, "pointers": [32872, 33272, 33850, 34497, 35096, 35893, 36212, 36673, 37128, 37128], "timeCounters": [4, 4, 4, 4, 10, 4, 64, 64, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] },
+        { "frame": 30, "operation": 0, "musicBank": 0, "dacDisabled": 0, "fadeInTimer": 26, "newSample": 0, "pointers": [32874, 33278, 33852, 34499, 35103, 35897, 36212, 36673, 37128, 37128], "timeCounters": [10, 10, 10, 10, 4, 10, 46, 46, 0, 0], "inactive": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1] }
+      ]
+    },
+    {
+      "id": "music-32-silent", "command": 32, "entryLabel": "Music_32", "bank": "bank0", "bankRegisterValue": 1, "dacDisabled": false, "timerB": 200,
+      "expectedCheckpoints": [
+        { "frame": 1, "operation": 0, "musicBank": 1, "dacDisabled": 0, "fadeInTimer": 0, "newSample": 254, "pointers": [65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076], "timeCounters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "inactive": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+        { "frame": 10, "operation": 0, "musicBank": 1, "dacDisabled": 0, "fadeInTimer": 9, "newSample": 254, "pointers": [65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076], "timeCounters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "inactive": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+        { "frame": 30, "operation": 0, "musicBank": 1, "dacDisabled": 0, "fadeInTimer": 29, "newSample": 254, "pointers": [65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076, 65076], "timeCounters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "inactive": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] }
+      ]
+    }
+  ]
+}
