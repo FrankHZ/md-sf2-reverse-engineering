@@ -75,6 +75,11 @@ timing from opcode names alone.
 Standalone script resources likewise retain ordered commands, operand text, and resolved references
 between all 178 labels. These are importable command graphs, not proof that a modern engine may skip
 the original interpreter's state, wait, camera, dialogue, or presentation sequencing.
+The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
+over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
+shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,
+and inline-action-program cursor outcomes explicitly instead of flattening every command into a
+linear list.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

@@ -47,6 +47,22 @@ counts rather than making unused macros disappear. The most common forms are `ne
 (2,058), `csWait` (1,591), `setFacing` (1,579), `setActscriptWait` (1,015), and
 `entityActionsWait` (957).
 
+The 82 primary command layouts contain 133 logical parameters and exactly 133 emitted operand fields
+covering 234 bytes. Including each two-byte opcode, 17 commands are two bytes, 27 are four bytes, 24
+are six bytes, and 14 are eight bytes. Operand rows retain stream offset, byte width, raw expression,
+logical parameter ordinal, and direct-versus-shorthand encoding. This matters for `animEntityFX`:
+its entity word plus `defineShorthand.w ENTITY_TRANSITION_` word make the command six bytes; a parser
+that counts only `dc.*` directives silently undercounts it by two. Alias layouts substitute constants
+without changing physical width: for example, `setF` preserves both `csc10` operand words while
+fixing the second to `$FFFF`.
+
+Script-cursor topology is also closed for every unique handler. Seventy-seven return with sequential
+cursor ownership, `csc0B_jump` replaces A6 with one absolute target, four condition handlers choose
+between that absolute target and a four-byte skip, and `csc14_setEntityActscriptManual` installs the
+inline action-program pointer then scans through its `$8080` terminator. This classification concerns
+encoded cursor transfer; synchronous sleeps, camera waits, dialogue, and visible effects inside a
+handler remain separate timing behavior.
+
 The 83 handlers contain 955 parsed instructions and group into fourteen source-role families. Their
 source-shaped access catalog contains 16 entity fields, 25 global-state symbols, and 62 direct-call
 targets, while preserving every script-cursor statement. These facts define opcode topology and

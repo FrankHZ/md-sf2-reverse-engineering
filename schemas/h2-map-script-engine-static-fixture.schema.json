@@ -18,10 +18,11 @@
     },
     "expected": {
       "type": "object", "additionalProperties": false,
-      "required": ["summary", "dispatcherFacts", "familyCounts", "mostUsedMacros", "unusedMacros", "runtimeQuestions"],
+      "required": ["summary", "dispatcherFacts", "familyCounts", "abiFacts", "mostUsedMacros", "unusedMacros", "runtimeQuestions"],
       "properties": {
         "summary": { "type": "object" }, "dispatcherFacts": { "type": "object" },
-        "familyCounts": { "type": "object" }, "mostUsedMacros": { "type": "array" },
+        "familyCounts": { "type": "object" }, "abiFacts": { "type": "object" },
+        "mostUsedMacros": { "type": "array" },
         "unusedMacros": { "type": "array" }, "runtimeQuestions": { "type": "array" }
       }
     }

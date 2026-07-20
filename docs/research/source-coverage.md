@@ -73,7 +73,9 @@ The current evidence is deep but narrow:
   Huffman state. The map-script side additionally closes 82 non-filler opcodes, eight filler slots,
   83 unique handlers, 93 primary/alias/special macros, and 13,515 complete-source invocations across
   169 files. Its handler catalog captures 955 instructions, 16 entity fields, 25 global states, and
-  62 direct-call targets; story reachability and timing/presentation remain batched runtime questions.
+  62 direct-call targets. Its ABI adds 133 primary parameters/operand fields, 234 operand bytes, exact
+  2/4/6/8-byte width counts, and 77 sequential/1 absolute/4 conditional/1 inline cursor-flow handlers;
+  story reachability and timing/presentation remain batched runtime questions.
   The entity-action source surface is additionally closed across three shared and 75
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
   corpus uniquely owns 1,472 commands in 361 inline programs and 11 standalone ROM ranges, with 17
@@ -298,7 +300,9 @@ alternates, unlabeled storage, and the separate Z80 address space rather than un
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
 slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
-and makes eleven unused definitions explicit. Its remaining three runtime questions are grouped by
+and makes eleven unused definitions explicit. All 133 primary operand fields and their 234 bytes are
+typed by width/offset/expression, including the shorthand-encoded transition word, and all 83 unique
+handlers have a cursor-flow class. Its remaining three runtime questions are grouped by
 story reachability, multi-service frame timing, and visible presentation; none justifies a one-case
 emulator launch.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM

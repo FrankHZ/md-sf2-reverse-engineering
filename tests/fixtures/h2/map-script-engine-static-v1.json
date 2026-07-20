@@ -20,7 +20,11 @@
       "handlerStatementCount": 955,
       "handlerEntityFieldCount": 16,
       "handlerGlobalStateCount": 25,
-      "handlerDirectCallTargetCount": 62
+      "handlerDirectCallTargetCount": 62,
+      "primaryLogicalParameterCount": 133,
+      "primaryOperandFieldCount": 133,
+      "primaryOperandByteCount": 234,
+      "sequentialHandlerCount": 77
     },
     "dispatcherFacts": {
       "sha256": "B128F068249EABC9443A0363BAFAEC1D9B4E06D6BE21B32867C265C7CC405CDE",
@@ -29,6 +33,14 @@
       "sourceRomParity": true
     },
     "familyCounts": { "audio":1, "control-flow":6, "dialogue-ui":1, "entity":30, "entity-party":7, "filler":1, "map-camera":6, "map-state":8, "map-transition":1, "no-op":1, "party":1, "presentation":11, "story-state":4, "text":5 },
+    "abiFacts": {
+      "commandWidthCounts": { "2":17, "4":27, "6":24, "8":14 },
+      "handlerFlowCounts": { "absolute-jump":1, "conditional-absolute-jump":4, "inline-action-program":1, "sequential":77 },
+      "absoluteJumpHandlers": ["csc0B_jump"],
+      "conditionalAbsoluteJumpHandlers": ["csc0C_jumpIfFlagSet", "csc0D_jumpIfFlagClear", "csc0E_jumpIfForceMemberInList", "csc0F_jumpIfCharacterDead"],
+      "inlineActionProgramHandlers": ["csc14_setEntityActscriptManual"],
+      "shorthandOperands": [{ "macro":"animEntityFX", "streamOffset":4, "widthBytes":2, "encoding":"shorthand:ENTITY_TRANSITION_" }]
+    },
     "mostUsedMacros": [
       { "macro":"nextSingleText", "count":2058 },
       { "macro":"csWait", "count":1591 },

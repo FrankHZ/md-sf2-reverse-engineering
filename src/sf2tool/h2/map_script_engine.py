@@ -47,12 +47,65 @@ def _macro_blocks(source: str) -> dict[str, str]:
     return {match.group("name"): match.group("body") for match in pattern.finditer(source)}
 
 
-def _encoded_bytes(body: str) -> int:
+def _emission_rows(body: str) -> list[dict[str, Any]]:
     widths = {"b": 1, "w": 2, "l": 4}
-    return sum(
-        widths[match.group(1)]
-        for match in re.finditer(r"^\s*dc\.([bwl])\s+", body, re.MULTILINE)
-    )
+    rows: list[dict[str, Any]] = []
+    offset = 0
+    for raw_line in body.splitlines():
+        code = raw_line.split(";", 1)[0].strip()
+        direct = re.match(r"^dc\.([bwl])\s+(.+)$", code)
+        shorthand = re.match(
+            r"^defineShorthand\.([bwl])\s+([^,]+),(.+)$", code
+        )
+        if direct:
+            width_code, expression = direct.groups()
+            encoding = "direct"
+        elif shorthand:
+            width_code, prefix, expression = shorthand.groups()
+            encoding = f"shorthand:{prefix.strip()}"
+        else:
+            continue
+        expression = expression.strip()
+        if direct and "," in expression:
+            raise ValueError(f"unsupported multi-value map-script emission: {code}")
+        width = widths[width_code]
+        rows.append(
+            {
+                "streamOffset": offset,
+                "widthBytes": width,
+                "expression": expression,
+                "parameterOrdinals": sorted(
+                    {int(value) for value in re.findall(r"\\(\d+)", expression)}
+                ),
+                "encoding": encoding,
+            }
+        )
+        offset += width
+    return rows
+
+
+def _substitute_alias_layout(
+    layout: list[dict[str, Any]], arguments: list[str]
+) -> list[dict[str, Any]]:
+    def substitute(match: re.Match[str]) -> str:
+        ordinal = int(match.group(1))
+        if ordinal > len(arguments):
+            raise ValueError(f"map-script alias argument {ordinal} is missing")
+        return arguments[ordinal - 1]
+
+    rows = []
+    for row in layout:
+        expression = re.sub(r"\\(\d+)", substitute, row["expression"])
+        rows.append(
+            {
+                **row,
+                "expression": expression,
+                "parameterOrdinals": sorted(
+                    {int(value) for value in re.findall(r"\\(\d+)", expression)}
+                ),
+            }
+        )
+    return rows
 
 
 def _map_macro_contracts(disasm: Path) -> dict[str, dict[str, Any]]:
@@ -61,6 +114,7 @@ def _map_macro_contracts(disasm: Path) -> dict[str, dict[str, Any]]:
     blocks = _macro_blocks(prefix)
     primary: dict[str, dict[str, Any]] = {}
     for name, body in blocks.items():
+        emissions = _emission_rows(body)
         first_word = re.search(
             r"^\s*dc\.w\s+(\$?[0-9A-Fa-f]+)\b", body, re.MULTILINE
         )
@@ -68,13 +122,18 @@ def _map_macro_contracts(disasm: Path) -> dict[str, dict[str, Any]]:
             continue
         opcode = _literal(first_word.group(1))
         if opcode <= 0x56:
+            if not emissions or emissions[0]["widthBytes"] != 2:
+                raise ValueError(f"map-script opcode emission is malformed: {name}")
+            operand_layout = emissions[1:]
             parameters = sorted(
                 {int(value) for value in re.findall(r"\\(\d+)", body)}
             )
             primary[name] = {
                 "kind": "command",
                 "opcode": opcode,
-                "encodedBytes": _encoded_bytes(body),
+                "encodedBytes": sum(row["widthBytes"] for row in emissions),
+                "operandBytes": sum(row["widthBytes"] for row in operand_layout),
+                "operandLayout": operand_layout,
                 "parameterOrdinals": parameters,
                 "aliasOf": None,
             }
@@ -88,8 +147,19 @@ def _map_macro_contracts(disasm: Path) -> dict[str, dict[str, Any]]:
         call = re.search(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\b", body, re.MULTILINE)
         if call and call.group(1) in primary:
             target = call.group(1)
+            call_line = next(
+                line.split(";", 1)[0].strip()
+                for line in body.splitlines()
+                if line.split(";", 1)[0].strip()
+            )
+            argument_text = call_line[len(target) :].strip()
+            arguments = [value.strip() for value in argument_text.split(",")]
+            operand_layout = _substitute_alias_layout(
+                primary[target]["operandLayout"], arguments
+            )
             aliases[name] = {
                 **primary[target],
+                "operandLayout": operand_layout,
                 "parameterOrdinals": sorted(
                     {int(value) for value in re.findall(r"\\(\d+)", body)}
                 ),
@@ -98,31 +168,28 @@ def _map_macro_contracts(disasm: Path) -> dict[str, dict[str, Any]]:
     if len(aliases) != 8:
         raise ValueError("map-script alias macro boundary drift")
 
-    special = {
-        "csWait": {
-            "kind": "sleep",
-            "opcode": None,
-            "encodedBytes": 2,
-            "parameterOrdinals": [1],
-            "aliasOf": None,
-        },
-        "cscNop": {
-            "kind": "source-nop",
-            "opcode": None,
-            "encodedBytes": 0,
-            "parameterOrdinals": [],
-            "aliasOf": None,
-        },
-        "csc_end": {
-            "kind": "terminator",
-            "opcode": None,
-            "encodedBytes": 2,
-            "parameterOrdinals": [],
-            "aliasOf": None,
-        },
+    special_kinds = {
+        "csWait": "sleep",
+        "cscNop": "source-nop",
+        "csc_end": "terminator",
     }
-    if not set(special).issubset(blocks):
+    if not set(special_kinds).issubset(blocks):
         raise ValueError("map-script special macro boundary drift")
+    special = {}
+    for name, kind in special_kinds.items():
+        emissions = _emission_rows(blocks[name])
+        operand_layout = emissions[1:] if name == "csWait" else []
+        special[name] = {
+            "kind": kind,
+            "opcode": None,
+            "encodedBytes": sum(row["widthBytes"] for row in emissions),
+            "operandBytes": sum(row["widthBytes"] for row in operand_layout),
+            "operandLayout": operand_layout,
+            "parameterOrdinals": sorted(
+                {int(value) for value in re.findall(r"\\(\d+)", blocks[name])}
+            ),
+            "aliasOf": None,
+        }
     return {**primary, **aliases, **special}
 
 
@@ -187,6 +254,23 @@ def _handler_family(opcode: int, target: str) -> str:
     raise ValueError(f"unclassified map-script handler opcode: {opcode}")
 
 
+def _cursor_flow(target: str, statements: list[str]) -> str:
+    has_absolute_transfer = "movea.l (a6),a6" in statements
+    has_skip = "addq.w #4,a6" in statements
+    if has_absolute_transfer and has_skip:
+        return "conditional-absolute-jump"
+    if has_absolute_transfer:
+        return "absolute-jump"
+    if target == "csc14_setEntityActscriptManual":
+        if (
+            "move.l a6,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)" not in statements
+            or "cmpi.w #$8080,(a6)+" not in statements
+        ):
+            raise ValueError("map-script inline action-program cursor shape drift")
+        return "inline-action-program"
+    return "sequential"
+
+
 def _handler_rows(
     disasm: Path,
     addresses: dict[str, int],
@@ -235,6 +319,10 @@ def _handler_rows(
         macro_names = sorted(
             {name for opcode in opcodes for name in macros_by_opcode.get(opcode, [])}
         )
+        encoded_sizes = {macro_contracts[name]["encodedBytes"] for name in macro_names}
+        operand_sizes = {macro_contracts[name]["operandBytes"] for name in macro_names}
+        if len(encoded_sizes) > 1 or len(operand_sizes) > 1:
+            raise ValueError(f"map-script alias physical layout drift: {target}")
         rows.append(
             {
                 "name": target,
@@ -246,6 +334,9 @@ def _handler_rows(
                 "endLine": source.count("\n", 0, body_match.end("body")) + 1,
                 "statementCount": len(statements),
                 "macroNames": macro_names,
+                "encodedCommandBytes": next(iter(encoded_sizes), 2),
+                "operandBytes": next(iter(operand_sizes), 0),
+                "cursorFlow": _cursor_flow(target, statements),
                 "sourceCommandCount": sum(source_counts[name] for name in macro_names),
                 "entityFieldAccesses": entity_accesses,
                 "globalStateAccesses": _global_access_rows(statements),
@@ -331,6 +422,8 @@ def build_map_script_engine_contract(
     family_counts = Counter(
         family for handler in handlers for family in handler["families"]
     )
+    command_width_counts = Counter(row["encodedBytes"] for row in primary.values())
+    handler_flow_counts = Counter(row["cursorFlow"] for row in handlers)
     summary = {
         "dispatcherSlotCount": len(targets),
         "uniqueHandlerCount": len(handlers),
@@ -361,6 +454,14 @@ def build_map_script_engine_contract(
         "handlerDirectCallTargetCount": len(
             {call for row in handlers for call in row["directCalls"]}
         ),
+        "primaryLogicalParameterCount": sum(
+            len(row["parameterOrdinals"]) for row in primary.values()
+        ),
+        "primaryOperandFieldCount": sum(
+            len(row["operandLayout"]) for row in primary.values()
+        ),
+        "primaryOperandByteCount": sum(row["operandBytes"] for row in primary.values()),
+        "sequentialHandlerCount": handler_flow_counts["sequential"],
     }
     return {
         "schemaVersion": 1,
@@ -383,6 +484,36 @@ def build_map_script_engine_contract(
             "sourceRomParity": True,
         },
         "familyCounts": dict(sorted(family_counts.items())),
+        "abiFacts": {
+            "commandWidthCounts": {
+                str(width): count for width, count in sorted(command_width_counts.items())
+            },
+            "handlerFlowCounts": dict(sorted(handler_flow_counts.items())),
+            "absoluteJumpHandlers": sorted(
+                row["name"] for row in handlers if row["cursorFlow"] == "absolute-jump"
+            ),
+            "conditionalAbsoluteJumpHandlers": sorted(
+                row["name"]
+                for row in handlers
+                if row["cursorFlow"] == "conditional-absolute-jump"
+            ),
+            "inlineActionProgramHandlers": sorted(
+                row["name"]
+                for row in handlers
+                if row["cursorFlow"] == "inline-action-program"
+            ),
+            "shorthandOperands": [
+                {
+                    "macro": name,
+                    "streamOffset": operand["streamOffset"],
+                    "widthBytes": operand["widthBytes"],
+                    "encoding": operand["encoding"],
+                }
+                for name, row in sorted(primary.items())
+                for operand in row["operandLayout"]
+                if operand["encoding"].startswith("shorthand:")
+            ],
+        },
         "macroContracts": {name: macros[name] for name in sorted(macros)},
         "macroSourceCounts": dict(sorted(source_counts.items())),
         "opcodeSourceCounts": opcode_counts,
@@ -414,6 +545,7 @@ def verify_map_script_engine_contract(
         "summary",
         "dispatcherFacts",
         "familyCounts",
+        "abiFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

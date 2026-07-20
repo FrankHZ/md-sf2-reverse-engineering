@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "sf2-map-script-engine-static-v1",
   "outputPath": "local/derived/map-script-engine-static.json",
-  "outputSha256": "795B7CE040C256AD7523833D91F4A6A4254ACA46199E302F2C6F6090FFAE7DBE",
+  "outputSha256": "F783DD1098253B652AF153E6CAD2FD2F884AF83BF15EA89F41290DE336079924",
   "summary": {
     "dispatcherSlotCount": 90,
     "uniqueHandlerCount": 83,
@@ -18,6 +18,10 @@
     "handlerStatementCount": 955,
     "handlerEntityFieldCount": 16,
     "handlerGlobalStateCount": 25,
-    "handlerDirectCallTargetCount": 62
+    "handlerDirectCallTargetCount": 62,
+    "primaryLogicalParameterCount": 133,
+    "primaryOperandFieldCount": 133,
+    "primaryOperandByteCount": 234,
+    "sequentialHandlerCount": 77
   }
 }

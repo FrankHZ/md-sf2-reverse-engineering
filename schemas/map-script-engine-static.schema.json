@@ -2,13 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SF2 map-script engine static contract",
   "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "rom", "summary", "function", "dispatcher", "familyCounts", "macroContracts", "macroSourceCounts", "opcodeSourceCounts", "unusedMacros", "handlers", "runtimeQuestions"],
+  "required": ["schemaVersion", "id", "upstream", "rom", "summary", "function", "dispatcher", "familyCounts", "abiFacts", "macroContracts", "macroSourceCounts", "opcodeSourceCounts", "unusedMacros", "handlers", "runtimeQuestions"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-map-script-engine-static-v1" },
     "upstream": { "type": "object" },
     "rom": { "type": "object" },
-    "summary": { "type": "object", "minProperties": 15 },
+    "summary": { "type": "object", "minProperties": 19 },
     "function": { "type": "object", "minProperties": 85, "maxProperties": 85, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "dispatcher": {
       "type": "object", "additionalProperties": false,
@@ -23,6 +23,18 @@
       }
     },
     "familyCounts": { "type": "object", "minProperties": 14 },
+    "abiFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commandWidthCounts", "handlerFlowCounts", "absoluteJumpHandlers", "conditionalAbsoluteJumpHandlers", "inlineActionProgramHandlers", "shorthandOperands"],
+      "properties": {
+        "commandWidthCounts": { "type": "object" },
+        "handlerFlowCounts": { "type": "object" },
+        "absoluteJumpHandlers": { "type": "array", "items": { "type": "string" } },
+        "conditionalAbsoluteJumpHandlers": { "type": "array", "items": { "type": "string" } },
+        "inlineActionProgramHandlers": { "type": "array", "items": { "type": "string" } },
+        "shorthandOperands": { "type": "array", "items": { "type": "object" } }
+      }
+    },
     "macroContracts": { "type": "object", "minProperties": 93, "maxProperties": 93 },
     "macroSourceCounts": { "type": "object", "minProperties": 93, "maxProperties": 93 },
     "opcodeSourceCounts": { "type": "object", "minProperties": 70 },
@@ -31,12 +43,14 @@
       "type": "array", "minItems": 83, "maxItems": 83,
       "items": {
         "type": "object", "additionalProperties": false,
-        "required": ["name", "opcodes", "families", "address", "sourcePath", "startLine", "endLine", "statementCount", "macroNames", "sourceCommandCount", "entityFieldAccesses", "globalStateAccesses", "directCalls", "scriptCursorStatements"],
+        "required": ["name", "opcodes", "families", "address", "sourcePath", "startLine", "endLine", "statementCount", "macroNames", "encodedCommandBytes", "operandBytes", "cursorFlow", "sourceCommandCount", "entityFieldAccesses", "globalStateAccesses", "directCalls", "scriptCursorStatements"],
         "properties": {
           "name": { "type": "string" }, "opcodes": { "type": "array" }, "families": { "type": "array" },
           "address": { "type": "integer" }, "sourcePath": { "type": "string" },
           "startLine": { "type": "integer" }, "endLine": { "type": "integer" },
           "statementCount": { "type": "integer" }, "macroNames": { "type": "array" },
+          "encodedCommandBytes": { "type": "integer" }, "operandBytes": { "type": "integer" },
+          "cursorFlow": { "enum": ["sequential", "absolute-jump", "conditional-absolute-jump", "inline-action-program"] },
           "sourceCommandCount": { "type": "integer" }, "entityFieldAccesses": { "type": "array" },
           "globalStateAccesses": { "type": "array" }, "directCalls": { "type": "array" },
           "scriptCursorStatements": { "type": "array" }
