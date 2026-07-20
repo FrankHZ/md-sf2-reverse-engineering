@@ -512,8 +512,10 @@ read/5 write），并保留脚本参数的 byte/word/long 读取宽度。43 个 
 源码角色家族，同时记录 22 条实体 bit test/set/clear 和 46 条 fixed/relative/absolute 脚本指针
 动作；`FLAGS_A` 的 entity-collision、map-collision、obstruction 位均已关联读写 handler。
 宏参数 ABI 也已闭合 46 个声明参数/86 bytes：40 个运行时宏完整消费，`ac_pass` 跳过其 word，
-`ac_setId`/`ac_setSprite` 只读声明 word 的低字节。下一步静态前沿是确认参数角色/signedness、
-宏外编码 operands 和 wait/continue/yield 状态转换，只把帧时序、碰撞结果和 caller-dependent story
+`ac_setId`/`ac_setSprite` 只读声明 word 的低字节。`ac_branch` 的宏外 word-relative operand
+和三个 handler-only 6-byte layout 也已闭合；后三者在
+2,204 条源码命令中均未出现，因此完整 corpus 实际使用 35/43 handler。下一步静态前沿是确认
+剩余未命名参数的角色/signedness 和 wait/continue/yield 状态转换，只把帧时序、碰撞结果和 caller-dependent story
 reachability 留给集中 BizHawk 矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义

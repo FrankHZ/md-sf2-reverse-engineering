@@ -165,6 +165,12 @@ macros consume every declared byte. Three are intentionally partial at the handl
 `ac_pass` advances over both payload bytes without reading them, while `ac_setId` and `ac_setSprite`
 read only the low byte of their declared word. All four ignored byte positions are preserved in the
 contract instead of being silently retyped as byte parameters.
+`ac_branch` is the sole named macro with an operand encoded outside its macro body: a trailing signed
+word-relative displacement at offset 2. The three handler-only opcodes are absent from all 2,204
+parsed source commands but their handler shapes are closed: opcodes 49/50 are six bytes with a
+handler-read word followed by a relative displacement; opcode 51 has an ignored word followed by the
+same displacement shape. Consequently 35 of 43 handlers occur in the complete source corpus. The
+eight absent handlers are the five unused named-macro handlers plus those three handler-only slots.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -175,9 +181,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch records parameter roles/signedness, including operands encoded outside named
-macro bodies, and turns the pointer-action/exit-route facts into explicit wait/continue/yield
-transition contracts.
+The next static batch records signedness/roles for the remaining unnamed parameter fields and turns
+the pointer-action/exit-route facts into explicit wait/continue/yield transition contracts.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

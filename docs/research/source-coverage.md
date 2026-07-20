@@ -313,8 +313,11 @@ records, and 46 fixed/relative/absolute script-pointer actions. `FLAGS_A` bits 5
 the handlers that test or update entity collision, map collision, and obstruction state. Parameter
 ABI coverage now joins 46 macro-declared parameters/86 bytes to handler reads: 40 runtime macros read
 their full declarations, `ac_pass` ignores its word, and `ac_setId`/`ac_setSprite` consume only the
-low byte of their declared words. Parameter roles/signedness, operands outside macro bodies, and
-explicit wait/continue/yield transitions remain the next static pass. Frame
+low byte of their declared words. `ac_branch` is the only named macro with an external operand (a
+word-relative displacement). All three handler-only six-byte
+layouts are now explicit and absent from the 2,204-command source corpus; overall, 35/43 handlers are
+used and eight are absent. Remaining parameter roles/signedness and explicit wait/continue/yield
+transitions are the next static pass. Frame
 timing, collision outcomes, and normal-story reachability remain runtime questions and should be
 grouped only after that pass finds real ambiguity.
 

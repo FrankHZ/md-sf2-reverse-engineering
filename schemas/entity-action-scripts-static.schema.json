@@ -10,7 +10,8 @@
     "distributedReferenceFacts", "handlerSummary", "handlerFacts", "standaloneRomRanges",
     "corpora", "entryReferences",
     "distributedFiles", "inlinePrograms", "standalonePrograms", "distributedEntryReferences",
-    "handlerDispatchTable", "handlerMacroBindings", "handlerOpcodeBindings", "handlers",
+    "handlerDispatchTable", "handlerMacroBindings", "handlerOpcodeBindings", "handlerOnlyLayouts",
+    "handlers",
     "runtimeQuestions"
   ],
   "properties": {
@@ -102,7 +103,7 @@
       }
     },
     "handlerSummary": {
-      "type": "object", "minProperties": 25, "maxProperties": 25,
+      "type": "object", "minProperties": 29, "maxProperties": 29,
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "handlerFacts": {
@@ -112,7 +113,8 @@
         "inlineTerminatorWord", "unusedRuntimeMacros", "allRuntimeMacrosMapToHandlers",
         "allNonfillerHandlersOwned", "allHandlerAccessesClassified", "allHandlersGrouped",
         "allHandlerFlowActionsClassified", "allDeclaredParameterBytesAccounted",
-        "partiallyConsumedMacros", "handlerFamilyCounts"
+        "partiallyConsumedMacros", "unusedHandlers",
+        "allHandlerOnlyOpcodesAbsentFromSourceCorpus", "handlerFamilyCounts"
       ],
       "properties": {
         "fillerTarget": { "const": "esc_goToNextEntity" },
@@ -140,6 +142,11 @@
           "type": "array", "minItems": 3, "maxItems": 3,
           "items": { "type": "string", "pattern": "^ac_" }
         },
+        "unusedHandlers": {
+          "type": "array", "minItems": 8, "maxItems": 8,
+          "items": { "type": "string", "pattern": "^esc" }
+        },
+        "allHandlerOnlyOpcodesAbsentFromSourceCorpus": { "const": true },
         "handlerFamilyCounts": {
           "type": "object", "minProperties": 8, "maxProperties": 8,
           "additionalProperties": { "type": "integer", "minimum": 1 }
@@ -185,6 +192,10 @@
     "handlerOpcodeBindings": {
       "type": "array", "minItems": 40, "maxItems": 40,
       "items": { "$ref": "#/$defs/handlerOpcodeBinding" }
+    },
+    "handlerOnlyLayouts": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "items": { "$ref": "#/$defs/handlerOnlyLayout" }
     },
     "handlers": {
       "type": "array", "minItems": 43, "maxItems": 43,
@@ -315,7 +326,7 @@
       "type": "object", "additionalProperties": false,
       "required": [
         "macro", "opcode", "encodedBytes", "parameterBytes", "handler",
-        "declaredParameters", "allDeclaredParameterBytesRead", "isInlineTerminator",
+        "declaredParameters", "externalOperands", "allDeclaredParameterBytesRead", "isInlineTerminator",
         "sourceCommandCount"
       ],
       "properties": {
@@ -325,6 +336,9 @@
         "parameterBytes": { "type": "integer", "minimum": 0 },
         "declaredParameters": {
           "type": "array", "items": { "$ref": "#/$defs/declaredParameter" }
+        },
+        "externalOperands": {
+          "type": "array", "items": { "$ref": "#/$defs/operandLayout" }
         },
         "allDeclaredParameterBytesRead": { "type": "boolean" },
         "handler": { "type": ["string", "null"] },
@@ -366,10 +380,34 @@
         }
       }
     },
+    "operandLayout": {
+      "type": "object", "additionalProperties": false,
+      "required": ["offset", "widthBytes", "kind"],
+      "properties": {
+        "offset": { "type": "integer", "minimum": 2 },
+        "widthBytes": { "enum": [1, 2, 4] },
+        "kind": {
+          "enum": ["handler-read", "ignored", "relative-branch", "absolute-jump"]
+        }
+      }
+    },
+    "handlerOnlyLayout": {
+      "type": "object", "additionalProperties": false,
+      "required": ["opcode", "handler", "encodedBytes", "sourceCommandCount", "operands"],
+      "properties": {
+        "opcode": { "type": "integer", "minimum": 0, "maximum": 79 },
+        "handler": { "type": "string", "pattern": "^esc" },
+        "encodedBytes": { "type": "integer", "minimum": 2 },
+        "sourceCommandCount": { "const": 0 },
+        "operands": {
+          "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/operandLayout" }
+        }
+      }
+    },
     "handler": {
       "type": "object", "additionalProperties": false,
       "required": [
-        "name", "opcode", "family", "address", "sourcePath", "startLine", "endLine",
+        "name", "opcode", "family", "sourceCommandCount", "address", "sourcePath", "startLine", "endLine",
         "statementCount",
         "entityFields", "entityFieldAccesses", "globalState", "globalStateAccesses",
         "scriptParameterOffsets", "scriptReads", "bitAccesses", "scriptPointerActions",
@@ -384,6 +422,7 @@
             "motion-state", "movement", "wait"
           ]
         },
+        "sourceCommandCount": { "type": "integer", "minimum": 0 },
         "address": { "type": "integer", "minimum": 0 },
         "sourcePath": { "const": "code/common/scripting/entity/entityscriptengine_2.asm" },
         "startLine": { "type": "integer", "minimum": 1 },

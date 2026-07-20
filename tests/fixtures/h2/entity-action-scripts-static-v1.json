@@ -201,7 +201,11 @@
     "declaredMacroParameterCount": 46,
     "declaredMacroParameterByteCount": 86,
     "ignoredDeclaredParameterByteCount": 4,
-    "fullyConsumedRuntimeMacroCount": 40
+    "fullyConsumedRuntimeMacroCount": 40,
+    "externalMacroOperandCount": 1,
+    "handlerOnlyLayoutCount": 3,
+    "usedHandlerCount": 35,
+    "unusedHandlerCount": 8
   },
   "handlerFacts": {
     "fillerTarget": "esc_goToNextEntity",
@@ -221,6 +225,8 @@
     "allHandlerFlowActionsClassified": true,
     "allDeclaredParameterBytesAccounted": true,
     "partiallyConsumedMacros": ["ac_pass", "ac_setId", "ac_setSprite"],
+    "unusedHandlers": ["esc0F_waitUntilOtherEntityReachesDest", "esc16_setEntityNumber", "esc1D_setEntityGhost", "esc21_set1Cbit4", "esc31_branchIfFlagSet", "esc32_branchIfFlagClear", "esc33_randomBranch", "esc41_pass"],
+    "allHandlerOnlyOpcodesAbsentFromSourceCorpus": true,
     "handlerFamilyCounts": {
       "audio": 1,
       "control-flow": 6,

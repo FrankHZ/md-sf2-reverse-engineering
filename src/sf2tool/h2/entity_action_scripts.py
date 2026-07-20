@@ -999,6 +999,32 @@ def _entity_action_handlers(
                     "ignoredOffsets": sorted(declared - handler_read_bytes),
                 }
             )
+        declared_parameter_bytes = {
+            byte
+            for parameter in contract["parameters"]
+            for byte in range(
+                parameter["offset"], parameter["offset"] + parameter["widthBytes"]
+            )
+        }
+        external_operands = []
+        if handler is not None:
+            for action in handlers_by_name[handler]["scriptPointerActions"]:
+                if action["kind"] == "advance":
+                    continue
+                action_bytes = set(
+                    range(
+                        action["parameterOffset"],
+                        action["parameterOffset"] + action["widthBytes"],
+                    )
+                )
+                if not action_bytes <= declared_parameter_bytes:
+                    external_operands.append(
+                        {
+                            "offset": action["parameterOffset"],
+                            "widthBytes": action["widthBytes"],
+                            "kind": action["kind"],
+                        }
+                    )
         macro_bindings.append(
             {
                 "macro": macro,
@@ -1006,6 +1032,7 @@ def _entity_action_handlers(
                 "encodedBytes": contract["encodedBytes"],
                 "parameterBytes": contract["encodedBytes"] - 2,
                 "declaredParameters": parameter_coverage,
+                "externalOperands": external_operands,
                 "allDeclaredParameterBytesRead": all(
                     not row["ignoredOffsets"] for row in parameter_coverage
                 ),
@@ -1023,11 +1050,67 @@ def _entity_action_handlers(
     handler_only_opcodes = {
         opcode: target for opcode, target in handler_by_opcode.items() if opcode not in opcode_rows
     }
+    handler_only_layouts = []
+    for opcode, target in sorted(handler_only_opcodes.items()):
+        handler_row = handlers_by_name[target]
+        advances = [
+            action["bytes"]
+            for action in handler_row["scriptPointerActions"]
+            if action["kind"] == "advance"
+        ]
+        if len(advances) != 1:
+            raise ValueError(f"handler-only opcode has ambiguous encoded size: {target}")
+        encoded_bytes = advances[0]
+        read_bytes = {
+            byte
+            for read in handler_row["scriptReads"]
+            for byte in range(read["offset"], read["offset"] + read["widthBytes"])
+        }
+        flow_bytes = {
+            byte: action["kind"]
+            for action in handler_row["scriptPointerActions"]
+            if action["kind"] != "advance"
+            for byte in range(
+                action["parameterOffset"],
+                action["parameterOffset"] + action["widthBytes"],
+            )
+        }
+        byte_roles = [
+            flow_bytes.get(offset, "handler-read" if offset in read_bytes else "ignored")
+            for offset in range(2, encoded_bytes)
+        ]
+        operands = []
+        start = 2
+        for index in range(1, len(byte_roles) + 1):
+            if index < len(byte_roles) and byte_roles[index] == byte_roles[index - 1]:
+                continue
+            operands.append(
+                {
+                    "offset": start,
+                    "widthBytes": 2 + index - start,
+                    "kind": byte_roles[index - 1],
+                }
+            )
+            start = 2 + index
+        handler_only_layouts.append(
+            {
+                "opcode": opcode,
+                "handler": target,
+                "encodedBytes": encoded_bytes,
+                "sourceCommandCount": 0,
+                "operands": operands,
+            }
+        )
     mapped_handlers = {row["handler"] for row in opcode_rows.values()} | set(
         handler_only_opcodes.values()
     )
     if mapped_handlers != set(handler_names):
         raise ValueError("entity-action handler coverage drift")
+    source_counts_by_handler = {
+        row["handler"]: row["sourceCommandCount"] for row in opcode_rows.values()
+    }
+    for row in handlers:
+        row["sourceCommandCount"] = source_counts_by_handler.get(row["name"], 0)
     filler_indices = [
         index for index, target in enumerate(dispatch_targets) if target == filler_target
     ]
@@ -1119,6 +1202,12 @@ def _entity_action_handlers(
             not row["isInlineTerminator"] and row["allDeclaredParameterBytesRead"]
             for row in macro_bindings
         ),
+        "externalMacroOperandCount": sum(
+            len(row["externalOperands"]) for row in macro_bindings
+        ),
+        "handlerOnlyLayoutCount": len(handler_only_layouts),
+        "usedHandlerCount": sum(row["sourceCommandCount"] > 0 for row in handlers),
+        "unusedHandlerCount": sum(row["sourceCommandCount"] == 0 for row in handlers),
     }
     return {
         "summary": summary,
@@ -1142,6 +1231,12 @@ def _entity_action_handlers(
             "allHandlerFlowActionsClassified": True,
             "allDeclaredParameterBytesAccounted": True,
             "partiallyConsumedMacros": partially_consumed_macros,
+            "unusedHandlers": [
+                row["name"] for row in handlers if row["sourceCommandCount"] == 0
+            ],
+            "allHandlerOnlyOpcodesAbsentFromSourceCorpus": all(
+                row["sourceCommandCount"] == 0 for row in handler_only_layouts
+            ),
             "handlerFamilyCounts": dict(
                 sorted(Counter(row["family"] for row in handlers).items())
             ),
@@ -1149,6 +1244,7 @@ def _entity_action_handlers(
         "dispatchTable": dispatch_targets,
         "macroBindings": macro_bindings,
         "opcodeBindings": [opcode_rows[opcode] for opcode in sorted(opcode_rows)],
+        "handlerOnlyLayouts": handler_only_layouts,
         "handlers": handlers,
     }
 
@@ -1364,6 +1460,7 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "handlerDispatchTable": handler_contract["dispatchTable"],
         "handlerMacroBindings": handler_contract["macroBindings"],
         "handlerOpcodeBindings": handler_contract["opcodeBindings"],
+        "handlerOnlyLayouts": handler_contract["handlerOnlyLayouts"],
         "handlers": handler_contract["handlers"],
         "runtimeQuestions": [
             "What are the exact frame durations and collision effects of movement/action commands?",

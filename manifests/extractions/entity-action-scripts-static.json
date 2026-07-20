@@ -65,7 +65,11 @@
     "declaredMacroParameterCount": 46,
     "declaredMacroParameterByteCount": 86,
     "ignoredDeclaredParameterByteCount": 4,
-    "fullyConsumedRuntimeMacroCount": 40
+    "fullyConsumedRuntimeMacroCount": 40,
+    "externalMacroOperandCount": 1,
+    "handlerOnlyLayoutCount": 3,
+    "usedHandlerCount": 35,
+    "unusedHandlerCount": 8
   },
-  "outputSha256": "54FC67A1C4BBF63C231C7B1CAD7A1D4761891C8CB7169022CF16A669420F97F3"
+  "outputSha256": "F4C1A3D8660FAD7174D463876EFF85BB1FD4F0847FD04E84B2D1B2E079857F39"
 }
