@@ -1,6 +1,8 @@
 from sf2tool.h2.map_script_engine import (
     _cursor_flow,
     _emission_rows,
+    _logical_source_lines,
+    _program_corpus,
     _substitute_alias_layout,
 )
 
@@ -47,3 +49,32 @@ def test_cursor_flow_distinguishes_jump_and_inline_program_shapes() -> None:
         )
         == "inline-action-program"
     )
+
+
+def test_logical_source_lines_join_ampersand_continuations() -> None:
+    assert _logical_source_lines("  setBlocks 1,2,&\n    3,4,5,6\n") == [
+        (1, "  setBlocks 1,2, 3,4,5,6")
+    ]
+
+
+def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) -> None:
+    (tmp_path / "one.asm").write_text(
+        "entry:\n  csc_end\n\n  csc_end\n", encoding="utf-8"
+    )
+    (tmp_path / "two.asm").write_text("tail:\n  jump entry\n", encoding="utf-8")
+    contracts = {
+        "csc_end": {"kind": "terminator", "opcode": None, "encodedBytes": 2},
+        "jump": {"kind": "command", "opcode": 11, "encodedBytes": 6},
+    }
+
+    actual = _program_corpus(
+        tmp_path,
+        ["one.asm", "two.asm"],
+        contracts,
+        {"entry": 0x100, "tail": 0x200},
+    )
+
+    assert actual["summary"]["programCount"] == 3
+    assert actual["summary"]["anonymousProgramCount"] == 1
+    assert actual["summary"]["absoluteJumpTerminatedProgramCount"] == 1
+    assert actual["transferCounts"] == {"absolute-jump:cross-program": 1}

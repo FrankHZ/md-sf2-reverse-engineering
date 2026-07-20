@@ -80,6 +80,10 @@ over 234 bytes. An importer MUST preserve each field's byte width and stream off
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,
 and inline-action-program cursor outcomes explicitly instead of flattening every command into a
 linear list.
+The original corpus contains 304 such programs and 348 labels. Import validation MUST assign every
+tracked command to one program, preserve the 303 `csc_end` and one absolute-jump termination shapes,
+and resolve all same-program/cross-program script targets. Assembly-subroutine calls stay explicit
+external edges; a modern importer MUST NOT inline or reinterpret them merely from their symbol names.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

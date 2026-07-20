@@ -168,7 +168,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   filler、83 个唯一 handler、82 主宏/8 alias/3 special，以及 169 个源码文件中的 13,515 次调用、
   955 条 handler 语句、16 个实体字段、25 个全局状态与 62 个 direct-call target；ABI 再闭合
   133 个主宏参数/operand field、234 个 operand bytes、2/4/6/8-byte 宽度分布，以及 77 sequential/
-  1 absolute/4 conditional/1 inline 的 cursor-flow 分类。
+  1 absolute/4 conditional/1 inline 的 cursor-flow 分类；完整源码进一步归属为 304 个 program/
+  348 个 label，303 个 `csc_end` 加一个 jump 终止，并解析 42 条同 program、20 条跨 program
+  script jump 和 122 条 68000 subroutine call。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

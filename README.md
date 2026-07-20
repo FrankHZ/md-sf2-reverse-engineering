@@ -59,6 +59,11 @@ slot 包含 82 个有效 opcode 和 8 个 filler，归并为 83 个唯一 handle
 2/4/6/8-byte 命令分别有 17/27/24/14 个，且 `defineShorthand.w` 也计入物理宽度。脚本指针流
 归并为 77 个顺序 handler、1 个绝对跳转、4 个条件绝对跳转和 1 个内嵌 action-program；剧情
 分支可达性、跨 command 等待时序和 palette/VDP presentation 仍进入集中模拟队列。
+完整调用面又进一步唯一归入 304 个 program/348 个 label：303 个由 `csc_end` 终止，唯一的
+`cs_5DE22` 以绝对 jump 终止。62 条脚本跳转全部解析为 42 条同 program 和 20 条跨 program，
+122 条 `executeSubroutine` 全部解析到 68000 symbol；61,020 bytes 是宏自身发出的 map-command
+编码，不混入内嵌 entity-action payload。296 个 program 有 H1 地址，另 8 个 source-only
+边界被显式保留，其中 7 个没有入口标签。动态 story flag 组合仍不从静态 target 图猜测。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
 data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 25 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表、sprite-dialogue 与 Battle 01 数据。完整口径、空白子系统和
@@ -546,7 +551,8 @@ map-script engine 同样已按静态优先闭合 90-slot jump table、82 个非 
 handler、93 个宏合同和全源码 13,515 次命令调用；其三项剩余运行时问题按 story branch、跨
 entity/camera/text/transition 的 frame timing、palette/VDP presentation 分组。其 133 个主宏参数
 field/234 operand bytes、四档命令宽度和 77 sequential/1 absolute/4 conditional/1 inline 的
-cursor-flow 分类也已静态闭合，不为单一 opcode 另起模拟器 fixture。
+cursor-flow 分类也已静态闭合。完整 corpus 的 304 program/348 label/184 transfer 同样已解析，
+所有 62 条 script jump 与 122 条 subroutine call 均有目标，不为单一 opcode 另起模拟器 fixture。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

@@ -63,6 +63,24 @@ inline action-program pointer then scans through its `$8080` terminator. This cl
 encoded cursor transfer; synchronous sleeps, camera waits, dialogue, and visible effects inside a
 handler remain separate timing behavior.
 
+The complete source corpus is now owned at program level. All 13,515 tracked invocations in 169 files
+belong to exactly one of 304 programs and 348 program labels. Three hundred three programs terminate
+with `csc_end`; `cs_5DE22` is the sole physical tail that terminates by jumping to another program.
+Program sizes range from two through 797 tracked commands. Their macros emit 61,020 map-command bytes;
+that byte total deliberately excludes entity-action payloads embedded after `customActscript` or
+`entityActions` headers because those payloads have their own H2 owner.
+
+Every encoded control target resolves. The eleven unconditional jumps divide into seven same-program
+and four cross-program edges; the 51 conditional jumps divide into 35 same-program and sixteen
+cross-program edges. All 122 `executeSubroutine` targets resolve to 68000 symbols outside the map-
+script program graph. Thus the corpus has 184 explicit transfers with no unowned script target.
+This proves graph topology, not which flag-dependent route is reachable in a particular save state.
+
+Two hundred ninety-six programs have H1 entry addresses. Eight remain source-only: the labeled but
+unassembled `rbcs_battle01`, one unlabeled unused suspend scene in map 72, and six unlabeled debug
+fragments. Seven programs therefore have no entry label. These exceptions remain first-class rows
+rather than borrowing an adjacent address or disappearing from the denominator.
+
 The 83 handlers contain 955 parsed instructions and group into fourteen source-role families. Their
 source-shaped access catalog contains 16 entity fields, 25 global-state symbols, and 62 direct-call
 targets, while preserving every script-cursor statement. These facts define opcode topology and

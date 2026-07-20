@@ -351,7 +351,7 @@ def _handler_rows(
 
 def _source_usage(
     disasm: Path, macro_contracts: dict[str, dict[str, Any]]
-) -> tuple[Counter[str], dict[str, int], int]:
+) -> tuple[Counter[str], dict[str, int], list[str]]:
     counts: Counter[str] = Counter()
     paths: set[str] = set()
     pattern = re.compile(
@@ -379,8 +379,264 @@ def _source_usage(
     return (
         counts,
         {str(key): value for key, value in sorted(opcode_counts.items())},
-        len(paths),
+        sorted(paths),
     )
+
+
+def _logical_source_lines(source: str) -> list[tuple[int, str]]:
+    rows: list[tuple[int, str]] = []
+    pending = ""
+    start_line = 0
+    for line_number, raw_line in enumerate(source.splitlines(), start=1):
+        code = raw_line.split(";", 1)[0].rstrip()
+        if not code.strip():
+            continue
+        if pending:
+            code = f"{pending} {code.strip()}"
+        else:
+            start_line = line_number
+        if code.rstrip().endswith("&"):
+            pending = code.rstrip()[:-1].rstrip()
+            continue
+        rows.append((start_line, code))
+        pending = ""
+    if pending:
+        raise ValueError("unterminated map-script source continuation")
+    return rows
+
+
+def _invocation(
+    statement: str, macro_contracts: dict[str, dict[str, Any]]
+) -> tuple[str, list[str]] | None:
+    match = re.match(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\b(.*)$", statement)
+    if not match or match.group(1) not in macro_contracts:
+        return None
+    argument_text = match.group(2).strip()
+    arguments = (
+        [argument.strip() for argument in argument_text.split(",")]
+        if argument_text
+        else []
+    )
+    return match.group(1), arguments
+
+
+def _target_symbol(expression: str, known_symbols: set[str]) -> str:
+    candidates = re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", expression)
+    matches = [candidate for candidate in candidates if candidate in known_symbols]
+    if len(matches) != 1:
+        raise ValueError(f"map-script target expression is ambiguous: {expression}")
+    return matches[0]
+
+
+def _program_corpus(
+    disasm: Path,
+    source_paths: list[str],
+    macro_contracts: dict[str, dict[str, Any]],
+    addresses: dict[str, int],
+) -> dict[str, Any]:
+    target_ordinals = {
+        "executeSubroutine": (0, "subroutine-call"),
+        "jump": (0, "absolute-jump"),
+        "jumpIfFlagSet": (1, "conditional-absolute-jump"),
+        "jumpIfFlagClear": (1, "conditional-absolute-jump"),
+        "jumpIfDefeatedByLastAttack": (1, "conditional-absolute-jump"),
+        "jumpIfDead": (1, "conditional-absolute-jump"),
+    }
+    source_symbols = {
+        match.group(1)
+        for source_path in source_paths
+        for _, line in _logical_source_lines(read_upstream_text(disasm / source_path))
+        if line and not line[0].isspace()
+        for match in [re.match(r"^([A-Za-z_][A-Za-z0-9_]*):", line)]
+        if match
+    }
+    known_symbols = set(addresses) | source_symbols
+    programs: list[dict[str, Any]] = []
+    for source_path in source_paths:
+        source = read_upstream_text(disasm / source_path)
+        pending_labels: list[str] = []
+        active: dict[str, Any] | None = None
+        for line_number, logical_line in _logical_source_lines(source):
+            statement = logical_line
+            label_match = (
+                re.match(r"^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$", logical_line)
+                if logical_line and not logical_line[0].isspace()
+                else None
+            )
+            if label_match:
+                label, statement = label_match.groups()
+                if active is None:
+                    pending_labels.append(label)
+                else:
+                    active["labels"].append(label)
+                if not statement:
+                    continue
+            invocation = _invocation(statement, macro_contracts)
+            if invocation is None:
+                if active is None:
+                    pending_labels = []
+                continue
+            macro, arguments = invocation
+            contract = macro_contracts[macro]
+            if active is None:
+                entry_label = pending_labels[0] if pending_labels else None
+                entry = (
+                    entry_label if entry_label else f"{source_path}#L{line_number}"
+                )
+                active = {
+                    "id": entry,
+                    "entryLabel": entry_label,
+                    "address": addresses.get(entry),
+                    "sourcePath": source_path,
+                    "startLine": line_number,
+                    "endLine": None,
+                    "termination": None,
+                    "labels": list(pending_labels),
+                    "commands": [],
+                }
+                pending_labels = []
+            command: dict[str, Any] = {
+                "index": len(active["commands"]),
+                "sourceLine": line_number,
+                "macro": macro,
+                "kind": contract["kind"],
+                "opcode": contract["opcode"],
+                "encodedBytes": contract["encodedBytes"],
+                "arguments": arguments,
+            }
+            if macro in target_ordinals:
+                ordinal, transfer_kind = target_ordinals[macro]
+                if ordinal >= len(arguments):
+                    raise ValueError(
+                        f"map-script target argument is missing: {source_path}:{line_number}"
+                    )
+                target = _target_symbol(arguments[ordinal], known_symbols)
+                command["transferKind"] = transfer_kind
+                command["targetSymbol"] = target
+                command["targetAddress"] = addresses.get(target)
+            active["commands"].append(command)
+            if macro == "csc_end":
+                active["endLine"] = line_number
+                active["termination"] = "csc-end"
+                programs.append(active)
+                active = None
+                pending_labels = []
+        if active is not None:
+            if active["commands"][-1]["macro"] != "jump":
+                raise ValueError(f"unterminated map-script program: {active['id']}")
+            active["endLine"] = active["commands"][-1]["sourceLine"]
+            active["termination"] = "absolute-jump"
+            programs.append(active)
+
+    if len({program["id"] for program in programs}) != len(programs):
+        raise ValueError("duplicate map-script program entry label")
+    label_owners: dict[str, str] = {}
+    for program in programs:
+        for label in program["labels"]:
+            if label in label_owners:
+                raise ValueError(f"duplicate map-script program label: {label}")
+            label_owners[label] = program["id"]
+
+    transfer_counts: Counter[str] = Counter()
+    transfers = []
+    for program in programs:
+        for command in program["commands"]:
+            if "transferKind" not in command:
+                continue
+            target_program = label_owners.get(command["targetSymbol"])
+            relation = (
+                "assembly-subroutine"
+                if command["transferKind"] == "subroutine-call"
+                and target_program is None
+                else "same-program"
+                if target_program == program["id"]
+                else "cross-program"
+                if target_program is not None
+                else "unowned-script-target"
+            )
+            if relation == "unowned-script-target":
+                raise ValueError(
+                    f"map-script branch target has no program owner: {command['targetSymbol']}"
+                )
+            transfer_counts[f"{command['transferKind']}:{relation}"] += 1
+            transfers.append(
+                {
+                    "sourceProgram": program["id"],
+                    "commandIndex": command["index"],
+                    "kind": command["transferKind"],
+                    "targetSymbol": command["targetSymbol"],
+                    "targetAddress": command["targetAddress"],
+                    "targetProgram": target_program,
+                    "relation": relation,
+                }
+            )
+
+    command_count = sum(len(program["commands"]) for program in programs)
+    source_only_programs = [
+        {
+            "id": program["id"],
+            "sourcePath": program["sourcePath"],
+            "termination": program["termination"],
+        }
+        for program in programs
+        if program["address"] is None
+    ]
+    return {
+        "summary": {
+            "sourceFileCount": len(source_paths),
+            "programCount": len(programs),
+            "anonymousProgramCount": sum(
+                program["entryLabel"] is None for program in programs
+            ),
+            "h1AddressedProgramCount": sum(
+                program["address"] is not None for program in programs
+            ),
+            "sourceOnlyProgramCount": sum(
+                program["address"] is None for program in programs
+            ),
+            "programLabelCount": len(label_owners),
+            "cscEndTerminatedProgramCount": sum(
+                program["termination"] == "csc-end" for program in programs
+            ),
+            "absoluteJumpTerminatedProgramCount": sum(
+                program["termination"] == "absolute-jump" for program in programs
+            ),
+            "commandCount": command_count,
+            "encodedCommandByteCount": sum(
+                command["encodedBytes"]
+                for program in programs
+                for command in program["commands"]
+            ),
+            "transferCount": len(transfers),
+            "sameProgramTransferCount": sum(
+                transfer["relation"] == "same-program" for transfer in transfers
+            ),
+            "crossProgramTransferCount": sum(
+                transfer["relation"] == "cross-program" for transfer in transfers
+            ),
+            "assemblySubroutineCallCount": sum(
+                transfer["relation"] == "assembly-subroutine" for transfer in transfers
+            ),
+            "minimumCommandsPerProgram": min(
+                len(program["commands"]) for program in programs
+            ),
+            "maximumCommandsPerProgram": max(
+                len(program["commands"]) for program in programs
+            ),
+        },
+        "transferCounts": dict(sorted(transfer_counts.items())),
+        "sourceOnlyPrograms": source_only_programs,
+        "largestPrograms": [
+            {"id": program["id"], "commandCount": len(program["commands"])}
+            for program in sorted(
+                programs,
+                key=lambda row: (-len(row["commands"]), row["id"]),
+            )[:10]
+        ],
+        "labelOwners": dict(sorted(label_owners.items())),
+        "transfers": transfers,
+        "programs": programs,
+    }
 
 
 def build_map_script_engine_contract(
@@ -395,7 +651,10 @@ def build_map_script_engine_contract(
     addresses = listing_symbol_addresses(listing_path.read_text(encoding="utf-8"))
     rom = rom_path.read_bytes()
     macros = _map_macro_contracts(disasm)
-    source_counts, opcode_counts, source_file_count = _source_usage(disasm, macros)
+    source_counts, opcode_counts, source_paths = _source_usage(disasm, macros)
+    program_corpus = _program_corpus(disasm, source_paths, macros, addresses)
+    if program_corpus["summary"]["commandCount"] != sum(source_counts.values()):
+        raise ValueError("map-script program ownership does not cover every source command")
     dispatch_source = read_upstream_text(disasm / DISPATCH_SOURCE)
     targets = _dispatch_targets(dispatch_source)
     handlers = _handler_rows(disasm, addresses, targets, source_counts, macros)
@@ -435,7 +694,7 @@ def build_map_script_engine_contract(
         "usedMacroCount": sum(source_counts[name] > 0 for name in macros),
         "unusedMacroCount": sum(source_counts[name] == 0 for name in macros),
         "sourceCommandCount": sum(source_counts.values()),
-        "sourceFileCount": source_file_count,
+        "sourceFileCount": len(source_paths),
         "handlerStatementCount": sum(row["statementCount"] for row in handlers),
         "handlerEntityFieldCount": len(
             {
@@ -462,6 +721,12 @@ def build_map_script_engine_contract(
         ),
         "primaryOperandByteCount": sum(row["operandBytes"] for row in primary.values()),
         "sequentialHandlerCount": handler_flow_counts["sequential"],
+        "programCount": program_corpus["summary"]["programCount"],
+        "programLabelCount": program_corpus["summary"]["programLabelCount"],
+        "programTransferCount": program_corpus["summary"]["transferCount"],
+        "encodedCommandByteCount": program_corpus["summary"][
+            "encodedCommandByteCount"
+        ],
     }
     return {
         "schemaVersion": 1,
@@ -519,6 +784,7 @@ def build_map_script_engine_contract(
         "opcodeSourceCounts": opcode_counts,
         "unusedMacros": sorted(name for name in macros if source_counts[name] == 0),
         "handlers": handlers,
+        "programCorpus": program_corpus,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -546,11 +812,20 @@ def verify_map_script_engine_contract(
         "dispatcherFacts",
         "familyCounts",
         "abiFacts",
+        "programSummary",
+        "transferCounts",
+        "sourceOnlyPrograms",
+        "largestPrograms",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
     ):
         actual = (
+            output["programCorpus"]["summary"]
+            if field == "programSummary"
+            else output["programCorpus"][field]
+            if field in {"transferCounts", "sourceOnlyPrograms", "largestPrograms"}
+            else
             {
                 "sha256": output["dispatcher"]["sha256"],
                 "fillerTarget": output["dispatcher"]["fillerTarget"],

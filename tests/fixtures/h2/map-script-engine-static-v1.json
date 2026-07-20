@@ -24,7 +24,11 @@
       "primaryLogicalParameterCount": 133,
       "primaryOperandFieldCount": 133,
       "primaryOperandByteCount": 234,
-      "sequentialHandlerCount": 77
+      "sequentialHandlerCount": 77,
+      "programCount": 304,
+      "programLabelCount": 348,
+      "programTransferCount": 184,
+      "encodedCommandByteCount": 61020
     },
     "dispatcherFacts": {
       "sha256": "B128F068249EABC9443A0363BAFAEC1D9B4E06D6BE21B32867C265C7CC405CDE",
@@ -41,6 +45,53 @@
       "inlineActionProgramHandlers": ["csc14_setEntityActscriptManual"],
       "shorthandOperands": [{ "macro":"animEntityFX", "streamOffset":4, "widthBytes":2, "encoding":"shorthand:ENTITY_TRANSITION_" }]
     },
+    "programSummary": {
+      "sourceFileCount": 169,
+      "programCount": 304,
+      "anonymousProgramCount": 7,
+      "h1AddressedProgramCount": 296,
+      "sourceOnlyProgramCount": 8,
+      "programLabelCount": 348,
+      "cscEndTerminatedProgramCount": 303,
+      "absoluteJumpTerminatedProgramCount": 1,
+      "commandCount": 13515,
+      "encodedCommandByteCount": 61020,
+      "transferCount": 184,
+      "sameProgramTransferCount": 42,
+      "crossProgramTransferCount": 20,
+      "assemblySubroutineCallCount": 122,
+      "minimumCommandsPerProgram": 2,
+      "maximumCommandsPerProgram": 797
+    },
+    "transferCounts": {
+      "absolute-jump:cross-program": 4,
+      "absolute-jump:same-program": 7,
+      "conditional-absolute-jump:cross-program": 16,
+      "conditional-absolute-jump:same-program": 35,
+      "subroutine-call:assembly-subroutine": 122
+    },
+    "sourceOnlyPrograms": [
+      { "id":"rbcs_battle01", "sourcePath":"data/battles/entries/battle01/cs_regiontriggered_1.asm", "termination":"csc-end" },
+      { "id":"data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23", "sourcePath":"data/maps/entries/map72/mapsetups/s6_initfunction.asm", "termination":"csc-end" },
+      { "id":"data/scripting/map/debugscripts.asm#L11", "sourcePath":"data/scripting/map/debugscripts.asm", "termination":"csc-end" },
+      { "id":"data/scripting/map/debugscripts.asm#L16", "sourcePath":"data/scripting/map/debugscripts.asm", "termination":"csc-end" },
+      { "id":"data/scripting/map/debugscripts.asm#L24", "sourcePath":"data/scripting/map/debugscripts.asm", "termination":"csc-end" },
+      { "id":"data/scripting/map/debugscripts.asm#L26", "sourcePath":"data/scripting/map/debugscripts.asm", "termination":"csc-end" },
+      { "id":"data/scripting/map/debugscripts.asm#L76", "sourcePath":"data/scripting/map/debugscripts.asm", "termination":"csc-end" },
+      { "id":"data/scripting/map/debugscripts.asm#L86", "sourcePath":"data/scripting/map/debugscripts.asm", "termination":"csc-end" }
+    ],
+    "largestPrograms": [
+      { "id":"cs_615E6", "commandCount":797 },
+      { "id":"cs_5B6C0", "commandCount":409 },
+      { "id":"abcs_battle07", "commandCount":397 },
+      { "id":"IntroCutscene4", "commandCount":245 },
+      { "id":"cs_62D0E", "commandCount":245 },
+      { "id":"IntroCutscene3", "commandCount":225 },
+      { "id":"abcs_battle42", "commandCount":214 },
+      { "id":"abcs_battle18", "commandCount":212 },
+      { "id":"cs_5B016", "commandCount":212 },
+      { "id":"abcs_battle38", "commandCount":199 }
+    ],
     "mostUsedMacros": [
       { "macro":"nextSingleText", "count":2058 },
       { "macro":"csWait", "count":1591 },

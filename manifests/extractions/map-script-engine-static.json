@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "sf2-map-script-engine-static-v1",
   "outputPath": "local/derived/map-script-engine-static.json",
-  "outputSha256": "F783DD1098253B652AF153E6CAD2FD2F884AF83BF15EA89F41290DE336079924",
+  "outputSha256": "DB45BF624CE475EE9D8895C531D9CE2EFEA3540789FED2DBB46DB9C2ABD8699A",
   "summary": {
     "dispatcherSlotCount": 90,
     "uniqueHandlerCount": 83,
@@ -22,6 +22,10 @@
     "primaryLogicalParameterCount": 133,
     "primaryOperandFieldCount": 133,
     "primaryOperandByteCount": 234,
-    "sequentialHandlerCount": 77
+    "sequentialHandlerCount": 77,
+    "programCount": 304,
+    "programLabelCount": 348,
+    "programTransferCount": 184,
+    "encodedCommandByteCount": 61020
   }
 }
