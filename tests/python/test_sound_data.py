@@ -2,6 +2,7 @@ from sf2tool.h2.sound_data import (
     _fixed_opcode_families,
     _music_bank_selection_contract,
     _music_frequency_contract,
+    _music_instrument_contract,
     _music_sample_contract,
     _parse_music_macros,
     _song_command_row,
@@ -172,3 +173,25 @@ def test_music_sample_contract_maps_table_and_song_uses() -> None:
         {"sampleIndex": 1, "invocationCount": 1},
     ]
     assert contract["entries"][0]["romOffset"] == 0x1E0000
+
+
+def test_music_instrument_contract_splits_psg_nibbles() -> None:
+    driver_source = (
+        "t_YM_LEVELS: db 0\n"
+        + "db 0\n" * 15
+        + "t_SLOTS_PER_ALGO: db 8\n"
+        + "db 8\n" * 7
+        + "pt_PITCH_EFFECTS: dw 0\n"
+        + "pt_PSG_INSTRUMENTS: dw byte_12D2\n"
+        + "dw byte_12D2\n" * 15
+        + "byte_12D2: db 80h\n"
+    )
+    sources = {"data/sound/musicbank0/music01.asm": "inst 0\nvol 0\npsgInst 0A5h\n"}
+
+    contract = _music_instrument_contract(sources, driver_source, bytes(0x200000))
+
+    assert contract["summary"]["ymInvocationCount"] == 1
+    assert contract["psg"]["instrumentInvocationCounts"] == [
+        {"instrumentIndex": 10, "invocationCount": 1}
+    ]
+    assert contract["psg"]["levelInvocationCounts"] == [{"level": 5, "invocationCount": 1}]

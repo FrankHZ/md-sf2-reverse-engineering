@@ -779,6 +779,111 @@ def _psg_note_shift_audit(
     }
 
 
+def _db_table_values(driver_source: str, start_label: str, end_label: str) -> list[int]:
+    section = driver_source.split(start_label, 1)[1].split(end_label, 1)[0]
+    return [
+        _parse_asm_int(value)
+        for value in re.findall(r"\bdb\s+([0-9A-F]+h|\d+)", section, re.IGNORECASE)
+    ]
+
+
+def _music_instrument_contract(
+    sources: dict[str, str], driver_source: str, rom: bytes
+) -> dict[str, Any]:
+    ym_uses: Counter[int] = Counter()
+    psg_values: Counter[int] = Counter()
+    volume_uses: Counter[int] = Counter()
+    for source_path, source in sources.items():
+        if not re.search(r"/music\d+\.asm$", source_path):
+            continue
+        for raw_line in source.splitlines():
+            line = raw_line.split(";", 1)[0]
+            match = re.match(r"^\s*(inst|psgInst|vol)\s+([^,\s]+)", line)
+            if match is None:
+                continue
+            macro, argument = match.groups()
+            value = _parse_asm_int(argument)
+            if macro == "inst":
+                ym_uses[value] += 1
+            elif macro == "psgInst":
+                psg_values[value] += 1
+            else:
+                volume_uses[value] += 1
+
+    ym_levels = _db_table_values(driver_source, "t_YM_LEVELS:", "t_SLOTS_PER_ALGO:")
+    slot_masks = _db_table_values(driver_source, "t_SLOTS_PER_ALGO:", "pt_PITCH_EFFECTS:")
+    if len(ym_levels) != 16 or len(slot_masks) != 8:
+        raise ValueError("YM instrument support-table boundary drift")
+    if max(volume_uses) >= len(ym_levels):
+        raise ValueError("YM volume use outside level table")
+
+    ym_entry_size = 0x29
+    ym_rom_base = 0x1EB000
+    ym_entries = []
+    for index, count in sorted(ym_uses.items()):
+        rom_offset = ym_rom_base + index * ym_entry_size
+        payload = rom[rom_offset : rom_offset + ym_entry_size]
+        if len(payload) != ym_entry_size or rom_offset + ym_entry_size > 0x1F0000:
+            raise ValueError("YM instrument ROM range drift")
+        ym_entries.append(
+            {
+                "instrumentIndex": index,
+                "invocationCount": count,
+                "romOffset": rom_offset,
+                "sizeBytes": ym_entry_size,
+                "payloadSha256": _sha256(payload),
+            }
+        )
+
+    psg_pointer_section = driver_source.split("pt_PSG_INSTRUMENTS:", 1)[1].split("byte_12D2:", 1)[0]
+    psg_targets = re.findall(r"\bdw\s+(byte_[0-9A-F]+)", psg_pointer_section)
+    if len(psg_targets) != 16:
+        raise ValueError("PSG instrument pointer-table boundary drift")
+    psg_instrument_uses = Counter()
+    psg_level_uses = Counter()
+    for value, count in psg_values.items():
+        psg_instrument_uses[value >> 4] += count
+        psg_level_uses[value & 0x0F] += count
+    if max(psg_instrument_uses) >= len(psg_targets):
+        raise ValueError("PSG instrument use outside pointer table")
+
+    return {
+        "summary": {
+            "ymInvocationCount": sum(ym_uses.values()),
+            "ymUsedInstrumentCount": len(ym_uses),
+            "ymMinimumInstrumentIndex": min(ym_uses),
+            "ymMaximumInstrumentIndex": max(ym_uses),
+            "psgInvocationCount": sum(psg_values.values()),
+            "psgUsedInstrumentCount": len(psg_instrument_uses),
+            "psgUsedLevelCount": len(psg_level_uses),
+            "volumeInvocationCount": sum(volume_uses.values()),
+            "volumeUsedLevelCount": len(volume_uses),
+        },
+        "ym": {
+            "instrumentRomBase": ym_rom_base,
+            "instrumentSizeBytes": ym_entry_size,
+            "levelTable": ym_levels,
+            "slotMasksByAlgorithm": slot_masks,
+            "usedEntries": ym_entries,
+            "volumeInvocationCounts": [
+                {"level": value, "invocationCount": count}
+                for value, count in sorted(volume_uses.items())
+            ],
+        },
+        "psg": {
+            "pointerTargets": psg_targets,
+            "instrumentInvocationCounts": [
+                {"instrumentIndex": value, "invocationCount": count}
+                for value, count in sorted(psg_instrument_uses.items())
+            ],
+            "levelInvocationCounts": [
+                {"level": value, "invocationCount": count}
+                for value, count in sorted(psg_level_uses.items())
+            ],
+        },
+    }
+
+
 def _music_sample_contract(
     sources: dict[str, str], driver_source: str, rom: bytes
 ) -> dict[str, Any]:
@@ -1095,6 +1200,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
         sources, bank_payloads, enum_source
     )
     command_model["frequencyModel"] = _music_frequency_contract(sources, driver_source)
+    command_model["instrumentModel"] = _music_instrument_contract(sources, driver_source, rom)
     command_model["sampleModel"] = _music_sample_contract(sources, driver_source, rom)
     summary = {
         "fileCount": len(files),
@@ -1225,6 +1331,15 @@ def verify_sound_data_inventory(
     for field in ("summary", "musicInvocationCounts"):
         if sample_model[field] != expected_samples[field]:
             raise ValueError(f"sound data sample-model {field} drift")
+    instrument_model = output["commandModel"]["instrumentModel"]
+    expected_instruments = fixture["expected"]["commandModel"]["instrumentModel"]
+    if instrument_model["summary"] != expected_instruments["summary"]:
+        raise ValueError("sound data instrument-model summary drift")
+    for field in ("levelTable", "slotMasksByAlgorithm", "volumeInvocationCounts"):
+        if instrument_model["ym"][field] != expected_instruments["ym"][field]:
+            raise ValueError(f"sound data YM instrument {field} drift")
+    if instrument_model["psg"] != expected_instruments["psg"]:
+        raise ValueError("sound data PSG instrument model drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

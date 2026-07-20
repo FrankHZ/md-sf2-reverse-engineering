@@ -64,7 +64,7 @@
     },
     "commandModel": {
       "type": "object", "additionalProperties": false,
-      "required": ["summary", "macroDefinitions", "invocationCounts", "unusedMacros", "channelRoles", "musicHeaders", "frequencyModel", "sampleModel", "songs", "driver", "bankSelection"],
+      "required": ["summary", "macroDefinitions", "invocationCounts", "unusedMacros", "channelRoles", "musicHeaders", "frequencyModel", "instrumentModel", "sampleModel", "songs", "driver", "bankSelection"],
       "properties": {
         "summary": { "type": "object" },
         "macroDefinitions": { "type": "array", "minItems": 1, "uniqueItems": true },
@@ -119,6 +119,15 @@
             "summary": { "type": "object" },
             "musicInvocationCounts": { "type": "array", "minItems": 6, "maxItems": 6 },
             "entries": { "type": "array", "minItems": 17, "maxItems": 17 }
+          }
+        },
+        "instrumentModel": {
+          "type": "object", "additionalProperties": false,
+          "required": ["summary", "ym", "psg"],
+          "properties": {
+            "summary": { "type": "object" },
+            "ym": { "type": "object" },
+            "psg": { "type": "object" }
           }
         },
         "songs": { "type": "array", "minItems": 37, "maxItems": 37 },

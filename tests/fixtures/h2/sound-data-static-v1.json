@@ -199,6 +199,51 @@
           {"sampleIndex":5,"invocationCount":104}
         ]
       },
+      "instrumentModel": {
+        "summary": {
+          "ymInvocationCount":922, "ymUsedInstrumentCount":51,
+          "ymMinimumInstrumentIndex":0, "ymMaximumInstrumentIndex":63,
+          "psgInvocationCount":908, "psgUsedInstrumentCount":7,
+          "psgUsedLevelCount":15, "volumeInvocationCount":6546,
+          "volumeUsedLevelCount":15
+        },
+        "ym": {
+          "levelTable":[112,96,80,64,56,48,42,38,32,28,24,20,16,11,8,4],
+          "slotMasksByAlgorithm":[8,8,8,8,12,14,14,15],
+          "volumeInvocationCounts": [
+            {"level":0,"invocationCount":9}, {"level":1,"invocationCount":24},
+            {"level":2,"invocationCount":35}, {"level":3,"invocationCount":149},
+            {"level":4,"invocationCount":195}, {"level":5,"invocationCount":312},
+            {"level":6,"invocationCount":502}, {"level":7,"invocationCount":723},
+            {"level":8,"invocationCount":904}, {"level":9,"invocationCount":789},
+            {"level":10,"invocationCount":655}, {"level":11,"invocationCount":1140},
+            {"level":12,"invocationCount":818}, {"level":13,"invocationCount":200},
+            {"level":14,"invocationCount":91}
+          ]
+        },
+        "psg": {
+          "pointerTargets":["byte_12D2","byte_12D4","byte_12E6","byte_12F4","byte_130B","byte_1312","byte_131D","byte_1325","byte_132A","byte_1338","byte_133E","byte_1349","byte_134B","byte_134F","byte_1355","byte_135D"],
+          "instrumentInvocationCounts": [
+            {"instrumentIndex":0,"invocationCount":447},
+            {"instrumentIndex":1,"invocationCount":8},
+            {"instrumentIndex":2,"invocationCount":2},
+            {"instrumentIndex":3,"invocationCount":2},
+            {"instrumentIndex":7,"invocationCount":401},
+            {"instrumentIndex":10,"invocationCount":22},
+            {"instrumentIndex":15,"invocationCount":26}
+          ],
+          "levelInvocationCounts": [
+            {"level":0,"invocationCount":180}, {"level":1,"invocationCount":2},
+            {"level":2,"invocationCount":4}, {"level":3,"invocationCount":1},
+            {"level":4,"invocationCount":10}, {"level":5,"invocationCount":12},
+            {"level":6,"invocationCount":40}, {"level":7,"invocationCount":38},
+            {"level":8,"invocationCount":40}, {"level":9,"invocationCount":99},
+            {"level":10,"invocationCount":99}, {"level":11,"invocationCount":159},
+            {"level":12,"invocationCount":137}, {"level":13,"invocationCount":85},
+            {"level":14,"invocationCount":2}
+          ]
+        }
+      },
       "bankSelection": {
         "enumSourcePath":"sf2enums.asm",
         "enumSourceSha256":"ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",

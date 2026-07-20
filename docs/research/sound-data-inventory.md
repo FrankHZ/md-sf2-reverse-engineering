@@ -97,6 +97,20 @@ and 104. The remaining eleven rows are outside the music corpus and may serve SF
 Index bounds and ROM ranges are confirmed statically; translating the frame-period byte into audible
 sample rate remains part of the shared timing observation.
 
+## Instrument and Level Domains
+
+The 922 YM `inst` calls use 51 indices from 0 through 63. `YM1_LoadInstrument` and
+`YM2_LoadInstrument` select ROM bank `0x1E8000`, address fixed-size 41-byte definitions from Z80
+window address `0xB000`, and return to the music bank afterward. The inventory binds every used
+definition to its physical ROM range and hash without exporting instrument bytes.
+
+The YM level table has 16 values (`0x70` down to `0x04`) and the eight algorithm slot masks are
+`08,08,08,08,0C,0E,0E,0F`. All 6,546 `vol` calls use levels 0–14. PSG's 16-pointer instrument table
+is source-bound; its 908 packed `psgInst` arguments split into a high-nibble instrument and low-nibble
+level. The corpus uses seven instrument indices (0, 1, 2, 3, 7, 10, 15) and levels 0–14, with no
+table or nibble overflow. Audible envelopes and update timing remain runtime behavior rather than a
+claim derived from index validity.
+
 ## Static Command Corpus
 
 `musicmacros.asm` defines 29 byte-emitting macros; every definition occurs in the song corpus and ten

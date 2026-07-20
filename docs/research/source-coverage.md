@@ -37,7 +37,8 @@ loop state machine, with all 390 channel slots and zero incompatible macro/role 
 all 39 four-byte music headers and the complete 64-slot/two-bank command-selection map with no
 cross-bank fallback, and the 84-entry YM/64-entry PSG frequency tables bound to 21,841 note calls,
 including a 218-command shift/loop CFG audit with zero invalid effective indices, plus the 17-entry
-DAC load table bound to 1,559 music sample calls, plus 281 fixed
+DAC load table bound to 1,559 music sample calls and the complete 8,376-call instrument/level domain,
+plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,
