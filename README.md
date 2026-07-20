@@ -17,14 +17,15 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,467 条 confirmed finding、67 个 H2 fixture、58 个 H3 fixture
-和 2,007 个地址绑定。
+截至 2026-07-19，研究索引有 1,468 条 confirmed finding、68 个 H2 fixture、58 个 H3 fixture
+和 2,016 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
 `data/battles/global` 的 18 个文件已全部盘点，其中 17 个原版布局文件拥有 H1 地址绑定，唯一
 例外是未编入构建的旧版零表；`data/stats/allies` 的 42 个直接/传递 include 文件也已全部绑定。
-items/spells/enemies 的 19 个布局文件也已完整盘点并复用既有深层 rail；battle cutscene 数据
+items/spells/enemies 的 19 个布局文件也已完整盘点；其中 8 个物品辅助表进一步形成 9 段
+source/H1/ROM parity 与完整 canonical catalog。battle cutscene 数据
 则完成 61/61 H2 inventory 和 59 个真实 H1 绑定；45 个 battle spriteset 与其指针容器也已
 达到 46/46 真实 H1 绑定；battle cutscene 路由与 terrain 容器再新增 7 个真实绑定和 1 个明确
 alternate。完整 `data/maps` 树的 1,390 个 ASM 已全部进入 H2 构建图盘点，其中 727 个文件拥有
@@ -40,8 +41,8 @@ description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stu
 597 条物理 statement 和 80 次 script 调用；最后 47 个 standalone setup script 也闭合为 178 个
 全局标签、8,058 条语句和 146 次跨文件引用。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
-data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 14 个 ROM
-table range 另覆盖核心角色/职业/物品/法术/敌人/成长与 Battle 01 数据。完整口径、空白子系统和
+data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 23 个 ROM
+table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
 ## 我们要交付什么
@@ -227,13 +228,18 @@ fixture 覆盖和对现代重制的合同影响。
 - 定义 schema、canonical serializer 和确定性测试；
 - 建立模拟器选择决策与首批行为场景。
 
-当前 H2 已覆盖 14 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
+当前 H2 已覆盖 23 个 ROM table range：角色/职业/物品/法术的 281 条固定记录字段级零差异，
 5 条成长曲线、59 个职业成长记录和 122 个学法术条目，以及 5 段转职表、103 个敌人名称和
 103 个 56-byte 敌人定义、30 条跨 22 场战斗的敌人掉落记录，以及 103 条敌人 gold word。
 drop rail 确认 flags 0-29、三个 `RNG(32)` 特例和 `0xFFFF` 终止；gold rail 还保留并拒绝误解释源码标记的
 69-word unused 尾部；新增敌人/转职双路径比较 2,722 个字段、零差异；所有 canonical JSON
 均有 schema、固定 hash 与重复导出验证，内容只写入 ignored 的 `local/derived/`，仓库不保存
-原版名称清单。battle AI 静态 rail 另覆盖完整 26 文件/5,991 行源码面、82 个 global label、
+原版名称清单。item-auxiliary rail 另把 30 家商店/235 个物品引用、128 项 debug shop、13 档宝箱
+金币、25 条损坏文案映射、9 组 mithril 职业/8×4 武器候选、特殊 Caravan 描述、9 个战外可用
+物品和 84 行武器图形展开成 canonical catalog；9 段共 768 bytes 全部通过 source/H1/ROM parity。
+静态消费者还证明 BRN/RDBN 不直接使用第 9 个职业组，而是随机转到武器 row 0 或 2；商店剧情
+准入、blacksmith 持久化/呈现与实测频率保留到集中运行时矩阵。battle AI 静态 rail 另覆盖完整
+26 文件/5,991 行源码面、82 个 global label、
 388 个直接调用点、五类 action getter、四套 attack priority script、物理/法术 potential-damage
 模型、4×32 class adjustment 表，healing eligibility/spell-level/item precedence 与
 movetype/AOE scoring，support admission、DISPEL/MUDDLE 2 target scoring 和两个不可达

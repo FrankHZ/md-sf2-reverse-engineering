@@ -31,13 +31,13 @@
         "globalLabelCount": { "type": "integer", "minimum": 19 },
         "layoutIncludedFileCount": { "const": 19 },
         "representativeAddressCount": { "const": 19 },
-        "indexedRecordCount": { "const": 19 },
+        "indexedRecordCount": { "const": 20 },
         "indexedFileCount": { "const": 19 }
       }
     },
     "layoutPaths": { "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true },
     "indexedRecordIds": {
-      "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true
+      "type": "array", "minItems": 20, "maxItems": 20, "uniqueItems": true
     },
     "indexedSourcePaths": {
       "type": "array", "minItems": 19, "maxItems": 19, "uniqueItems": true

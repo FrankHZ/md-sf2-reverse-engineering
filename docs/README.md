@@ -116,7 +116,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`ally-data-inventory.md`](./research/ally-data-inventory.md)：ally/class 42 个直接或传递 include
   文件，以及对既有成长/法术学习 rails 的复用关系。
 - [`core-stats-data-inventory.md`](./research/core-stats-data-inventory.md)：items/spells/enemies 的
-  19 个 source 文件、表维度与已有深层合同所有权。
+  19 个 source 文件与表维度，以及 shops/debug shop/chest gold/break messages/mithril/Caravan/
+  field items/weapon graphics 的 9-range 深层 source/H1/ROM 合同。
 - [`battle-cutscene-data.md`](./research/battle-cutscene-data.md)：61 个 battle cutscene data 文件、
   59 个构建内脚本及两个显式例外。
 - [`battle-spriteset-data.md`](./research/battle-spriteset-data.md)：46 文件 spriteset pointer/include

@@ -4,7 +4,8 @@
   addresses, prompt input/return rules, text controls, the nine field-item dispatches, and portrait
   header/palette/tile loading boundaries, plus the complete diamond-menu/yes-no compressed graphics
   and uncompressed item/spell/other icon storage/copy/highlight corpora, and the complete assembled
-  UI/window layout, spell-level pointer, diamond-border, and direct menu-tile corpus
+  UI/window layout, spell-level pointer, diamond-border, and direct menu-tile corpus, plus the
+  count-prefixed shop and sequential mithril-selection data contracts
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -102,6 +103,13 @@ The layout-owned field-item table has nine index/effect pairs, for item indices 
 15, followed by `0xFFFF`. `UseItemOnField` masks status bits from the item entry before dispatch.
 Field usability uses a separate byte list ending in `-1` and returns `-1` for an unlisted item.
 
+The item-auxiliary contract independently expands all 30 shop records and byte-compares the complete
+265-byte list with ROM. Shop index 0 selects the first record; later indexes walk count-prefixed rows.
+It also closes the blacksmith's 9 class groups and 8 weapon rows: groups 0-7 select rows directly,
+while BRN/RDBN in group 8 take a two-way random fallback to row 0 or 2 before testing the row's
+`16, 8, 4, 1` denominators. Story/debug shop admission and blacksmith persistence/presentation remain
+runtime questions; table ordering and selection control flow are no longer inferred.
+
 The inventory binds the top-level `FieldMenu`, `ShopMenu`, `ChurchMenu`, `CaravanMenu`, and
 `BlacksmithMenu` entry points, plus the surrounding battle item/magic/equip menus, member screens,
 portrait windows, minimap, and ending presentation. Detailed service state machines and animation
@@ -122,6 +130,7 @@ uv run sf2 h2 portraits
 uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
+uv run sf2 h2 item-auxiliary
 uv run sf2 research-index test
 ```
 

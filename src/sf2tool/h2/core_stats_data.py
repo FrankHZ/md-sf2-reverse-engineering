@@ -231,7 +231,7 @@ def build_core_stats_data_inventory(upstream_path: Path) -> dict[str, Any]:
         "runtimeQuestions": [
             "enemy-map-sprite-entries-beyond-definition-count",
             "special-caravan-description-presentation",
-            "shop-and-debug-shop-admission-and-ordering",
+            "shop-and-debug-shop-caller-admission",
         ],
         "files": files,
     }

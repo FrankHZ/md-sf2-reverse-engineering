@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-item-auxiliary-static-v1",
+  "outputSha256": "355DD29167EC04B9E483845FF5253F28A6D5AC1D27EFAB572AC23D2291D54792",
+  "summary": {
+    "sourceFileCount": 8,
+    "consumerFileCount": 7,
+    "romRangeCount": 9,
+    "sourceRomParityByteCount": 768,
+    "shopCount": 30,
+    "weaponShopCount": 15,
+    "itemShopCount": 15,
+    "shopItemReferenceCount": 235,
+    "uniqueShopInventoryCount": 15,
+    "debugShopItemCount": 128,
+    "chestGoldTierCount": 13,
+    "breakMessageCount": 25,
+    "mithrilClassGroupCount": 9,
+    "mithrilWeaponRowCount": 8,
+    "mithrilChoiceCount": 32,
+    "specialCaravanDescriptionCount": 1,
+    "fieldUsableItemCount": 9,
+    "weaponGraphicsCount": 84,
+    "weaponGraphicsNoneSpriteCount": 18
+  }
+}

@@ -150,6 +150,7 @@ the complete assembled UI/window layout, spell-pointer, border, and direct-asset
 the complete variable-width font, ASCII-map, pointer, and loader corpus, plus
 the complete 255-entry context-Huffman offset table, 86 reachable trees, and 1,536 leaf-code corpus, plus
 the complete 17-bank, 4,267-string static Huffman decode corpus, plus
+the complete nine-range shop/debug-shop/chest/break/mithril/Caravan/field-item/weapon-graphics corpus, plus
 the complete four-stream unused-cloud payload and two-palette unused-base corpus, plus
 the complete spell/invocation/status/transition battle-effect graphics corpus, plus
 the complete 115-stream map-tileset corpus and map/animation usage boundary, plus

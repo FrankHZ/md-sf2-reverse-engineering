@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/h2-item-auxiliary-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "table", "summary", "consumerRules", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-item-auxiliary-static-v1" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": {
+      "type": "object",
+      "minProperties": 9,
+      "maxProperties": 9,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "summary": {
+      "type": "object",
+      "minProperties": 19,
+      "maxProperties": 19,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "consumerRules": { "type": "object", "minProperties": 8, "maxProperties": 8 },
+    "runtimeQuestions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "string" }
+    }
+  }
+}

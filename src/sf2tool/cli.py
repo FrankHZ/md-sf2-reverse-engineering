@@ -37,6 +37,7 @@ from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
 from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
+from sf2tool.h2.item_auxiliary import verify_item_auxiliary_contract
 from sf2tool.h2.map_content import verify_map_content_contract
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
@@ -322,6 +323,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_core_stats_data, rom=False)
     h2_core_stats_data.add_argument("--output-path", type=_path)
+    h2_item_auxiliary = h2_commands.add_parser(
+        "item-auxiliary",
+        help="verify shops, mithril, chest, field-item, break-message, and weapon graphics tables",
+    )
+    _add_local_paths(h2_item_auxiliary)
+    h2_item_auxiliary.add_argument("--output-path", type=_path)
     h2_battle_cutscene_data = h2_commands.add_parser(
         "battle-cutscene-data", help="inventory built and orphaned battle cutscene data"
     )
@@ -935,6 +942,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "core-stats-data":
         print_record(
             verify_core_stats_data_inventory(
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "item-auxiliary":
+        print_record(
+            verify_item_auxiliary_contract(
+                args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
             )

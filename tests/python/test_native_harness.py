@@ -31,10 +31,10 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1467
-    assert result["H2Fixtures"] == 67
+    assert result["Records"] == 1468
+    assert result["H2Fixtures"] == 68
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 58
-    assert result["AddressBindings"] == 2007
+    assert result["AddressBindings"] == 2016
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -217,6 +217,13 @@ def test_core_stats_data_has_a_source_only_inventory_command() -> None:
     args = build_parser().parse_args(["h2", "core-stats-data"])
     assert args.h2_command == "core-stats-data"
     assert not hasattr(args, "rom_path")
+    assert args.output_path is None
+
+
+def test_item_auxiliary_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "item-auxiliary"])
+    assert args.h2_command == "item-auxiliary"
+    assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 
 

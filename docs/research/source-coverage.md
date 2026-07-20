@@ -20,15 +20,15 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,467 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed findings | 1,468 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 67 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 68 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,007 | Checked ROM/RAM relationships between fixtures and symbols/state |
-| H2 ROM table ranges | 14 | Deterministic source/ROM dual-path extraction ranges |
+| Address bindings | 2,016 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H2 ROM table ranges | 23 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
 graph, the 41-file Z80 music graph with two bank/ROM parity checks, plus 281 fixed
@@ -199,6 +199,13 @@ The current evidence is deep but narrow:
   Their 128 item records, 44 spell names/elements and 89 level definitions, 103 enemy definitions,
   166 enemy map-sprite rows, shops, mithril, weapon graphics, range rings, and gold used/unused split
   are structurally rechecked while existing core/enemy/battlefield rails retain semantic ownership.
+  The deeper item-auxiliary rail expands eight source tables into a canonical catalog: 30 shop
+  inventories with 235 references, the complete 128-item debug shop, 13 chest-gold tiers, 25 item-
+  break offsets, nine mithril class groups and eight four-choice weapon rows, one special Caravan
+  description, nine field-usable items, and 84 weapon-graphics rows. Nine ranges totaling 768 bytes
+  match source, H1, and ROM. Static consumer flow proves that BRN/RDBN randomly choose mithril row 0
+  or 2 instead of consuming a ninth weapon row; caller admission, persistence, presentation, and
+  observed RNG frequency remain grouped runtime questions.
   Battle cutscene data now has a complete 61-file inventory: 59 labeled cutscenes enter through one
   unlabeled storage include container and have H1 bindings; one Battle 01 region script is an orphan
   absent from the original build. Type/command shape is indexed, but story content and side effects
@@ -232,9 +239,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,467 records; its
-verifier reports 381 unique code files, 980 unique data files, 67 H2 fixtures, 58 H3 fixtures, and
-2,007 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,468 records; its
+verifier reports 381 unique code files, 980 unique data files, 68 H2 fixtures, 58 H3 fixtures, and
+2,016 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

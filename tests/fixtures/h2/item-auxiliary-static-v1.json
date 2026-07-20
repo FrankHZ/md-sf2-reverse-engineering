@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-item-auxiliary-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "list_ShopInventories": 133240,
+    "list_DebugShopInventory": 133505,
+    "table_ChestGoldAmounts": 145838,
+    "table_ItemBreakMessages": 48368,
+    "list_MithrilWeaponClasses": 139106,
+    "table_MithrilWeapons": 139154,
+    "table_SpecialCaravanDescriptions": 141474,
+    "table_UsableOnFieldItems": 141794,
+    "table_WeaponGraphics": 129506
+  },
+  "summary": {
+    "sourceFileCount": 8,
+    "consumerFileCount": 7,
+    "romRangeCount": 9,
+    "sourceRomParityByteCount": 768,
+    "shopCount": 30,
+    "weaponShopCount": 15,
+    "itemShopCount": 15,
+    "shopItemReferenceCount": 235,
+    "uniqueShopInventoryCount": 15,
+    "debugShopItemCount": 128,
+    "chestGoldTierCount": 13,
+    "breakMessageCount": 25,
+    "mithrilClassGroupCount": 9,
+    "mithrilWeaponRowCount": 8,
+    "mithrilChoiceCount": 32,
+    "specialCaravanDescriptionCount": 1,
+    "fieldUsableItemCount": 9,
+    "weaponGraphicsCount": 84,
+    "weaponGraphicsNoneSpriteCount": 18
+  },
+  "consumerRules": {
+    "shops": {
+      "indexBase": 0,
+      "storage": "count byte followed by item bytes",
+      "selection": "skip index count-prefixed records from list start"
+    },
+    "debugShop": "one count byte followed by every item index 0..127",
+    "chestGold": "word[(itemIndex-128)&127] with no local bounds check",
+    "breakMessages": "matched item byte adds its offset to the selected base message",
+    "mithril": "groups 0..7 select rows directly; BRN/RDBN randomly select row 0 or 2; each row tests denominators 16,8,4,1 in order",
+    "specialCaravan": "matched entry displays lineCount consecutive messages",
+    "fieldItems": "linear byte allowlist terminated by 255",
+    "weaponGraphics": "allies with equipped item 26..109 select two signed bytes by itemIndex-26; all other cases return -1/-1"
+  },
+  "runtimeQuestions": [
+    "Which story and debug callers admit each of the 30 shop indexes, including the gaps in named SHOP_ITEM enums?",
+    "Do blacksmith presentation, order persistence, and observed RNG frequencies match the statically derived row selection?"
+  ]
+}
