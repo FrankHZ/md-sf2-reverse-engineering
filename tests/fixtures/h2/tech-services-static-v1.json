@@ -41,6 +41,33 @@
         "tiles_SpeechBalloon": "data/graphics/specialscreens/witchscreen/speechballoontiles.bin",
         "tiles_UnusedCloud": "data/graphics/tech/unusedcloudtiles.bin",
         "tiles_YesNoPrompt": "data/graphics/tech/menus/yesnoprompttiles.bin"
+      },
+      "deepOwnership": {
+        "ownerFixtureCount": 8,
+        "ownedDirectiveCount": 20,
+        "unownedDirectiveCount": 0,
+        "owners": {
+          "TextBankTreeData": { "fixture": "tests/fixtures/h2/text-huffman-static-v1.json", "verifier": "src/sf2tool/h2/text_huffman.py", "command": "uv run sf2 h2 text-huffman" },
+          "TextBankTreeOffsets": { "fixture": "tests/fixtures/h2/text-huffman-static-v1.json", "verifier": "src/sf2tool/h2/text_huffman.py", "command": "uv run sf2 h2 text-huffman" },
+          "font_TitleScreen": { "fixture": "tests/fixtures/h2/special-screen-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/special_screen_graphics.py", "command": "uv run sf2 h2 special-screen-graphics" },
+          "font_VariableWidth": { "fixture": "tests/fixtures/h2/variable-width-font-static-v1.json", "verifier": "src/sf2tool/h2/variable_width_font.py", "command": "uv run sf2 h2 variable-width-font" },
+          "palette_TitleScreenFont": { "fixture": "tests/fixtures/h2/special-screen-presentation-static-v1.json", "verifier": "src/sf2tool/h2/special_screen_presentation.py", "command": "uv run sf2 h2 special-screen-presentation" },
+          "palette_UnusedBase": { "fixture": "tests/fixtures/h2/unused-technical-assets-static-v1.json", "verifier": "src/sf2tool/h2/unused_technical_assets.py", "command": "uv run sf2 h2 unused-tech-assets" },
+          "palette_WitchChoice": { "fixture": "tests/fixtures/h2/witch-menu-graphics-static-v1.json", "verifier": "src/sf2tool/h2/witch_menu_graphics.py", "command": "uv run sf2 h2 witch-menu-graphics" },
+          "table_WitchBubbleAnimation": { "fixture": "tests/fixtures/h2/witch-menu-graphics-static-v1.json", "verifier": "src/sf2tool/h2/witch_menu_graphics.py", "command": "uv run sf2 h2 witch-menu-graphics" },
+          "tiles_Base": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_BattleFieldMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_CaravanMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_ChurchMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_DepotMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_IconHighlight": { "fixture": "tests/fixtures/h2/icon-graphics-static-v1.json", "verifier": "src/sf2tool/h2/icon_graphics.py", "command": "uv run sf2 h2 icon-graphics" },
+          "tiles_ItemMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_MainMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_ShopMenu": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" },
+          "tiles_SpeechBalloon": { "fixture": "tests/fixtures/h2/special-screen-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/special_screen_graphics.py", "command": "uv run sf2 h2 special-screen-graphics" },
+          "tiles_UnusedCloud": { "fixture": "tests/fixtures/h2/unused-technical-assets-static-v1.json", "verifier": "src/sf2tool/h2/unused_technical_assets.py", "command": "uv run sf2 h2 unused-tech-assets" },
+          "tiles_YesNoPrompt": { "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json", "verifier": "src/sf2tool/h2/ui_graphics.py", "command": "uv run sf2 h2 ui-graphics" }
+        }
       }
     },
     "soundDriverFacts": {
@@ -75,7 +102,8 @@
       "input-hardware-and-repeat-timing",
       "sram-persistence-and-corruption-matrix",
       "z80-mailbox-channel-and-audio-timing",
-      "thinking-rng-caller-distribution-and-delay"
+      "thinking-rng-caller-distribution-and-delay",
+      "unused-technical-resource-raw-reach-and-presentation"
     ]
   }
 }

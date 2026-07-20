@@ -85,7 +85,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`technical-graphics.md`](./research/technical-graphics.md)：解压、显示初始化、sprite/palette、视差、
   battle terrain/background/sprite/weapon/ground/portrait/special-sprite 完整 Stack corpus、flash
   script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
-  special-screen、8 条 base/menu UI、56 条 battle-effect、115 条 map-tileset
+  special-screen、8 条 base/menu UI Stack stream 与 7-icon uncompressed main-menu、56 条
+  battle-effect、115 条 map-tileset
   Stack-compression corpus、208 张 battle-sprite animation table、163 槽 icon
   storage/menu-copy/highlight 合同、19 个 vanilla-built UI-layout owner 与 5,614-byte 静态 corpus、
   80-glyph variable-width font/ASCII map/loader 与完整 context-Huffman 合同、witch menu
@@ -97,7 +98,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
   variable-width font、context-Huffman 与 witch-menu direct payload、68000 sound bridge、RNG 和
-  独立 Z80 driver 构建链，以及没有 symbolic consumer 的 cloud/base payload 边界。
+  独立 Z80 driver 构建链、没有 symbolic consumer 的 cloud/base payload 边界，以及 20/20
+  technical incbin 到 8 个深层 H2 owner 的可执行归属审计。
 - [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
   map event、交互和物品 handoff。
 - [`special-screens.md`](./research/special-screens.md)：logo/title、witch save、suspend/reset、ending

@@ -42,8 +42,11 @@ bit 31 set and pack four indices selecting uncompressed main-menu icons. The oth
 to pointer words for item, battlefield, church, shop, caravan, and depot Stack streams. Each stream
 decodes to 2,304 bytes, matching two animation frames of four 288-byte icon transfers. The separate
 yes/no stream decodes to 1,152 bytes, matching two frames of two icons. All seven payloads, their
-pointers, and the menu table are source/H1/ROM identical; visible timing and palette composition
-remain in the presentation queue.
+pointers, and the menu table are source/H1/ROM identical. The uncompressed main-menu payload is now
+independently checked too: seven 576-byte/18-tile icons and its pointer match ROM; the three packed
+entries select `[5,1,2,4]`, `[0,1,2,3]`, and `[0,1,2,4]`, leaving icon 6 without a static table
+reference. Its dynamic reach, visible timing, and palette composition remain in the presentation
+queue.
 
 `NumberPrompt` applies right/left/down/up deltas of `+1/-1/+10/-10`, clamps after each update to the
 caller-provided minimum and maximum, returns the selected number on A/C, and returns `-1` on B. Its

@@ -18,7 +18,7 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 H4 复用。
 
 截至 2026-07-19，研究索引有 1,467 条 confirmed finding、66 个 H2 fixture、58 个 H3 fixture
-和 1,984 个地址绑定。
+和 1,988 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -309,9 +309,11 @@ stream：23,296 个压缩字节确定性解出 50,176 bytes，9 个资源和 6 �
 DMA tail 当时由何种 staging bytes 占据仍为 Unknown，已与渲染、palette、transition 和 pixel-fill
 顺序一起进入集中 presentation 矩阵。
 UI graphics rail 再闭合 base tiles、6 套 compressed diamond-menu tiles 和 yes/no prompt 共 8 条
-Stack stream：7,848 个压缩字节解出 23,168 bytes，8 个资源、8 个 source pointer 与 9 槽 menu
-table 全部通过 source/H1/ROM parity。menu table 的前 3 槽保留为 high-bit packed main-menu icon
-组合，后 6 槽才是压缩资源二级指针；两条路径不会混作同一种格式。
+Stack stream：7,848 个压缩字节解出 23,168 bytes；又补齐 4,032-byte uncompressed main-menu
+payload 的 7 个 576-byte/18-tile icon。9 个资源、9 个 source pointer 与 9 槽 menu table 全部通过
+source/H1/ROM parity。menu table 前 3 槽的 high-bit packed 组合分别选 `[5,1,2,4]`、`[0,1,2,3]`
+和 `[0,1,2,4]`，后 6 槽才是压缩资源二级指针；icon 6 没有静态 table 引用。technical-services
+ownership audit 同时证明 section 3/6/17 的 20 个 incbin 已全部归入 8 个深层 H2 owner，unowned 为 0。
 icon-graphics rail 接着闭合连续的原版 icon storage：目录中有 167 个 192-byte payload，但构建只
 装配 163 个（127 item、30 spell、6 other），共 31,296 bytes，并由 `p_Icons` 作为无指针表的
 算术索引基址。未装配的 item 127 和 spell 16-18 明确保留为四个 source-only payload；物理槽

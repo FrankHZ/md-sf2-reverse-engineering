@@ -37,8 +37,16 @@ listing.
 
 The five incbin files contain exactly twenty named entries across sections 3, 6, and 17. Their
 canonical mapping covers UI/font/title resources, Huffman text trees, witch-screen resources, and
-base tiles. This confirms ROM routing only; extracted copyrighted resource bytes remain local and
-their rendered meaning stays with the corresponding presentation subsystem.
+base tiles. A deterministic ownership audit now requires all twenty entries to appear in one of
+eight deeper H2 fixtures and verifies each fixture/verifier/command exists; the unowned count is
+zero. Extracted copyrighted resource bytes remain local, and rendered meaning stays with the
+corresponding presentation subsystem.
+
+That audit exposed and then closed the sole remaining shallow entry, uncompressed
+`tiles_MainMenu`: 4,032 bytes divide into seven 576-byte/18-tile icons, its pointer and payload match
+ROM, and the packed menu table selects icon IDs 0-5 while leaving ID 6 without a static table
+reference. The other nineteen entries were already owned by the Huffman, font, screen, witch, UI,
+icon, or nominally-unused resource contracts.
 
 The text-Huffman rail closes the tree entries beyond routing. It checks the 510-byte offset table and
 1,952-byte tree payload against H1 and ROM, reconstructs all 86 defined trees and 1,536 symbol/code

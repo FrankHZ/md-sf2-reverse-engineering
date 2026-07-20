@@ -155,13 +155,17 @@ The ninth corpus closes shared base and menu UI graphics. `tiles_Base` is decode
 VRAM upload and again as the source for the doubled ending-credits font. Six diamond-menu resources
 each decode to 2,304 bytes (two frames of four 288-byte icons), while the yes/no prompt decodes to
 1,152 bytes (two frames of two icons). Together the eight streams expand 7,848 compressed bytes to
-23,168 bytes; all eight payloads, eight pointers, and the nine-entry menu table match the ROM.
+23,168 bytes. The adjacent uncompressed main-menu payload adds 4,032 bytes: seven fixed 576-byte/
+18-tile icon records. Packed table entries reference icons 0-5 in combinations `[5,1,2,4]`,
+`[0,1,2,3]`, and `[0,1,2,4]`; icon 6 has no table reference. All nine payloads, nine pointers, the
+seven icon boundaries, and the nine-entry menu table match the ROM.
 
 The menu table is heterogeneous by design. Its first three longwords have bit 31 set and pack four
 indices into the uncompressed `tiles_MainMenu`; the other six point to pointer words for the Stack
 resources. The consumer clears and branches on bit 31 before choosing `LoadMainMenuIcon` or the
 Stack decoder, so the tracked contract preserves the two formats instead of treating the packed
-values as malformed addresses.
+values as malformed addresses. This closes the last section-6 technical incbin that previously had
+only routing evidence; icon 6 runtime reach and final presentation remain Unknown.
 
 The tenth corpus closes battle-scene effects. Twenty-three spell containers each carry a decoded
 byte-count word, three palette colors, and one Stack stream; every decoded size matches its header.

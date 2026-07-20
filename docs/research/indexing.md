@@ -79,7 +79,7 @@ index verifier proves every copy still agrees.
 
 ## Current Boundary
 
-As of 2026-07-19, the index contains 1,467 confirmed findings and 1,984 checked address bindings. It
+As of 2026-07-19, the index contains 1,467 confirmed findings and 1,988 checked address bindings. It
 connects all 58 H3 fixture files plus 66 H2 fixtures needed by the completed code and
 data inventories. This produces 381/387 strict code-file reach and 980/1,690 strict data-file reach.
 

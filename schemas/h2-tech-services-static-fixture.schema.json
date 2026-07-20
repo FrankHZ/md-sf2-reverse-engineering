@@ -14,7 +14,7 @@
       "properties": {
         "resourceFacts": { "type": "object" }, "soundDriverFacts": { "type": "object" },
         "serviceFacts": { "type": "object" },
-        "runtimeQuestions": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true }
+        "runtimeQuestions": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true }
       }
     }
   }

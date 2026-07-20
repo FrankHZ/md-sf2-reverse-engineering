@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/sf2/ui-graphics-decode.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "menuTable", "summary", "resources", "runtimeQuestions"],
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "function", "table", "menuTable", "summary", "mainMenu", "resources", "runtimeQuestions"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-ui-graphics-decode-v1" },
@@ -12,18 +12,20 @@
       "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
     },
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
-    "function": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "table": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "function": { "type": "object", "minProperties": 6, "maxProperties": 6, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "table": { "type": "object", "minProperties": 19, "maxProperties": 19, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "menuTable": {
       "type": "object", "additionalProperties": false,
-      "required": ["values", "packedMainMenuEntries", "compressedPointerSymbols"],
+      "required": ["values", "packedMainMenuEntries", "compressedPointerSymbols", "packedMainMenuIconIndices"],
       "properties": {
         "values": { "type": "array", "minItems": 9, "maxItems": 9, "items": { "type": "integer", "minimum": 0 } },
         "packedMainMenuEntries": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "integer", "minimum": 0 } },
-        "compressedPointerSymbols": { "type": "array", "minItems": 6, "maxItems": 6, "uniqueItems": true, "items": { "type": "string" } }
+        "compressedPointerSymbols": { "type": "array", "minItems": 6, "maxItems": 6, "uniqueItems": true, "items": { "type": "string" } },
+        "packedMainMenuIconIndices": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "integer", "minimum": 0, "maximum": 6 } } }
       }
     },
-    "summary": { "type": "object", "minProperties": 20, "maxProperties": 20, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 27, "maxProperties": 27, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "mainMenu": { "type": "object", "minProperties": 15, "maxProperties": 15 },
     "resources": {
       "type": "array", "minItems": 8, "maxItems": 8,
       "items": {

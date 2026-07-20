@@ -144,7 +144,7 @@ map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing b
 the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
 the complete witch-menu choice palette, bubble-animation table, and timer-phase corpus, plus
 the complete uncompressed special-screen palette/layout presentation corpus, plus
-the complete base/diamond-menu/yes-no Stack-compressed UI corpus, plus
+the complete base/diamond-menu/yes-no Stack-compressed UI corpus and seven-icon uncompressed main-menu payload, plus
 the complete 163-entry icon storage corpus and menu copy/highlight boundaries, plus
 the complete assembled UI/window layout, spell-pointer, border, and direct-asset corpus, plus
 the complete variable-width font, ASCII-map, pointer, and loader corpus, plus

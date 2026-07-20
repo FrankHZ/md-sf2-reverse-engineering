@@ -23,6 +23,12 @@ ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 MENU_TABLE_SYMBOL = "pt_tiles_Menu"
 MENU_TABLE_PATH = "code/common/menus/menutilespointertable.asm"
 PACKED_MAIN_MENU_ENTRIES = [0x85010204, 0x80010203, 0x80010204]
+MAIN_MENU_SYMBOL = "tiles_MainMenu"
+MAIN_MENU_POINTER_SYMBOL = "p_tiles_MainMenu"
+MAIN_MENU_PATH = "data/graphics/tech/menus/mainmenutiles.bin"
+MAIN_MENU_DEFINITION_PATH = "code/common/tech/incbins/s06_incbins_graphics.asm"
+MAIN_MENU_POINTER_PATH = "code/common/tech/pointers/s06_pointers.asm"
+MAIN_MENU_ICON_BYTES = 576
 
 RESOURCES = [
     {
@@ -121,6 +127,9 @@ def _assert_consumer_shape(disasm: Path) -> None:
         "bclr    #31,d0",
         "jsr     (LoadStackCompressedData).w",
         "bsr.w   LoadMainMenuIcon",
+        "movea.l (p_tiles_MainMenu).l,a0",
+        "mulu.w  #GFX_DIAMOND_MENU_ICON_PIXELS_NUMBER,d0",
+        "move.w  #143,d0",
     ):
         if fragment not in diamond:
             raise ValueError(f"diamond-menu consumer drift: missing {fragment!r}")
@@ -154,8 +163,64 @@ def build_ui_graphics_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         if f"${value:X}" not in table_source:
             raise ValueError(f"packed main-menu entry drift: {value:08X}")
 
+    main_definition = read_upstream_text(disasm / MAIN_MENU_DEFINITION_PATH)
+    if re.search(
+        rf'^{MAIN_MENU_SYMBOL}:\s*incbin\s+"{re.escape(MAIN_MENU_PATH)}"',
+        main_definition,
+        re.MULTILINE,
+    ) is None:
+        raise ValueError("main-menu icon resource definition drift")
+    main_pointer = read_upstream_text(disasm / MAIN_MENU_POINTER_PATH)
+    if re.search(
+        rf"^{MAIN_MENU_POINTER_SYMBOL}:\s*\n\s*dc\.l\s+{MAIN_MENU_SYMBOL}\b",
+        main_pointer,
+        re.MULTILINE,
+    ) is None:
+        raise ValueError("main-menu icon pointer definition drift")
+    main_data = (disasm / MAIN_MENU_PATH).read_bytes()
+    if len(main_data) % MAIN_MENU_ICON_BYTES:
+        raise ValueError("main-menu icon payload is not a whole number of icon records")
+    main_address = addresses[MAIN_MENU_SYMBOL]
+    main_pointer_address = addresses[MAIN_MENU_POINTER_SYMBOL]
+    if rom[main_address : main_address + len(main_data)] != main_data:
+        raise ValueError("main-menu icon source/ROM parity drift")
+    main_pointer_bytes = main_address.to_bytes(4, "big")
+    if rom[main_pointer_address : main_pointer_address + 4] != main_pointer_bytes:
+        raise ValueError("main-menu icon pointer ROM parity drift")
+    packed_icon_indices = []
+    for value in PACKED_MAIN_MENU_ENTRIES:
+        value &= 0x7FFFFFFF
+        indices = []
+        for _ in range(4):
+            value = ((value << 8) & 0xFFFFFFFF) | (value >> 24)
+            indices.append(value & 0xFF)
+        packed_icon_indices.append(indices)
+    icon_count = len(main_data) // MAIN_MENU_ICON_BYTES
+    referenced_icon_indices = sorted({index for row in packed_icon_indices for index in row})
+    if any(index >= icon_count for index in referenced_icon_indices):
+        raise ValueError("packed main-menu icon index exceeds its payload")
+    unreferenced_icon_indices = sorted(set(range(icon_count)) - set(referenced_icon_indices))
+    icons = [
+        {
+            "index": index,
+            "address": main_address + index * MAIN_MENU_ICON_BYTES,
+            "byteCount": MAIN_MENU_ICON_BYTES,
+            "tileCount": MAIN_MENU_ICON_BYTES // 32,
+            "sha256": hashlib.sha256(
+                main_data[
+                    index * MAIN_MENU_ICON_BYTES : (index + 1) * MAIN_MENU_ICON_BYTES
+                ]
+            ).hexdigest().upper(),
+        }
+        for index in range(icon_count)
+    ]
+
     rows = []
-    table_addresses = {MENU_TABLE_SYMBOL: addresses[MENU_TABLE_SYMBOL]}
+    table_addresses = {
+        MENU_TABLE_SYMBOL: addresses[MENU_TABLE_SYMBOL],
+        MAIN_MENU_SYMBOL: main_address,
+        MAIN_MENU_POINTER_SYMBOL: main_pointer_address,
+    }
     for spec in RESOURCES:
         definition = read_upstream_text(disasm / spec["definitionPath"])
         if not re.search(
@@ -211,18 +276,28 @@ def build_ui_graphics_contract(rom_path: Path, upstream_path: Path) -> dict[str,
         raise ValueError("diamond-menu table ROM parity drift")
 
     summary = {
-        "resourceCount": len(rows),
+        "resourceCount": len(rows) + 1,
         "baseResourceCount": sum(row["family"] == "base" for row in rows),
         "diamondMenuResourceCount": sum(row["family"] == "diamond-menu" for row in rows),
         "yesNoResourceCount": sum(row["family"] == "yes-no" for row in rows),
+        "mainMenuResourceCount": 1,
+        "mainMenuIconCount": icon_count,
+        "mainMenuIconByteCount": MAIN_MENU_ICON_BYTES,
+        "mainMenuReferencedIconCount": len(referenced_icon_indices),
+        "mainMenuUnreferencedIconCount": len(unreferenced_icon_indices),
         "menuTableEntryCount": len(menu_table_values),
         "packedMainMenuEntryCount": len(PACKED_MAIN_MENU_ENTRIES),
         "compressedMenuPointerCount": len(menu_pointer_symbols),
         "compressedByteCount": sum(row["compressedBytes"] for row in rows),
+        "uncompressedByteCount": len(main_data),
         "decodedByteCount": sum(row["decodedBytes"] for row in rows),
-        "resourceRomParityCount": len(rows),
-        "pointerRomParityCount": len(rows),
+        "resourceRomParityCount": len(rows) + 1,
+        "pointerRomParityCount": len(rows) + 1,
         "menuTableRomParityCount": len(menu_table_values),
+        "sourceRomParityByteCount": sum(row["compressedBytes"] for row in rows)
+        + len(main_data)
+        + (len(rows) + 1) * 4
+        + len(table_bytes),
         "commandGroupCount": sum(row["commandGroupCount"] for row in rows),
         "literalWordCount": sum(row["literalWordCount"] for row in rows),
         "copyCommandCount": sum(row["copyCommandCount"] for row in rows),
@@ -242,6 +317,7 @@ def build_ui_graphics_contract(rom_path: Path, upstream_path: Path) -> dict[str,
             "LoadBaseTiles": addresses["LoadBaseTiles"],
             "GenerateEndingCreditsFont": addresses["GenerateEndingCreditsFont"],
             "ExecuteDiamondMenu": addresses["ExecuteDiamondMenu"],
+            "LoadMainMenuIcon": addresses["LoadMainMenuIcon"],
             "alt_YesNoPrompt": addresses["alt_YesNoPrompt"],
         },
         "table": table_addresses,
@@ -249,12 +325,30 @@ def build_ui_graphics_contract(rom_path: Path, upstream_path: Path) -> dict[str,
             "values": menu_table_values,
             "packedMainMenuEntries": PACKED_MAIN_MENU_ENTRIES,
             "compressedPointerSymbols": menu_pointer_symbols,
+            "packedMainMenuIconIndices": packed_icon_indices,
         },
         "summary": summary,
+        "mainMenu": {
+            "symbol": MAIN_MENU_SYMBOL,
+            "pointerSymbol": MAIN_MENU_POINTER_SYMBOL,
+            "sourcePath": MAIN_MENU_PATH,
+            "definitionPath": MAIN_MENU_DEFINITION_PATH,
+            "pointerPath": MAIN_MENU_POINTER_PATH,
+            "sourceAddress": main_address,
+            "pointerAddress": main_pointer_address,
+            "byteCount": len(main_data),
+            "iconByteCount": MAIN_MENU_ICON_BYTES,
+            "iconCount": icon_count,
+            "referencedIconIndices": referenced_icon_indices,
+            "unreferencedIconIndices": unreferenced_icon_indices,
+            "sourceSha256": hashlib.sha256(main_data).hexdigest().upper(),
+            "pointerSha256": hashlib.sha256(main_pointer_bytes).hexdigest().upper(),
+            "icons": icons,
+        },
         "resources": rows,
         "runtimeQuestions": [
-            "Do the decoded base, diamond-menu, and yes/no tiles render with original palette, "
-            "frame timing, and icon-selection behavior?"
+            "Do the decoded base, compressed diamond-menu, uncompressed main-menu, and yes/no "
+            "tiles render with original palette, frame timing, and icon-selection behavior?"
         ],
     }
 
@@ -272,7 +366,14 @@ def verify_ui_graphics_contract(
         or fixture["romSha256"] != output["romSha256"]
     ):
         raise ValueError("UI graphics provenance drift")
-    for field in ("function", "table", "menuTable", "summary", "runtimeQuestions"):
+    for field in (
+        "function",
+        "table",
+        "menuTable",
+        "summary",
+        "mainMenu",
+        "runtimeQuestions",
+    ):
         if fixture[field] != output[field]:
             raise ValueError(f"UI graphics {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()

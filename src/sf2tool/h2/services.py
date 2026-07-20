@@ -41,6 +41,67 @@ FIXTURE_SCHEMA = repo_path("schemas/h2-tech-services-static-fixture.schema.json"
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 
+DEEP_RESOURCE_OWNER_GROUPS = (
+    {
+        "fixture": "tests/fixtures/h2/text-huffman-static-v1.json",
+        "verifier": "src/sf2tool/h2/text_huffman.py",
+        "command": "uv run sf2 h2 text-huffman",
+        "symbols": ("TextBankTreeData", "TextBankTreeOffsets"),
+    },
+    {
+        "fixture": "tests/fixtures/h2/special-screen-graphics-decode-v1.json",
+        "verifier": "src/sf2tool/h2/special_screen_graphics.py",
+        "command": "uv run sf2 h2 special-screen-graphics",
+        "symbols": ("font_TitleScreen", "tiles_SpeechBalloon"),
+    },
+    {
+        "fixture": "tests/fixtures/h2/variable-width-font-static-v1.json",
+        "verifier": "src/sf2tool/h2/variable_width_font.py",
+        "command": "uv run sf2 h2 variable-width-font",
+        "symbols": ("font_VariableWidth",),
+    },
+    {
+        "fixture": "tests/fixtures/h2/special-screen-presentation-static-v1.json",
+        "verifier": "src/sf2tool/h2/special_screen_presentation.py",
+        "command": "uv run sf2 h2 special-screen-presentation",
+        "symbols": ("palette_TitleScreenFont",),
+    },
+    {
+        "fixture": "tests/fixtures/h2/unused-technical-assets-static-v1.json",
+        "verifier": "src/sf2tool/h2/unused_technical_assets.py",
+        "command": "uv run sf2 h2 unused-tech-assets",
+        "symbols": ("palette_UnusedBase", "tiles_UnusedCloud"),
+    },
+    {
+        "fixture": "tests/fixtures/h2/witch-menu-graphics-static-v1.json",
+        "verifier": "src/sf2tool/h2/witch_menu_graphics.py",
+        "command": "uv run sf2 h2 witch-menu-graphics",
+        "symbols": ("palette_WitchChoice", "table_WitchBubbleAnimation"),
+    },
+    {
+        "fixture": "tests/fixtures/h2/ui-graphics-decode-v1.json",
+        "verifier": "src/sf2tool/h2/ui_graphics.py",
+        "command": "uv run sf2 h2 ui-graphics",
+        "symbols": (
+            "tiles_Base",
+            "tiles_BattleFieldMenu",
+            "tiles_CaravanMenu",
+            "tiles_ChurchMenu",
+            "tiles_DepotMenu",
+            "tiles_ItemMenu",
+            "tiles_MainMenu",
+            "tiles_ShopMenu",
+            "tiles_YesNoPrompt",
+        ),
+    },
+    {
+        "fixture": "tests/fixtures/h2/icon-graphics-static-v1.json",
+        "verifier": "src/sf2tool/h2/icon_graphics.py",
+        "command": "uv run sf2 h2 icon-graphics",
+        "symbols": ("tiles_IconHighlight",),
+    },
+)
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -71,6 +132,53 @@ def _incbin_targets(disasm: Path, paths: list[Path]) -> dict[str, str]:
                 raise ValueError(f"missing technical resource target: {target}")
             targets[label] = target.replace("\\", "/")
     return dict(sorted(targets.items()))
+
+
+def _contains_json_value(value: Any, expected: str) -> bool:
+    if value == expected:
+        return True
+    if isinstance(value, dict):
+        return expected in value or any(
+            _contains_json_value(item, expected) for item in value.values()
+        )
+    if isinstance(value, list):
+        return any(_contains_json_value(item, expected) for item in value)
+    return False
+
+
+def _deep_resource_ownership(targets: dict[str, str]) -> dict[str, Any]:
+    owners: dict[str, dict[str, str]] = {}
+    for group in DEEP_RESOURCE_OWNER_GROUPS:
+        fixture_path = repo_path(group["fixture"])
+        verifier_path = repo_path(group["verifier"])
+        if not fixture_path.is_file() or not verifier_path.is_file():
+            raise ValueError(f"missing deep technical-resource owner: {group['fixture']}")
+        fixture = load_json(fixture_path)
+        for symbol in group["symbols"]:
+            if symbol in owners:
+                raise ValueError(f"duplicate deep technical-resource owner: {symbol}")
+            if not _contains_json_value(fixture, symbol):
+                raise ValueError(
+                    f"deep technical-resource fixture does not identify {symbol}: "
+                    f"{group['fixture']}"
+                )
+            owners[symbol] = {
+                "fixture": group["fixture"],
+                "verifier": group["verifier"],
+                "command": group["command"],
+            }
+    missing = sorted(set(targets) - set(owners))
+    extra = sorted(set(owners) - set(targets))
+    if missing or extra:
+        raise ValueError(
+            f"technical-resource deep ownership drift: missing={missing}, extra={extra}"
+        )
+    return {
+        "ownerFixtureCount": len({row["fixture"] for row in owners.values()}),
+        "ownedDirectiveCount": len(owners),
+        "unownedDirectiveCount": 0,
+        "owners": {symbol: owners[symbol] for symbol in sorted(owners)},
+    }
 
 
 def _service_facts(disasm: Path) -> dict[str, Any]:
@@ -159,6 +267,7 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
     }
     incbin_paths = [path for path in paths if path.parent.name == INCBIN_ROOT.name]
     incbin_targets = _incbin_targets(disasm, incbin_paths)
+    deep_ownership = _deep_resource_ownership(incbin_targets)
 
     build_script = read_upstream_text(upstream_path / "build/build.bat")
     _require_fragments(
@@ -236,6 +345,7 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
             "incbinDirectiveCount": len(incbin_targets),
             "layoutSectionNumbers": [3, 6, 17],
             "targets": incbin_targets,
+            "deepOwnership": deep_ownership,
         },
         "soundDriverFacts": sound_driver_facts,
         "serviceFacts": _service_facts(disasm),
@@ -244,6 +354,7 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
             "sram-persistence-and-corruption-matrix",
             "z80-mailbox-channel-and-audio-timing",
             "thinking-rng-caller-distribution-and-delay",
+            "unused-technical-resource-raw-reach-and-presentation",
         ],
         "files": files,
     }

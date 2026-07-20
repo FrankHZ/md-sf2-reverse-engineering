@@ -8,10 +8,13 @@
     "LoadBaseTiles": 30286,
     "GenerateEndingCreditsFont": 1753756,
     "ExecuteDiamondMenu": 66038,
+    "LoadMainMenuIcon": 66920,
     "alt_YesNoPrompt": 86668
   },
   "table": {
     "pt_tiles_Menu": 69980,
+    "tiles_MainMenu": 170498,
+    "p_tiles_MainMenu": 163856,
     "tiles_Base": 2029030,
     "p_tiles_Base": 2023464,
     "tiles_ItemMenu": 174530,
@@ -32,18 +35,64 @@
   "menuTable": {
     "values": [2231435780, 2147549699, 2147549700, 163860, 163864, 163868, 163872, 163876, 163880],
     "packedMainMenuEntries": [2231435780, 2147549699, 2147549700],
-    "compressedPointerSymbols": ["p_tiles_ItemMenu", "p_tiles_BattlefieldMenu", "p_tiles_ChurchMenu", "p_tiles_ShopMenu", "p_tiles_CaravanMenu", "p_tiles_DepotMenu"]
+    "compressedPointerSymbols": ["p_tiles_ItemMenu", "p_tiles_BattlefieldMenu", "p_tiles_ChurchMenu", "p_tiles_ShopMenu", "p_tiles_CaravanMenu", "p_tiles_DepotMenu"],
+    "packedMainMenuIconIndices": [[5, 1, 2, 4], [0, 1, 2, 3], [0, 1, 2, 4]]
   },
   "summary": {
-    "resourceCount": 8, "baseResourceCount": 1, "diamondMenuResourceCount": 6,
-    "yesNoResourceCount": 1, "menuTableEntryCount": 9, "packedMainMenuEntryCount": 3,
-    "compressedMenuPointerCount": 6, "compressedByteCount": 7848,
-    "decodedByteCount": 23168, "resourceRomParityCount": 8, "pointerRomParityCount": 8,
-    "menuTableRomParityCount": 9, "commandGroupCount": 315, "literalWordCount": 3111,
-    "copyCommandCount": 1869, "copiedWordCount": 8473, "minimumTrailingBits": 32,
-    "maximumTrailingBits": 46, "maximumCopyOffsetWords": 1904, "maximumCopyLengthWords": 33
+    "resourceCount": 9,
+    "baseResourceCount": 1,
+    "diamondMenuResourceCount": 6,
+    "yesNoResourceCount": 1,
+    "mainMenuResourceCount": 1,
+    "mainMenuIconCount": 7,
+    "mainMenuIconByteCount": 576,
+    "mainMenuReferencedIconCount": 6,
+    "mainMenuUnreferencedIconCount": 1,
+    "menuTableEntryCount": 9,
+    "packedMainMenuEntryCount": 3,
+    "compressedMenuPointerCount": 6,
+    "compressedByteCount": 7848,
+    "uncompressedByteCount": 4032,
+    "decodedByteCount": 23168,
+    "resourceRomParityCount": 9,
+    "pointerRomParityCount": 9,
+    "menuTableRomParityCount": 9,
+    "sourceRomParityByteCount": 11952,
+    "commandGroupCount": 315,
+    "literalWordCount": 3111,
+    "copyCommandCount": 1869,
+    "copiedWordCount": 8473,
+    "minimumTrailingBits": 32,
+    "maximumTrailingBits": 46,
+    "maximumCopyOffsetWords": 1904,
+    "maximumCopyLengthWords": 33
+  },
+  "mainMenu": {
+    "symbol": "tiles_MainMenu",
+    "pointerSymbol": "p_tiles_MainMenu",
+    "sourcePath": "data/graphics/tech/menus/mainmenutiles.bin",
+    "definitionPath": "code/common/tech/incbins/s06_incbins_graphics.asm",
+    "pointerPath": "code/common/tech/pointers/s06_pointers.asm",
+    "sourceAddress": 170498,
+    "pointerAddress": 163856,
+    "byteCount": 4032,
+    "iconByteCount": 576,
+    "iconCount": 7,
+    "referencedIconIndices": [0, 1, 2, 3, 4, 5],
+    "unreferencedIconIndices": [6],
+    "sourceSha256": "B9DB554851B8F64939161BA995EA6A9577A23C0C809A003E3ED5DD0670FEA836",
+    "pointerSha256": "5AF5C62BC1553E187F18E5A002BADDDE480E2A2E32823A874FE74448C3551D74",
+    "icons": [
+      { "index": 0, "address": 170498, "byteCount": 576, "tileCount": 18, "sha256": "74F10053B4CF60E3C811255B98FED3B49D0EA0898220FD4DCE85C1700D62341F" },
+      { "index": 1, "address": 171074, "byteCount": 576, "tileCount": 18, "sha256": "A6B0C7DB49F80836FA2A6E3EA26DCC2214421C5656E9967BFCA99EAC56F00001" },
+      { "index": 2, "address": 171650, "byteCount": 576, "tileCount": 18, "sha256": "FB92051A8750C46287BAC80EB2E2E8AED651A55ACA3543DD15E224B35029028A" },
+      { "index": 3, "address": 172226, "byteCount": 576, "tileCount": 18, "sha256": "B31319B236CF48CE192FCD4F0A2A4B493056767EFDBAA58DB824F302ECD1370F" },
+      { "index": 4, "address": 172802, "byteCount": 576, "tileCount": 18, "sha256": "37CBB9285FECE38B65A93D896654F3A7D3E2263AA03D5C4BD6216B74C97E6358" },
+      { "index": 5, "address": 173378, "byteCount": 576, "tileCount": 18, "sha256": "D972E0BB74948EDBEF169C5D11F1AB8EB286AF37D483DD1AFBF10ECC6955A6DD" },
+      { "index": 6, "address": 173954, "byteCount": 576, "tileCount": 18, "sha256": "6A69B6753693BE7E48BEDF6C971B7C736B778D1FC7A606175984D03CA211D44E" }
+    ]
   },
   "runtimeQuestions": [
-    "Do the decoded base, diamond-menu, and yes/no tiles render with original palette, frame timing, and icon-selection behavior?"
+    "Do the decoded base, compressed diamond-menu, uncompressed main-menu, and yes/no tiles render with original palette, frame timing, and icon-selection behavior?"
   ]
 }
