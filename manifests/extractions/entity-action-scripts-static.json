@@ -58,7 +58,10 @@
     "handlerEntityReadFieldCount": 11,
     "handlerEntityWriteFieldCount": 17,
     "handlerGlobalReadStateCount": 10,
-    "handlerGlobalWriteStateCount": 5
+    "handlerGlobalWriteStateCount": 5,
+    "handlerFamilyCount": 8,
+    "handlerBitAccessCount": 22,
+    "handlerScriptPointerActionCount": 46
   },
-  "outputSha256": "B081549F488BCB24435D8697B7EF81BEDB66770E89C7E3D09FA70618AD0D0F5F"
+  "outputSha256": "5E3C331E18DE459A1BE011869A84A5FCB1E4FDE95546F92BB33AF1A9D3B61917"
 }

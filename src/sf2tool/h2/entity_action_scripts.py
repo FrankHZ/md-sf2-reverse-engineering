@@ -60,6 +60,18 @@ BRANCH_WORD_PATTERN = re.compile(
     r"([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*&\s*\$FFFF\s*$"
 )
 
+HANDLER_FAMILY_BY_OPCODE = {
+    **{opcode: "wait" for opcode in (0x00, 0x01, 0x0F)},
+    **{opcode: "direct-control" for opcode in (0x02, 0x07, 0x08)},
+    **{opcode: "movement" for opcode in (0x03, 0x04, 0x05, 0x06, 0x09, 0x0C, 0x0D, 0x0E)},
+    **{opcode: "motion-state" for opcode in range(0x10, 0x15)},
+    **{opcode: "entity-property" for opcode in (0x0A, 0x0B, *range(0x15, 0x23))},
+    0x23: "audio",
+    **{opcode: "control-flow" for opcode in range(0x30, 0x35)},
+    0x40: "map-effect",
+    0x41: "control-flow",
+}
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -714,6 +726,63 @@ def _script_read_rows(statements: list[str]) -> list[dict[str, Any]]:
     ]
 
 
+def _bit_access_rows(statements: list[str]) -> list[dict[str, Any]]:
+    accesses: dict[tuple[str, str], dict[str, Any]] = {}
+    for statement in statements:
+        match = re.match(
+            r"^(?P<operation>btst|bset|bclr|bchg)\s+#(?P<bit>[^,]+),"
+            r"(?P<target>.*ENTITYDEF_OFFSET_[A-Z0-9_]+\(a[0-7]\).*)$",
+            statement,
+        )
+        if match is None:
+            continue
+        field = re.search(r"(ENTITYDEF_OFFSET_[A-Z0-9_]+)", match.group("target"))
+        if field is None:
+            continue
+        key = (field.group(1), match.group("bit"))
+        row = accesses.setdefault(
+            key,
+            {
+                "field": key[0],
+                "bit": key[1],
+                "tested": False,
+                "set": False,
+                "cleared": False,
+                "toggled": False,
+            },
+        )
+        row[
+            {
+                "btst": "tested",
+                "bset": "set",
+                "bclr": "cleared",
+                "bchg": "toggled",
+            }[match.group("operation")]
+        ] = True
+    return [row for _, row in sorted(accesses.items())]
+
+
+def _script_pointer_actions(statements: list[str]) -> list[dict[str, Any]]:
+    actions: set[tuple[str, int, int]] = set()
+    for statement in statements:
+        advance = re.match(r"^addq\.l\s+#(\d+),a1$", statement)
+        if advance:
+            actions.add(("advance", int(advance.group(1)), 0))
+        relative = re.match(r"^adda\.w\s+(\d+)\(a1\),a1$", statement)
+        if relative:
+            actions.add(("relative-branch", int(relative.group(1)), 2))
+        absolute = re.match(r"^movea\.l\s+(\d+)\(a1\),a1$", statement)
+        if absolute:
+            actions.add(("absolute-jump", int(absolute.group(1)), 4))
+    rows = []
+    for kind, value, width in sorted(actions):
+        if kind == "advance":
+            rows.append({"kind": kind, "bytes": value})
+        else:
+            rows.append({"kind": kind, "parameterOffset": value, "widthBytes": width})
+    return rows
+
+
 def _entity_action_handlers(
     disasm: Path,
     addresses: dict[str, int],
@@ -738,6 +807,11 @@ def _entity_action_handlers(
 
     filler_target = "esc_goToNextEntity"
     handler_names = sorted(set(dispatch_targets) - {filler_target})
+    handler_opcodes = {
+        handler: dispatch_targets.index(handler) for handler in handler_names
+    }
+    if set(handler_opcodes.values()) != set(HANDLER_FAMILY_BY_OPCODE):
+        raise ValueError("entity-action handler family opcode boundary drift")
     handlers = []
     for handler in handler_names:
         body_match = re.search(
@@ -828,6 +902,8 @@ def _entity_action_handlers(
         handlers.append(
             {
                 "name": handler,
+                "opcode": handler_opcodes[handler],
+                "family": HANDLER_FAMILY_BY_OPCODE[handler_opcodes[handler]],
                 "address": addresses[handler],
                 "sourcePath": HANDLER_SOURCE_PATH.as_posix(),
                 "startLine": body_start_line,
@@ -839,6 +915,8 @@ def _entity_action_handlers(
                 "globalStateAccesses": global_accesses,
                 "scriptParameterOffsets": script_offsets,
                 "scriptReads": _script_read_rows(statements),
+                "bitAccesses": _bit_access_rows(statements),
+                "scriptPointerActions": _script_pointer_actions(statements),
                 "directCalls": direct_calls,
                 "exitRoutes": exit_routes,
             }
@@ -899,6 +977,8 @@ def _entity_action_handlers(
     filler_indices = [
         index for index, target in enumerate(dispatch_targets) if target == filler_target
     ]
+    if any(not row["scriptPointerActions"] for row in handlers):
+        raise ValueError("entity-action handler lacks a classified script-pointer action")
     summary = {
         "dispatchSlotCount": len(dispatch_targets),
         "uniqueDispatchTargetCount": len(set(dispatch_targets)),
@@ -958,6 +1038,11 @@ def _entity_action_handlers(
                 if access["write"]
             }
         ),
+        "handlerFamilyCount": len({row["family"] for row in handlers}),
+        "handlerBitAccessCount": sum(len(row["bitAccesses"]) for row in handlers),
+        "handlerScriptPointerActionCount": sum(
+            len(row["scriptPointerActions"]) for row in handlers
+        ),
     }
     return {
         "summary": summary,
@@ -977,6 +1062,11 @@ def _entity_action_handlers(
             "allRuntimeMacrosMapToHandlers": True,
             "allNonfillerHandlersOwned": True,
             "allHandlerAccessesClassified": True,
+            "allHandlersGrouped": True,
+            "allHandlerFlowActionsClassified": True,
+            "handlerFamilyCounts": dict(
+                sorted(Counter(row["family"] for row in handlers).items())
+            ),
         },
         "dispatchTable": dispatch_targets,
         "macroBindings": macro_bindings,

@@ -102,7 +102,7 @@
       }
     },
     "handlerSummary": {
-      "type": "object", "minProperties": 18, "maxProperties": 18,
+      "type": "object", "minProperties": 21, "maxProperties": 21,
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "handlerFacts": {
@@ -110,7 +110,8 @@
       "required": [
         "fillerTarget", "fillerIndices", "handlerOnlyOpcodes", "inlineTerminatorMacro",
         "inlineTerminatorWord", "unusedRuntimeMacros", "allRuntimeMacrosMapToHandlers",
-        "allNonfillerHandlersOwned", "allHandlerAccessesClassified"
+        "allNonfillerHandlersOwned", "allHandlerAccessesClassified", "allHandlersGrouped",
+        "allHandlerFlowActionsClassified", "handlerFamilyCounts"
       ],
       "properties": {
         "fillerTarget": { "const": "esc_goToNextEntity" },
@@ -130,7 +131,13 @@
         },
         "allRuntimeMacrosMapToHandlers": { "const": true },
         "allNonfillerHandlersOwned": { "const": true },
-        "allHandlerAccessesClassified": { "const": true }
+        "allHandlerAccessesClassified": { "const": true },
+        "allHandlersGrouped": { "const": true },
+        "allHandlerFlowActionsClassified": { "const": true },
+        "handlerFamilyCounts": {
+          "type": "object", "minProperties": 8, "maxProperties": 8,
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        }
       }
     },
     "standaloneRomRanges": {
@@ -331,12 +338,21 @@
     "handler": {
       "type": "object", "additionalProperties": false,
       "required": [
-        "name", "address", "sourcePath", "startLine", "endLine", "statementCount",
+        "name", "opcode", "family", "address", "sourcePath", "startLine", "endLine",
+        "statementCount",
         "entityFields", "entityFieldAccesses", "globalState", "globalStateAccesses",
-        "scriptParameterOffsets", "scriptReads", "directCalls", "exitRoutes"
+        "scriptParameterOffsets", "scriptReads", "bitAccesses", "scriptPointerActions",
+        "directCalls", "exitRoutes"
       ],
       "properties": {
         "name": { "type": "string", "pattern": "^esc" },
+        "opcode": { "type": "integer", "minimum": 0, "maximum": 79 },
+        "family": {
+          "enum": [
+            "audio", "control-flow", "direct-control", "entity-property", "map-effect",
+            "motion-state", "movement", "wait"
+          ]
+        },
         "address": { "type": "integer", "minimum": 0 },
         "sourcePath": { "const": "code/common/scripting/entity/entityscriptengine_2.asm" },
         "startLine": { "type": "integer", "minimum": 1 },
@@ -355,6 +371,12 @@
         },
         "scriptReads": {
           "type": "array", "items": { "$ref": "#/$defs/scriptRead" }
+        },
+        "bitAccesses": {
+          "type": "array", "items": { "$ref": "#/$defs/bitAccess" }
+        },
+        "scriptPointerActions": {
+          "type": "array", "items": { "$ref": "#/$defs/scriptPointerAction" }
         },
         "directCalls": { "type": "array", "items": { "type": "string" } },
         "exitRoutes": { "type": "array", "items": { "type": "string", "pattern": "^esc_" } }
@@ -383,6 +405,39 @@
           "type": "array", "minItems": 1, "items": { "type": "string" }
         }
       }
+    },
+    "bitAccess": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field", "bit", "tested", "set", "cleared", "toggled"],
+      "properties": {
+        "field": { "type": "string", "pattern": "^ENTITYDEF_OFFSET_" },
+        "bit": { "type": "string" },
+        "tested": { "type": "boolean" },
+        "set": { "type": "boolean" },
+        "cleared": { "type": "boolean" },
+        "toggled": { "type": "boolean" }
+      }
+    },
+    "scriptPointerAction": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "bytes"],
+          "properties": {
+            "kind": { "const": "advance" },
+            "bytes": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "parameterOffset", "widthBytes"],
+          "properties": {
+            "kind": { "enum": ["relative-branch", "absolute-jump"] },
+            "parameterOffset": { "type": "integer", "minimum": 0 },
+            "widthBytes": { "enum": [2, 4] }
+          }
+        }
+      ]
     },
     "entryReference": {
       "type": "object", "additionalProperties": false,

@@ -306,10 +306,14 @@ macro-addressable runtime opcodes, three handler-only branch opcodes, and one no
 inline terminator. The catalog captures all handler H1 addresses, source spans, parameter reads with
 byte/word/long widths, direct calls, and exit routes. Its source-shaped access classifier finds 18
 entity fields (11 read, 17 written) and 15 global-state symbols (ten read, five written); the entity
-count includes the implicit X field accessed directly as `(a0)`. The next semantic-depth batch should
-group handler families and record signedness, collision/obstruction flags, and wait/termination
-transitions. Frame timing, collision outcomes, and normal-story reachability remain runtime questions
-and should be grouped only after that pass finds real ambiguity.
+count includes the implicit X field accessed directly as `(a0)`. The semantic catalog now builds on
+eight complete source-role families (16 entity-property, eight movement, six control-flow,
+five motion-state, three direct-control, three wait, one audio, one map-effect), 22 entity-bit access
+records, and 46 fixed/relative/absolute script-pointer actions. `FLAGS_A` bits 5/6/7 are now tied to
+the handlers that test or update entity collision, map collision, and obstruction state. Parameter
+roles/signedness and explicit wait/continue/yield transitions remain the next static pass. Frame
+timing, collision outcomes, and normal-story reachability remain runtime questions and should be
+grouped only after that pass finds real ambiguity.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks

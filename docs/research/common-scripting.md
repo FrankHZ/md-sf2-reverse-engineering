@@ -155,6 +155,11 @@ routes, and source-shaped access modes. Its 18 entity fields include the implici
 `(a0)`; 11 fields are read and 17 are written. Of 15 global-state symbols, ten are read and five are
 written. Parameter reads also retain byte/word/long width and instruction provenance. These are
 deterministic assembly-access facts, not yet claims about signed meaning or frame-level behavior.
+All 43 handlers are grouped into eight source-role families: 16 entity-property, eight movement, six
+control-flow, five motion-state, three direct-control, three wait, one audio, and one map-effect.
+Twenty-two per-handler entity-bit access records distinguish test/set/clear operations, including
+`FLAGS_A` bits 5/6/7 for entity collision, map collision, and obstruction control. The catalog also
+records 46 script-pointer actions: fixed advances plus word-relative and long-absolute transfers.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -165,8 +170,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch groups the complete handler catalog into semantic families and records parameter
-signedness, obstruction/collision flags, and wait/termination transitions from explicit operations.
+The next static batch records parameter roles/signedness and turns the pointer-action/exit-route facts
+into explicit wait/continue/yield transition contracts.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

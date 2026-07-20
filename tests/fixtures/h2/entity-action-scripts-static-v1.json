@@ -194,7 +194,10 @@
     "handlerEntityReadFieldCount": 11,
     "handlerEntityWriteFieldCount": 17,
     "handlerGlobalReadStateCount": 10,
-    "handlerGlobalWriteStateCount": 5
+    "handlerGlobalWriteStateCount": 5,
+    "handlerFamilyCount": 8,
+    "handlerBitAccessCount": 22,
+    "handlerScriptPointerActionCount": 46
   },
   "handlerFacts": {
     "fillerTarget": "esc_goToNextEntity",
@@ -209,7 +212,19 @@
     "unusedRuntimeMacros": ["ac_pass", "ac_set1Cb4", "ac_setGhost", "ac_setId", "ac_waitDestEntity"],
     "allRuntimeMacrosMapToHandlers": true,
     "allNonfillerHandlersOwned": true,
-    "allHandlerAccessesClassified": true
+    "allHandlerAccessesClassified": true,
+    "allHandlersGrouped": true,
+    "allHandlerFlowActionsClassified": true,
+    "handlerFamilyCounts": {
+      "audio": 1,
+      "control-flow": 6,
+      "direct-control": 3,
+      "entity-property": 16,
+      "map-effect": 1,
+      "motion-state": 5,
+      "movement": 8,
+      "wait": 3
+    }
   },
   "standaloneRomRanges": [
     { "id": "eas_452A4", "sourcePath": "code/common/scripting/map/vehiclefunctions.asm", "start": 283300, "endExclusive": 283426, "sha256": "FA243D870003484C1DAD46460708C8A7903BDC5A29190BCCE1035C9ECCA5F040" },
