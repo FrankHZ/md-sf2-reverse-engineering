@@ -197,7 +197,11 @@
     "handlerGlobalWriteStateCount": 5,
     "handlerFamilyCount": 8,
     "handlerBitAccessCount": 22,
-    "handlerScriptPointerActionCount": 46
+    "handlerScriptPointerActionCount": 46,
+    "declaredMacroParameterCount": 46,
+    "declaredMacroParameterByteCount": 86,
+    "ignoredDeclaredParameterByteCount": 4,
+    "fullyConsumedRuntimeMacroCount": 40
   },
   "handlerFacts": {
     "fillerTarget": "esc_goToNextEntity",
@@ -215,6 +219,8 @@
     "allHandlerAccessesClassified": true,
     "allHandlersGrouped": true,
     "allHandlerFlowActionsClassified": true,
+    "allDeclaredParameterBytesAccounted": true,
+    "partiallyConsumedMacros": ["ac_pass", "ac_setId", "ac_setSprite"],
     "handlerFamilyCounts": {
       "audio": 1,
       "control-flow": 6,

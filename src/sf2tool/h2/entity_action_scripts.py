@@ -77,7 +77,7 @@ def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
 
 
-def _macro_contracts(disasm: Path) -> dict[str, dict[str, int]]:
+def _macro_contracts(disasm: Path) -> dict[str, dict[str, Any]]:
     source = read_upstream_text(disasm / MACRO_PATH)
     contracts = {}
     pattern = re.compile(
@@ -91,12 +91,35 @@ def _macro_contracts(disasm: Path) -> dict[str, dict[str, int]]:
             raise ValueError(f"entity-action macro has no literal opcode: {match.group(1)}")
         token = first_word.group(1)
         opcode = int(token[1:], 16) if token.startswith("$") else int(token)
-        size = (
-            len(re.findall(r"^\s*dc\.b\b", body, re.MULTILINE))
-            + 2 * len(re.findall(r"^\s*dc\.w\b", body, re.MULTILINE))
-            + 4 * len(re.findall(r"^\s*dc\.l\b", body, re.MULTILINE))
-        )
-        contracts[match.group(1)] = {"opcode": opcode, "encodedBytes": size}
+        offset = 0
+        parameters = []
+        for raw_line in body.splitlines():
+            directive = re.match(
+                r"^\s*dc\.(?P<size>[bwl])\s+(?P<expression>[^;]+?)"
+                r"(?:\s*;\s*(?P<comment>.*))?$",
+                raw_line,
+            )
+            if directive is None:
+                continue
+            width = {"b": 1, "w": 2, "l": 4}[directive.group("size")]
+            expression = directive.group("expression").strip()
+            ordinal = re.search(r"\\(\d+)", expression)
+            if ordinal:
+                parameters.append(
+                    {
+                        "ordinal": int(ordinal.group(1)),
+                        "offset": offset,
+                        "widthBytes": width,
+                        "expression": expression,
+                        "role": (directive.group("comment") or "").strip(),
+                    }
+                )
+            offset += width
+        contracts[match.group(1)] = {
+            "opcode": opcode,
+            "encodedBytes": offset,
+            "parameters": parameters,
+        }
     if len(contracts) != 44:
         raise ValueError(f"entity-action macro boundary drift: {len(contracts)}")
     return contracts
@@ -106,7 +129,7 @@ def _parse_corpus(
     disasm: Path,
     rom: bytes,
     addresses: dict[str, int],
-    macro_contracts: dict[str, dict[str, int]],
+    macro_contracts: dict[str, dict[str, Any]],
     spec: dict[str, Any],
 ) -> dict[str, Any]:
     source = read_upstream_text(disasm / spec["path"])
@@ -145,7 +168,8 @@ def _parse_corpus(
                 "ownerLabel": active_label,
                 "macro": macro,
                 "arguments": arguments.strip(),
-                **macro_contracts[macro],
+                "opcode": macro_contracts[macro]["opcode"],
+                "encodedBytes": macro_contracts[macro]["encodedBytes"],
             }
         )
 
@@ -230,7 +254,7 @@ def _source_area(path: Path) -> str:
 def _command_row(
     line_number: int,
     match: re.Match[str],
-    macro_contracts: dict[str, dict[str, int]],
+    macro_contracts: dict[str, dict[str, Any]],
     owner_label: str,
 ) -> dict[str, Any]:
     inline_label, macro, arguments = match.groups()
@@ -241,7 +265,8 @@ def _command_row(
         "ownerLabel": inline_label or owner_label,
         "macro": macro,
         "arguments": arguments.strip(),
-        **macro_contracts[macro],
+        "opcode": macro_contracts[macro]["opcode"],
+        "encodedBytes": macro_contracts[macro]["encodedBytes"],
     }
 
 
@@ -315,7 +340,7 @@ def _parse_standalone_region(
     start_line: int,
     end_line: int,
     addresses: dict[str, int],
-    macro_contracts: dict[str, dict[str, int]],
+    macro_contracts: dict[str, dict[str, Any]],
     rom: bytes,
 ) -> list[dict[str, Any]]:
     labels: list[dict[str, Any]] = []
@@ -410,7 +435,7 @@ def _parse_distributed_programs(
     disasm: Path,
     rom: bytes,
     addresses: dict[str, int],
-    macro_contracts: dict[str, dict[str, int]],
+    macro_contracts: dict[str, dict[str, Any]],
     shared_corpora: list[dict[str, Any]],
 ) -> dict[str, Any]:
     shared_paths = {row["sourcePath"] for row in shared_corpora}
@@ -786,7 +811,7 @@ def _script_pointer_actions(statements: list[str]) -> list[dict[str, Any]]:
 def _entity_action_handlers(
     disasm: Path,
     addresses: dict[str, int],
-    macro_contracts: dict[str, dict[str, int]],
+    macro_contracts: dict[str, dict[str, Any]],
     command_counts: Counter[str],
 ) -> dict[str, Any]:
     source = read_upstream_text(disasm / HANDLER_SOURCE_PATH)
@@ -922,6 +947,7 @@ def _entity_action_handlers(
             }
         )
 
+    handlers_by_name = {row["name"]: row for row in handlers}
     macro_bindings = []
     opcode_rows: dict[int, dict[str, Any]] = {}
     for macro, contract in sorted(macro_contracts.items()):
@@ -949,12 +975,40 @@ def _entity_action_handlers(
                 raise ValueError(f"entity-action opcode alias drift: {macro}")
             row["macros"].append(macro)
             row["sourceCommandCount"] += command_counts[macro]
+        handler_read_bytes = (
+            {
+                byte
+                for read in handlers_by_name[handler]["scriptReads"]
+                for byte in range(read["offset"], read["offset"] + read["widthBytes"])
+            }
+            if handler is not None
+            else set()
+        )
+        parameter_coverage = []
+        for parameter in contract["parameters"]:
+            declared = set(
+                range(
+                    parameter["offset"],
+                    parameter["offset"] + parameter["widthBytes"],
+                )
+            )
+            parameter_coverage.append(
+                {
+                    **parameter,
+                    "readOffsets": sorted(declared & handler_read_bytes),
+                    "ignoredOffsets": sorted(declared - handler_read_bytes),
+                }
+            )
         macro_bindings.append(
             {
                 "macro": macro,
                 "opcode": opcode,
                 "encodedBytes": contract["encodedBytes"],
                 "parameterBytes": contract["encodedBytes"] - 2,
+                "declaredParameters": parameter_coverage,
+                "allDeclaredParameterBytesRead": all(
+                    not row["ignoredOffsets"] for row in parameter_coverage
+                ),
                 "handler": handler,
                 "isInlineTerminator": is_terminator,
                 "sourceCommandCount": command_counts[macro],
@@ -979,6 +1033,11 @@ def _entity_action_handlers(
     ]
     if any(not row["scriptPointerActions"] for row in handlers):
         raise ValueError("entity-action handler lacks a classified script-pointer action")
+    partially_consumed_macros = [
+        row["macro"]
+        for row in macro_bindings
+        if not row["isInlineTerminator"] and not row["allDeclaredParameterBytesRead"]
+    ]
     summary = {
         "dispatchSlotCount": len(dispatch_targets),
         "uniqueDispatchTargetCount": len(set(dispatch_targets)),
@@ -1043,6 +1102,23 @@ def _entity_action_handlers(
         "handlerScriptPointerActionCount": sum(
             len(row["scriptPointerActions"]) for row in handlers
         ),
+        "declaredMacroParameterCount": sum(
+            len(row["declaredParameters"]) for row in macro_bindings
+        ),
+        "declaredMacroParameterByteCount": sum(
+            parameter["widthBytes"]
+            for row in macro_bindings
+            for parameter in row["declaredParameters"]
+        ),
+        "ignoredDeclaredParameterByteCount": sum(
+            len(parameter["ignoredOffsets"])
+            for row in macro_bindings
+            for parameter in row["declaredParameters"]
+        ),
+        "fullyConsumedRuntimeMacroCount": sum(
+            not row["isInlineTerminator"] and row["allDeclaredParameterBytesRead"]
+            for row in macro_bindings
+        ),
     }
     return {
         "summary": summary,
@@ -1064,6 +1140,8 @@ def _entity_action_handlers(
             "allHandlerAccessesClassified": True,
             "allHandlersGrouped": True,
             "allHandlerFlowActionsClassified": True,
+            "allDeclaredParameterBytesAccounted": True,
+            "partiallyConsumedMacros": partially_consumed_macros,
             "handlerFamilyCounts": dict(
                 sorted(Counter(row["family"] for row in handlers).items())
             ),

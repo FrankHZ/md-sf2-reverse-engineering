@@ -160,6 +160,11 @@ control-flow, five motion-state, three direct-control, three wait, one audio, an
 Twenty-two per-handler entity-bit access records distinguish test/set/clear operations, including
 `FLAGS_A` bits 5/6/7 for entity collision, map collision, and obstruction control. The catalog also
 records 46 script-pointer actions: fixed advances plus word-relative and long-absolute transfers.
+The 44 macro definitions declare 46 dynamic parameters spanning 86 encoded bytes. Forty runtime
+macros consume every declared byte. Three are intentionally partial at the handler boundary:
+`ac_pass` advances over both payload bytes without reading them, while `ac_setId` and `ac_setSprite`
+read only the low byte of their declared word. All four ignored byte positions are preserved in the
+contract instead of being silently retyped as byte parameters.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -170,8 +175,9 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch records parameter roles/signedness and turns the pointer-action/exit-route facts
-into explicit wait/continue/yield transition contracts.
+The next static batch records parameter roles/signedness, including operands encoded outside named
+macro bodies, and turns the pointer-action/exit-route facts into explicit wait/continue/yield
+transition contracts.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

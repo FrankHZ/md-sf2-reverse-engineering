@@ -102,7 +102,7 @@
       }
     },
     "handlerSummary": {
-      "type": "object", "minProperties": 21, "maxProperties": 21,
+      "type": "object", "minProperties": 25, "maxProperties": 25,
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "handlerFacts": {
@@ -111,7 +111,8 @@
         "fillerTarget", "fillerIndices", "handlerOnlyOpcodes", "inlineTerminatorMacro",
         "inlineTerminatorWord", "unusedRuntimeMacros", "allRuntimeMacrosMapToHandlers",
         "allNonfillerHandlersOwned", "allHandlerAccessesClassified", "allHandlersGrouped",
-        "allHandlerFlowActionsClassified", "handlerFamilyCounts"
+        "allHandlerFlowActionsClassified", "allDeclaredParameterBytesAccounted",
+        "partiallyConsumedMacros", "handlerFamilyCounts"
       ],
       "properties": {
         "fillerTarget": { "const": "esc_goToNextEntity" },
@@ -134,6 +135,11 @@
         "allHandlerAccessesClassified": { "const": true },
         "allHandlersGrouped": { "const": true },
         "allHandlerFlowActionsClassified": { "const": true },
+        "allDeclaredParameterBytesAccounted": { "const": true },
+        "partiallyConsumedMacros": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "type": "string", "pattern": "^ac_" }
+        },
         "handlerFamilyCounts": {
           "type": "object", "minProperties": 8, "maxProperties": 8,
           "additionalProperties": { "type": "integer", "minimum": 1 }
@@ -309,13 +315,18 @@
       "type": "object", "additionalProperties": false,
       "required": [
         "macro", "opcode", "encodedBytes", "parameterBytes", "handler",
-        "isInlineTerminator", "sourceCommandCount"
+        "declaredParameters", "allDeclaredParameterBytesRead", "isInlineTerminator",
+        "sourceCommandCount"
       ],
       "properties": {
         "macro": { "type": "string", "pattern": "^ac_" },
         "opcode": { "type": "integer", "minimum": 0, "maximum": 65535 },
         "encodedBytes": { "type": "integer", "minimum": 2 },
         "parameterBytes": { "type": "integer", "minimum": 0 },
+        "declaredParameters": {
+          "type": "array", "items": { "$ref": "#/$defs/declaredParameter" }
+        },
+        "allDeclaredParameterBytesRead": { "type": "boolean" },
         "handler": { "type": ["string", "null"] },
         "isInlineTerminator": { "type": "boolean" },
         "sourceCommandCount": { "type": "integer", "minimum": 0 }
@@ -333,6 +344,26 @@
           "items": { "type": "string", "pattern": "^ac_" }
         },
         "sourceCommandCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "declaredParameter": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "ordinal", "offset", "widthBytes", "expression", "role", "readOffsets",
+        "ignoredOffsets"
+      ],
+      "properties": {
+        "ordinal": { "type": "integer", "minimum": 1 },
+        "offset": { "type": "integer", "minimum": 2 },
+        "widthBytes": { "enum": [1, 2, 4] },
+        "expression": { "type": "string" },
+        "role": { "type": "string" },
+        "readOffsets": {
+          "type": "array", "items": { "type": "integer", "minimum": 2 }
+        },
+        "ignoredOffsets": {
+          "type": "array", "items": { "type": "integer", "minimum": 2 }
+        }
       }
     },
     "handler": {

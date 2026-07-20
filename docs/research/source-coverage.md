@@ -311,7 +311,10 @@ eight complete source-role families (16 entity-property, eight movement, six con
 five motion-state, three direct-control, three wait, one audio, one map-effect), 22 entity-bit access
 records, and 46 fixed/relative/absolute script-pointer actions. `FLAGS_A` bits 5/6/7 are now tied to
 the handlers that test or update entity collision, map collision, and obstruction state. Parameter
-roles/signedness and explicit wait/continue/yield transitions remain the next static pass. Frame
+ABI coverage now joins 46 macro-declared parameters/86 bytes to handler reads: 40 runtime macros read
+their full declarations, `ac_pass` ignores its word, and `ac_setId`/`ac_setSprite` consume only the
+low byte of their declared words. Parameter roles/signedness, operands outside macro bodies, and
+explicit wait/continue/yield transitions remain the next static pass. Frame
 timing, collision outcomes, and normal-story reachability remain runtime questions and should be
 grouped only after that pass finds real ambiguity.
 
