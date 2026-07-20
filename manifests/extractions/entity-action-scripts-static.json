@@ -69,7 +69,10 @@
     "externalMacroOperandCount": 1,
     "handlerOnlyLayoutCount": 3,
     "usedHandlerCount": 35,
-    "unusedHandlerCount": 8
+    "unusedHandlerCount": 8,
+    "yieldCapableHandlerCount": 11,
+    "redispatchCapableHandlerCount": 39,
+    "dualOutcomeHandlerCount": 7
   },
-  "outputSha256": "F4C1A3D8660FAD7174D463876EFF85BB1FD4F0847FD04E84B2D1B2E079857F39"
+  "outputSha256": "A6A61936FB94E50F798C6F650AE506765BBEDCFCD58B4866BB547DD7AAF11A60"
 }

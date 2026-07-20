@@ -912,12 +912,24 @@ def _entity_action_handlers(
         exit_routes = sorted(
             set(
                 re.findall(
-                    r"\b(?:bra|jmp)(?:\.[bwl])?\s+"
+                    r"\b(?:b[a-z]+|jmp)(?:\.[bwl])?\s+"
                     r"(esc_(?:clearTimerGoToNextCommand|clearTimerGoToNextEntity|goToNextEntity))\b",
                     body,
                 )
             )
         )
+        flow_outcomes = set()
+        if "esc_clearTimerGoToNextCommand" in exit_routes:
+            flow_outcomes.add("redispatch-next-command")
+        if {
+            "esc_clearTimerGoToNextEntity",
+            "esc_goToNextEntity",
+        } & set(exit_routes):
+            flow_outcomes.add("yield-next-entity")
+        if handler_opcodes[handler] in {0x04, 0x05, 0x09, 0x0E, 0x41}:
+            flow_outcomes.add("redispatch-next-command")
+        if not flow_outcomes:
+            raise ValueError(f"entity-action handler flow outcome is unclassified: {handler}")
         script_offsets = sorted(
             {
                 int(value)
@@ -944,6 +956,7 @@ def _entity_action_handlers(
                 "scriptPointerActions": _script_pointer_actions(statements),
                 "directCalls": direct_calls,
                 "exitRoutes": exit_routes,
+                "flowOutcomes": sorted(flow_outcomes),
             }
         )
 
@@ -1208,6 +1221,13 @@ def _entity_action_handlers(
         "handlerOnlyLayoutCount": len(handler_only_layouts),
         "usedHandlerCount": sum(row["sourceCommandCount"] > 0 for row in handlers),
         "unusedHandlerCount": sum(row["sourceCommandCount"] == 0 for row in handlers),
+        "yieldCapableHandlerCount": sum(
+            "yield-next-entity" in row["flowOutcomes"] for row in handlers
+        ),
+        "redispatchCapableHandlerCount": sum(
+            "redispatch-next-command" in row["flowOutcomes"] for row in handlers
+        ),
+        "dualOutcomeHandlerCount": sum(len(row["flowOutcomes"]) == 2 for row in handlers),
     }
     return {
         "summary": summary,
@@ -1237,6 +1257,7 @@ def _entity_action_handlers(
             "allHandlerOnlyOpcodesAbsentFromSourceCorpus": all(
                 row["sourceCommandCount"] == 0 for row in handler_only_layouts
             ),
+            "allHandlerOutcomesClassified": True,
             "handlerFamilyCounts": dict(
                 sorted(Counter(row["family"] for row in handlers).items())
             ),

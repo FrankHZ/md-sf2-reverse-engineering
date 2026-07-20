@@ -171,6 +171,12 @@ parsed source commands but their handler shapes are closed: opcodes 49/50 are si
 handler-read word followed by a relative displacement; opcode 51 has an ignored word followed by the
 same displacement shape. Consequently 35 of 43 handlers occur in the complete source corpus. The
 eight absent handlers are the five unused named-macro handlers plus those three handler-only slots.
+All direct conditional and unconditional exits, plus the shared movement tail and `ac_pass`
+fallthrough, now reduce to two implementation-neutral outcomes. Thirty-nine handlers can redispatch
+the next command in the same entity update, eleven can yield to the next entity, and seven can do
+either: wait, wait-for-destination, relative/absolute movement when obstructed, random walk, sprite
+update when the load queue is full, and wait-for-another-entity. The four yield-only handlers are the
+character/follower/raft/Caravan continuous-control paths.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -181,8 +187,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch records signedness/roles for the remaining unnamed parameter fields and turns
-the pointer-action/exit-route facts into explicit wait/continue/yield transition contracts.
+The next static batch records signedness/roles for the remaining unnamed parameter fields and the
+source conditions selecting each dual outcome.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

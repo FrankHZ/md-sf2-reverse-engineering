@@ -26,8 +26,8 @@
     "distributedCommandCounts": { "type": "object", "minProperties": 34, "maxProperties": 34 },
     "distributedControlFlowFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 },
     "distributedReferenceFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
-    "handlerSummary": { "type": "object", "minProperties": 29, "maxProperties": 29 },
-    "handlerFacts": { "type": "object", "minProperties": 16, "maxProperties": 16 },
+    "handlerSummary": { "type": "object", "minProperties": 32, "maxProperties": 32 },
+    "handlerFacts": { "type": "object", "minProperties": 17, "maxProperties": 17 },
     "standaloneRomRanges": { "type": "array", "minItems": 11, "maxItems": 11 },
     "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2 }
   }

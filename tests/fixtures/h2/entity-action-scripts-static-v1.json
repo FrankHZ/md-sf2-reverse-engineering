@@ -205,7 +205,10 @@
     "externalMacroOperandCount": 1,
     "handlerOnlyLayoutCount": 3,
     "usedHandlerCount": 35,
-    "unusedHandlerCount": 8
+    "unusedHandlerCount": 8,
+    "yieldCapableHandlerCount": 11,
+    "redispatchCapableHandlerCount": 39,
+    "dualOutcomeHandlerCount": 7
   },
   "handlerFacts": {
     "fillerTarget": "esc_goToNextEntity",
@@ -227,6 +230,7 @@
     "partiallyConsumedMacros": ["ac_pass", "ac_setId", "ac_setSprite"],
     "unusedHandlers": ["esc0F_waitUntilOtherEntityReachesDest", "esc16_setEntityNumber", "esc1D_setEntityGhost", "esc21_set1Cbit4", "esc31_branchIfFlagSet", "esc32_branchIfFlagClear", "esc33_randomBranch", "esc41_pass"],
     "allHandlerOnlyOpcodesAbsentFromSourceCorpus": true,
+    "allHandlerOutcomesClassified": true,
     "handlerFamilyCounts": {
       "audio": 1,
       "control-flow": 6,
