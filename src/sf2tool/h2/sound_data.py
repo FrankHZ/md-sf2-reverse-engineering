@@ -16,6 +16,7 @@ from sf2tool.source_text import read_upstream_text
 
 ID = "sf2-sound-data-static-v1"
 SOURCE_ROOT = Path("data/sound")
+DRIVER_SOURCE = Path("code/common/tech/sound/sounddriver.asm")
 BANK_SOURCES = {
     "bank0": SOURCE_ROOT / "musicbank0/musicbank0.asm",
     "bank1": SOURCE_ROOT / "musicbank1/musicbank1.asm",
@@ -244,6 +245,128 @@ def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
     }
 
 
+def _fixed_opcode_families(
+    macro_definitions: list[dict[str, Any]],
+) -> tuple[dict[str, list[str]], list[str]]:
+    families: dict[str, list[str]] = {}
+    dynamic = []
+    for row in macro_definitions:
+        first = row["byteExpressions"][0]
+        match = re.fullmatch(r"0([0-9A-F]+)h", first, re.IGNORECASE)
+        if match is None:
+            dynamic.append(row["name"])
+            continue
+        opcode = f"{int(match.group(1), 16):02X}"
+        families.setdefault(opcode, []).append(row["name"])
+    return (
+        {opcode: sorted(names) for opcode, names in sorted(families.items())},
+        sorted(dynamic),
+    )
+
+
+def _require_driver_fragments(source: str, fragments: list[str]) -> None:
+    cursor = 0
+    for fragment in fragments:
+        cursor = source.find(fragment, cursor)
+        if cursor < 0:
+            raise ValueError(f"sound driver instruction sequence drift: {fragment}")
+        cursor += len(fragment)
+
+
+def _music_driver_contract(
+    driver_source: str, macro_definitions: list[dict[str, Any]]
+) -> dict[str, Any]:
+    _require_driver_fragments(
+        driver_source,
+        [
+            "YM1_ParseData:",
+            "cp\t0FFh",
+            "cp\t0FEh",
+            "cp\t0FDh",
+            "cp\t0FCh",
+            "cp\t0FBh",
+            "cp\t0FAh",
+            "cp\t0F9h",
+            "cp\t0F8h",
+            "call\tParseLoopCommand",
+            "YM2_ParseData:",
+            "call\tParseLoopCommand",
+            "YM2_ParseChannel6Data:",
+            "call\tParseLoopCommand",
+            "PSG_ParseToneData:",
+            "call\tPSG_LoadInstrument",
+            "call\tSetRelease",
+            "call\tLoadVibrato",
+            "call\tYM1_Input",
+            "call\tLoadNoteShift",
+            "call\tParseLoopCommand",
+            "PSG_ParseNoiseData:",
+            "call\tParseLoopCommand",
+            "ParseLoopCommand:",
+            "and\t7",
+            "cp\t1",
+            "cp\t2",
+            "cp\t3",
+            "cp\t4",
+            "cp\t5",
+            "cp\t6",
+            "and\t1Fh",
+            "inc\ta",
+            "dec\t(ix+19h)",
+        ],
+    )
+    families, dynamic = _fixed_opcode_families(macro_definitions)
+    if len(re.findall(r"call\s+ParseLoopCommand", driver_source)) != 5:
+        raise ValueError("sound driver loop-parser caller boundary drift")
+    return {
+        "sourcePath": DRIVER_SOURCE.as_posix(),
+        "sourceSha256": _sha256(driver_source.encode()),
+        "channelParsers": [
+            "YM1_ParseData",
+            "YM2_ParseData",
+            "YM2_ParseChannel6Data",
+            "PSG_ParseToneData",
+            "PSG_ParseNoiseData",
+        ],
+        "sharedLoopParser": "ParseLoopCommand",
+        "sharedLoopParserCallerCount": 5,
+        "fixedOpcodeFamilies": families,
+        "dynamicFirstByteMacros": dynamic,
+        "channelSpecificCommands": {
+            "FA": {"ym": "stereo", "psg": "timer-b"},
+            "FC": {"ym": "slide-or-key-release", "psg": "key-release"},
+            "FD": {"ym": "volume", "psg": "instrument"},
+            "FE": {"ym": "instrument", "psg": "unsupported"},
+        },
+        "ffForms": {
+            "ym1": {
+                "0000": "end-channel",
+                "nonzero-low-00-high": "queue-operation-and-end-channel",
+                "nonzero-high": "jump-absolute-z80-address",
+            },
+            "ym2AndPsg": {
+                "0000": "end-channel",
+                "nonzero-word": "jump-absolute-z80-address",
+            },
+        },
+        "loopSubcommands": [
+            {"parameter": "00", "meaning": "main-loop-start", "stateOffsets": [19, 20]},
+            {"parameter": "20", "meaning": "repeat-start", "stateOffsets": [21, 22]},
+            {"parameter": "40", "meaning": "repeat-section-1", "stateOffsets": [26]},
+            {"parameter": "60", "meaning": "repeat-section-2", "stateOffsets": [27]},
+            {"parameter": "80", "meaning": "repeat-section-3-terminator", "stateOffsets": []},
+            {"parameter": "A0", "meaning": "repeat-end", "stateOffsets": [21, 22]},
+            {"parameter": "A1", "meaning": "main-loop-end", "stateOffsets": [19, 20]},
+            {
+                "parameter": "C0-DF",
+                "meaning": "counted-loop-start-count-low5-plus-1",
+                "stateOffsets": [23, 24, 25],
+            },
+            {"parameter": "E0", "meaning": "counted-loop-end", "stateOffsets": [23, 24, 25]},
+        ],
+    }
+
+
 def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -325,6 +448,10 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
     song_files = _song_file_catalog(sources, bank_payloads)
     song_paths = [row["sourcePath"] for row in song_files]
     command_model = _music_command_model(sources)
+    driver_source = read_upstream_text(disasm / DRIVER_SOURCE)
+    command_model["driver"] = _music_driver_contract(
+        driver_source, command_model["macroDefinitions"]
+    )
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -364,7 +491,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
             "files and two macro/enum sources remain outside symbol reach"
         ),
         "runtimeQuestions": [
-            "music-command-and-channel-interpreter-semantics",
+            "note-sample-frequency-and-channel-state-runtime-semantics",
             "tempo-loop-and-instrument-timing",
             "bank-selection-and-cross-bank-fallback-behavior",
         ],
@@ -396,7 +523,7 @@ def verify_sound_data_inventory(
     song_rom_offsets = {row["id"]: row["entryRomOffset"] for row in output["songFiles"]}
     if fixture["table"]["songRomOffsets"] != song_rom_offsets:
         raise ValueError("sound data song ROM-offset drift")
-    for field in ("summary", "unusedMacros", "invocationCounts"):
+    for field in ("summary", "unusedMacros", "invocationCounts", "driver"):
         if output["commandModel"][field] != fixture["expected"]["commandModel"][field]:
             raise ValueError(f"sound data command-model {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()

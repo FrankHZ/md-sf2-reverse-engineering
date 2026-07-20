@@ -153,7 +153,8 @@ the complete 17-bank, 4,267-string static Huffman decode corpus, plus
 the complete nine-range shop/debug-shop/chest/break/mithril/Caravan/field-item/weapon-graphics corpus, plus
 the complete 166-row enemy map-sprite table and normal-vs-NPC-tail reachability boundary, plus
 the complete original built map-sprite assignment domains and reserved-ID exclusion audit, plus
-the complete two-bank/37-song Z80 music source/range/pointer/ROM and 29-macro command corpus, plus
+the complete two-bank/37-song Z80 music source/range/pointer/ROM, 29-macro command corpus, and
+five-parser/shared-loop static driver contract, plus
 the complete map-script dispatcher/macro/handler/source-use inventory, plus
 the complete shared battle player-input/cursor function inventory and static menu/item/chest contract, plus
 the complete shared/distributed entity-action command/control-flow/reference corpus,

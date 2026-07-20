@@ -64,13 +64,14 @@
     },
     "commandModel": {
       "type": "object", "additionalProperties": false,
-      "required": ["summary", "macroDefinitions", "invocationCounts", "unusedMacros", "songs"],
+      "required": ["summary", "macroDefinitions", "invocationCounts", "unusedMacros", "songs", "driver"],
       "properties": {
         "summary": { "type": "object" },
         "macroDefinitions": { "type": "array", "minItems": 1, "uniqueItems": true },
         "invocationCounts": { "type": "object" },
         "unusedMacros": { "type": "array", "uniqueItems": true },
-        "songs": { "type": "array", "minItems": 37, "maxItems": 37 }
+        "songs": { "type": "array", "minItems": 37, "maxItems": 37 },
+        "driver": { "type": "object" }
       }
     },
     "strictIndexExclusion": { "type": "string", "minLength": 1 },

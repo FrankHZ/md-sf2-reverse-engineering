@@ -1,4 +1,8 @@
-from sf2tool.h2.sound_data import _parse_music_macros, _song_command_row
+from sf2tool.h2.sound_data import (
+    _fixed_opcode_families,
+    _parse_music_macros,
+    _song_command_row,
+)
 
 
 def test_music_macro_abi_and_song_invocations_are_parsed() -> None:
@@ -33,3 +37,7 @@ def test_music_macro_abi_and_song_invocations_are_parsed() -> None:
     assert row["channelLabels"] == ["Music_1_Channel_0"]
     assert row["macroInvocationCount"] == 2
     assert row["macroInvocations"] == {"channel_end": 1, "note": 1}
+    assert _fixed_opcode_families(macros) == (
+        {"FF": ["channel_end"]},
+        ["note"],
+    )

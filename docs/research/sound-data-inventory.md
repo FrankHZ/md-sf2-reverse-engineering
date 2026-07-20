@@ -51,9 +51,20 @@ invocations. The 2,347 flow invocations comprise main loops, repeat sections, co
 channel terminators. Each macro records its parameters, exact emitted-byte expressions and width;
 each song records entry/channel labels, pointer counts, directives and per-macro use counts.
 
-This closes source grammar and command inventory, not playback meaning. Note/sample pitch decoding,
-loop execution, tempo, instruments, and channel scheduling remain `Inferred` or `Unknown` until the
-Z80 driver consumer is modeled and the coherent runtime matrix is observed.
+The adjacent Z80 driver now closes the static consumer side too. Five YM/PSG parsers call one shared
+`ParseLoopCommand`; fixed opcode families cover `70`, `F0`, and `F8`–`FF`, while six note/sample
+macros compute their first byte from arguments. `FA`, `FC`, `FD`, and `FE` are explicitly
+channel-specific: for example, `FA` selects stereo on YM but Timer B on PSG, and `FD` means volume on
+YM but instrument on PSG. `FF 0000` terminates all channels; YM1 alone treats a nonzero low byte with
+zero high byte as a queued operation, while other nonzero words are absolute Z80 jumps.
+
+The nine `F8` parameter forms are also tied to exact channel-state offsets: main/repeat starts,
+three repeat sections, repeat/main endings, and counted-loop start/end. A counted start stores
+`low5 + 1`; the ending decrements offset `$19` and jumps through `$17-$18` until zero.
+
+This closes source grammar, dispatch, and static loop state—not playback timing. Note/sample
+frequency results, live channel-state evolution, tempo, instruments, and scheduling remain
+`Inferred` or `Unknown` until the coherent runtime matrix is observed.
 
 ## Complete Data-ASM Discovery
 
@@ -65,9 +76,9 @@ file, the four symbol-less music support/entry sources, and explicit alternates/
 
 ## Concentrated Queue
 
-No emulator was launched. Remaining questions are grouped as music command/channel interpretation,
-tempo/loop/instrument timing, and bank-selection/fallback behavior. They should be tested together
-through the sound-command boundary after the static command stream model is built.
+No emulator was launched. Remaining questions are grouped as note/sample frequency and live channel
+state, tempo/loop/instrument timing, and bank-selection/fallback behavior. They should be tested
+together through the sound-command boundary rather than one launch per opcode.
 
 ## Reproduction
 

@@ -65,11 +65,46 @@
         "setRelease":1115, "setSlide":76, "shifting":218, "stereo":446,
         "sustain":416, "vibrato":469, "vol":6546, "wait":909, "waitL":1439,
         "ymTimer":3
+      },
+      "driver": {
+        "sourcePath":"code/common/tech/sound/sounddriver.asm",
+        "sourceSha256":"DE26E4AE704AA5B0E4FE39D7A32AC47C2F1FE4FEDBD86EB6E1EE51C7C20BB1AE",
+        "channelParsers":["YM1_ParseData","YM2_ParseData","YM2_ParseChannel6Data","PSG_ParseToneData","PSG_ParseNoiseData"],
+        "sharedLoopParser":"ParseLoopCommand", "sharedLoopParserCallerCount":5,
+        "fixedOpcodeFamilies": {
+          "70":["wait"], "F0":["waitL"],
+          "F8":["countedLoopEnd","countedLoopStart","mainLoopEnd","mainLoopStart","repeatEnd","repeatSection1Start","repeatSection2Start","repeatSection3Start","repeatStart"],
+          "F9":["shifting"], "FA":["stereo","ymTimer"], "FB":["vibrato"],
+          "FC":["noSlide","setRelease","setSlide","sustain"], "FD":["psgInst","vol"],
+          "FE":["inst"], "FF":["channel_end"]
+        },
+        "dynamicFirstByteMacros":["note","noteL","psgNote","psgNoteL","sample","sampleL"],
+        "channelSpecificCommands": {
+          "FA":{"ym":"stereo","psg":"timer-b"},
+          "FC":{"ym":"slide-or-key-release","psg":"key-release"},
+          "FD":{"ym":"volume","psg":"instrument"},
+          "FE":{"ym":"instrument","psg":"unsupported"}
+        },
+        "ffForms": {
+          "ym1":{"0000":"end-channel","nonzero-low-00-high":"queue-operation-and-end-channel","nonzero-high":"jump-absolute-z80-address"},
+          "ym2AndPsg":{"0000":"end-channel","nonzero-word":"jump-absolute-z80-address"}
+        },
+        "loopSubcommands": [
+          {"parameter":"00","meaning":"main-loop-start","stateOffsets":[19,20]},
+          {"parameter":"20","meaning":"repeat-start","stateOffsets":[21,22]},
+          {"parameter":"40","meaning":"repeat-section-1","stateOffsets":[26]},
+          {"parameter":"60","meaning":"repeat-section-2","stateOffsets":[27]},
+          {"parameter":"80","meaning":"repeat-section-3-terminator","stateOffsets":[]},
+          {"parameter":"A0","meaning":"repeat-end","stateOffsets":[21,22]},
+          {"parameter":"A1","meaning":"main-loop-end","stateOffsets":[19,20]},
+          {"parameter":"C0-DF","meaning":"counted-loop-start-count-low5-plus-1","stateOffsets":[23,24,25]},
+          {"parameter":"E0","meaning":"counted-loop-end","stateOffsets":[23,24,25]}
+        ]
       }
     },
     "strictIndexExclusion": "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry files and two macro/enum sources remain outside symbol reach",
     "runtimeQuestions": [
-      "music-command-and-channel-interpreter-semantics",
+      "note-sample-frequency-and-channel-state-runtime-semantics",
       "tempo-loop-and-instrument-timing",
       "bank-selection-and-cross-bank-fallback-behavior"
     ]
