@@ -140,6 +140,21 @@ bytes, command ownership, labeled layout, and static control flow. It does not y
 effects of all 44 defined opcode handlers or prove movement timing, collision results, or story-route
 reachability.
 
+The dispatcher boundary is now complete as well. Its 80 slots contain 37 copies of
+`esc_goToNextEntity` and 43 real handlers. Of the 44 named `ac_*` macros, `ac_end` is the `$8080`
+inline-copy terminator and never indexes the dispatcher; the other 43 macro names collapse to 40
+runtime opcodes because the four orientation macros share opcode 27. Three additional handlers at
+opcodes 49-51 implement flag-set, flag-clear, and random branches without a matching named macro.
+Every runtime macro maps to a non-filler handler, every non-filler handler is owned by either a macro
+opcode or one of those three handler-only slots, and all handler labels have H1 addresses.
+
+The complete source corpus uses 38 of the 43 runtime macros. `ac_pass`, `ac_set1Cb4`, `ac_setGhost`,
+`ac_setId`, and `ac_waitDestEntity` are defined and mapped but absent from all 2,204 parsed commands.
+The handler catalog records every handler's source span, script-parameter offsets, direct calls, exit
+routes, and references to 17 entity fields and 15 global-state symbols. Read/write direction and
+signed parameter meaning remain the next semantic pass; the current static claim is complete routing
+and source-shape ownership.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -149,8 +164,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch maps all 44 defined `ac_*` forms onto the 80-slot entity dispatcher and records
-handler RAM reads/writes, signedness, obstruction/collision flags, and wait/termination transitions.
+The next static batch classifies the complete handler catalog's entity/RAM references by read/write
+direction and records signedness, obstruction/collision flags, and wait/termination transitions.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

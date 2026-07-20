@@ -341,7 +341,7 @@ def build_parser() -> argparse.ArgumentParser:
     h2_enemy_map_sprites.add_argument("--output-path", type=_path)
     h2_entity_action_scripts = h2_commands.add_parser(
         "entity-action-scripts",
-        help="parse the global cutscene entity-action command and control-flow corpus",
+        help="parse the complete entity-action corpus, control flow, and dispatcher handlers",
     )
     _add_local_paths(h2_entity_action_scripts)
     h2_entity_action_scripts.add_argument("--output-path", type=_path)

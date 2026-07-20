@@ -3,6 +3,9 @@
   "id": "sf2-entity-action-scripts-static-v1",
   "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "function": {
+    "rjt_EntityScriptCommands": 20252
+  },
   "table": {
     "eas_LyingLeft": 280954,
     "word_44DEA": 282090,
@@ -172,6 +175,36 @@
     "crossFileReferenceCount": 8,
     "referenceSourceFileCount": 8,
     "referenceScope": "all pinned code/data ASM, comments and definitions excluded"
+  },
+  "handlerSummary": {
+    "dispatchSlotCount": 80,
+    "uniqueDispatchTargetCount": 44,
+    "fillerSlotCount": 37,
+    "handlerCount": 43,
+    "definedMacroCount": 44,
+    "runtimeMacroCount": 43,
+    "runtimeOpcodeCount": 40,
+    "handlerOnlyOpcodeCount": 3,
+    "terminatorMacroCount": 1,
+    "usedRuntimeMacroCount": 38,
+    "unusedRuntimeMacroCount": 5,
+    "handlerEntityFieldCount": 17,
+    "handlerGlobalStateCount": 15,
+    "handlerDirectCallTargetCount": 11
+  },
+  "handlerFacts": {
+    "fillerTarget": "esc_goToNextEntity",
+    "fillerIndices": [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79],
+    "handlerOnlyOpcodes": {
+      "49": "esc31_branchIfFlagSet",
+      "50": "esc32_branchIfFlagClear",
+      "51": "esc33_randomBranch"
+    },
+    "inlineTerminatorMacro": "ac_end",
+    "inlineTerminatorWord": 32896,
+    "unusedRuntimeMacros": ["ac_pass", "ac_set1Cb4", "ac_setGhost", "ac_setId", "ac_waitDestEntity"],
+    "allRuntimeMacrosMapToHandlers": true,
+    "allNonfillerHandlersOwned": true
   },
   "standaloneRomRanges": [
     { "id": "eas_452A4", "sourcePath": "code/common/scripting/map/vehiclefunctions.asm", "start": 283300, "endExclusive": 283426, "sha256": "FA243D870003484C1DAD46460708C8A7903BDC5A29190BCCE1035C9ECCA5F040" },

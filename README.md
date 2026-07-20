@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,488 条 confirmed finding、72 个 H2 fixture、58 个 H3 fixture
-和 2,046 个地址绑定。
+截至 2026-07-19，研究索引有 1,489 条 confirmed finding、72 个 H2 fixture、58 个 H3 fixture
+和 2,047 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -42,7 +42,9 @@ sentinel/unbacked 区间。后续 81 个脚本 sprite 赋值、5 个实际写入
 361 个内嵌程序和 11 个连续 standalone ROM 区段中的 1,472 条命令全部唯一归属，17 个 `eas_*`
 入口全部有源码引用，5,684 action bytes、14 条 branch 和 364 条 jump 的目标全部解析。共享部分
 对全部 code/data ASM 的引用图覆盖 230 个 source，61 个入口中只有 `eas_ShrinkDisappear` 没有
-外部引用。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
+外部引用。80-slot dispatcher 也已闭合为 37 个 filler slot 和 43 个真实 handler；44 个宏中
+`ac_end` 是不进入 dispatcher 的 `$8080` 内嵌终止词，其余 43 个运行时宏映射到 40 个 opcode，
+另有三个无命名宏的条件/随机 branch handler。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
 1,451 次 setup-level record reference，并保留两个 direct-`rts` stub 与 map 44 错误指针例外。
 description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stub 和 227 条物理 entry，并从
 唯一正常调用链确认三个 `d6` 条件函数会被跳过；init 层闭合 84 个 source、90 个 callable entry、
@@ -502,10 +504,12 @@ BizHawk 启动中确认 missing/default、last-set-flag-wins 与 alias route，
 
 分散式 entity-action 队列现已从候选扫描提升为 H2 合同：75 个文件的 1,472 条命令全部归属于
 361 个内嵌程序或 11 个连续 standalone ROM 区段，17 个具名入口、14 条相对分支和 364 条绝对
-jump 均已解析，11 段共 942 bytes 与 H1/ROM 地址和哈希一致。下一步静态前沿转向 80-slot entity
-action dispatcher 的 44 个已定义 opcode/handler：逐项记录 RAM 字段、signedness、阻挡/碰撞和
-结束/等待状态的写入合同，只把帧时序、碰撞结果和 caller-dependent story reachability 留给集中
-BizHawk 矩阵。
+jump 均已解析，11 段共 942 bytes 与 H1/ROM 地址和哈希一致。80-slot entity-action dispatcher
+也已逐槽绑定：37 个 filler、43 个 handler、40 个宏可达 opcode 与三个 handler-only branch
+opcode 全部有 H1 地址和结构化 handler catalog；五个运行时宏在完整源码 corpus 中从未使用。
+下一步静态前沿是在这份完整 handler 分母上区分每个实体/RAM 字段的读取与写入方向、参数
+signedness、阻挡/碰撞和等待状态转换，只把帧时序、碰撞结果和 caller-dependent story
+reachability 留给集中 BizHawk 矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

@@ -21,6 +21,7 @@ FIXTURE = repo_path("tests/fixtures/h2/entity-action-scripts-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-entity-action-scripts-static-fixture.schema.json")
 
 MACRO_PATH = Path("sf2cutscenemacros.asm")
+HANDLER_SOURCE_PATH = Path("code/common/scripting/entity/entityscriptengine_2.asm")
 CORPORA = (
     {
         "id": "battle-neutral",
@@ -611,6 +612,204 @@ def _parse_distributed_programs(
     }
 
 
+def _entity_action_handlers(
+    disasm: Path,
+    addresses: dict[str, int],
+    macro_contracts: dict[str, dict[str, int]],
+    command_counts: Counter[str],
+) -> dict[str, Any]:
+    source = read_upstream_text(disasm / HANDLER_SOURCE_PATH)
+    table_match = re.search(
+        r"^rjt_EntityScriptCommands:\s*\n(?P<body>.*?)(?=^; =+)",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if table_match is None:
+        raise ValueError("entity-action dispatcher table is missing")
+    dispatch_targets = re.findall(
+        r"^\s*dc\.w\s+([A-Za-z_][A-Za-z0-9_]*)-rjt_EntityScriptCommands\b",
+        table_match.group("body"),
+        re.MULTILINE,
+    )
+    if len(dispatch_targets) != 80:
+        raise ValueError(f"entity-action dispatcher slot drift: {len(dispatch_targets)}")
+
+    filler_target = "esc_goToNextEntity"
+    handler_names = sorted(set(dispatch_targets) - {filler_target})
+    handlers = []
+    for handler in handler_names:
+        body_match = re.search(
+            rf"^{re.escape(handler)}:\s*\n(?P<body>.*?)"
+            rf"^\s*; End of function {re.escape(handler)}\s*$",
+            source,
+            re.MULTILINE | re.DOTALL,
+        )
+        if body_match is None:
+            raise ValueError(f"entity-action handler body is missing: {handler}")
+        if handler not in addresses:
+            raise ValueError(f"entity-action handler lacks H1 address: {handler}")
+        body = body_match.group("body")
+        body_start_line = source.count("\n", 0, body_match.start("body")) + 1
+        body_end_line = source.count("\n", 0, body_match.end("body")) + 1
+        statements = []
+        for raw_line in body.splitlines():
+            code = raw_line.split(";", 1)[0].strip()
+            if not code or re.match(r"^[A-Za-z_@][A-Za-z0-9_@]*:$", code):
+                continue
+            if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwl])?(?:\s+|$)", code):
+                statements.append(code)
+        entity_fields = sorted(set(re.findall(r"\bENTITYDEF_OFFSET_[A-Z0-9_]+\b", body)))
+        global_state = sorted(
+            set(re.findall(r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w", body))
+            | set(re.findall(r"\(([A-Z][A-Z0-9_]*)\)\.l", body))
+        )
+        direct_calls = sorted(
+            set(
+                re.findall(
+                    r"\b(?:bsr|jsr)(?:\.[bwl])?\s+\(?([A-Za-z_][A-Za-z0-9_]*)",
+                    body,
+                )
+            )
+        )
+        exit_routes = sorted(
+            set(
+                re.findall(
+                    r"\b(?:bra|jmp)(?:\.[bwl])?\s+"
+                    r"(esc_(?:clearTimerGoToNextCommand|clearTimerGoToNextEntity|goToNextEntity))\b",
+                    body,
+                )
+            )
+        )
+        script_offsets = sorted(
+            {
+                int(value)
+                for value in re.findall(r"(?<![A-Za-z0-9_])-?(\d+)\(a1\)", body)
+            }
+        )
+        handlers.append(
+            {
+                "name": handler,
+                "address": addresses[handler],
+                "sourcePath": HANDLER_SOURCE_PATH.as_posix(),
+                "startLine": body_start_line,
+                "endLine": body_end_line,
+                "statementCount": len(statements),
+                "entityFields": entity_fields,
+                "globalState": global_state,
+                "scriptParameterOffsets": script_offsets,
+                "directCalls": direct_calls,
+                "exitRoutes": exit_routes,
+            }
+        )
+
+    macro_bindings = []
+    opcode_rows: dict[int, dict[str, Any]] = {}
+    for macro, contract in sorted(macro_contracts.items()):
+        opcode = contract["opcode"]
+        is_terminator = macro == "ac_end"
+        if is_terminator:
+            handler = None
+        else:
+            if opcode >= len(dispatch_targets):
+                raise ValueError(f"entity-action macro opcode is outside dispatcher: {macro}")
+            handler = dispatch_targets[opcode]
+            if handler == filler_target:
+                raise ValueError(f"entity-action macro maps to filler slot: {macro}")
+            row = opcode_rows.setdefault(
+                opcode,
+                {
+                    "opcode": opcode,
+                    "handler": handler,
+                    "encodedBytes": contract["encodedBytes"],
+                    "macros": [],
+                    "sourceCommandCount": 0,
+                },
+            )
+            if row["handler"] != handler or row["encodedBytes"] != contract["encodedBytes"]:
+                raise ValueError(f"entity-action opcode alias drift: {macro}")
+            row["macros"].append(macro)
+            row["sourceCommandCount"] += command_counts[macro]
+        macro_bindings.append(
+            {
+                "macro": macro,
+                "opcode": opcode,
+                "encodedBytes": contract["encodedBytes"],
+                "parameterBytes": contract["encodedBytes"] - 2,
+                "handler": handler,
+                "isInlineTerminator": is_terminator,
+                "sourceCommandCount": command_counts[macro],
+            }
+        )
+
+    handler_by_opcode = {
+        index: target
+        for index, target in enumerate(dispatch_targets)
+        if target != filler_target
+    }
+    handler_only_opcodes = {
+        opcode: target for opcode, target in handler_by_opcode.items() if opcode not in opcode_rows
+    }
+    mapped_handlers = {row["handler"] for row in opcode_rows.values()} | set(
+        handler_only_opcodes.values()
+    )
+    if mapped_handlers != set(handler_names):
+        raise ValueError("entity-action handler coverage drift")
+    filler_indices = [
+        index for index, target in enumerate(dispatch_targets) if target == filler_target
+    ]
+    summary = {
+        "dispatchSlotCount": len(dispatch_targets),
+        "uniqueDispatchTargetCount": len(set(dispatch_targets)),
+        "fillerSlotCount": len(filler_indices),
+        "handlerCount": len(handler_names),
+        "definedMacroCount": len(macro_bindings),
+        "runtimeMacroCount": sum(not row["isInlineTerminator"] for row in macro_bindings),
+        "runtimeOpcodeCount": len(opcode_rows),
+        "handlerOnlyOpcodeCount": len(handler_only_opcodes),
+        "terminatorMacroCount": sum(row["isInlineTerminator"] for row in macro_bindings),
+        "usedRuntimeMacroCount": sum(
+            not row["isInlineTerminator"] and row["sourceCommandCount"] > 0
+            for row in macro_bindings
+        ),
+        "unusedRuntimeMacroCount": sum(
+            not row["isInlineTerminator"] and row["sourceCommandCount"] == 0
+            for row in macro_bindings
+        ),
+        "handlerEntityFieldCount": len(
+            {field for row in handlers for field in row["entityFields"]}
+        ),
+        "handlerGlobalStateCount": len(
+            {field for row in handlers for field in row["globalState"]}
+        ),
+        "handlerDirectCallTargetCount": len(
+            {target for row in handlers for target in row["directCalls"]}
+        ),
+    }
+    return {
+        "summary": summary,
+        "facts": {
+            "fillerTarget": filler_target,
+            "fillerIndices": filler_indices,
+            "handlerOnlyOpcodes": {
+                str(opcode): target for opcode, target in sorted(handler_only_opcodes.items())
+            },
+            "inlineTerminatorMacro": "ac_end",
+            "inlineTerminatorWord": macro_contracts["ac_end"]["opcode"],
+            "unusedRuntimeMacros": [
+                row["macro"]
+                for row in macro_bindings
+                if not row["isInlineTerminator"] and row["sourceCommandCount"] == 0
+            ],
+            "allRuntimeMacrosMapToHandlers": True,
+            "allNonfillerHandlersOwned": True,
+        },
+        "dispatchTable": dispatch_targets,
+        "macroBindings": macro_bindings,
+        "opcodeBindings": [opcode_rows[opcode] for opcode in sorted(opcode_rows)],
+        "handlers": handlers,
+    }
+
+
 def _reference_rows_for_owners(
     disasm: Path, label_owner: dict[str, str]
 ) -> list[dict[str, Any]]:
@@ -695,6 +894,11 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
     command_counts: Counter[str] = Counter()
     for corpus in corpora:
         command_counts.update(corpus["commandCounts"])
+    all_command_counts = command_counts.copy()
+    all_command_counts.update(distributed["commandCounts"])
+    handler_contract = _entity_action_handlers(
+        disasm, addresses, macro_contracts, all_command_counts
+    )
     summary = {
         "corpusCount": len(corpora),
         "byteCount": sum(row["summary"]["byteCount"] for row in corpora),
@@ -740,6 +944,9 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "id": ID,
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
         "romSha256": rom_identity["sha256"],
+        "function": {
+            "rjt_EntityScriptCommands": addresses["rjt_EntityScriptCommands"]
+        },
         "table": {
             spec["bindingSymbol"]: addresses[spec["bindingSymbol"]]
             for spec in CORPORA
@@ -790,6 +997,8 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
             ),
             "referenceScope": "all pinned code/data ASM, comments and definitions excluded",
         },
+        "handlerSummary": handler_contract["summary"],
+        "handlerFacts": handler_contract["facts"],
         "standaloneRomRanges": [
             {
                 key: program[key]
@@ -809,6 +1018,10 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "inlinePrograms": distributed["inlinePrograms"],
         "standalonePrograms": distributed["standalonePrograms"],
         "distributedEntryReferences": distributed_references,
+        "handlerDispatchTable": handler_contract["dispatchTable"],
+        "handlerMacroBindings": handler_contract["macroBindings"],
+        "handlerOpcodeBindings": handler_contract["opcodeBindings"],
+        "handlers": handler_contract["handlers"],
         "runtimeQuestions": [
             "What are the exact frame durations and collision effects of movement/action commands?",
             "Which external references are reachable through normal story routes?",
@@ -830,6 +1043,7 @@ def verify_entity_action_script_contract(
     ):
         raise ValueError("entity-action script provenance drift")
     for field in (
+        "function",
         "table",
         "summary",
         "romRanges",
@@ -840,6 +1054,8 @@ def verify_entity_action_script_contract(
         "distributedCommandCounts",
         "distributedControlFlowFacts",
         "distributedReferenceFacts",
+        "handlerSummary",
+        "handlerFacts",
         "standaloneRomRanges",
         "runtimeQuestions",
     ):
@@ -849,6 +1065,7 @@ def verify_entity_action_script_contract(
     if (
         output["summary"] != manifest["summary"]
         or output["distributedSummary"] != manifest["distributedSummary"]
+        or output["handlerSummary"] != manifest["handlerSummary"]
         or digest != manifest["outputSha256"]
     ):
         raise ValueError("entity-action script canonical manifest drift")

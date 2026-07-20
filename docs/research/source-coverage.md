@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,488 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed findings | 1,489 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H2 fixture files | 72 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,046 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,047 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -74,8 +74,10 @@ The current evidence is deep but narrow:
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
   corpus uniquely owns 1,472 commands in 361 inline programs and 11 standalone ROM ranges, with 17
   named entries, 5,684 action bytes, and complete static targets for 14 branches and 364 jumps. All
-  distributed entries have a source reference; command timing and story-route reachability remain
-  outside that credit. One
+  distributed entries have a source reference. Its 80-slot dispatcher is also closed as 37 filler
+  slots plus 43 real handlers: 43 runtime macro names map to 40 opcodes, `ac_end` is a separate
+  `$8080` copy terminator, and three handler-only conditional/random branch opcodes close the
+  non-filler table. Command timing and story-route reachability remain outside that credit. One
   unlabeled 288-byte data blob is H2-verified but
   excluded from symbol reach.
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
@@ -255,9 +257,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,488 records; its
+files and the corresponding `data` query yields 1,690. The index summary reports 1,489 records; its
 verifier reports 381 unique code files, 980 unique data files, 72 H2 fixtures, 58 H3 fixtures, and
-2,046 bindings. The
+2,047 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -299,10 +301,14 @@ with the inline payloads, the distributed surface accounts for 5,684 action byte
 branches and 364 absolute jumps resolve, every absolute jump targets `eas_Idle`, and all 17 named
 entries have at least one same-file or cross-file source reference.
 
-The next semantic-depth batch should bind the 44 defined `ac_*` opcode forms to the 80-slot entity
-action dispatcher and record handler RAM reads/writes, signedness, collision/obstruction flags, and
-wait/termination transitions. Frame timing, collision outcomes, and normal-story reachability remain
-runtime questions and should be grouped only after that handler contract identifies real ambiguity.
+The 80-slot dispatcher is now structurally closed: 37 filler slots, 43 non-filler handlers, 40
+macro-addressable runtime opcodes, three handler-only branch opcodes, and one non-dispatched `$8080`
+inline terminator. The catalog captures all handler H1 addresses, source spans, parameter offsets,
+direct calls, exit routes, 17 referenced entity fields, and 15 global-state symbols. The next
+semantic-depth batch should classify those references by read/write direction and record signedness,
+collision/obstruction flags, and wait/termination transitions. Frame timing, collision outcomes, and
+normal-story reachability remain runtime questions and should be grouped only after that pass finds
+real ambiguity.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks

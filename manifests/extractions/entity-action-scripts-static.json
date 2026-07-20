@@ -40,5 +40,21 @@
     "relativeBranchCount": 14,
     "actionByteCount": 5684
   },
-  "outputSha256": "ECBAEF903626B88708FCB362B61709DA396084F32B608DAF4993A1EC30EC324C"
+  "handlerSummary": {
+    "dispatchSlotCount": 80,
+    "uniqueDispatchTargetCount": 44,
+    "fillerSlotCount": 37,
+    "handlerCount": 43,
+    "definedMacroCount": 44,
+    "runtimeMacroCount": 43,
+    "runtimeOpcodeCount": 40,
+    "handlerOnlyOpcodeCount": 3,
+    "terminatorMacroCount": 1,
+    "usedRuntimeMacroCount": 38,
+    "unusedRuntimeMacroCount": 5,
+    "handlerEntityFieldCount": 17,
+    "handlerGlobalStateCount": 15,
+    "handlerDirectCallTargetCount": 11
+  },
+  "outputSha256": "E82D144F275A81A37ECBB4DE3FE06DC4AADDF750A22AA56A09C9BF5822DEE965"
 }
