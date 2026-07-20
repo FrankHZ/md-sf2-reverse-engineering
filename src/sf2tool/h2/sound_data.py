@@ -17,6 +17,7 @@ from sf2tool.source_text import read_upstream_text
 ID = "sf2-sound-data-static-v1"
 SOURCE_ROOT = Path("data/sound")
 DRIVER_SOURCE = Path("code/common/tech/sound/sounddriver.asm")
+ENUM_SOURCE = Path("sf2enums.asm")
 BANK_SOURCES = {
     "bank0": SOURCE_ROOT / "musicbank0/musicbank0.asm",
     "bank1": SOURCE_ROOT / "musicbank1/musicbank1.asm",
@@ -375,6 +376,104 @@ def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
     }
 
 
+def _music_bank_selection_contract(
+    sources: dict[str, str], bank_payloads: dict[str, bytes], enum_source: str
+) -> dict[str, Any]:
+    enum_section = enum_source.split("; enum Music", 1)[1].split("; enum Sfx", 1)[0]
+    enum_rows = re.findall(
+        r"^(MUSIC_[A-Z0-9_]+):\s+equ\s+(\$?[0-9A-F]+)\s*$",
+        enum_section,
+        re.MULTILINE,
+    )
+    enum_names = {
+        int(value.removeprefix("$"), 16 if value.startswith("$") else 10): name
+        for name, value in enum_rows
+    }
+    if enum_names.get(0) != "MUSIC_NOTHING":
+        raise ValueError("music enum zero-command boundary drift")
+
+    symbol_sources = {}
+    for source_path, source in sources.items():
+        if not re.search(r"/music\d+\.asm$", source_path):
+            continue
+        for symbol in re.findall(r"^(Music_\d+):", source, re.MULTILINE):
+            if symbol in symbol_sources:
+                raise ValueError(f"duplicate music entry symbol: {symbol}")
+            symbol_sources[symbol] = source_path
+
+    slots = []
+    for bank, first_command in (("bank0", 1), ("bank1", 33)):
+        bank_source = sources[BANK_SOURCES[bank].as_posix()]
+        pointer_symbols = re.findall(r"^\s*dw\s+(Music_\d+)\s*$", bank_source, re.MULTILINE)
+        if len(pointer_symbols) != 32:
+            raise ValueError(f"music command pointer-table boundary drift: {bank}")
+        payload = bank_payloads[bank]
+        for slot_index, target_symbol in enumerate(pointer_symbols):
+            command_id = first_command + slot_index
+            target_address = int.from_bytes(payload[slot_index * 2 : slot_index * 2 + 2], "little")
+            target_offset = target_address - BANK_ORIGIN
+            if target_symbol not in symbol_sources or not 64 <= target_offset < len(payload):
+                raise ValueError(f"music command target boundary drift: {command_id}")
+            slots.append(
+                {
+                    "commandId": command_id,
+                    "commandHex": f"{command_id:02X}",
+                    "enumName": enum_names.get(command_id),
+                    "bank": bank,
+                    "bankRegisterValue": 1 if bank == "bank0" else 0,
+                    "pointerSlotIndex": slot_index,
+                    "targetSymbol": target_symbol,
+                    "targetZ80Address": target_address,
+                    "targetRomOffset": BANK_ROM_OFFSETS[bank] + target_offset,
+                    "targetSourcePath": symbol_sources[target_symbol],
+                    "targetHeaderMarker": payload[target_offset],
+                }
+            )
+
+    target_commands: dict[str, list[int]] = {}
+    for row in slots:
+        target_commands.setdefault(row["targetSymbol"], []).append(row["commandId"])
+    aliases = [
+        {"targetSymbol": symbol, "commandIds": commands}
+        for symbol, commands in sorted(target_commands.items())
+        if len(commands) > 1
+    ]
+    named_slots = [row for row in slots if row["enumName"] is not None]
+    return {
+        "enumSourcePath": ENUM_SOURCE.as_posix(),
+        "enumSourceSha256": _sha256(enum_source.encode()),
+        "summary": {
+            "commandSlotCount": len(slots),
+            "namedMusicCommandCount": len(named_slots),
+            "unnamedCommandSlotCount": len(slots) - len(named_slots),
+            "uniquePointerTargetCount": len(target_commands),
+            "zeroHeaderMarkerSlotCount": sum(row["targetHeaderMarker"] == 0 for row in slots),
+            "sfxRedirectSlotCount": sum(row["targetHeaderMarker"] != 0 for row in slots),
+            "crossBankFallbackEdgeCount": 0,
+        },
+        "bankRules": [
+            {
+                "commandRange": "01-20",
+                "bank": "bank0",
+                "bankRegisterValue": 1,
+                "romOffset": BANK_ROM_OFFSETS["bank0"],
+                "pointerIndexExpression": "command-1",
+            },
+            {
+                "commandRange": "21-40",
+                "bank": "bank1",
+                "bankRegisterValue": 0,
+                "romOffset": BANK_ROM_OFFSETS["bank1"],
+                "pointerIndexExpression": "command-33",
+            },
+        ],
+        "zeroCommandBehavior": "ignored-by-main-loop",
+        "nonzeroHeaderBehavior": "redirect-to-load-sfx",
+        "aliasTargets": aliases,
+        "slots": slots,
+    }
+
+
 def _fixed_opcode_families(
     macro_definitions: list[dict[str, Any]],
 ) -> tuple[dict[str, list[str]], list[str]]:
@@ -409,6 +508,21 @@ def _music_driver_contract(
     _require_driver_fragments(
         driver_source,
         [
+            "Main:",
+            "cp\t21h",
+            "ld\ta, 1",
+            "ld\t(MUSIC_BANK_TO_LOAD), a",
+            "call\tLoadMusicBank",
+            "ld\tde, 8000h",
+            "loc_201:",
+            "xor\ta",
+            "ld\t(MUSIC_BANK_TO_LOAD), a",
+            "call\tLoadMusicBank",
+            "sub\t20h",
+            "Load_Music:",
+            "dec\ta",
+            "add\ta, a",
+            "jp\tnz, Load_SFX",
             "UpdateSound:",
             "ld\tiy, CURRENT_CHANNEL",
             "call\tYM1_ParseData",
@@ -593,6 +707,10 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
     command_model["driver"] = _music_driver_contract(
         driver_source, command_model["macroDefinitions"]
     )
+    enum_source = read_upstream_text(disasm / ENUM_SOURCE)
+    command_model["bankSelection"] = _music_bank_selection_contract(
+        sources, bank_payloads, enum_source
+    )
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -634,7 +752,6 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
         "runtimeQuestions": [
             "note-sample-frequency-and-channel-state-runtime-semantics",
             "tempo-loop-and-instrument-timing",
-            "bank-selection-and-cross-bank-fallback-behavior",
         ],
         "files": files,
     }
@@ -664,9 +781,26 @@ def verify_sound_data_inventory(
     song_rom_offsets = {row["id"]: row["entryRomOffset"] for row in output["songFiles"]}
     if fixture["table"]["songRomOffsets"] != song_rom_offsets:
         raise ValueError("sound data song ROM-offset drift")
-    for field in ("summary", "unusedMacros", "invocationCounts", "driver"):
+    for field in (
+        "summary",
+        "unusedMacros",
+        "invocationCounts",
+        "driver",
+    ):
         if output["commandModel"][field] != fixture["expected"]["commandModel"][field]:
             raise ValueError(f"sound data command-model {field} drift")
+    expected_bank_selection = fixture["expected"]["commandModel"]["bankSelection"]
+    for field in (
+        "enumSourcePath",
+        "enumSourceSha256",
+        "summary",
+        "bankRules",
+        "zeroCommandBehavior",
+        "nonzeroHeaderBehavior",
+        "aliasTargets",
+    ):
+        if output["commandModel"]["bankSelection"][field] != expected_bank_selection[field]:
+            raise ValueError(f"sound data bank-selection {field} drift")
     expected_channel_roles = fixture["expected"]["commandModel"]["channelRoles"]
     for field in (
         "slotRoles",

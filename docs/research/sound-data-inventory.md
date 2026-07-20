@@ -4,8 +4,8 @@
   bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, the 29-macro ABI and
   complete source invocation corpus, ten-slot channel-role shape and command compatibility, and
   canonical-ROM parity
-- Status: **Inferred** for music command semantics and bank selection
-- Status: **Unknown** for three grouped runtime questions
+- Status: **Inferred** for music command playback semantics
+- Status: **Unknown** for two grouped runtime questions
 - Evidence date: 2026-07-19
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -42,6 +42,21 @@ The 37 source headers form contiguous song regions immediately after each 64-byt
 ROM-checked bytes. Each catalog row also records source/payload hashes and checks that its logical
 `Music_n` pointer lands inside the owning file range. This handles the combined Music 3/4 and 13/14
 sources without pretending the filename necessarily begins at the first label.
+
+## Music Command and Bank Selection
+
+The Z80 `Main` path and both 32-word bank tables close the complete command-to-pointer map. Command
+`0` is ignored by `Main_Loop`. Music commands `0x01`–`0x20` set the bank register value to `1`, map
+ROM `0x1F8000`, and index bank 0 with `command - 1`; `0x21`–`0x40` set it to `0`, map ROM
+`0x1F0000`, and index bank 1 with `command - 33`. Values from `0x41` enter the SFX path after the
+earlier special-command checks.
+
+All 64 canonical pointer slots resolve to a source label and begin with the zero music-header marker,
+so none takes the driver's nonzero-header redirect to `Load_SFX`. The 38 named nonzero music enums
+resolve to their matching slots. Commands 29–32 alias the silent `Music_32` target; commands 42–64
+alias `Music_64`. There are 39 unique pointer targets, no target crosses its selected 32 KiB bank,
+and no cross-bank fallback edge exists in this path. Bank selection and fallback are therefore closed
+statically rather than deferred to an emulator run.
 
 ## Static Command Corpus
 
@@ -97,9 +112,9 @@ file, the four symbol-less music support/entry sources, and explicit alternates/
 
 ## Concentrated Queue
 
-No emulator was launched. Remaining questions are grouped as note/sample frequency and live channel
-state, tempo/loop/instrument timing, and bank-selection/fallback behavior. They should be tested
-together through the sound-command boundary rather than one launch per opcode.
+No emulator was launched. Remaining questions are grouped as note/sample frequency plus live channel
+state, and tempo/loop/instrument timing. They should be tested together through the sound-command
+boundary rather than one launch per opcode.
 
 ## Reproduction
 

@@ -1,5 +1,6 @@
 from sf2tool.h2.sound_data import (
     _fixed_opcode_families,
+    _music_bank_selection_contract,
     _parse_music_macros,
     _song_command_row,
 )
@@ -70,3 +71,39 @@ def test_music_entry_requires_exact_channel_pointer_shape() -> None:
         )
     else:
         raise AssertionError("nine-channel music entry unexpectedly parsed")
+
+
+def test_music_bank_selection_maps_all_command_slots() -> None:
+    bank0_source = "\n".join(["dw Music_1"] * 32)
+    bank1_source = "\n".join(["dw Music_33"] * 32)
+    sources = {
+        "data/sound/musicbank0/musicbank0.asm": bank0_source,
+        "data/sound/musicbank0/music01.asm": "Music_1:\n",
+        "data/sound/musicbank1/musicbank1.asm": bank1_source,
+        "data/sound/musicbank1/music33.asm": "Music_33:\n",
+    }
+    bank_payload = bytearray(0x8000)
+    for index in range(32):
+        bank_payload[index * 2 : index * 2 + 2] = (0x8040).to_bytes(2, "little")
+    enum_source = (
+        "; enum Music\nMUSIC_NOTHING: equ 0\nMUSIC_MAIN_THEME: equ 1\n"
+        "MUSIC_BATTLE_THEME_3: equ 33\n; enum Sfx\n"
+    )
+
+    contract = _music_bank_selection_contract(
+        sources, {"bank0": bytes(bank_payload), "bank1": bytes(bank_payload)}, enum_source
+    )
+
+    assert contract["summary"] == {
+        "commandSlotCount": 64,
+        "namedMusicCommandCount": 2,
+        "unnamedCommandSlotCount": 62,
+        "uniquePointerTargetCount": 2,
+        "zeroHeaderMarkerSlotCount": 64,
+        "sfxRedirectSlotCount": 0,
+        "crossBankFallbackEdgeCount": 0,
+    }
+    assert contract["slots"][0]["bankRegisterValue"] == 1
+    assert contract["slots"][0]["enumName"] == "MUSIC_MAIN_THEME"
+    assert contract["slots"][-1]["bankRegisterValue"] == 0
+    assert contract["slots"][-1]["commandId"] == 64

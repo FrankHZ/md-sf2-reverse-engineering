@@ -119,6 +119,35 @@
         },
         "compatibilityViolationCount": 0
       },
+      "bankSelection": {
+        "enumSourcePath":"sf2enums.asm",
+        "enumSourceSha256":"ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",
+        "summary": {
+          "commandSlotCount":64, "namedMusicCommandCount":38,
+          "unnamedCommandSlotCount":26, "uniquePointerTargetCount":39,
+          "zeroHeaderMarkerSlotCount":64, "sfxRedirectSlotCount":0,
+          "crossBankFallbackEdgeCount":0
+        },
+        "bankRules": [
+          {
+            "commandRange":"01-20", "bank":"bank0", "bankRegisterValue":1,
+            "romOffset":2064384, "pointerIndexExpression":"command-1"
+          },
+          {
+            "commandRange":"21-40", "bank":"bank1", "bankRegisterValue":0,
+            "romOffset":2031616, "pointerIndexExpression":"command-33"
+          }
+        ],
+        "zeroCommandBehavior":"ignored-by-main-loop",
+        "nonzeroHeaderBehavior":"redirect-to-load-sfx",
+        "aliasTargets": [
+          {"targetSymbol":"Music_32","commandIds":[29,30,31,32]},
+          {
+            "targetSymbol":"Music_64",
+            "commandIds":[42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]
+          }
+        ]
+      },
       "driver": {
         "sourcePath":"code/common/tech/sound/sounddriver.asm",
         "sourceSha256":"DE26E4AE704AA5B0E4FE39D7A32AC47C2F1FE4FEDBD86EB6E1EE51C7C20BB1AE",
@@ -159,8 +188,7 @@
     "strictIndexExclusion": "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry files and two macro/enum sources remain outside symbol reach",
     "runtimeQuestions": [
       "note-sample-frequency-and-channel-state-runtime-semantics",
-      "tempo-loop-and-instrument-timing",
-      "bank-selection-and-cross-bank-fallback-behavior"
+      "tempo-loop-and-instrument-timing"
     ]
   }
 }

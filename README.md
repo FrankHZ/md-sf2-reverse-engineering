@@ -22,7 +22,8 @@ H4 复用。
 地址域校验。music rail 还静态闭合 29 个 byte-emitting macro、39 个 song entry、321 个 channel
 label 和 39,290 次 macro invocation，并将 `F8`–`FF`/`F0`/`70` 接到五个 YM/PSG parser 与共享
 loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro 调用的声道角色兼容性为
-零越界，播放时序仍留在集中运行矩阵。
+零越界；64 个 music command slot 的双 bank 选择、39 个唯一目标和静态零 fallback 也已闭合，
+播放时序仍留在集中运行矩阵。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
