@@ -77,6 +77,8 @@ The current evidence is deep but narrow:
   2/4/6/8-byte width counts, and 77 sequential/1 absolute/4 conditional/1 inline cursor-flow handlers;
   all 13,515 commands additionally belong to 304 programs/348 labels. Their 62 script jumps resolve
   as 42 same-program and 20 cross-program edges, while 122 subroutine calls resolve to 68000 symbols.
+  A complete 2,077-file token scan gives 297 referenced programs (187 cross-file, 110 same-file-only)
+  and seven zero-reference programs; 347/348 program labels have a reference.
   Story reachability and timing/presentation remain batched runtime questions.
   The entity-action source surface is additionally closed across three shared and 75
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
@@ -308,6 +310,9 @@ handlers have a cursor-flow class. Its remaining three runtime questions are gro
 story reachability, multi-service frame timing, and visible presentation. The full program graph now
 owns 304 programs, 348 labels, 303 `csc_end` terminations plus one jump termination, 62 resolved
 script jumps, and 122 resolved assembly-subroutine calls; none justifies a one-case emulator launch.
+The adjacent reference graph scans all 2,077 code/data files and separates 297 statically referenced
+programs from seven zero-reference source bodies. This is an input-selection bound, not proof that
+the corresponding caller state occurs during normal play.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

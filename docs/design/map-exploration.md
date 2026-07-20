@@ -84,6 +84,10 @@ The original corpus contains 304 such programs and 348 labels. Import validation
 tracked command to one program, preserve the 303 `csc_end` and one absolute-jump termination shapes,
 and resolve all same-program/cross-program script targets. Assembly-subroutine calls stay explicit
 external edges; a modern importer MUST NOT inline or reinterpret them merely from their symbol names.
+The importer SHOULD retain reference status separately from address status: 297 programs have an
+incoming source reference, seven have none, and eight lack H1 entry addresses. A reference is useful
+for reachability planning but MUST NOT be promoted to proof that a normal save-state route executes
+the program.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

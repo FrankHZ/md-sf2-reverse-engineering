@@ -28,7 +28,9 @@
       "programCount": 304,
       "programLabelCount": 348,
       "programTransferCount": 184,
-      "encodedCommandByteCount": 61020
+      "encodedCommandByteCount": 61020,
+      "referencedProgramCount": 297,
+      "unreferencedProgramCount": 7
     },
     "dispatcherFacts": {
       "sha256": "B128F068249EABC9443A0363BAFAEC1D9B4E06D6BE21B32867C265C7CC405CDE",
@@ -70,6 +72,26 @@
       "conditional-absolute-jump:same-program": 35,
       "subroutine-call:assembly-subroutine": 122
     },
+    "referenceSummary": {
+      "scannedSourceFileCount": 2077,
+      "referencedProgramCount": 297,
+      "externallyReferencedProgramCount": 187,
+      "sameFileOnlyProgramCount": 110,
+      "unreferencedProgramCount": 7,
+      "referencedLabelCount": 347,
+      "unreferencedLabelCount": 1,
+      "sameFileReferenceCount": 165,
+      "externalReferenceCount": 206
+    },
+    "unreferencedPrograms": [
+      "rbcs_battle01",
+      "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+      "data/scripting/map/debugscripts.asm#L16",
+      "data/scripting/map/debugscripts.asm#L24",
+      "data/scripting/map/debugscripts.asm#L26",
+      "data/scripting/map/debugscripts.asm#L76",
+      "data/scripting/map/debugscripts.asm#L86"
+    ],
     "sourceOnlyPrograms": [
       { "id":"rbcs_battle01", "sourcePath":"data/battles/entries/battle01/cs_regiontriggered_1.asm", "termination":"csc-end" },
       { "id":"data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23", "sourcePath":"data/maps/entries/map72/mapsetups/s6_initfunction.asm", "termination":"csc-end" },

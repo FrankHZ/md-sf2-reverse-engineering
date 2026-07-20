@@ -81,6 +81,19 @@ unassembled `rbcs_battle01`, one unlabeled unused suspend scene in map 72, and s
 fragments. Seven programs therefore have no entry label. These exceptions remain first-class rows
 rather than borrowing an adjacent address or disappearing from the denominator.
 
+A token-exact reference scan over all 2,077 code/data ASM files establishes the static reachability
+upper bound. Two hundred ninety-seven programs have at least one reference through any owned label:
+187 have a cross-file reference and 110 are same-file-only. Seven programs have no reference. Across
+the 348 labels there are 165 same-file and 206 cross-file references; 347 labels are referenced and
+`rbcs_battle01` is the sole zero-reference label. One otherwise source-only anonymous debug fragment
+is still same-file reachable through an internal label, so source/H1 status and reference status are
+deliberately independent axes.
+
+The seven zero-reference programs are `rbcs_battle01`, the unlabeled map 72 suspend scene, and five
+unlabeled debug fragments. Static references only prove that source contains an incoming edge. They
+do not prove normal-game caller state, flag combinations, save persistence, or rendered sequencing,
+which remain runtime/design questions.
+
 The 83 handlers contain 955 parsed instructions and group into fourteen source-role families. Their
 source-shaped access catalog contains 16 entity fields, 25 global-state symbols, and 62 direct-call
 targets, while preserving every script-cursor statement. These facts define opcode topology and

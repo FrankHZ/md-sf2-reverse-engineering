@@ -170,7 +170,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   133 个主宏参数/operand field、234 个 operand bytes、2/4/6/8-byte 宽度分布，以及 77 sequential/
   1 absolute/4 conditional/1 inline 的 cursor-flow 分类；完整源码进一步归属为 304 个 program/
   348 个 label，303 个 `csc_end` 加一个 jump 终止，并解析 42 条同 program、20 条跨 program
-  script jump 和 122 条 68000 subroutine call。
+  script jump 和 122 条 68000 subroutine call；全 2,077 个 code/data ASM 的引用图再区分 187 个
+  跨文件可引用、110 个仅同文件可引用和 7 个零引用 program，347/348 label 有引用。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

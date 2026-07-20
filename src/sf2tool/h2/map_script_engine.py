@@ -428,6 +428,106 @@ def _target_symbol(expression: str, known_symbols: set[str]) -> str:
     return matches[0]
 
 
+def _program_references(
+    disasm: Path,
+    label_owners: dict[str, str],
+    programs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    occurrences = {label: Counter() for label in label_owners}
+    scanned_files = 0
+    for root_name in ("code", "data"):
+        for path in sorted((disasm / root_name).rglob("*.asm")):
+            scanned_files += 1
+            source_path = path.relative_to(disasm).as_posix()
+            for raw_line in read_upstream_text(path).splitlines():
+                code = raw_line.split(";", 1)[0]
+                definition = re.match(r"^([A-Za-z_][A-Za-z0-9_]*):", code)
+                definition_label = definition.group(1) if definition else None
+                for token in re.finditer(r"\b[A-Za-z_][A-Za-z0-9_]*\b", code):
+                    label = token.group(0)
+                    if label not in label_owners:
+                        continue
+                    if label == definition_label and token.start() == 0:
+                        continue
+                    occurrences[label][source_path] += 1
+
+    owner_paths = {program["id"]: program["sourcePath"] for program in programs}
+    label_rows = []
+    program_counts = {program["id"]: Counter() for program in programs}
+    for label, owner_program in sorted(label_owners.items()):
+        owner_path = owner_paths[owner_program]
+        same_file_count = occurrences[label][owner_path]
+        external_sources = sorted(
+            path for path, count in occurrences[label].items() if path != owner_path and count
+        )
+        external_count = sum(occurrences[label][path] for path in external_sources)
+        program_counts[owner_program]["sameFileReferenceCount"] += same_file_count
+        program_counts[owner_program]["externalReferenceCount"] += external_count
+        if same_file_count or external_count:
+            program_counts[owner_program]["referencedLabelCount"] += 1
+        label_rows.append(
+            {
+                "label": label,
+                "ownerProgram": owner_program,
+                "sameFileReferenceCount": same_file_count,
+                "externalReferenceCount": external_count,
+                "externalSourcePaths": external_sources,
+            }
+        )
+
+    program_rows = []
+    for program in programs:
+        counts = program_counts[program["id"]]
+        reference_class = (
+            "external"
+            if counts["externalReferenceCount"]
+            else "same-file-only"
+            if counts["sameFileReferenceCount"]
+            else "unreferenced"
+        )
+        program_rows.append(
+            {
+                "id": program["id"],
+                "sourcePath": program["sourcePath"],
+                "labelCount": len(program["labels"]),
+                "referencedLabelCount": counts["referencedLabelCount"],
+                "sameFileReferenceCount": counts["sameFileReferenceCount"],
+                "externalReferenceCount": counts["externalReferenceCount"],
+                "referenceClass": reference_class,
+            }
+        )
+
+    class_counts = Counter(row["referenceClass"] for row in program_rows)
+    return {
+        "summary": {
+            "scannedSourceFileCount": scanned_files,
+            "referencedProgramCount": len(programs) - class_counts["unreferenced"],
+            "externallyReferencedProgramCount": class_counts["external"],
+            "sameFileOnlyProgramCount": class_counts["same-file-only"],
+            "unreferencedProgramCount": class_counts["unreferenced"],
+            "referencedLabelCount": sum(
+                bool(row["sameFileReferenceCount"] or row["externalReferenceCount"])
+                for row in label_rows
+            ),
+            "unreferencedLabelCount": sum(
+                not row["sameFileReferenceCount"] and not row["externalReferenceCount"]
+                for row in label_rows
+            ),
+            "sameFileReferenceCount": sum(
+                row["sameFileReferenceCount"] for row in label_rows
+            ),
+            "externalReferenceCount": sum(
+                row["externalReferenceCount"] for row in label_rows
+            ),
+        },
+        "unreferencedPrograms": [
+            row["id"] for row in program_rows if row["referenceClass"] == "unreferenced"
+        ],
+        "programs": program_rows,
+        "labels": label_rows,
+    }
+
+
 def _program_corpus(
     disasm: Path,
     source_paths: list[str],
@@ -536,6 +636,7 @@ def _program_corpus(
             if label in label_owners:
                 raise ValueError(f"duplicate map-script program label: {label}")
             label_owners[label] = program["id"]
+    references = _program_references(disasm, label_owners, programs)
 
     transfer_counts: Counter[str] = Counter()
     transfers = []
@@ -625,6 +726,10 @@ def _program_corpus(
             ),
         },
         "transferCounts": dict(sorted(transfer_counts.items())),
+        "referenceSummary": references["summary"],
+        "unreferencedPrograms": references["unreferencedPrograms"],
+        "programReferences": references["programs"],
+        "labelReferences": references["labels"],
         "sourceOnlyPrograms": source_only_programs,
         "largestPrograms": [
             {"id": program["id"], "commandCount": len(program["commands"])}
@@ -727,6 +832,12 @@ def build_map_script_engine_contract(
         "encodedCommandByteCount": program_corpus["summary"][
             "encodedCommandByteCount"
         ],
+        "referencedProgramCount": program_corpus["referenceSummary"][
+            "referencedProgramCount"
+        ],
+        "unreferencedProgramCount": program_corpus["referenceSummary"][
+            "unreferencedProgramCount"
+        ],
     }
     return {
         "schemaVersion": 1,
@@ -814,6 +925,8 @@ def verify_map_script_engine_contract(
         "abiFacts",
         "programSummary",
         "transferCounts",
+        "referenceSummary",
+        "unreferencedPrograms",
         "sourceOnlyPrograms",
         "largestPrograms",
         "mostUsedMacros",
@@ -824,7 +937,14 @@ def verify_map_script_engine_contract(
             output["programCorpus"]["summary"]
             if field == "programSummary"
             else output["programCorpus"][field]
-            if field in {"transferCounts", "sourceOnlyPrograms", "largestPrograms"}
+            if field
+            in {
+                "transferCounts",
+                "referenceSummary",
+                "unreferencedPrograms",
+                "sourceOnlyPrograms",
+                "largestPrograms",
+            }
             else
             {
                 "sha256": output["dispatcher"]["sha256"],

@@ -64,6 +64,9 @@ slot 包含 82 个有效 opcode 和 8 个 filler，归并为 83 个唯一 handle
 122 条 `executeSubroutine` 全部解析到 68000 symbol；61,020 bytes 是宏自身发出的 map-command
 编码，不混入内嵌 entity-action payload。296 个 program 有 H1 地址，另 8 个 source-only
 边界被显式保留，其中 7 个没有入口标签。动态 story flag 组合仍不从静态 target 图猜测。
+全 2,077 个 code/data ASM 的 token 引用图进一步证明 297/304 program 有源码引用：187 个存在
+跨文件引用，110 个仅有同文件引用，7 个零引用；347/348 label 被引用，唯一零引用 label 是
+未装配的 `rbcs_battle01`。这只是静态可达上界，不等同正常存档下的剧情可达性。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
 data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 25 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表、sprite-dialogue 与 Battle 01 数据。完整口径、空白子系统和
@@ -552,7 +555,8 @@ handler、93 个宏合同和全源码 13,515 次命令调用；其三项剩余�
 entity/camera/text/transition 的 frame timing、palette/VDP presentation 分组。其 133 个主宏参数
 field/234 operand bytes、四档命令宽度和 77 sequential/1 absolute/4 conditional/1 inline 的
 cursor-flow 分类也已静态闭合。完整 corpus 的 304 program/348 label/184 transfer 同样已解析，
-所有 62 条 script jump 与 122 条 subroutine call 均有目标，不为单一 opcode 另起模拟器 fixture。
+所有 62 条 script jump 与 122 条 subroutine call 均有目标；297 个 program 有静态引用、7 个
+零引用，不为单一 opcode 另起模拟器 fixture。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

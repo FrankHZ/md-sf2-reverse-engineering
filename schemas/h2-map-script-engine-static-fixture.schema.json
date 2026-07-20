@@ -18,11 +18,12 @@
     },
     "expected": {
       "type": "object", "additionalProperties": false,
-      "required": ["summary", "dispatcherFacts", "familyCounts", "abiFacts", "programSummary", "transferCounts", "sourceOnlyPrograms", "largestPrograms", "mostUsedMacros", "unusedMacros", "runtimeQuestions"],
+      "required": ["summary", "dispatcherFacts", "familyCounts", "abiFacts", "programSummary", "transferCounts", "referenceSummary", "unreferencedPrograms", "sourceOnlyPrograms", "largestPrograms", "mostUsedMacros", "unusedMacros", "runtimeQuestions"],
       "properties": {
         "summary": { "type": "object" }, "dispatcherFacts": { "type": "object" },
         "familyCounts": { "type": "object" }, "abiFacts": { "type": "object" },
         "programSummary": { "type": "object" }, "transferCounts": { "type": "object" },
+        "referenceSummary": { "type": "object" }, "unreferencedPrograms": { "type": "array" },
         "sourceOnlyPrograms": { "type": "array" }, "largestPrograms": { "type": "array" },
         "mostUsedMacros": { "type": "array" },
         "unusedMacros": { "type": "array" }, "runtimeQuestions": { "type": "array" }

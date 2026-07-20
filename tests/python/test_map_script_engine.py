@@ -58,10 +58,14 @@ def test_logical_source_lines_join_ampersand_continuations() -> None:
 
 
 def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) -> None:
-    (tmp_path / "one.asm").write_text(
+    (tmp_path / "code").mkdir()
+    (tmp_path / "data").mkdir()
+    (tmp_path / "code" / "one.asm").write_text(
         "entry:\n  csc_end\n\n  csc_end\n", encoding="utf-8"
     )
-    (tmp_path / "two.asm").write_text("tail:\n  jump entry\n", encoding="utf-8")
+    (tmp_path / "data" / "two.asm").write_text(
+        "tail:\n  jump entry\n", encoding="utf-8"
+    )
     contracts = {
         "csc_end": {"kind": "terminator", "opcode": None, "encodedBytes": 2},
         "jump": {"kind": "command", "opcode": 11, "encodedBytes": 6},
@@ -69,7 +73,7 @@ def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) ->
 
     actual = _program_corpus(
         tmp_path,
-        ["one.asm", "two.asm"],
+        ["code/one.asm", "data/two.asm"],
         contracts,
         {"entry": 0x100, "tail": 0x200},
     )
@@ -78,3 +82,7 @@ def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) ->
     assert actual["summary"]["anonymousProgramCount"] == 1
     assert actual["summary"]["absoluteJumpTerminatedProgramCount"] == 1
     assert actual["transferCounts"] == {"absolute-jump:cross-program": 1}
+    assert actual["referenceSummary"]["referencedProgramCount"] == 1
+    assert actual["referenceSummary"]["unreferencedProgramCount"] == 2
+    assert actual["referenceSummary"]["referencedLabelCount"] == 1
+    assert actual["referenceSummary"]["unreferencedLabelCount"] == 1
