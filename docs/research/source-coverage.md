@@ -27,7 +27,7 @@ It says that the file has been reached, not that every instruction in the file i
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H2 fixture files | 72 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,027 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,029 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -70,9 +70,10 @@ The current evidence is deep but narrow:
   inventoried too, closing file-level reach for all 183 files under `code/gameflow/battle`; map-script
   content and story semantics are not implied by that boundary milestone. Common scripting now has
   a complete 29-file inventory, 28 H1-bound files, 90/80-slot map/entity dispatch tables, and text
-  Huffman state. The global entity-action body is additionally closed as a 1,730-byte corpus with
-  49 labels, 444 commands, and complete static branch/jump targets; command timing and story-route
-  invocation remain outside that credit. One unlabeled 288-byte data blob is H2-verified but
+  Huffman state. Three shared entity-action bodies are additionally closed as a 2,864-byte corpus
+  with 118 labels, 732 commands, complete static branch/jump targets, and a 230-source external
+  reference graph; command timing and story-route reachability remain outside that credit. One
+  unlabeled 288-byte data blob is H2-verified but
   excluded from symbol reach.
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
   8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
@@ -253,7 +254,7 @@ uv run sf2 research-index test
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,472 records; its
 verifier reports 381 unique code files, 980 unique data files, 72 H2 fixtures, 58 H3 fixtures, and
-2,027 bindings. The
+2,029 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

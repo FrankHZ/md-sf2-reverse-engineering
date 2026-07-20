@@ -5,7 +5,7 @@
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
-  conversion, pointer, and glyph-loader data path, and the 1,730-byte global entity-action corpus
+  conversion, pointer, and glyph-loader data path, and the three-source shared entity-action corpus
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, entity movement timing, text rendering timing,
   and individual script content
@@ -114,12 +114,14 @@ selection; enemy table values span 52-229. Consequently no original built input 
 237-250. Raw RAM, malformed scripts, and corrupt combatant state remain nonstandard injection cases,
 not normal-game reachability unknowns.
 
-The shared cutscene entity-action source is also parsed as a complete command corpus. It contains
-444 commands across 39 entry labels, uses 28 of 44 defined `ac_*` macro forms, and occupies exactly
-1,730 bytes once macro widths and seven explicit branch displacement words are summed. All seven
-relative branches stay within the file; 28 of 29 absolute jumps exit to `eas_Idle`, while the last
-jumps internally to `eas_Init`. This confirms command inventory and static control flow, but not
-frame timing, collision outcomes, or which story routes invoke each entry.
+All three shared entity-action sources are also parsed as complete command corpora. They contain
+732 commands across 61 entry labels, use 34 of 44 defined `ac_*` macro forms, and occupy exactly
+2,864 bytes once macro widths and 38 explicit branch displacement words are summed. All relative
+targets resolve within the shared corpora; 28 of 29 absolute jumps exit to `eas_Idle`, while the last
+jumps internally to `eas_Init`. A complete code/data source scan finds 3,061 external references from
+230 files; `eas_ShrinkDisappear` is the only entry without one. This confirms command inventory,
+static control flow, and source references, but not frame timing, collision outcomes, or normal-story
+reachability of those references.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected

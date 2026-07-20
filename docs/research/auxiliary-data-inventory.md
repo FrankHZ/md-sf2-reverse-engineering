@@ -8,7 +8,7 @@
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
   and complete map-tileset decode/usage, map-palette/header-usage, icon-storage, and assembled
   UI-layout/direct-asset corpora, plus the ASCII-to-variable-width-font conversion table
-  and the complete global cutscene entity-action command/control-flow corpus
+  and the complete three-source shared entity-action command/control-flow/reference corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -143,13 +143,18 @@ exercise the fallback remain presentation/runtime questions. The broader scripti
 proves build ownership and symbol placement without redistributing text banks, staff strings,
 cutscene content, or entity-action bodies. Full catalogs remain under ignored `local/derived/`.
 
-The global `eas_actions.asm` entity-action body is now structurally closed without pretending that
-static commands prove rendered timing. Its 1,730-byte H1/ROM range contains 49 labels (39 callable
-`eas_` entries plus three byte and seven word control-flow labels), 444 macro commands using 28 of
-the 44 defined `ac_*` forms, and seven explicit displacement words. Macro-expanded widths plus those
-words account for every byte in the range. All seven relative branches remain inside the corpus;
-29 absolute jumps comprise 28 exits to shared `eas_Idle` and one internal jump to `eas_Init`.
-Command/frame timing, collision effects, and story-route invocation remain runtime/caller questions.
+The three shared entity-action sources are now structurally closed without pretending that static
+commands prove rendered timing. Battle-neutral, main, and cutscene-action ranges total 2,864 bytes,
+118 labels (61 callable `eas_` entries plus 19 byte and 38 word control-flow labels), and 732 macro
+commands using 34 of the 44 defined `ac_*` forms. Macro-expanded widths plus 38 explicit displacement
+words account for every byte in all three H1/ROM ranges. Their 38 relative branches resolve to known
+shared or same-corpus labels; the cutscene corpus's 29 absolute jumps comprise 28 exits to shared
+`eas_Idle` and one internal jump to `eas_Init`.
+
+A comments/definitions-excluded scan of every pinned code/data ASM finds 3,061 external references
+from 230 files. Sixty of 61 entry labels have at least one external source reference;
+`eas_ShrinkDisappear` is the sole source-unreferenced entry. This closes the reference graph, not
+normal-story reachability, command/frame timing, or collision effects.
 
 The dedicated text-bank rail now goes beyond that routing boundary without tracking plaintext. All
 17 bank payloads, 4,267 length-prefixed records, 17-entry pointer table, and top-level pointer match

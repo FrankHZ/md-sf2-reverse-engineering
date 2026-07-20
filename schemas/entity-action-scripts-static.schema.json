@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/sf2/entity-action-scripts-static.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "romSha256", "table", "summary", "romRange", "commandCounts", "controlFlowFacts", "labels", "commands", "runtimeQuestions"],
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "table", "summary", "romRanges", "commandCounts", "referenceFacts", "corpora", "entryReferences", "runtimeQuestions"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-entity-action-scripts-static-v1" },
@@ -15,13 +15,13 @@
       }
     },
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
-    "table": { "type": "object", "minProperties": 1, "maxProperties": 1, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "summary": { "type": "object", "minProperties": 14, "maxProperties": 14, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "romRange": { "type": "object", "minProperties": 4, "maxProperties": 4 },
-    "commandCounts": { "type": "object", "minProperties": 28, "maxProperties": 28, "additionalProperties": { "type": "integer", "minimum": 1 } },
-    "controlFlowFacts": { "type": "object", "minProperties": 4, "maxProperties": 4 },
-    "labels": { "type": "array", "minItems": 49, "maxItems": 49, "items": { "$ref": "#/$defs/label" } },
-    "commands": { "type": "array", "minItems": 444, "maxItems": 444, "items": { "$ref": "#/$defs/command" } },
+    "table": { "type": "object", "minProperties": 3, "maxProperties": 3, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 16, "maxProperties": 16, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "romRanges": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "object", "minProperties": 5, "maxProperties": 5 } },
+    "commandCounts": { "type": "object", "minProperties": 34, "maxProperties": 34, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "referenceFacts": { "type": "object", "minProperties": 3, "maxProperties": 3 },
+    "corpora": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/corpus" } },
+    "entryReferences": { "type": "array", "minItems": 61, "maxItems": 61, "items": { "$ref": "#/$defs/entryReference" } },
     "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
   },
   "$defs": {
@@ -43,6 +43,40 @@
         "arguments": { "type": "string" },
         "opcode": { "type": "integer", "minimum": 0, "maximum": 65535 },
         "encodedBytes": { "type": "integer", "minimum": 2 }
+      }
+    },
+    "corpus": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "sourcePath", "start", "endExclusive", "sha256", "summary", "commandCounts", "controlFlow", "labels", "commands"],
+      "properties": {
+        "id": { "type": "string" },
+        "sourcePath": { "type": "string" },
+        "start": { "type": "integer", "minimum": 0 },
+        "endExclusive": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "summary": { "type": "object", "minProperties": 10, "maxProperties": 10 },
+        "commandCounts": { "type": "object" },
+        "controlFlow": { "type": "object", "minProperties": 2, "maxProperties": 2 },
+        "labels": { "type": "array", "items": { "$ref": "#/$defs/label" } },
+        "commands": { "type": "array", "items": { "$ref": "#/$defs/command" } }
+      }
+    },
+    "entryReference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["label", "ownerPath", "internalReferenceCount", "externalReferenceCount", "externalSourceFileCount", "externalReferences"],
+      "properties": {
+        "label": { "type": "string", "pattern": "^eas_" },
+        "ownerPath": { "type": "string" },
+        "internalReferenceCount": { "type": "integer", "minimum": 0 },
+        "externalReferenceCount": { "type": "integer", "minimum": 0 },
+        "externalSourceFileCount": { "type": "integer", "minimum": 0 },
+        "externalReferences": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["path", "line"],
+            "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
+          }
+        }
       }
     }
   }
