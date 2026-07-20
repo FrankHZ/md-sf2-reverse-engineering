@@ -287,6 +287,17 @@ deterministic H2 inventory; its lower 980/1,690 strict reach reflects include-si
 alternates, unlabeled storage, and the separate Z80 address space rather than unknown files.
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
+The immediate static frontier is the distributed entity-action corpus outside the three already
+closed shared sources. A lexical scan currently finds 75 non-shared ASM files and 1,472 `ac_*`
+commands: 42 files under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
+under `code`. It also finds 361 inline `customActscript`/`customActscriptWait` starts, 361 `ac_end`
+terminators, and 17 named `eas_*` entries. These are a **provisional queue denominator**, not an H2
+closure claim. The owning parser must assign every command to exactly one inline or named program,
+resolve its relative and absolute transfers, and prove source/H1/ROM parity wherever a real H1 span
+exists before these counts become Confirmed indexed evidence. Runtime timing, collision, and story
+reachability stay outside that static claim and should be batched only after the command corpus is
+closed.
+
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks
 and 77 complete 64x64 layouts with every block reference in range. Those structures now join into a

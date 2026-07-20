@@ -496,6 +496,13 @@ BizHawk 启动中确认 missing/default、last-set-flag-wins 与 alias route，
 各自只调用一个 H2 目标并返回；entity/zone/item rail 的 9 个 exact/wildcard/default H2
 选择案例也已在一个 BizHawk 启动中全部通过原版 wrapper 分发验证，
 同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
+
+当前紧邻的静态前沿是把三个共享 entity-action source 之外、散落在地图、战斗和脚本数据中的
+自定义 `ac_*` 程序纳入同一结构化模型。一次源码级候选扫描得到 75 个文件和 1,472 条命令，分布为
+42 个 `data/maps`、26 个 `data/battles`、6 个 `data/scripting` 和 1 个 `code` 文件；其中可见
+361 个内嵌 `customActscript[Wait]` 起点、361 个 `ac_end` 和 17 个具名 `eas_*` 入口。这些数字目前
+只作为待闭合分母，不计入 H2 完成：下一步解析器必须让每条命令唯一归属于一个内嵌或具名程序，
+解析控制转移，并在能取得 H1 地址的范围证明 source/H1/ROM 字节一致后才能提升为 Confirmed。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与
