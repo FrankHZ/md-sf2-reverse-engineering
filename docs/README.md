@@ -155,7 +155,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   732 commands、38 个 relative branch 与 61-entry external-reference graph，并继续闭合 75 个
   distributed source、361 个 inline program、11 个 standalone ROM range、1,472 commands 和
   17 个具名入口，以及 80-slot dispatcher 的 37 filler/43 handler、40 个宏可达 opcode、三个
-  handler-only branch opcode 与 `$8080` inline terminator 边界。
+  handler-only branch opcode 与 `$8080` inline terminator 边界；handler catalog 还分类了 18 个
+  实体字段的 11 read/17 write、15 个全局状态的 10 read/5 write 和参数读取宽度。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

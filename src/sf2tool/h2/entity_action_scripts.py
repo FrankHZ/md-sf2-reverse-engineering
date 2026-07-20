@@ -612,6 +612,108 @@ def _parse_distributed_programs(
     }
 
 
+def _split_operands(value: str) -> list[str]:
+    operands = []
+    start = 0
+    depth = 0
+    for index, character in enumerate(value):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        elif character == "," and depth == 0:
+            operands.append(value[start:index].strip())
+            start = index + 1
+    if value[start:].strip():
+        operands.append(value[start:].strip())
+    return operands
+
+
+def _operand_mode(mnemonic: str, operand_index: int, operand_count: int) -> str:
+    operation = mnemonic.split(".", 1)[0]
+    if operation == "lea" and operand_index == 0:
+        return "address"
+    if operation in {"move", "movea"}:
+        return "read" if operand_index == 0 else "write"
+    if operation.startswith("cmp") or operation in {"tst", "btst", "chk"}:
+        return "read"
+    if operation in {"clr", "st", "sf"}:
+        return "write"
+    if operation in {"bset", "bclr", "bchg"}:
+        return "read" if operand_index == 0 and operand_count > 1 else "read-write"
+    if operand_count > 1:
+        return "read" if operand_index == 0 else "read-write"
+    return "read-write"
+
+
+def _access_rows(
+    statements: list[str], token_pattern: re.Pattern[str], *, implicit_entity_x: bool = False
+) -> list[dict[str, Any]]:
+    accesses: dict[str, dict[str, Any]] = {}
+    for statement in statements:
+        instruction = re.match(
+            r"^(?P<mnemonic>[a-z][A-Za-z0-9]*(?:\.[bwl])?)(?:\s+(?P<operands>.*))?$",
+            statement,
+        )
+        if instruction is None:
+            continue
+        mnemonic = instruction.group("mnemonic")
+        operands = _split_operands(instruction.group("operands") or "")
+        for operand_index, operand in enumerate(operands):
+            names = [match.group(1) for match in token_pattern.finditer(operand)]
+            if implicit_entity_x and re.search(r"(?<![A-Za-z0-9_])\(a0\)", operand):
+                names.append("ENTITYDEF_OFFSET_X")
+            for name in names:
+                row = accesses.setdefault(
+                    name,
+                    {
+                        "name": name,
+                        "read": False,
+                        "write": False,
+                        "addressed": False,
+                        "operations": set(),
+                    },
+                )
+                mode = _operand_mode(mnemonic, operand_index, len(operands))
+                row["read"] |= mode in {"read", "read-write"}
+                row["write"] |= mode in {"write", "read-write"}
+                row["addressed"] |= mode == "address"
+                row["operations"].add(mnemonic)
+    return [
+        {**row, "operations": sorted(row["operations"])}
+        for _, row in sorted(accesses.items())
+    ]
+
+
+def _script_read_rows(statements: list[str]) -> list[dict[str, Any]]:
+    reads: dict[tuple[int, int], set[str]] = {}
+    for statement in statements:
+        instruction = re.match(
+            r"^(?P<mnemonic>[a-z][A-Za-z0-9]*)(?:\.(?P<size>[bwl]))?"
+            r"(?:\s+(?P<operands>.*))?$",
+            statement,
+        )
+        if instruction is None:
+            continue
+        mnemonic = instruction.group("mnemonic")
+        size = {"b": 1, "w": 2, "l": 4}.get(instruction.group("size"))
+        if size is None:
+            continue
+        for operand_index, operand in enumerate(
+            _split_operands(instruction.group("operands") or "")
+        ):
+            if _operand_mode(mnemonic, operand_index, 2) not in {"read", "read-write"}:
+                continue
+            for value in re.findall(r"(?<![A-Za-z0-9_])(\d+)\(a1\)", operand):
+                reads.setdefault((int(value), size), set()).add(
+                    f"{mnemonic}.{instruction.group('size')}"
+                )
+    return [
+        {"offset": offset, "widthBytes": width, "operations": sorted(operations)}
+        for (offset, width), operations in sorted(reads.items())
+    ]
+
+
 def _entity_action_handlers(
     disasm: Path,
     addresses: dict[str, int],
@@ -658,7 +760,44 @@ def _entity_action_handlers(
                 continue
             if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwl])?(?:\s+|$)", code):
                 statements.append(code)
-        entity_fields = sorted(set(re.findall(r"\bENTITYDEF_OFFSET_[A-Z0-9_]+\b", body)))
+        entity_pattern = re.compile(r"\b(ENTITYDEF_OFFSET_[A-Z0-9_]+)\b")
+        global_pattern = re.compile(
+            r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w|"
+            r"\(([A-Z][A-Z0-9_]*)\)\.l"
+        )
+        entity_accesses = _access_rows(
+            statements, entity_pattern, implicit_entity_x=True
+        )
+        global_accesses_raw: dict[str, dict[str, Any]] = {}
+        for statement in statements:
+            normalized = re.sub(
+                global_pattern,
+                lambda match: f"GLOBAL::{match.group(1) or match.group(2)}",
+                statement,
+            )
+            rows = _access_rows(
+                [normalized], re.compile(r"GLOBAL::([A-Z][A-Z0-9_]*)")
+            )
+            for row in rows:
+                existing = global_accesses_raw.setdefault(
+                    row["name"],
+                    {
+                        "name": row["name"],
+                        "read": False,
+                        "write": False,
+                        "addressed": False,
+                        "operations": set(),
+                    },
+                )
+                existing["read"] |= row["read"]
+                existing["write"] |= row["write"]
+                existing["addressed"] |= row["addressed"]
+                existing["operations"].update(row["operations"])
+        global_accesses = [
+            {**row, "operations": sorted(row["operations"])}
+            for _, row in sorted(global_accesses_raw.items())
+        ]
+        entity_fields = [row["name"] for row in entity_accesses]
         global_state = sorted(
             set(re.findall(r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w", body))
             | set(re.findall(r"\(([A-Z][A-Z0-9_]*)\)\.l", body))
@@ -695,8 +834,11 @@ def _entity_action_handlers(
                 "endLine": body_end_line,
                 "statementCount": len(statements),
                 "entityFields": entity_fields,
+                "entityFieldAccesses": entity_accesses,
                 "globalState": global_state,
+                "globalStateAccesses": global_accesses,
                 "scriptParameterOffsets": script_offsets,
+                "scriptReads": _script_read_rows(statements),
                 "directCalls": direct_calls,
                 "exitRoutes": exit_routes,
             }
@@ -784,6 +926,38 @@ def _entity_action_handlers(
         "handlerDirectCallTargetCount": len(
             {target for row in handlers for target in row["directCalls"]}
         ),
+        "handlerEntityReadFieldCount": len(
+            {
+                access["name"]
+                for row in handlers
+                for access in row["entityFieldAccesses"]
+                if access["read"]
+            }
+        ),
+        "handlerEntityWriteFieldCount": len(
+            {
+                access["name"]
+                for row in handlers
+                for access in row["entityFieldAccesses"]
+                if access["write"]
+            }
+        ),
+        "handlerGlobalReadStateCount": len(
+            {
+                access["name"]
+                for row in handlers
+                for access in row["globalStateAccesses"]
+                if access["read"]
+            }
+        ),
+        "handlerGlobalWriteStateCount": len(
+            {
+                access["name"]
+                for row in handlers
+                for access in row["globalStateAccesses"]
+                if access["write"]
+            }
+        ),
     }
     return {
         "summary": summary,
@@ -802,6 +976,7 @@ def _entity_action_handlers(
             ],
             "allRuntimeMacrosMapToHandlers": True,
             "allNonfillerHandlersOwned": True,
+            "allHandlerAccessesClassified": True,
         },
         "dispatchTable": dispatch_targets,
         "macroBindings": macro_bindings,

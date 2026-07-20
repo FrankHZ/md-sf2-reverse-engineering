@@ -150,10 +150,11 @@ opcode or one of those three handler-only slots, and all handler labels have H1 
 
 The complete source corpus uses 38 of the 43 runtime macros. `ac_pass`, `ac_set1Cb4`, `ac_setGhost`,
 `ac_setId`, and `ac_waitDestEntity` are defined and mapped but absent from all 2,204 parsed commands.
-The handler catalog records every handler's source span, script-parameter offsets, direct calls, exit
-routes, and references to 17 entity fields and 15 global-state symbols. Read/write direction and
-signed parameter meaning remain the next semantic pass; the current static claim is complete routing
-and source-shape ownership.
+The handler catalog records every handler's source span, script-parameter reads, direct calls, exit
+routes, and source-shaped access modes. Its 18 entity fields include the implicit X coordinate at
+`(a0)`; 11 fields are read and 17 are written. Of 15 global-state symbols, ten are read and five are
+written. Parameter reads also retain byte/word/long width and instruction provenance. These are
+deterministic assembly-access facts, not yet claims about signed meaning or frame-level behavior.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -164,8 +165,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch classifies the complete handler catalog's entity/RAM references by read/write
-direction and records signedness, obstruction/collision flags, and wait/termination transitions.
+The next static batch groups the complete handler catalog into semantic families and records parameter
+signedness, obstruction/collision flags, and wait/termination transitions from explicit operations.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

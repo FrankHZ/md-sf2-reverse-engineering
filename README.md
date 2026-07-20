@@ -507,8 +507,9 @@ BizHawk 启动中确认 missing/default、last-set-flag-wins 与 alias route，
 jump 均已解析，11 段共 942 bytes 与 H1/ROM 地址和哈希一致。80-slot entity-action dispatcher
 也已逐槽绑定：37 个 filler、43 个 handler、40 个宏可达 opcode 与三个 handler-only branch
 opcode 全部有 H1 地址和结构化 handler catalog；五个运行时宏在完整源码 corpus 中从未使用。
-下一步静态前沿是在这份完整 handler 分母上区分每个实体/RAM 字段的读取与写入方向、参数
-signedness、阻挡/碰撞和等待状态转换，只把帧时序、碰撞结果和 caller-dependent story
+catalog 已进一步按源码指令分类 18 个实体字段（11 read/17 write）和 15 个全局状态（10
+read/5 write），并保留脚本参数的 byte/word/long 读取宽度。下一步静态前沿是在这份完整
+handler 分母上分组语义家族，确认参数 signedness、阻挡/碰撞和等待状态转换，只把帧时序、碰撞结果和 caller-dependent story
 reachability 留给集中 BizHawk 矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义

@@ -52,9 +52,13 @@
     "terminatorMacroCount": 1,
     "usedRuntimeMacroCount": 38,
     "unusedRuntimeMacroCount": 5,
-    "handlerEntityFieldCount": 17,
+    "handlerEntityFieldCount": 18,
     "handlerGlobalStateCount": 15,
-    "handlerDirectCallTargetCount": 11
+    "handlerDirectCallTargetCount": 11,
+    "handlerEntityReadFieldCount": 11,
+    "handlerEntityWriteFieldCount": 17,
+    "handlerGlobalReadStateCount": 10,
+    "handlerGlobalWriteStateCount": 5
   },
-  "outputSha256": "E82D144F275A81A37ECBB4DE3FE06DC4AADDF750A22AA56A09C9BF5822DEE965"
+  "outputSha256": "B081549F488BCB24435D8697B7EF81BEDB66770E89C7E3D09FA70618AD0D0F5F"
 }

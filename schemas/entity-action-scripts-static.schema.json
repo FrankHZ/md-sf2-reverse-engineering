@@ -102,7 +102,7 @@
       }
     },
     "handlerSummary": {
-      "type": "object", "minProperties": 14, "maxProperties": 14,
+      "type": "object", "minProperties": 18, "maxProperties": 18,
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "handlerFacts": {
@@ -110,7 +110,7 @@
       "required": [
         "fillerTarget", "fillerIndices", "handlerOnlyOpcodes", "inlineTerminatorMacro",
         "inlineTerminatorWord", "unusedRuntimeMacros", "allRuntimeMacrosMapToHandlers",
-        "allNonfillerHandlersOwned"
+        "allNonfillerHandlersOwned", "allHandlerAccessesClassified"
       ],
       "properties": {
         "fillerTarget": { "const": "esc_goToNextEntity" },
@@ -129,7 +129,8 @@
           "items": { "type": "string", "pattern": "^ac_" }
         },
         "allRuntimeMacrosMapToHandlers": { "const": true },
-        "allNonfillerHandlersOwned": { "const": true }
+        "allNonfillerHandlersOwned": { "const": true },
+        "allHandlerAccessesClassified": { "const": true }
       }
     },
     "standaloneRomRanges": {
@@ -331,7 +332,8 @@
       "type": "object", "additionalProperties": false,
       "required": [
         "name", "address", "sourcePath", "startLine", "endLine", "statementCount",
-        "entityFields", "globalState", "scriptParameterOffsets", "directCalls", "exitRoutes"
+        "entityFields", "entityFieldAccesses", "globalState", "globalStateAccesses",
+        "scriptParameterOffsets", "scriptReads", "directCalls", "exitRoutes"
       ],
       "properties": {
         "name": { "type": "string", "pattern": "^esc" },
@@ -341,12 +343,45 @@
         "endLine": { "type": "integer", "minimum": 1 },
         "statementCount": { "type": "integer", "minimum": 1 },
         "entityFields": { "type": "array", "items": { "type": "string" } },
+        "entityFieldAccesses": {
+          "type": "array", "items": { "$ref": "#/$defs/access" }
+        },
         "globalState": { "type": "array", "items": { "type": "string" } },
+        "globalStateAccesses": {
+          "type": "array", "items": { "$ref": "#/$defs/access" }
+        },
         "scriptParameterOffsets": {
           "type": "array", "items": { "type": "integer", "minimum": 0 }
         },
+        "scriptReads": {
+          "type": "array", "items": { "$ref": "#/$defs/scriptRead" }
+        },
         "directCalls": { "type": "array", "items": { "type": "string" } },
         "exitRoutes": { "type": "array", "items": { "type": "string", "pattern": "^esc_" } }
+      }
+    },
+    "access": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "read", "write", "addressed", "operations"],
+      "properties": {
+        "name": { "type": "string" },
+        "read": { "type": "boolean" },
+        "write": { "type": "boolean" },
+        "addressed": { "type": "boolean" },
+        "operations": {
+          "type": "array", "minItems": 1, "items": { "type": "string" }
+        }
+      }
+    },
+    "scriptRead": {
+      "type": "object", "additionalProperties": false,
+      "required": ["offset", "widthBytes", "operations"],
+      "properties": {
+        "offset": { "type": "integer", "minimum": 0 },
+        "widthBytes": { "enum": [1, 2, 4] },
+        "operations": {
+          "type": "array", "minItems": 1, "items": { "type": "string" }
+        }
       }
     },
     "entryReference": {

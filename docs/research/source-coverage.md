@@ -303,12 +303,13 @@ entries have at least one same-file or cross-file source reference.
 
 The 80-slot dispatcher is now structurally closed: 37 filler slots, 43 non-filler handlers, 40
 macro-addressable runtime opcodes, three handler-only branch opcodes, and one non-dispatched `$8080`
-inline terminator. The catalog captures all handler H1 addresses, source spans, parameter offsets,
-direct calls, exit routes, 17 referenced entity fields, and 15 global-state symbols. The next
-semantic-depth batch should classify those references by read/write direction and record signedness,
-collision/obstruction flags, and wait/termination transitions. Frame timing, collision outcomes, and
-normal-story reachability remain runtime questions and should be grouped only after that pass finds
-real ambiguity.
+inline terminator. The catalog captures all handler H1 addresses, source spans, parameter reads with
+byte/word/long widths, direct calls, and exit routes. Its source-shaped access classifier finds 18
+entity fields (11 read, 17 written) and 15 global-state symbols (ten read, five written); the entity
+count includes the implicit X field accessed directly as `(a0)`. The next semantic-depth batch should
+group handler families and record signedness, collision/obstruction flags, and wait/termination
+transitions. Frame timing, collision outcomes, and normal-story reachability remain runtime questions
+and should be grouped only after that pass finds real ambiguity.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks
