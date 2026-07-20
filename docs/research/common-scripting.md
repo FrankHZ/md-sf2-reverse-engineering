@@ -1,7 +1,8 @@
 # Common Scripting Engines
 
-- Status: **Confirmed** for the pinned 29-file inventory, 90-slot map-script and 80-slot entity-script
-  dispatch tables, interpreter admission/termination rules, text-bank selection, complete context-
+- Status: **Confirmed** for the pinned 29-file inventory, the complete 90-slot map-script macro/
+  dispatcher/handler/source-use contract, the 80-slot entity-script dispatch table, interpreter
+  admission/termination rules, text-bank selection, complete context-
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
@@ -31,6 +32,27 @@ excluded from strict symbol-based file reach.
 byte; P2 Start under debug mode sets the skip flag, bypassing dialogue and those sleep commands.
 Nonnegative commands select one of 90 table slots. Eight slots route to the shared no-op target.
 Return waits for outstanding view scroll when a dialogue window is open and clears view speed.
+
+The map-script command boundary is now fully static rather than represented by the table shape alone.
+The 90 slots contain 82 non-filler opcodes and eight filler slots at indices 56, 76-79, and 87-89.
+They resolve to 83 unique handlers: one shared filler plus one handler for every non-filler opcode.
+The 180-byte relative jump table matches the pinned H1 addresses and input ROM; its SHA-256 is
+`B128F068249EABC9443A0363BAFAEC1D9B4E06D6BE21B32867C265C7CC405CDE`.
+
+The macro ABI contains 82 primary command macros, eight aliases, and three non-dispatched forms:
+`csWait` encodes the negative sleep word, `cscNop` emits no bytes, and `csc_end` emits `$FFFF`.
+All 93 forms are scanned across every code/data ASM file. The original corpus has 13,515 invocations
+in 169 files and uses 82 forms; eleven defined forms are absent. The catalog retains explicit zero
+counts rather than making unused macros disappear. The most common forms are `nextSingleText`
+(2,058), `csWait` (1,591), `setFacing` (1,579), `setActscriptWait` (1,015), and
+`entityActionsWait` (957).
+
+The 83 handlers contain 955 parsed instructions and group into fourteen source-role families. Their
+source-shaped access catalog contains 16 entity fields, 25 global-state symbols, and 62 direct-call
+targets, while preserving every script-cursor statement. These facts define opcode topology and
+state-touch surfaces, not caller-dependent story meaning. Story-branch reachability, combined
+entity/camera/text/wait/transition frame timing, and palette-fade/VDP-visible presentation remain
+three grouped runtime questions for future shared observation seams.
 
 The entity VInt skips slots whose coordinate is at least `$7000` or whose actscript pointer is zero,
 then dispatches the current word through an 80-slot table. It has 44 unique targets; 37 unused slots
@@ -265,6 +287,7 @@ injection behavior.
 
 ```powershell
 uv run sf2 h2 common-scripting
+uv run sf2 h2 map-script-engine
 uv run sf2 h2 entity-action-scripts
 uv run sf2 h3 entity-movement
 uv run sf2 h2 map-setup
@@ -283,7 +306,8 @@ uv run sf2 h2 sprite-dialogue
 uv run sf2 research-index test
 ```
 
-Generated JSON stays under ignored `local/derived/common-scripting-static.json` and
+Generated JSON stays under ignored `local/derived/common-scripting-static.json`,
+`local/derived/map-script-engine-static.json`, and
 `local/derived/variable-width-font-static.json` and `local/derived/text-huffman-static.json`.
 The full decoded symbol corpus stays in ignored `local/derived/text-banks-static.json`.
 The full dialogue-property catalog stays in ignored `local/derived/sprite-dialogue-static.json`.

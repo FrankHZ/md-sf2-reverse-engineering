@@ -164,7 +164,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   predicate 也已绑定源码证据；后续 `UpdateEntityData` 另闭合 560 bytes、190 instructions、九个
   movement phase、15 个字段、5 个 bit access 和 16-byte facing table ROM parity；四个 update
   helper 再闭合 434 bytes、135 instructions、22 callers、目的地冲突 CCR、sprite fallthrough 与
-  map-offset hash 公式。
+  map-offset hash 公式；map-script engine 则闭合 90-slot dispatcher 的 82 个有效 opcode/8 个
+  filler、83 个唯一 handler、82 主宏/8 alias/3 special，以及 169 个源码文件中的 13,515 次调用、
+  955 条 handler 语句、16 个实体字段、25 个全局状态与 62 个 direct-call target。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

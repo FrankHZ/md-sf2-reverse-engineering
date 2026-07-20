@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 map-script engine static contract",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "rom", "summary", "function", "dispatcher", "familyCounts", "macroContracts", "macroSourceCounts", "opcodeSourceCounts", "unusedMacros", "handlers", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-script-engine-static-v1" },
+    "upstream": { "type": "object" },
+    "rom": { "type": "object" },
+    "summary": { "type": "object", "minProperties": 15 },
+    "function": { "type": "object", "minProperties": 85, "maxProperties": 85, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "dispatcher": {
+      "type": "object", "additionalProperties": false,
+      "required": ["address", "endExclusive", "sha256", "targets", "fillerTarget", "fillerIndices", "sourceRomParity"],
+      "properties": {
+        "address": { "type": "integer" }, "endExclusive": { "type": "integer" },
+        "sha256": { "pattern": "^[0-9A-F]{64}$" },
+        "targets": { "type": "array", "minItems": 90, "maxItems": 90, "items": { "type": "string" } },
+        "fillerTarget": { "const": "csc_doNothing" },
+        "fillerIndices": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "type": "integer" } },
+        "sourceRomParity": { "const": true }
+      }
+    },
+    "familyCounts": { "type": "object", "minProperties": 14 },
+    "macroContracts": { "type": "object", "minProperties": 93, "maxProperties": 93 },
+    "macroSourceCounts": { "type": "object", "minProperties": 93, "maxProperties": 93 },
+    "opcodeSourceCounts": { "type": "object", "minProperties": 70 },
+    "unusedMacros": { "type": "array", "items": { "type": "string" } },
+    "handlers": {
+      "type": "array", "minItems": 83, "maxItems": 83,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "opcodes", "families", "address", "sourcePath", "startLine", "endLine", "statementCount", "macroNames", "sourceCommandCount", "entityFieldAccesses", "globalStateAccesses", "directCalls", "scriptCursorStatements"],
+        "properties": {
+          "name": { "type": "string" }, "opcodes": { "type": "array" }, "families": { "type": "array" },
+          "address": { "type": "integer" }, "sourcePath": { "type": "string" },
+          "startLine": { "type": "integer" }, "endLine": { "type": "integer" },
+          "statementCount": { "type": "integer" }, "macroNames": { "type": "array" },
+          "sourceCommandCount": { "type": "integer" }, "entityFieldAccesses": { "type": "array" },
+          "globalStateAccesses": { "type": "array" }, "directCalls": { "type": "array" },
+          "scriptCursorStatements": { "type": "array" }
+        }
+      }
+    },
+    "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "string" } }
+  }
+}

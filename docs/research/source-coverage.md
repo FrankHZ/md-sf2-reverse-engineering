@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 72 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 73 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 59 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,056 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,058 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -70,7 +70,11 @@ The current evidence is deep but narrow:
   inventoried too, closing file-level reach for all 183 files under `code/gameflow/battle`; map-script
   content and story semantics are not implied by that boundary milestone. Common scripting now has
   a complete 29-file inventory, 28 H1-bound files, 90/80-slot map/entity dispatch tables, and text
-  Huffman state. The entity-action source surface is additionally closed across three shared and 75
+  Huffman state. The map-script side additionally closes 82 non-filler opcodes, eight filler slots,
+  83 unique handlers, 93 primary/alias/special macros, and 13,515 complete-source invocations across
+  169 files. Its handler catalog captures 955 instructions, 16 entity fields, 25 global states, and
+  62 direct-call targets; story reachability and timing/presentation remain batched runtime questions.
+  The entity-action source surface is additionally closed across three shared and 75
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
   corpus uniquely owns 1,472 commands in 361 inline programs and 11 standalone ROM ranges, with 17
   named entries, 5,684 action bytes, and complete static targets for 14 branches and 364 jumps. All
@@ -258,8 +262,8 @@ uv run sf2 research-index test
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
 files and the corresponding `data` query yields 1,690. The index summary reports 1,490 records; its
-verifier reports 381 unique code files, 980 unique data files, 72 H2 fixtures, 59 H3 fixtures, and
-2,056 bindings. The
+verifier reports 381 unique code files, 980 unique data files, 73 H2 fixtures, 59 H3 fixtures, and
+2,058 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -292,6 +296,11 @@ deterministic H2 inventory; its lower 980/1,690 strict reach reflects include-si
 alternates, unlabeled storage, and the separate Z80 address space rather than unknown files.
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
+The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
+slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
+and makes eleven unused definitions explicit. Its remaining three runtime questions are grouped by
+story reachability, multi-service frame timing, and visible presentation; none justifies a one-case
+emulator launch.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

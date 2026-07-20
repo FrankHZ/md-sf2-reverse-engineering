@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 map-script engine static fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-script-engine-static-v1" },
+    "romSha256": { "pattern": "^[0-9A-F]{64}$" },
+    "upstreamCommit": { "pattern": "^[0-9a-f]{40}$" },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ExecuteMapScript", "rjt_cutsceneScriptCommands"],
+      "properties": {
+        "ExecuteMapScript": { "type": "integer" },
+        "rjt_cutsceneScriptCommands": { "type": "integer" }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["summary", "dispatcherFacts", "familyCounts", "mostUsedMacros", "unusedMacros", "runtimeQuestions"],
+      "properties": {
+        "summary": { "type": "object" }, "dispatcherFacts": { "type": "object" },
+        "familyCounts": { "type": "object" }, "mostUsedMacros": { "type": "array" },
+        "unusedMacros": { "type": "array" }, "runtimeQuestions": { "type": "array" }
+      }
+    }
+  }
+}

@@ -32,9 +32,9 @@ def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
     assert result["Records"] == 1490
-    assert result["H2Fixtures"] == 72
+    assert result["H2Fixtures"] == 73
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 59
-    assert result["AddressBindings"] == 2056
+    assert result["AddressBindings"] == 2058
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 980
 
@@ -92,6 +92,12 @@ def test_enemy_gold_has_a_dedicated_narrow_extraction_command() -> None:
 def test_enemy_drops_has_a_dedicated_narrow_extraction_command() -> None:
     args = build_parser().parse_args(["h2", "enemy-drops"])
     assert args.h2_command == "enemy-drops"
+    assert args.output_path is None
+
+
+def test_map_script_engine_has_a_dedicated_static_contract_command() -> None:
+    args = build_parser().parse_args(["h2", "map-script-engine"])
+    assert args.h2_command == "map-script-engine"
     assert args.output_path is None
 
 

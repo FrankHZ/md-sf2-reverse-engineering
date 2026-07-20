@@ -39,6 +39,8 @@ Evidence is executable through:
   `tests/fixtures/h2/canonical-map-import-v1.json`;
 - `sf2-map-events-static-v1` in
   `tests/fixtures/h2/map-events-static-v1.json`;
+- `sf2-map-script-engine-static-v1` in
+  `tests/fixtures/h2/map-script-engine-static-v1.json`;
 - `sf2-map-setup-selection-runtime-v1` in
   `tests/fixtures/h3/map-setup-selection-v1.json`;
 - `sf2-map-init-dispatch-runtime-v1` in
@@ -227,6 +229,6 @@ The first remake map slice is acceptable when it can:
 - apply a scripted block copy to an isolated working layout;
 - report intentional presentation deviations separately from original facts.
 
-Future H4 tests should reuse compact cases derived from the three H2 fixtures above. Rendered screenshots
+Future H4 tests should reuse compact cases derived from the H2 fixtures above. Rendered screenshots
 or extracted map dumps are not golden fixtures; small indices, state transitions, hashes over
 user-local generated output, and placeholder-asset renders are the permitted parity surfaces.

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-script-engine-static-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "function": { "ExecuteMapScript": 291116, "rjt_cutsceneScriptCommands": 291200 },
+  "expected": {
+    "summary": {
+      "dispatcherSlotCount": 90,
+      "uniqueHandlerCount": 83,
+      "fillerSlotCount": 8,
+      "primaryCommandMacroCount": 82,
+      "aliasMacroCount": 8,
+      "specialMacroCount": 3,
+      "trackedMacroCount": 93,
+      "usedMacroCount": 82,
+      "unusedMacroCount": 11,
+      "sourceCommandCount": 13515,
+      "sourceFileCount": 169,
+      "handlerStatementCount": 955,
+      "handlerEntityFieldCount": 16,
+      "handlerGlobalStateCount": 25,
+      "handlerDirectCallTargetCount": 62
+    },
+    "dispatcherFacts": {
+      "sha256": "B128F068249EABC9443A0363BAFAEC1D9B4E06D6BE21B32867C265C7CC405CDE",
+      "fillerTarget": "csc_doNothing",
+      "fillerIndices": [56, 76, 77, 78, 79, 87, 88, 89],
+      "sourceRomParity": true
+    },
+    "familyCounts": { "audio":1, "control-flow":6, "dialogue-ui":1, "entity":30, "entity-party":7, "filler":1, "map-camera":6, "map-state":8, "map-transition":1, "no-op":1, "party":1, "presentation":11, "story-state":4, "text":5 },
+    "mostUsedMacros": [
+      { "macro":"nextSingleText", "count":2058 },
+      { "macro":"csWait", "count":1591 },
+      { "macro":"setFacing", "count":1579 },
+      { "macro":"setActscriptWait", "count":1015 },
+      { "macro":"entityActionsWait", "count":957 },
+      { "macro":"setPos", "count":608 },
+      { "macro":"nextText", "count":577 },
+      { "macro":"entityActions", "count":487 },
+      { "macro":"setActscript", "count":436 },
+      { "macro":"customActscriptWait", "count":359 },
+      { "macro":"playSound", "count":309 },
+      { "macro":"csc_end", "count":303 }
+    ],
+    "unusedMacros": ["csc06", "csc10", "csc14", "csc2D", "cscNop", "jumpIfDead", "jumpIfDefeatedByLastAttack", "menu", "nextSingleTextVar", "nextTextVar", "slowFadeOutB"],
+    "runtimeQuestions": [
+      "caller-dependent-story-branch-reachability-and-persistence",
+      "entity-camera-text-wait-and-transition-frame-timing",
+      "palette-fade-and-vdp-visible-presentation"
+    ]
+  }
+}

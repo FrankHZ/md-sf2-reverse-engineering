@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,490 条 confirmed finding、72 个 H2 fixture、59 个 H3 fixture
-和 2,056 个地址绑定。
+截至 2026-07-19，研究索引有 1,490 条 confirmed finding、73 个 H2 fixture、59 个 H3 fixture
+和 2,058 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -50,6 +50,12 @@ description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stu
 唯一正常调用链确认三个 `d6` 条件函数会被跳过；init 层闭合 84 个 source、90 个 callable entry、
 597 条物理 statement 和 80 次 script 调用；最后 47 个 standalone setup script 也闭合为 178 个
 全局标签、8,058 条语句和 146 次跨文件引用。
+与 entity-action 相邻的 map-script engine 也已从入口形状提升为完整静态合同：90 个 dispatcher
+slot 包含 82 个有效 opcode 和 8 个 filler，归并为 83 个唯一 handler；宏层闭合 82 个主命令、
+8 个 alias 以及 sleep/source-nop/terminator 三种特殊编码。完整 code/data 源码的 169 个文件共
+使用这些宏 13,515 次；93 个受跟踪宏中 82 个出现、11 个未出现，handler 的 955 条语句、16 个
+实体字段、25 个全局状态和 62 个 direct-call target 也已结构化。90-word jump table 与输入 ROM
+逐字节一致；剧情分支可达性、跨 command 等待时序和 palette/VDP presentation 仍进入集中模拟队列。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
 data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 25 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表、sprite-dialogue 与 Battle 01 数据。完整口径、空白子系统和
@@ -533,6 +539,10 @@ entity 32 bypass、effect/DMA 链，以及 `(hash(Y>>7)<<6)+hash(X>>7)` 的 word
 以及 layer 2/layer 0/immersed 到达状态均逐字段匹配 Python 模型。RAM 脚本用 dispatcher 的
 yield-only filler 槽终止；`ac_pass` 会前进四字节并继续分发，不能当作停止命令。
 caller-dependent story reachability 仍单独保留。
+map-script engine 同样已按静态优先闭合 90-slot jump table、82 个非 filler opcode、83 个唯一
+handler、93 个宏合同和全源码 13,515 次命令调用；其三项剩余运行时问题按 story branch、跨
+entity/camera/text/transition 的 frame timing、palette/VDP presentation 分组，不为单一 opcode
+另起模拟器 fixture。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

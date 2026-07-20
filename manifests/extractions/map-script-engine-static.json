@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-script-engine-static-v1",
+  "outputPath": "local/derived/map-script-engine-static.json",
+  "outputSha256": "795B7CE040C256AD7523833D91F4A6A4254ACA46199E302F2C6F6090FFAE7DBE",
+  "summary": {
+    "dispatcherSlotCount": 90,
+    "uniqueHandlerCount": 83,
+    "fillerSlotCount": 8,
+    "primaryCommandMacroCount": 82,
+    "aliasMacroCount": 8,
+    "specialMacroCount": 3,
+    "trackedMacroCount": 93,
+    "usedMacroCount": 82,
+    "unusedMacroCount": 11,
+    "sourceCommandCount": 13515,
+    "sourceFileCount": 169,
+    "handlerStatementCount": 955,
+    "handlerEntityFieldCount": 16,
+    "handlerGlobalStateCount": 25,
+    "handlerDirectCallTargetCount": 62
+  }
+}

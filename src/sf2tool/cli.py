@@ -49,6 +49,7 @@ from sf2tool.h2.map_import import verify_canonical_map_import
 from sf2tool.h2.map_init import verify_map_init_contract
 from sf2tool.h2.map_layouts import verify_map_layout_contract
 from sf2tool.h2.map_palettes import verify_map_palette_contract
+from sf2tool.h2.map_script_engine import verify_map_script_engine_contract
 from sf2tool.h2.map_scripts import verify_map_scripts_inventory
 from sf2tool.h2.map_setup import verify_map_setup_contract
 from sf2tool.h2.map_sprite_assignments import verify_map_sprite_assignment_contract
@@ -346,6 +347,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_entity_action_scripts)
     h2_entity_action_scripts.add_argument("--output-path", type=_path)
+    h2_map_script_engine = h2_commands.add_parser(
+        "map-script-engine", help="inventory map-script macros, handlers, and source usage"
+    )
+    _add_local_paths(h2_map_script_engine)
+    h2_map_script_engine.add_argument("--output-path", type=_path)
     h2_sprite_dialogue = h2_commands.add_parser(
         "sprite-dialogue",
         help="decode map-sprite portrait and speech-SFX properties against the ROM",
@@ -999,6 +1005,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "entity-action-scripts":
         print_record(
             verify_entity_action_script_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-script-engine":
+        print_record(
+            verify_map_script_engine_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
