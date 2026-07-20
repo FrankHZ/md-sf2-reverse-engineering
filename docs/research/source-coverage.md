@@ -317,9 +317,13 @@ low byte of their declared words. `ac_branch` is the only named macro with an ex
 word-relative displacement). All three handler-only six-byte
 layouts are now explicit and absent from the 2,204-command source corpus; overall, 35/43 handlers are
 used and eight are absent. Wait/continue/yield transitions are now classified for all handlers: 39
-can redispatch, 11 can yield, and seven have both
-outcomes; four continuous-control handlers are yield-only. Remaining parameter roles/signedness and
-the predicates selecting dual outcomes are the next static pass. Frame
+can redispatch, 11 can yield, and seven have both outcomes; four continuous-control handlers are
+yield-only. Remaining parameter roles/signedness and
+the predicates selecting dual outcomes are now closed too: all 46 declared parameters divide into ten
+signed numeric, twenty unsigned numeric, fifteen boolean, and one ignored value, while all seven dual
+handlers retain their selecting source statements. `ac_randomWalk` is the only macro-comment/data-flow
+disagreement and remains explicit. The next static pass follows those commands into
+`UpdateEntityData` movement arithmetic and flag consumption. Frame
 timing, collision outcomes, and normal-story reachability remain runtime questions and should be
 grouped only after that pass finds real ambiguity.
 

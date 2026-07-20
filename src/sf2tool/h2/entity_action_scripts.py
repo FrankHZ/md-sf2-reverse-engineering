@@ -72,6 +72,161 @@ HANDLER_FAMILY_BY_OPCODE = {
     0x41: "control-flow",
 }
 
+PARAMETER_ROLE_OVERRIDES = {
+    ("ac_acceleration", 1): "X acceleration activation state",
+    ("ac_acceleration", 2): "Y acceleration activation state",
+    ("ac_deceleration", 1): "X deceleration activation state",
+    ("ac_deceleration", 2): "Y deceleration activation state",
+    ("ac_moveEntFacRelPos", 2): "facing-relative direction",
+    ("ac_moveEntFacRelPos", 3): "distance multiplier",
+    ("ac_moveFacRelPos", 1): "facing-relative direction",
+    ("ac_moveFacRelPos", 2): "distance multiplier",
+    ("ac_pass", 1): "ignored payload",
+    ("ac_randomWalk", 1): "center X (map tiles)",
+    ("ac_randomWalk", 2): "center Y (map tiles)",
+    ("ac_randomWalk", 3): "radius (map tiles)",
+    ("ac_set1Cb4", 1): "state ON/OFF",
+    ("ac_setGhost", 1): "state ON/OFF",
+    ("ac_setId", 1): "entity number",
+    ("ac_waitDestEntity", 1): "other entity",
+}
+
+SIGNED_PARAMETER_ROLES = {
+    "X (in map tiles)",
+    "X speed",
+    "Y (in map tiles)",
+    "Y speed",
+    "distance multiplier",
+    "relative X (pixels)",
+    "relative X destination",
+    "relative Y (pixels)",
+    "relative Y destination",
+}
+
+BOOLEAN_PARAMETER_ROLES = {
+    "X acceleration activation state",
+    "X deceleration activation state",
+    "Y acceleration activation state",
+    "Y deceleration activation state",
+    "state ON/OFF",
+}
+
+
+def _parameter_semantics(macro: str, parameter: dict[str, Any]) -> dict[str, str]:
+    key = (macro, parameter["ordinal"])
+    role = PARAMETER_ROLE_OVERRIDES.get(key, parameter["role"])
+    if not role:
+        raise ValueError(f"entity-action parameter role is unclassified: {macro}#{key[1]}")
+    if role in BOOLEAN_PARAMETER_ROLES:
+        value_kind = "boolean"
+        signedness = "not-applicable"
+    elif role == "ignored payload":
+        value_kind = "ignored"
+        signedness = "not-applicable"
+    elif role in SIGNED_PARAMETER_ROLES:
+        value_kind = "numeric"
+        signedness = "signed"
+    else:
+        value_kind = "numeric"
+        signedness = "unsigned"
+    return {
+        "effectiveRole": role,
+        "roleEvidence": "handler-dataflow" if key in PARAMETER_ROLE_OVERRIDES else "macro-comment",
+        "valueKind": value_kind,
+        "signedness": signedness,
+    }
+
+
+def _operand_semantics(kind: str) -> tuple[str, str]:
+    if kind == "relative-branch":
+        return "branch displacement", "signed"
+    if kind == "absolute-jump":
+        return "absolute address", "unsigned"
+    if kind == "ignored":
+        return "ignored padding", "not-applicable"
+    return "handler-read value", "unknown"
+
+
+DUAL_OUTCOME_CONDITIONS = {
+    0x00: {
+        "kind": "timer-threshold",
+        "yieldWhen": "BLE is not taken after duration-minus-wait-timer comparison",
+        "redispatchWhen": "BLE is taken after duration-minus-wait-timer comparison",
+        "evidencePatterns": (
+            r"^cmp\.b ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER\(a0\),d2$",
+            r"^ble\.s loc_4FCE$",
+        ),
+    },
+    0x01: {
+        "kind": "destination-delta",
+        "yieldWhen": "combined X/Y destination delta is nonzero",
+        "redispatchWhen": "combined X/Y destination delta is zero",
+        "evidencePatterns": (r"^or\.w d4,d6$", r"^bne\.w esc_clearTimerGoToNextEntity$"),
+    },
+    0x04: {
+        "kind": "helper-ccr",
+        "yieldWhen": "BNE is taken after HasSameDestinationAsOtherEntity",
+        "redispatchWhen": "BNE is not taken after HasSameDestinationAsOtherEntity",
+        "evidencePatterns": (
+            r"^bsr\.w HasSameDestinationAsOtherEntity$",
+            r"^bne\.w esc_goToNextEntity$",
+        ),
+    },
+    0x05: {
+        "kind": "helper-ccr",
+        "yieldWhen": "BNE is taken after HasSameDestinationAsOtherEntity",
+        "redispatchWhen": "BNE is not taken after HasSameDestinationAsOtherEntity",
+        "evidencePatterns": (
+            r"^bsr\.w HasSameDestinationAsOtherEntity$",
+            r"^bne\.w esc_goToNextEntity$",
+        ),
+    },
+    0x06: {
+        "kind": "bounded-search",
+        "yieldWhen": "direction search exhausts and falls through to esc_goToNextEntity",
+        "redispatchWhen": "a candidate reaches the shared movement tail",
+        "evidencePatterns": (
+            r"^dbf d6,loc_5472$",
+            r"^bra\.w esc_goToNextEntity$",
+            r"^bra\.w esc_clearTimerGoToNextCommand$",
+        ),
+    },
+    0x0A: {
+        "kind": "queue-limit",
+        "yieldWhen": "BGT is taken after sprite-load-count limit comparison",
+        "redispatchWhen": "BGT is not taken after sprite-load-count limit comparison",
+        "evidencePatterns": (
+            r"^cmpi\.b #GFX_MAX_SPRITES_TO_LOAD,\(\(SPRITES_TO_LOAD_NUMBER-\$1000000\)\)\.w$",
+            r"^bgt\.w esc_goToNextEntity$",
+        ),
+    },
+    0x0F: {
+        "kind": "destination-delta",
+        "yieldWhen": "other entity combined X/Y destination delta is nonzero",
+        "redispatchWhen": "other entity combined X/Y destination delta is zero",
+        "evidencePatterns": (r"^or\.w d4,d6$", r"^bne\.w esc_clearTimerGoToNextEntity$"),
+    },
+}
+
+
+def _dual_outcome_condition(
+    opcode: int, statements: list[str]
+) -> dict[str, Any] | None:
+    spec = DUAL_OUTCOME_CONDITIONS.get(opcode)
+    if spec is None:
+        return None
+    evidence = []
+    for pattern in spec["evidencePatterns"]:
+        matches = [statement for statement in statements if re.match(pattern, statement)]
+        if len(matches) != 1:
+            raise ValueError(
+                f"entity-action dual-outcome evidence drift: opcode={opcode} pattern={pattern}"
+            )
+        evidence.append(matches[0])
+    return {
+        key: spec[key] for key in ("kind", "yieldWhen", "redispatchWhen")
+    } | {"evidenceStatements": evidence}
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -857,8 +1012,8 @@ def _entity_action_handlers(
             code = raw_line.split(";", 1)[0].strip()
             if not code or re.match(r"^[A-Za-z_@][A-Za-z0-9_@]*:$", code):
                 continue
-            if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwl])?(?:\s+|$)", code):
-                statements.append(code)
+            if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwls])?(?:\s+|$)", code):
+                statements.append(re.sub(r"\s+", " ", code))
         entity_pattern = re.compile(r"\b(ENTITYDEF_OFFSET_[A-Z0-9_]+)\b")
         global_pattern = re.compile(
             r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w|"
@@ -957,10 +1112,18 @@ def _entity_action_handlers(
                 "directCalls": direct_calls,
                 "exitRoutes": exit_routes,
                 "flowOutcomes": sorted(flow_outcomes),
+                "dualOutcomeCondition": _dual_outcome_condition(
+                    handler_opcodes[handler], statements
+                ),
             }
         )
 
     handlers_by_name = {row["name"]: row for row in handlers}
+    if any(
+        (len(row["flowOutcomes"]) == 2) != (row["dualOutcomeCondition"] is not None)
+        for row in handlers
+    ):
+        raise ValueError("entity-action dual-outcome condition coverage drift")
     macro_bindings = []
     opcode_rows: dict[int, dict[str, Any]] = {}
     for macro, contract in sorted(macro_contracts.items()):
@@ -1008,6 +1171,7 @@ def _entity_action_handlers(
             parameter_coverage.append(
                 {
                     **parameter,
+                    **_parameter_semantics(macro, parameter),
                     "readOffsets": sorted(declared & handler_read_bytes),
                     "ignoredOffsets": sorted(declared - handler_read_bytes),
                 }
@@ -1031,11 +1195,14 @@ def _entity_action_handlers(
                     )
                 )
                 if not action_bytes <= declared_parameter_bytes:
+                    role, signedness = _operand_semantics(action["kind"])
                     external_operands.append(
                         {
                             "offset": action["parameterOffset"],
                             "widthBytes": action["widthBytes"],
                             "kind": action["kind"],
+                            "role": role,
+                            "signedness": signedness,
                         }
                     )
         macro_bindings.append(
@@ -1102,6 +1269,16 @@ def _entity_action_handlers(
                     "offset": start,
                     "widthBytes": 2 + index - start,
                     "kind": byte_roles[index - 1],
+                    "role": (
+                        "flag identifier"
+                        if byte_roles[index - 1] == "handler-read" and opcode in {0x31, 0x32}
+                        else _operand_semantics(byte_roles[index - 1])[0]
+                    ),
+                    "signedness": (
+                        "unsigned"
+                        if byte_roles[index - 1] == "handler-read" and opcode in {0x31, 0x32}
+                        else _operand_semantics(byte_roles[index - 1])[1]
+                    ),
                 }
             )
             start = 2 + index
@@ -1133,6 +1310,9 @@ def _entity_action_handlers(
         row["macro"]
         for row in macro_bindings
         if not row["isInlineTerminator"] and not row["allDeclaredParameterBytesRead"]
+    ]
+    declared_parameters = [
+        parameter for row in macro_bindings for parameter in row["declaredParameters"]
     ]
     summary = {
         "dispatchSlotCount": len(dispatch_targets),
@@ -1228,6 +1408,24 @@ def _entity_action_handlers(
             "redispatch-next-command" in row["flowOutcomes"] for row in handlers
         ),
         "dualOutcomeHandlerCount": sum(len(row["flowOutcomes"]) == 2 for row in handlers),
+        "classifiedDeclaredParameterCount": sum(
+            parameter["signedness"] != "unknown" for parameter in declared_parameters
+        ),
+        "signedDeclaredParameterCount": sum(
+            parameter["signedness"] == "signed" for parameter in declared_parameters
+        ),
+        "unsignedDeclaredParameterCount": sum(
+            parameter["signedness"] == "unsigned" for parameter in declared_parameters
+        ),
+        "booleanDeclaredParameterCount": sum(
+            parameter["valueKind"] == "boolean" for parameter in declared_parameters
+        ),
+        "ignoredDeclaredParameterCount": sum(
+            parameter["valueKind"] == "ignored" for parameter in declared_parameters
+        ),
+        "dualOutcomeConditionCount": sum(
+            row["dualOutcomeCondition"] is not None for row in handlers
+        ),
     }
     return {
         "summary": summary,
@@ -1258,6 +1456,24 @@ def _entity_action_handlers(
                 row["sourceCommandCount"] == 0 for row in handler_only_layouts
             ),
             "allHandlerOutcomesClassified": True,
+            "allDeclaredParameterSemanticsClassified": all(
+                parameter["signedness"] != "unknown" for parameter in declared_parameters
+            ),
+            "allExternalOperandSemanticsClassified": all(
+                operand["signedness"] != "unknown"
+                for row in macro_bindings
+                for operand in row["externalOperands"]
+            ),
+            "macroCommentDisagreements": sorted(
+                {
+                    row["macro"]
+                    for row in macro_bindings
+                    for parameter in row["declaredParameters"]
+                    if parameter["role"]
+                    and parameter["role"] != parameter["effectiveRole"]
+                }
+            ),
+            "allDualOutcomeConditionsClassified": True,
             "handlerFamilyCounts": dict(
                 sorted(Counter(row["family"] for row in handlers).items())
             ),

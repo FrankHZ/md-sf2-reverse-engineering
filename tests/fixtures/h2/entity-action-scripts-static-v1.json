@@ -208,7 +208,13 @@
     "unusedHandlerCount": 8,
     "yieldCapableHandlerCount": 11,
     "redispatchCapableHandlerCount": 39,
-    "dualOutcomeHandlerCount": 7
+    "dualOutcomeHandlerCount": 7,
+    "classifiedDeclaredParameterCount": 46,
+    "signedDeclaredParameterCount": 10,
+    "unsignedDeclaredParameterCount": 20,
+    "booleanDeclaredParameterCount": 15,
+    "ignoredDeclaredParameterCount": 1,
+    "dualOutcomeConditionCount": 7
   },
   "handlerFacts": {
     "fillerTarget": "esc_goToNextEntity",
@@ -231,6 +237,10 @@
     "unusedHandlers": ["esc0F_waitUntilOtherEntityReachesDest", "esc16_setEntityNumber", "esc1D_setEntityGhost", "esc21_set1Cbit4", "esc31_branchIfFlagSet", "esc32_branchIfFlagClear", "esc33_randomBranch", "esc41_pass"],
     "allHandlerOnlyOpcodesAbsentFromSourceCorpus": true,
     "allHandlerOutcomesClassified": true,
+    "allDeclaredParameterSemanticsClassified": true,
+    "allExternalOperandSemanticsClassified": true,
+    "macroCommentDisagreements": ["ac_randomWalk"],
+    "allDualOutcomeConditionsClassified": true,
     "handlerFamilyCounts": {
       "audio": 1,
       "control-flow": 6,

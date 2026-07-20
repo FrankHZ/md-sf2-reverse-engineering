@@ -72,7 +72,13 @@
     "unusedHandlerCount": 8,
     "yieldCapableHandlerCount": 11,
     "redispatchCapableHandlerCount": 39,
-    "dualOutcomeHandlerCount": 7
+    "dualOutcomeHandlerCount": 7,
+    "classifiedDeclaredParameterCount": 46,
+    "signedDeclaredParameterCount": 10,
+    "unsignedDeclaredParameterCount": 20,
+    "booleanDeclaredParameterCount": 15,
+    "ignoredDeclaredParameterCount": 1,
+    "dualOutcomeConditionCount": 7
   },
-  "outputSha256": "A6A61936FB94E50F798C6F650AE506765BBEDCFCD58B4866BB547DD7AAF11A60"
+  "outputSha256": "C6BD4909AD38274B0A38F48FDAEE5CDB857712D6CE716CAEF8640E78046875FD"
 }

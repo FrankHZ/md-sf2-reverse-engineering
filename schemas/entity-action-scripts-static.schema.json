@@ -103,7 +103,7 @@
       }
     },
     "handlerSummary": {
-      "type": "object", "minProperties": 32, "maxProperties": 32,
+      "type": "object", "minProperties": 38, "maxProperties": 38,
       "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "handlerFacts": {
@@ -115,6 +115,8 @@
         "allHandlerFlowActionsClassified", "allDeclaredParameterBytesAccounted",
         "partiallyConsumedMacros", "unusedHandlers",
         "allHandlerOnlyOpcodesAbsentFromSourceCorpus", "allHandlerOutcomesClassified",
+        "allDeclaredParameterSemanticsClassified", "allExternalOperandSemanticsClassified",
+        "macroCommentDisagreements", "allDualOutcomeConditionsClassified",
         "handlerFamilyCounts"
       ],
       "properties": {
@@ -149,6 +151,13 @@
         },
         "allHandlerOnlyOpcodesAbsentFromSourceCorpus": { "const": true },
         "allHandlerOutcomesClassified": { "const": true },
+        "allDeclaredParameterSemanticsClassified": { "const": true },
+        "allExternalOperandSemanticsClassified": { "const": true },
+        "macroCommentDisagreements": {
+          "type": "array", "minItems": 1, "maxItems": 1,
+          "items": { "const": "ac_randomWalk" }
+        },
+        "allDualOutcomeConditionsClassified": { "const": true },
         "handlerFamilyCounts": {
           "type": "object", "minProperties": 8, "maxProperties": 8,
           "additionalProperties": { "type": "integer", "minimum": 1 }
@@ -365,8 +374,8 @@
     "declaredParameter": {
       "type": "object", "additionalProperties": false,
       "required": [
-        "ordinal", "offset", "widthBytes", "expression", "role", "readOffsets",
-        "ignoredOffsets"
+        "ordinal", "offset", "widthBytes", "expression", "role", "effectiveRole",
+        "roleEvidence", "valueKind", "signedness", "readOffsets", "ignoredOffsets"
       ],
       "properties": {
         "ordinal": { "type": "integer", "minimum": 1 },
@@ -374,6 +383,10 @@
         "widthBytes": { "enum": [1, 2, 4] },
         "expression": { "type": "string" },
         "role": { "type": "string" },
+        "effectiveRole": { "type": "string", "minLength": 1 },
+        "roleEvidence": { "enum": ["macro-comment", "handler-dataflow"] },
+        "valueKind": { "enum": ["boolean", "ignored", "numeric"] },
+        "signedness": { "enum": ["signed", "unsigned", "not-applicable"] },
         "readOffsets": {
           "type": "array", "items": { "type": "integer", "minimum": 2 }
         },
@@ -384,13 +397,15 @@
     },
     "operandLayout": {
       "type": "object", "additionalProperties": false,
-      "required": ["offset", "widthBytes", "kind"],
+      "required": ["offset", "widthBytes", "kind", "role", "signedness"],
       "properties": {
         "offset": { "type": "integer", "minimum": 2 },
         "widthBytes": { "enum": [1, 2, 4] },
         "kind": {
           "enum": ["handler-read", "ignored", "relative-branch", "absolute-jump"]
-        }
+        },
+        "role": { "type": "string", "minLength": 1 },
+        "signedness": { "enum": ["signed", "unsigned", "not-applicable", "unknown"] }
       }
     },
     "handlerOnlyLayout": {
@@ -413,7 +428,7 @@
         "statementCount",
         "entityFields", "entityFieldAccesses", "globalState", "globalStateAccesses",
         "scriptParameterOffsets", "scriptReads", "bitAccesses", "scriptPointerActions",
-        "directCalls", "exitRoutes", "flowOutcomes"
+        "directCalls", "exitRoutes", "flowOutcomes", "dualOutcomeCondition"
       ],
       "properties": {
         "name": { "type": "string", "pattern": "^esc" },
@@ -455,6 +470,31 @@
         "flowOutcomes": {
           "type": "array", "minItems": 1, "maxItems": 2,
           "items": { "enum": ["redispatch-next-command", "yield-next-entity"] }
+        },
+        "dualOutcomeCondition": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": [
+                "kind", "yieldWhen", "redispatchWhen", "evidenceStatements"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "timer-threshold", "destination-delta", "helper-ccr",
+                    "bounded-search", "queue-limit"
+                  ]
+                },
+                "yieldWhen": { "type": "string", "minLength": 1 },
+                "redispatchWhen": { "type": "string", "minLength": 1 },
+                "evidenceStatements": {
+                  "type": "array", "minItems": 2, "maxItems": 3,
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          ]
         }
       }
     },

@@ -177,6 +177,19 @@ the next command in the same entity update, eleven can yield to the next entity,
 either: wait, wait-for-destination, relative/absolute movement when obstructed, random walk, sprite
 update when the load queue is full, and wait-for-another-entity. The four yield-only handlers are the
 character/follower/raft/Caravan continuous-control paths.
+All 46 declared macro parameters now have effective handler-side roles and numeric interpretation:
+ten signed numeric values, twenty unsigned numeric values, fifteen booleans, and the one deliberately
+ignored `ac_pass` payload. Macro comments own 32 roles; handler data flow supplies the other fourteen.
+`ac_randomWalk` is the sole recorded disagreement: its macro calls the first two words X/Y speed,
+while the handler uses them as unsigned center tile coordinates and the third word as a radius before
+unsigned tile-size multiplication. The raw macro comment remains in the contract beside the effective
+role instead of being overwritten.
+
+The seven dual-outcome handlers also carry source-statement predicates. They distinguish the wait
+timer threshold, current/other-entity destination deltas, raw CCR results from
+`HasSameDestinationAsOtherEntity`, random-walk search exhaustion, and the sprite-load queue limit.
+For the helper-CCR cases the contract deliberately says only whether BNE is taken; it does not infer
+collision meaning from the helper name or comment.
 
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
@@ -187,8 +200,9 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static batch records signedness/roles for the remaining unnamed parameter fields and the
-source conditions selecting each dual outcome.
+The next static entity-action batch moves below the command handlers into `UpdateEntityData`: per-frame
+velocity/travel/acceleration arithmetic, flag consumers, snapping, and the helper CCR boundary. Only
+timing or collision meaning still unresolved after that pass belongs in the grouped emulator matrix.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

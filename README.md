@@ -516,8 +516,12 @@ read/5 write），并保留脚本参数的 byte/word/long 读取宽度。43 个 
 和三个 handler-only 6-byte layout 也已闭合；后三者在
 2,204 条源码命令中均未出现，因此完整 corpus 实际使用 35/43 handler。43 个 handler 的 flow
 outcome 也已统一为 redispatch/yield：39 个可 redispatch、11 个可 yield、
-七个具备双路径，四个连续控制 handler 只 yield。下一步静态前沿是确认剩余未命名参数的
-角色/signedness 和七个双路径的选择条件，只把帧时序、碰撞结果和 caller-dependent story
+七个具备双路径，四个连续控制 handler 只 yield。46 个声明参数现已全部获得 handler-side
+角色：10 signed numeric、20 unsigned numeric、15
+boolean、1 ignored；七个 dual handler 也全部绑定选择条件及源码语句。`ac_randomWalk` 是唯一
+显式源码注释冲突：宏称前两个 word 为 X/Y speed，handler 实际把它们作为 unsigned 中心 tile
+坐标，并把第三个 word 作为半径。下一步静态前沿下沉到 `UpdateEntityData` 的逐帧 velocity/
+travel/acceleration、flag consumer 和位置 snap，只把仍无法静态确认的帧时序、碰撞结果和 caller-dependent story
 reachability 留给集中 BizHawk 矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
