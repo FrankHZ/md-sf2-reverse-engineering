@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "SF2 Z80 music-bank static fixture",
+  "title": "SF2 Z80 sound-data static fixture",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "table", "expected"],

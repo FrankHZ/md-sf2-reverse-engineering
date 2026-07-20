@@ -1001,6 +1001,193 @@ def _sfx_source_headers(driver_source: str) -> dict[str, dict[str, Any]]:
     return headers
 
 
+def _decode_sfx_streams(
+    driver_payload: bytes, entries: list[dict[str, Any]]
+) -> dict[str, Any]:
+    references: dict[int, list[dict[str, Any]]] = {}
+    for entry in entries:
+        slots = SFX_TYPE_1_SLOTS if entry["type"] == 1 else SFX_TYPE_2_SLOTS
+        for slot, pointer in zip(slots, entry["channelPointers"], strict=True):
+            if driver_payload[pointer] == 0xFF:
+                continue
+            references.setdefault(pointer, []).append(
+                {
+                    "commandId": entry["commandId"],
+                    "sfxIndex": entry["sfxIndex"],
+                    "slot": slot,
+                }
+            )
+
+    token_kinds: dict[int, str] = {}
+    loop_subcommands: dict[int, int] = {}
+    unique_token_addresses: set[int] = set()
+    unique_decoded_addresses: set[int] = set()
+    redirects: set[tuple[int, int]] = set()
+    counted_loop_edges: set[tuple[int, int, int]] = set()
+    streams = []
+    for start, stream_references in sorted(references.items()):
+        address = start
+        visited_segment_starts: set[int] = set()
+        segments = []
+        stream_token_count = 0
+        redirect_depth = 0
+        counted_loop_anchor: tuple[int, int] | None = None
+        stream_counted_loop_edges = []
+        while True:
+            if address in visited_segment_starts:
+                raise ValueError(f"SFX redirect cycle at {address:04X}")
+            if not SFX_DATA_START_ADDRESS <= address < SFX_DATA_END_ADDRESS:
+                raise ValueError(f"SFX stream address outside data range: {address:04X}")
+            visited_segment_starts.add(address)
+            segment_start = address
+            segment_token_count = 0
+            while True:
+                if not SFX_DATA_START_ADDRESS <= address < SFX_DATA_END_ADDRESS:
+                    raise ValueError(f"SFX token outside data range: {address:04X}")
+                opcode = driver_payload[address]
+                token_start = address
+                if opcode == 0xFF:
+                    width = 3
+                    if address + width > SFX_DATA_END_ADDRESS:
+                        raise ValueError(f"truncated SFX FF token at {address:04X}")
+                    target = int.from_bytes(driver_payload[address + 1 : address + 3], "little")
+                    kind = "terminate" if target == 0 else "redirect"
+                elif opcode >= 0xF8:
+                    width = 2
+                    if address + width > SFX_DATA_END_ADDRESS:
+                        raise ValueError(f"truncated SFX command at {address:04X}")
+                    target = None
+                    kind = "command"
+                    if opcode == 0xF8:
+                        parameter = driver_payload[address + 1]
+                        subcommand = parameter >> 5
+                        loop_subcommands[token_start] = subcommand
+                        if subcommand == 6:
+                            if counted_loop_anchor is not None:
+                                raise ValueError(
+                                    f"nested SFX counted loop at {token_start:04X}"
+                                )
+                            counted_loop_anchor = (address + width, (parameter & 0x1F) + 1)
+                        elif subcommand == 7:
+                            if counted_loop_anchor is None:
+                                raise ValueError(
+                                    f"unmatched SFX counted-loop end at {token_start:04X}"
+                                )
+                            loop_target, iteration_count = counted_loop_anchor
+                            edge = (token_start, loop_target, iteration_count)
+                            counted_loop_edges.add(edge)
+                            stream_counted_loop_edges.append(
+                                {
+                                    "endTokenZ80Address": token_start,
+                                    "targetZ80Address": loop_target,
+                                    "iterationCount": iteration_count,
+                                }
+                            )
+                            counted_loop_anchor = None
+                else:
+                    width = 2 if opcode & 0x80 else 1
+                    if address + width > SFX_DATA_END_ADDRESS:
+                        raise ValueError(f"truncated SFX note/sample at {address:04X}")
+                    target = None
+                    kind = "note-or-sample"
+
+                token_kind = f"{opcode:02X}" if opcode >= 0xF8 else kind
+                if token_start in token_kinds and token_kinds[token_start] != token_kind:
+                    raise ValueError(f"inconsistent SFX token decode at {token_start:04X}")
+                token_kinds[token_start] = token_kind
+                unique_token_addresses.add(token_start)
+                unique_decoded_addresses.update(range(token_start, token_start + width))
+                segment_token_count += 1
+                stream_token_count += 1
+                address += width
+                if opcode != 0xFF:
+                    continue
+
+                segment = {
+                    "startZ80Address": segment_start,
+                    "endZ80AddressExclusive": address,
+                    "sizeBytes": address - segment_start,
+                    "tokenCount": segment_token_count,
+                    "terminalKind": kind,
+                    "sha256": _sha256(driver_payload[segment_start:address]),
+                }
+                if target:
+                    if not SFX_DATA_START_ADDRESS <= target < SFX_DATA_END_ADDRESS:
+                        raise ValueError(
+                            f"SFX redirect target outside data range: {target:04X}"
+                        )
+                    segment["redirectTargetZ80Address"] = target
+                    redirects.add((token_start, target))
+                    redirect_depth += 1
+                segments.append(segment)
+                if not target:
+                    if counted_loop_anchor is not None:
+                        raise ValueError(f"unterminated SFX counted loop from {start:04X}")
+                    address = 0
+                else:
+                    address = target
+                break
+            if address == 0:
+                break
+
+        streams.append(
+            {
+                "startZ80Address": start,
+                "referenceCount": len(stream_references),
+                "roles": sorted({row["slot"] for row in stream_references}),
+                "commandIds": sorted({row["commandId"] for row in stream_references}),
+                "tokenCount": stream_token_count,
+                "redirectDepth": redirect_depth,
+                "countedLoopEdges": stream_counted_loop_edges,
+                "segments": segments,
+            }
+        )
+
+    return {
+        "tokenRules": [
+            {
+                "kind": "note-or-sample",
+                "opcodeRange": "00-F7",
+                "width": "1 byte when bit 7 is clear; otherwise 2 bytes",
+            },
+            {"kind": "command", "opcodeRange": "F8-FE", "width": "2 bytes"},
+            {
+                "kind": "end-or-redirect",
+                "opcodeRange": "FF",
+                "width": "3 bytes; little-endian zero terminates, nonzero redirects",
+            },
+        ],
+        "summary": {
+            "activeReferenceCount": sum(len(rows) for rows in references.values()),
+            "uniqueActiveStartCount": len(references),
+            "decodedStreamCount": len(streams),
+            "traversedTokenCount": sum(row["tokenCount"] for row in streams),
+            "uniqueTokenStartCount": len(unique_token_addresses),
+            "uniqueDecodedByteCount": len(unique_decoded_addresses),
+            "redirectEdgeCount": len(redirects),
+            "countedLoopEdgeCount": len(counted_loop_edges),
+            "maximumCountedLoopIterationCount": max(
+                (edge[2] for edge in counted_loop_edges), default=0
+            ),
+            "maximumRedirectDepth": max(
+                (row["redirectDepth"] for row in streams), default=0
+            ),
+            "maximumStreamTokenCount": max(
+                (row["tokenCount"] for row in streams), default=0
+            ),
+        },
+        "opcodeCounts": [
+            {"opcodeOrKind": opcode, "tokenCount": count}
+            for opcode, count in sorted(Counter(token_kinds.values()).items())
+        ],
+        "loopSubcommandCounts": [
+            {"subcommand": subcommand, "tokenCount": count}
+            for subcommand, count in sorted(Counter(loop_subcommands.values()).items())
+        ],
+        "streams": streams,
+    }
+
+
 def _sfx_contract(
     driver_source: str,
     reference_source: str,
@@ -1138,6 +1325,7 @@ def _sfx_contract(
             for slot in SFX_TYPE_1_SLOTS
             if active_slot_counts[slot]
         ],
+        "streamModel": _decode_sfx_streams(driver_payload, entries),
         "entries": entries,
     }
 
@@ -1548,6 +1736,9 @@ def verify_sound_data_inventory(
     for field in ("driverBinary", "layout", "summary", "activeSlotCounts"):
         if sfx_model[field] != expected_sfx[field]:
             raise ValueError(f"sound data SFX model {field} drift")
+    for field in ("tokenRules", "summary", "opcodeCounts", "loopSubcommandCounts"):
+        if sfx_model["streamModel"][field] != expected_sfx["streamModel"][field]:
+            raise ValueError(f"sound data SFX stream model {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

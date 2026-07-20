@@ -31,6 +31,8 @@ loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro �
 进一步用 4 个 command、12 个 checkpoint 和 120 个声道快照确认命令清零、bank/DAC 状态、
 十槽初始 pointer、有效声道推进与 Music 32 全 inactive 控制。驱动内嵌 SFX 也已闭合完整
 `0x41–0x78`/56-command 域、28+28 两类 header、364 个 pointer 和 66 个 active channel 引用；
+这 66 个唯一 stream start 又静态解码为 786 个唯一 token、1,447 个覆盖字节和 7 对 counted-loop
+边，全部以 `FF 0000` 结束且没有 absolute redirect；
 硬件采样率和可听输出仍未知。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build

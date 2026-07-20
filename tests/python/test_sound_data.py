@@ -1,4 +1,7 @@
 from sf2tool.h2.sound_data import (
+    SFX_DATA_END_ADDRESS,
+    SFX_DATA_START_ADDRESS,
+    _decode_sfx_streams,
     _fixed_opcode_families,
     _music_bank_selection_contract,
     _music_frequency_contract,
@@ -29,6 +32,51 @@ def test_sfx_source_headers_parse_both_layouts() -> None:
         "sfx_01": {"type": 2, "targets": ["byte_1000", "byte_1003", "byte_1006"]},
         "sfx_02": {"type": 1, "targets": ["byte_1010"] * 10},
     }
+
+
+def test_sfx_stream_decoder_maps_token_widths_and_counted_loop_edge() -> None:
+    payload = bytearray(SFX_DATA_END_ADDRESS)
+    start = SFX_DATA_START_ADDRESS
+    inactive = start + 0x20
+    payload[start : start + 13] = bytes(
+        [0xFE, 0x01, 0x81, 0x04, 0x10, 0xF8, 0xC2, 0x20, 0xF8, 0xE0, 0xFF, 0, 0]
+    )
+    payload[inactive : inactive + 3] = bytes([0xFF, 0, 0])
+    entries = [
+        {
+            "type": 2,
+            "channelPointers": [start, inactive, inactive],
+            "commandId": 0x41,
+            "sfxIndex": 1,
+        }
+    ]
+
+    model = _decode_sfx_streams(bytes(payload), entries)
+
+    assert model["summary"] == {
+        "activeReferenceCount": 1,
+        "uniqueActiveStartCount": 1,
+        "decodedStreamCount": 1,
+        "traversedTokenCount": 7,
+        "uniqueTokenStartCount": 7,
+        "uniqueDecodedByteCount": 13,
+        "redirectEdgeCount": 0,
+        "countedLoopEdgeCount": 1,
+        "maximumCountedLoopIterationCount": 3,
+        "maximumRedirectDepth": 0,
+        "maximumStreamTokenCount": 7,
+    }
+    assert model["loopSubcommandCounts"] == [
+        {"subcommand": 6, "tokenCount": 1},
+        {"subcommand": 7, "tokenCount": 1},
+    ]
+    assert model["streams"][0]["countedLoopEdges"] == [
+        {
+            "endTokenZ80Address": start + 8,
+            "targetZ80Address": start + 7,
+            "iterationCount": 3,
+        }
+    ]
 
 
 def test_music_macro_abi_and_song_invocations_are_parsed() -> None:

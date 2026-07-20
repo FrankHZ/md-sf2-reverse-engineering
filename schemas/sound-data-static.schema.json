@@ -132,7 +132,7 @@
         },
         "sfxModel": {
           "type": "object", "additionalProperties": false,
-          "required": ["driverSourcePath", "driverSourceSha256", "referenceSourcePath", "referenceSourceSha256", "driverBinary", "layout", "summary", "activeSlotCounts", "entries"],
+          "required": ["driverSourcePath", "driverSourceSha256", "referenceSourcePath", "referenceSourceSha256", "driverBinary", "layout", "summary", "activeSlotCounts", "streamModel", "entries"],
           "properties": {
             "driverSourcePath": { "const": "code/common/tech/sound/sounddriver.asm" },
             "driverSourceSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
@@ -142,6 +142,17 @@
             "layout": { "type": "object" },
             "summary": { "type": "object" },
             "activeSlotCounts": { "type": "array", "minItems": 5, "maxItems": 5 },
+            "streamModel": {
+              "type": "object", "additionalProperties": false,
+              "required": ["tokenRules", "summary", "opcodeCounts", "loopSubcommandCounts", "streams"],
+              "properties": {
+                "tokenRules": { "type": "array", "minItems": 3, "maxItems": 3 },
+                "summary": { "type": "object" },
+                "opcodeCounts": { "type": "array", "minItems": 2 },
+                "loopSubcommandCounts": { "type": "array" },
+                "streams": { "type": "array", "minItems": 1 }
+              }
+            },
             "entries": { "type": "array", "minItems": 56, "maxItems": 56 }
           }
         },

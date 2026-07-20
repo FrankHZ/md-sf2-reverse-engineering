@@ -269,7 +269,43 @@
           {"slot":"ym2-6-dac","entryCount":7},
           {"slot":"psg-tone-3","entryCount":26},
           {"slot":"psg-noise","entryCount":6}
-        ]
+        ],
+        "streamModel": {
+          "tokenRules": [
+            {
+              "kind":"note-or-sample", "opcodeRange":"00-F7",
+              "width":"1 byte when bit 7 is clear; otherwise 2 bytes"
+            },
+            {"kind":"command", "opcodeRange":"F8-FE", "width":"2 bytes"},
+            {
+              "kind":"end-or-redirect", "opcodeRange":"FF",
+              "width":"3 bytes; little-endian zero terminates, nonzero redirects"
+            }
+          ],
+          "summary": {
+            "activeReferenceCount":66, "uniqueActiveStartCount":66,
+            "decodedStreamCount":66, "traversedTokenCount":792,
+            "uniqueTokenStartCount":786, "uniqueDecodedByteCount":1447,
+            "redirectEdgeCount":0, "countedLoopEdgeCount":7,
+            "maximumCountedLoopIterationCount":17, "maximumRedirectDepth":0,
+            "maximumStreamTokenCount":42
+          },
+          "opcodeCounts": [
+            {"opcodeOrKind":"F8","tokenCount":14},
+            {"opcodeOrKind":"F9","tokenCount":1},
+            {"opcodeOrKind":"FA","tokenCount":2},
+            {"opcodeOrKind":"FB","tokenCount":61},
+            {"opcodeOrKind":"FC","tokenCount":79},
+            {"opcodeOrKind":"FD","tokenCount":153},
+            {"opcodeOrKind":"FE","tokenCount":27},
+            {"opcodeOrKind":"FF","tokenCount":65},
+            {"opcodeOrKind":"note-or-sample","tokenCount":384}
+          ],
+          "loopSubcommandCounts": [
+            {"subcommand":6,"tokenCount":7},
+            {"subcommand":7,"tokenCount":7}
+          ]
+        }
       },
       "bankSelection": {
         "enumSourcePath":"sf2enums.asm",

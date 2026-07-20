@@ -129,9 +129,22 @@ The target's first byte classifies 66 active and 298 immediate-`FF` inactive ref
 active type-1 references preserve the music/SFX partition documented by the driver: 26 use PSG tone
 3 and six use PSG noise; none consumes YM1, YM2, PSG tone 1, or PSG tone 2. The 34 active type-2
 references borrow only YM4/YM5/YM6-DAC, with counts 8/19/7. This confirms command selection, header
-shape, pointer resolution, and channel ownership. It does not yet claim that every embedded SFX
-byte stream's branches/loops have been independently decoded; those streams feed the already-mapped
-YM/PSG parsers.
+shape, pointer resolution, and channel ownership.
+
+**Confirmed:** the deterministic binary parser now walks all 66 active references, which are also
+66 unique start addresses. It applies the driver-consumer widths directly: `00..F7` note/sample
+tokens occupy one byte when bit 7 is clear and two otherwise, `F8..FE` commands occupy two bytes,
+and `FF` consumes a little-endian word. The corpus has 792 traversed tokens at 786 unique starts and
+1,447 unique decoded bytes. The unique-token totals are 384 note/sample, 14 `F8`, one `F9`, two
+`FA`, 61 `FB`, 79 `FC`, 153 `FD`, 27 `FE`, and 65 `FF` tokens; the difference between 65 terminal
+tokens and 66 streams is one shared terminal.
+
+Every encountered `FF` word is zero, so all streams terminate locally and the SFX corpus has no
+absolute redirect edge. The 14 `F8` tokens form seven counted-loop start/end pairs across six
+streams; no other loop subcommand appears. Each end resolves to its preceding saved address, the
+largest encoded iteration count is 17, and unmatched or nested counted loops fail extraction. This
+closes the embedded stream tokenization and its present control-flow edges. It does not claim
+wall-clock execution length, DAC sample timing, YM/PSG register output, or audible equivalence.
 
 ## Static Command Corpus
 
