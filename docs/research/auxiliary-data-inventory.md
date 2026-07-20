@@ -8,7 +8,7 @@
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
   and complete map-tileset decode/usage, map-palette/header-usage, icon-storage, and assembled
   UI-layout/direct-asset corpora, plus the ASCII-to-variable-width-font conversion table
-  and the complete three-source shared entity-action command/control-flow/reference corpus
+  and the complete shared/distributed entity-action command/control-flow/reference corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
 - Evidence date: 2026-07-19
@@ -155,6 +155,13 @@ A comments/definitions-excluded scan of every pinned code/data ASM finds 3,061 e
 from 230 files. Sixty of 61 entry labels have at least one external source reference;
 `eas_ShrinkDisappear` is the sole source-unreferenced entry. This closes the reference graph, not
 normal-story reachability, command/frame timing, or collision effects.
+
+The distributed half is now closed by the same owner rather than left as cutscene content. Seventy-
+five additional files contain 361 inline action programs plus 11 standalone action ranges: all 1,472
+commands are assigned, all 14 relative branches and 364 absolute jumps resolve, and the 17 named
+entries all have a source reference. The 11 standalone ranges total 942 source/H1/ROM-checked bytes;
+the inline and standalone payloads together encode 5,684 action bytes. Opcode-handler state effects
+and rendered movement remain with the scripting/runtime queue.
 
 The dedicated text-bank rail now goes beyond that routing boundary without tracking plaintext. All
 17 bank payloads, 4,267 length-prefixed records, 17-entry pointer table, and top-level pointer match

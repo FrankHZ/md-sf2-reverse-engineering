@@ -152,7 +152,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   属性、`0xFFFF` sentinel、first-match 与 fallback 消费规则的完整 source/H1/ROM parity，以及
   5 个 sprite 写入点、81 个脚本赋值、20 个 property-update caller 和 ally/enemy 派生域的
   237-250 排除审计，以及三个 shared entity-action corpus 的 2,864 bytes、118 labels、
-  732 commands、38 个 relative branch 与 61-entry external-reference graph。
+  732 commands、38 个 relative branch 与 61-entry external-reference graph，并继续闭合 75 个
+  distributed source、361 个 inline program、11 个 standalone ROM range、1,472 commands 和
+  17 个具名入口。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,472 | Confirmed symbol/table records in `manifests/research-index.json` |
+| Indexed findings | 1,488 | Confirmed symbol/table records in `manifests/research-index.json` |
 | Indexed source files | 1,361 | 381 code files and 980 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
 | H2 fixture files | 72 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 58 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,029 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,046 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -70,9 +70,12 @@ The current evidence is deep but narrow:
   inventoried too, closing file-level reach for all 183 files under `code/gameflow/battle`; map-script
   content and story semantics are not implied by that boundary milestone. Common scripting now has
   a complete 29-file inventory, 28 H1-bound files, 90/80-slot map/entity dispatch tables, and text
-  Huffman state. Three shared entity-action bodies are additionally closed as a 2,864-byte corpus
-  with 118 labels, 732 commands, complete static branch/jump targets, and a 230-source external
-  reference graph; command timing and story-route reachability remain outside that credit. One
+  Huffman state. The entity-action source surface is additionally closed across three shared and 75
+  distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
+  corpus uniquely owns 1,472 commands in 361 inline programs and 11 standalone ROM ranges, with 17
+  named entries, 5,684 action bytes, and complete static targets for 14 branches and 364 jumps. All
+  distributed entries have a source reference; command timing and story-route reachability remain
+  outside that credit. One
   unlabeled 288-byte data blob is H2-verified but
   excluded from symbol reach.
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
@@ -252,9 +255,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,472 records; its
+files and the corresponding `data` query yields 1,690. The index summary reports 1,488 records; its
 verifier reports 381 unique code files, 980 unique data files, 72 H2 fixtures, 58 H3 fixtures, and
-2,029 bindings. The
+2,046 bindings. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -287,16 +290,19 @@ deterministic H2 inventory; its lower 980/1,690 strict reach reflects include-si
 alternates, unlabeled storage, and the separate Z80 address space rather than unknown files.
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
-The immediate static frontier is the distributed entity-action corpus outside the three already
-closed shared sources. A lexical scan currently finds 75 non-shared ASM files and 1,472 `ac_*`
-commands: 42 files under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
-under `code`. It also finds 361 inline `customActscript`/`customActscriptWait` starts, 361 `ac_end`
-terminators, and 17 named `eas_*` entries. These are a **provisional queue denominator**, not an H2
-closure claim. The owning parser must assign every command to exactly one inline or named program,
-resolve its relative and absolute transfers, and prove source/H1/ROM parity wherever a real H1 span
-exists before these counts become Confirmed indexed evidence. Runtime timing, collision, and story
-reachability stay outside that static claim and should be batched only after the command corpus is
-closed.
+The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
+files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
+under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline
+`customActscript`/`customActscriptWait` programs and 255 commands in 11 labeled standalone ROM
+ranges. Those ranges expose 17 `eas_*` entries and total 942 source/H1/ROM-checked bytes; combined
+with the inline payloads, the distributed surface accounts for 5,684 action bytes. All 14 relative
+branches and 364 absolute jumps resolve, every absolute jump targets `eas_Idle`, and all 17 named
+entries have at least one same-file or cross-file source reference.
+
+The next semantic-depth batch should bind the 44 defined `ac_*` opcode forms to the 80-slot entity
+action dispatcher and record handler RAM reads/writes, signedness, collision/obstruction flags, and
+wait/termination transitions. Frame timing, collision outcomes, and normal-story reachability remain
+runtime questions and should be grouped only after that handler contract identifies real ambiguity.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks

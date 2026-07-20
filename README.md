@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,472 条 confirmed finding、72 个 H2 fixture、58 个 H3 fixture
-和 2,029 个地址绑定。
+截至 2026-07-19，研究索引有 1,488 条 confirmed finding、72 个 H2 fixture、58 个 H3 fixture
+和 2,046 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -37,9 +37,12 @@ last-set-flag-wins 选择规则，以及 126 张六指针 setup table/756 个 sl
 复用七条 variant suffix）；这些记录使用 113 个 map-sprite ID，且全部排除 237-250 的
 sentinel/unbacked 区间。后续 81 个脚本 sprite 赋值、5 个实际写入点、20 个
 `UpdateEntityProperties` caller 以及 ally/enemy 派生表也已全部分类，原版 built domain 同样不会
-写入 237-250；三个共享 entity-action source 也已解析为 118 labels、732 commands 和 38 条
-relative branch 的完整 2,864-byte corpus。对全部 code/data ASM 的引用图覆盖 230 个 source，
-61 个入口中只有 `eas_ShrinkDisappear` 没有外部引用。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
+写入 237-250；完整 entity-action surface 也已闭合三个共享 source 和 75 个分散式 source。
+共享部分包含 118 labels、732 commands、38 条 relative branch 和 2,864 bytes；分散部分把
+361 个内嵌程序和 11 个连续 standalone ROM 区段中的 1,472 条命令全部唯一归属，17 个 `eas_*`
+入口全部有源码引用，5,684 action bytes、14 条 branch 和 364 条 jump 的目标全部解析。共享部分
+对全部 code/data ASM 的引用图覆盖 230 个 source，61 个入口中只有 `eas_ShrinkDisappear` 没有
+外部引用。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
 1,451 次 setup-level record reference，并保留两个 direct-`rts` stub 与 map 44 错误指针例外。
 description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stub 和 227 条物理 entry，并从
 唯一正常调用链确认三个 `d6` 条件函数会被跳过；init 层闭合 84 个 source、90 个 callable entry、
@@ -497,12 +500,12 @@ BizHawk 启动中确认 missing/default、last-set-flag-wins 与 alias route，
 选择案例也已在一个 BizHawk 启动中全部通过原版 wrapper 分发验证，
 同时把渲染、VDP animation timing 与 transition persistence 保持为集中运行矩阵。
 
-当前紧邻的静态前沿是把三个共享 entity-action source 之外、散落在地图、战斗和脚本数据中的
-自定义 `ac_*` 程序纳入同一结构化模型。一次源码级候选扫描得到 75 个文件和 1,472 条命令，分布为
-42 个 `data/maps`、26 个 `data/battles`、6 个 `data/scripting` 和 1 个 `code` 文件；其中可见
-361 个内嵌 `customActscript[Wait]` 起点、361 个 `ac_end` 和 17 个具名 `eas_*` 入口。这些数字目前
-只作为待闭合分母，不计入 H2 完成：下一步解析器必须让每条命令唯一归属于一个内嵌或具名程序，
-解析控制转移，并在能取得 H1 地址的范围证明 source/H1/ROM 字节一致后才能提升为 Confirmed。
+分散式 entity-action 队列现已从候选扫描提升为 H2 合同：75 个文件的 1,472 条命令全部归属于
+361 个内嵌程序或 11 个连续 standalone ROM 区段，17 个具名入口、14 条相对分支和 364 条绝对
+jump 均已解析，11 段共 942 bytes 与 H1/ROM 地址和哈希一致。下一步静态前沿转向 80-slot entity
+action dispatcher 的 44 个已定义 opcode/handler：逐项记录 RAM 字段、signedness、阻挡/碰撞和
+结束/等待状态的写入合同，只把帧时序、碰撞结果和 caller-dependent story reachability 留给集中
+BizHawk 矩阵。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

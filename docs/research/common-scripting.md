@@ -5,7 +5,8 @@
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
-  conversion, pointer, and glyph-loader data path, and the three-source shared entity-action corpus
+  conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
+  entity-action source corpus
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, entity movement timing, text rendering timing,
   and individual script content
@@ -123,6 +124,22 @@ jumps internally to `eas_Init`. A complete code/data source scan finds 3,061 ext
 static control flow, and source references, but not frame timing, collision outcomes, or normal-story
 reachability of those references.
 
+The same rail now closes every distributed `ac_*` body outside those shared files. The 75 source
+files divide into 42 map, 26 battle, six scripting-data, and one code file. All 1,472 commands have
+one structural owner: 1,217 commands in 361 `customActscript`/`customActscriptWait` programs and 255
+commands in 11 continuous standalone action ranges. Every inline program reaches `ac_end`; together
+they encode 4,742 action bytes. The standalone ranges encode another 942 bytes, expose 17 `eas_*`
+entry labels, and match their H1 label offsets and ROM range hashes. `byte_45488` is deliberately a
+range start even though `eas_4548C` appears four bytes later, proving that physical ranges and
+`eas_*` entry counts are different denominators.
+
+Across the distributed corpus, 14 relative branches resolve to five known targets and all 364
+absolute jumps resolve to `eas_Idle`. All 17 named entries have at least one definition-excluded
+same-file or cross-file reference (38 references from eight files total). This confirms 5,684 action
+bytes, command ownership, labeled layout, and static control flow. It does not yet explain the RAM
+effects of all 44 defined opcode handlers or prove movement timing, collision results, or story-route
+reachability.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -132,6 +149,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
+The next static batch maps all 44 defined `ac_*` forms onto the 80-slot entity dispatcher and records
+handler RAM reads/writes, signedness, obstruction/collision flags, and wait/termination transitions.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

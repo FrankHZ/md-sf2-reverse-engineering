@@ -45,6 +45,20 @@ CORPORA = (
     },
 )
 
+COMMAND_PATTERN = re.compile(
+    r"^\s*(?:([A-Za-z_][A-Za-z0-9_]*):\s*)?(ac_[A-Za-z0-9_]+)\b(.*)$"
+)
+CUSTOM_PROGRAM_PATTERN = re.compile(
+    r"^\s*(?:([A-Za-z_][A-Za-z0-9_]*):\s*)?"
+    r"(customActscriptWait|customActscript)\b(.*)$"
+)
+LABEL_PATTERN = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*):")
+LABEL_ONLY_PATTERN = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*):\s*$")
+BRANCH_WORD_PATTERN = re.compile(
+    r"^\s*dc\.w\s+\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*-\s*"
+    r"([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*&\s*\$FFFF\s*$"
+)
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -187,13 +201,419 @@ def _parse_corpus(
     }
 
 
-def _reference_rows(disasm: Path, corpora: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    label_owner = {
-        label["name"]: corpus["sourcePath"]
-        for corpus in corpora
-        for label in corpus["labels"]
-        if label["name"].startswith("eas_")
+def _source_area(path: Path) -> str:
+    value = path.as_posix()
+    if value.startswith("data/maps/"):
+        return "maps"
+    if value.startswith("data/battles/"):
+        return "battles"
+    if value.startswith("data/scripting/"):
+        return "scripting-data"
+    if value.startswith("code/"):
+        return "code"
+    raise ValueError(f"unclassified distributed entity-action source: {value}")
+
+
+def _command_row(
+    line_number: int,
+    match: re.Match[str],
+    macro_contracts: dict[str, dict[str, int]],
+    owner_label: str,
+) -> dict[str, Any]:
+    inline_label, macro, arguments = match.groups()
+    if macro not in macro_contracts:
+        raise ValueError(f"undefined entity-action macro at line {line_number}: {macro}")
+    return {
+        "line": line_number,
+        "ownerLabel": inline_label or owner_label,
+        "macro": macro,
+        "arguments": arguments.strip(),
+        **macro_contracts[macro],
     }
+
+
+def _program_control_flow(
+    commands: list[dict[str, Any]], branch_targets: list[str]
+) -> dict[str, list[str]]:
+    return {
+        "relativeBranchTargets": branch_targets,
+        "absoluteJumpTargets": [
+            row["arguments"] for row in commands if row["macro"] == "ac_jump"
+        ],
+    }
+
+
+def _standalone_regions(
+    lines: list[str], command_lines: list[int]
+) -> list[tuple[int, int]]:
+    if not command_lines:
+        return []
+
+    def is_separator_payload(raw_line: str) -> bool:
+        code = raw_line.split(";", 1)[0].strip()
+        return (
+            not code
+            or LABEL_ONLY_PATTERN.match(code) is not None
+            or BRANCH_WORD_PATTERN.match(code) is not None
+        )
+
+    regions: list[list[int]] = [[command_lines[0]]]
+    for line_number in command_lines[1:]:
+        previous = regions[-1][-1]
+        between_is_payload = all(
+            is_separator_payload(lines[index - 1])
+            for index in range(previous + 1, line_number)
+        )
+        if between_is_payload:
+            regions[-1].append(line_number)
+        else:
+            regions.append([line_number])
+
+    spans = []
+    for region in regions:
+        start = region[0]
+        probe = start - 1
+        while probe >= 1 and not lines[probe - 1].split(";", 1)[0].strip():
+            probe -= 1
+        if probe >= 1:
+            label_match = LABEL_ONLY_PATTERN.match(lines[probe - 1].split(";", 1)[0])
+            if label_match and label_match.group(1).startswith("eas_"):
+                start = probe
+
+        end = region[-1]
+        last_command = COMMAND_PATTERN.match(lines[end - 1].split(";", 1)[0])
+        if last_command and last_command.group(2) == "ac_branch":
+            probe = end + 1
+            while probe <= len(lines) and not lines[probe - 1].split(";", 1)[0].strip():
+                probe += 1
+            if probe > len(lines) or BRANCH_WORD_PATTERN.match(
+                lines[probe - 1].split(";", 1)[0]
+            ) is None:
+                raise ValueError(f"standalone entity-action branch lacks word after line {end}")
+            end = probe
+        spans.append((start, end))
+    return spans
+
+
+def _parse_standalone_region(
+    *,
+    path: Path,
+    lines: list[str],
+    start_line: int,
+    end_line: int,
+    addresses: dict[str, int],
+    macro_contracts: dict[str, dict[str, int]],
+    rom: bytes,
+) -> list[dict[str, Any]]:
+    labels: list[dict[str, Any]] = []
+    commands: list[dict[str, Any]] = []
+    branch_targets: list[str] = []
+    start_label: str | None = None
+    start_address: int | None = None
+    active_label = "$range-start"
+
+    for line_number in range(start_line, end_line + 1):
+        code = lines[line_number - 1].split(";", 1)[0].rstrip()
+        if not code.strip():
+            continue
+        label_match = LABEL_PATTERN.match(code)
+        label = label_match.group(1) if label_match else None
+        if label:
+            if label not in addresses:
+                raise ValueError(f"standalone entity-action label lacks H1 address: {label}")
+            if start_label is None:
+                start_label = label
+                start_address = addresses[label]
+            assert start_address is not None
+            expected = start_address + sum(row["encodedBytes"] for row in commands) + 2 * len(
+                branch_targets
+            )
+            if label not in addresses or addresses[label] != expected:
+                raise ValueError(f"standalone entity-action label address drift: {label}")
+            labels.append(
+                {"name": label, "address": addresses[label], "line": line_number}
+            )
+            active_label = label
+        if start_label is None or start_address is None:
+            raise ValueError(
+                f"standalone entity-action payload lacks a labeled start: {path}:{line_number}"
+            )
+        command_match = COMMAND_PATTERN.match(code)
+        if command_match:
+            commands.append(
+                _command_row(line_number, command_match, macro_contracts, active_label)
+            )
+            continue
+        branch_word = BRANCH_WORD_PATTERN.match(code)
+        if branch_word:
+            if not commands or commands[-1]["macro"] != "ac_branch":
+                raise ValueError(f"orphan entity-action displacement word: {path}:{line_number}")
+            target, base = branch_word.groups()
+            if commands[-1]["ownerLabel"] != base:
+                raise ValueError(f"entity-action branch base drift: {path}:{line_number}")
+            branch_targets.append(target)
+            continue
+        if LABEL_ONLY_PATTERN.match(code):
+            continue
+        raise ValueError(f"unexpected standalone entity-action source: {path}:{line_number}")
+    if not commands:
+        raise ValueError(f"standalone entity-action region has no commands: {path}:{start_line}")
+    if commands[-1]["macro"] not in {"ac_branch", "ac_jump"}:
+        raise ValueError(f"standalone entity-action region has no terminator: {start_label}")
+    byte_count = sum(row["encodedBytes"] for row in commands) + 2 * len(branch_targets)
+    end_exclusive = start_address + byte_count
+    rom_range = rom[start_address:end_exclusive]
+    command_counts = Counter(row["macro"] for row in commands)
+    return [
+        {
+            "id": start_label,
+            "sourcePath": path.as_posix(),
+            "startLine": start_line,
+            "endLine": end_line,
+            "start": start_address,
+            "endExclusive": end_exclusive,
+            "sha256": hashlib.sha256(rom_range).hexdigest().upper(),
+            "summary": {
+                "byteCount": byte_count,
+                "labelCount": len(labels),
+                "entryLabelCount": sum(
+                    label["name"].startswith("eas_") for label in labels
+                ),
+                "commandCount": len(commands),
+                "uniqueCommandMacroCount": len(command_counts),
+                "directDisplacementWordCount": len(branch_targets),
+                "absoluteJumpCount": command_counts["ac_jump"],
+                "relativeBranchCount": command_counts["ac_branch"],
+            },
+            "commandCounts": dict(sorted(command_counts.items())),
+            "controlFlow": _program_control_flow(commands, branch_targets),
+            "labels": labels,
+            "commands": commands,
+        }
+    ]
+
+
+def _parse_distributed_programs(
+    disasm: Path,
+    rom: bytes,
+    addresses: dict[str, int],
+    macro_contracts: dict[str, dict[str, int]],
+    shared_corpora: list[dict[str, Any]],
+) -> dict[str, Any]:
+    shared_paths = {row["sourcePath"] for row in shared_corpora}
+    sources: list[tuple[Path, str, list[str]]] = []
+    source_paths = [
+        *(disasm / "code").rglob("*.asm"),
+        *(disasm / "data").rglob("*.asm"),
+    ]
+    for source_path in sorted(source_paths):
+        relative = source_path.relative_to(disasm)
+        if relative.as_posix() in shared_paths:
+            continue
+        source = read_upstream_text(source_path)
+        if re.search(r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*:\s*)?ac_[A-Za-z0-9_]+", source, re.MULTILINE):
+            sources.append((relative, source, source.splitlines()))
+
+    inline_programs: list[dict[str, Any]] = []
+    standalone_programs: list[dict[str, Any]] = []
+    file_rows = []
+    for relative, source, lines in sources:
+        active: dict[str, Any] | None = None
+        standalone_command_lines: list[int] = []
+        file_inline_count = 0
+        file_command_count = 0
+        for line_number, raw_line in enumerate(lines, 1):
+            code = raw_line.split(";", 1)[0].rstrip()
+            starter = CUSTOM_PROGRAM_PATTERN.match(code)
+            if starter:
+                if active is not None:
+                    raise ValueError(f"nested custom actscript: {relative}:{line_number}")
+                inline_label, wrapper, entity = starter.groups()
+                active = {
+                    "id": f"{relative.as_posix()}#L{line_number}",
+                    "sourcePath": relative.as_posix(),
+                    "startLine": line_number,
+                    "endLine": line_number,
+                    "wrapper": wrapper,
+                    "waitForCompletion": wrapper == "customActscriptWait",
+                    "entityExpression": entity.strip(),
+                    "ownerLabel": inline_label or f"$inline-{line_number}",
+                    "commands": [],
+                }
+                file_inline_count += 1
+                continue
+            command_match = COMMAND_PATTERN.match(code)
+            if command_match:
+                file_command_count += 1
+                if active is None:
+                    standalone_command_lines.append(line_number)
+                    continue
+                command = _command_row(
+                    line_number, command_match, macro_contracts, active["ownerLabel"]
+                )
+                active["commands"].append(command)
+                active["endLine"] = line_number
+                if command["macro"] == "ac_end":
+                    command_counts = Counter(row["macro"] for row in active["commands"])
+                    inline_programs.append(
+                        {
+                            key: active[key]
+                            for key in (
+                                "id",
+                                "sourcePath",
+                                "startLine",
+                                "endLine",
+                                "wrapper",
+                                "waitForCompletion",
+                                "entityExpression",
+                            )
+                        }
+                        | {
+                            "summary": {
+                                "encodedByteCount": sum(
+                                    row["encodedBytes"] for row in active["commands"]
+                                ),
+                                "commandCount": len(active["commands"]),
+                                "uniqueCommandMacroCount": len(command_counts),
+                                "absoluteJumpCount": command_counts["ac_jump"],
+                                "relativeBranchCount": command_counts["ac_branch"],
+                            },
+                            "commandCounts": dict(sorted(command_counts.items())),
+                            "controlFlow": _program_control_flow(active["commands"], []),
+                            "commands": active["commands"],
+                        }
+                    )
+                    active = None
+                continue
+            if active is not None and code.strip():
+                raise ValueError(
+                    f"unexpected source inside custom actscript: {relative}:{line_number}"
+                )
+        if active is not None:
+            raise ValueError(f"unterminated custom actscript: {relative}:{active['startLine']}")
+
+        before_program_count = len(standalone_programs)
+        for start_line, end_line in _standalone_regions(lines, standalone_command_lines):
+            standalone_programs.extend(
+                _parse_standalone_region(
+                    path=relative,
+                    lines=lines,
+                    start_line=start_line,
+                    end_line=end_line,
+                    addresses=addresses,
+                    macro_contracts=macro_contracts,
+                    rom=rom,
+                )
+            )
+        file_programs = standalone_programs[before_program_count:]
+        file_rows.append(
+            {
+                "sourcePath": relative.as_posix(),
+                "area": _source_area(relative),
+                "commandCount": file_command_count,
+                "inlineProgramCount": file_inline_count,
+                "standaloneProgramCount": len(file_programs),
+                "namedEntryLabelCount": sum(
+                    program["summary"]["entryLabelCount"]
+                    for program in file_programs
+                ),
+                "sha256": hashlib.sha256(source.encode("utf-8")).hexdigest().upper(),
+            }
+        )
+
+    all_commands = [
+        command
+        for program in [*inline_programs, *standalone_programs]
+        for command in program["commands"]
+    ]
+    command_counts = Counter(row["macro"] for row in all_commands)
+    area_counts = Counter(row["area"] for row in file_rows)
+    relative_targets = [
+        target
+        for program in standalone_programs
+        for target in program["controlFlow"]["relativeBranchTargets"]
+    ]
+    absolute_targets = [
+        target
+        for program in [*inline_programs, *standalone_programs]
+        for target in program["controlFlow"]["absoluteJumpTargets"]
+    ]
+    all_labels = {
+        label["name"]
+        for corpus in shared_corpora
+        for label in corpus["labels"]
+    } | {
+        label["name"]
+        for program in standalone_programs
+        for label in program["labels"]
+    }
+    unresolved = sorted(
+        (set(relative_targets) | set(absolute_targets)) - all_labels
+    )
+    inline_command_count = sum(row["summary"]["commandCount"] for row in inline_programs)
+    standalone_command_count = sum(
+        row["summary"]["commandCount"] for row in standalone_programs
+    )
+    summary = {
+        "sourceFileCount": len(file_rows),
+        "inlineProgramCount": len(inline_programs),
+        "standaloneProgramCount": len(standalone_programs),
+        "namedEntryLabelCount": sum(
+            program["summary"]["entryLabelCount"]
+            for program in standalone_programs
+        ),
+        "commandCount": len(all_commands),
+        "ownedCommandCount": inline_command_count + standalone_command_count,
+        "unownedCommandCount": len(all_commands)
+        - inline_command_count
+        - standalone_command_count,
+        "inlineCommandCount": inline_command_count,
+        "standaloneCommandCount": standalone_command_count,
+        "uniqueCommandMacroCount": len(command_counts),
+        "definedCommandMacroCount": len(macro_contracts),
+        "unusedCommandMacroCount": len(set(macro_contracts) - set(command_counts)),
+        "encodedCommandByteCount": sum(row["encodedBytes"] for row in all_commands),
+        "inlineEncodedByteCount": sum(
+            row["summary"]["encodedByteCount"] for row in inline_programs
+        ),
+        "standaloneByteCount": sum(
+            row["summary"]["byteCount"] for row in standalone_programs
+        ),
+        "directDisplacementWordCount": sum(
+            row["summary"]["directDisplacementWordCount"]
+            for row in standalone_programs
+        ),
+        "absoluteJumpCount": command_counts["ac_jump"],
+        "relativeBranchCount": command_counts["ac_branch"],
+    }
+    summary["actionByteCount"] = (
+        summary["encodedCommandByteCount"]
+        + 2 * summary["directDisplacementWordCount"]
+    )
+    if summary["unownedCommandCount"] != 0:
+        raise ValueError("distributed entity-action command ownership drift")
+    if any(program["commands"][-1]["macro"] != "ac_end" for program in inline_programs):
+        raise ValueError("distributed inline entity-action termination drift")
+    return {
+        "summary": summary,
+        "sourceFileCounts": dict(sorted(area_counts.items())),
+        "commandCounts": dict(sorted(command_counts.items())),
+        "controlFlowFacts": {
+            "absoluteJumpTargets": dict(sorted(Counter(absolute_targets).items())),
+            "relativeBranchTargets": dict(sorted(Counter(relative_targets).items())),
+            "unresolvedTargets": unresolved,
+            "allTargetsResolved": not unresolved,
+            "allInlineProgramsTerminateWithAcEnd": True,
+        },
+        "files": file_rows,
+        "inlinePrograms": inline_programs,
+        "standalonePrograms": standalone_programs,
+    }
+
+
+def _reference_rows_for_owners(
+    disasm: Path, label_owner: dict[str, str]
+) -> list[dict[str, Any]]:
     alternatives = "|".join(
         re.escape(label) for label in sorted(label_owner, key=len, reverse=True)
     )
@@ -227,6 +647,18 @@ def _reference_rows(disasm: Path, corpora: list[dict[str, Any]]) -> list[dict[st
     ]
 
 
+def _reference_rows(disasm: Path, corpora: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return _reference_rows_for_owners(
+        disasm,
+        {
+            label["name"]: corpus["sourcePath"]
+            for corpus in corpora
+            for label in corpus["labels"]
+            if label["name"].startswith("eas_")
+        },
+    )
+
+
 def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -242,6 +674,24 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         _parse_corpus(disasm, rom, addresses, macro_contracts, spec) for spec in CORPORA
     ]
     references = _reference_rows(disasm, corpora)
+    distributed = _parse_distributed_programs(
+        disasm, rom, addresses, macro_contracts, corpora
+    )
+    distributed_table = {
+        label["name"]: label["address"]
+        for program in distributed["standalonePrograms"]
+        for label in program["labels"]
+        if label["name"].startswith("eas_")
+    }
+    distributed_references = _reference_rows_for_owners(
+        disasm,
+        {
+            label["name"]: program["sourcePath"]
+            for program in distributed["standalonePrograms"]
+            for label in program["labels"]
+            if label["name"].startswith("eas_")
+        },
+    )
     command_counts: Counter[str] = Counter()
     for corpus in corpora:
         command_counts.update(corpus["commandCounts"])
@@ -280,12 +730,21 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
     unreferenced = [
         row["label"] for row in references if row["externalReferenceCount"] == 0
     ]
+    distributed_unreferenced = [
+        row["label"]
+        for row in distributed_references
+        if row["internalReferenceCount"] + row["externalReferenceCount"] == 0
+    ]
     return {
         "schemaVersion": 1,
         "id": ID,
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
         "romSha256": rom_identity["sha256"],
-        "table": {spec["bindingSymbol"]: addresses[spec["bindingSymbol"]] for spec in CORPORA},
+        "table": {
+            spec["bindingSymbol"]: addresses[spec["bindingSymbol"]]
+            for spec in CORPORA
+        }
+        | distributed_table,
         "summary": summary,
         "romRanges": [
             {
@@ -300,8 +759,56 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
             "allOtherEntryLabelsHaveExternalReferences": len(unreferenced) == 1,
             "referenceScope": "all pinned code/data ASM, comments and definitions excluded",
         },
+        "distributedSummary": distributed["summary"],
+        "distributedSourceFileCounts": distributed["sourceFileCounts"],
+        "distributedCommandCounts": distributed["commandCounts"],
+        "distributedControlFlowFacts": distributed["controlFlowFacts"],
+        "distributedReferenceFacts": {
+            "unreferencedEntryLabels": distributed_unreferenced,
+            "referencedEntryCount": sum(
+                row["internalReferenceCount"] + row["externalReferenceCount"] > 0
+                for row in distributed_references
+            ),
+            "referenceCount": sum(
+                row["internalReferenceCount"] + row["externalReferenceCount"]
+                for row in distributed_references
+            ),
+            "crossFileReferenceCount": sum(
+                row["externalReferenceCount"] for row in distributed_references
+            ),
+            "referenceSourceFileCount": len(
+                {
+                    reference["path"]
+                    for row in distributed_references
+                    for reference in row["externalReferences"]
+                }
+                | {
+                    row["ownerPath"]
+                    for row in distributed_references
+                    if row["internalReferenceCount"] > 0
+                }
+            ),
+            "referenceScope": "all pinned code/data ASM, comments and definitions excluded",
+        },
+        "standaloneRomRanges": [
+            {
+                key: program[key]
+                for key in (
+                    "id",
+                    "sourcePath",
+                    "start",
+                    "endExclusive",
+                    "sha256",
+                )
+            }
+            for program in distributed["standalonePrograms"]
+        ],
         "corpora": corpora,
         "entryReferences": references,
+        "distributedFiles": distributed["files"],
+        "inlinePrograms": distributed["inlinePrograms"],
+        "standalonePrograms": distributed["standalonePrograms"],
+        "distributedEntryReferences": distributed_references,
         "runtimeQuestions": [
             "What are the exact frame durations and collision effects of movement/action commands?",
             "Which external references are reachable through normal story routes?",
@@ -328,12 +835,22 @@ def verify_entity_action_script_contract(
         "romRanges",
         "commandCounts",
         "referenceFacts",
+        "distributedSummary",
+        "distributedSourceFileCounts",
+        "distributedCommandCounts",
+        "distributedControlFlowFacts",
+        "distributedReferenceFacts",
+        "standaloneRomRanges",
         "runtimeQuestions",
     ):
         if fixture[field] != output[field]:
             raise ValueError(f"entity-action script fixture drift: {field}")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
-    if output["summary"] != manifest["summary"] or digest != manifest["outputSha256"]:
+    if (
+        output["summary"] != manifest["summary"]
+        or output["distributedSummary"] != manifest["distributedSummary"]
+        or digest != manifest["outputSha256"]
+    ):
         raise ValueError("entity-action script canonical manifest drift")
     destination = output_path or repo_path("local/derived/entity-action-scripts-static.json")
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -343,6 +860,8 @@ def verify_entity_action_script_contract(
         "Output": display_path(destination),
         "SHA256": digest,
         "Labels": output["summary"]["labelCount"],
-        "Commands": output["summary"]["commandCount"],
+        "Commands": output["summary"]["commandCount"]
+        + output["distributedSummary"]["commandCount"],
+        "DistributedCommands": output["distributedSummary"]["commandCount"],
         "Status": "PASS",
     }

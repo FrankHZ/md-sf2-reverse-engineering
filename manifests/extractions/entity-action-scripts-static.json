@@ -19,5 +19,26 @@
     "externalReferenceCount": 3061,
     "externalReferenceSourceFileCount": 230
   },
-  "outputSha256": "FBD31BA13AFA44474F53B5F1BD366F2AA606DD25CB50AC01369D0BF34BF2137C"
+  "distributedSummary": {
+    "sourceFileCount": 75,
+    "inlineProgramCount": 361,
+    "standaloneProgramCount": 11,
+    "namedEntryLabelCount": 17,
+    "commandCount": 1472,
+    "ownedCommandCount": 1472,
+    "unownedCommandCount": 0,
+    "inlineCommandCount": 1217,
+    "standaloneCommandCount": 255,
+    "uniqueCommandMacroCount": 34,
+    "definedCommandMacroCount": 44,
+    "unusedCommandMacroCount": 10,
+    "encodedCommandByteCount": 5656,
+    "inlineEncodedByteCount": 4742,
+    "standaloneByteCount": 942,
+    "directDisplacementWordCount": 14,
+    "absoluteJumpCount": 364,
+    "relativeBranchCount": 14,
+    "actionByteCount": 5684
+  },
+  "outputSha256": "ECBAEF903626B88708FCB362B61709DA396084F32B608DAF4993A1EC30EC324C"
 }
