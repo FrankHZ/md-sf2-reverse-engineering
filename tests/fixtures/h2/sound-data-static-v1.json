@@ -119,6 +119,26 @@
         },
         "compatibilityViolationCount": 0
       },
+      "musicHeaders": {
+        "summary": {
+          "entryCount":39, "zeroTypeMarkerCount":39,
+          "dacEnabledEntryCount":19, "dacDisabledEntryCount":20,
+          "nonzeroReservedTimerACount":0, "uniqueTimerBValueCount":19,
+          "minimumTimerB":189, "maximumTimerB":212
+        },
+        "timerBValueCounts": [
+          {"value":189,"entryCount":2}, {"value":192,"entryCount":3},
+          {"value":193,"entryCount":1}, {"value":194,"entryCount":3},
+          {"value":195,"entryCount":2}, {"value":196,"entryCount":3},
+          {"value":197,"entryCount":1}, {"value":198,"entryCount":3},
+          {"value":200,"entryCount":4}, {"value":201,"entryCount":3},
+          {"value":202,"entryCount":1}, {"value":203,"entryCount":1},
+          {"value":204,"entryCount":3}, {"value":205,"entryCount":2},
+          {"value":206,"entryCount":1}, {"value":207,"entryCount":2},
+          {"value":209,"entryCount":2}, {"value":210,"entryCount":1},
+          {"value":212,"entryCount":1}
+        ]
+      },
       "bankSelection": {
         "enumSourcePath":"sf2enums.asm",
         "enumSourceSha256":"ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",
@@ -153,6 +173,13 @@
         "sourceSha256":"DE26E4AE704AA5B0E4FE39D7A32AC47C2F1FE4FEDBD86EB6E1EE51C7C20BB1AE",
         "channelParsers":["YM1_ParseData","YM2_ParseData","YM2_ParseChannel6Data","PSG_ParseToneData","PSG_ParseNoiseData"],
         "musicUpdateSlotRoles":["ym1","ym1","ym1","ym2","ym2","dac","psg-tone","psg-tone","psg-tone","psg-noise"],
+        "musicHeaderFields": [
+          {"offset":0,"meaning":"zero-music-type-marker"},
+          {"offset":1,"meaning":"nonzero-disables-dac"},
+          {"offset":2,"meaning":"reserved-timer-a-byte"},
+          {"offset":3,"meaning":"ym-timer-b-value"},
+          {"offset":4,"meaning":"ten-little-endian-channel-pointers"}
+        ],
         "sharedLoopParser":"ParseLoopCommand", "sharedLoopParserCallerCount":5,
         "fixedOpcodeFamilies": {
           "70":["wait"], "F0":["waitL"],

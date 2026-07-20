@@ -102,6 +102,11 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
 
 
+def _parse_asm_int(value: str) -> int:
+    value = value.strip()
+    return int(value[:-1], 16) if value.lower().endswith("h") else int(value)
+
+
 def _resolve_include(source_path: str, target: str) -> str:
     normalized = target.replace("\\", "/")
     return posixpath.normpath(posixpath.join(posixpath.dirname(source_path), normalized))
@@ -248,7 +253,26 @@ def _song_command_row(source_path: str, source: str, macro_names: set[str]) -> d
             raise ValueError(
                 f"music entry does not have ten channel pointers: {source_path}::{label}"
             )
-        entry_pointer_rows.append({"entryLabel": label, "targets": pointers})
+        header_values = []
+        for raw_line in body.splitlines():
+            line = raw_line.split(";", 1)[0].strip()
+            match = re.fullmatch(r"db\s+([0-9A-F]+h|\d+)", line, re.IGNORECASE)
+            if match:
+                header_values.append(_parse_asm_int(match.group(1)))
+        if len(header_values) != 4 or any(value > 0xFF for value in header_values):
+            raise ValueError(f"music entry header shape drift: {source_path}::{label}")
+        entry_pointer_rows.append(
+            {
+                "entryLabel": label,
+                "header": {
+                    "typeMarker": header_values[0],
+                    "dacDisabled": header_values[1] != 0,
+                    "reservedTimerA": header_values[2],
+                    "timerB": header_values[3],
+                },
+                "targets": pointers,
+            }
+        )
         for target, role in zip(pointers, CHANNEL_SLOT_ROLES, strict=True):
             channel_roles.setdefault(target, set()).add(role)
     if set(channel_bodies) != set(channel_roles):
@@ -336,6 +360,16 @@ def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
                             "invocationCount": count,
                         }
                     )
+    header_rows = [
+        {
+            "sourcePath": row["sourcePath"],
+            "entryLabel": entry["entryLabel"],
+            **entry["header"],
+        }
+        for row in songs
+        for entry in row["entryPointers"]
+    ]
+    timer_b_counts = Counter(row["timerB"] for row in header_rows)
     return {
         "summary": {
             "macroDefinitionCount": len(macro_definitions),
@@ -371,6 +405,25 @@ def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
                 "violationCount": len(compatibility_violations),
                 "violations": compatibility_violations,
             },
+        },
+        "musicHeaders": {
+            "summary": {
+                "entryCount": len(header_rows),
+                "zeroTypeMarkerCount": sum(row["typeMarker"] == 0 for row in header_rows),
+                "dacEnabledEntryCount": sum(not row["dacDisabled"] for row in header_rows),
+                "dacDisabledEntryCount": sum(row["dacDisabled"] for row in header_rows),
+                "nonzeroReservedTimerACount": sum(
+                    row["reservedTimerA"] != 0 for row in header_rows
+                ),
+                "uniqueTimerBValueCount": len(timer_b_counts),
+                "minimumTimerB": min(timer_b_counts),
+                "maximumTimerB": max(timer_b_counts),
+            },
+            "timerBValueCounts": [
+                {"value": value, "entryCount": count}
+                for value, count in sorted(timer_b_counts.items())
+            ],
+            "entries": header_rows,
         },
         "songs": songs,
     }
@@ -523,6 +576,13 @@ def _music_driver_contract(
             "dec\ta",
             "add\ta, a",
             "jp\tnz, Load_SFX",
+            "call\tStopMusic",
+            "ld\t(MUSIC_DOESNT_USE_SAMPLES), a",
+            "ld\tb, 26h",
+            "ld\tc, (hl)",
+            "call\tYM1_Input",
+            "ld\tb, 0Ah",
+            "Load_Music_Channels:",
             "UpdateSound:",
             "ld\tiy, CURRENT_CHANNEL",
             "call\tYM1_ParseData",
@@ -585,6 +645,13 @@ def _music_driver_contract(
             "PSG_ParseNoiseData",
         ],
         "musicUpdateSlotRoles": list(CHANNEL_SLOT_ROLES),
+        "musicHeaderFields": [
+            {"offset": 0, "meaning": "zero-music-type-marker"},
+            {"offset": 1, "meaning": "nonzero-disables-dac"},
+            {"offset": 2, "meaning": "reserved-timer-a-byte"},
+            {"offset": 3, "meaning": "ym-timer-b-value"},
+            {"offset": 4, "meaning": "ten-little-endian-channel-pointers"},
+        ],
         "sharedLoopParser": "ParseLoopCommand",
         "sharedLoopParserCallerCount": 5,
         "fixedOpcodeFamilies": families,
@@ -814,6 +881,10 @@ def verify_sound_data_inventory(
     compatibility = output["commandModel"]["channelRoles"]["compatibility"]
     if compatibility["violationCount"] != expected_channel_roles["compatibilityViolationCount"]:
         raise ValueError("sound data channel-role compatibility drift")
+    expected_headers = fixture["expected"]["commandModel"]["musicHeaders"]
+    for field in ("summary", "timerBValueCounts"):
+        if output["commandModel"]["musicHeaders"][field] != expected_headers[field]:
+            raise ValueError(f"sound data music-header {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

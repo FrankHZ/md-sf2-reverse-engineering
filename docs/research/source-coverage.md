@@ -34,7 +34,8 @@ The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,3
 graph, the 41-file Z80 music graph with two bank/ROM parity checks, 37 song-level pointer/range
 bindings, and a 29-macro/39,290-invocation source grammar tied to five driver parsers and one shared
 loop state machine, with all 390 channel slots and zero incompatible macro/role uses audited, plus
-the complete 64-slot/two-bank music-command selection map with no cross-bank fallback, plus 281 fixed
+all 39 four-byte music headers and the complete 64-slot/two-bank command-selection map with no
+cross-bank fallback, plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,

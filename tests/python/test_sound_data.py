@@ -28,7 +28,7 @@ def test_music_macro_abi_and_song_invocations_are_parsed() -> None:
         },
     ]
     source = (
-        "Music_1: db 0\n"
+        "Music_1: db 0\n db 1\n db 0\n db 200\n"
         + "dw Music_1_Channel_0\n" * 10
         + "Music_1_Channel_0: note C4\n channel_end\n"
     )
@@ -44,7 +44,16 @@ def test_music_macro_abi_and_song_invocations_are_parsed() -> None:
     assert row["macroInvocationCount"] == 2
     assert row["macroInvocations"] == {"channel_end": 1, "note": 1}
     assert row["entryPointers"] == [
-        {"entryLabel": "Music_1", "targets": ["Music_1_Channel_0"] * 10}
+        {
+            "entryLabel": "Music_1",
+            "header": {
+                "typeMarker": 0,
+                "dacDisabled": True,
+                "reservedTimerA": 0,
+                "timerB": 200,
+            },
+            "targets": ["Music_1_Channel_0"] * 10,
+        }
     ]
     assert row["channels"] == [
         {

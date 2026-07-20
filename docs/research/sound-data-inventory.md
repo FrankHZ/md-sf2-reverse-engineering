@@ -2,8 +2,8 @@
 
 - Status: **Confirmed** for the complete 41-file directory, two bank entry points, include graph,
   bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, the 29-macro ABI and
-  complete source invocation corpus, ten-slot channel-role shape and command compatibility, and
-  canonical-ROM parity
+  complete source invocation corpus, all 39 music headers, ten-slot channel-role shape and command
+  compatibility, and canonical-ROM parity
 - Status: **Inferred** for music command playback semantics
 - Status: **Unknown** for two grouped runtime questions
 - Evidence date: 2026-07-19
@@ -57,6 +57,19 @@ resolve to their matching slots. Commands 29–32 alias the silent `Music_32` ta
 alias `Music_64`. There are 39 unique pointer targets, no target crosses its selected 32 KiB bank,
 and no cross-bank fallback edge exists in this path. Bank selection and fallback are therefore closed
 statically rather than deferred to an emulator run.
+
+## Music Header Fields
+
+All 39 unique music targets use the same 24-byte header: a zero type marker, a DAC-disable byte, one
+reserved Timer A byte, one YM Timer B byte, and ten little-endian channel pointers. The driver reads
+the second byte into `MUSIC_DOESNT_USE_SAMPLES`, skips the reserved byte, writes byte 3 to YM register
+`0x26`, then initializes ten `0x20`-byte channel-state records from the pointers.
+
+Nineteen headers leave DAC enabled and 20 disable it. The reserved byte is zero in every entry.
+Timer B uses 19 distinct source values from `0xBD` through `0xD4`; exact value counts and all entry
+rows are part of the canonical fixture. This confirms the stored control fields and driver reads,
+but not the wall-clock tempo produced by YM2612 Timer B, which remains in the concentrated timing
+matrix.
 
 ## Static Command Corpus
 
@@ -112,9 +125,9 @@ file, the four symbol-less music support/entry sources, and explicit alternates/
 
 ## Concentrated Queue
 
-No emulator was launched. Remaining questions are grouped as note/sample frequency plus live channel
-state, and tempo/loop/instrument timing. They should be tested together through the sound-command
-boundary rather than one launch per opcode.
+No emulator was launched. Remaining questions are grouped as effective shifted note/sample frequency
+plus live channel state, and Timer-B/loop/instrument timing. They should be tested together through
+the sound-command boundary rather than one launch per opcode.
 
 ## Reproduction
 
