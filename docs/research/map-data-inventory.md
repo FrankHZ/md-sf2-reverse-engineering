@@ -134,6 +134,13 @@ scales them by `MAP_TILE_SIZE`, and routes special mapsprites through the specia
 path. The complete numeric records stay in ignored `local/derived/map-entities-static.json`; the
 tracked fixture contains only counts, encodings, fallthrough relationships, addresses, and rules.
 
+The same ROM-backed decode now closes the initial map-sprite domain for all 980 physical records.
+They use 113 distinct IDs: 977 records are regular IDs below 240, while the three special records use
+251, 252, and 255. The high regular range stops at 236, so none of the shared-sentinel regular IDs
+237-239 or unbacked special IDs 240-250 occurs in any selected entity-list source. This proves the
+initial-map-record boundary only; later cutscene, entity-action, combatant-derived, and direct code
+writes remain separate assignment domains.
+
 ## Entity, Zone, and Item Event Tables
 
 The event-table rail follows all three event slots from the 126 setup tables, decodes each unique

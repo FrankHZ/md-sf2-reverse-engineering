@@ -117,8 +117,9 @@ Entity movement timing, dialogue typewriter/render timing, control-code side eff
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and
 observation buffers rather than becoming one emulator launch per opcode. Symbolic reference search
-for reserved map-sprite IDs 237-250 is complete; encoded records and runtime writes are the remaining
-static frontier before one shared entity-sprite matrix. This batch adds no emulator run.
+for reserved map-sprite IDs 237-250 and the complete 980-record initial map-entity decode are both
+clear; later scripted, combatant-derived, and direct runtime writes are the remaining static frontier
+before one shared entity-sprite matrix. This batch adds no emulator run.
 
 ## Reproduction
 

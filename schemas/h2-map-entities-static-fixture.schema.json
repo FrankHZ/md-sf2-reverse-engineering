@@ -18,12 +18,13 @@
     "expected": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["summary", "sourceMacroCounts", "physicalRecordKinds", "referenceRecordKinds", "duplicatePointerTargets", "fallthroughFragments", "consumerFacts", "runtimeQuestions"],
+      "required": ["summary", "sourceMacroCounts", "physicalRecordKinds", "referenceRecordKinds", "mapSpriteFacts", "duplicatePointerTargets", "fallthroughFragments", "consumerFacts", "runtimeQuestions"],
       "properties": {
-        "summary": { "type": "object", "minProperties": 18, "maxProperties": 18 },
+        "summary": { "type": "object", "minProperties": 21, "maxProperties": 21 },
         "sourceMacroCounts": { "type": "object" },
         "physicalRecordKinds": { "type": "object" },
         "referenceRecordKinds": { "type": "object" },
+        "mapSpriteFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
         "duplicatePointerTargets": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
         "fallthroughFragments": { "type": "array", "minItems": 9, "maxItems": 9 },
         "consumerFacts": { "type": "object" },

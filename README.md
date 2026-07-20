@@ -34,7 +34,8 @@ H2，其中 63 个拥有真实 H1 绑定。最后 41 个 Z80 music ASM 也完成
 bank/ROM 字节一致性验证；地图侧还进一步确认 64 个 setup map row、66 个 flag variant、
 last-set-flag-wins 选择规则，以及 126 张六指针 setup table/756 个 slot 的 ROM parity；
 地图 entity 层又闭合 125 个 source、980 条物理记录和 9 个跨文件 fallthrough（其中 map 17
-复用七条 variant suffix）；entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
+复用七条 variant suffix）；这些记录使用 113 个 map-sprite ID，且全部排除 237-250 的
+sentinel/unbacked 区间。entity/zone/item event 层继续闭合 263 个 source、1,134 条物理记录和
 1,451 次 setup-level record reference，并保留两个 direct-`rts` stub 与 map 44 错误指针例外。
 description 层也闭合 75 个 callable target、37 个 wrapper、38 个空 stub 和 227 条物理 entry，并从
 唯一正常调用链确认三个 `d6` 条件函数会被跳过；init 层闭合 84 个 source、90 个 callable entry、

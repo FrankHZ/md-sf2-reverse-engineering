@@ -25,7 +25,10 @@
       "sequencedPhysicalRecordCount": 3,
       "fixedRecordReferenceCount": 808,
       "walkingRecordReferenceCount": 175,
-      "sequencedRecordReferenceCount": 4
+      "sequencedRecordReferenceCount": 4,
+      "uniquePhysicalMapSpriteCount": 113,
+      "regularPhysicalMapSpriteRecordCount": 977,
+      "specialPhysicalMapSpriteRecordCount": 3
     },
     "sourceMacroCounts": {
       "entity": 9,
@@ -43,6 +46,36 @@
       "fixed": 808,
       "sequenced": 4,
       "walking": 175
+    },
+    "mapSpriteFacts": {
+      "physicalValueRange": { "minimum": 1, "maximum": 255 },
+      "physicalHighValueCounts": {
+        "230": 7,
+        "231": 2,
+        "232": 1,
+        "233": 26,
+        "234": 11,
+        "235": 5,
+        "236": 29,
+        "251": 1,
+        "252": 1,
+        "255": 1
+      },
+      "referenceHighValueCounts": {
+        "230": 7,
+        "231": 2,
+        "232": 1,
+        "233": 26,
+        "234": 11,
+        "235": 5,
+        "236": 29,
+        "251": 1,
+        "252": 1,
+        "255": 1
+      },
+      "sentinelRegularIdsPresent": [],
+      "unbackedSpecialIdsPresent": [],
+      "routedSpecialIdsPresent": [251, 252, 255]
     },
     "duplicatePointerTargets": ["ms_map21_Entities"],
     "fallthroughFragments": [

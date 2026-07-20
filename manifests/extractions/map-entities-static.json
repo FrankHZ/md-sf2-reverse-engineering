@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-map-entities-static-v1",
-  "outputSha256": "A29065C79803EB7E6760CF80B6CCE732ED538FA560F95532130075EC67F2D4B3",
+  "outputSha256": "BFC583155F1D6EE490877A0B0CA2CBBE13DF145A99EE25CA72228A4EA4A2CA4A",
   "summary": {
     "sourceFileCount": 125,
     "entityPointerReferenceCount": 126,
@@ -20,6 +20,9 @@
     "sequencedPhysicalRecordCount": 3,
     "fixedRecordReferenceCount": 808,
     "walkingRecordReferenceCount": 175,
-    "sequencedRecordReferenceCount": 4
+    "sequencedRecordReferenceCount": 4,
+    "uniquePhysicalMapSpriteCount": 113,
+    "regularPhysicalMapSpriteRecordCount": 977,
+    "specialPhysicalMapSpriteRecordCount": 3
   }
 }

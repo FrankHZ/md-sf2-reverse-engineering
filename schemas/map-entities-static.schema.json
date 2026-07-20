@@ -3,7 +3,7 @@
   "$id": "https://example.invalid/md-sf2/schemas/map-entities-static.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "sourceMacroCounts", "physicalRecordKinds", "referenceRecordKinds", "duplicatePointerTargets", "fallthroughFragments", "consumerFacts", "runtimeQuestions", "sourceFiles", "lists"],
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "scope", "function", "summary", "sourceMacroCounts", "physicalRecordKinds", "referenceRecordKinds", "mapSpriteFacts", "duplicatePointerTargets", "fallthroughFragments", "consumerFacts", "runtimeQuestions", "sourceFiles", "lists"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-map-entities-static-v1" },
@@ -24,10 +24,11 @@
       "required": ["InitializeMapEntities"],
       "properties": { "InitializeMapEntities": { "type": "integer", "minimum": 0 } }
     },
-    "summary": { "type": "object", "minProperties": 18, "maxProperties": 18, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 21, "maxProperties": 21, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "sourceMacroCounts": { "$ref": "#/definitions/countMap" },
     "physicalRecordKinds": { "$ref": "#/definitions/countMap" },
     "referenceRecordKinds": { "$ref": "#/definitions/countMap" },
+    "mapSpriteFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
     "duplicatePointerTargets": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
     "fallthroughFragments": { "type": "array", "items": { "$ref": "#/definitions/fallthrough" } },
     "consumerFacts": { "type": "object" },

@@ -234,6 +234,12 @@ def build_map_entities_contract(rom_path: Path, upstream_path: Path) -> dict[str
     for row in source_files:
         source_macro_counts.update(row["macroCounts"])
     physical_kind_counts = Counter(record["kind"] for record in physical_records.values())
+    physical_map_sprites = Counter(
+        record["mapSprite"] for record in physical_records.values()
+    )
+    reference_map_sprites = Counter(
+        record["mapSprite"] for row in lists for record in row["records"]
+    )
     shared_record_references = sum(len(owners) - 1 for owners in record_owners.values())
     summary = {
         "sourceFileCount": len(source_files),
@@ -254,6 +260,13 @@ def build_map_entities_contract(rom_path: Path, upstream_path: Path) -> dict[str
         "fixedRecordReferenceCount": reference_kind_counts["fixed"],
         "walkingRecordReferenceCount": reference_kind_counts["walking"],
         "sequencedRecordReferenceCount": reference_kind_counts["sequenced"],
+        "uniquePhysicalMapSpriteCount": len(physical_map_sprites),
+        "regularPhysicalMapSpriteRecordCount": sum(
+            count for value, count in physical_map_sprites.items() if value < 240
+        ),
+        "specialPhysicalMapSpriteRecordCount": sum(
+            count for value, count in physical_map_sprites.items() if value >= 240
+        ),
     }
     duplicate_pointer_targets = sorted(
         symbol for symbol, count in Counter(target["symbol"] for target in entity_targets).items()
@@ -270,6 +283,31 @@ def build_map_entities_contract(rom_path: Path, upstream_path: Path) -> dict[str
         "sourceMacroCounts": dict(sorted(source_macro_counts.items())),
         "physicalRecordKinds": dict(sorted(physical_kind_counts.items())),
         "referenceRecordKinds": dict(sorted(reference_kind_counts.items())),
+        "mapSpriteFacts": {
+            "physicalValueRange": {
+                "minimum": min(physical_map_sprites),
+                "maximum": max(physical_map_sprites),
+            },
+            "physicalHighValueCounts": {
+                str(value): count
+                for value, count in sorted(physical_map_sprites.items())
+                if value >= 230
+            },
+            "referenceHighValueCounts": {
+                str(value): count
+                for value, count in sorted(reference_map_sprites.items())
+                if value >= 230
+            },
+            "sentinelRegularIdsPresent": sorted(
+                set(range(237, 240)) & set(physical_map_sprites)
+            ),
+            "unbackedSpecialIdsPresent": sorted(
+                set(range(240, 251)) & set(physical_map_sprites)
+            ),
+            "routedSpecialIdsPresent": sorted(
+                set(range(251, 256)) & set(physical_map_sprites)
+            ),
+        },
         "duplicatePointerTargets": duplicate_pointer_targets,
         "fallthroughFragments": fallthroughs,
         "consumerFacts": _consumer_facts(disasm),
@@ -302,6 +340,7 @@ def verify_map_entities_contract(
         "sourceMacroCounts",
         "physicalRecordKinds",
         "referenceRecordKinds",
+        "mapSpriteFacts",
         "duplicatePointerTargets",
         "fallthroughFragments",
         "consumerFacts",

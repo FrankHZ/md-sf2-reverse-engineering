@@ -310,9 +310,10 @@ This batch starts no emulator. All current direct named decoder consumers now ha
 later compression work must come from indirect/embedded tables or new source evidence. Rendered
 behavior joins the shared presentation matrix: display
 initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
-updates, special-screen transfer tails, and flash duration can share VDP/RAM observation points. Static symbolic search is now
-complete for reserved IDs 237-250; the next reachability step must inspect encoded records and
-runtime writes rather than repeating text search.
+updates, special-screen transfer tails, and flash duration can share VDP/RAM observation points.
+Static symbolic search is now complete for reserved IDs 237-250, and all 980 initial map-entity
+records also exclude them. The next reachability step must inspect later scripted,
+combatant-derived, and direct runtime writes rather than repeating text search.
 
 ## Reproduction
 
