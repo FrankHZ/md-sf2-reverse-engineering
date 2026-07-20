@@ -189,7 +189,8 @@ The seven dual-outcome handlers also carry source-statement predicates. They dis
 timer threshold, current/other-entity destination deltas, raw CCR results from
 `HasSameDestinationAsOtherEntity`, random-walk search exhaustion, and the sprite-load queue limit.
 For the helper-CCR cases the contract deliberately says only whether BNE is taken; it does not infer
-collision meaning from the helper name or comment.
+collision meaning from the helper name or comment. The helper pass below now resolves that boundary
+from its actual return instructions.
 
 The command layer now joins directly to the 560-byte `UpdateEntityData` core at `$5D6C..$5F9C`.
 Its 190 instructions divide into nine H1-bound phases: destination delta, per-axis acceleration,
@@ -207,6 +208,21 @@ thresholds -8/+8 to index the 16-byte `$5F9C` facing table, whose bytes match th
 Each axis snaps to destination on zero delta or sign crossover. Once both travel words are zero, the
 destination tile can change layer/immersed state and trigger a sprite reload when immersed toggles.
 
+Four update helpers add another 434 bytes/135 instructions, eight entity fields, eleven global-state
+symbols, eight direct-call targets, and 22 call sites across two source files. The destination-conflict
+helper scans 49 slots, skips empty/current entities, and treats Manhattan destination distance below
+one map tile (384 pixels) as a conflict when entity-obstruction bit 5 is enabled. Its code sets Z=0 on
+conflict (`moveq #-1,d4`) and Z=1 on no conflict (`clr.w d4`); intervening `movem`/`rts` preserve CCR.
+This contradicts the source comment claiming “zero-bit set if true.” The relative/absolute movement
+handlers' BNE branches therefore yield on a real destination conflict and redispatch when clear.
+
+`UpdateEntitySprite` is a gate, not a normal call wrapper: auto-facing must be enabled, facing must
+change, and the sprite-load queue must be below its limit; success falls directly through into
+`ChangeEntityMapsprite`. That function bypasses special sprites and entity number 32, otherwise loads
+the regular compressed sprite, applies immersed/resize/ghost/orientation transforms, and queues VInt
+DMA. `ConvertMapPixelCoordinatesToOffset` conditionally adds exploration layer origins, hashes
+`X>>7`/`Y>>7` to six bits, forms `(row<<6)+column`, and doubles it to a word-byte offset.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -216,10 +232,10 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-The next static entity-action batch follows `UpdateEntityData` into its three direct helpers and the
-`HasSameDestinationAsOtherEntity` CCR producer, separating map-coordinate, sprite-refresh, and
-collision predicates before defining the grouped emulator matrix. Only timing or collision meaning
-still unresolved after that pass belongs in runtime.
+The static command/update/helper chain is now closed deeply enough to define one grouped movement
+runtime matrix. It should batch wait duration, unobstructed/blocked relative and absolute movement,
+acceleration/deceleration, destination snap, facing/animation progression, and immersed/layer arrival
+into shared setup and observation buffers. Story-route reachability remains a separate question.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and

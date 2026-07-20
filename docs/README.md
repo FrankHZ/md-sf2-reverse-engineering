@@ -162,7 +162,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   35/43 handler 的完整源码使用边界，以及 39 redispatch/11 yield/7 dual 的全 handler flow
   outcome 分类；46 个参数的 10 signed/20 unsigned/15 boolean/1 ignored 解释与七个 dual
   predicate 也已绑定源码证据；后续 `UpdateEntityData` 另闭合 560 bytes、190 instructions、九个
-  movement phase、15 个字段、5 个 bit access 和 16-byte facing table ROM parity。
+  movement phase、15 个字段、5 个 bit access 和 16-byte facing table ROM parity；四个 update
+  helper 再闭合 434 bytes、135 instructions、22 callers、目的地冲突 CCR、sprite fallthrough 与
+  map-offset hash 公式。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 及其 canonical ROM byte parity。
 

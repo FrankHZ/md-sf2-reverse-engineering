@@ -523,9 +523,13 @@ boolean、1 ignored；七个 dual handler 也全部绑定选择条件及源码�
 坐标，并把第三个 word 作为半径。`UpdateEntityData` 也已闭合为 560 bytes/190 instructions/九个
 H1 阶段：15 个实体字段、FLAGS_A 0-3 的加减速、3/4 acceleration 与 1/4 deceleration、velocity
 积分、±8 facing dominance、动画 `>>5`/`-1` disable/`>30` reset、目的地 crossover snap 和到达
-tile 的 layer/immersed 更新均有源码与 ROM 合同。下一步静态前沿追踪它的三个 direct helper 与
-`HasSameDestinationAsOtherEntity` CCR producer，只把仍无法静态确认的帧时序、碰撞结果和 caller-dependent story
-reachability 留给集中 BizHawk 矩阵。
+tile 的 layer/immersed 更新均有源码与 ROM 合同。四个 helper 也已闭合 434 bytes/135
+instructions/22 callers。目的地冲突实际扫描 49 slots，以
+`abs(dx)+abs(dy)<384` 判定；冲突留下 Z=0、无冲突留下 Z=1，明确推翻了源码注释中的 “zero-bit
+set if true”。sprite gate 的 auto-facing/facing-change/queue-limit fallthrough、special sprite 与
+entity 32 bypass、effect/DMA 链，以及 `(hash(Y>>7)<<6)+hash(X>>7)` 的 word-byte offset 均已结构化。
+现在只需把 wait/movement/accel/snap/facing/arrival 的逐帧进展集中到一次 BizHawk matrix；
+caller-dependent story reachability 仍单独保留。
 只有 direct-`rts` stub reachability、
 非标准 description caller、script side effects、transition persistence 或 presentation timing 在静态解析后仍有歧义
 时，才启动同一 observation seam 的集中 BizHawk matrix；UI/presentation、SRAM hardware 与

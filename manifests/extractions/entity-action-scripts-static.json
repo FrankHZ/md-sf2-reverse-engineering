@@ -91,5 +91,18 @@
     "directCallCount": 3,
     "facingTableByteCount": 16
   },
-  "outputSha256": "1775C130F5A47372568DEDD944A8D7808D7B836D82CFC3A20C20690C2F33E7C5"
+  "updateHelperSummary": {
+    "helperCount": 4,
+    "functionByteCount": 434,
+    "statementCount": 135,
+    "entityFieldCount": 8,
+    "globalStateCount": 11,
+    "bitAccessCount": 2,
+    "directCallTargetCount": 8,
+    "callerCount": 22,
+    "callerSourceFileCount": 2,
+    "fallthroughHelperCount": 1,
+    "commentContradictionCount": 1
+  },
+  "outputSha256": "01B7F8C860E963178C755A1C1FE22848C40099CAFE8F3A4DD054FFF3B86C46AC"
 }

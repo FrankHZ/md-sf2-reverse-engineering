@@ -328,9 +328,12 @@ now split into nine H1-bound phases with 15 entity fields (14 read, nine written
 consumers, three direct calls, and a ROM-matched 16-byte facing table. It confirms 3/4 acceleration
 and 1/4 deceleration thresholds, velocity-to-position integration, +/-8 facing dominance, animation
 delta shift 5/-1 disable/>30 reset, axis crossover snapping, and arrival layer/immersed updates. The
-next static pass follows its direct helpers and the destination-conflict CCR producer. Frame
-timing, collision outcomes, and normal-story reachability remain runtime questions and should be
-grouped only after that pass finds real ambiguity.
+helpers are now closed too: four functions total 434 bytes/135 instructions with 22 call sites. The
+conflict helper proves a 49-slot, Manhattan-distance-below-384 test and exposes a source-comment error:
+conflict leaves Z clear, no conflict leaves Z set. Sprite auto-facing fallthrough, special/entity-32
+bypasses, effect/DMA calls, and the coordinate hash formula are also explicit. The remaining original
+behavior question is frame-by-frame progression, not collision predicate meaning; it should use one
+batched movement matrix. Normal-story reachability remains separate.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks

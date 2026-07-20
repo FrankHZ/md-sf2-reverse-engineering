@@ -165,8 +165,8 @@ DUAL_OUTCOME_CONDITIONS = {
     },
     0x04: {
         "kind": "helper-ccr",
-        "yieldWhen": "BNE is taken after HasSameDestinationAsOtherEntity",
-        "redispatchWhen": "BNE is not taken after HasSameDestinationAsOtherEntity",
+        "yieldWhen": "destination conflict clears CCR Z and BNE is taken",
+        "redispatchWhen": "no destination conflict sets CCR Z and BNE is not taken",
         "evidencePatterns": (
             r"^bsr\.w HasSameDestinationAsOtherEntity$",
             r"^bne\.w esc_goToNextEntity$",
@@ -174,8 +174,8 @@ DUAL_OUTCOME_CONDITIONS = {
     },
     0x05: {
         "kind": "helper-ccr",
-        "yieldWhen": "BNE is taken after HasSameDestinationAsOtherEntity",
-        "redispatchWhen": "BNE is not taken after HasSameDestinationAsOtherEntity",
+        "yieldWhen": "destination conflict clears CCR Z and BNE is taken",
+        "redispatchWhen": "no destination conflict sets CCR Z and BNE is not taken",
         "evidencePatterns": (
             r"^bsr\.w HasSameDestinationAsOtherEntity$",
             r"^bne\.w esc_goToNextEntity$",
@@ -877,6 +877,43 @@ def _access_rows(
     ]
 
 
+GLOBAL_ACCESS_PATTERN = re.compile(
+    r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w|"
+    r"\(([A-Z][A-Z0-9_]*)\)\.l"
+)
+
+
+def _global_access_rows(statements: list[str]) -> list[dict[str, Any]]:
+    accesses: dict[str, dict[str, Any]] = {}
+    for statement in statements:
+        normalized = re.sub(
+            GLOBAL_ACCESS_PATTERN,
+            lambda match: f"GLOBAL::{match.group(1) or match.group(2)}",
+            statement,
+        )
+        for row in _access_rows(
+            [normalized], re.compile(r"GLOBAL::([A-Z][A-Z0-9_]*)")
+        ):
+            existing = accesses.setdefault(
+                row["name"],
+                {
+                    "name": row["name"],
+                    "read": False,
+                    "write": False,
+                    "addressed": False,
+                    "operations": set(),
+                },
+            )
+            existing["read"] |= row["read"]
+            existing["write"] |= row["write"]
+            existing["addressed"] |= row["addressed"]
+            existing["operations"].update(row["operations"])
+    return [
+        {**row, "operations": sorted(row["operations"])}
+        for _, row in sorted(accesses.items())
+    ]
+
+
 def _script_read_rows(statements: list[str]) -> list[dict[str, Any]]:
     reads: dict[tuple[int, int], set[str]] = {}
     for statement in statements:
@@ -1008,6 +1045,232 @@ def _entity_update_core(
         "sub_5FAC",
         *(label for _, label in UPDATE_CORE_PHASES),
     }
+    return _finish_entity_update_core(
+        source, body_match, statements, evidence, required_symbols, addresses, rom
+    )
+
+
+UPDATE_HELPER_SPECS = (
+    {
+        "name": "HasSameDestinationAsOtherEntity",
+        "role": "destination-conflict-ccr",
+        "endSymbol": "esc07_controlRaft",
+        "fallthroughTarget": None,
+    },
+    {
+        "name": "UpdateEntitySprite",
+        "role": "auto-facing-gate",
+        "endSymbol": "ChangeEntityMapsprite",
+        "fallthroughTarget": "ChangeEntityMapsprite",
+    },
+    {
+        "name": "ChangeEntityMapsprite",
+        "role": "mapsprite-refresh",
+        "endSymbol": "table_FacingValues_2",
+        "fallthroughTarget": None,
+    },
+    {
+        "name": "ConvertMapPixelCoordinatesToOffset",
+        "role": "map-layout-offset",
+        "endSymbol": "DisplayText",
+        "fallthroughTarget": None,
+    },
+)
+
+UPDATE_HELPER_EVIDENCE = {
+    "HasSameDestinationAsOtherEntity": (
+        (r"^btst #5,ENTITYDEF_OFFSET_FLAGS_A\(a0\)$", 1),
+        (r"^moveq #48,d6$", 1),
+        (r"^cmpi\.w #\$7000,\(a2\)$", 1),
+        (r"^cmp\.w d6,d7$", 1),
+        (r"^add\.w d4,d5$", 1),
+        (r"^cmpi\.w #MAP_TILE_SIZE,d5$", 1),
+        (r"^bcc\.w @NextEntity$", 1),
+        (r"^moveq #-1,d4$", 1),
+        (r"^clr\.w d4$", 1),
+    ),
+    "UpdateEntitySprite": (
+        (r"^btst #ENTITYDEF_FLAGS_B_AUTO_FACING,ENTITYDEF_OFFSET_FLAGS_B\(a0\)$", 1),
+        (r"^cmp\.b ENTITYDEF_OFFSET_FACING\(a0\),d6$", 1),
+        (r"^cmpi\.b #GFX_MAX_SPRITES_TO_LOAD,\(\(SPRITES_TO_LOAD_NUMBER-\$1000000\)\)\.w$", 1),
+        (r"^bge\.w return_6180$", 1),
+    ),
+    "ChangeEntityMapsprite": (
+        (r"^cmpi\.b #MAPSPRITES_SPECIALS_START,d1$", 1),
+        (r"^cmpi\.b #32,d1$", 1),
+        (r"^jsr \(LoadBasicCompressedData\)\.w$", 1),
+        (r"^btst #ENTITYDEF_FLAGS_B_IMMERSED,d1$", 1),
+        (r"^btst #ENTITYDEF_FLAGS_B_RESIZE,d1$", 1),
+        (r"^btst #ENTITYDEF_FLAGS_B_GHOST,d1$", 1),
+        (r"^bsr\.w ApplyVIntVramDma$", 1),
+        (r"^bsr\.w EnableDmaQueueProcessing$", 1),
+    ),
+    "ConvertMapPixelCoordinatesToOffset": (
+        (r"^cmpi\.b #NOT_CURRENTLY_IN_BATTLE,\(\(CURRENT_BATTLE-\$1000000\)\)\.w$", 1),
+        (r"^tst\.b ENTITYDEF_OFFSET_LAYER\(a0\)$", 1),
+        (r"^tst\.b \(\(MAP_AREA_LAYER_TYPE-\$1000000\)\)\.w$", 1),
+        (r"^lsr\.w #7,d2$", 1),
+        (r"^lsr\.w #7,d3$", 1),
+        (r"^andi\.w #\$3F,d2$", 1),
+        (r"^andi\.w #\$3F,d3$", 1),
+        (r"^lsl\.w #6,d3$", 1),
+        (r"^add\.w d2,d2$", 2),
+    ),
+}
+
+
+def _entity_update_helpers(
+    disasm: Path, addresses: dict[str, int], rom: bytes
+) -> dict[str, Any]:
+    source = read_upstream_text(disasm / HANDLER_SOURCE_PATH)
+    helper_names = {spec["name"] for spec in UPDATE_HELPER_SPECS}
+    callers: dict[str, list[dict[str, Any]]] = {name: [] for name in helper_names}
+    call_pattern = re.compile(
+        r"\b(?:bsr|jsr)(?:\.[bwls])?\s+\(?"
+        rf"({'|'.join(sorted(helper_names, key=len, reverse=True))})\)?(?:\.[bwls])?\b"
+    )
+    for path in sorted(disasm.rglob("*.asm")):
+        relative = path.relative_to(disasm).as_posix()
+        text = read_upstream_text(path)
+        for line_number, raw_line in enumerate(text.splitlines(), 1):
+            code = raw_line.split(";", 1)[0]
+            match = call_pattern.search(code)
+            if match:
+                callers[match.group(1)].append({"path": relative, "line": line_number})
+
+    rows = []
+    for spec in UPDATE_HELPER_SPECS:
+        name = spec["name"]
+        if name not in addresses or spec["endSymbol"] not in addresses:
+            raise ValueError(f"entity update helper H1 boundary missing: {name}")
+        body_match = re.search(
+            rf"^{re.escape(name)}:\s*\n(?P<body>.*?)"
+            rf"^\s*; End of function {re.escape(name)}\s*$",
+            source,
+            re.MULTILINE | re.DOTALL,
+        )
+        if body_match is None:
+            raise ValueError(f"entity update helper body missing: {name}")
+        statements = []
+        for raw_line in body_match.group("body").splitlines():
+            code = raw_line.split(";", 1)[0].strip()
+            if not code or re.match(r"^[A-Za-z_@][A-Za-z0-9_@]*:$", code):
+                continue
+            if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwls])?(?:\s+|$)", code):
+                statements.append(re.sub(r"\s+", " ", code))
+        for pattern, expected_count in UPDATE_HELPER_EVIDENCE[name]:
+            match_count = sum(
+                bool(re.match(pattern, statement)) for statement in statements
+            )
+            if match_count != expected_count:
+                raise ValueError(
+                    f"entity update helper evidence drift: {name} pattern={pattern}"
+                )
+        start = addresses[name]
+        end = addresses[spec["endSymbol"]]
+        rows.append(
+            {
+                "name": name,
+                "role": spec["role"],
+                "address": start,
+                "endExclusive": end,
+                "byteCount": end - start,
+                "sourcePath": HANDLER_SOURCE_PATH.as_posix(),
+                "startLine": source.count("\n", 0, body_match.start()) + 1,
+                "endLine": source.count("\n", 0, body_match.end()) + 1,
+                "statementCount": len(statements),
+                "sha256": hashlib.sha256(rom[start:end]).hexdigest().upper(),
+                "entityFieldAccesses": _access_rows(
+                    statements,
+                    re.compile(r"\b(ENTITYDEF_OFFSET_[A-Z0-9_]+)\b"),
+                    implicit_entity_x=True,
+                ),
+                "globalStateAccesses": _global_access_rows(statements),
+                "bitAccesses": _bit_access_rows(statements),
+                "directCalls": sorted(
+                    {
+                        match.group(1)
+                        for statement in statements
+                        if (
+                            match := re.match(
+                                r"^(?:bsr|jsr)(?:\.[bwls])?\s+\(?"
+                                r"([A-Za-z_][A-Za-z0-9_]*)",
+                                statement,
+                            )
+                        )
+                    }
+                ),
+                "callers": callers[name],
+                "fallthroughTarget": spec["fallthroughTarget"],
+            }
+        )
+    if not all(row["callers"] for row in rows):
+        raise ValueError("entity update helper caller coverage drift")
+    return {
+        "summary": {
+            "helperCount": len(rows),
+            "functionByteCount": sum(row["byteCount"] for row in rows),
+            "statementCount": sum(row["statementCount"] for row in rows),
+            "entityFieldCount": len(
+                {
+                    access["name"]
+                    for row in rows
+                    for access in row["entityFieldAccesses"]
+                }
+            ),
+            "globalStateCount": len(
+                {
+                    access["name"]
+                    for row in rows
+                    for access in row["globalStateAccesses"]
+                }
+            ),
+            "bitAccessCount": sum(len(row["bitAccesses"]) for row in rows),
+            "directCallTargetCount": len(
+                {target for row in rows for target in row["directCalls"]}
+            ),
+            "callerCount": sum(len(row["callers"]) for row in rows),
+            "callerSourceFileCount": len(
+                {caller["path"] for row in rows for caller in row["callers"]}
+            ),
+            "fallthroughHelperCount": sum(
+                row["fallthroughTarget"] is not None for row in rows
+            ),
+            "commentContradictionCount": 1,
+        },
+        "facts": {
+            "destinationConflictScannedSlotCount": 49,
+            "destinationConflictDistanceMetric": "abs(dx)+abs(dy)",
+            "destinationConflictThresholdExclusive": 384,
+            "destinationConflictCcrZero": False,
+            "noDestinationConflictCcrZero": True,
+            "destinationConflictCommentContradiction": True,
+            "updateSpriteFallsThroughToChange": True,
+            "updateSpriteRequiresAutoFacing": True,
+            "updateSpriteRequiresFacingChange": True,
+            "updateSpriteRequiresQueueBelowLimit": True,
+            "coordinatePixelShift": 7,
+            "coordinateHashMask": 63,
+            "coordinateRowShift": 6,
+            "coordinateOutputByteScale": 2,
+            "changeSpecialSpriteBypass": True,
+            "changeEntity32Bypass": True,
+            "allHelpersH1Bound": True,
+            "allHelpersHaveCallers": True,
+        },
+        "helpers": rows,
+    }
+
+
+def _finish_entity_update_core(
+    source: str,
+    body_match: re.Match[str],
+    statements: list[str],
+    evidence: Any,
+    required_symbols: set[str],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
     missing_symbols = required_symbols - addresses.keys()
     if missing_symbols:
         raise ValueError(f"entity update core H1 symbols missing: {sorted(missing_symbols)}")
@@ -1179,42 +1442,10 @@ def _entity_action_handlers(
             if re.match(r"^[a-z][A-Za-z0-9]*(?:\.[bwls])?(?:\s+|$)", code):
                 statements.append(re.sub(r"\s+", " ", code))
         entity_pattern = re.compile(r"\b(ENTITYDEF_OFFSET_[A-Z0-9_]+)\b")
-        global_pattern = re.compile(
-            r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w|"
-            r"\(([A-Z][A-Z0-9_]*)\)\.l"
-        )
         entity_accesses = _access_rows(
             statements, entity_pattern, implicit_entity_x=True
         )
-        global_accesses_raw: dict[str, dict[str, Any]] = {}
-        for statement in statements:
-            normalized = re.sub(
-                global_pattern,
-                lambda match: f"GLOBAL::{match.group(1) or match.group(2)}",
-                statement,
-            )
-            rows = _access_rows(
-                [normalized], re.compile(r"GLOBAL::([A-Z][A-Z0-9_]*)")
-            )
-            for row in rows:
-                existing = global_accesses_raw.setdefault(
-                    row["name"],
-                    {
-                        "name": row["name"],
-                        "read": False,
-                        "write": False,
-                        "addressed": False,
-                        "operations": set(),
-                    },
-                )
-                existing["read"] |= row["read"]
-                existing["write"] |= row["write"]
-                existing["addressed"] |= row["addressed"]
-                existing["operations"].update(row["operations"])
-        global_accesses = [
-            {**row, "operations": sorted(row["operations"])}
-            for _, row in sorted(global_accesses_raw.items())
-        ]
+        global_accesses = _global_access_rows(statements)
         entity_fields = [row["name"] for row in entity_accesses]
         global_state = sorted(
             set(re.findall(r"\(\(([A-Z][A-Z0-9_]*)-\$1000000\)\)\.w", body))
@@ -1740,6 +1971,7 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         disasm, addresses, macro_contracts, all_command_counts
     )
     update_core = _entity_update_core(disasm, addresses, rom)
+    update_helpers = _entity_update_helpers(disasm, addresses, rom)
     summary = {
         "corpusCount": len(corpora),
         "byteCount": sum(row["summary"]["byteCount"] for row in corpora),
@@ -1788,6 +2020,9 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "function": {
             "rjt_EntityScriptCommands": addresses["rjt_EntityScriptCommands"],
             "UpdateEntityData": addresses["UpdateEntityData"],
+            **{
+                row["name"]: row["address"] for row in update_helpers["helpers"]
+            },
         },
         "table": {
             spec["bindingSymbol"]: addresses[spec["bindingSymbol"]]
@@ -1844,6 +2079,8 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
         "handlerFacts": handler_contract["facts"],
         "updateCoreSummary": update_core["summary"],
         "updateCoreFacts": update_core["facts"],
+        "updateHelperSummary": update_helpers["summary"],
+        "updateHelperFacts": update_helpers["facts"],
         "standaloneRomRanges": [
             {
                 key: program[key]
@@ -1880,6 +2117,7 @@ def build_entity_action_script_contract(rom_path: Path, upstream_path: Path) -> 
                 "evidenceStatements",
             )
         },
+        "updateCoreHelpers": update_helpers["helpers"],
         "runtimeQuestions": [
             "What are the exact frame durations and collision effects of movement/action commands?",
             "Which external references are reachable through normal story routes?",
@@ -1916,6 +2154,8 @@ def verify_entity_action_script_contract(
         "handlerFacts",
         "updateCoreSummary",
         "updateCoreFacts",
+        "updateHelperSummary",
+        "updateHelperFacts",
         "standaloneRomRanges",
         "runtimeQuestions",
     ):
@@ -1927,6 +2167,7 @@ def verify_entity_action_script_contract(
         or output["distributedSummary"] != manifest["distributedSummary"]
         or output["handlerSummary"] != manifest["handlerSummary"]
         or output["updateCoreSummary"] != manifest["updateCoreSummary"]
+        or output["updateHelperSummary"] != manifest["updateHelperSummary"]
         or digest != manifest["outputSha256"]
     ):
         raise ValueError("entity-action script canonical manifest drift")

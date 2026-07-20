@@ -8,11 +8,11 @@
     "commandCounts", "referenceFacts", "distributedSummary",
     "distributedSourceFileCounts", "distributedCommandCounts", "distributedControlFlowFacts",
     "distributedReferenceFacts", "handlerSummary", "handlerFacts", "updateCoreSummary",
-    "updateCoreFacts", "standaloneRomRanges",
+    "updateCoreFacts", "updateHelperSummary", "updateHelperFacts", "standaloneRomRanges",
     "corpora", "entryReferences",
     "distributedFiles", "inlinePrograms", "standalonePrograms", "distributedEntryReferences",
     "handlerDispatchTable", "handlerMacroBindings", "handlerOpcodeBindings", "handlerOnlyLayouts",
-    "handlers", "entityUpdateCore",
+    "handlers", "entityUpdateCore", "updateCoreHelpers",
     "runtimeQuestions"
   ],
   "properties": {
@@ -28,10 +28,17 @@
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
     "function": {
       "type": "object", "additionalProperties": false,
-      "required": ["rjt_EntityScriptCommands", "UpdateEntityData"],
+      "required": [
+        "rjt_EntityScriptCommands", "UpdateEntityData", "HasSameDestinationAsOtherEntity",
+        "UpdateEntitySprite", "ChangeEntityMapsprite", "ConvertMapPixelCoordinatesToOffset"
+      ],
       "properties": {
         "rjt_EntityScriptCommands": { "type": "integer", "minimum": 0 },
-        "UpdateEntityData": { "type": "integer", "minimum": 0 }
+        "UpdateEntityData": { "type": "integer", "minimum": 0 },
+        "HasSameDestinationAsOtherEntity": { "type": "integer", "minimum": 0 },
+        "UpdateEntitySprite": { "type": "integer", "minimum": 0 },
+        "ChangeEntityMapsprite": { "type": "integer", "minimum": 0 },
+        "ConvertMapPixelCoordinatesToOffset": { "type": "integer", "minimum": 0 }
       }
     },
     "table": {
@@ -201,6 +208,43 @@
         "facingTableMatchesRom": { "const": true }
       }
     },
+    "updateHelperSummary": {
+      "type": "object", "minProperties": 11, "maxProperties": 11,
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "updateHelperFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "destinationConflictScannedSlotCount", "destinationConflictDistanceMetric",
+        "destinationConflictThresholdExclusive", "destinationConflictCcrZero",
+        "noDestinationConflictCcrZero", "destinationConflictCommentContradiction",
+        "updateSpriteFallsThroughToChange", "updateSpriteRequiresAutoFacing",
+        "updateSpriteRequiresFacingChange", "updateSpriteRequiresQueueBelowLimit",
+        "coordinatePixelShift", "coordinateHashMask", "coordinateRowShift",
+        "coordinateOutputByteScale", "changeSpecialSpriteBypass", "changeEntity32Bypass",
+        "allHelpersH1Bound", "allHelpersHaveCallers"
+      ],
+      "properties": {
+        "destinationConflictScannedSlotCount": { "const": 49 },
+        "destinationConflictDistanceMetric": { "const": "abs(dx)+abs(dy)" },
+        "destinationConflictThresholdExclusive": { "const": 384 },
+        "destinationConflictCcrZero": { "const": false },
+        "noDestinationConflictCcrZero": { "const": true },
+        "destinationConflictCommentContradiction": { "const": true },
+        "updateSpriteFallsThroughToChange": { "const": true },
+        "updateSpriteRequiresAutoFacing": { "const": true },
+        "updateSpriteRequiresFacingChange": { "const": true },
+        "updateSpriteRequiresQueueBelowLimit": { "const": true },
+        "coordinatePixelShift": { "const": 7 },
+        "coordinateHashMask": { "const": 63 },
+        "coordinateRowShift": { "const": 6 },
+        "coordinateOutputByteScale": { "const": 2 },
+        "changeSpecialSpriteBypass": { "const": true },
+        "changeEntity32Bypass": { "const": true },
+        "allHelpersH1Bound": { "const": true },
+        "allHelpersHaveCallers": { "const": true }
+      }
+    },
     "standaloneRomRanges": {
       "type": "array", "minItems": 11, "maxItems": 11,
       "items": { "$ref": "#/$defs/romRange" }
@@ -250,6 +294,10 @@
       "items": { "$ref": "#/$defs/handler" }
     },
     "entityUpdateCore": { "$ref": "#/$defs/entityUpdateCore" },
+    "updateCoreHelpers": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": { "$ref": "#/$defs/updateCoreHelper" }
+    },
     "runtimeQuestions": {
       "type": "array", "minItems": 2, "maxItems": 2,
       "items": { "type": "string" }
@@ -664,6 +712,58 @@
         "startLabel": { "type": "string" },
         "startAddress": { "type": "integer", "minimum": 0 },
         "endExclusiveAddress": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "updateCoreHelper": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "name", "role", "address", "endExclusive", "byteCount", "sourcePath",
+        "startLine", "endLine", "statementCount", "sha256", "entityFieldAccesses",
+        "globalStateAccesses", "bitAccesses", "directCalls", "callers", "fallthroughTarget"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "HasSameDestinationAsOtherEntity", "UpdateEntitySprite",
+            "ChangeEntityMapsprite", "ConvertMapPixelCoordinatesToOffset"
+          ]
+        },
+        "role": {
+          "enum": [
+            "destination-conflict-ccr", "auto-facing-gate", "mapsprite-refresh",
+            "map-layout-offset"
+          ]
+        },
+        "address": { "type": "integer", "minimum": 0 },
+        "endExclusive": { "type": "integer", "minimum": 1 },
+        "byteCount": { "type": "integer", "minimum": 1 },
+        "sourcePath": { "const": "code/common/scripting/entity/entityscriptengine_2.asm" },
+        "startLine": { "type": "integer", "minimum": 1 },
+        "endLine": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "entityFieldAccesses": {
+          "type": "array", "items": { "$ref": "#/$defs/access" }
+        },
+        "globalStateAccesses": {
+          "type": "array", "items": { "$ref": "#/$defs/access" }
+        },
+        "bitAccesses": {
+          "type": "array", "items": { "$ref": "#/$defs/bitAccess" }
+        },
+        "directCalls": { "type": "array", "items": { "type": "string" } },
+        "callers": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["path", "line"],
+            "properties": {
+              "path": { "type": "string" },
+              "line": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "fallthroughTarget": { "type": ["string", "null"] }
       }
     },
     "entryReference": {

@@ -8,7 +8,7 @@
     "commandCounts", "referenceFacts", "distributedSummary",
     "distributedSourceFileCounts", "distributedCommandCounts", "distributedControlFlowFacts",
     "distributedReferenceFacts", "handlerSummary", "handlerFacts", "updateCoreSummary",
-    "updateCoreFacts", "standaloneRomRanges",
+    "updateCoreFacts", "updateHelperSummary", "updateHelperFacts", "standaloneRomRanges",
     "runtimeQuestions"
   ],
   "properties": {
@@ -16,7 +16,7 @@
     "id": { "const": "sf2-entity-action-scripts-static-v1" },
     "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
-    "function": { "type": "object", "minProperties": 2, "maxProperties": 2 },
+    "function": { "type": "object", "minProperties": 6, "maxProperties": 6 },
     "table": { "type": "object", "minProperties": 21, "maxProperties": 21 },
     "summary": { "type": "object", "minProperties": 16, "maxProperties": 16 },
     "romRanges": { "type": "array", "minItems": 3, "maxItems": 3 },
@@ -31,6 +31,8 @@
     "handlerFacts": { "type": "object", "minProperties": 21, "maxProperties": 21 },
     "updateCoreSummary": { "type": "object", "minProperties": 9, "maxProperties": 9 },
     "updateCoreFacts": { "type": "object", "minProperties": 15, "maxProperties": 15 },
+    "updateHelperSummary": { "type": "object", "minProperties": 11, "maxProperties": 11 },
+    "updateHelperFacts": { "type": "object", "minProperties": 18, "maxProperties": 18 },
     "standaloneRomRanges": { "type": "array", "minItems": 11, "maxItems": 11 },
     "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2 }
   }

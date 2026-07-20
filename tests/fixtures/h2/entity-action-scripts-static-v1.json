@@ -5,7 +5,11 @@
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "function": {
     "rjt_EntityScriptCommands": 20252,
-    "UpdateEntityData": 23916
+    "UpdateEntityData": 23916,
+    "HasSameDestinationAsOtherEntity": 22032,
+    "UpdateEntitySprite": 24716,
+    "ChangeEntityMapsprite": 24744,
+    "ConvertMapPixelCoordinatesToOffset": 25084
   },
   "table": {
     "eas_LyingLeft": 280954,
@@ -281,6 +285,39 @@
     "animationCounterResetAbove": 30,
     "allPhasesH1Bound": true,
     "facingTableMatchesRom": true
+  },
+  "updateHelperSummary": {
+    "helperCount": 4,
+    "functionByteCount": 434,
+    "statementCount": 135,
+    "entityFieldCount": 8,
+    "globalStateCount": 11,
+    "bitAccessCount": 2,
+    "directCallTargetCount": 8,
+    "callerCount": 22,
+    "callerSourceFileCount": 2,
+    "fallthroughHelperCount": 1,
+    "commentContradictionCount": 1
+  },
+  "updateHelperFacts": {
+    "destinationConflictScannedSlotCount": 49,
+    "destinationConflictDistanceMetric": "abs(dx)+abs(dy)",
+    "destinationConflictThresholdExclusive": 384,
+    "destinationConflictCcrZero": false,
+    "noDestinationConflictCcrZero": true,
+    "destinationConflictCommentContradiction": true,
+    "updateSpriteFallsThroughToChange": true,
+    "updateSpriteRequiresAutoFacing": true,
+    "updateSpriteRequiresFacingChange": true,
+    "updateSpriteRequiresQueueBelowLimit": true,
+    "coordinatePixelShift": 7,
+    "coordinateHashMask": 63,
+    "coordinateRowShift": 6,
+    "coordinateOutputByteScale": 2,
+    "changeSpecialSpriteBypass": true,
+    "changeEntity32Bypass": true,
+    "allHelpersH1Bound": true,
+    "allHelpersHaveCallers": true
   },
   "standaloneRomRanges": [
     { "id": "eas_452A4", "sourcePath": "code/common/scripting/map/vehiclefunctions.asm", "start": 283300, "endExclusive": 283426, "sha256": "FA243D870003484C1DAD46460708C8A7903BDC5A29190BCCE1035C9ECCA5F040" },
