@@ -25,6 +25,7 @@ BANK_OUTPUTS = {
 }
 BANK_ROM_OFFSETS = {"bank1": 0x1F0000, "bank0": 0x1F8000}
 BANK_SIZE = 0x8000
+BANK_ORIGIN = 0x8000
 MANIFEST = repo_path("manifests/extractions/sound-data-static.json")
 SCHEMA = repo_path("schemas/sound-data-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/sound-data-static-v1.json")
@@ -43,6 +44,75 @@ def _sha256(data: bytes) -> str:
 def _resolve_include(source_path: str, target: str) -> str:
     normalized = target.replace("\\", "/")
     return posixpath.normpath(posixpath.join(posixpath.dirname(source_path), normalized))
+
+
+def _song_file_catalog(
+    sources: dict[str, str], bank_payloads: dict[str, bytes]
+) -> list[dict[str, Any]]:
+    rows = []
+    header_pattern = re.compile(
+        r"^; ASM FILE .+?\n; 0x([0-9A-F]+)\.\.0x([0-9A-F]+) : Music ",
+        re.MULTILINE,
+    )
+    for source_path, source in sorted(sources.items()):
+        filename = Path(source_path).name
+        match = re.fullmatch(r"music(\d+)\.asm", filename)
+        if match is None:
+            continue
+        music_index = int(match.group(1))
+        bank = "bank0" if "/musicbank0/" in source_path else "bank1"
+        first_index = 1 if bank == "bank0" else 33
+        if not first_index <= music_index < first_index + 32:
+            raise ValueError(f"song index is outside {bank}: {music_index}")
+        header = header_pattern.search(source)
+        if header is None:
+            raise ValueError(f"song source range header is missing: {source_path}")
+        start = int(header.group(1), 16)
+        end = int(header.group(2), 16)
+        if not BANK_ORIGIN + 64 <= start < end <= BANK_ORIGIN + BANK_SIZE:
+            raise ValueError(f"song source range is outside {bank}: {source_path}")
+        symbol = f"Music_{music_index}"
+        if not re.search(rf"^{re.escape(symbol)}:", source, re.MULTILINE):
+            raise ValueError(f"song entry symbol is missing: {source_path}::{symbol}")
+        payload = bank_payloads[bank]
+        pointer_offset = (music_index - first_index) * 2
+        entry = int.from_bytes(payload[pointer_offset : pointer_offset + 2], "little")
+        if not start <= entry < end:
+            raise ValueError(f"song entry pointer is outside source range: {source_path}")
+        file_payload = payload[start - BANK_ORIGIN : end - BANK_ORIGIN]
+        rows.append(
+            {
+                "id": Path(source_path).stem,
+                "sourcePath": source_path,
+                "bank": bank,
+                "musicIndex": music_index,
+                "entrySymbol": symbol,
+                "entryZ80Address": entry,
+                "entryRomOffset": BANK_ROM_OFFSETS[bank] + entry - BANK_ORIGIN,
+                "fileStartZ80Address": start,
+                "fileEndZ80Address": end,
+                "fileRomOffset": BANK_ROM_OFFSETS[bank] + start - BANK_ORIGIN,
+                "sizeBytes": len(file_payload),
+                "sourceSha256": _sha256(source.encode()),
+                "payloadSha256": _sha256(file_payload),
+            }
+        )
+    if len(rows) != 37:
+        raise ValueError(f"sound song-file boundary drift: {len(rows)}")
+    for bank in BANK_SOURCES:
+        ranges = sorted(
+            (row["fileStartZ80Address"], row["fileEndZ80Address"])
+            for row in rows
+            if row["bank"] == bank
+        )
+        if not ranges or ranges[0][0] != BANK_ORIGIN + 64:
+            raise ValueError(f"{bank} song payload does not start after its pointer table")
+        if any(
+            left[1] != right[0]
+            for left, right in zip(ranges, ranges[1:], strict=False)
+        ):
+            raise ValueError(f"{bank} song source ranges are not contiguous")
+    return rows
 
 
 def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
@@ -92,6 +162,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
         raise ValueError("sound bank entry points do not reach the complete source directory")
 
     bank_facts: dict[str, dict[str, Any]] = {}
+    bank_payloads: dict[str, bytes] = {}
     for bank, source_path in BANK_SOURCES.items():
         output_path = disasm / BANK_OUTPUTS[bank]
         if not output_path.is_file():
@@ -103,6 +174,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
         rom_payload = rom[offset : offset + BANK_SIZE]
         if payload != rom_payload:
             raise ValueError(f"generated {bank} does not match the canonical ROM slice")
+        bank_payloads[bank] = payload
         source = sources[source_path.as_posix()]
         pointers = re.findall(r"^\s*dw\s+(Music_\d+)\s*$", source, re.MULTILINE)
         song_includes = [
@@ -121,13 +193,8 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
             "romParity": True,
         }
 
-    song_paths = sorted(
-        path
-        for path in sources
-        if re.search(r"/music\d+\.asm$", path)
-    )
-    if len(song_paths) != 37:
-        raise ValueError("sound song-file boundary drift")
+    song_files = _song_file_catalog(sources, bank_payloads)
+    song_paths = [row["sourcePath"] for row in song_files]
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -138,6 +205,8 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
         "songFileCount": len(song_paths),
         "transitiveIncludeFileCount": len(set(targets)),
         "strictH1IndexedFileCount": 0,
+        "z80BankBoundSongFileCount": len(song_files),
+        "songPayloadBytes": sum(row["sizeBytes"] for row in song_files),
     }
     return {
         "schemaVersion": 1,
@@ -154,12 +223,13 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
             "bankAddressSpaceOrigin": 0x8000,
             "banks": bank_facts,
             "romLayoutOrder": ["bank1", "bank0"],
-            "sourceContentParsed": False,
+            "sourceContentParsed": True,
             "musicSemanticsParsed": False,
         },
+        "songFiles": song_files,
         "strictIndexExclusion": (
-            "music sources are assembled in a separate Z80 address space and included into the "
-            "68000 ROM as unlabeled bank binaries"
+            "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry "
+            "files and two macro/enum sources remain outside symbol reach"
         ),
         "runtimeQuestions": [
             "music-command-and-channel-interpreter-semantics",
@@ -191,6 +261,9 @@ def verify_sound_data_inventory(
     for field in ("facts", "strictIndexExclusion", "runtimeQuestions"):
         if output[field] != fixture["expected"][field]:
             raise ValueError(f"sound data {field} drift")
+    song_rom_offsets = {row["id"]: row["entryRomOffset"] for row in output["songFiles"]}
+    if fixture["table"]["songRomOffsets"] != song_rom_offsets:
+        raise ValueError("sound data song ROM-offset drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

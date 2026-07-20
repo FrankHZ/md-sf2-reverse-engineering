@@ -31,12 +31,15 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1498
-    assert result["H2Fixtures"] == 73
+    assert result["Records"] == 1535
+    assert result["H2Fixtures"] == 74
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 59
-    assert result["AddressBindings"] == 2066
+    assert result["AddressBindings"] == 2103
     assert result["IndexedCodeFiles"] == 381
-    assert result["IndexedDataFiles"] == 980
+    assert result["IndexedDataFiles"] == 1017
+    assert result["H1ListingRecords"] == 1498
+    assert result["AlternateListingRecords"] == 37
+    assert result["Z80MusicBankRecords"] == 37
 
 
 def test_listing_symbol_addresses_indexes_once_and_rejects_conflicts() -> None:

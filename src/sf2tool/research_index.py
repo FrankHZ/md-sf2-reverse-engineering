@@ -80,6 +80,7 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
         if record_id in record_ids:
             raise ValueError(f"duplicate research record ID: {record_id}")
         record_ids.add(record_id)
+        listing_domain = record.get("listingDomain", "h1-68000")
 
         addresses: dict[str, dict[str, Any]] = {}
         symbol_addresses = [
@@ -104,7 +105,20 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
                     f"indexed symbol {record['symbol']} is absent from {record['sourcePath']}"
                 )
 
-        if has_listing:
+        if listing_domain == "z80-music-bank":
+            if not re.fullmatch(
+                r"data/sound/musicbank[01]/music\d+\.asm", record["sourcePath"]
+            ):
+                raise ValueError(f"invalid Z80 music-bank source path in {record_id}")
+            if any(
+                evidence["fixture"] != "tests/fixtures/h2/sound-data-static-v1.json"
+                or evidence["verifier"] != "src/sf2tool/h2/sound_data.py"
+                for evidence in record["evidence"]
+            ):
+                raise ValueError(f"invalid Z80 music-bank evidence owner in {record_id}")
+            if not 0x1F0000 <= symbol_addresses[0]["value"] < 0x200000:
+                raise ValueError(f"Z80 music-bank ROM address is outside both banks in {record_id}")
+        elif has_listing:
             if record["symbol"] not in listing_addresses:
                 raise ValueError(
                     f"indexed symbol {record['symbol']} is absent from the H1 assembler listing"
@@ -177,6 +191,16 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
     indexed_h3_count = sum(path.startswith("tests/fixtures/h3/") for path in fixture_ids)
     indexed_h2_count = sum(path.startswith("tests/fixtures/h2/") for path in fixture_ids)
     indexed_source_paths = {record["sourcePath"] for record in index["records"]}
+    h1_records = [
+        record
+        for record in index["records"]
+        if record.get("listingDomain", "h1-68000") == "h1-68000"
+    ]
+    alternate_records = [
+        record
+        for record in index["records"]
+        if record.get("listingDomain", "h1-68000") != "h1-68000"
+    ]
     return {
         "Index": "manifests/research-index.json",
         "Records": len(index["records"]),
@@ -187,6 +211,11 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
         "AddressBindings": binding_count,
         "IndexedCodeFiles": sum(path.startswith("code/") for path in indexed_source_paths),
         "IndexedDataFiles": sum(path.startswith("data/") for path in indexed_source_paths),
+        "H1ListingRecords": len(h1_records),
+        "AlternateListingRecords": len(alternate_records),
+        "Z80MusicBankRecords": sum(
+            record.get("listingDomain") == "z80-music-bank" for record in index["records"]
+        ),
         "ResearchDocuments": len(documents),
         "DesignContracts": len(contracts),
         "UpstreamSourcesChecked": has_sources,

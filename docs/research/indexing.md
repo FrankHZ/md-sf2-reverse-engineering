@@ -73,23 +73,27 @@ When a new reverse-engineering slice introduces a runtime address or indexed sta
    point.
 
 Observation points inside a function use `kind: observation`. Named function entries use
-`kind: symbol`; stable runtime state uses `space: ram` and `kind: state`. An address appearing in
+`kind: symbol`; stable runtime state uses `space: ram` and `kind: state`. `listingDomain` defaults to
+`h1-68000`. The only alternate domain is `z80-music-bank`; it is restricted to song sources, the
+sound-data fixture/verifier, and the two canonical ROM bank ranges. An address appearing in
 multiple fixtures is deliberately repeated in those fixtures as an executable contract, while the
 index verifier proves every copy still agrees.
 
 ## Current Boundary
 
-As of 2026-07-19, the index contains 1,498 confirmed findings and 2,066 checked address bindings. It
-connects all 59 H3 fixture files plus 73 H2 fixtures needed by the completed code and
-data inventories. This produces 381/387 strict code-file reach and 980/1,690 strict data-file reach.
+As of 2026-07-19, the index contains 1,535 confirmed findings and 2,103 checked address bindings. It
+connects all 59 H3 fixture files plus 74 H2 fixtures needed by the completed code and data
+inventories. This produces 381/387 code-file reach and 1,017/1,690 domain-aware data-file reach.
+The verifier reports the provenance split independently: 1,498 H1 records and 37 Z80 music-bank
+records.
 
-Those strict counters deliberately require a named symbol in the claimed source file and a matching
-68000 H1 listing address. They therefore do not credit 662 map bodies that are reachable only through
-an include site, the unlabeled map-storage container, unassembled alternates, or the 41 music sources
-assembled in a separate Z80 address space. Their owning deterministic H2 rails still prove that all
-1,690 data ASM files belong to a known build/inventory graph, so data-ASM H2 inventory is 100% while
-strict data-file reach remains 57.99%. Neither percentage is line, function, semantic, or remake
-completion coverage.
+Every indexed record still requires a named symbol in the claimed source file and an executable
+fixture binding. Normal records additionally require the matching 68000 H1 address. The 37 song
+records instead prove their Z80 pointer-table entry, bank-relative range, ROM physical offset, and
+bank/ROM bytes; the two unlabeled bank entry files and two macro/enum files remain excluded. The
+counter still does not credit 662 map bodies reachable only through an include site, the unlabeled
+map-storage container, or unassembled alternates. Their H2 rails prove that all 1,690 data ASM files
+belong to a known graph, but indexed reach is not line, semantic, or remake completion coverage.
 
 Source coverage percentages must always name their denominator and evidence level. The current
 snapshot, explicit exceptions, and static-first batching policy are recorded in

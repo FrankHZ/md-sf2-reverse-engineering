@@ -52,7 +52,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
   合同索引、校验规则和新增发现的落地流程。
 - [`source-coverage.md`](./research/source-coverage.md)：当前覆盖分母、98.45% code-file reach、
-  100% data-ASM H2 inventory、57.99% strict data-file reach 的不同边界，以及静态优先、集中运行
+  100% data-ASM H2 inventory、60.18% domain-aware data-file reach 的不同边界，以及静态优先、集中运行
   H3 的子系统批处理节奏。
 - [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
   治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。

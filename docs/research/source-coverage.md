@@ -20,18 +20,19 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,498 | Confirmed symbol/table records in `manifests/research-index.json` |
-| Indexed source files | 1,361 | 381 code files and 980 data files |
+| Indexed findings | 1,535 | 1,498 H1-backed plus 37 Z80 music-bank records |
+| Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
-| Indexed data-file reach | 57.99% | 980 indexed data files / 1,690; deliberately undercounts other H2 manifests |
-| H2 fixture files | 73 | Deterministic source/ROM contracts, often covering complete corpora |
+| Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
+| H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 59 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,066 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,103 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
-graph, the 41-file Z80 music graph with two bank/ROM parity checks, plus 281 fixed
+graph, the 41-file Z80 music graph with two bank/ROM parity checks and 37 song-level pointer/range
+bindings, plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,
@@ -272,9 +273,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,498 records; its
-verifier reports 381 unique code files, 980 unique data files, 73 H2 fixtures, 59 H3 fixtures, and
-2,066 bindings. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,535 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 59 H3 fixtures, and
+2,103 bindings. Of the records, 1,498 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -303,8 +304,9 @@ fixtures.
 
 Code-file discovery is at its honest symbol-index ceiling: 381/387 files have strict reach and the six
 remaining files are explicitly owned H2 exceptions. Data-file discovery is also closed at 1,690/1,690
-deterministic H2 inventory; its lower 980/1,690 strict reach reflects include-site-only map bodies,
-alternates, unlabeled storage, and the separate Z80 address space rather than unknown files.
+deterministic H2 inventory; its 1,017/1,690 domain-aware reach includes 37 Z80 song files while the
+remaining gap reflects include-site-only map bodies, alternates, and unlabeled storage rather than
+unknown files.
 
 The next work is semantic depth, not another sweep for filenames or artificial index percentage.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler

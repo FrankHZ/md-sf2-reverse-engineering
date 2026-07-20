@@ -1,7 +1,7 @@
 # Z80 Music-Bank Source and ROM-Parity Inventory
 
 - Status: **Confirmed** for the complete 41-file directory, two bank entry points, include graph,
-  bank sizes/hashes/order, pointer/include counts, and canonical-ROM byte parity
+  bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, and canonical-ROM parity
 - Status: **Inferred** for music command semantics and bank selection
 - Status: **Unknown** for three grouped runtime questions
 - Evidence date: 2026-07-19
@@ -17,8 +17,10 @@ the directory at 41/41 H2 inventory.
 
 These sources do not define symbols in the 68000 H1 listing. The ROM layout includes the completed
 banks as unlabeled binary payloads, bank 1 first at `0x1F0000` and bank 0 second at `0x1F8000`.
-Consequently none of the 41 files receives a false 68000 symbol binding, and strict indexed-file reach
-correctly remains unchanged.
+The index therefore keeps H1 as its default and adds one restricted `z80-music-bank` domain. Its 37
+song records bind an actual source label to the little-endian bank pointer, Z80 address, and physical
+ROM offset; the two bank entry files and two macro/enum sources remain uncredited because they have
+no independent entry symbol.
 
 ## Static Bank Parity
 
@@ -33,13 +35,19 @@ The verifier reads the local generated banks and canonical ROM only for byte par
 music bytes, note streams, instruments, PCM, or extracted audio. The generated structured inventory
 stays under ignored `local/derived/sound-data-static.json`.
 
+The 37 source headers form contiguous song regions immediately after each 64-byte pointer table:
+27 files occupy 32,247 bytes in bank 0 and ten files occupy 32,121 bytes in bank 1, for 64,368
+ROM-checked bytes. Each catalog row also records source/payload hashes and checks that its logical
+`Music_n` pointer lands inside the owning file range. This handles the combined Music 3/4 and 13/14
+sources without pretending the filename necessarily begins at the first label.
+
 ## Complete Data-ASM Discovery
 
 With this directory closed, every one of the pinned checkout's 1,690 `disasm/data` ASM files belongs
 to a deterministic H2 inventory. This is source-discovery coverage, not semantic completion. The
-separate strict H1 index remains 980/1,690 because 662 map bodies are labeled at include sites, one
-map storage file is unlabeled, 41 music sources use the Z80 address space, and the remaining explicit
-alternates/containers cannot honestly claim built 68000 symbols.
+domain-aware index is now 1,017/1,690: 980 files use H1 and 37 song files use the Z80 bank domain.
+The remaining gap includes 662 map bodies labeled only at include sites, one unlabeled map storage
+file, the four symbol-less music support/entry sources, and explicit alternates/containers.
 
 ## Concentrated Queue
 

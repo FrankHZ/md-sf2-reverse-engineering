@@ -3,6 +3,20 @@
   "id": "sf2-sound-data-static-v1",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "table": {
+    "songRomOffsets": {
+      "music01": 2066889, "music02": 2072489, "music03": 2074387, "music05": 2076880,
+      "music06": 2078645, "music07": 2080399, "music08": 2082093, "music09": 2064448,
+      "music10": 2065189, "music11": 2066421, "music12": 2086936, "music13": 2087561,
+      "music15": 2088802, "music16": 2090234, "music17": 2091058, "music18": 2091734,
+      "music19": 2092202, "music20": 2092831, "music21": 2093272, "music22": 2093635,
+      "music23": 2093866, "music24": 2094228, "music25": 2094518, "music26": 2095107,
+      "music27": 2095385, "music28": 2095766, "music32": 2096668, "music33": 2031680,
+      "music34": 2035979, "music35": 2038655, "music36": 2039825, "music37": 2043900,
+      "music38": 2046539, "music39": 2050143, "music40": 2054263, "music41": 2055322,
+      "music64": 2063774
+    }
+  },
   "expected": {
     "facts": {
       "assemblyCpu": "z80",
@@ -30,10 +44,10 @@
         }
       },
       "romLayoutOrder": ["bank1", "bank0"],
-      "sourceContentParsed": false,
+      "sourceContentParsed": true,
       "musicSemanticsParsed": false
     },
-    "strictIndexExclusion": "music sources are assembled in a separate Z80 address space and included into the 68000 ROM as unlabeled bank binaries",
+    "strictIndexExclusion": "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry files and two macro/enum sources remain outside symbol reach",
     "runtimeQuestions": [
       "music-command-and-channel-interpreter-semantics",
       "tempo-loop-and-instrument-timing",

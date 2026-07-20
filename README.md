@@ -17,8 +17,9 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,498 条 confirmed finding、73 个 H2 fixture、59 个 H3 fixture
-和 2,066 个地址绑定。
+截至 2026-07-19，研究索引有 1,535 条 confirmed finding、74 个 H2 fixture、59 个 H3 fixture
+和 2,103 个地址绑定；其中 1,498 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
+地址域校验。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -71,8 +72,9 @@ slot 包含 82 个有效 opcode 和 8 个 filler，归并为 83 个唯一 handle
 yes/no 结果写入和 20 条 battle-unlock 写入覆盖 56 个 flag、89 个 program，读写域仅在
 71/76/89 相交。`yesNo` 的返回 0=set/非零=clear 与 `setStoryFlag n` 写 `400+n` 都由 handler
 源码绑定；实际存档路径和持久化顺序仍不从静态图推断。
-因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。严格
-data-file reach 仍为 980/1,690（57.99%），因为该口径只接受文件内 68000 H1 符号。H2 的 25 个 ROM
+因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。domain-aware indexed
+data-file reach 为 1,017/1,690（60.18%）：980 个文件由 68000 H1 符号绑定，另 37 个 song source
+由 Z80 pointer table、bank-relative 地址和 ROM 物理偏移双重绑定。H2 的 25 个 ROM
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表、sprite-dialogue 与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
@@ -508,8 +510,9 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 ## 下一步
 
 源码“找文件”阶段已经收口：code 是 381/387 strict reach，剩余 6 个都有明确 H2 所有权；data
-是 1,690/1,690 H2 inventory，980/1,690 strict H1 reach 的差额也全部归因于 include-site-only、
-unlabeled/alternate 或独立 Z80 地址空间。地图 setup 的 flag selection、六指针 layout、四类 event
+是 1,690/1,690 H2 inventory，domain-aware reach 已为 1,017/1,690；其中 980 个 H1 文件与 37 个
+Z80 song 文件分开报告，余下差额归因于 include-site-only、unlabeled/alternate 或无入口符号。
+地图 setup 的 flag selection、六指针 layout、四类 event
 dispatcher 结构、全部 entity stream、263 个 entity/zone/item event source 和 75 个 description
 target、84 个 initialization source 与全部 47 个 standalone setup script 也已静态闭合。79 个
 map entry、662 个 source-form map-content section 和 154 个私有 blocks/layout payload 现已全部完成
