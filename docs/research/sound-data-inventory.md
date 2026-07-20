@@ -2,7 +2,8 @@
 
 - Status: **Confirmed** for the complete 41-file directory, two bank entry points, include graph,
   bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, the 29-macro ABI and
-  complete source invocation corpus, and canonical-ROM parity
+  complete source invocation corpus, ten-slot channel-role shape and command compatibility, and
+  canonical-ROM parity
 - Status: **Inferred** for music command semantics and bank selection
 - Status: **Unknown** for three grouped runtime questions
 - Evidence date: 2026-07-19
@@ -61,6 +62,26 @@ zero high byte as a queued operation, while other nonzero words are absolute Z80
 The nine `F8` parameter forms are also tied to exact channel-state offsets: main/repeat starts,
 three repeat sections, repeat/main endings, and counted-loop start/end. A counted start stores
 `low5 + 1`; the ending decrements offset `$19` and jumps through `$17-$18` until zero.
+
+## Channel-Role Compatibility Audit
+
+Every one of the 39 logical song entries has exactly ten pointers. Their order is confirmed against
+the music pass in `UpdateSound`: three YM1 channels, two ordinary YM2 channels, the YM2 channel 6 / DAC
+slot, three PSG tone channels, and one PSG noise channel. Across all entries this produces 117 YM1,
+78 YM2, 39 YM2/DAC, 117 PSG-tone, and 39 PSG-noise pointer slots.
+
+Pointer reuse reduces the 390 slots to 321 source labels. Of these, 108 are YM1-only, 72 YM2-only,
+36 YM2/DAC-only, and 68 PSG-tone-only. Another 35 labels are shared by the PSG tone/noise slots and
+contain only `channel_end`; the two all-role labels are the silent Music 32/64 bodies. Thus no active
+noise sequence appears in the original song-source corpus, even though the noise parser supports
+notes, instruments, release, waits, loops, and termination.
+
+The verifier checks all 39,290 macro calls against the parser-supported roles. YM note/instrument/
+volume/stereo macros remain on YM-capable slots, sample macros occur only on the channel-6/DAC slot,
+PSG note/instrument macros remain on PSG slots, and `ymTimer` occurs only on PSG tone. Shared waits,
+loops, release, and termination are accepted on every parser that implements them. The pinned corpus
+has zero incompatible role uses. This is a static source/dispatch guarantee; it does not establish
+audible timing, channel state, or hardware output.
 
 This closes source grammar, dispatch, and static loop state—not playback timing. Note/sample
 frequency results, live channel-state evolution, tempo, instruments, and scheduling remain

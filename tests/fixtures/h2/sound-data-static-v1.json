@@ -53,7 +53,8 @@
         "macroDefinitionCount": 29, "usedMacroCount": 29, "unusedMacroCount": 0,
         "flowMacroCount": 10, "songEntryLabelCount": 39, "channelLabelCount": 321,
         "channelPointerCount": 390, "uniqueChannelPointerCount": 321,
-        "macroInvocationCount": 39290, "flowInvocationCount": 2347
+        "macroInvocationCount": 39290, "flowInvocationCount": 2347,
+        "multiRoleChannelLabelCount": 37
       },
       "unusedMacros": [],
       "invocationCounts": {
@@ -66,10 +67,63 @@
         "sustain":416, "vibrato":469, "vol":6546, "wait":909, "waitL":1439,
         "ymTimer":3
       },
+      "channelRoles": {
+        "slotRoles": [
+          "ym1", "ym1", "ym1", "ym2", "ym2", "dac",
+          "psg-tone", "psg-tone", "psg-tone", "psg-noise"
+        ],
+        "pointerCounts": {
+          "dac":39, "psg-noise":39, "psg-tone":117, "ym1":117, "ym2":78
+        },
+        "uniqueLabelCounts": {
+          "dac":38, "psg-noise":37, "psg-tone":105, "ym1":110, "ym2":74
+        },
+        "roleSetCounts": [
+          {"roles":["dac"],"labelCount":36},
+          {"roles":["dac","psg-noise","psg-tone","ym1","ym2"],"labelCount":2},
+          {"roles":["psg-noise","psg-tone"],"labelCount":35},
+          {"roles":["psg-tone"],"labelCount":68},
+          {"roles":["ym1"],"labelCount":108},
+          {"roles":["ym2"],"labelCount":72}
+        ],
+        "macroRoleUses": {
+          "channel_end":["dac","psg-noise","psg-tone","ym1","ym2"],
+          "countedLoopEnd":["dac","psg-tone","ym1","ym2"],
+          "countedLoopStart":["dac","psg-tone","ym1","ym2"],
+          "inst":["dac","ym1","ym2"],
+          "mainLoopEnd":["dac","psg-tone","ym1","ym2"],
+          "mainLoopStart":["dac","psg-tone","ym1","ym2"],
+          "noSlide":["dac","ym1","ym2"],
+          "note":["dac","ym1","ym2"],
+          "noteL":["dac","ym1","ym2"],
+          "psgInst":["psg-tone"],
+          "psgNote":["psg-tone"],
+          "psgNoteL":["psg-tone"],
+          "repeatEnd":["dac","psg-tone","ym1","ym2"],
+          "repeatSection1Start":["dac","psg-tone","ym1","ym2"],
+          "repeatSection2Start":["dac","psg-tone","ym1","ym2"],
+          "repeatSection3Start":["dac","psg-tone","ym1","ym2"],
+          "repeatStart":["dac","psg-tone","ym1","ym2"],
+          "sample":["dac"],
+          "sampleL":["dac"],
+          "setRelease":["dac","psg-tone","ym1","ym2"],
+          "setSlide":["dac","ym1","ym2"],
+          "shifting":["dac","psg-tone","ym1","ym2"],
+          "stereo":["dac","ym1","ym2"],
+          "sustain":["dac","ym1","ym2"],
+          "vibrato":["dac","psg-tone","ym1","ym2"],
+          "vol":["dac","ym1","ym2"],
+          "wait":["dac","psg-tone","ym1","ym2"],
+          "waitL":["dac","psg-tone","ym1","ym2"],
+          "ymTimer":["psg-tone"]
+        },
+        "compatibilityViolationCount": 0
+      },
       "driver": {
         "sourcePath":"code/common/tech/sound/sounddriver.asm",
         "sourceSha256":"DE26E4AE704AA5B0E4FE39D7A32AC47C2F1FE4FEDBD86EB6E1EE51C7C20BB1AE",
         "channelParsers":["YM1_ParseData","YM2_ParseData","YM2_ParseChannel6Data","PSG_ParseToneData","PSG_ParseNoiseData"],
+        "musicUpdateSlotRoles":["ym1","ym1","ym1","ym2","ym2","dac","psg-tone","psg-tone","psg-tone","psg-noise"],
         "sharedLoopParser":"ParseLoopCommand", "sharedLoopParserCallerCount":5,
         "fixedOpcodeFamilies": {
           "70":["wait"], "F0":["waitL"],

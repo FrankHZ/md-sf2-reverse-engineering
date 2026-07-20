@@ -64,12 +64,32 @@
     },
     "commandModel": {
       "type": "object", "additionalProperties": false,
-      "required": ["summary", "macroDefinitions", "invocationCounts", "unusedMacros", "songs", "driver"],
+      "required": ["summary", "macroDefinitions", "invocationCounts", "unusedMacros", "channelRoles", "songs", "driver"],
       "properties": {
         "summary": { "type": "object" },
         "macroDefinitions": { "type": "array", "minItems": 1, "uniqueItems": true },
         "invocationCounts": { "type": "object" },
         "unusedMacros": { "type": "array", "uniqueItems": true },
+        "channelRoles": {
+          "type": "object", "additionalProperties": false,
+          "required": ["slotRoles", "pointerCounts", "uniqueLabelCounts", "roleSetCounts", "macroRoleUses", "compatibility"],
+          "properties": {
+            "slotRoles": { "type": "array", "minItems": 10, "maxItems": 10 },
+            "pointerCounts": { "type": "object" },
+            "uniqueLabelCounts": { "type": "object" },
+            "roleSetCounts": { "type": "array", "minItems": 1 },
+            "macroRoleUses": { "type": "object" },
+            "compatibility": {
+              "type": "object", "additionalProperties": false,
+              "required": ["allowedRolesByMacro", "violationCount", "violations"],
+              "properties": {
+                "allowedRolesByMacro": { "type": "object", "minProperties": 29, "maxProperties": 29 },
+                "violationCount": { "const": 0 },
+                "violations": { "type": "array", "maxItems": 0 }
+              }
+            }
+          }
+        },
         "songs": { "type": "array", "minItems": 37, "maxItems": 37 },
         "driver": { "type": "object" }
       }

@@ -40,6 +40,52 @@ FLOW_MACROS = {
     "repeatSection3Start",
     "repeatStart",
 }
+CHANNEL_SLOT_ROLES = (
+    "ym1",
+    "ym1",
+    "ym1",
+    "ym2",
+    "ym2",
+    "dac",
+    "psg-tone",
+    "psg-tone",
+    "psg-tone",
+    "psg-noise",
+)
+ALL_CHANNEL_ROLES = frozenset(CHANNEL_SLOT_ROLES)
+YM_CHANNEL_ROLES = frozenset({"ym1", "ym2", "dac"})
+PSG_CHANNEL_ROLES = frozenset({"psg-tone", "psg-noise"})
+MACRO_ALLOWED_ROLES = {
+    "channel_end": ALL_CHANNEL_ROLES,
+    "countedLoopEnd": ALL_CHANNEL_ROLES,
+    "countedLoopStart": ALL_CHANNEL_ROLES,
+    "inst": YM_CHANNEL_ROLES,
+    "mainLoopEnd": ALL_CHANNEL_ROLES,
+    "mainLoopStart": ALL_CHANNEL_ROLES,
+    "noSlide": YM_CHANNEL_ROLES,
+    "note": YM_CHANNEL_ROLES,
+    "noteL": YM_CHANNEL_ROLES,
+    "psgInst": PSG_CHANNEL_ROLES,
+    "psgNote": PSG_CHANNEL_ROLES,
+    "psgNoteL": PSG_CHANNEL_ROLES,
+    "repeatEnd": ALL_CHANNEL_ROLES,
+    "repeatSection1Start": ALL_CHANNEL_ROLES,
+    "repeatSection2Start": ALL_CHANNEL_ROLES,
+    "repeatSection3Start": ALL_CHANNEL_ROLES,
+    "repeatStart": ALL_CHANNEL_ROLES,
+    "sample": frozenset({"dac"}),
+    "sampleL": frozenset({"dac"}),
+    "setRelease": ALL_CHANNEL_ROLES,
+    "setSlide": YM_CHANNEL_ROLES,
+    "shifting": frozenset(ALL_CHANNEL_ROLES - {"psg-noise"}),
+    "stereo": YM_CHANNEL_ROLES,
+    "sustain": ALL_CHANNEL_ROLES,
+    "vibrato": frozenset(ALL_CHANNEL_ROLES - {"psg-noise"}),
+    "vol": YM_CHANNEL_ROLES,
+    "wait": ALL_CHANNEL_ROLES,
+    "waitL": ALL_CHANNEL_ROLES,
+    "ymTimer": frozenset({"psg-tone"}),
+}
 MANIFEST = repo_path("manifests/extractions/sound-data-static.json")
 SCHEMA = repo_path("schemas/sound-data-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/sound-data-static-v1.json")
@@ -121,10 +167,7 @@ def _song_file_catalog(
         )
         if not ranges or ranges[0][0] != BANK_ORIGIN + 64:
             raise ValueError(f"{bank} song payload does not start after its pointer table")
-        if any(
-            left[1] != right[0]
-            for left, right in zip(ranges, ranges[1:], strict=False)
-        ):
+        if any(left[1] != right[0] for left, right in zip(ranges, ranges[1:], strict=False)):
             raise ValueError(f"{bank} song source ranges are not contiguous")
     return rows
 
@@ -139,18 +182,14 @@ def _parse_music_macros(source: str) -> list[dict[str, Any]]:
     )
     for match in pattern.finditer(source):
         arguments = [
-            value.strip()
-            for value in (match.group("args") or "").split(",")
-            if value.strip()
+            value.strip() for value in (match.group("args") or "").split(",") if value.strip()
         ]
         byte_expressions = []
         for body_line in match.group("body").splitlines():
             line = body_line.split(";", 1)[0].strip()
             directive = re.match(r"^db\s+(.+)$", line, re.IGNORECASE)
             if directive:
-                byte_expressions.extend(
-                    value.strip() for value in directive.group(1).split(",")
-                )
+                byte_expressions.extend(value.strip() for value in directive.group(1).split(","))
         if not byte_expressions:
             raise ValueError(f"music macro emits no bytes: {match.group('name')}")
         rows.append(
@@ -190,9 +229,47 @@ def _song_command_row(source_path: str, source: str, macro_names: set[str]) -> d
         raise ValueError(f"unknown music source statements in {source_path}: {dict(unknown)}")
     entry_labels = re.findall(r"^(Music_\d+):", source, re.MULTILINE)
     channel_labels = re.findall(r"^(Music_\d+_Channel_\d+):", source, re.MULTILINE)
-    channel_pointers = re.findall(
-        r"^\s*dw\s+(Music_\d+_Channel_\d+)\s*$", source, re.MULTILINE
-    )
+    channel_pointers = re.findall(r"^\s*dw\s+(Music_\d+_Channel_\d+)\s*$", source, re.MULTILINE)
+    label_matches = list(re.finditer(r"^(Music_\d+(?:_Channel_\d+)?):.*$", source, re.MULTILINE))
+    channel_roles: dict[str, set[str]] = {}
+    channel_bodies: dict[str, str] = {}
+    entry_pointer_rows = []
+    for index, label_match in enumerate(label_matches):
+        label = label_match.group(1)
+        end = label_matches[index + 1].start() if index + 1 < len(label_matches) else len(source)
+        inline_body = label_match.group(0).split(":", 1)[1]
+        body = inline_body + source[label_match.end() : end]
+        if "_Channel_" in label:
+            channel_bodies[label] = body
+            continue
+        pointers = re.findall(r"^\s*dw\s+(Music_\d+_Channel_\d+)\s*$", body, re.MULTILINE)
+        if len(pointers) != len(CHANNEL_SLOT_ROLES):
+            raise ValueError(
+                f"music entry does not have ten channel pointers: {source_path}::{label}"
+            )
+        entry_pointer_rows.append({"entryLabel": label, "targets": pointers})
+        for target, role in zip(pointers, CHANNEL_SLOT_ROLES, strict=True):
+            channel_roles.setdefault(target, set()).add(role)
+    if set(channel_bodies) != set(channel_roles):
+        raise ValueError(f"music channel pointer/label mismatch: {source_path}")
+    channels = []
+    for label, body in channel_bodies.items():
+        channel_invocations = Counter()
+        for raw_line in body.splitlines():
+            line = raw_line.split(";", 1)[0].strip()
+            if not line:
+                continue
+            token = line.split(None, 1)[0]
+            if token in macro_names:
+                channel_invocations[token] += 1
+        channels.append(
+            {
+                "label": label,
+                "roles": sorted(channel_roles[label]),
+                "macroInvocationCount": sum(channel_invocations.values()),
+                "macroInvocations": dict(sorted(channel_invocations.items())),
+            }
+        )
     return {
         "sourcePath": source_path,
         "entryLabels": entry_labels,
@@ -202,6 +279,8 @@ def _song_command_row(source_path: str, source: str, macro_names: set[str]) -> d
         "macroInvocationCount": sum(invocations.values()),
         "macroInvocations": dict(sorted(invocations.items())),
         "directiveCounts": dict(sorted(directive_counts.items())),
+        "entryPointers": entry_pointer_rows,
+        "channels": channels,
     }
 
 
@@ -215,12 +294,47 @@ def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
         if re.search(r"/music\d+\.asm$", path)
     ]
     invocation_counts = Counter(
-        {
-            name: sum(row["macroInvocations"].get(name, 0) for row in songs)
-            for name in macro_names
-        }
+        {name: sum(row["macroInvocations"].get(name, 0) for row in songs) for name in macro_names}
     )
     unused = sorted(name for name, count in invocation_counts.items() if count == 0)
+    if macro_names != set(MACRO_ALLOWED_ROLES):
+        raise ValueError("music macro channel-role contract drift")
+    role_pointer_counts = Counter(
+        role for row in songs for _entry in row["entryPointers"] for role in CHANNEL_SLOT_ROLES
+    )
+    role_label_counts = Counter(
+        role for row in songs for channel in row["channels"] for role in channel["roles"]
+    )
+    macro_role_uses = {
+        name: sorted(
+            {
+                role
+                for row in songs
+                for channel in row["channels"]
+                if channel["macroInvocations"].get(name, 0)
+                for role in channel["roles"]
+            }
+        )
+        for name in sorted(macro_names)
+    }
+    role_set_counts = Counter(
+        tuple(channel["roles"]) for row in songs for channel in row["channels"]
+    )
+    compatibility_violations = []
+    for row in songs:
+        for channel in row["channels"]:
+            for macro, count in channel["macroInvocations"].items():
+                incompatible_roles = sorted(set(channel["roles"]) - MACRO_ALLOWED_ROLES[macro])
+                if incompatible_roles:
+                    compatibility_violations.append(
+                        {
+                            "sourcePath": row["sourcePath"],
+                            "channelLabel": channel["label"],
+                            "macro": macro,
+                            "roles": incompatible_roles,
+                            "invocationCount": count,
+                        }
+                    )
     return {
         "summary": {
             "macroDefinitionCount": len(macro_definitions),
@@ -230,17 +344,33 @@ def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
             "songEntryLabelCount": sum(len(row["entryLabels"]) for row in songs),
             "channelLabelCount": sum(len(row["channelLabels"]) for row in songs),
             "channelPointerCount": sum(row["channelPointerCount"] for row in songs),
-            "uniqueChannelPointerCount": sum(
-                row["uniqueChannelPointerCount"] for row in songs
-            ),
+            "uniqueChannelPointerCount": sum(row["uniqueChannelPointerCount"] for row in songs),
             "macroInvocationCount": sum(invocation_counts.values()),
-            "flowInvocationCount": sum(
-                invocation_counts[name] for name in FLOW_MACROS
+            "flowInvocationCount": sum(invocation_counts[name] for name in FLOW_MACROS),
+            "multiRoleChannelLabelCount": sum(
+                len(channel["roles"]) > 1 for row in songs for channel in row["channels"]
             ),
         },
         "macroDefinitions": macro_definitions,
         "invocationCounts": dict(sorted(invocation_counts.items())),
         "unusedMacros": unused,
+        "channelRoles": {
+            "slotRoles": list(CHANNEL_SLOT_ROLES),
+            "pointerCounts": dict(sorted(role_pointer_counts.items())),
+            "uniqueLabelCounts": dict(sorted(role_label_counts.items())),
+            "roleSetCounts": [
+                {"roles": list(roles), "labelCount": count}
+                for roles, count in sorted(role_set_counts.items())
+            ],
+            "macroRoleUses": macro_role_uses,
+            "compatibility": {
+                "allowedRolesByMacro": {
+                    name: sorted(roles) for name, roles in sorted(MACRO_ALLOWED_ROLES.items())
+                },
+                "violationCount": len(compatibility_violations),
+                "violations": compatibility_violations,
+            },
+        },
         "songs": songs,
     }
 
@@ -279,6 +409,18 @@ def _music_driver_contract(
     _require_driver_fragments(
         driver_source,
         [
+            "UpdateSound:",
+            "ld\tiy, CURRENT_CHANNEL",
+            "call\tYM1_ParseData",
+            "call\tYM1_ParseData",
+            "call\tYM1_ParseData",
+            "call\tYM2_ParseData",
+            "call\tYM2_ParseData",
+            "call\tYM2_ParseChannel6Data",
+            "call\tPSG_ParseToneData",
+            "call\tPSG_ParseToneData",
+            "call\tPSG_ParseToneData",
+            "call\tPSG_ParseNoiseData",
             "YM1_ParseData:",
             "cp\t0FFh",
             "cp\t0FEh",
@@ -328,6 +470,7 @@ def _music_driver_contract(
             "PSG_ParseToneData",
             "PSG_ParseNoiseData",
         ],
+        "musicUpdateSlotRoles": list(CHANNEL_SLOT_ROLES),
         "sharedLoopParser": "ParseLoopCommand",
         "sharedLoopParserCallerCount": 5,
         "fixedOpcodeFamilies": families,
@@ -381,9 +524,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
     if len(paths) != 41:
         raise ValueError(f"sound data boundary drift: expected 41 files, got {len(paths)}")
     files = [_parse_source_file(path, path.relative_to(disasm).as_posix()) for path in paths]
-    sources = {
-        path.relative_to(disasm).as_posix(): read_upstream_text(path) for path in paths
-    }
+    sources = {path.relative_to(disasm).as_posix(): read_upstream_text(path) for path in paths}
 
     include_edges = []
     for source_path, source in sources.items():
@@ -526,6 +667,19 @@ def verify_sound_data_inventory(
     for field in ("summary", "unusedMacros", "invocationCounts", "driver"):
         if output["commandModel"][field] != fixture["expected"]["commandModel"][field]:
             raise ValueError(f"sound data command-model {field} drift")
+    expected_channel_roles = fixture["expected"]["commandModel"]["channelRoles"]
+    for field in (
+        "slotRoles",
+        "pointerCounts",
+        "uniqueLabelCounts",
+        "roleSetCounts",
+        "macroRoleUses",
+    ):
+        if output["commandModel"]["channelRoles"][field] != expected_channel_roles[field]:
+            raise ValueError(f"sound data channel-role {field} drift")
+    compatibility = output["commandModel"]["channelRoles"]["compatibility"]
+    if compatibility["violationCount"] != expected_channel_roles["compatibilityViolationCount"]:
+        raise ValueError("sound data channel-role compatibility drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")
