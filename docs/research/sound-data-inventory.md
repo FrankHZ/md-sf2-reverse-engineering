@@ -1,7 +1,8 @@
 # Z80 Music-Bank Source and ROM-Parity Inventory
 
 - Status: **Confirmed** for the complete 41-file directory, two bank entry points, include graph,
-  bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, and canonical-ROM parity
+  bank sizes/hashes/order, pointer/include counts, 37 song ranges/entries, the 29-macro ABI and
+  complete source invocation corpus, and canonical-ROM parity
 - Status: **Inferred** for music command semantics and bank selection
 - Status: **Unknown** for three grouped runtime questions
 - Evidence date: 2026-07-19
@@ -40,6 +41,19 @@ The 37 source headers form contiguous song regions immediately after each 64-byt
 ROM-checked bytes. Each catalog row also records source/payload hashes and checks that its logical
 `Music_n` pointer lands inside the owning file range. This handles the combined Music 3/4 and 13/14
 sources without pretending the filename necessarily begins at the first label.
+
+## Static Command Corpus
+
+`musicmacros.asm` defines 29 byte-emitting macros; every definition occurs in the song corpus and ten
+encode loop/section/channel flow. Across 37 files, the parser owns 39 song-entry labels, 321 channel
+labels, 390 channel pointer slots resolving to 321 per-file unique targets, and 39,290 macro
+invocations. The 2,347 flow invocations comprise main loops, repeat sections, counted loops, and 139
+channel terminators. Each macro records its parameters, exact emitted-byte expressions and width;
+each song records entry/channel labels, pointer counts, directives and per-macro use counts.
+
+This closes source grammar and command inventory, not playback meaning. Note/sample pitch decoding,
+loop execution, tempo, instruments, and channel scheduling remain `Inferred` or `Unknown` until the
+Z80 driver consumer is modeled and the coherent runtime matrix is observed.
 
 ## Complete Data-ASM Discovery
 

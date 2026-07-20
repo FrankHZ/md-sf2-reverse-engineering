@@ -24,9 +24,10 @@
     "expected": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["facts", "strictIndexExclusion", "runtimeQuestions"],
+      "required": ["facts", "commandModel", "strictIndexExclusion", "runtimeQuestions"],
       "properties": {
         "facts": { "type": "object" },
+        "commandModel": { "type": "object", "required": ["summary", "unusedMacros", "invocationCounts"] },
         "strictIndexExclusion": { "type": "string", "minLength": 1 },
         "runtimeQuestions": {
           "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true

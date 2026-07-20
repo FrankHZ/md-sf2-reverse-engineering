@@ -31,8 +31,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
-graph, the 41-file Z80 music graph with two bank/ROM parity checks and 37 song-level pointer/range
-bindings, plus 281 fixed
+graph, the 41-file Z80 music graph with two bank/ROM parity checks, 37 song-level pointer/range
+bindings, and a 29-macro/39,290-invocation source grammar, plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,

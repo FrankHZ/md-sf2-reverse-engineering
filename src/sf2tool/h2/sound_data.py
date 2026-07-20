@@ -4,6 +4,7 @@ import hashlib
 import json
 import posixpath
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,18 @@ BANK_OUTPUTS = {
 BANK_ROM_OFFSETS = {"bank1": 0x1F0000, "bank0": 0x1F8000}
 BANK_SIZE = 0x8000
 BANK_ORIGIN = 0x8000
+FLOW_MACROS = {
+    "channel_end",
+    "countedLoopEnd",
+    "countedLoopStart",
+    "mainLoopEnd",
+    "mainLoopStart",
+    "repeatEnd",
+    "repeatSection1Start",
+    "repeatSection2Start",
+    "repeatSection3Start",
+    "repeatStart",
+}
 MANIFEST = repo_path("manifests/extractions/sound-data-static.json")
 SCHEMA = repo_path("schemas/sound-data-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/sound-data-static-v1.json")
@@ -115,6 +128,122 @@ def _song_file_catalog(
     return rows
 
 
+def _parse_music_macros(source: str) -> list[dict[str, Any]]:
+    rows = []
+    pattern = re.compile(
+        r"^[ \t]*(?P<name>[A-Za-z_][A-Za-z0-9_]*)[ \t]+macro"
+        r"(?:[ \t]+(?P<args>[^\r\n]+))?[ \t]*\r?$"
+        r"(?P<body>.*?)^[ \t]*endm[ \t]*\r?$",
+        re.MULTILINE | re.DOTALL | re.IGNORECASE,
+    )
+    for match in pattern.finditer(source):
+        arguments = [
+            value.strip()
+            for value in (match.group("args") or "").split(",")
+            if value.strip()
+        ]
+        byte_expressions = []
+        for body_line in match.group("body").splitlines():
+            line = body_line.split(";", 1)[0].strip()
+            directive = re.match(r"^db\s+(.+)$", line, re.IGNORECASE)
+            if directive:
+                byte_expressions.extend(
+                    value.strip() for value in directive.group(1).split(",")
+                )
+        if not byte_expressions:
+            raise ValueError(f"music macro emits no bytes: {match.group('name')}")
+        rows.append(
+            {
+                "name": match.group("name"),
+                "parameters": arguments,
+                "emittedByteCount": len(byte_expressions),
+                "byteExpressions": byte_expressions,
+                "flowControl": match.group("name") in FLOW_MACROS,
+            }
+        )
+    names = [row["name"] for row in rows]
+    if len(names) != len(set(names)):
+        raise ValueError("duplicate music macro definition")
+    return rows
+
+
+def _song_command_row(source_path: str, source: str, macro_names: set[str]) -> dict[str, Any]:
+    invocations: Counter[str] = Counter()
+    directive_counts: Counter[str] = Counter()
+    unknown: Counter[str] = Counter()
+    for raw_line in source.splitlines():
+        line = raw_line.split(";", 1)[0].strip()
+        if not line:
+            continue
+        line = re.sub(r"^[A-Za-z_][A-Za-z0-9_]*:\s*", "", line)
+        if not line:
+            continue
+        token = line.split(None, 1)[0]
+        if token in macro_names:
+            invocations[token] += 1
+        elif token.lower() in {"db", "dw"}:
+            directive_counts[token.lower()] += 1
+        else:
+            unknown[token] += 1
+    if unknown:
+        raise ValueError(f"unknown music source statements in {source_path}: {dict(unknown)}")
+    entry_labels = re.findall(r"^(Music_\d+):", source, re.MULTILINE)
+    channel_labels = re.findall(r"^(Music_\d+_Channel_\d+):", source, re.MULTILINE)
+    channel_pointers = re.findall(
+        r"^\s*dw\s+(Music_\d+_Channel_\d+)\s*$", source, re.MULTILINE
+    )
+    return {
+        "sourcePath": source_path,
+        "entryLabels": entry_labels,
+        "channelLabels": channel_labels,
+        "channelPointerCount": len(channel_pointers),
+        "uniqueChannelPointerCount": len(set(channel_pointers)),
+        "macroInvocationCount": sum(invocations.values()),
+        "macroInvocations": dict(sorted(invocations.items())),
+        "directiveCounts": dict(sorted(directive_counts.items())),
+    }
+
+
+def _music_command_model(sources: dict[str, str]) -> dict[str, Any]:
+    macro_path = (SOURCE_ROOT / "musicmacros.asm").as_posix()
+    macro_definitions = _parse_music_macros(sources[macro_path])
+    macro_names = {row["name"] for row in macro_definitions}
+    songs = [
+        _song_command_row(path, sources[path], macro_names)
+        for path in sorted(sources)
+        if re.search(r"/music\d+\.asm$", path)
+    ]
+    invocation_counts = Counter(
+        {
+            name: sum(row["macroInvocations"].get(name, 0) for row in songs)
+            for name in macro_names
+        }
+    )
+    unused = sorted(name for name, count in invocation_counts.items() if count == 0)
+    return {
+        "summary": {
+            "macroDefinitionCount": len(macro_definitions),
+            "usedMacroCount": len(macro_definitions) - len(unused),
+            "unusedMacroCount": len(unused),
+            "flowMacroCount": sum(row["flowControl"] for row in macro_definitions),
+            "songEntryLabelCount": sum(len(row["entryLabels"]) for row in songs),
+            "channelLabelCount": sum(len(row["channelLabels"]) for row in songs),
+            "channelPointerCount": sum(row["channelPointerCount"] for row in songs),
+            "uniqueChannelPointerCount": sum(
+                row["uniqueChannelPointerCount"] for row in songs
+            ),
+            "macroInvocationCount": sum(invocation_counts.values()),
+            "flowInvocationCount": sum(
+                invocation_counts[name] for name in FLOW_MACROS
+            ),
+        },
+        "macroDefinitions": macro_definitions,
+        "invocationCounts": dict(sorted(invocation_counts.items())),
+        "unusedMacros": unused,
+        "songs": songs,
+    }
+
+
 def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -195,6 +324,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
 
     song_files = _song_file_catalog(sources, bank_payloads)
     song_paths = [row["sourcePath"] for row in song_files]
+    command_model = _music_command_model(sources)
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -224,9 +354,11 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
             "banks": bank_facts,
             "romLayoutOrder": ["bank1", "bank0"],
             "sourceContentParsed": True,
+            "macroAbiParsed": True,
             "musicSemanticsParsed": False,
         },
         "songFiles": song_files,
+        "commandModel": command_model,
         "strictIndexExclusion": (
             "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry "
             "files and two macro/enum sources remain outside symbol reach"
@@ -264,6 +396,9 @@ def verify_sound_data_inventory(
     song_rom_offsets = {row["id"]: row["entryRomOffset"] for row in output["songFiles"]}
     if fixture["table"]["songRomOffsets"] != song_rom_offsets:
         raise ValueError("sound data song ROM-offset drift")
+    for field in ("summary", "unusedMacros", "invocationCounts"):
+        if output["commandModel"][field] != fixture["expected"]["commandModel"][field]:
+            raise ValueError(f"sound data command-model {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

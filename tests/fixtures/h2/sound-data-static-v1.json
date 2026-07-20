@@ -45,7 +45,27 @@
       },
       "romLayoutOrder": ["bank1", "bank0"],
       "sourceContentParsed": true,
+      "macroAbiParsed": true,
       "musicSemanticsParsed": false
+    },
+    "commandModel": {
+      "summary": {
+        "macroDefinitionCount": 29, "usedMacroCount": 29, "unusedMacroCount": 0,
+        "flowMacroCount": 10, "songEntryLabelCount": 39, "channelLabelCount": 321,
+        "channelPointerCount": 390, "uniqueChannelPointerCount": 321,
+        "macroInvocationCount": 39290, "flowInvocationCount": 2347
+      },
+      "unusedMacros": [],
+      "invocationCounts": {
+        "channel_end":139, "countedLoopEnd":525, "countedLoopStart":525, "inst":922,
+        "mainLoopEnd":174, "mainLoopStart":174, "noSlide":76, "note":9780,
+        "noteL":6856, "psgInst":908, "psgNote":3763, "psgNoteL":1442,
+        "repeatEnd":216, "repeatSection1Start":189, "repeatSection2Start":189,
+        "repeatSection3Start":27, "repeatStart":189, "sample":835, "sampleL":724,
+        "setRelease":1115, "setSlide":76, "shifting":218, "stereo":446,
+        "sustain":416, "vibrato":469, "vol":6546, "wait":909, "waitL":1439,
+        "ymTimer":3
+      }
     },
     "strictIndexExclusion": "song files use explicit z80-music-bank ROM bindings; the two unlabeled bank entry files and two macro/enum sources remain outside symbol reach",
     "runtimeQuestions": [
