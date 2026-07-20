@@ -311,9 +311,10 @@ later compression work must come from indirect/embedded tables or new source evi
 behavior joins the shared presentation matrix: display
 initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
 updates, special-screen transfer tails, and flash duration can share VDP/RAM observation points.
-Static symbolic search is now complete for reserved IDs 237-250, and all 980 initial map-entity
-records also exclude them. The next reachability step must inspect later scripted,
-combatant-derived, and direct runtime writes rather than repeating text search.
+Static reachability is now complete for reserved IDs 237-250: symbolic references, all 980 initial
+map-entity records, 81 later script assignments, ally/enemy derivation, five actual writers, and all
+20 property-update callers exclude them from the original built domains. Only deliberately malformed
+script/RAM injection and its visible failure mode remain optional runtime research.
 
 ## Reproduction
 

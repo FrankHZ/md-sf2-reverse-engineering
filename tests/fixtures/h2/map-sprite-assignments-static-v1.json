@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-sprite-assignments-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "DeclareNewEntity": 280010,
+    "esc17_setSpriteNumber": 23420,
+    "UpdateEntityProperties": 24658,
+    "csc1A_setEntitySprite": 289352,
+    "GetAllyMapsprite": 281030,
+    "table_AllyMapsprites": 281182
+  },
+  "summary": {
+    "writerSiteCount": 5,
+    "scriptAssignmentCount": 81,
+    "scriptAssignmentUniqueValueCount": 40,
+    "setSpriteCount": 56,
+    "newEntityCount": 18,
+    "actionSetSpriteCount": 7,
+    "scriptRegularBackedCount": 76,
+    "scriptRoutedSpecialCount": 5,
+    "scriptReservedCount": 0,
+    "updateEntityPropertiesCallerCount": 20,
+    "updatePreserveCallerCount": 12,
+    "updateAllyDerivedCallerCount": 5,
+    "updateAllyOrVehicleCallerCount": 1,
+    "updateLiteralCallerCount": 2,
+    "allyTableRowCount": 30,
+    "enemyTableRowCount": 166,
+    "initialEntityRecordCount": 980
+  },
+  "writerSites": [
+    { "path": "code/common/scripting/entity/entityfunctions_1.asm", "owner": "DeclareNewEntity", "instruction": "move.b  d4,ENTITYDEF_OFFSET_MAPSPRITE(a0)" },
+    { "path": "code/common/scripting/entity/entityscriptengine_2.asm", "owner": "esc17_setSpriteNumber", "instruction": "move.b  3(a1),ENTITYDEF_OFFSET_MAPSPRITE(a0)" },
+    { "path": "code/common/scripting/entity/entityscriptengine_2.asm", "owner": "UpdateEntityProperties", "instruction": "move.b  d3,ENTITYDEF_OFFSET_MAPSPRITE(a0)" },
+    { "path": "code/common/scripting/map/mapscriptengine_1.asm", "owner": "csc1A_setEntitySprite", "instruction": "move.b  d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)" },
+    { "path": "code/common/scripting/map/followersfunctions_2.asm", "owner": "direct-player-raft-write", "instruction": "move.b  #MAPSPRITE_RAFT,((ENTITY_MAPSPRITE-$1000000)).w" }
+  ],
+  "scriptAssignmentFacts": {
+    "macroCounts": { "ac_setSprite": 7, "newEntity": 18, "setSprite": 56 },
+    "domainCounts": { "regular-backed": 76, "routed-special": 5 },
+    "reservedIdsPresent": [],
+    "highestRegularValue": 230,
+    "routedSpecialValues": [255]
+  },
+  "derivedDomainFacts": {
+    "initialEntityReservedIdsPresent": [],
+    "allyTableValueRange": { "minimum": 1, "maximum": 58 },
+    "enemyTableValueRange": { "minimum": 52, "maximum": 229 },
+    "allyDerivationOnlySubtractsOrUsesNamedBlueFlameNpcFallbacks": true,
+    "originalBuiltDomainsContainReservedIds": false
+  },
+  "updateCallerFacts": {
+    "inputKindCounts": {
+      "ally-or-literal-vehicle": 1,
+      "ally-table-derived": 5,
+      "literal-map-sprite": 2,
+      "preserve-existing": 12
+    },
+    "allCallersClassified": true
+  },
+  "runtimeQuestions": [
+    "Can malformed scripts, raw RAM edits, or corrupt combatant state inject IDs 237-250?",
+    "What visible failure modes result when each sentinel or unbacked ID reaches its loader?"
+  ]
+}

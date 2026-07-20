@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/map-sprite-assignments-static.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "table", "summary", "writerSites", "scriptAssignmentFacts", "derivedDomainFacts", "updateCallerFacts", "scriptAssignments", "updateCallers", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-sprite-assignments-static-v1" },
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 6, "maxProperties": 6, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "writerSites": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "type": "object", "minProperties": 3, "maxProperties": 3 } },
+    "scriptAssignmentFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+    "derivedDomainFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 },
+    "updateCallerFacts": { "type": "object", "minProperties": 2, "maxProperties": 2 },
+    "scriptAssignments": { "type": "array", "minItems": 81, "maxItems": 81, "items": { "$ref": "#/$defs/assignment" } },
+    "updateCallers": { "type": "array", "minItems": 20, "maxItems": 20, "items": { "$ref": "#/$defs/caller" } },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  },
+  "$defs": {
+    "assignment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "line", "macro", "expression", "value", "domain"],
+      "properties": {
+        "path": { "type": "string" },
+        "line": { "type": "integer", "minimum": 1 },
+        "macro": { "enum": ["setSprite", "newEntity", "ac_setSprite"] },
+        "expression": { "type": "string" },
+        "value": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "domain": { "enum": ["regular-backed", "regular-sentinel", "unbacked-special", "routed-special"] }
+      }
+    },
+    "caller": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "line", "inputKind", "lastD3Source"],
+      "properties": {
+        "path": { "type": "string" },
+        "line": { "type": "integer", "minimum": 1 },
+        "inputKind": { "enum": ["preserve-existing", "literal-map-sprite", "ally-table-derived", "ally-or-literal-vehicle"] },
+        "lastD3Source": { "type": "string" }
+      }
+    }
+  }
+}

@@ -162,11 +162,13 @@ No emulator was launched. Remaining questions are grouped as:
 3. entity-action and global-cutscene dispatch effects;
 4. configuration, debug, fading, and spell-animation data consumers.
 
-The complete symbolic source scan found no uses of regular IDs 237-239 or special IDs 240-250, and
-the ROM-backed decode of all 980 physical map-entity records now finds none either. Runtime
-sprite-ID writes remain the final reachability surface; if static call/data-flow analysis cannot
-close them, all reserved IDs join one entity-sprite runtime matrix rather than separate emulator
-launches.
+The complete assignment-domain audit now goes past symbolic search and initial records. It classifies
+all five actual entity map-sprite write sites, all 81 built `setSprite`/`newEntity`/`ac_setSprite`
+payloads, all 20 `UpdateEntityProperties` callers, the 30-row ally table and its subtract-only
+derivation, the 166-row enemy table, and all 980 physical map-entity records. None can produce regular
+sentinel IDs 237-239 or unbacked special IDs 240-250 in the original built domains. Emulator work is
+therefore no longer needed to prove normal exclusion; malformed script/RAM injection and the visible
+failure modes of deliberately forced reserved IDs remain one optional nonstandard matrix.
 
 These belong with the existing UI/VDP and scripting runtime queues rather than separate one-case
 launches.

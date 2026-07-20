@@ -50,6 +50,7 @@ from sf2tool.h2.map_layouts import verify_map_layout_contract
 from sf2tool.h2.map_palettes import verify_map_palette_contract
 from sf2tool.h2.map_scripts import verify_map_scripts_inventory
 from sf2tool.h2.map_setup import verify_map_setup_contract
+from sf2tool.h2.map_sprite_assignments import verify_map_sprite_assignment_contract
 from sf2tool.h2.map_sprites import verify_map_sprite_contract
 from sf2tool.h2.map_tilesets import verify_map_tileset_contract
 from sf2tool.h2.maps import verify_map_inventory
@@ -413,6 +414,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_sprites)
     h2_map_sprites.add_argument("--output-path", type=_path)
+    h2_map_sprite_assignments = h2_commands.add_parser(
+        "map-sprite-assignments",
+        help="audit initial, scripted, ally/enemy-derived, and direct map-sprite writes",
+    )
+    _add_local_paths(h2_map_sprite_assignments)
+    h2_map_sprite_assignments.add_argument("--output-path", type=_path)
     h2_special_sprites = h2_commands.add_parser(
         "special-sprites",
         help="decode the complete Stack-compressed special-sprite corpus and routing boundary",
@@ -1079,6 +1086,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-sprites":
         print_record(
             verify_map_sprite_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-sprite-assignments":
+        print_record(
+            verify_map_sprite_assignment_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

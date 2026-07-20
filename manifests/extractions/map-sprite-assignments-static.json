@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-sprite-assignments-static-v1",
+  "summary": {
+    "writerSiteCount": 5,
+    "scriptAssignmentCount": 81,
+    "scriptAssignmentUniqueValueCount": 40,
+    "setSpriteCount": 56,
+    "newEntityCount": 18,
+    "actionSetSpriteCount": 7,
+    "scriptRegularBackedCount": 76,
+    "scriptRoutedSpecialCount": 5,
+    "scriptReservedCount": 0,
+    "updateEntityPropertiesCallerCount": 20,
+    "updatePreserveCallerCount": 12,
+    "updateAllyDerivedCallerCount": 5,
+    "updateAllyOrVehicleCallerCount": 1,
+    "updateLiteralCallerCount": 2,
+    "allyTableRowCount": 30,
+    "enemyTableRowCount": 166,
+    "initialEntityRecordCount": 980
+  },
+  "outputSha256": "6FA327C7AB0FDBA54EA92DD469FE8B2117C2D889DE5EC9FF0A91BBE5556F2C8B"
+}

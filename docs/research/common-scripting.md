@@ -104,6 +104,16 @@ table returns portrait `-1` and normal bleep 6 (74). Source reconstruction and t
 for all 478 bytes. Which call paths use that fallback and the timing of portrait suppression/audio
 remain grouped presentation questions rather than guessed semantics.
 
+The complete original map-sprite assignment surface is now statically classified. Four entity-slot
+writers plus the direct player-raft write consume 81 built script macro assignments, 20 callers of
+`UpdateEntityProperties`, 980 initial entity records, or the already-verified ally/enemy tables. The
+script payloads contain 76 backed regular values and five routed special value 255 assignments; all
+20 property-update callers either preserve the current sprite (12), use ally/vehicle derivation (6),
+or pass one of two named literals. Ally table values span 1-58 and only decrease during class
+selection; enemy table values span 52-229. Consequently no original built input domain writes
+237-250. Raw RAM, malformed scripts, and corrupt combatant state remain nonstandard injection cases,
+not normal-game reachability unknowns.
+
 `map/mapsetupsfunctions_1.asm` and `map/mapfunctions.asm` now have deeper cross-subsystem contracts:
 setup selection, six-pointer layout, entity/zone/item/description dispatcher shapes, all selected
 entity record streams, the complete entity/zone/item event-table boundary, and all area-description
@@ -116,10 +126,11 @@ general scripting engine; the map-data document owns setup-table semantics.
 Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
 dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and
-observation buffers rather than becoming one emulator launch per opcode. Symbolic reference search
-for reserved map-sprite IDs 237-250 and the complete 980-record initial map-entity decode are both
-clear; later scripted, combatant-derived, and direct runtime writes are the remaining static frontier
-before one shared entity-sprite matrix. This batch adds no emulator run.
+observation buffers rather than becoming one emulator launch per opcode. Reserved map-sprite IDs
+237-250 are now excluded from symbolic references, encoded entity records, built script payloads,
+combatant-derived tables, direct writers, and every property-update caller. A future shared
+entity-sprite matrix is only needed if the project chooses to document deliberately malformed/raw
+injection behavior. This batch adds no emulator run.
 
 ## Reproduction
 
@@ -136,6 +147,7 @@ uv run sf2 h2 variable-width-font
 uv run sf2 h2 text-huffman
 uv run sf2 h2 text-banks
 uv run sf2 h2 enemy-map-sprites
+uv run sf2 h2 map-sprite-assignments
 uv run sf2 h2 sprite-dialogue
 uv run sf2 research-index test
 ```
@@ -144,3 +156,4 @@ Generated JSON stays under ignored `local/derived/common-scripting-static.json` 
 `local/derived/variable-width-font-static.json` and `local/derived/text-huffman-static.json`.
 The full decoded symbol corpus stays in ignored `local/derived/text-banks-static.json`.
 The full dialogue-property catalog stays in ignored `local/derived/sprite-dialogue-static.json`.
+The full assignment/caller catalog stays in ignored `local/derived/map-sprite-assignments-static.json`.
