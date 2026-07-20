@@ -178,6 +178,21 @@
           "ymFrequencyShiftStateOffset":29
         }
       },
+      "sampleModel": {
+        "summary": {
+          "tableEntryCount":17, "musicInvocationCount":1559,
+          "musicUsedSampleCount":6, "minimumMusicSampleIndex":0,
+          "maximumMusicSampleIndex":5, "musicUnusedTableEntryCount":11
+        },
+        "musicInvocationCounts": [
+          {"sampleIndex":0,"invocationCount":88},
+          {"sampleIndex":1,"invocationCount":33},
+          {"sampleIndex":2,"invocationCount":360},
+          {"sampleIndex":3,"invocationCount":572},
+          {"sampleIndex":4,"invocationCount":402},
+          {"sampleIndex":5,"invocationCount":104}
+        ]
+      },
       "bankSelection": {
         "enumSourcePath":"sf2enums.asm",
         "enumSourceSha256":"ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",

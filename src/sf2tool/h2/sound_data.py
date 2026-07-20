@@ -650,6 +650,70 @@ def _music_frequency_contract(sources: dict[str, str], driver_source: str) -> di
     }
 
 
+def _music_sample_contract(
+    sources: dict[str, str], driver_source: str, rom: bytes
+) -> dict[str, Any]:
+    section = driver_source.split("t_SAMPLE_LOAD_DATA:", 1)[1].split("pt_SFX:", 1)[0]
+    entries = []
+    for raw_line in section.splitlines():
+        line = raw_line.split(";", 1)[0].strip()
+        match = re.match(r"^(?:db\s+)?(.+)$", line)
+        if match is None:
+            continue
+        entry_text = match.group(1)
+        values = [value.strip() for value in entry_text.split(",")]
+        if len(values) != 8:
+            continue
+        parsed = [_parse_asm_int(value) for value in values]
+        frame_period, ignored_1, bank, ignored_3, length_lo, length_hi, ptr_lo, ptr_hi = parsed
+        length = length_lo | (length_hi << 8)
+        pointer = ptr_lo | (ptr_hi << 8)
+        rom_offset = 0x1E0000 + bank * 0x8000 + pointer - BANK_ORIGIN
+        if ignored_1 or ignored_3 or bank not in (0, 1):
+            raise ValueError("DAC sample load-table field boundary drift")
+        if not 0x1E0000 <= rom_offset < rom_offset + length <= 0x1F0000:
+            raise ValueError("DAC sample ROM range boundary drift")
+        entries.append(
+            {
+                "sampleIndex": len(entries),
+                "framePeriod": frame_period,
+                "bank": bank,
+                "lengthBytes": length,
+                "pointerZ80Address": pointer,
+                "romOffset": rom_offset,
+                "romEndOffset": rom_offset + length,
+                "payloadSha256": _sha256(rom[rom_offset : rom_offset + length]),
+            }
+        )
+    if len(entries) != 17:
+        raise ValueError("DAC sample load-table entry-count drift")
+
+    uses: Counter[int] = Counter()
+    for source_path, source in sources.items():
+        if not re.search(r"/music\d+\.asm$", source_path):
+            continue
+        for match in re.finditer(r"^\s*sampleL?\s+([^,\s]+)", source, re.MULTILINE):
+            index = _parse_asm_int(match.group(1))
+            if not 0 <= index < len(entries):
+                raise ValueError(f"music DAC sample index outside load table: {index}")
+            uses[index] += 1
+    return {
+        "summary": {
+            "tableEntryCount": len(entries),
+            "musicInvocationCount": sum(uses.values()),
+            "musicUsedSampleCount": len(uses),
+            "minimumMusicSampleIndex": min(uses),
+            "maximumMusicSampleIndex": max(uses),
+            "musicUnusedTableEntryCount": len(entries) - len(uses),
+        },
+        "musicInvocationCounts": [
+            {"sampleIndex": index, "invocationCount": count}
+            for index, count in sorted(uses.items())
+        ],
+        "entries": entries,
+    }
+
+
 def _fixed_opcode_families(
     macro_definitions: list[dict[str, Any]],
 ) -> tuple[dict[str, list[str]], list[str]]:
@@ -902,6 +966,7 @@ def build_sound_data_inventory(rom_path: Path, upstream_path: Path) -> dict[str,
         sources, bank_payloads, enum_source
     )
     command_model["frequencyModel"] = _music_frequency_contract(sources, driver_source)
+    command_model["sampleModel"] = _music_sample_contract(sources, driver_source, rom)
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -1024,6 +1089,11 @@ def verify_sound_data_inventory(
         for field in ("summary", "tableSha256", "rawOutsideTableUses"):
             if frequency[family][field] != expected_frequency[family][field]:
                 raise ValueError(f"sound data {family}-frequency {field} drift")
+    sample_model = output["commandModel"]["sampleModel"]
+    expected_samples = fixture["expected"]["commandModel"]["sampleModel"]
+    for field in ("summary", "musicInvocationCounts"):
+        if sample_model[field] != expected_samples[field]:
+            raise ValueError(f"sound data sample-model {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("sound data canonical hash drift")

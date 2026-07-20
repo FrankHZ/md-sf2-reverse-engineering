@@ -156,6 +156,7 @@ the complete original built map-sprite assignment domains and reserved-ID exclus
 the complete two-bank/37-song Z80 music source/range/pointer/ROM, 29-macro command corpus, and
 39-header/five-parser/shared-loop/ten-slot channel-role/64-command bank-selection static driver
 contract and the 84-entry YM/64-entry PSG frequency tables with complete note-call audit, plus
+the 17-entry DAC load table with complete music sample-call audit, plus
 the complete map-script dispatcher/macro/handler/source-use inventory, plus
 the complete shared battle player-input/cursor function inventory and static menu/item/chest contract, plus
 the complete shared/distributed entity-action command/control-flow/reference corpus,

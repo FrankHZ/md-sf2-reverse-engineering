@@ -2,6 +2,7 @@ from sf2tool.h2.sound_data import (
     _fixed_opcode_families,
     _music_bank_selection_contract,
     _music_frequency_contract,
+    _music_sample_contract,
     _parse_music_macros,
     _song_command_row,
 )
@@ -149,3 +150,22 @@ def test_music_frequency_contract_parses_overlapping_ym_table() -> None:
     assert contract["ym"]["summary"]["rawIndexOutsideTableInvocationCount"] == 0
     assert contract["psg"]["summary"]["rawIndexOutsideTableInvocationCount"] == 0
     assert contract["macroInvocationCounts"] == {"note": 1, "psgNote": 1}
+
+
+def test_music_sample_contract_maps_table_and_song_uses() -> None:
+    driver_source = (
+        "t_SAMPLE_LOAD_DATA: db 1,0,0,0,1,0,0,80h\n"
+        + "db 1,0,0,0,1,0,0,80h\n" * 16
+        + "pt_SFX: dw 0\n"
+    )
+    sources = {"data/sound/musicbank0/music01.asm": "sample 0\nsampleL 1,4\n"}
+
+    contract = _music_sample_contract(sources, driver_source, bytes(0x200000))
+
+    assert contract["summary"]["tableEntryCount"] == 17
+    assert contract["summary"]["musicInvocationCount"] == 2
+    assert contract["musicInvocationCounts"] == [
+        {"sampleIndex": 0, "invocationCount": 1},
+        {"sampleIndex": 1, "invocationCount": 1},
+    ]
+    assert contract["entries"][0]["romOffset"] == 0x1E0000

@@ -36,7 +36,7 @@ bindings, and a 29-macro/39,290-invocation source grammar tied to five driver pa
 loop state machine, with all 390 channel slots and zero incompatible macro/role uses audited, plus
 all 39 four-byte music headers and the complete 64-slot/two-bank command-selection map with no
 cross-bank fallback, and the 84-entry YM/64-entry PSG frequency tables bound to 21,841 note calls,
-plus 281 fixed
+plus the 17-entry DAC load table bound to 1,559 music sample calls, plus 281 fixed
 ally/class/item/spell records, five 29-point growth curves, 59 class-growth records, 122 spell-learn
 entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 enemy-drop entries,
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,

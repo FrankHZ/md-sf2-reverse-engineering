@@ -25,7 +25,8 @@ loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro �
 零越界；64 个 music command slot 的双 bank 选择、39 个唯一目标和静态零 fallback 也已闭合，
 39 个四字节控制头进一步确认 19 个 DAC-enabled / 20 个 DAC-disabled entry 与 19 种 Timer B
 值。84 项 YM / 64 项 PSG 频率表已绑定全部 21,841 次 note 调用；其中 197 次高 PSG note
-必须结合 `$1C` shifting 状态解释，实际播放时序仍留在集中运行矩阵。
+必须结合 `$1C` shifting 状态解释。17 项 DAC load table 也绑定 1,559 次音乐 sample 调用，
+实际播放时序仍留在集中运行矩阵。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：

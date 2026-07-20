@@ -85,6 +85,18 @@ interpreting per-channel control flow and shift state; the static inventory pres
 count groups instead of assuming a zero shift. YM additionally applies byte `$1D` after table lookup
 as a frequency offset.
 
+## DAC Sample Load Table
+
+The driver's `t_SAMPLE_LOAD_DATA` has 17 eight-byte entries. Each row stores a PCM frame-period byte,
+two zero/reserved bytes, a bank selector, a little-endian length, and a little-endian Z80-window
+pointer. All derived ranges stay inside the selected `0x1E0000`/`0x1E8000` 32 KiB ROM bank; the
+inventory records only metadata and payload hashes, never PCM bytes.
+
+The 1,559 `sample`/`sampleL` calls in music use only indices 0–5, with counts 88, 33, 360, 572, 402,
+and 104. The remaining eleven rows are outside the music corpus and may serve SFX or alternate rates.
+Index bounds and ROM ranges are confirmed statically; translating the frame-period byte into audible
+sample rate remains part of the shared timing observation.
+
 ## Static Command Corpus
 
 `musicmacros.asm` defines 29 byte-emitting macros; every definition occurs in the song corpus and ten
@@ -140,8 +152,8 @@ file, the four symbol-less music support/entry sources, and explicit alternates/
 ## Concentrated Queue
 
 No emulator was launched. Remaining questions are grouped as the 197 effective shifted PSG indices,
-sample frequency plus live channel state, and Timer-B/loop/instrument timing. They should be tested
-together through the sound-command boundary rather than one launch per opcode.
+DAC frame-period/sample rate plus live channel state, and Timer-B/loop/instrument timing. They should
+be tested together through the sound-command boundary rather than one launch per opcode.
 
 ## Reproduction
 
