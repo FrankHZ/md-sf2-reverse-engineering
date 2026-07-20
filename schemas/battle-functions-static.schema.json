@@ -2,16 +2,18 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II shared battle functions static inventory",
   "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "functionFacts", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "function", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "functionFacts", "playerControl", "files"],
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-functions-static-v1" },
     "upstream": { "type": "object" }, "scope": { "const": "code/gameflow/battle/battlefunctions" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 7 }, "indexedRecordCount": { "const": 7 }, "indexedFileCount": { "const": 7 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
+    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "playerControlFunctionCount", "playerControlStatementCount", "playerControlBranchSiteCount", "playerControlGlobalStateCount"], "properties": { "fileCount": { "const": 7 }, "indexedRecordCount": { "const": 13 }, "indexedFileCount": { "const": 7 } } },
+    "function": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+    "indexedRecordIds": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
     "indexedSourcePaths": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
     "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
     "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
     "functionFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
+    "playerControl": { "type": "object", "required": ["summary", "selectedCallEdges", "globalStates", "inputBits", "battleActionConstants", "menuConstants", "functions", "behaviorFacts"] },
     "files": { "type": "array", "minItems": 7, "maxItems": 7 }
   }
 }

@@ -1,9 +1,12 @@
 # Shared Battle Functions
 
-- Status: **Confirmed** for the pinned seven-file inventory, individual-turn control routing, Kiwi
-  Flame Breath conversion, Egress/Angel Wing exits, battle load ordering, and move-SFX selection
-- Status: **Inferred** for cursor/pulsating-grid helper roles based only on upstream names/comments
-- Status: **Unknown** for the deeper player-input/cursor state machine and runtime presentation timing
+- Status: **Confirmed (static)** for the pinned seven-file inventory, individual-turn control
+  routing, Kiwi Flame Breath conversion, Egress/Angel Wing exits, battle load ordering, move-SFX
+  selection, and the selected player-input/cursor/menu control-flow contract
+- Status: **Inferred** for unmodeled pulsating-grid presentation helper roles based on upstream
+  names/comments
+- Status: **Unknown** for runtime input timing, frame/presentation behavior, and remaining ailment
+  subroutes
 - Evidence date: 2026-07-18
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -28,8 +31,31 @@ a good candidate for a future grouped special-action runtime matrix rather than 
 VInts, terrain decompression, music, then fade-in; Fairy Woods additionally opens its timer. Move SFX
 is zero outside battle and walking in battle, but Chirrup Sandals override either state with BLOAB.
 
-The large cursor/grid and player-input files are hash/call inventoried, but their deeper branch state
-machine is explicitly queued for subsequent static passes.
+## Confirmed Player-Control State Machine
+
+The H2 extractor now owns six entry points across nine source ranges: `ControlCursorEntity`,
+`ControlCursorEntity_ChooseTarget`, `SetCursorDestinationToNextBattleEntity`,
+`ProcessBattleEntityControlPlayerInput` plus its three split function chunks, `BattlefieldMenu`, and
+`PerformAiTargetingVisualAct`. Their 1,039 parsed statements contain 231 branch sites, 207 direct
+call sites to 84 unique targets, 59 referenced global states, and all eight directional/action input
+bits. Six H1 symbol addresses bind the catalog back to the rebuilt ROM listing.
+
+Static instruction order confirms these implementation-neutral decisions:
+
+- cursor movement accepts A, B, or C as tile confirmation, stores the chosen coordinates, and hides
+  the cursor;
+- target selection returns `-1` for an empty list, uses B to cancel and A/C to confirm, wraps through
+  candidates in all four directions, and returns a combatant index;
+- the battle diamond menu selects attack, magic, item, or search/stay; cancel restores the original
+  position and leaves action `-1`; committed outcomes include attack, spell, item, stay, and trapped
+  chest, while the item menu indices are use, give, equip, and drop;
+- the battlefield menu selects members, minimap, options, or suspend. Battle 0 rejects suspend;
+  normal suspend copies the seconds counter, sets flag 88, saves, and transfers to `WitchSuspend`,
+  while the debug Start path returns to the menu after saving.
+
+These are deterministic source-shape and branch-order facts, not emulator evidence about key-repeat
+cadence, animation duration, VInt timing, or on-screen presentation. Those questions remain grouped
+for a later shared BizHawk matrix rather than one launch per branch.
 
 ## Reproduction
 

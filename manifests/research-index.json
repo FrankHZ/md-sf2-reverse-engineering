@@ -244,6 +244,30 @@
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 153488 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.setMoveSfxAddress" }] }], "documents": ["docs/research/battle-functions.md"]
     },
     {
+      "id": "battle.functions.control-cursor", "subsystem": "battle.functions", "status": "confirmed", "symbol": "ControlCursorEntity", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 142736 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.controlCursorAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.choose-target", "subsystem": "battle.functions", "status": "confirmed", "symbol": "ControlCursorEntity_ChooseTarget", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 143586 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.chooseTargetAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.set-cursor-target", "subsystem": "battle.functions", "status": "confirmed", "symbol": "SetCursorDestinationToNextBattleEntity", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 144060 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.setCursorTargetAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.player-input", "subsystem": "battle.functions", "status": "confirmed", "symbol": "ProcessBattleEntityControlPlayerInput", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 149090 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.processPlayerInputAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.battlefield-menu", "subsystem": "battle.functions", "status": "confirmed", "symbol": "BattlefieldMenu", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 151966 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.battlefieldMenuAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
+      "id": "battle.functions.ai-target-visual", "subsystem": "battle.functions", "status": "confirmed", "symbol": "PerformAiTargetingVisualAct", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 152718 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-functions-static-v1.json", "fixtureId": "sf2-battle-functions-static-v1", "verifier": "src/sf2tool/h2/battle_functions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.aiTargetVisualAddress" }] }], "documents": ["docs/research/battle-functions.md"]
+    },
+    {
       "id": "battle.combatant.get-enemy",
       "subsystem": "battle.combatant",
       "status": "confirmed",

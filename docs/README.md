@@ -63,7 +63,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-actions.md`](./research/battle-actions.md)：战斗动作 29 文件完整静态 inventory、动作管线、
   物理分支顺序、物品损坏、Taros 特例和目标排序合同。
 - [`battle-functions.md`](./research/battle-functions.md)：共享战斗函数 7 文件 inventory、单回合控制、
-  Kiwi 火焰、EGRESS/Angel Wing、battle load 和移动音效合同。
+  Kiwi 火焰、EGRESS/Angel Wing、battle load、移动音效，以及 6 个 player-control/cursor/menu
+  入口的静态状态机合同。
 - [`battle-scene-engine.md`](./research/battle-scene-engine.md)：battle scene 根引擎 12 文件和动画
   实现 55 文件、21 条 scene-script 命令、初始化/选择器、32×2 setup/update 配对，以及完整
   87 ally/121 enemy battle-sprite sequence 和 421 条 frame entry 合同。
