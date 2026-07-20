@@ -71,7 +71,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   10 文件路由、flag 准入、leader-death position 准备和 map-script 调度。
 - [`common-scripting.md`](./research/common-scripting.md)：entity/map/text/credits 的 29 文件
   inventory、90/80 槽解释器、完整 255-entry/86-tree/1,536-leaf context-Huffman corpus、
-  80-glyph variable-width font/256-entry ASCII map 数据流和无标签废弃数据边界。
+  17-bank/4,267-string/152,679-symbol 静态解码、80-glyph variable-width font/256-entry ASCII
+  map 数据流和无标签废弃数据边界。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、

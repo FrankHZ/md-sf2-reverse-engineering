@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-text-banks-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "table": {
+    "TextBank00": 191284, "TextBank01": 195383, "TextBank02": 199252,
+    "TextBank03": 205630, "TextBank04": 211005, "TextBank05": 215855,
+    "TextBank06": 221074, "TextBank07": 225840, "TextBank08": 230667,
+    "TextBank09": 235345, "TextBank10": 239727, "TextBank11": 244289,
+    "TextBank12": 248653, "TextBank13": 253297, "TextBank14": 258419,
+    "TextBank15": 263032, "TextBank16": 267550,
+    "pt_TextBanks": 270298, "p_pt_TextBanks": 163840
+  },
+  "summary": {
+    "bankCount": 17, "fullBankCount": 16, "partialBankCount": 1,
+    "stringCount": 4267, "bankByteCount": 79013, "lengthPrefixByteCount": 4267,
+    "compressedPayloadByteCount": 74746, "decodedSymbolCount": 152679,
+    "decodedNonTerminatorSymbolCount": 148412, "distinctDecodedSymbolCount": 86,
+    "controlSymbolCountIncludingTerminators": 13050,
+    "controlSymbolCountExcludingTerminators": 8783, "terminatorCount": 4267,
+    "minimumCompressedByteCount": 3, "maximumCompressedByteCount": 116,
+    "minimumDecodedSymbolCount": 2, "maximumDecodedSymbolCount": 243,
+    "minimumTrailingBitCount": 8, "maximumTrailingBitCount": 15,
+    "pointerTableByteCount": 68, "alignmentByteCount": 1, "topPointerByteCount": 4,
+    "sourceRomParityByteCount": 79086
+  },
+  "pointerFacts": {
+    "pointerTableSymbol": "pt_TextBanks", "pointerTableAddress": 270298,
+    "pointerCount": 17,
+    "pointerTableSha256": "EF567A87CF10620BC79DF76B4629279765F3E0259D05AC4C77CAE9BF09B89B1E",
+    "topPointerSymbol": "p_pt_TextBanks", "topPointerAddress": 163840,
+    "topPointerSha256": "EC2DEF35F25D21B46C72457BCD76DDDEDCF35F432790ACC0CBB3A42A451B17E2",
+    "bankSelectionFormula": "bank=(stringIndex>>8); withinBank=stringIndex&255",
+    "recordSelectionFormula": "advance 1+lengthByte for each preceding record"
+  },
+  "gamescriptFacts": {
+    "sourcePath": "data/scripting/text/gamescript.txt", "byteCount": 203862,
+    "lineIdCount": 4267, "firstLineId": 0, "lastLineId": 4266,
+    "idsAreContiguous": true,
+    "sha256": "14EB069436F9F77081AAFF6125312A9C277CB24255BE5F0D1EF108AF53AEA205"
+  },
+  "histogramFacts": {
+    "lengthPrefixHistogramSha256": "1DD4F62319670E744EDC1260340FEE93F46412CD9F4B0C6CC506BE3E2DA2670B",
+    "trailingBitHistogram": { "8": 557, "9": 546, "10": 560, "11": 531, "12": 522, "13": 535, "14": 536, "15": 480 },
+    "controlSymbolHistogram": { "238": 4, "239": 3616, "240": 92, "241": 69, "242": 185, "243": 325, "244": 77, "245": 14, "246": 7, "247": 1143, "248": 73, "249": 35, "250": 2845, "251": 77, "252": 221, "253": 0, "254": 4267 },
+    "decodedSymbolHistogramSha256": "A34642FB0ADFE5F9603CDAB24EDB706C0B820F9117A2594B5186B2697BA388E0"
+  },
+  "bankFacts": [
+    { "bankIndex": 0, "symbol": "TextBank00", "address": 191284, "byteCount": 4099, "stringCount": 256, "payloadByteCount": 3843, "decodedSymbolCount": 7547, "inputBitCount": 27880, "sourceSha256": "F5C93C25C6A09B9D864B1891EB631CABCD4E58F27EBE0DAEC17D1DFF01A4062A", "decodedSymbolsSha256": "7FE39D1DA5466E9FB0467345D16A9908E39D4B9F0B4DFAC9961EE8601BA5EFC6" },
+    { "bankIndex": 1, "symbol": "TextBank01", "address": 195383, "byteCount": 3869, "stringCount": 256, "payloadByteCount": 3613, "decodedSymbolCount": 6784, "inputBitCount": 26018, "sourceSha256": "2F7BB428AB311C8702D4BE0108339E60B7D1A7226F0DEFC2858DFDF2F84C7FBE", "decodedSymbolsSha256": "3EAD06AB1B27F85FBF123D7DAD6EAFC7FA3B8F36A8674E994B93FD1499D85F93" },
+    { "bankIndex": 2, "symbol": "TextBank02", "address": 199252, "byteCount": 6378, "stringCount": 256, "payloadByteCount": 6122, "decodedSymbolCount": 12918, "inputBitCount": 46055, "sourceSha256": "0AFB8B1E66EDE4CEE95F52E7CE539E73A94F72A4F9F2461332B77CCA7E3671F8", "decodedSymbolsSha256": "ECA262BAE40BBD2323F6D7000F9350E948AE40E2C4380F7C366CB29BC6A05021" },
+    { "bankIndex": 3, "symbol": "TextBank03", "address": 205630, "byteCount": 5375, "stringCount": 256, "payloadByteCount": 5119, "decodedSymbolCount": 10674, "inputBitCount": 37983, "sourceSha256": "09BF5DD465B9FED96643EAA131B04911B26FD7A41791A4AEDD51570CBA764D6A", "decodedSymbolsSha256": "9A4AF9FCBD7484A65DBCC305BE0450E2D535C35096376B36FE1B9CAF6B1B7C37" },
+    { "bankIndex": 4, "symbol": "TextBank04", "address": 211005, "byteCount": 4850, "stringCount": 256, "payloadByteCount": 4594, "decodedSymbolCount": 9521, "inputBitCount": 33806, "sourceSha256": "AC2CA5A8FF404038B3256980A8809C44B079DE4D60B21CA190F1ED641548F8B3", "decodedSymbolsSha256": "D133D781D957CA44DB7B95696282B54C4C13C6E0B1A6BF31DCD7613F4E3A9AC2" },
+    { "bankIndex": 5, "symbol": "TextBank05", "address": 215855, "byteCount": 5219, "stringCount": 256, "payloadByteCount": 4963, "decodedSymbolCount": 10322, "inputBitCount": 36775, "sourceSha256": "F06D20D0BE87A42F9826F7FF266D4DF69D79391089B6D6972DAA5DCF8DF6238D", "decodedSymbolsSha256": "C7B264B33D3DCDB707DCD7D7C77A267E7FC6FE5384B35DE55E6BF5203B94EE1E" },
+    { "bankIndex": 6, "symbol": "TextBank06", "address": 221074, "byteCount": 4766, "stringCount": 256, "payloadByteCount": 4510, "decodedSymbolCount": 9288, "inputBitCount": 33207, "sourceSha256": "8B9E2CF33C24F6CC5D1035EB215BF0601340E63D0DBDFF054CF9A5354B863834", "decodedSymbolsSha256": "E4CC02C073E682BD43AED08A3001F699AC3A176E4F16D4729E9F5E360AF67EB2" },
+    { "bankIndex": 7, "symbol": "TextBank07", "address": 225840, "byteCount": 4827, "stringCount": 256, "payloadByteCount": 4571, "decodedSymbolCount": 9296, "inputBitCount": 33577, "sourceSha256": "C89E472B9FF34F5F549980D29FDE6AE67F1BB4D6CB9635E2AF171A5FC8448939", "decodedSymbolsSha256": "F796DBBAF16DE13E99744D8CE8B215E2EB4C9930A61480BECD8F44FE2C178101" },
+    { "bankIndex": 8, "symbol": "TextBank08", "address": 230667, "byteCount": 4678, "stringCount": 256, "payloadByteCount": 4422, "decodedSymbolCount": 9147, "inputBitCount": 32424, "sourceSha256": "9982A0041A0A65985B13AB244195F9172ABB2A4824F5EF74F92493CE5CEE9639", "decodedSymbolsSha256": "EEDEA6AAB53BBCE537608DCB4B7B364CA04CEAA72895D1B69AB093744556C79F" },
+    { "bankIndex": 9, "symbol": "TextBank09", "address": 235345, "byteCount": 4382, "stringCount": 256, "payloadByteCount": 4126, "decodedSymbolCount": 8555, "inputBitCount": 30106, "sourceSha256": "EDE469EB90371AAE7B5A8CA59C7512449092D98772AF0E181904B1A3914AA25A", "decodedSymbolsSha256": "945CC585D7E84DC9801982F098892DE8F57DE72776F407802CB238D8676AAA5A" },
+    { "bankIndex": 10, "symbol": "TextBank10", "address": 239727, "byteCount": 4562, "stringCount": 256, "payloadByteCount": 4306, "decodedSymbolCount": 8913, "inputBitCount": 31485, "sourceSha256": "79A59D3678A7ABB9204521938F6AFB7AD233F33D4327566F83CA484D79093E2B", "decodedSymbolsSha256": "48B9247ABAB48DBF888462DDC6A4D4F67308A676759DBCFA0BAC06CB311CAE0C" },
+    { "bankIndex": 11, "symbol": "TextBank11", "address": 244289, "byteCount": 4364, "stringCount": 256, "payloadByteCount": 4108, "decodedSymbolCount": 8535, "inputBitCount": 29987, "sourceSha256": "10C9C56E1CC13825A482C9A73931909308E1CB1747E497CC34F024B03DC489E0", "decodedSymbolsSha256": "CCACF57E051D60AB5D7A3B5D25C56558A03325707472CBC150DC3F6B5E1294B4" },
+    { "bankIndex": 12, "symbol": "TextBank12", "address": 248653, "byteCount": 4644, "stringCount": 256, "payloadByteCount": 4388, "decodedSymbolCount": 9085, "inputBitCount": 32147, "sourceSha256": "DEDB94C32D92A9080666C3FB7F90F675B0996BBA0CBCBC3DF41508A7000A385B", "decodedSymbolsSha256": "A2A082FB07793B04B7DFF221D72DC65ECBF9615E6E57984D95BC2C6262D084B3" },
+    { "bankIndex": 13, "symbol": "TextBank13", "address": 253297, "byteCount": 5122, "stringCount": 256, "payloadByteCount": 4866, "decodedSymbolCount": 10022, "inputBitCount": 35988, "sourceSha256": "4522E535D175FC523637BA46D4AEEC50E05A6C7787CFEA766E28E731E4046DC8", "decodedSymbolsSha256": "FF18BEF432C00435A9EE879FA5D5A7DDDE8CE9EA40FC10579588D0F816531DE7" },
+    { "bankIndex": 14, "symbol": "TextBank14", "address": 258419, "byteCount": 4613, "stringCount": 256, "payloadByteCount": 4357, "decodedSymbolCount": 8899, "inputBitCount": 31946, "sourceSha256": "7470B4C6E8256681871EDB163E8CC7268E6D1C358090EE10FF025A9B407E967A", "decodedSymbolsSha256": "01E68306531D2EB3F3918AC981AA09D985C393FCB8C805EB4D682E95AE286A61" },
+    { "bankIndex": 15, "symbol": "TextBank15", "address": 263032, "byteCount": 4518, "stringCount": 256, "payloadByteCount": 4262, "decodedSymbolCount": 8384, "inputBitCount": 31110, "sourceSha256": "BF191ED19975939D7D840D9E3449F117EE2ADCF254EC0A41293AB6060D999757", "decodedSymbolsSha256": "82EFE6CE08325A6731CFCA553C21B6E475A8F1EEFFCE1E868E97E760348365BA" },
+    { "bankIndex": 16, "symbol": "TextBank16", "address": 267550, "byteCount": 2747, "stringCount": 171, "payloadByteCount": 2576, "decodedSymbolCount": 4789, "inputBitCount": 18740, "sourceSha256": "397C4F476185FE1D73C1304BAFE973A0A6EE35FD5B873A5B41B36A2883E9B606", "decodedSymbolsSha256": "0BB164E600626BD547AA11DB85587D27AF88097557A749115E741E18A5C02862" }
+  ],
+  "copyrightBoundary": {
+    "trackedFixtureContainsPlaintext": false,
+    "generatedDecodedSymbolsStayUnderIgnoredLocalRoot": true,
+    "gamescriptPlaintextIsHashedButNotCopied": true
+  },
+  "runtimeQuestions": [
+    "Do all control-code side effects, parameters, waits, window state, and inserted names/items/spells reproduce the original presentation for the decoded corpus?",
+    "Can the statically unreferenced color control symbol 253 or any nonstandard direct text input be reached outside the 4,267 original bank records?"
+  ]
+}

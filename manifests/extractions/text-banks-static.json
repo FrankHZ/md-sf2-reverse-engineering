@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-text-banks-static-v1",
+  "outputSha256": "443BD61BA2FE20059C4D21A88FDA2D2B57FB68D50F7F422C45E9AA866AE58ACC",
+  "summary": {
+    "bankCount": 17, "fullBankCount": 16, "partialBankCount": 1,
+    "stringCount": 4267, "bankByteCount": 79013, "lengthPrefixByteCount": 4267,
+    "compressedPayloadByteCount": 74746, "decodedSymbolCount": 152679,
+    "decodedNonTerminatorSymbolCount": 148412, "distinctDecodedSymbolCount": 86,
+    "controlSymbolCountIncludingTerminators": 13050,
+    "controlSymbolCountExcludingTerminators": 8783, "terminatorCount": 4267,
+    "minimumCompressedByteCount": 3, "maximumCompressedByteCount": 116,
+    "minimumDecodedSymbolCount": 2, "maximumDecodedSymbolCount": 243,
+    "minimumTrailingBitCount": 8, "maximumTrailingBitCount": 15,
+    "pointerTableByteCount": 68, "alignmentByteCount": 1, "topPointerByteCount": 4,
+    "sourceRomParityByteCount": 79086
+  }
+}

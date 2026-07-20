@@ -2,7 +2,7 @@
 
 - Status: **Confirmed** for the pinned 29-file inventory, 90-slot map-script and 80-slot entity-script
   dispatch tables, interpreter admission/termination rules, text-bank selection, complete context-
-  Huffman tree corpus and
+  Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, plus the complete variable-width font,
   ASCII conversion, pointer, and glyph-loader data path
 - Status: **Inferred** for named helper intent where only call structure is modeled
@@ -50,6 +50,20 @@ the sole one-leaf tree and emits symbol 58 without consuming an input bit. Start
 all 86 defined contexts are reachable, and the emitted-symbol set equals the defined-context set, so
 no valid path selects a `$FFFF` entry. All 2,462 bytes match the H1 addresses and input ROM.
 
+The same decoder now processes the complete original text-bank corpus. Banks 0-15 contain 256
+length-prefixed records each and bank 16 contains 171, for 4,267 strings across 79,013 source bytes.
+Their 74,746 compressed payload bytes decode to 152,679 symbols, including exactly one terminator 254
+per record. Every record leaves 8-15 stored bits after its terminator, every one of the 86 defined
+Huffman contexts occurs in the real corpus, and no undefined context is selected. The 17 bank
+addresses, 68-byte pointer table, one alignment byte, and top-level pointer give 79,086 bytes of
+source/ROM parity. The adjacent `gamescript.txt` independently has contiguous IDs 0-4266; only its
+hash/count are tracked, while plaintext and per-string decoded symbol arrays remain under ignored
+`local/derived`.
+
+Control symbols 238-252 occur 8,783 times before terminators. Symbol 253, documented by the parser as
+the color command, occurs zero times in the complete original banks. That proves base-corpus absence,
+not impossibility through a nonstandard direct input or modified script.
+
 The variable-width font has 80 fixed 32-byte glyph records. Each record stores a width field followed
 by fifteen rows of twelve usable pixel bits; all header and row padding bits are zero. Stored widths
 range from 3 through 9, and `LoadVariableWidthFont` uses `(symbolId - 1) * 32`, then advances zero
@@ -82,8 +96,8 @@ general scripting engine; the map-data document owns setup-table semantics.
 
 ## Runtime Queue
 
-Entity movement timing, dialogue typewriter/render timing, full text-bank/control-code replay,
-nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
+Entity movement timing, dialogue typewriter/render timing, control-code side effects and inserted
+dynamic values, nonstandard direct symbol injection, end-credit presentation, and contextual meaning of script
 commands remain grouped runtime questions. They will share scenario setup and
 observation buffers rather than becoming one emulator launch per opcode. Symbolic reference search
 for reserved map-sprite IDs 237-250 is complete; encoded records and runtime writes are the remaining
@@ -102,8 +116,10 @@ uv run sf2 h2 map-scripts
 uv run sf2 h2 map-sprites
 uv run sf2 h2 variable-width-font
 uv run sf2 h2 text-huffman
+uv run sf2 h2 text-banks
 uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/common-scripting-static.json` and
 `local/derived/variable-width-font-static.json` and `local/derived/text-huffman-static.json`.
+The full decoded symbol corpus stays in ignored `local/derived/text-banks-static.json`.

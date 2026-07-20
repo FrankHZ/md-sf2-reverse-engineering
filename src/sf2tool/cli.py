@@ -62,6 +62,7 @@ from sf2tool.h2.special_screen_graphics import verify_special_screen_graphics_co
 from sf2tool.h2.special_screen_presentation import verify_special_screen_presentation_contract
 from sf2tool.h2.special_sprites import verify_special_sprite_contract
 from sf2tool.h2.stats import verify_stats_inventory
+from sf2tool.h2.text_banks import verify_text_banks_contract
 from sf2tool.h2.text_huffman import verify_text_huffman_contract
 from sf2tool.h2.ui_graphics import verify_ui_graphics_contract
 from sf2tool.h2.ui_layouts import verify_ui_layout_contract
@@ -433,6 +434,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_text_huffman)
     h2_text_huffman.add_argument("--output-path", type=_path)
+    h2_text_banks = h2_commands.add_parser(
+        "text-banks",
+        help="verify and decode all 17 context-Huffman text banks without tracking plaintext",
+    )
+    _add_local_paths(h2_text_banks)
+    h2_text_banks.add_argument("--output-path", type=_path)
     h2_unused_technical_assets = h2_commands.add_parser(
         "unused-tech-assets",
         help="verify the unreferenced cloud streams and base palettes retained in the ROM",
@@ -1083,6 +1090,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "text-huffman":
         print_record(
             verify_text_huffman_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "text-banks":
+        print_record(
+            verify_text_banks_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

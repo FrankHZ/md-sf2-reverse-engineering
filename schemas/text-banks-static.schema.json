@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sf2/text-banks-static.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "table", "summary", "pointerFacts", "gamescriptFacts", "lengthPrefixHistogram", "trailingBitHistogram", "controlSymbolHistogram", "decodedSymbolHistogram", "banks", "copyrightBoundary", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-text-banks-static-v1" },
+    "upstream": { "type": "object", "additionalProperties": false, "required": ["repository", "commit"], "properties": { "repository": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } } },
+    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "table": { "type": "object", "minProperties": 19, "maxProperties": 19, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "summary": { "type": "object", "minProperties": 23, "maxProperties": 23, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "pointerFacts": { "type": "object", "minProperties": 9, "maxProperties": 9 },
+    "gamescriptFacts": { "type": "object", "minProperties": 7, "maxProperties": 7 },
+    "lengthPrefixHistogram": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "trailingBitHistogram": { "type": "object", "minProperties": 8, "maxProperties": 8, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "controlSymbolHistogram": { "type": "object", "minProperties": 17, "maxProperties": 17, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "decodedSymbolHistogram": { "type": "object", "minProperties": 86, "maxProperties": 86, "additionalProperties": { "type": "integer", "minimum": 1 } },
+    "banks": { "type": "array", "minItems": 17, "maxItems": 17, "items": { "type": "object", "minProperties": 12, "maxProperties": 12 } },
+    "copyrightBoundary": { "type": "object", "minProperties": 3, "maxProperties": 3 },
+    "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } }
+  }
+}

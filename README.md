@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,467 条 confirmed finding、66 个 H2 fixture、58 个 H3 fixture
-和 1,988 个地址绑定。
+截至 2026-07-19，研究索引有 1,467 条 confirmed finding、67 个 H2 fixture、58 个 H3 fixture
+和 2,007 个地址绑定。
 按固定上游的 387 个 `disasm/code` ASM 文件作严格分母，已有可执行证据触达 381 个文件，即
 **98.45% code-file reach**；其余 6 个均为已由 H2 盘点的 alternate、unlabeled 或独立 Z80 build
 例外。这不是行/函数覆盖率，也不表示这些文件已全部理解。数据侧已开始按完整目录推进：
@@ -334,8 +334,12 @@ advance；ASCII 路径只发出 78/80 个 glyph。后续 text-Huffman rail 又�
 offset table 与 1,952-byte tree payload：86 棵定义树、1,536 个 leaf code 连续覆盖整个 payload，
 从初始 context 254 可达全部定义树且不会落入 169 个 `$FFFF` 槽。上游说明写的 256 entries 与
 实际 255 entries 的差异被显式保留；Huffman 与 ASCII 的正常输入并集仍不发出 glyph 70/71。
-完整 4,267-string/control-code replay、非标准直接 symbol 注入，以及 overlap、palette、typewriter
-timing 与 DMA 呈现，保留到共享 text-presentation matrix。
+完整 control-code side-effect replay、非标准直接 symbol 注入，以及 overlap、palette、typewriter
+timing 与 DMA 呈现，保留到共享 text-presentation matrix。随后 text-banks rail 已把语料静态部分
+闭合：17 个 bank 的 79,013 source bytes/4,267 条 length-prefixed record 解出 152,679 个 symbol，
+每条恰好一个 terminator 254，86 个已定义 context 全部在真实语料中出现，17-entry pointer table、
+top-level pointer 和总计 79,086 parity bytes 均与 ROM 一致。control 253 在原版 corpus 中出现 0 次；
+明文与逐条 symbol 只保留在 ignored 输出，仓库仅追踪聚合和 hash。
 witch-menu-graphics rail 随后补齐同一 section 6 的非压缩 presentation 数据：32-byte/16-color
 choice palette、960-byte bubble table、两个 longword pointer 和 `ExecuteWitchMainMenu`/
 `DrawWitchMenuBubble` 消费路径，共 1,000 bytes 通过 source/H1/ROM parity。bubble 表严格拆成

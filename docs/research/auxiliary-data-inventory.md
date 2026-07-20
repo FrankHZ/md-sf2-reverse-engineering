@@ -133,9 +133,16 @@ scripting inventory proves build ownership and symbol placement without redistri
 staff strings, cutscene content, or entity-action bodies. Full detail remains under ignored
 `local/derived/auxiliary-data-static.json`.
 
+The dedicated text-bank rail now goes beyond that routing boundary without tracking plaintext. All
+17 bank payloads, 4,267 length-prefixed records, 17-entry pointer table, and top-level pointer match
+ROM. Deterministic Huffman replay produces 152,679 symbols and exactly 4,267 terminators; per-bank and
+per-string material remains generated under ignored `local/derived`, while the repository retains
+only aggregate counts and hashes.
+
 The 256-byte ASCII-to-text-symbol table is now independently source/ROM-checked by the variable-width
 font rail. It reaches 78 of 80 glyph IDs and maps 145 byte values to default glyph 1; Huffman symbols
-bypass this table, so the two absent IDs are not classified as unreachable.
+bypass this table, but the complete tree and bank replay independently proves normal compressed text
+also omits glyph IDs 70 and 71. The two IDs are therefore absent from both normal input routes.
 
 ## Concentrated Queue
 
@@ -158,6 +165,7 @@ launches.
 
 ```powershell
 uv run sf2 h2 auxiliary-data
+uv run sf2 h2 text-banks
 uv run sf2 h2 battle-backgrounds
 uv run sf2 h2 battle-sprites
 uv run sf2 h2 battle-sprite-animations

@@ -23,7 +23,9 @@ generated output and protected by its hash.
 The pointer files span sections 2, 3, 6, 8, 10, 11, 12, 13, 14, 15, 16, and 17. Every global entry is
 one `dc.l` target. These tables connect names, definitions, text banks, menus, maps, backgrounds,
 battle sprites, ending resources, portraits, icons, growth data, and other section-owned content.
-The inventory proves routing identity, not the semantic correctness of every destination asset.
+The inventory proves routing identity, not the semantic correctness of every destination asset. The
+section-6 text-bank pointer now also has a deeper owner that verifies all 17 targets, the 68-byte
+pointer table, and complete 4,267-record static decode.
 
 ## Verification Boundary
 
