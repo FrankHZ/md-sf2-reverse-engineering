@@ -121,7 +121,8 @@ The current evidence is deep but narrow:
   persistence, caller-return, and presentation timing remain queued for one concentrated simulation.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory, with durable
-  media behavior retained for one grouped H3 matrix.
+  media behavior retained for one grouped H3 matrix; its six-entry input surface now binds two-port
+  raw sampling, state storage, wait helpers, 11 direct call sites, and one controller/input H3 matrix.
   Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
   order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
   remains queued for one technical runtime matrix.
@@ -216,8 +217,8 @@ The current evidence is deep but narrow:
   Remaining technical services inventory all twelve resource/sound/SRAM/input/copy/RNG files. Eleven
   main-layout files are H1-bound; the standalone Z80 source is separately assembled and H2-hashed
   without pretending it owns a 68000 listing symbol. Resource routing, overlap-copy direction,
-  controller scan shape, SRAM checksum/slot shape, and the sound build chain are static contracts;
-  hardware and timing questions remain in four grouped runtime queues.
+  controller sampling/wait shape, SRAM checksum/slot shape, and the sound build chain are static
+  contracts; hardware and timing questions remain in five grouped runtime queues.
   Startup/main-loop/exploration now binds all thirteen layout-owned files and models cold/system
   initialization, region admission, battle/exploration routing, six map-event types, entity/area
   interaction, item handoff, and event-before-action polling. Reset hardware, VInt-edge event/input

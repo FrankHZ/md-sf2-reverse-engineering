@@ -8,7 +8,7 @@
 - Status: **Inferred** for caller-visible thinking-RNG distribution and perceived delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-20
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -72,9 +72,22 @@ ROM. The owning special-screen/graphics documents retain the palette, frame-grid
 `CopyBytes` compares destination and source. It copies backward when the destination address is
 higher and forward otherwise, preserving overlapping moves in the normal memmove cases.
 
-`UpdatePlayerInputs` scans both controller data ports and stores two state bytes per controller. The
-two bounded input waits use 60 and 180 VInt iterations. Static source proves the port and loop shape;
-controller-model quirks and exact repeat perception require runtime observation.
+`input.asm` is a 158-line, six-entry H1 surface: `UpdatePlayerInputs` (`0x150E`),
+`WaitForPlayerInput` (`0x1576`), `WaitForPlayer1NewInput` (`0x1586`), `sub_15A4` (`0x15A4`),
+`WaitForInputFor1Second` (`0x15D8`), and `WaitForInputFor3Seconds` (`0x15F4`). **Confirmed:**
+`UpdatePlayerInputs` samples `DATA1` then `DATA2` at a two-byte stride, produces two inverted composed
+state bytes per port, and stores contiguous Player 1 then Player 2 raw state. Each composition writes
+TH low then high, shifts/masks `$C0`, combines a `$3F` read, and inverts before storing. The VInt repeat
+stage is owned by the technical-interrupt rail: it transforms raw input into current/last input with a
+24-frame initial delay and six-frame cadence. `WaitForPlayerInput` uses current input; the Player 1
+new-input helper requires release then press; one/three-second raw Player 1 waits have 60/180 VInt
+upper bounds and early exit. `sub_15A4` has a scratch-mask overlap counter with threshold 10. The
+comment-stripping parser finds four source-local `WaitForVInt` call sites and eleven external sites
+across nine callers: one `UpdatePlayerInputs` site and ten `WaitForPlayerInput` sites; the remaining
+four entry points have zero static direct-call sites, which does not establish runtime reachability.
+**Unknown:** hardware latency, controller-model
+and three-/six-button behavior, and player-visible repeat timing. The implementation-neutral contract
+is [`input-system.md`](../design/input-system.md).
 
 ## SRAM Save-System Contract
 
@@ -123,7 +136,8 @@ distribution and variable delay remain inferred until tested as a matrix.
 
 No emulator was launched for this batch. Five questions are retained for later grouped runs:
 
-1. controller hardware and repeat timing;
+1. one controller/input matrix: raw state A/B to last/current, new press and release/repress, held
+   24/6 repeat boundaries, 60/180 early exit/timeout, and controller-model/latency edges;
 2. SRAM signature initialization/full clear, valid/invalid checksum and occupied flags, save/copy/
    delete/reload persistence ordering, and partial-write/power-loss boundaries in one corruption
    matrix;
@@ -131,8 +145,9 @@ No emulator was launched for this batch. Five questions are retained for later g
 4. thinking-RNG caller distribution and delay boundaries.
 5. raw/computed reach plus frame/palette/VDP behavior for the nominally unused graphics resources.
 
-The SRAM cases should share one initialized save-state matrix, and audio cases should share one sound
-driver instrumentation launch. Isolated one-case fixtures are not warranted by the current evidence.
+The controller/input cases should share VInt and controller setup, SRAM cases should share one
+initialized save-state matrix, and audio cases should share one sound-driver instrumentation launch.
+Isolated one-case fixtures are not warranted by the current evidence.
 
 ## Reproduction
 

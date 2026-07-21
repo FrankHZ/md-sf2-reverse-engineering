@@ -7,7 +7,7 @@
   behavior has not been observed
 - Status: **Unknown** for Z80/VDP bus timing, DMA queue overflow behavior, visual fade timing, and
   hardware/emulator differences
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-20
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -46,9 +46,11 @@ Four fade entry points select in/out from black/white. Execution initializes all
 until VInt clears the fade setting, then waits one additional VInt. Each color component is clamped to
 its nibble range before a CRAM DMA is queued.
 
-Unchanged input is suppressed until the repeat delay reaches 24 frames. After a repeated input is
-emitted, subtracting six from the delay produces a six-frame repeat cadence. This is a static counter
-contract, not yet a controller-latency measurement.
+After `UpdatePlayerInputs` samples raw controller state, unchanged input is suppressed until the repeat
+delay reaches 24 frames. After a repeated input is emitted, subtracting six from the delay produces a
+six-frame repeat cadence. This is a VInt-derived current/last-input static counter contract, not yet a
+controller-latency measurement; the raw sampling and wait-helper boundary is in
+[`input-system.md`](../design/input-system.md).
 
 ## Trap Boundary
 

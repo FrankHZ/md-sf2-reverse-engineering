@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II remaining technical services static inventory",
   "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "resourceFacts", "soundDriverFacts", "serviceFacts", "sramFacts", "runtimeQuestions", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "resourceFacts", "soundDriverFacts", "serviceFacts", "inputFacts", "sramFacts", "runtimeQuestions", "files"],
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-services-static-v1" },
     "upstream": { "type": "object" },
@@ -25,11 +25,117 @@
     "resourceFacts": { "type": "object", "required": ["incbinDirectiveCount", "layoutSectionNumbers", "targets", "deepOwnership"] },
     "soundDriverFacts": { "type": "object", "minProperties": 11, "maxProperties": 11 },
     "serviceFacts": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+    "inputFacts": { "$ref": "#/definitions/inputFacts" },
     "sramFacts": { "$ref": "#/definitions/sramFacts" },
     "runtimeQuestions": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true },
     "files": { "type": "array", "minItems": 12, "maxItems": 12 }
   },
   "definitions": {
+    "inputFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "sourceLineCount", "functionEntries", "sourceDirectCallSiteCounts", "constants", "sampling", "waits", "heldInputSuppression", "externalDirectCallerOccurrences", "externalDirectCallSiteCounts", "runtimeQuestions"],
+      "properties": {
+        "sourcePath": { "const": "code/common/tech/input.asm" }, "sourceLineCount": { "const": 158 },
+        "functionEntries": {
+          "type": "object", "additionalProperties": false,
+          "required": ["UpdatePlayerInputs", "WaitForPlayerInput", "WaitForPlayer1NewInput", "sub_15A4", "WaitForInputFor1Second", "WaitForInputFor3Seconds"],
+          "properties": {
+            "UpdatePlayerInputs": { "const": 5390 }, "WaitForPlayerInput": { "const": 5494 },
+            "WaitForPlayer1NewInput": { "const": 5510 }, "sub_15A4": { "const": 5540 },
+            "WaitForInputFor1Second": { "const": 5592 }, "WaitForInputFor3Seconds": { "const": 5620 }
+          }
+        },
+        "sourceDirectCallSiteCounts": { "type": "object", "additionalProperties": false, "required": ["WaitForVInt"], "properties": { "WaitForVInt": { "const": 4 } } },
+        "constants": {
+          "type": "object", "additionalProperties": false, "required": ["addresses", "buttonMasks"],
+          "properties": {
+            "addresses": {
+              "type": "object", "additionalProperties": false,
+              "required": ["DATA1", "DATA2", "PLAYER_1_INPUT", "PLAYER_2_INPUT", "CURRENT_PLAYER_INPUT", "byte_FFDE9E", "byte_FFDE9F", "LAST_PLAYER_INPUT", "INPUT_REPEAT_DELAYER"],
+              "properties": {
+                "DATA1": { "const": 10551299 }, "DATA2": { "const": 10551301 },
+                "PLAYER_1_INPUT": { "const": 16768663 }, "PLAYER_2_INPUT": { "const": 16768665 },
+                "CURRENT_PLAYER_INPUT": { "const": 16768667 }, "byte_FFDE9E": { "const": 16768670 },
+                "byte_FFDE9F": { "const": 16768671 }, "LAST_PLAYER_INPUT": { "const": 16768748 },
+                "INPUT_REPEAT_DELAYER": { "const": 16768749 }
+              }
+            },
+            "buttonMasks": {
+              "type": "object", "additionalProperties": false,
+              "required": ["INPUT_UP", "INPUT_DOWN", "INPUT_LEFT", "INPUT_RIGHT", "INPUT_B", "INPUT_C", "INPUT_A", "INPUT_START"],
+              "properties": {
+                "INPUT_UP": { "const": 1 }, "INPUT_DOWN": { "const": 2 }, "INPUT_LEFT": { "const": 4 }, "INPUT_RIGHT": { "const": 8 },
+                "INPUT_B": { "const": 16 }, "INPUT_C": { "const": 32 }, "INPUT_A": { "const": 64 }, "INPUT_START": { "const": 128 }
+              }
+            }
+          }
+        },
+        "sampling": {
+          "type": "object", "additionalProperties": false,
+          "required": ["controllerPortAddresses", "controllerPortStrideBytes", "controllerCount", "rawStateBytesPerController", "rawStateStorageAddresses", "thLowWriteValue", "thHighWriteValue", "highBitsLeftShift", "highBitsMask", "lowBitsMask", "invertsComposedState", "storesTwoComposedStatesPerPort"],
+          "properties": {
+            "controllerPortAddresses": { "type": "array", "items": [{ "const": 10551299 }, { "const": 10551301 }], "minItems": 2, "maxItems": 2, "additionalItems": false },
+            "controllerPortStrideBytes": { "const": 2 }, "controllerCount": { "const": 2 }, "rawStateBytesPerController": { "const": 2 },
+            "rawStateStorageAddresses": { "type": "array", "items": [{ "const": 16768663 }, { "const": 16768665 }], "minItems": 2, "maxItems": 2, "additionalItems": false },
+            "thLowWriteValue": { "const": 0 }, "thHighWriteValue": { "const": 64 }, "highBitsLeftShift": { "const": 2 },
+            "highBitsMask": { "const": 192 }, "lowBitsMask": { "const": 63 }, "invertsComposedState": { "const": true },
+            "storesTwoComposedStatesPerPort": { "const": true }
+          }
+        },
+        "waits": {
+          "type": "object", "additionalProperties": false,
+          "required": ["recognizedButtonMask", "waitForPlayerInputUsesCurrentInput", "waitForPlayerInputReturnsWhenRecognizedInputIsNonzero", "waitForPlayer1NewInputRequiresReleaseThenRecognizedPress", "oneSecondMaximumVintWaits", "threeSecondMaximumVintWaits", "boundedWaitsReturnEarlyOnRecognizedPlayer1Input"],
+          "properties": {
+            "recognizedButtonMask": { "const": 255 }, "waitForPlayerInputUsesCurrentInput": { "const": true },
+            "waitForPlayerInputReturnsWhenRecognizedInputIsNonzero": { "const": true }, "waitForPlayer1NewInputRequiresReleaseThenRecognizedPress": { "const": true },
+            "oneSecondMaximumVintWaits": { "const": 60 }, "threeSecondMaximumVintWaits": { "const": 180 },
+            "boundedWaitsReturnEarlyOnRecognizedPlayer1Input": { "const": true }
+          }
+        },
+        "heldInputSuppression": {
+          "type": "object", "additionalProperties": false,
+          "required": ["player1AndMaskUsesScratchMaskAddress", "counterAddress", "counterThreshold", "overlapBelowThresholdClearsPlayer1Input", "zeroOverlapOrCounterAtLeastThresholdClearsScratchState"],
+          "properties": {
+            "player1AndMaskUsesScratchMaskAddress": { "const": 16768670 }, "counterAddress": { "const": 16768671 },
+            "counterThreshold": { "const": 10 }, "overlapBelowThresholdClearsPlayer1Input": { "const": true },
+            "zeroOverlapOrCounterAtLeastThresholdClearsScratchState": { "const": true }
+          }
+        },
+        "externalDirectCallerOccurrences": {
+          "type": "object", "additionalProperties": false,
+          "required": ["code/common/menus/blacksmith/blacksmithactions.asm", "code/common/menus/church/churchactions_2.asm", "code/common/menus/memberslistscreen.asm", "code/common/menus/shop/shopactions.asm", "code/common/stats/iteminventory.asm", "code/common/stats/items/itemfunctions_s7_0.asm", "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm", "code/gameflow/battle/battlefunctions/battlefunctions_0.asm", "code/gameflow/battle/battlefunctions/battlefunctions_2.asm"],
+          "properties": {
+            "code/common/menus/blacksmith/blacksmithactions.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 1 } } },
+            "code/common/menus/church/churchactions_2.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 1 } } },
+            "code/common/menus/memberslistscreen.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 1 } } },
+            "code/common/menus/shop/shopactions.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 1 } } },
+            "code/common/stats/iteminventory.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 2 } } },
+            "code/common/stats/items/itemfunctions_s7_0.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 2 } } },
+            "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm": { "type": "object", "additionalProperties": false, "required": ["UpdatePlayerInputs"], "properties": { "UpdatePlayerInputs": { "const": 1 } } },
+            "code/gameflow/battle/battlefunctions/battlefunctions_0.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 1 } } },
+            "code/gameflow/battle/battlefunctions/battlefunctions_2.asm": { "type": "object", "additionalProperties": false, "required": ["WaitForPlayerInput"], "properties": { "WaitForPlayerInput": { "const": 1 } } }
+          }
+        },
+        "externalDirectCallSiteCounts": {
+          "type": "object", "additionalProperties": false,
+          "required": ["UpdatePlayerInputs", "WaitForPlayerInput", "WaitForPlayer1NewInput", "sub_15A4", "WaitForInputFor1Second", "WaitForInputFor3Seconds"],
+          "properties": {
+            "UpdatePlayerInputs": { "const": 1 }, "WaitForPlayerInput": { "const": 10 },
+            "WaitForPlayer1NewInput": { "const": 0 }, "sub_15A4": { "const": 0 },
+            "WaitForInputFor1Second": { "const": 0 }, "WaitForInputFor3Seconds": { "const": 0 }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array", "items": [
+            { "const": "controller-input-matrix-raw-state-a-b-to-last-current" },
+            { "const": "controller-input-matrix-new-press-and-release-repress" },
+            { "const": "controller-input-matrix-held-24-frame-initial-and-6-frame-repeat" },
+            { "const": "controller-input-matrix-one-and-three-second-early-exit-and-timeout" },
+            { "const": "controller-input-matrix-three-versus-six-button-and-hardware-latency-edges" }
+          ], "minItems": 5, "maxItems": 5, "additionalItems": false
+        }
+      }
+    },
     "sramFacts": {
       "type": "object", "additionalProperties": false,
       "required": ["sourcePath", "sourceLineCount", "functionEntries", "constants", "layout", "operations", "checksum", "externalCallerOccurrences", "runtimeQuestions"],

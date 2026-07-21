@@ -202,6 +202,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
 - [`save-system.md`](./design/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
   save/load/copy/delete 静态合同，以及留给 H3 的持久化和断电边界。
+- [`input-system.md`](./design/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
+  helper 与控制器/时序未知边界。
 
 ## Decisions
 

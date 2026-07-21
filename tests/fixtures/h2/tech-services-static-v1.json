@@ -98,6 +98,98 @@
       "thinkingRngIncrement": 12345,
       "thinkingRngStoredStateBits": 8
     },
+    "inputFacts": {
+      "sourcePath": "code/common/tech/input.asm",
+      "sourceLineCount": 158,
+      "functionEntries": {
+        "UpdatePlayerInputs": 5390,
+        "WaitForPlayerInput": 5494,
+        "WaitForPlayer1NewInput": 5510,
+        "sub_15A4": 5540,
+        "WaitForInputFor1Second": 5592,
+        "WaitForInputFor3Seconds": 5620
+      },
+      "sourceDirectCallSiteCounts": { "WaitForVInt": 4 },
+      "constants": {
+        "addresses": {
+          "DATA1": 10551299,
+          "DATA2": 10551301,
+          "PLAYER_1_INPUT": 16768663,
+          "PLAYER_2_INPUT": 16768665,
+          "CURRENT_PLAYER_INPUT": 16768667,
+          "byte_FFDE9E": 16768670,
+          "byte_FFDE9F": 16768671,
+          "LAST_PLAYER_INPUT": 16768748,
+          "INPUT_REPEAT_DELAYER": 16768749
+        },
+        "buttonMasks": {
+          "INPUT_UP": 1,
+          "INPUT_DOWN": 2,
+          "INPUT_LEFT": 4,
+          "INPUT_RIGHT": 8,
+          "INPUT_B": 16,
+          "INPUT_C": 32,
+          "INPUT_A": 64,
+          "INPUT_START": 128
+        }
+      },
+      "sampling": {
+        "controllerPortAddresses": [10551299, 10551301],
+        "controllerPortStrideBytes": 2,
+        "controllerCount": 2,
+        "rawStateBytesPerController": 2,
+        "rawStateStorageAddresses": [16768663, 16768665],
+        "thLowWriteValue": 0,
+        "thHighWriteValue": 64,
+        "highBitsLeftShift": 2,
+        "highBitsMask": 192,
+        "lowBitsMask": 63,
+        "invertsComposedState": true,
+        "storesTwoComposedStatesPerPort": true
+      },
+      "waits": {
+        "recognizedButtonMask": 255,
+        "waitForPlayerInputUsesCurrentInput": true,
+        "waitForPlayerInputReturnsWhenRecognizedInputIsNonzero": true,
+        "waitForPlayer1NewInputRequiresReleaseThenRecognizedPress": true,
+        "oneSecondMaximumVintWaits": 60,
+        "threeSecondMaximumVintWaits": 180,
+        "boundedWaitsReturnEarlyOnRecognizedPlayer1Input": true
+      },
+      "heldInputSuppression": {
+        "player1AndMaskUsesScratchMaskAddress": 16768670,
+        "counterAddress": 16768671,
+        "counterThreshold": 10,
+        "overlapBelowThresholdClearsPlayer1Input": true,
+        "zeroOverlapOrCounterAtLeastThresholdClearsScratchState": true
+      },
+      "externalDirectCallerOccurrences": {
+        "code/common/menus/blacksmith/blacksmithactions.asm": { "WaitForPlayerInput": 1 },
+        "code/common/menus/church/churchactions_2.asm": { "WaitForPlayerInput": 1 },
+        "code/common/menus/memberslistscreen.asm": { "WaitForPlayerInput": 1 },
+        "code/common/menus/shop/shopactions.asm": { "WaitForPlayerInput": 1 },
+        "code/common/stats/iteminventory.asm": { "WaitForPlayerInput": 2 },
+        "code/common/stats/items/itemfunctions_s7_0.asm": { "WaitForPlayerInput": 2 },
+        "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm": { "UpdatePlayerInputs": 1 },
+        "code/gameflow/battle/battlefunctions/battlefunctions_0.asm": { "WaitForPlayerInput": 1 },
+        "code/gameflow/battle/battlefunctions/battlefunctions_2.asm": { "WaitForPlayerInput": 1 }
+      },
+      "externalDirectCallSiteCounts": {
+        "UpdatePlayerInputs": 1,
+        "WaitForPlayerInput": 10,
+        "WaitForPlayer1NewInput": 0,
+        "sub_15A4": 0,
+        "WaitForInputFor1Second": 0,
+        "WaitForInputFor3Seconds": 0
+      },
+      "runtimeQuestions": [
+        "controller-input-matrix-raw-state-a-b-to-last-current",
+        "controller-input-matrix-new-press-and-release-repress",
+        "controller-input-matrix-held-24-frame-initial-and-6-frame-repeat",
+        "controller-input-matrix-one-and-three-second-early-exit-and-timeout",
+        "controller-input-matrix-three-versus-six-button-and-hardware-latency-edges"
+      ]
+    },
     "sramFacts": {
       "sourcePath": "code/common/tech/sram/sramfunctions.asm",
       "sourceLineCount": 229,

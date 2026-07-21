@@ -31,8 +31,17 @@ SOURCE_PATHS = (
 )
 SOUND_DRIVER_PATH = Path("code/common/tech/sound/sounddriver.asm")
 SRAM_SOURCE_PATH = Path("code/common/tech/sram/sramfunctions.asm")
-SRAM_CONST_PATH = Path("sf2const.asm")
-SRAM_ENUM_PATH = Path("sf2enums.asm")
+CONST_PATH = Path("sf2const.asm")
+ENUM_PATH = Path("sf2enums.asm")
+INPUT_SOURCE_PATH = Path("code/common/tech/input.asm")
+INPUT_FUNCTIONS = (
+    "UpdatePlayerInputs",
+    "WaitForPlayerInput",
+    "WaitForPlayer1NewInput",
+    "sub_15A4",
+    "WaitForInputFor1Second",
+    "WaitForInputFor3Seconds",
+)
 SRAM_FUNCTIONS = (
     "CheckSram",
     "SaveGame",
@@ -169,10 +178,347 @@ def _read_equ_values(path: Path, names: tuple[str, ...]) -> dict[str, int]:
     return values
 
 
+def _require_input_section(
+    source: str, start_marker: str, end_marker: str, fragments: tuple[str, ...]
+) -> None:
+    start = source.find(start_marker)
+    if start < 0:
+        raise ValueError(f"input section start drift: {start_marker}")
+    end = source.find(end_marker, start + len(start_marker))
+    if end < 0:
+        raise ValueError(f"input section end drift: {end_marker}")
+    section = source[start:end]
+    missing = [fragment for fragment in fragments if fragment not in section]
+    if missing:
+        raise ValueError(f"input section semantic drift at {start_marker}: {missing}")
+
+
+def _require_input_ordered_section(
+    source: str, start_marker: str, end_marker: str, fragments: tuple[str, ...]
+) -> None:
+    start = source.find(start_marker)
+    end = source.find(end_marker, start + len(start_marker))
+    if start < 0 or end < 0:
+        raise ValueError(f"input ordered section boundary drift: {start_marker}")
+    position = start
+    for fragment in fragments:
+        position = source.find(fragment, position, end)
+        if position < 0:
+            raise ValueError(
+                f"input ordered section semantic drift at {start_marker}: {fragment}"
+            )
+        position += len(fragment)
+
+
+def _input_facts(disasm: Path, listing: str) -> dict[str, Any]:
+    source = read_upstream_text(disasm / INPUT_SOURCE_PATH)
+    addresses = _read_equ_values(
+        disasm / CONST_PATH,
+        (
+            "DATA1",
+            "DATA2",
+            "PLAYER_1_INPUT",
+            "PLAYER_2_INPUT",
+            "CURRENT_PLAYER_INPUT",
+            "byte_FFDE9E",
+            "byte_FFDE9F",
+            "LAST_PLAYER_INPUT",
+            "INPUT_REPEAT_DELAYER",
+        ),
+    )
+    masks = _read_equ_values(
+        disasm / ENUM_PATH,
+        (
+            "INPUT_UP",
+            "INPUT_DOWN",
+            "INPUT_LEFT",
+            "INPUT_RIGHT",
+            "INPUT_B",
+            "INPUT_C",
+            "INPUT_A",
+            "INPUT_START",
+        ),
+    )
+    current_input_mask = (
+        "andi.b  #INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT|INPUT_B|INPUT_C|INPUT_A|"
+        "INPUT_START,((CURRENT_PLAYER_INPUT-$1000000)).w"
+    )
+    player1_input_mask = (
+        "andi.b  #INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT|INPUT_B|INPUT_C|INPUT_A|"
+        "INPUT_START,((PLAYER_1_INPUT-$1000000)).w"
+    )
+    controller_port_stride = addresses["DATA2"] - addresses["DATA1"]
+    raw_state_group_stride = addresses["PLAYER_2_INPUT"] - addresses["PLAYER_1_INPUT"]
+    if controller_port_stride != raw_state_group_stride:
+        raise ValueError(
+            "input controller port and raw-state group stride disagree: "
+            f"{controller_port_stride} != {raw_state_group_stride}"
+        )
+    recognized_button_mask = 0
+    for value in masks.values():
+        recognized_button_mask |= value
+    _require_input_section(
+        source,
+        "UpdatePlayerInputs:",
+        "; End of function UpdatePlayerInputs",
+        (
+            "lea     ((PLAYER_1_INPUT-$1000000)).w,a5",
+            "lea     (DATA1).l,a6",
+            "bsr.s   @loc_1",
+            "addq.w  #2,a6",
+            "move.b  #0,(a6)",
+            "move.b  #$40,(a6)",
+            "lsl.b   #2,d6",
+            "andi.b  #$C0,d6",
+            "andi.b  #$3F,d7",
+            "or.b    d7,d6",
+            "not.b   d6",
+            "move.b  d6,(a5)+",
+        ),
+    )
+    _require_input_ordered_section(
+        source,
+        "UpdatePlayerInputs:",
+        "; End of function UpdatePlayerInputs",
+        (
+            "lea     ((PLAYER_1_INPUT-$1000000)).w,a5",
+            "lea     (DATA1).l,a6",
+            "bsr.s   @loc_1",
+            "addq.w  #2,a6",
+            "@loc_1:",
+            "move.b  #0,(a6)",
+            "move.b  (a6),d6",
+            "move.b  #$40,(a6)",
+            "lsl.b   #2,d6",
+            "andi.b  #$C0,d6",
+            "move.b  (a6),d7",
+            "move.b  #0,(a6)",
+            "andi.b  #$3F,d7",
+            "or.b    d7,d6",
+            "move.b  (a6),d7",
+            "move.b  #$40,(a6)",
+            "not.b   d6",
+            "move.b  d6,(a5)+",
+            "move.b  (a6),d7",
+            "move.b  #0,(a6)",
+            "move.b  (a6),d6",
+            "move.b  #$40,(a6)",
+            "lsl.b   #2,d6",
+            "andi.b  #$C0,d6",
+            "move.b  (a6),d7",
+            "move.b  #0,(a6)",
+            "andi.b  #$3F,d7",
+            "or.b    d7,d6",
+            "move.b  (a6),d7",
+            "move.b  #$40,(a6)",
+            "not.b   d6",
+            "move.b  d6,(a5)+",
+        ),
+    )
+    _require_input_section(
+        source,
+        "WaitForPlayerInput:",
+        "; End of function WaitForPlayerInput",
+        (
+            current_input_mask,
+            "bne.s   @Return",
+            "bsr.w   WaitForVInt",
+            "bra.s   WaitForPlayerInput",
+        ),
+    )
+    _require_input_ordered_section(
+        source,
+        "WaitForPlayerInput:",
+        "; End of function WaitForPlayerInput",
+        (
+            current_input_mask,
+            "bne.s   @Return",
+            "bsr.w   WaitForVInt",
+            "bra.s   WaitForPlayerInput",
+        ),
+    )
+    _require_input_section(
+        source,
+        "WaitForPlayer1NewInput:",
+        "; End of function WaitForPlayer1NewInput",
+        (
+            player1_input_mask,
+            "beq.s   @Wait",
+            "bsr.w   WaitForVInt",
+            "bra.s   WaitForPlayer1NewInput",
+            "bne.s   @Return",
+            "bra.s   @Wait",
+        ),
+    )
+    _require_input_ordered_section(
+        source,
+        "WaitForPlayer1NewInput:",
+        "; End of function WaitForPlayer1NewInput",
+        (
+            player1_input_mask,
+            "beq.s   @Wait",
+            "bsr.w   WaitForVInt",
+            "bra.s   WaitForPlayer1NewInput",
+            "@Wait:",
+            player1_input_mask,
+            "bne.s   @Return",
+            "bsr.w   WaitForVInt",
+            "bra.s   @Wait",
+        ),
+    )
+    _require_input_section(
+        source,
+        "sub_15A4:",
+        "; End of function sub_15A4",
+        (
+            "move.b  ((PLAYER_1_INPUT-$1000000)).w,d7",
+            "and.b   ((byte_FFDE9E-$1000000)).w,d7",
+            "beq.s   loc_15CA",
+            "addq.b  #1,((byte_FFDE9F-$1000000)).w",
+            "cmpi.b  #$A,d7",
+            "bcc.s   loc_15CA",
+            "clr.b   ((PLAYER_1_INPUT-$1000000)).w",
+            "clr.b   ((byte_FFDE9E-$1000000)).w",
+            "clr.b   ((byte_FFDE9F-$1000000)).w",
+        ),
+    )
+    _require_input_ordered_section(
+        source,
+        "sub_15A4:",
+        "; End of function sub_15A4",
+        (
+            "move.b  ((PLAYER_1_INPUT-$1000000)).w,d7",
+            "and.b   ((byte_FFDE9E-$1000000)).w,d7",
+            "beq.s   loc_15CA",
+            "addq.b  #1,((byte_FFDE9F-$1000000)).w",
+            "move.b  ((byte_FFDE9F-$1000000)).w,d7",
+            "cmpi.b  #$A,d7",
+            "bcc.s   loc_15CA",
+            "clr.b   ((PLAYER_1_INPUT-$1000000)).w",
+            "loc_15CA:",
+            "clr.b   ((byte_FFDE9E-$1000000)).w",
+            "clr.b   ((byte_FFDE9F-$1000000)).w",
+        ),
+    )
+    _require_input_section(
+        source,
+        "WaitForInputFor1Second:",
+        "; End of function WaitForInputFor1Second",
+        (
+            "moveq   #59,d5",
+            player1_input_mask,
+            "bne.s   @Done",
+            "bsr.w   WaitForVInt",
+            "dbf     d5,WaitForInput_Loop",
+        ),
+    )
+    _require_input_ordered_section(
+        source,
+        "WaitForInputFor1Second:",
+        "; End of function WaitForInputFor1Second",
+        (
+            "moveq   #59,d5",
+            "WaitForInput_Loop:",
+            player1_input_mask,
+            "bne.s   @Done",
+            "bsr.w   WaitForVInt",
+            "dbf     d5,WaitForInput_Loop",
+        ),
+    )
+    _require_input_section(
+        source,
+        "WaitForInputFor3Seconds:",
+        "; End of function WaitForInputFor3Seconds",
+        ("move.l  #179,d5", "bra.s   WaitForInput_Loop"),
+    )
+    _require_input_ordered_section(
+        source,
+        "WaitForInputFor3Seconds:",
+        "; End of function WaitForInputFor3Seconds",
+        ("move.l  #179,d5", "bra.s   WaitForInput_Loop"),
+    )
+
+    input_source_parse = _parse_source_file(
+        disasm / INPUT_SOURCE_PATH, INPUT_SOURCE_PATH.as_posix()
+    )
+    source_direct_calls = {
+        call["target"]: call["siteCount"]
+        for call in input_source_parse["directCalls"]
+    }
+    caller_targets = set(INPUT_FUNCTIONS)
+    callers: dict[str, dict[str, int]] = {}
+    call_site_counts = {target: 0 for target in INPUT_FUNCTIONS}
+    for path in sorted((disasm / "code").rglob("*.asm"), key=lambda item: item.as_posix()):
+        if path.relative_to(disasm) == INPUT_SOURCE_PATH:
+            continue
+        parsed = _parse_source_file(path, path.relative_to(disasm).as_posix())
+        sites = {
+            call["target"]: call["siteCount"]
+            for call in parsed["directCalls"]
+            if call["target"] in caller_targets
+        }
+        if sites:
+            callers[path.relative_to(disasm).as_posix()] = sites
+            for target, count in sites.items():
+                call_site_counts[target] += count
+
+    return {
+        "sourcePath": INPUT_SOURCE_PATH.as_posix(),
+        "sourceLineCount": len(source.splitlines()),
+        "functionEntries": {
+            name: _listing_address(listing, name) for name in INPUT_FUNCTIONS
+        },
+        "sourceDirectCallSiteCounts": source_direct_calls,
+        "constants": {"addresses": addresses, "buttonMasks": masks},
+        "sampling": {
+            "controllerPortAddresses": [addresses["DATA1"], addresses["DATA2"]],
+            "controllerPortStrideBytes": controller_port_stride,
+            "controllerCount": 2,
+            "rawStateBytesPerController": 2,
+            "rawStateStorageAddresses": [
+                addresses["PLAYER_1_INPUT"],
+                addresses["PLAYER_2_INPUT"],
+            ],
+            "thLowWriteValue": 0,
+            "thHighWriteValue": 64,
+            "highBitsLeftShift": 2,
+            "highBitsMask": 192,
+            "lowBitsMask": 63,
+            "invertsComposedState": True,
+            "storesTwoComposedStatesPerPort": True,
+        },
+        "waits": {
+            "recognizedButtonMask": recognized_button_mask,
+            "waitForPlayerInputUsesCurrentInput": True,
+            "waitForPlayerInputReturnsWhenRecognizedInputIsNonzero": True,
+            "waitForPlayer1NewInputRequiresReleaseThenRecognizedPress": True,
+            "oneSecondMaximumVintWaits": 60,
+            "threeSecondMaximumVintWaits": 180,
+            "boundedWaitsReturnEarlyOnRecognizedPlayer1Input": True,
+        },
+        "heldInputSuppression": {
+            "player1AndMaskUsesScratchMaskAddress": addresses["byte_FFDE9E"],
+            "counterAddress": addresses["byte_FFDE9F"],
+            "counterThreshold": 10,
+            "overlapBelowThresholdClearsPlayer1Input": True,
+            "zeroOverlapOrCounterAtLeastThresholdClearsScratchState": True,
+        },
+        "externalDirectCallerOccurrences": callers,
+        "externalDirectCallSiteCounts": call_site_counts,
+        "runtimeQuestions": [
+            "controller-input-matrix-raw-state-a-b-to-last-current",
+            "controller-input-matrix-new-press-and-release-repress",
+            "controller-input-matrix-held-24-frame-initial-and-6-frame-repeat",
+            "controller-input-matrix-one-and-three-second-early-exit-and-timeout",
+            "controller-input-matrix-three-versus-six-button-and-hardware-latency-edges",
+        ],
+    }
+
+
 def _sram_facts(disasm: Path, listing: str) -> dict[str, Any]:
     source = read_upstream_text(disasm / SRAM_SOURCE_PATH)
     constants = _read_equ_values(
-        disasm / SRAM_CONST_PATH,
+        disasm / CONST_PATH,
         (
             "SRAM_START",
             "SAVE1_DATA",
@@ -184,7 +530,7 @@ def _sram_facts(disasm: Path, listing: str) -> dict[str, Any]:
         ),
     )
     sizes = _read_equ_values(
-        disasm / SRAM_ENUM_PATH,
+        disasm / ENUM_PATH,
         (
             "SAVE_FLAGS_SIZE",
             "SAVE_CHECKSUM_SIZE",
@@ -659,6 +1005,7 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
         },
         "soundDriverFacts": sound_driver_facts,
         "serviceFacts": _service_facts(disasm),
+        "inputFacts": _input_facts(disasm, listing),
         "sramFacts": _sram_facts(disasm, listing),
         "runtimeQuestions": [
             "input-hardware-and-repeat-timing",
@@ -692,6 +1039,7 @@ def verify_service_inventory(
         "resourceFacts",
         "soundDriverFacts",
         "serviceFacts",
+        "inputFacts",
         "sramFacts",
         "runtimeQuestions",
     ):
