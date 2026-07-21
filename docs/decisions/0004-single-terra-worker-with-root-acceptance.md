@@ -34,7 +34,8 @@ and keeps the durable repository record coherent.
 1. The root specifies the owning topic, bounded source surface, tracked outputs, and one narrow H2/H3
    acceptance command.
 2. The Terra worker performs the complete static slice and returns a structured handoff without staging
-   or committing.
+   or committing. Before handoff it performs an adversarial self-review against the acceptance checklist
+   below and reports the weaknesses it corrected.
 3. The root compares the handoff with the diff, checks labels, provenance, and counters, and sends any
    correction back to the same worker.
 4. The root runs `uv run sf2 verify` and the owning narrow command, scans the private-artifact boundary,
@@ -54,6 +55,29 @@ and keeps the durable repository record coherent.
 - Codex custom-agent configuration is not a security boundary. It supplies role instructions and model
   defaults; it cannot by itself prevent a worker from invoking Git or writing an ignored path. The
   worker policy plus root review, verification, and artifact scan provide the operational safeguard.
+
+## Worker Acceptance Checklist
+
+The first delegated slices showed that passing narrow commands alone does not guarantee an acceptance-
+quality contract. Before handoff, the worker therefore checks all of the following:
+
+1. Extractor output, golden fixture, output schema, fixture schema, focused tests, research prose, and any
+   design contract agree on one complete data shape.
+2. New nested schemas forbid extra fields and require exact known names, counts, values, and ordered
+   arrays; a property-count-only schema is not sufficient when the evidence is exact.
+3. Focused tests assert the complete new semantic object, not only representative fields already covered
+   by the golden comparison.
+4. Confirmed control-flow facts have smallest-stable-section guards that preserve branch polarity,
+   selector behavior, call/mutation order, and result values.
+5. Caller inventories parse call instructions with comments excluded and retain both target identity and
+   per-target site counts.
+6. Storage-byte counts, logical sizes, physical address intervals, transfer lengths, encoded sizes, and
+   loop counters use distinct field names and prose.
+7. Static evidence does not promote hardware persistence, caller-visible lifecycle, timing, or rendered
+   behavior without the appropriate runtime observation.
+
+The root repeats these checks independently. A rejection returns to the same worker and becomes input to
+its next self-review; the root does not silently patch the research implementation.
 
 ## Consequences
 

@@ -755,6 +755,11 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         "Do not use external",
         "verify --full",
         "root owns commit",
+        "additionalProperties: false",
+        "branch polarity",
+        "caller target identity",
+        "physical address intervals",
+        "adversarial root-style self-review",
     ):
         assert required_text in instructions
 

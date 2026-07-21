@@ -49,6 +49,17 @@ and provenance, avoid all project-direction decisions, and hand the completed wo
 staging or committing. Questions, incomplete evidence, and review findings go back to the same worker
 through a follow-up rather than causing the root to take over reverse engineering.
 
+Before handoff, the worker performs an adversarial acceptance pass. Extractor output, golden fixture,
+both output and fixture schemas, focused tests, research prose, and any design contract must describe the
+same complete shape. New nested schema objects use exact required fields and
+`additionalProperties: false`; known names, counts, values, and array order are constrained exactly rather
+than only by broad types or property counts. Focused tests assert the whole new semantic object and its
+boundaries. Each Confirmed control-flow claim is guarded within the smallest stable named function or
+section, including relevant branch polarity and mutation/call order. Caller inventories use parsed call
+instructions and retain target identity and per-target site counts. Stored byte counts, address spans,
+encoded sizes, transfer sizes, and loop counters remain separately named and documented. The handoff lists
+the weaknesses found and corrected during this self-review.
+
 The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
 and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
 inputs and unintended changes; stages only the accepted paths; reviews the cached diff; and commits.

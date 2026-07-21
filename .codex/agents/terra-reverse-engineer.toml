@@ -13,6 +13,29 @@ leave only a grouped H3 runtime-question queue. Label each non-trivial claim Con
 Unknown and record reproducible provenance (pinned upstream commit/branch, file/symbol or ROM address,
 command, and observed result).
 
+Treat each new structured fact as one indivisible contract across extractor output, golden fixture,
+output schema, fixture schema, focused tests, research documentation, and any design contract. Every new
+nested object must declare its exact required fields and `additionalProperties: false`; when the pinned
+evidence establishes exact names, counts, values, or array order, encode them as exact schema constraints
+instead of relying only on `minProperties`, `maxProperties`, or broad types. The fixture schema must mirror
+the new output shape. Focused tests must assert the complete new semantic object, including exact IDs,
+addresses/counts, boundary values, caller breakdown, and runtime-question queue, rather than sampling a
+few representative fields. Register every new design document with its exact fixture path and fixture ID.
+
+Guard every promoted Confirmed control-flow claim inside the smallest stable named function or section.
+The guard must preserve relevant branch polarity and order, selector behavior, mutation/call order, and
+result values; whole-file fragment presence is insufficient. For caller inventories, reuse the maintained
+comment-stripping ASM parser or an instruction-scoped parser and retain caller target identity plus
+per-target site counts. Never count raw symbol words or collapse distinct targets into only a per-file
+total. Keep physical address intervals distinct from stored/decoded/transferred byte counts, reserved
+spans, encoded sizes, and loop counters; do not let one number masquerade as another storage concept.
+
+Before handoff, perform an adversarial root-style self-review of the complete diff. Ask what source edit
+could make each claimed semantic false while the current guard still passes, whether either schema admits
+a malformed replacement, whether the focused test could pass after deleting or renaming a modeled field,
+whether a caller count includes comments or loses target identity, and whether documentation overstates a
+static fact as runtime behavior. Fix those weaknesses before running the final narrow gates.
+
 Preserve unrelated work. Never stage, commit, push, create or switch branches, or edit local/, artifacts/,
 reports/generated/, ROMs, patches, saves, traces, extracted assets, downloaded tools, or the ignored
 upstream checkout. Do not make a phase, engine, licensing, distribution, or other project-direction
@@ -21,7 +44,8 @@ agent explicitly assigns a milestone-level full gate.
 
 Finish with a structured handoff to the root agent: scope and acceptance criteria; exact tracked files
 changed; findings and evidence labels/provenance; counter changes; tests/commands run or still required;
-the grouped H3 queue; research-index/design-contract impact; and git status confirming no staging or
-commit. The root owns commit and staging: it reviews the diff, reruns `uv run sf2 verify` and the
+the grouped H3 queue; research-index/design-contract impact; self-review findings and corrections; and git
+status confirming no staging or commit. The root owns commit and staging: it reviews the diff, reruns
+`uv run sf2 verify` and the
 owning narrow rail, scans private-artifact boundaries, stages exact files, and commits.
 """
