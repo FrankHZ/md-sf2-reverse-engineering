@@ -123,6 +123,9 @@ The current evidence is deep but narrow:
   layout, interleaved copying, checksum/flag transitions, and its caller inventory, with durable
   media behavior retained for one grouped H3 matrix; its six-entry input surface now binds two-port
   raw sampling, state storage, wait helpers, 11 direct call sites, and one controller/input H3 matrix.
+  The paired six-entry RNG surface now records both seed states, base/debug control flow, exact
+  low-byte bounded domains, 163 direct named call sites, and the six-site jump-alias boundary; retry
+  behavior and seed-copy isolation remain one grouped H3 question.
   Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
   order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
   remains queued for one technical runtime matrix.

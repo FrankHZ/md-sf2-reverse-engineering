@@ -130,6 +130,14 @@ CONTRACTS = {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
     },
+    "docs/design/randomness.md": {
+        "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
+        "tests/fixtures/h3/rng-v1.json": "sf2-rng-generate-random-number-v1",
+        "tests/fixtures/h3/debug-rng-v1.json": "sf2-rng-debug-override-v1",
+        "tests/fixtures/h3/battle-ai-action-choice-v1.json": (
+            "sf2-battle-ai-action-choice-runtime-v1"
+        ),
+    },
 }
 
 

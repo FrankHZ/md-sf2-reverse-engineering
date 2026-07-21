@@ -4,8 +4,9 @@
   addresses, twenty technical-resource incbin mappings, byte-copy direction, input scan/wait shape,
   SRAM slot/checksum structure, the complete variable-width-font, context-Huffman, and witch-menu
   direct payload/pointer boundaries, the four-stream unused-cloud and two-palette unused-base
-  boundaries, the 68000 music-wait command, and the Z80 driver build chain
-- Status: **Inferred** for caller-visible thinking-RNG distribution and perceived delay
+  boundaries, the 68000 music-wait command, Z80 driver build chain, and the complete six-entry RNG
+  service boundary
+- Status: **Inferred** for caller-visible retry distribution and perceived RNG delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
 - Evidence date: 2026-07-20
@@ -128,9 +129,40 @@ timing. The remake-facing extraction is
 the mailbox with three-frame sleeps. The Z80 source statically exposes YM2612, PSG, DAC, bank, music,
 and SFX machinery, but audible timing and channel output remain outside this static contract.
 
-The thinking-AI RNG advances the low-byte state with multiplier 541 and increment 12345. The base
-68000 RNG file was already covered by dedicated H3 fixtures. For the thinking variant, caller-visible
-distribution and variable delay remain inferred until tested as a matrix.
+## RNG Service Contract
+
+The two RNG sources form a six-entry static surface: `GenerateRandomNumber` (`0x1600`),
+`WaitForRandomValueToMatch` (`0x1628`), `GenerateRandomValueUnsigned` (`0x1652`),
+`GenerateRandomOrDebugNumber` (`0x1674`), `GenerateRandomValueSigned` (`0x1AD090`), and
+`GenerateRandomNumberUnderD6` (`0x1AD0B4`). Named-function guards and comment-stripping direct
+call parsing cover each entry.
+
+**Confirmed:** the main generator updates the 16-bit `RANDOM_SEED` with multiplier 13 and increment
+7, preserves `d6`, doubles its range before unsigned multiplication, then uses the upper product
+word and halves the result. `GenerateRandomOrDebugNumber` saves `d6`/`d7`; when debug mode is enabled
+it checks Right, Up, Left, Down and returns 0, 1, 2, 3 respectively without calling the base generator.
+Disabled debug or no direction takes the base-generator fallback. Existing H3 evidence is
+`rng-v1.json` (`sf2-rng-generate-random-number-v1`) and `debug-rng-v1.json`
+(`sf2-rng-debug-override-v1`).
+
+**Confirmed:** `GenerateRandomValueUnsigned` advances the word at `RANDOM_SEED_COPY` by
+`state * 541 + 12345` and returns its masked low byte. The misleadingly named
+`GenerateRandomValueSigned` reads that low byte, sign-extends it before an *unsigned* multiply by
+the same constants, then masks and stores its low byte. Both bounded helpers return zero for low-byte
+ranges 0, 1, and 128..255. For 2..127 they accept unsigned bytes 0..range-1 and retry otherwise.
+The `GenerateRandomNumberUnderD6` source comment claims lower bound 2; that claim conflicts with its
+actual comparison and is preserved as a discrepancy, not normalized into the contract.
+
+The direct-call inventory contains 131 direct `GenerateRandomNumber` sites, 26 direct
+`GenerateRandomOrDebugNumber` sites, and no direct sites for the other five named entries. In
+particular, `GenerateRandomNumberUnderD6` has **zero direct target sites**; six sites call the
+separate `j_GenerateRandomNumberUnderD6` jump-interface alias in
+`code/common/tech/jumpinterfaces/s13_jumpinterface.asm`. This distinguishes source spelling
+from runtime reachability. **Unknown:** the retry count/distribution and timing, and whether
+`RANDOM_SEED_COPY` is isolated across text, menu, and AI callers. The single grouped H3 matrix is
+`random-services-matrix-range-retry-and-seed-copy-isolation`; existing range-two action evidence is
+`battle-ai-action-choice-v1.json` (`sf2-battle-ai-action-choice-runtime-v1`). The implementation
+boundary is [`randomness.md`](../design/randomness.md).
 
 ## Concentrated Runtime Queue
 
@@ -142,7 +174,7 @@ No emulator was launched for this batch. Five questions are retained for later g
    delete/reload persistence ordering, and partial-write/power-loss boundaries in one corruption
    matrix;
 3. 68000-to-Z80 mailbox, channel routing, and audio timing;
-4. thinking-RNG caller distribution and delay boundaries.
+4. RNG low-byte range/retry boundaries and seed-copy isolation across text, menu, and AI callers;
 5. raw/computed reach plus frame/palette/VDP behavior for the nominally unused graphics resources.
 
 The controller/input cases should share VInt and controller setup, SRAM cases should share one

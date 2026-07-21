@@ -1,7 +1,7 @@
 # Runtime RNG and Battle-Math Call Chains
 
 - Status: **Confirmed runtime fixtures for RNG, level up/stat refresh, turn order, physical attacks, and bounded spell families**
-- Evidence date: 2026-07-18
+- Evidence date: 2026-07-20
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -40,6 +40,11 @@ Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
 `RANDOM_SEED=$FFDEA4`, `RANDOM_SEED_COPY=$FFDFB0`,
 `LEVELUP_ARGUMENTS=$FFAF82`, `BATTLE_TURN_ORDER=$FFF71A`, and
 `CURRENT_BATTLE_TURN=$FFF79A` in `disasm/sf2const.asm`.
+
+The complete H2 source contract, including the seed-copy byte generator, low-byte bounded-domain
+discrepancy, and direct-target versus jump-alias call inventory, is owned by
+[`technical-services.md`](./technical-services.md). Retry timing/distribution and seed-copy isolation
+are still unobserved; no additional H3 fixture was created for this static expansion.
 
 ## Confirmed: Base RNG
 

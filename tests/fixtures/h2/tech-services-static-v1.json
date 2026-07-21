@@ -190,6 +190,47 @@
         "controller-input-matrix-three-versus-six-button-and-hardware-latency-edges"
       ]
     },
+    "randomServicesFacts": {
+      "sourceFiles": {
+        "base": { "path": "code/common/tech/randomnumbergenerator.asm", "lineCount": 121 },
+        "thinking": { "path": "code/common/tech/thinkingairng.asm", "lineCount": 66 }
+      },
+      "functionEntries": {
+        "GenerateRandomNumber": 5632,
+        "WaitForRandomValueToMatch": 5672,
+        "GenerateRandomValueUnsigned": 5714,
+        "GenerateRandomOrDebugNumber": 5748,
+        "GenerateRandomValueSigned": 1757328,
+        "GenerateRandomNumberUnderD6": 1757364
+      },
+      "constants": {
+        "addresses": { "DEBUG_MODE_TOGGLE": 16756905, "PLAYER_1_INPUT": 16768663, "RANDOM_SEED": 16768676, "RANDOM_SEED_COPY": 16768944 },
+        "masks": { "BYTE_MASK": 255, "WORD_MASK": 65535, "WORD_SHIFT_COUNT": 16, "INPUT_BIT_UP": 0, "INPUT_BIT_DOWN": 1, "INPUT_BIT_LEFT": 2, "INPUT_BIT_RIGHT": 3 },
+        "derivedWidths": { "byteStateBits": 8, "wordStateBits": 16 },
+        "debugDirectionMasks": { "INPUT_BIT_RIGHT": 8, "INPUT_BIT_UP": 1, "INPUT_BIT_LEFT": 4, "INPUT_BIT_DOWN": 2 }
+      },
+      "baseGenerator": { "seedStateAddress": 16768676, "stateWidthBits": 16, "multiplier": 13, "increment": 7, "masksUpdatedStateToWordWidth": true, "preservesD6RangeRegister": true, "doublesRangeBeforeUnsignedMultiply": true, "movesUpperProductWordThenHalvesResult": true },
+      "debugOverride": { "toggleAddress": 16756905, "player1InputAddress": 16768663, "enabledDirectionPriority": ["INPUT_BIT_RIGHT", "INPUT_BIT_UP", "INPUT_BIT_LEFT", "INPUT_BIT_DOWN"], "enabledDirectionReturnValues": [0, 1, 2, 3], "directionOverrideSkipsBaseGenerator": true, "disabledOrNoDirectionCallsBaseGenerator": true, "preservesD6AndD7": true },
+      "seedCopyByteGenerator": { "sourceLabel": "GenerateRandomValueUnsigned", "seedCopyAddress": 16768944, "storedStateWidthBits": 16, "returnedValueWidthBits": 8, "multiplier": 541, "increment": 12345, "returnsMaskedLowByte": true },
+      "boundedSeedCopySampler": { "sourceLabel": "WaitForRandomValueToMatch", "rangeLowByteImmediateZeroValues": [0, 1], "rangeLowByteImmediateZeroSignedRange": [128, 255], "acceptedUnsignedResultMinimum": 0, "acceptedUnsignedResultUpperBound": "rangeLowByteMinusOne", "retriesUntilUnsignedResultIsBelowRangeLowByte": true },
+      "thinkingByteGenerator": { "sourceLabel": "GenerateRandomValueSigned", "seedCopyAddress": 16768944, "readsLowByteThenSignExtendsBeforeUnsignedMultiply": true, "multiplier": 541, "increment": 12345, "masksAndStoresLowByte": true, "returnedValueWidthBits": 8 },
+      "thinkingBoundedSampler": { "sourceLabel": "GenerateRandomNumberUnderD6", "rangeLowByteImmediateZeroValues": [0, 1], "rangeLowByteImmediateZeroSignedRange": [128, 255], "acceptedUnsignedResultMinimum": 0, "acceptedUnsignedResultUpperBound": "rangeLowByteMinusOne", "retriesUntilUnsignedResultIsBelowRangeLowByte": true, "sourceCommentClaimsAcceptedLowerBound": 2, "sourceCommentDisagreesWithReturnDomain": true },
+      "sourceDirectCallSiteCounts": {
+        "code/common/tech/randomnumbergenerator.asm": { "GenerateRandomNumber": 1, "GenerateRandomValueUnsigned": 1 },
+        "code/common/tech/thinkingairng.asm": { "GenerateRandomValueSigned": 1 }
+      },
+      "externalDirectCallerOccurrences": {
+        "code/common/maps/unused_mapload.asm": { "GenerateRandomNumber": 4 }, "code/common/menus/blacksmith/pickmithrilweapon.asm": { "GenerateRandomNumber": 2 }, "code/common/menus/diamondmenu.asm": { "GenerateRandomNumber": 1 }, "code/common/menus/item/fielditemeffects.asm": { "GenerateRandomNumber": 5 }, "code/common/menus/numberprompt.asm": { "GenerateRandomNumber": 1 }, "code/common/menus/portraitfunctions.asm": { "GenerateRandomNumber": 2 }, "code/common/scripting/endcredits.asm": { "GenerateRandomNumber": 2 }, "code/common/scripting/entity/entityscriptengine_2.asm": { "GenerateRandomNumber": 2 }, "code/common/scripting/map/mapsetupsfunctions_1.asm": { "GenerateRandomNumber": 2 }, "code/common/scripting/text/textfunctions_1.asm": { "GenerateRandomNumber": 2 }, "code/common/stats/items/fielditemeffects.asm": { "GenerateRandomNumber": 5 }, "code/common/stats/levelup.asm": { "GenerateRandomNumber": 2 },
+        "code/gameflow/battle/ai/command/attack/determinebattleaction.asm": { "GenerateRandomNumber": 2, "j_GenerateRandomNumberUnderD6": 1 }, "code/gameflow/battle/ai/command/attack/determinemuddledbattleaction.asm": { "GenerateRandomOrDebugNumber": 2 }, "code/gameflow/battle/ai/command/attack/prioritizetargets.asm": { "j_GenerateRandomNumberUnderD6": 1 }, "code/gameflow/battle/ai/determineaistandbymovement_1.asm": { "j_GenerateRandomNumberUnderD6": 3 }, "code/gameflow/battle/ai/startaicontrol.asm": { "j_GenerateRandomNumberUnderD6": 1 },
+        "code/gameflow/battle/battleactions/breakuseditem.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/calculatespelldamage.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/castspell.asm": { "GenerateRandomOrDebugNumber": 7 }, "code/gameflow/battle/battleactions/createbattlesceneanimation.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/createbattlescenemessage.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/determinecriticalhit.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/determinedodge.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/determinedoubleandcounter.asm": { "GenerateRandomOrDebugNumber": 2 }, "code/gameflow/battle/battleactions/dropenemyitem.asm": { "GenerateRandomOrDebugNumber": 2 }, "code/gameflow/battle/battleactions/giveexpandgold.asm": { "GenerateRandomOrDebugNumber": 2 }, "code/gameflow/battle/battleactions/inflictcursedamage.asm": { "GenerateRandomOrDebugNumber": 1 }, "code/gameflow/battle/battleactions/inflictdamage.asm": { "GenerateRandomOrDebugNumber": 2 }, "code/gameflow/battle/battleactions/initbattlesceneproperties.asm": { "GenerateRandomOrDebugNumber": 2 },
+        "code/gameflow/battle/battlefunctions/executeindividualturn.asm": { "GenerateRandomNumber": 1 }, "code/gameflow/battle/battleloop/processafterturneffects.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battleloop/turnorderfunctions.asm": { "GenerateRandomNumber": 5 }, "code/gameflow/battle/battleloop/upgradeenemies.asm": { "GenerateRandomNumber": 1 }, "code/gameflow/battle/battlescenes/animation/blast.asm": { "GenerateRandomNumber": 1 }, "code/gameflow/battle/battlescenes/animation/blaze.asm": { "GenerateRandomNumber": 2 }, "code/gameflow/battle/battlescenes/animation/bolt.asm": { "GenerateRandomNumber": 2 }, "code/gameflow/battle/battlescenes/animation/debuff.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/healingfairy.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/prismlaser.asm": { "GenerateRandomNumber": 1 },
+        "code/gameflow/battle/battlescenes/animation/update/apollo.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/update/atlas.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/animation/update/blast.asm": { "GenerateRandomNumber": 7 }, "code/gameflow/battle/battlescenes/animation/update/blaze.asm": { "GenerateRandomNumber": 5 }, "code/gameflow/battle/battlescenes/animation/update/bolt.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/animation/update/bubblebreath.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/update/burstrock.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/update/cannonfire.asm": { "GenerateRandomNumber": 2 }, "code/gameflow/battle/battlescenes/animation/update/dao.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/animation/update/debuff.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/update/demonbreath.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/update/detox.asm": { "GenerateRandomNumber": 1 }, "code/gameflow/battle/battlescenes/animation/update/freeze.asm": { "GenerateRandomNumber": 6 }, "code/gameflow/battle/battlescenes/animation/update/healingfairy.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/animation/update/neptun.asm": { "GenerateRandomNumber": 3 }, "code/gameflow/battle/battlescenes/animation/update/prismlaser.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/animation/update/shotfire.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/animation/update/snowbreath.asm": { "GenerateRandomNumber": 1 },
+        "code/gameflow/battle/battlescenes/battlesceneengine_0.asm": { "GenerateRandomNumber": 4 }, "code/gameflow/battle/battlescenes/updatespellanimation.asm": { "GenerateRandomNumber": 1 }, "code/gameflow/exploration/exploration.asm": { "GenerateRandomNumber": 2 }, "code/specialscreens/witch/witchfunctions.asm": { "GenerateRandomNumber": 2 }, "code/specialscreens/witch/witchmainmenu.asm": { "GenerateRandomNumber": 1 }, "code/specialscreens/witchend/witchend.asm": { "GenerateRandomNumber": 2 }
+      },
+      "externalDirectCallSiteCounts": { "GenerateRandomNumber": 131, "GenerateRandomNumberUnderD6": 0, "GenerateRandomOrDebugNumber": 26, "GenerateRandomValueSigned": 0, "GenerateRandomValueUnsigned": 0, "WaitForRandomValueToMatch": 0, "j_GenerateRandomNumberUnderD6": 6 },
+      "jumpInterfaceAliases": { "j_GenerateRandomNumberUnderD6": { "sourcePath": "code/common/tech/jumpinterfaces/s13_jumpinterface.asm", "target": "GenerateRandomNumberUnderD6" } },
+      "runtimeQuestions": ["random-services-matrix-range-retry-and-seed-copy-isolation"]
+    },
     "sramFacts": {
       "sourcePath": "code/common/tech/sram/sramfunctions.asm",
       "sourceLineCount": 229,
@@ -275,7 +316,7 @@
       "input-hardware-and-repeat-timing",
       "sram-persistence-and-corruption-matrix",
       "z80-mailbox-channel-and-audio-timing",
-      "thinking-rng-caller-distribution-and-delay",
+      "random-services-matrix-range-retry-and-seed-copy-isolation",
       "unused-technical-resource-raw-reach-and-presentation"
     ]
   }

@@ -1,11 +1,120 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 import pytest
 
-from sf2tool.h2.services import build_service_inventory
+from sf2tool.h2.services import (
+    _rng_direct_call_counts,
+    _rng_source_comment_lower_bound,
+    build_service_inventory,
+)
+from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
+
+
+def test_rng_direct_call_parser_only_accepts_instruction_field(tmp_path) -> None:
+    source = tmp_path / "calls.asm"
+    source.write_text(
+        """\
+                bsr.s   GenerateRandomNumber
+                bsr.w   GenerateRandomNumber
+                jsr     GenerateRandomOrDebugNumber
+;               bsr.s   GenerateRandomNumber
+label:          bsr.s   GenerateRandomNumber
+                dc.b    'bsr.s GenerateRandomNumber'
+macro           bsr.s   GenerateRandomNumber
+""",
+        encoding="utf-8",
+    )
+
+    assert _rng_direct_call_counts(
+        source, {"GenerateRandomNumber", "GenerateRandomOrDebugNumber"}
+    ) == {"GenerateRandomNumber": 3, "GenerateRandomOrDebugNumber": 1}
+
+
+def test_rng_source_comment_lower_bound_is_parsed_and_required() -> None:
+    assert _rng_source_comment_lower_bound(
+        "; Return 0, or a random number in the range 2, d6.w-1"
+    ) == 2
+    with pytest.raises(ValueError, match="range comment"):
+        _rng_source_comment_lower_bound("; different comment")
+
+
+def test_rng_schema_definitions_match_between_output_and_fixture() -> None:
+    output_schema = load_json(repo_path("schemas/tech-services-static.schema.json"))
+    fixture_schema = load_json(
+        repo_path("schemas/h2-tech-services-static-fixture.schema.json")
+    )
+    for definition in (
+        "randomServicesFacts",
+        "boundedRandomSampler",
+        "thinkingBoundedRandomSampler",
+    ):
+        assert fixture_schema["definitions"][definition] == output_schema["definitions"][
+            definition
+        ]
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_rng_schemas_reject_nested_caller_name_and_count_mutations() -> None:
+    fixture_path = repo_path("tests/fixtures/h2/tech-services-static-v1.json")
+    fixture = load_json(fixture_path)
+    malformed_fixture = deepcopy(fixture)
+    callers = malformed_fixture["expected"]["randomServicesFacts"][
+        "externalDirectCallerOccurrences"
+    ]
+    callers["code/common/maps/renamed_mapload.asm"] = callers.pop(
+        "code/common/maps/unused_mapload.asm"
+    )
+    with pytest.raises(ValueError, match="randomServicesFacts"):
+        validate_json(
+            malformed_fixture,
+            repo_path("schemas/h2-tech-services-static-fixture.schema.json"),
+            owner="malformed RNG fixture",
+        )
+
+    malformed_output = deepcopy(fixture["expected"]["randomServicesFacts"])
+    malformed_output["externalDirectCallerOccurrences"][
+        "code/common/maps/unused_mapload.asm"
+    ]["GenerateRandomNumber"] = 5
+    output = build_service_inventory(UPSTREAM)
+    output["randomServicesFacts"] = malformed_output
+    with pytest.raises(ValueError, match="externalDirectCallerOccurrences"):
+        validate_json(
+            output,
+            repo_path("schemas/tech-services-static.schema.json"),
+            owner="malformed RNG output",
+        )
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_random_services_static_contract_covers_generators_bounds_and_callers() -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/tech-services-static-v1.json"))
+    random_facts = build_service_inventory(UPSTREAM)["randomServicesFacts"]
+
+    assert random_facts == fixture["expected"]["randomServicesFacts"]
+    assert random_facts["thinkingBoundedSampler"] == {
+        "sourceLabel": "GenerateRandomNumberUnderD6",
+        "rangeLowByteImmediateZeroValues": [0, 1],
+        "rangeLowByteImmediateZeroSignedRange": [128, 255],
+        "acceptedUnsignedResultMinimum": 0,
+        "acceptedUnsignedResultUpperBound": "rangeLowByteMinusOne",
+        "retriesUntilUnsignedResultIsBelowRangeLowByte": True,
+        "sourceCommentClaimsAcceptedLowerBound": 2,
+        "sourceCommentDisagreesWithReturnDomain": True,
+    }
+    assert random_facts["externalDirectCallSiteCounts"] == {
+        "GenerateRandomNumber": 131,
+        "GenerateRandomNumberUnderD6": 0,
+        "GenerateRandomOrDebugNumber": 26,
+        "GenerateRandomValueSigned": 0,
+        "GenerateRandomValueUnsigned": 0,
+        "WaitForRandomValueToMatch": 0,
+        "j_GenerateRandomNumberUnderD6": 6,
+    }
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")

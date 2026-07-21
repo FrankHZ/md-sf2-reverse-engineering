@@ -34,6 +34,20 @@ SRAM_SOURCE_PATH = Path("code/common/tech/sram/sramfunctions.asm")
 CONST_PATH = Path("sf2const.asm")
 ENUM_PATH = Path("sf2enums.asm")
 INPUT_SOURCE_PATH = Path("code/common/tech/input.asm")
+BASE_RNG_SOURCE_PATH = Path("code/common/tech/randomnumbergenerator.asm")
+THINKING_RNG_SOURCE_PATH = Path("code/common/tech/thinkingairng.asm")
+THINKING_RNG_JUMP_INTERFACE_PATH = Path(
+    "code/common/tech/jumpinterfaces/s13_jumpinterface.asm"
+)
+RANDOM_SERVICE_FUNCTIONS = (
+    "GenerateRandomNumber",
+    "WaitForRandomValueToMatch",
+    "GenerateRandomValueUnsigned",
+    "GenerateRandomOrDebugNumber",
+    "GenerateRandomValueSigned",
+    "GenerateRandomNumberUnderD6",
+)
+THINKING_RNG_JUMP_ALIAS = "j_GenerateRandomNumberUnderD6"
 INPUT_FUNCTIONS = (
     "UpdatePlayerInputs",
     "WaitForPlayerInput",
@@ -511,6 +525,360 @@ def _input_facts(disasm: Path, listing: str) -> dict[str, Any]:
             "controller-input-matrix-held-24-frame-initial-and-6-frame-repeat",
             "controller-input-matrix-one-and-three-second-early-exit-and-timeout",
             "controller-input-matrix-three-versus-six-button-and-hardware-latency-edges",
+        ],
+    }
+
+
+def _function_section(source: str, start_marker: str, end_marker: str) -> str:
+    start = source.find(start_marker)
+    end = source.find(end_marker, start + len(start_marker))
+    if start < 0 or end < 0:
+        raise ValueError(f"function section boundary drift: {start_marker}")
+    return source[start:end]
+
+
+def _require_rng_ordered_section(
+    source: str, start_marker: str, end_marker: str, fragments: tuple[str, ...]
+) -> None:
+    section = _function_section(source, start_marker, end_marker)
+    position = 0
+    for fragment in fragments:
+        position = section.find(fragment, position)
+        if position < 0:
+            raise ValueError(f"RNG section semantic drift at {start_marker}: {fragment}")
+        position += len(fragment)
+
+
+def _rng_immediate(section: str, instruction: str, register: str) -> int:
+    match = re.search(
+        rf"{re.escape(instruction)}\s+#(\$[0-9A-F]+|\d+),{re.escape(register)}",
+        section,
+    )
+    if not match:
+        raise ValueError(f"missing RNG immediate: {instruction} -> {register}")
+    raw = match.group(1)
+    return int(raw[1:], 16) if raw.startswith("$") else int(raw)
+
+
+RNG_DIRECT_CALL_PATTERN = re.compile(
+    r"^\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*):\s*)?"
+    r"(?:bsr|jsr)(?:\.[bswl])?\s+([^\s,;]+)\s*$",
+    re.IGNORECASE,
+)
+RNG_DIRECT_TARGET_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+RNG_COMMENT_LOWER_BOUND_PATTERN = re.compile(
+    r"^\s*;\s*Return 0, or a random number in the range (\d+), d6\.w-1\s*$",
+    re.MULTILINE,
+)
+
+
+def _rng_direct_call_counts(path: Path, targets: set[str]) -> dict[str, int]:
+    counts: Counter[str] = Counter()
+    for raw_line in read_upstream_text(path).splitlines():
+        line = raw_line.split(";", 1)[0]
+        match = RNG_DIRECT_CALL_PATTERN.search(line)
+        if not match:
+            continue
+        operand = re.sub(r"\.[bwl]$", "", match.group(1), flags=re.IGNORECASE)
+        if operand.startswith("(") and operand.endswith(")"):
+            operand = operand[1:-1]
+        if RNG_DIRECT_TARGET_PATTERN.fullmatch(operand) and operand in targets:
+            counts[operand] += 1
+    return dict(sorted(counts.items()))
+
+
+def _rng_source_comment_lower_bound(source: str) -> int:
+    match = RNG_COMMENT_LOWER_BOUND_PATTERN.search(source)
+    if not match:
+        raise ValueError("missing GenerateRandomNumberUnderD6 range comment")
+    return int(match.group(1))
+
+
+def _random_services_facts(disasm: Path, listing: str) -> dict[str, Any]:
+    base_source = read_upstream_text(disasm / BASE_RNG_SOURCE_PATH)
+    thinking_source = read_upstream_text(disasm / THINKING_RNG_SOURCE_PATH)
+    jump_interface_source = read_upstream_text(
+        disasm / THINKING_RNG_JUMP_INTERFACE_PATH
+    )
+    addresses = _read_equ_values(
+        disasm / CONST_PATH,
+        ("DEBUG_MODE_TOGGLE", "PLAYER_1_INPUT", "RANDOM_SEED", "RANDOM_SEED_COPY"),
+    )
+    masks = _read_equ_values(
+        disasm / ENUM_PATH,
+        (
+            "BYTE_MASK",
+            "WORD_MASK",
+            "WORD_SHIFT_COUNT",
+            "INPUT_BIT_UP",
+            "INPUT_BIT_DOWN",
+            "INPUT_BIT_LEFT",
+            "INPUT_BIT_RIGHT",
+        ),
+    )
+    base_section = _function_section(
+        base_source, "GenerateRandomNumber:", "; End of function GenerateRandomNumber"
+    )
+    copy_section = _function_section(
+        base_source,
+        "GenerateRandomValueUnsigned:",
+        "; End of function GenerateRandomValueUnsigned",
+    )
+    thinking_value_section = _function_section(
+        thinking_source,
+        "GenerateRandomValueSigned:",
+        "; End of function GenerateRandomValueSigned",
+    )
+    base_multiplier = _rng_immediate(base_section, "mulu.w", "d7")
+    base_increment = _rng_immediate(base_section, "addi.w", "d7")
+    copy_multiplier = _rng_immediate(copy_section, "mulu.w", "d7")
+    copy_increment = _rng_immediate(copy_section, "addi.w", "d7")
+    thinking_multiplier = _rng_immediate(thinking_value_section, "mulu.w", "d7")
+    thinking_increment = _rng_immediate(thinking_value_section, "addi.w", "d7")
+    source_comment_lower_bound = _rng_source_comment_lower_bound(thinking_source)
+    byte_width_bits = masks["BYTE_MASK"].bit_length()
+    word_width_bits = masks["WORD_MASK"].bit_length()
+    if masks["WORD_SHIFT_COUNT"] != word_width_bits:
+        raise ValueError("RNG word shift declaration disagrees with word mask width")
+    debug_direction_order = (
+        "INPUT_BIT_RIGHT",
+        "INPUT_BIT_UP",
+        "INPUT_BIT_LEFT",
+        "INPUT_BIT_DOWN",
+    )
+    debug_direction_masks = {
+        name: 1 << masks[name] for name in debug_direction_order
+    }
+    _require_rng_ordered_section(
+        base_source,
+        "GenerateRandomNumber:",
+        "; End of function GenerateRandomNumber",
+        (
+            "move.w  (RANDOM_SEED).l,d7",
+            f"mulu.w  #{base_multiplier},d7",
+            f"addi.w  #{base_increment},d7",
+            "andi.l  #WORD_MASK,d7",
+            "move.w  d7,(RANDOM_SEED).l",
+            "move.w  d6,-(sp)",
+            "add.w   d6,d6",
+            "mulu.w  d6,d7",
+            "swap    d7",
+            "move.w  (sp)+,d6",
+            "lsr.w   #1,d7",
+        ),
+    )
+    _require_rng_ordered_section(
+        base_source,
+        "GenerateRandomOrDebugNumber:",
+        "; End of function GenerateRandomOrDebugNumber",
+        (
+            "movem.l d6-d7,-(sp)",
+            "move.w  d0,d6",
+            "tst.b   (DEBUG_MODE_TOGGLE).l",
+            "beq.s   @Skip",
+            "moveq   #0,d0",
+            "btst    #INPUT_BIT_RIGHT,((PLAYER_1_INPUT-$1000000)).w",
+            "bne.w   @Done",
+            "moveq   #1,d0",
+            "btst    #INPUT_BIT_UP,((PLAYER_1_INPUT-$1000000)).w",
+            "bne.w   @Done",
+            "moveq   #2,d0",
+            "btst    #INPUT_BIT_LEFT,((PLAYER_1_INPUT-$1000000)).w",
+            "bne.w   @Done",
+            "moveq   #3,d0",
+            "btst    #INPUT_BIT_DOWN,((PLAYER_1_INPUT-$1000000)).w",
+            "bne.w   @Done",
+            "@Skip:",
+            "bsr.w   GenerateRandomNumber",
+            "move.w  d7,d0",
+            "@Done:",
+            "movem.l (sp)+,d6-d7",
+        ),
+    )
+    _require_rng_ordered_section(
+        base_source,
+        "GenerateRandomValueUnsigned:",
+        "; End of function GenerateRandomValueUnsigned",
+        (
+            "lea     (RANDOM_SEED_COPY).l,a0",
+            "clr.w   d7",
+            "move.w  (a0),d7",
+            f"mulu.w  #{copy_multiplier},d7",
+            f"addi.w  #{copy_increment},d7",
+            "move.w  d7,(a0)",
+            "andi.w  #BYTE_MASK,d7",
+        ),
+    )
+    _require_rng_ordered_section(
+        base_source,
+        "WaitForRandomValueToMatch:",
+        "; End of function WaitForRandomValueToMatch",
+        (
+            "move.b  d6,d1",
+            "loc_162E:",
+            "bsr.w   GenerateRandomValueUnsigned",
+            "cmpi.b  #1,d1",
+            "beq.s   loc_163A",
+            "bpl.s   loc_163E",
+            "loc_163A:",
+            "bra.w   loc_164A",
+            "loc_163E:",
+            "cmp.b   d1,d7",
+            "bcs.s   loc_1644",
+            "bra.s   loc_162E",
+            "loc_164A:",
+            "clr.b   d7",
+        ),
+    )
+    _require_rng_ordered_section(
+        thinking_source,
+        "GenerateRandomValueSigned:",
+        "; End of function GenerateRandomValueSigned",
+        (
+            "lea     (RANDOM_SEED_COPY).l,a0",
+            "clr.w   d7",
+            "move.b  (a0),d7",
+            "ext.w   d7",
+            f"mulu.w  #{thinking_multiplier},d7",
+            f"addi.w  #{thinking_increment},d7",
+            "andi.w  #BYTE_MASK,d7",
+            "move.b  d7,(a0)",
+        ),
+    )
+    _require_rng_ordered_section(
+        thinking_source,
+        "GenerateRandomNumberUnderD6:",
+        "; End of function GenerateRandomNumberUnderD6",
+        (
+            "move.b  d6,d1",
+            "loc_1AD0BA:",
+            "bsr.s   GenerateRandomValueSigned",
+            "cmpi.b  #1,d1",
+            "beq.s   loc_1AD0C4",
+            "bpl.s   loc_1AD0C8",
+            "loc_1AD0C4:",
+            "bra.w   loc_1AD0D4",
+            "loc_1AD0C8:",
+            "cmp.b   d1,d7",
+            "bcs.s   loc_1AD0CE",
+            "bra.s   loc_1AD0BA",
+            "loc_1AD0D4:",
+            "clr.b   d7",
+        ),
+    )
+    _require_rng_ordered_section(
+        jump_interface_source,
+        f"{THINKING_RNG_JUMP_ALIAS}:",
+        f"; End of function {THINKING_RNG_JUMP_ALIAS}",
+        ("jmp     GenerateRandomNumberUnderD6(pc)",),
+    )
+
+    source_direct_calls: dict[str, dict[str, int]] = {}
+    for path in (BASE_RNG_SOURCE_PATH, THINKING_RNG_SOURCE_PATH):
+        source_direct_calls[path.as_posix()] = _rng_direct_call_counts(
+            disasm / path, set(RANDOM_SERVICE_FUNCTIONS)
+        )
+    caller_targets = set(RANDOM_SERVICE_FUNCTIONS) | {THINKING_RNG_JUMP_ALIAS}
+    external_callers: dict[str, dict[str, int]] = {}
+    external_call_totals = {target: 0 for target in sorted(caller_targets)}
+    for path in sorted((disasm / "code").rglob("*.asm"), key=lambda item: item.as_posix()):
+        relative = path.relative_to(disasm).as_posix()
+        if relative in {BASE_RNG_SOURCE_PATH.as_posix(), THINKING_RNG_SOURCE_PATH.as_posix()}:
+            continue
+        sites = _rng_direct_call_counts(path, caller_targets)
+        if sites:
+            external_callers[relative] = sites
+            for target, count in sites.items():
+                external_call_totals[target] += count
+    return {
+        "sourceFiles": {
+            "base": {
+                "path": BASE_RNG_SOURCE_PATH.as_posix(),
+                "lineCount": len(base_source.splitlines()),
+            },
+            "thinking": {
+                "path": THINKING_RNG_SOURCE_PATH.as_posix(),
+                "lineCount": len(thinking_source.splitlines()),
+            },
+        },
+        "functionEntries": {
+            name: _listing_address(listing, name) for name in RANDOM_SERVICE_FUNCTIONS
+        },
+        "constants": {
+            "addresses": addresses,
+            "masks": masks,
+            "derivedWidths": {
+                "byteStateBits": byte_width_bits,
+                "wordStateBits": word_width_bits,
+            },
+            "debugDirectionMasks": debug_direction_masks,
+        },
+        "baseGenerator": {
+            "seedStateAddress": addresses["RANDOM_SEED"],
+            "stateWidthBits": word_width_bits,
+            "multiplier": base_multiplier,
+            "increment": base_increment,
+            "masksUpdatedStateToWordWidth": True,
+            "preservesD6RangeRegister": True,
+            "doublesRangeBeforeUnsignedMultiply": True,
+            "movesUpperProductWordThenHalvesResult": True,
+        },
+        "debugOverride": {
+            "toggleAddress": addresses["DEBUG_MODE_TOGGLE"],
+            "player1InputAddress": addresses["PLAYER_1_INPUT"],
+            "enabledDirectionPriority": list(debug_direction_order),
+            "enabledDirectionReturnValues": [0, 1, 2, 3],
+            "directionOverrideSkipsBaseGenerator": True,
+            "disabledOrNoDirectionCallsBaseGenerator": True,
+            "preservesD6AndD7": True,
+        },
+        "seedCopyByteGenerator": {
+            "sourceLabel": "GenerateRandomValueUnsigned",
+            "seedCopyAddress": addresses["RANDOM_SEED_COPY"],
+            "storedStateWidthBits": word_width_bits,
+            "returnedValueWidthBits": byte_width_bits,
+            "multiplier": copy_multiplier,
+            "increment": copy_increment,
+            "returnsMaskedLowByte": True,
+        },
+        "boundedSeedCopySampler": {
+            "sourceLabel": "WaitForRandomValueToMatch",
+            "rangeLowByteImmediateZeroValues": [0, 1],
+            "rangeLowByteImmediateZeroSignedRange": [128, 255],
+            "acceptedUnsignedResultMinimum": 0,
+            "acceptedUnsignedResultUpperBound": "rangeLowByteMinusOne",
+            "retriesUntilUnsignedResultIsBelowRangeLowByte": True,
+        },
+        "thinkingByteGenerator": {
+            "sourceLabel": "GenerateRandomValueSigned",
+            "seedCopyAddress": addresses["RANDOM_SEED_COPY"],
+            "readsLowByteThenSignExtendsBeforeUnsignedMultiply": True,
+            "multiplier": thinking_multiplier,
+            "increment": thinking_increment,
+            "masksAndStoresLowByte": True,
+            "returnedValueWidthBits": byte_width_bits,
+        },
+        "thinkingBoundedSampler": {
+            "sourceLabel": "GenerateRandomNumberUnderD6",
+            "rangeLowByteImmediateZeroValues": [0, 1],
+            "rangeLowByteImmediateZeroSignedRange": [128, 255],
+            "acceptedUnsignedResultMinimum": 0,
+            "acceptedUnsignedResultUpperBound": "rangeLowByteMinusOne",
+            "retriesUntilUnsignedResultIsBelowRangeLowByte": True,
+            "sourceCommentClaimsAcceptedLowerBound": source_comment_lower_bound,
+            "sourceCommentDisagreesWithReturnDomain": True,
+        },
+        "sourceDirectCallSiteCounts": source_direct_calls,
+        "externalDirectCallerOccurrences": external_callers,
+        "externalDirectCallSiteCounts": external_call_totals,
+        "jumpInterfaceAliases": {
+            THINKING_RNG_JUMP_ALIAS: {
+                "sourcePath": THINKING_RNG_JUMP_INTERFACE_PATH.as_posix(),
+                "target": "GenerateRandomNumberUnderD6",
+            }
+        },
+        "runtimeQuestions": [
+            "random-services-matrix-range-retry-and-seed-copy-isolation",
         ],
     }
 
@@ -1006,12 +1374,13 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
         "soundDriverFacts": sound_driver_facts,
         "serviceFacts": _service_facts(disasm),
         "inputFacts": _input_facts(disasm, listing),
+        "randomServicesFacts": _random_services_facts(disasm, listing),
         "sramFacts": _sram_facts(disasm, listing),
         "runtimeQuestions": [
             "input-hardware-and-repeat-timing",
             "sram-persistence-and-corruption-matrix",
             "z80-mailbox-channel-and-audio-timing",
-            "thinking-rng-caller-distribution-and-delay",
+            "random-services-matrix-range-retry-and-seed-copy-isolation",
             "unused-technical-resource-raw-reach-and-presentation",
         ],
         "files": files,
@@ -1040,6 +1409,7 @@ def verify_service_inventory(
         "soundDriverFacts",
         "serviceFacts",
         "inputFacts",
+        "randomServicesFacts",
         "sramFacts",
         "runtimeQuestions",
     ):
