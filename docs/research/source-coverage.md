@@ -119,6 +119,9 @@ The current evidence is deep but narrow:
   text controls, field items, and the built eight-source shop/church/caravan/blacksmith state-machine
   surface are static contracts; one overlapping member-list alternate remains excluded, while UI,
   persistence, caller-return, and presentation timing remain queued for one concentrated simulation.
+  Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
+  layout, interleaved copying, checksum/flag transitions, and its caller inventory, with durable
+  media behavior retained for one grouped H3 matrix.
   Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
   order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
   remains queued for one technical runtime matrix.

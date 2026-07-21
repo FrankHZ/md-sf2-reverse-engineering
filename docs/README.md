@@ -200,6 +200,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   HEAL 1 治疗与治疗 EXP、SLEEP/SLOW 1 状态抗性与免疫、DESOUL 成败/即死/多目标 kill EXP/gold、SPOIT MP 吸收与边界截断、BOOST 1 属性/重施时序、SILENCE 施法门，以及临时状态回合后生命周期/持久场景回放边界的实现无关合同。
 - [`service-interactions.md`](./design/service-interactions.md)：shop、church、caravan/depot 与
   blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
+- [`save-system.md`](./design/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
+  save/load/copy/delete 静态合同，以及留给 H3 的持久化和断电边界。
 
 ## Decisions
 

@@ -123,6 +123,9 @@ CONTRACTS = {
     "docs/design/service-interactions.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": "sf2-common-menus-static-v1",
     },
+    "docs/design/save-system.md": {
+        "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
+    },
 }
 
 

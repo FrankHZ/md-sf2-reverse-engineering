@@ -30,6 +30,18 @@ SOURCE_PATHS = (
     Path("code/common/tech/thinkingairng.asm"),
 )
 SOUND_DRIVER_PATH = Path("code/common/tech/sound/sounddriver.asm")
+SRAM_SOURCE_PATH = Path("code/common/tech/sram/sramfunctions.asm")
+SRAM_CONST_PATH = Path("sf2const.asm")
+SRAM_ENUM_PATH = Path("sf2enums.asm")
+SRAM_FUNCTIONS = (
+    "CheckSram",
+    "SaveGame",
+    "LoadGame",
+    "CopySave",
+    "ClearSaveSlotFlag",
+    "CopyBytesToSram",
+    "CopyBytesFromSram",
+)
 REPRESENTATIVE_OVERRIDES = {
     "code/common/tech/sram/sramfunctions.asm": "CheckSram",
 }
@@ -111,6 +123,304 @@ def _require_fragments(source: str, fragments: tuple[str, ...], owner: str) -> N
     missing = [fragment for fragment in fragments if fragment not in source]
     if missing:
         raise ValueError(f"{owner} source-shape drift: missing {missing}")
+
+
+def _require_sram_section(
+    source: str, start_marker: str, end_marker: str, fragments: tuple[str, ...]
+) -> None:
+    start = source.find(start_marker)
+    if start < 0:
+        raise ValueError(f"SRAM section start drift: {start_marker}")
+    end = source.find(end_marker, start + len(start_marker))
+    if end < 0:
+        raise ValueError(f"SRAM section end drift: {end_marker}")
+    section = source[start:end]
+    missing = [fragment for fragment in fragments if fragment not in section]
+    if missing:
+        raise ValueError(f"SRAM section semantic drift at {start_marker}: {missing}")
+
+
+def _require_sram_ordered_section(
+    source: str, start_marker: str, end_marker: str, fragments: tuple[str, ...]
+) -> None:
+    start = source.find(start_marker)
+    end = source.find(end_marker, start + len(start_marker))
+    if start < 0 or end < 0:
+        raise ValueError(f"SRAM ordered section boundary drift: {start_marker}")
+    position = start
+    for fragment in fragments:
+        position = source.find(fragment, position, end)
+        if position < 0:
+            raise ValueError(
+                f"SRAM ordered section semantic drift at {start_marker}: {fragment}"
+            )
+        position += len(fragment)
+
+
+def _read_equ_values(path: Path, names: tuple[str, ...]) -> dict[str, int]:
+    source = read_upstream_text(path)
+    values: dict[str, int] = {}
+    for name in names:
+        match = re.search(rf"^{re.escape(name)}:\s+equ\s+(\$[0-9A-F]+|\d+)", source, re.MULTILINE)
+        if not match:
+            raise ValueError(f"missing SRAM constant: {name}")
+        raw = match.group(1)
+        values[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+    return values
+
+
+def _sram_facts(disasm: Path, listing: str) -> dict[str, Any]:
+    source = read_upstream_text(disasm / SRAM_SOURCE_PATH)
+    constants = _read_equ_values(
+        disasm / SRAM_CONST_PATH,
+        (
+            "SRAM_START",
+            "SAVE1_DATA",
+            "SRAM_STRING",
+            "SAVE_FLAGS",
+            "SAVE1_CHECKSUM",
+            "SAVE2_CHECKSUM",
+            "SAVE2_DATA",
+        ),
+    )
+    sizes = _read_equ_values(
+        disasm / SRAM_ENUM_PATH,
+        (
+            "SAVE_FLAGS_SIZE",
+            "SAVE_CHECKSUM_SIZE",
+            "SRAM_STRING_CHECK_COUNTER",
+            "SRAM_STRING_WRITE_COUNTER",
+            "SRAM_STRING_LENGTH",
+            "SAVE_SLOT_REAL_SIZE",
+            "SAVE_SLOT_SIZE",
+            "SRAM_BYTES_COUNTER",
+        ),
+    )
+    _require_sram_section(
+        source,
+        "CheckSram:",
+        "; End of function CheckSram",
+        (
+            "cmpm.b  (a0)+,(a1)+",
+            "lea     1(a1),a1 ; skip filler bytes",
+            "btst    #1,(SAVE_FLAGS).l",
+            "lea     (SAVE2_DATA).l,a0",
+            "cmp.b   (SAVE2_CHECKSUM).l,d0",
+            "moveq   #1,d1",
+            "moveq   #-1,d1",
+            "bclr    #1,(SAVE_FLAGS).l",
+            "btst    #0,(SAVE_FLAGS).l",
+            "lea     (SAVE1_DATA).l,a0",
+            "cmp.b   (SAVE1_CHECKSUM).l,d0",
+            "moveq   #1,d0",
+            "moveq   #-1,d0",
+            "bclr    #0,(SAVE_FLAGS).l",
+            "lea     (SRAM_START).l,a0",
+            "addq.l  #2,a0 ; skip filler bytes",
+            "bsr.w   CopyBytesToSram",
+            "clr.b   (SAVE_FLAGS).l",
+        ),
+    )
+    _require_sram_ordered_section(
+        source,
+        "CheckSram:",
+        "; End of function CheckSram",
+        (
+            "cmpm.b  (a0)+,(a1)+",
+            "btst    #1,(SAVE_FLAGS).l",
+            "btst    #0,(SAVE_FLAGS).l",
+            "lea     (SRAM_START).l,a0",
+            "bsr.w   CopyBytesToSram",
+            "clr.b   (SAVE_FLAGS).l",
+        ),
+    )
+    _require_sram_section(
+        source,
+        "SaveGame:",
+        "; End of function SaveGame",
+        (
+            "tst.b   d0",
+            "lea     (SAVE1_DATA).l,a1",
+            "lea     (SAVE1_CHECKSUM).l,a2",
+            "lea     (SAVE2_DATA).l,a1",
+            "lea     (SAVE2_CHECKSUM).l,a2",
+            "move.w  #SAVE_SLOT_REAL_SIZE,d7",
+            "bsr.w   CopyBytesToSram",
+            "move.b  d0,(a2)",
+            "bset    d1,(SAVE_FLAGS).l",
+        ),
+    )
+    _require_sram_ordered_section(
+        source,
+        "SaveGame:",
+        "; End of function SaveGame",
+        (
+            "tst.b   d0",
+            "bne.s   @Slot2",
+            "lea     (SAVE1_DATA).l,a1",
+            "lea     (SAVE1_CHECKSUM).l,a2",
+            "clr.w   d1",
+            "bra.s   @Continue",
+            "@Slot2:",
+            "lea     (SAVE2_DATA).l,a1",
+            "lea     (SAVE2_CHECKSUM).l,a2",
+            "moveq   #1,d1",
+            "bsr.w   CopyBytesToSram",
+            "move.b  d0,(a2)",
+            "bset    d1,(SAVE_FLAGS).l",
+        ),
+    )
+    _require_sram_section(
+        source,
+        "LoadGame:",
+        "; End of function LoadGame",
+        (
+            "lea     (COMBATANT_DATA).l,a1",
+            "tst.b   d0",
+            "bne.s   @Slot2",
+            "lea     (SAVE1_DATA).l,a0",
+            "clr.w   d1",
+            "bra.s   @Continue",
+            "@Slot2:",
+            "lea     (SAVE2_DATA).l,a0",
+            "moveq   #1,d1",
+            "move.w  #SAVE_SLOT_REAL_SIZE,d7",
+            "bsr.w   CopyBytesFromSram",
+        ),
+    )
+    _require_sram_ordered_section(
+        source,
+        "LoadGame:",
+        "; End of function LoadGame",
+        (
+            "lea     (COMBATANT_DATA).l,a1",
+            "tst.b   d0",
+            "bne.s   @Slot2",
+            "lea     (SAVE1_DATA).l,a0",
+            "clr.w   d1",
+            "bra.s   @Continue",
+            "@Slot2:",
+            "lea     (SAVE2_DATA).l,a0",
+            "moveq   #1,d1",
+            "move.w  #SAVE_SLOT_REAL_SIZE,d7",
+            "bsr.w   CopyBytesFromSram",
+        ),
+    )
+    _require_sram_section(
+        source,
+        "CopySave:",
+        "; End of function CopySave",
+        ("bsr.s   LoadGame", "eori.w  #1,d0", "andi.w  #1,d0", "bsr.s   SaveGame"),
+    )
+    _require_sram_ordered_section(
+        source,
+        "CopySave:",
+        "; End of function CopySave",
+        ("bsr.s   LoadGame", "eori.w  #1,d0", "andi.w  #1,d0", "bsr.s   SaveGame"),
+    )
+    _require_sram_section(
+        source,
+        "ClearSaveSlotFlag:",
+        "; End of function ClearSaveSlotFlag",
+        ("tst.b   d0", "bclr    #0,(SAVE_FLAGS).l", "bclr    #1,(SAVE_FLAGS).l"),
+    )
+    _require_sram_ordered_section(
+        source,
+        "ClearSaveSlotFlag:",
+        "; End of function ClearSaveSlotFlag",
+        (
+            "tst.b   d0",
+            "bne.s   @Slot2",
+            "bclr    #0,(SAVE_FLAGS).l",
+            "bra.s   @Return",
+            "@Slot2:",
+            "bclr    #1,(SAVE_FLAGS).l",
+        ),
+    )
+    _require_sram_section(
+        source,
+        "CopyBytesToSram:",
+        "; End of function CopyBytesToSram",
+        ("clr.w   d0", "subq.w  #1,d7", "move.b  (a0),(a1)", "add.b   (a0)+,d0", "addq.l  #2,a1"),
+    )
+    _require_sram_ordered_section(
+        source,
+        "CopyBytesToSram:",
+        "; End of function CopyBytesToSram",
+        ("move.b  (a0),(a1)", "add.b   (a0)+,d0", "addq.l  #2,a1"),
+    )
+    _require_sram_section(
+        source,
+        "CopyBytesFromSram:",
+        "; End of function CopyBytesFromSram",
+        ("clr.w   d0", "subq.w  #1,d7", "move.b  (a0),(a1)+", "add.b   (a0),d0", "addq.l  #2,a0"),
+    )
+    _require_sram_ordered_section(
+        source,
+        "CopyBytesFromSram:",
+        "; End of function CopyBytesFromSram",
+        ("move.b  (a0),(a1)+", "add.b   (a0),d0", "addq.l  #2,a0"),
+    )
+
+    caller_targets = set(SRAM_FUNCTIONS[:5])
+    callers: dict[str, dict[str, int]] = {}
+    for path in sorted((disasm / "code").rglob("*.asm"), key=lambda item: item.as_posix()):
+        if path.relative_to(disasm) == SRAM_SOURCE_PATH:
+            continue
+        parsed = _parse_source_file(path, path.relative_to(disasm).as_posix())
+        sites = {
+            call["target"]: call["siteCount"]
+            for call in parsed["directCalls"]
+            if call["target"] in caller_targets
+        }
+        if sites:
+            callers[path.relative_to(disasm).as_posix()] = sites
+
+    return {
+        "sourcePath": SRAM_SOURCE_PATH.as_posix(),
+        "sourceLineCount": len(source.splitlines()),
+        "functionEntries": {
+            name: _listing_address(listing, name) for name in SRAM_FUNCTIONS
+        },
+        "constants": {"addresses": constants, "sizes": sizes},
+        "layout": {
+            "logicalSlotCount": 2,
+            "slotSelector": {"zero": "slot1", "nonZero": "slot2"},
+            "logicalBytesPerSlot": sizes["SAVE_SLOT_REAL_SIZE"],
+            "storedPhysicalByteCountPerSlot": sizes["SAVE_SLOT_REAL_SIZE"],
+            "physicalAddressIntervalPerSlot": sizes["SAVE_SLOT_SIZE"],
+            "physicalAddressStepPerLogicalByte": 2,
+            "fullClearLogicalByteCount": sizes["SRAM_BYTES_COUNTER"] + 1,
+            "occupiedFlagBits": {"slot1": 0, "slot2": 1},
+        },
+        "operations": {
+            "checkOrder": ["signature", "slot2", "slot1"],
+            "validOccupiedSlotResult": 1,
+            "emptySlotResult": 0,
+            "invalidOccupiedSlotResult": -1,
+            "invalidChecksumClearsOccupiedFlag": True,
+            "signatureMismatchInitializesAllLogicalSramBytes": True,
+            "initializationWritesSignatureThenClearsSaveFlags": True,
+            "saveCopiesCombatantDataThenStoresChecksumThenSetsOccupiedFlag": True,
+            "loadCopiesSelectedSlotToCombatantDataWithoutLocalChecksumComparison": True,
+            "copyLoadsSelectedSlotThenSavesToOtherSlot": True,
+            "clearOnlyClearsSelectedOccupiedFlag": True,
+        },
+        "checksum": {
+            "accumulatorBits": 8,
+            "copyToSramAddsSourceByteAfterStore": True,
+            "copyFromSramAddsInterleavedSourceByte": True,
+            "storedAsByteAtSelectedChecksumAddress": True,
+            "checkComparesComputedByteToSelectedChecksumByte": True,
+        },
+        "externalCallerOccurrences": callers,
+        "runtimeQuestions": [
+            "sram-signature-and-full-clear-on-real-persistent-media",
+            "sram-valid-invalid-checksum-slot-flag-matrix",
+            "sram-save-copy-delete-and-reload-persistence-ordering",
+            "sram-power-loss-and-partial-write-boundaries",
+        ],
+    }
 
 
 def _incbin_targets(disasm: Path, paths: list[Path]) -> dict[str, str]:
@@ -349,6 +659,7 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
         },
         "soundDriverFacts": sound_driver_facts,
         "serviceFacts": _service_facts(disasm),
+        "sramFacts": _sram_facts(disasm, listing),
         "runtimeQuestions": [
             "input-hardware-and-repeat-timing",
             "sram-persistence-and-corruption-matrix",
@@ -377,7 +688,13 @@ def verify_service_inventory(
         raise ValueError("tech services summary drift")
     if output["representativeAddresses"] != fixture["function"]:
         raise ValueError("tech services H1 address drift")
-    for field in ("resourceFacts", "soundDriverFacts", "serviceFacts", "runtimeQuestions"):
+    for field in (
+        "resourceFacts",
+        "soundDriverFacts",
+        "serviceFacts",
+        "sramFacts",
+        "runtimeQuestions",
+    ):
         if output[field] != fixture["expected"][field]:
             raise ValueError(f"tech services {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()

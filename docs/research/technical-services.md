@@ -76,11 +76,40 @@ higher and forward otherwise, preserving overlapping moves in the normal memmove
 two bounded input waits use 60 and 180 VInt iterations. Static source proves the port and loop shape;
 controller-model quirks and exact repeat perception require runtime observation.
 
-The SRAM service owns two save slots. Logical bytes are stored at every other physical address, the
-copy helpers accumulate an eight-bit additive checksum, and `CheckSram` clears the occupied bit for
-a slot whose checksum fails. Initialization, save/load/copy, and explicit flag clearing are all in
-the same source file. Power-loss ordering and emulator persistence are not inferred from assembly
-alone.
+## SRAM Save-System Contract
+
+`code/common/tech/sram/sramfunctions.asm` is a 229-line, seven-entry service surface: `CheckSram`
+(`0x6EA6`), `SaveGame` (`0x6F6A`), `LoadGame` (`0x6FAC`), `CopySave` (`0x6FDA`),
+`ClearSaveSlotFlag` (`0x6FEC`), `CopyBytesToSram` (`0x7004`), and `CopyBytesFromSram` (`0x701C`).
+The maintained H2 model parses all corresponding H1 entries plus the SRAM constants from
+`sf2const.asm`/`sf2enums.asm`; named-function source guards prove each promoted semantic rather than
+relying on the file's presence alone.
+
+**Confirmed:** SRAM has two logical slots. Selector zero chooses slot 1; a nonzero selector chooses
+slot 2. Each writes 4,016 logical bytes as 4,016 physical storage bytes; advancing the SRAM address
+by two for every copied byte reserves an 8,032-byte address interval per slot, rather than writing
+8,032 storage bytes. `CheckSram` checks its signature, slot 2, then slot 1. The two occupied bits
+are 0 and 1 in `SAVE_FLAGS`. An occupied slot is
+copied through the checksum reader and compared with its selected checksum byte: valid returns 1,
+empty returns 0, invalid returns -1 and clears that occupied bit. A failed signature performs the
+8,192-logical-byte clear, writes the signature, then clears save flags.
+
+**Confirmed:** both copy helpers clear the word accumulator and perform byte addition, so their
+observable checksum is the eight-bit accumulator low byte. Writing stores each source byte then
+adds it before advancing the SRAM destination by two; reading copies the interleaved source byte,
+adds it, then advances that source by two. `SaveGame` copies combatant data, writes the checksum
+byte, then sets its occupied bit. `LoadGame` copies the selected slot to combatant data without a
+local checksum comparison. `CopySave` loads then saves to the opposite selector, while
+`ClearSaveSlotFlag` only clears the selected occupied bit.
+
+The direct-call parser (comments excluded) finds seven external call sites in three source files:
+church `SaveGame`, battle suspend `SaveGame`, and witch `CheckSram`/`SaveGame`/`LoadGame`/
+`CopySave`/`ClearSaveSlotFlag`, one site each. **Inferred:** these callers intend their respective
+save UI/lifecycle operations; their full caller-state outcomes are not promoted solely from the
+direct-call inventory. **Unknown:** physical-media persistence, power loss between data/checksum/flag
+writes, corruption beyond this checksum, emulator storage behavior, and the resulting player-visible
+timing. The remake-facing extraction is
+[`save-system.md`](../design/save-system.md).
 
 `PlayMusicAfterCurrentOne` sends the wait-for-current-music command and parameter command, then polls
 the mailbox with three-frame sleeps. The Z80 source statically exposes YM2612, PSG, DAC, bank, music,
@@ -95,7 +124,9 @@ distribution and variable delay remain inferred until tested as a matrix.
 No emulator was launched for this batch. Five questions are retained for later grouped runs:
 
 1. controller hardware and repeat timing;
-2. SRAM initialization, valid/invalid checksum, slot flags, and persistence in one corruption matrix;
+2. SRAM signature initialization/full clear, valid/invalid checksum and occupied flags, save/copy/
+   delete/reload persistence ordering, and partial-write/power-loss boundaries in one corruption
+   matrix;
 3. 68000-to-Z80 mailbox, channel routing, and audio timing;
 4. thinking-RNG caller distribution and delay boundaries.
 5. raw/computed reach plus frame/palette/VDP behavior for the nominally unused graphics resources.

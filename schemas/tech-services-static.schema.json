@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II remaining technical services static inventory",
   "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "resourceFacts", "soundDriverFacts", "serviceFacts", "runtimeQuestions", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "resourceFacts", "soundDriverFacts", "serviceFacts", "sramFacts", "runtimeQuestions", "files"],
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-services-static-v1" },
     "upstream": { "type": "object" },
@@ -25,7 +25,124 @@
     "resourceFacts": { "type": "object", "required": ["incbinDirectiveCount", "layoutSectionNumbers", "targets", "deepOwnership"] },
     "soundDriverFacts": { "type": "object", "minProperties": 11, "maxProperties": 11 },
     "serviceFacts": { "type": "object", "minProperties": 13, "maxProperties": 13 },
+    "sramFacts": { "$ref": "#/definitions/sramFacts" },
     "runtimeQuestions": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true },
     "files": { "type": "array", "minItems": 12, "maxItems": 12 }
+  },
+  "definitions": {
+    "sramFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "sourceLineCount", "functionEntries", "constants", "layout", "operations", "checksum", "externalCallerOccurrences", "runtimeQuestions"],
+      "properties": {
+        "sourcePath": { "const": "code/common/tech/sram/sramfunctions.asm" },
+        "sourceLineCount": { "const": 229 },
+        "functionEntries": {
+          "type": "object", "additionalProperties": false,
+          "required": ["CheckSram", "SaveGame", "LoadGame", "CopySave", "ClearSaveSlotFlag", "CopyBytesToSram", "CopyBytesFromSram"],
+          "properties": {
+            "CheckSram": { "const": 28326 }, "SaveGame": { "const": 28522 },
+            "LoadGame": { "const": 28588 }, "CopySave": { "const": 28634 },
+            "ClearSaveSlotFlag": { "const": 28652 }, "CopyBytesToSram": { "const": 28676 },
+            "CopyBytesFromSram": { "const": 28700 }
+          }
+        },
+        "constants": {
+          "type": "object", "additionalProperties": false, "required": ["addresses", "sizes"],
+          "properties": {
+            "addresses": {
+              "type": "object", "additionalProperties": false,
+              "required": ["SRAM_START", "SAVE1_DATA", "SRAM_STRING", "SAVE_FLAGS", "SAVE1_CHECKSUM", "SAVE2_CHECKSUM", "SAVE2_DATA"],
+              "properties": {
+                "SRAM_START": { "const": 2097153 }, "SAVE1_DATA": { "const": 2097329 },
+                "SRAM_STRING": { "const": 2105361 }, "SAVE_FLAGS": { "const": 2105397 },
+                "SAVE1_CHECKSUM": { "const": 2105399 }, "SAVE2_CHECKSUM": { "const": 2105401 },
+                "SAVE2_DATA": { "const": 2105403 }
+              }
+            },
+            "sizes": {
+              "type": "object", "additionalProperties": false,
+              "required": ["SAVE_FLAGS_SIZE", "SAVE_CHECKSUM_SIZE", "SRAM_STRING_CHECK_COUNTER", "SRAM_STRING_WRITE_COUNTER", "SRAM_STRING_LENGTH", "SAVE_SLOT_REAL_SIZE", "SAVE_SLOT_SIZE", "SRAM_BYTES_COUNTER"],
+              "properties": {
+                "SAVE_FLAGS_SIZE": { "const": 2 }, "SAVE_CHECKSUM_SIZE": { "const": 2 },
+                "SRAM_STRING_CHECK_COUNTER": { "const": 16 }, "SRAM_STRING_WRITE_COUNTER": { "const": 17 },
+                "SRAM_STRING_LENGTH": { "const": 36 }, "SAVE_SLOT_REAL_SIZE": { "const": 4016 },
+                "SAVE_SLOT_SIZE": { "const": 8032 }, "SRAM_BYTES_COUNTER": { "const": 8191 }
+              }
+            }
+          }
+        },
+        "layout": {
+          "type": "object", "additionalProperties": false,
+          "required": ["logicalSlotCount", "slotSelector", "logicalBytesPerSlot", "storedPhysicalByteCountPerSlot", "physicalAddressIntervalPerSlot", "physicalAddressStepPerLogicalByte", "fullClearLogicalByteCount", "occupiedFlagBits"],
+          "properties": {
+            "logicalSlotCount": { "const": 2 },
+            "slotSelector": {
+              "type": "object", "additionalProperties": false, "required": ["zero", "nonZero"],
+              "properties": { "zero": { "const": "slot1" }, "nonZero": { "const": "slot2" } }
+            },
+            "logicalBytesPerSlot": { "const": 4016 },
+            "storedPhysicalByteCountPerSlot": { "const": 4016 },
+            "physicalAddressIntervalPerSlot": { "const": 8032 },
+            "physicalAddressStepPerLogicalByte": { "const": 2 },
+            "fullClearLogicalByteCount": { "const": 8192 },
+            "occupiedFlagBits": {
+              "type": "object", "additionalProperties": false, "required": ["slot1", "slot2"],
+              "properties": { "slot1": { "const": 0 }, "slot2": { "const": 1 } }
+            }
+          }
+        },
+        "operations": {
+          "type": "object", "additionalProperties": false,
+          "required": ["checkOrder", "validOccupiedSlotResult", "emptySlotResult", "invalidOccupiedSlotResult", "invalidChecksumClearsOccupiedFlag", "signatureMismatchInitializesAllLogicalSramBytes", "initializationWritesSignatureThenClearsSaveFlags", "saveCopiesCombatantDataThenStoresChecksumThenSetsOccupiedFlag", "loadCopiesSelectedSlotToCombatantDataWithoutLocalChecksumComparison", "copyLoadsSelectedSlotThenSavesToOtherSlot", "clearOnlyClearsSelectedOccupiedFlag"],
+          "properties": {
+            "checkOrder": { "type": "array", "items": [{ "const": "signature" }, { "const": "slot2" }, { "const": "slot1" }], "minItems": 3, "maxItems": 3, "additionalItems": false },
+            "validOccupiedSlotResult": { "const": 1 }, "emptySlotResult": { "const": 0 }, "invalidOccupiedSlotResult": { "const": -1 },
+            "invalidChecksumClearsOccupiedFlag": { "const": true }, "signatureMismatchInitializesAllLogicalSramBytes": { "const": true },
+            "initializationWritesSignatureThenClearsSaveFlags": { "const": true }, "saveCopiesCombatantDataThenStoresChecksumThenSetsOccupiedFlag": { "const": true },
+            "loadCopiesSelectedSlotToCombatantDataWithoutLocalChecksumComparison": { "const": true }, "copyLoadsSelectedSlotThenSavesToOtherSlot": { "const": true },
+            "clearOnlyClearsSelectedOccupiedFlag": { "const": true }
+          }
+        },
+        "checksum": {
+          "type": "object", "additionalProperties": false,
+          "required": ["accumulatorBits", "copyToSramAddsSourceByteAfterStore", "copyFromSramAddsInterleavedSourceByte", "storedAsByteAtSelectedChecksumAddress", "checkComparesComputedByteToSelectedChecksumByte"],
+          "properties": {
+            "accumulatorBits": { "const": 8 }, "copyToSramAddsSourceByteAfterStore": { "const": true },
+            "copyFromSramAddsInterleavedSourceByte": { "const": true }, "storedAsByteAtSelectedChecksumAddress": { "const": true },
+            "checkComparesComputedByteToSelectedChecksumByte": { "const": true }
+          }
+        },
+        "externalCallerOccurrences": {
+          "type": "object", "additionalProperties": false,
+          "required": ["code/common/menus/church/churchactions_1.asm", "code/gameflow/battle/battlefunctions/battlefunctions_2.asm", "code/specialscreens/witch/witchstart.asm"],
+          "properties": {
+            "code/common/menus/church/churchactions_1.asm": {
+              "type": "object", "additionalProperties": false, "required": ["SaveGame"],
+              "properties": { "SaveGame": { "const": 1 } }
+            },
+            "code/gameflow/battle/battlefunctions/battlefunctions_2.asm": {
+              "type": "object", "additionalProperties": false, "required": ["SaveGame"],
+              "properties": { "SaveGame": { "const": 1 } }
+            },
+            "code/specialscreens/witch/witchstart.asm": {
+              "type": "object", "additionalProperties": false,
+              "required": ["CheckSram", "SaveGame", "LoadGame", "CopySave", "ClearSaveSlotFlag"],
+              "properties": {
+                "CheckSram": { "const": 1 }, "SaveGame": { "const": 1 }, "LoadGame": { "const": 1 },
+                "CopySave": { "const": 1 }, "ClearSaveSlotFlag": { "const": 1 }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array", "items": [
+            { "const": "sram-signature-and-full-clear-on-real-persistent-media" },
+            { "const": "sram-valid-invalid-checksum-slot-flag-matrix" },
+            { "const": "sram-save-copy-delete-and-reload-persistence-ordering" },
+            { "const": "sram-power-loss-and-partial-write-boundaries" }
+          ], "minItems": 4, "maxItems": 4, "additionalItems": false
+        }
+      }
+    }
   }
 }
