@@ -112,15 +112,79 @@ runtime questions; table ordering and selection control flow are no longer infer
 
 The inventory binds the top-level `FieldMenu`, `ShopMenu`, `ChurchMenu`, `CaravanMenu`, and
 `BlacksmithMenu` entry points, plus the surrounding battle item/magic/equip menus, member screens,
-portrait windows, minimap, and ending presentation. Detailed service state machines and animation
-behavior are intentionally not promoted from names alone.
+portrait windows, minimap, and ending presentation. The one unbuilt menu alternate remains
+`writememberlisttext.asm`; it is not part of the four-service state-machine denominator.
+
+## Static Service-Menu State Machines
+
+The maintained `common-menus` extractor now closes the built eight-source service surface:
+blacksmith actions/weapon selection, both caravan files, both church files, shop actions, and the
+shared shop/caravan selection screen. It contains 4,286 source lines, 420 direct call sites to 115
+unique targets, and 16 indirect call sites; the explicit source-path list prevents the two helper
+files from being silently omitted. This is a **Confirmed** source-control-flow contract, backed by
+the pinned `master` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`, the H1 entry bindings in
+`tests/fixtures/h2/common-menus-static-v1.json`, and source-shape checks in
+`src/sf2tool/h2/menus.py`. It adds no new H1 addresses: `BlacksmithMenu` (`0x21A3A`), `CaravanMenu`
+(`0x21FD2`), `ChurchMenu` (`0x20A02`), `ShopMenu` (`0x20064`), and `ExecuteShopScreen` (`0x147FA`)
+were already bound by this rail.
+
+`ShopMenu` and `ChurchMenu` each use an ordered choice chain after `ExecuteDiamondMenu`; their
+respective source orders are buy/sell/repair/deals and raise/cure/promote/save. A diamond-menu
+cancel exits either service. Non-exit shop actions return to its choice loop. The shared selection
+screen accepts A/C, cancels with B returning `-1`, and resolves the selected byte in `GENERIC_LIST`
+using `CURRENT_SHOP_PAGE * ITEMS_PER_SHOP_PAGE + CURRENT_SHOP_SELECTION`. The page multiplier is
+implemented as shifts/adds rather than a multiply instruction.
+
+The shop source directly proves gold/item effects at the helper boundary: buy decreases gold and
+adds an item; sell increases gold, drops the selected item, and adds a rare sale to deals; repair
+decreases gold and repairs the selected slot; deals purchase decreases gold, adds an item, and
+removes it from deals. The count-prefixed current-shop list and the deals-only-not-current-shop list
+are separate inputs to that same selection screen.
+
+Church choice 0 iterates current force members and can decrease gold, restore current HP, and update
+the ally map sprite; choice 1 can decrease gold and replace status effects; choice 2 selects a
+promotion-data-eligible member before `SetClass`/`Promote`; choice 3 enters `SaveGame`. The exact
+save continuation, caller return meaning, and player-visible sequencing are not inferred from those
+direct calls.
+
+`CaravanMenu` uses a four-entry relative jump table in this exact order: join, depot, item, purge;
+each action returns to the caravan loop, while cancel exits. Depot is a nested four-entry table
+(look, deposit, derive, drop), and the item submenu is a second nested table (use, give, equip,
+drop). The source proves party joins/leaves, depot deposit as add-to-caravan plus drop-from-member,
+derive as add-to-member plus remove-from-caravan, and rare depot drops as deals additions. It does
+not prove which map callers admit the service or retain a particular menu result.
+
+`BlacksmithMenu` has no diamond-menu dispatch. On each visit it zeros four stack-local counters,
+updates the force list, counts pending/ready orders, fulfills ready orders when flag 80 permits, and
+otherwise enters order placement while capacity remains. Placement requires mithril, an eligible
+promoted customer, confirmation, enough gold, and a free order slot; its direct effects decrease
+gold, remove mithril from the selected slot, choose a mithril weapon, and clear flag 80. Fulfillment
+selects a recipient, adds the selected weapon, and can offer equip. The pinned source also proves
+the BRN/RDBN random class boundary and weighted row selection inside `PickMithrilWeapon`; its
+cross-map/save persistence is not statically established here.
+
+The interaction-level handoff is recorded in
+[`service-interactions.md`](../design/service-interactions.md). It deliberately consumes only the
+confirmed action ordering, cancellation boundary, and direct mutation calls; it is not a claim about
+the original presentation or persistence lifecycle.
 
 ## Concentrated Runtime Queue
 
-The next UI runtime batch should share one BizHawk launch and generated case table for prompt return
-values, held-input release behavior, window displacement/restoration, and idle RNG advancement.
-Portrait, minimap, ending, and menu-icon frame timing should form a separate presentation matrix
-because they share VInt/VDP observation points. This static batch starts no emulator.
+One future service-menu H3 launch should use a generated matrix rather than one case per branch:
+
+- enter each vanilla shop, church, caravan, and blacksmith caller; record admission preconditions,
+  return state, and cancel behavior;
+- for shop/deals, church raise/cure/promotion/save, caravan depot transfer/drop, and blacksmith
+  order/fulfillment, snapshot gold, party inventory, caravan storage, order storage, flags, and save
+  state before/after both confirm and cancellation paths;
+- vary map reload, save/reload, story flag 80, and blacksmith-ready conditions to distinguish
+  per-visit stack state from persistent state;
+- share VInt/VDP/audio observation points for window/portrait movement, prompt release behavior, and
+  post-music continuation timing.
+
+This queue leaves caller-dependent service admission/return intent **Inferred** and persistence,
+window/portrait/audio/input timing, and final rendered composition **Unknown**. It starts no
+emulator in this static slice.
 
 ## Reproduction
 

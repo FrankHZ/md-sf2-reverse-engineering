@@ -8,6 +8,35 @@
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
     "function": { "type": "object", "minProperties": 41, "maxProperties": 41, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "expected": { "type": "object", "additionalProperties": false, "required": ["menuFacts", "alternateSource"], "properties": { "menuFacts": { "type": "object", "minProperties": 7, "maxProperties": 7 }, "alternateSource": { "type": "object" } } }
+    "expected": {
+      "type": "object", "additionalProperties": false, "required": ["menuFacts", "alternateSource"],
+      "properties": {
+        "menuFacts": {
+          "type": "object", "minProperties": 8, "maxProperties": 8, "required": ["serviceStateMachines"],
+          "properties": {
+            "serviceStateMachines": {
+              "type": "object", "additionalProperties": false,
+              "required": ["builtSourcePaths", "sourceInventory", "sharedSelectionScreen", "shop", "church", "caravan", "blacksmith", "staticBoundary"],
+              "properties": {
+                "builtSourcePaths": { "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true, "items": { "type": "string" } },
+                "sourceInventory": { "type": "object", "additionalProperties": false, "required": ["fileCount", "sourceLineCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "entrySymbols"], "properties": { "fileCount": { "const": 8 }, "sourceLineCount": { "type": "integer", "minimum": 1 }, "directCallSiteCount": { "type": "integer", "minimum": 1 }, "indirectCallSiteCount": { "type": "integer", "minimum": 1 }, "uniqueDirectTargetCount": { "type": "integer", "minimum": 1 }, "entrySymbols": { "type": "object", "additionalProperties": false, "required": ["blacksmith", "caravan", "church", "shop", "sharedSelection"], "properties": { "blacksmith": { "type": "string" }, "caravan": { "type": "string" }, "church": { "type": "string" }, "shop": { "type": "string" }, "sharedSelection": { "type": "string" } } } } },
+                "sharedSelectionScreen": { "type": "object", "additionalProperties": false, "required": ["entrySymbol", "cancelResult", "confirmButtons", "cancelButton", "selectionAddressing", "stateReadsAndWrites"], "properties": { "entrySymbol": { "type": "string" }, "cancelResult": { "const": -1 }, "confirmButtons": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "enum": ["A", "C"] } }, "cancelButton": { "const": "B" }, "selectionAddressing": { "type": "string" }, "stateReadsAndWrites": { "type": "array", "minItems": 5, "items": { "type": "string" } } } },
+                "shop": { "$ref": "#/definitions/fourChoiceService" }, "church": { "$ref": "#/definitions/fourChoiceService" },
+                "caravan": { "type": "object", "additionalProperties": false, "required": ["entrySymbol", "selectionMenu", "choiceOrder", "dispatch", "actionLoop", "exit", "depot", "item", "partyEffects"], "properties": { "entrySymbol": { "type": "string" }, "selectionMenu": { "type": "string" }, "choiceOrder": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } }, "dispatch": { "type": "string" }, "actionLoop": { "type": "string" }, "exit": { "type": "string" }, "depot": { "$ref": "#/definitions/nestedEffectService" }, "item": { "$ref": "#/definitions/nestedService" }, "partyEffects": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } } } },
+                "blacksmith": { "type": "object", "additionalProperties": false, "required": ["entrySymbol", "dispatch", "noDiamondMenu", "perVisitCounters", "fulfillment", "placementGuards", "placementEffects", "randomBoundary"], "properties": { "entrySymbol": { "type": "string" }, "dispatch": { "type": "string" }, "noDiamondMenu": { "const": true }, "perVisitCounters": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } }, "fulfillment": { "$ref": "#/definitions/stringArray" }, "placementGuards": { "type": "array", "minItems": 5, "items": { "type": "string" } }, "placementEffects": { "type": "array", "minItems": 4, "items": { "type": "string" } }, "randomBoundary": { "type": "string" } } },
+                "staticBoundary": { "type": "object", "additionalProperties": false, "required": ["callerDependentServiceAdmissionAndReturnState", "persistenceAcrossMapLoadSaveAndStoryProgress", "windowPortraitSoundAndInputTiming", "unbuiltAlternatePaths"], "properties": { "callerDependentServiceAdmissionAndReturnState": { "const": "inferred" }, "persistenceAcrossMapLoadSaveAndStoryProgress": { "const": "unknown" }, "windowPortraitSoundAndInputTiming": { "const": "unknown" }, "unbuiltAlternatePaths": { "type": "array", "minItems": 1, "items": { "type": "string" } } } }
+              }
+            }
+          }
+        },
+        "alternateSource": { "type": "object" }
+      }
+    }
+  },
+  "definitions": {
+    "stringArray": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "fourChoiceService": { "type": "object", "additionalProperties": false, "required": ["entrySymbol", "selectionMenu", "choiceOrder", "dispatch", "actionLoop", "exit", "confirmedEffects"], "properties": { "entrySymbol": { "type": "string" }, "selectionMenu": { "type": "string" }, "choiceOrder": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } }, "dispatch": { "type": "string" }, "actionLoop": { "type": "string" }, "exit": { "type": "string" }, "listSources": { "type": "array", "minItems": 2, "items": { "type": "string" } }, "confirmedEffects": { "type": "object", "minProperties": 4, "additionalProperties": { "$ref": "#/definitions/stringArray" } } } },
+    "nestedService": { "type": "object", "additionalProperties": false, "required": ["selectionMenu", "choiceOrder", "dispatch"], "properties": { "selectionMenu": { "type": "string" }, "choiceOrder": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } }, "dispatch": { "type": "string" }, "effects": { "type": "object", "minProperties": 3, "additionalProperties": { "$ref": "#/definitions/stringArray" } } } },
+    "nestedEffectService": { "type": "object", "additionalProperties": false, "required": ["selectionMenu", "choiceOrder", "dispatch", "effects"], "properties": { "selectionMenu": { "type": "string" }, "choiceOrder": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "string" } }, "dispatch": { "type": "string" }, "effects": { "type": "object", "minProperties": 3, "additionalProperties": { "$ref": "#/definitions/stringArray" } } } }
   }
 }

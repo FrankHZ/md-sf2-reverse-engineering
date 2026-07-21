@@ -25,6 +25,17 @@ FIXTURE_SCHEMA = repo_path("schemas/h2-common-menus-static-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 
+SERVICE_SOURCE_PATHS = (
+    Path("code/common/menus/blacksmith/blacksmithactions.asm"),
+    Path("code/common/menus/blacksmith/pickmithrilweapon.asm"),
+    Path("code/common/menus/caravan/caravanactions_1.asm"),
+    Path("code/common/menus/caravan/caravanactions_2.asm"),
+    Path("code/common/menus/church/churchactions_1.asm"),
+    Path("code/common/menus/church/churchactions_2.asm"),
+    Path("code/common/menus/shop/shopactions.asm"),
+    Path("code/common/menus/shopscreen.asm"),
+)
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -91,6 +102,427 @@ def _alternate_source_fact(disasm: Path, listing: str) -> dict[str, Any]:
         "alternateExcludedFromStrictReach": True,
         "canonicalSha256": hashlib.sha256(canonical_bytes).hexdigest().upper(),
         "alternateSha256": hashlib.sha256(alternate_bytes).hexdigest().upper(),
+    }
+
+
+def _require_service_section(
+    path: Path, start_marker: str, end_marker: str, fragments: list[str]
+) -> None:
+    source = path.read_text(encoding="utf-8")
+    start = source.find(start_marker)
+    if start < 0:
+        raise ValueError(f"service section start drift in {path.name}: {start_marker}")
+    end = source.find(end_marker, start + len(start_marker))
+    if end < 0:
+        raise ValueError(f"service section end drift in {path.name}: {end_marker}")
+    section = source[start:end]
+    missing = [fragment for fragment in fragments if fragment not in section]
+    if missing:
+        raise ValueError(
+            f"service section semantic drift in {path.name} ({start_marker}): {missing}"
+        )
+
+
+def _service_state_machines(disasm: Path) -> dict[str, Any]:
+    """Extract the built service-menu control-flow boundary without interpreting UI timing."""
+    root = disasm / SOURCE_ROOT
+    if not all((disasm / path).is_file() for path in SERVICE_SOURCE_PATHS):
+        raise ValueError("service-menu source boundary is incomplete")
+    service_files = [
+        _parse_source_file(disasm / path, path.as_posix()) for path in SERVICE_SOURCE_PATHS
+    ]
+    service_calls: Counter[str] = Counter()
+    for row in service_files:
+        for call in row["directCalls"]:
+            service_calls[call["target"]] += call["siteCount"]
+
+    _require_ordered_fragments(
+        root / "shop/shopactions.asm",
+        [
+            "moveq   #MENU_SHOP,d2",
+            "jsr     j_ExecuteDiamondMenu",
+            "cmpi.w  #-1,d0",
+            "@CheckChoice_Buy:",
+            "jsr     j_DecreaseGold",
+            "jsr     j_AddItem",
+            "@CheckChoice_Sell:",
+            "jsr     j_IncreaseGold",
+            "jsr     j_DropItemBySlot",
+            "@CheckChoice_Repair:",
+            "jsr     j_RepairItemBySlot",
+            "@CheckChoice_Deals:",
+            "jsr     j_RemoveItemFromDeals",
+        ],
+    )
+    _require_ordered_fragments(
+        root / "shopscreen.asm",
+        [
+            "ExecuteShopScreen:",
+            "clr.w   ((CURRENT_SHOP_PAGE-$1000000)).w",
+            "clr.w   ((CURRENT_SHOP_SELECTION-$1000000)).w",
+            "btst    #INPUT_BIT_B,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_C,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_A,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "moveq   #-1,d0",
+            "GetCurrentShopSelection:",
+            "add.w   d0,d0",
+            "add.w   d1,d0",
+            "move.w  ((CURRENT_SHOP_SELECTION-$1000000)).w,d1",
+            "add.w   d1,d0",
+        ],
+    )
+    _require_ordered_fragments(
+        root / "church/churchactions_1.asm",
+        [
+            "moveq   #MENU_CHURCH,d2",
+            "jsr     j_ExecuteDiamondMenu",
+            "@CheckRaiseAction:",
+            "jsr     j_DecreaseGold",
+            "jsr     j_IncreaseCurrentHp",
+            "@CheckCureAction:",
+            "jsr     j_SetStatusEffects",
+            "@CheckPromoAction:",
+            "jsr     j_Promote",
+            "@StartSave:",
+            "jsr     (SaveGame).w",
+        ],
+    )
+    _require_ordered_fragments(
+        root / "caravan/caravanactions_1.asm",
+        [
+            "CaravanMenu:",
+            "rjt_CaravanMenuActions:",
+            "dc.w caravanMenu_Join-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Depot-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Item-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Purge-rjt_CaravanMenuActions",
+            "rjt_CaravanDepotSubmenuActions:",
+            "dc.w caravanDepotSubmenu_Look-rjt_CaravanDepotSubmenuActions",
+            "dc.w caravanDepotSubmenu_Deposit-rjt_CaravanDepotSubmenuActions",
+            "dc.w caravanDepotSubmenu_Derive-rjt_CaravanDepotSubmenuActions",
+            "dc.w caravanDepotSubmenu_Drop-rjt_CaravanDepotSubmenuActions",
+            "jsr     j_AddItemToCaravan",
+            "jsr     j_RemoveItemFromCaravan",
+            "jsr     j_AddItemToDeals",
+            "rjt_CaravanItemSubmenuActions:",
+            "dc.w caravanItemSubmenu_Use-rjt_CaravanItemSubmenuActions",
+            "dc.w caravanItemSubmenu_Give-rjt_CaravanItemSubmenuActions",
+            "dc.w caravanItemSubmenu_Equip-rjt_CaravanItemSubmenuActions",
+            "dc.w caravanItemSubmenu_Drop-rjt_CaravanItemSubmenuActions",
+        ],
+    )
+    _require_ordered_fragments(
+        root / "blacksmith/blacksmithactions.asm",
+        [
+            "BlacksmithMenu:",
+            "clr.w   readyToFulfillOrdersNumber(a6)",
+            "clr.w   pendingOrdersNumber(a6)",
+            "clr.w   fulfilledOrdersNumber(a6)",
+            "clr.w   fulfillOrdersFlag(a6)",
+            "bsr.w   ProcessBlacksmithOrders",
+            "BlacksmithAction_PlaceOrder:",
+            "cmpi.w  #BLACKSMITH_MITHRIL_ITEM,d2",
+            "jsr     j_DecreaseGold",
+            "jsr     j_DropItemBySlot",
+            "bsr.w   PickMithrilWeapon",
+            "jsr     j_ClearFlag",
+            "CountPendingAndReadyToFulfillOrders:",
+            "move.w  #80,d1",
+            "jsr     j_CheckFlag",
+        ],
+    )
+    _require_ordered_fragments(
+        root / "blacksmith/pickmithrilweapon.asm",
+        [
+            "PickMithrilWeapon:",
+            "list_MithrilWeaponClasses",
+            "table_MithrilWeapons",
+            "jsr     (GenerateRandomNumber).w",
+            "lea     ((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w,a0",
+        ],
+    )
+    _require_service_section(
+        root / "shopscreen.asm",
+        "ExecuteShopScreen:",
+        "LoadShopInventoryHighlightSprites:",
+        [
+            "btst    #INPUT_BIT_B,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_C,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_A,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "moveq   #-1,d0",
+        ],
+    )
+    _require_service_section(
+        root / "shopscreen.asm",
+        "GetCurrentShopSelection:",
+        "inventoryWindowLayoutLoadingSpace = -240",
+        [
+            "((CURRENT_SHOP_PAGE-$1000000)).w,d0",
+            "((CURRENT_SHOP_SELECTION-$1000000)).w,d1",
+            "lea     ((GENERIC_LIST-$1000000)).w,a0",
+            "move.b  (a0,d0.w),d0",
+        ],
+    )
+    _require_service_section(
+        root / "shop/shopactions.asm",
+        "@CheckChoice_Buy:",
+        "@CheckChoice_Sell:",
+        ["jsr     j_DecreaseGold", "jsr     j_AddItem"],
+    )
+    _require_service_section(
+        root / "shop/shopactions.asm",
+        "@CheckChoice_Sell:",
+        "@CheckChoice_Repair:",
+        ["jsr     j_IncreaseGold", "jsr     j_DropItemBySlot", "jsr     j_AddItemToDeals"],
+    )
+    _require_service_section(
+        root / "shop/shopactions.asm",
+        "@CheckChoice_Repair:",
+        "@CheckChoice_Deals:",
+        ["jsr     j_DecreaseGold", "jsr     j_RepairItemBySlot"],
+    )
+    _require_service_section(
+        root / "shop/shopactions.asm",
+        "@CheckChoice_Deals:",
+        "PopulateShopInventoryList:",
+        ["jsr     j_DecreaseGold", "jsr     j_AddItem", "jsr     j_RemoveItemFromDeals"],
+    )
+    _require_service_section(
+        root / "shop/shopactions.asm",
+        "PopulateShopInventoryList:",
+        "DetermineDealsItemsNotInCurrentShop:",
+        ["bsr.s   GetShopInventoryAddress", "((GENERIC_LIST_LENGTH-$1000000)).w"],
+    )
+    _require_service_section(
+        root / "shop/shopactions.asm",
+        "DetermineDealsItemsNotInCurrentShop:",
+        "DoesCurrentShopContainItem:",
+        ["j_GetDealsItemAmount", "DoesCurrentShopContainItem", "((GENERIC_LIST-$1000000)).w"],
+    )
+    _require_service_section(
+        root / "church/churchactions_1.asm",
+        "@CheckRaiseAction:",
+        "@CheckCureAction:",
+        ["jsr     j_DecreaseGold", "jsr     j_IncreaseCurrentHp", "bsr.w   UpdateAllyMapsprite"],
+    )
+    _require_service_section(
+        root / "church/churchactions_1.asm",
+        "@CheckCureAction:",
+        "@CheckPromoAction:",
+        ["jsr     j_DecreaseGold", "jsr     j_SetStatusEffects"],
+    )
+    _require_service_section(
+        root / "church/churchactions_1.asm",
+        "@CheckPromoAction:",
+        "@StartSave:",
+        ["bsr.w   CountPromotableMembers", "jsr     j_SetClass", "jsr     j_Promote"],
+    )
+    _require_service_section(
+        root / "church/churchactions_2.asm",
+        "CountPromotableMembers:",
+        "GetPromotionData:",
+        ["jsr     j_GetClass", "bsr.w   GetPromotionData", "jsr     j_GetLevel"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "CaravanMenu:",
+        "caravanMenu_Join:",
+        ["moveq   #MENU_CARAVAN,d2", "jsr     j_ExecuteDiamondMenu", "rjt_CaravanMenuActions:"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "caravanMenu_Join:",
+        "caravanMenu_Purge:",
+        ["jsr     j_JoinBattleParty", "jsr     j_LeaveBattleParty"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "caravanMenu_Depot:",
+        "caravanDepotSubmenu_Look:",
+        ["moveq   #MENU_DEPOT,d2", "jsr     j_ExecuteDiamondMenu"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "caravanDepotSubmenu_Deposit:",
+        "caravanDepotSubmenu_Derive:",
+        ["jsr     j_AddItemToCaravan", "jsr     j_DropItemBySlot"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "caravanDepotSubmenu_Derive:",
+        "caravanDepotSubmenu_Drop:",
+        ["jsr     j_AddItem", "jsr     j_RemoveItemFromCaravan"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "caravanDepotSubmenu_Drop:",
+        "caravanMenu_Item:",
+        ["jsr     j_RemoveItemFromCaravan", "jsr     j_AddItemToDeals"],
+    )
+    _require_service_section(
+        root / "caravan/caravanactions_1.asm",
+        "caravanMenu_Item:",
+        "modend",
+        ["moveq   #MENU_ITEM,d2", "jsr     j_ExecuteDiamondMenu", "rjt_CaravanItemSubmenuActions:"],
+    )
+    _require_service_section(
+        root / "blacksmith/blacksmithactions.asm",
+        "ProcessBlacksmithOrders:",
+        "BlacksmithAction_FulfillOrder:",
+        [
+            "CountPendingAndReadyToFulfillOrders",
+            "#BLACKSMITH_MAX_ORDERS_NUMBER",
+            "BlacksmithAction_PlaceOrder",
+        ],
+    )
+    _require_service_section(
+        root / "blacksmith/blacksmithactions.asm",
+        "BlacksmithAction_FulfillOrder:",
+        "BlacksmithAction_PlaceOrder:",
+        ["jsr     j_AddItem", "jsr     j_EquipItemBySlot"],
+    )
+    _require_service_section(
+        root / "blacksmith/blacksmithactions.asm",
+        "BlacksmithAction_PlaceOrder:",
+        "WaitForMusicResumeAndPlayerInput_Blacksmith:",
+        [
+            "cmpi.w  #BLACKSMITH_MITHRIL_ITEM,d2",
+            "jsr     j_GetClass",
+            "bsr.w   IsClassBlacksmithEligible",
+            "#BLACKSMITH_ORDER_COST",
+            "jsr     j_GetGold",
+            "jsr     j_DecreaseGold",
+            "bsr.w   PickMithrilWeapon",
+            "jsr     j_ClearFlag",
+        ],
+    )
+    blacksmith_sources = "\n".join(
+        (disasm / path).read_text(encoding="utf-8")
+        for path in SERVICE_SOURCE_PATHS[:2]
+    )
+    if "ExecuteDiamondMenu" in blacksmith_sources:
+        raise ValueError("blacksmith service unexpectedly enters ExecuteDiamondMenu")
+
+    return {
+        "builtSourcePaths": [path.as_posix() for path in SERVICE_SOURCE_PATHS],
+        "sourceInventory": {
+            "fileCount": len(service_files),
+            "sourceLineCount": sum(row["sourceLineCount"] for row in service_files),
+            "directCallSiteCount": sum(service_calls.values()),
+            "indirectCallSiteCount": sum(row["indirectCallSiteCount"] for row in service_files),
+            "uniqueDirectTargetCount": len(service_calls),
+            "entrySymbols": {
+                "blacksmith": "BlacksmithMenu",
+                "caravan": "CaravanMenu",
+                "church": "ChurchMenu",
+                "shop": "ShopMenu",
+                "sharedSelection": "ExecuteShopScreen",
+            },
+        },
+        "sharedSelectionScreen": {
+            "entrySymbol": "ExecuteShopScreen",
+            "cancelResult": -1,
+            "confirmButtons": ["A", "C"],
+            "cancelButton": "B",
+            "selectionAddressing": "page-times-items-per-page-plus-selection",
+            "stateReadsAndWrites": [
+                "CURRENT_SHOP_PAGE",
+                "CURRENT_SHOP_SELECTION",
+                "CURRENT_SHOP_PAGE_ITEMS_NUMBER",
+                "GENERIC_LIST",
+                "GENERIC_LIST_LENGTH",
+            ],
+        },
+        "shop": {
+            "entrySymbol": "ShopMenu",
+            "selectionMenu": "MENU_SHOP",
+            "choiceOrder": ["buy", "sell", "repair", "deals"],
+            "dispatch": "ordered-conditional-chain",
+            "actionLoop": "each non-exit action returns to the shop choice loop",
+            "exit": "diamond-menu-cancel-exits-service",
+            "listSources": [
+                "count-prefixed-current-shop-inventory",
+                "eligible-deals-not-in-current-shop",
+            ],
+            "confirmedEffects": {
+                "buy": ["decrease-gold", "add-item"],
+                "sell": ["increase-gold", "drop-item-by-slot", "rare-item-adds-to-deals"],
+                "repair": ["decrease-gold", "repair-item-by-slot"],
+                "deals": ["decrease-gold", "add-item", "remove-item-from-deals"],
+            },
+        },
+        "church": {
+            "entrySymbol": "ChurchMenu",
+            "selectionMenu": "MENU_CHURCH",
+            "choiceOrder": ["raise", "cure", "promote", "save"],
+            "dispatch": "ordered-conditional-chain",
+            "actionLoop": "actions converge on the save-or-return boundary before returning",
+            "exit": "diamond-menu-cancel-exits-service",
+            "confirmedEffects": {
+                "raise": ["decrease-gold", "increase-current-hp", "update-ally-mapsprite"],
+                "cure": ["decrease-gold", "set-status-effects"],
+                "promote": ["promotion-data-gated-member-selection", "set-class", "promote"],
+                "save": ["save-game"],
+            },
+        },
+        "caravan": {
+            "entrySymbol": "CaravanMenu",
+            "selectionMenu": "MENU_CARAVAN",
+            "choiceOrder": ["join", "depot", "item", "purge"],
+            "dispatch": "four-entry-relative-jump-table",
+            "actionLoop": "each action returns to the caravan choice loop",
+            "exit": "diamond-menu-cancel-exits-service",
+            "depot": {
+                "selectionMenu": "MENU_DEPOT",
+                "choiceOrder": ["look", "deposit", "derive", "drop"],
+                "dispatch": "four-entry-relative-jump-table",
+                "effects": {
+                    "deposit": ["add-item-to-caravan", "drop-item-by-slot"],
+                    "derive": ["add-item", "remove-item-from-caravan"],
+                    "drop": ["remove-item-from-caravan", "rare-item-adds-to-deals"],
+                },
+            },
+            "item": {
+                "selectionMenu": "MENU_ITEM",
+                "choiceOrder": ["use", "give", "equip", "drop"],
+                "dispatch": "four-entry-relative-jump-table",
+            },
+            "partyEffects": ["join-battle-party", "leave-battle-party"],
+        },
+        "blacksmith": {
+            "entrySymbol": "BlacksmithMenu",
+            "dispatch": "ordered-fulfill-ready-orders-then-place-pending-order",
+            "noDiamondMenu": True,
+            "perVisitCounters": [
+                "readyToFulfillOrdersNumber",
+                "pendingOrdersNumber",
+                "fulfilledOrdersNumber",
+                "fulfillOrdersFlag",
+            ],
+            "fulfillment": ["select-recipient", "add-item", "optional-equip"],
+            "placementGuards": [
+                "select-mithril-item",
+                "select-eligible-promoted-customer",
+                "confirm-order-cost",
+                "sufficient-gold",
+                "free-order-slot",
+            ],
+            "placementEffects": [
+                "decrease-gold",
+                "drop-mithril-by-slot",
+                "pick-mithril-weapon",
+                "clear-flag-80",
+            ],
+            "randomBoundary": (
+                "mithril-weapon-selection-includes-random-class-and-weighted-row-selection"
+            ),
+        },
+        "staticBoundary": {
+            "callerDependentServiceAdmissionAndReturnState": "inferred",
+            "persistenceAcrossMapLoadSaveAndStoryProgress": "unknown",
+            "windowPortraitSoundAndInputTiming": "unknown",
+            "unbuiltAlternatePaths": [ALTERNATE_SOURCE.as_posix()],
+        },
     }
 
 
@@ -226,6 +658,7 @@ def _menu_facts(disasm: Path, field_item_pairs: list[dict[str, Any]]) -> dict[st
             "FieldMenu",
             "ShopMenu",
         ],
+        "serviceStateMachines": _service_state_machines(disasm),
         "inventoryBoundary": {
             "battlefieldAndFieldMenusInventoried": True,
             "shopsChurchCaravanAndBlacksmithInventoried": True,

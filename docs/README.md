@@ -79,7 +79,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
   field-item dispatch、spell learning、新游戏顺序和未 include 的 alternate source 边界。
 - [`common-menus.md`](./research/common-menus.md)：共享菜单 42 文件、提示框/文本控制、field-item
-  dispatch、商店/教堂/车队等服务入口、diamond/yes-no 压缩图形、完整 icon storage/copy/highlight
+  dispatch、商店/教堂/车队/铁匠的完整静态服务状态机、diamond/yes-no 压缩图形、完整 icon storage/copy/highlight
   合同、27 个 leaf UI layout/2,394 个 VDP word、spell-level pointer 与 diamond-border 合同及
   alternate 边界。
 - [`technical-interrupts.md`](./research/technical-interrupts.md)：VInt、DMA、fade、输入重复、wait/sleep
@@ -198,6 +198,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`spell-resolution.md`](./design/spell-resolution.md)：攻击法术的元素抗性位域、整数伤害调整、
   promoted power、DAO target-count division、spell critical、共用 downward spread、攻击法术 EXP、
   HEAL 1 治疗与治疗 EXP、SLEEP/SLOW 1 状态抗性与免疫、DESOUL 成败/即死/多目标 kill EXP/gold、SPOIT MP 吸收与边界截断、BOOST 1 属性/重施时序、SILENCE 施法门，以及临时状态回合后生命周期/持久场景回放边界的实现无关合同。
+- [`service-interactions.md`](./design/service-interactions.md)：shop、church、caravan/depot 与
+  blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
 
 ## Decisions
 

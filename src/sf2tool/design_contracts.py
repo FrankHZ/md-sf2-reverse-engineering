@@ -120,6 +120,9 @@ CONTRACTS = {
             "sf2-after-turn-status-lifecycle-v1"
         ),
     },
+    "docs/design/service-interactions.md": {
+        "tests/fixtures/h2/common-menus-static-v1.json": "sf2-common-menus-static-v1",
+    },
 }
 
 

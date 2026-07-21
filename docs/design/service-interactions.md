@@ -1,0 +1,43 @@
+# Service Interactions
+
+- **Confirmed original behavior:** static action ordering, cancellation and direct resource-helper
+  boundaries for the four service surfaces described below.
+- **Unknown original behavior:** caller admission/return effects, persistence across map/save reload,
+  input/audio/window/portrait timing, and final presentation composition.
+- Remake status: implementation-neutral static contract; runtime lifecycle remains incomplete.
+- Evidence date: 2026-07-20
+- Source baseline: `ShiningForceCentral/SF2DISASM`
+  `c834c652b6862bc5679fd7f69a38a7093206efc6`
+- Traceability: `sf2-common-menus-static-v1` in
+  `tests/fixtures/h2/common-menus-static-v1.json`; `src/sf2tool/h2/menus.py`; and
+  `docs/research/common-menus.md`.
+
+## Confirmed Interaction Contract
+
+The service layer exposes four static action surfaces. A remake-facing implementation may model
+their selection order and direct resource effects without copying original presentation assets or
+timing.
+
+| Surface | Ordered actions | Confirmed static boundary |
+| --- | --- | --- |
+| Shop | buy, sell, repair, deals | Buy/deals remove gold before granting an item; a deals purchase also removes its deals entry. Selling grants gold, removes the member-held item, and routes rare items to deals. Repair removes gold and repairs the selected item slot. |
+| Church | raise, cure, promote, save | Raise restores current HP after payment; cure replaces status bits after payment; promotion is data/member-gated before class change/promotion; save reaches the save operation. |
+| Caravan | join, depot, item, purge | Depot’s nested actions are look, deposit, derive, drop. Deposit transfers member item to storage; derive transfers storage item to member; rare dropped storage items reach deals. |
+| Blacksmith | fulfill ready orders, then place pending order | No diamond action menu. Placement consumes mithril and gold only after eligibility/confirmation/capacity guards; fulfillment grants the ready weapon to a selected member. |
+
+Shop, church, caravan, depot, and item surfaces cancel through the common diamond/selection boundary;
+the shared selection screen returns `-1` on B and confirms on A/C. Shop and caravan loop back to
+their action menus after non-exit actions. The blacksmith sequence is visit-driven rather than a
+diamond-menu loop.
+
+## Boundaries for a Future Remake
+
+This contract does not establish which maps/NPCs admit each service, whether cancellation has
+caller-visible side effects, or when a service returns to exploration. It also does not specify
+save/reload persistence for orders, deals, caravan storage, or story flags; input repeat behavior;
+window/portrait/audio timing; or final visual composition. Those remain original-runtime questions,
+not remake defaults.
+
+Future H4 tests should consume the `serviceStateMachines` fixture object for static action ordering
+and direct effect expectations, then add separate behavioral fixtures only after the grouped H3
+service matrix resolves those unknowns.

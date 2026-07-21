@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-20
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -116,8 +116,9 @@ The current evidence is deep but narrow:
   learning, and new-game order. Seventeen have independent evidence; three unassembled alternate
   item sources are tracked but excluded from strict reach rather than borrowing their canonical twins.
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
-  text controls, field items, and service entry points are static contracts; one overlapping member-list
-  alternate remains excluded, while UI/presentation timing is queued for concentrated simulation.
+  text controls, field items, and the built eight-source shop/church/caravan/blacksmith state-machine
+  surface are static contracts; one overlapping member-list alternate remains excluded, while UI,
+  persistence, caller-return, and presentation timing remain queued for one concentrated simulation.
   Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
   order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
   remains queued for one technical runtime matrix.

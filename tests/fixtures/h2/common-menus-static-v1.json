@@ -109,6 +109,109 @@
         "FieldMenu",
         "ShopMenu"
       ],
+      "serviceStateMachines": {
+        "builtSourcePaths": [
+          "code/common/menus/blacksmith/blacksmithactions.asm",
+          "code/common/menus/blacksmith/pickmithrilweapon.asm",
+          "code/common/menus/caravan/caravanactions_1.asm",
+          "code/common/menus/caravan/caravanactions_2.asm",
+          "code/common/menus/church/churchactions_1.asm",
+          "code/common/menus/church/churchactions_2.asm",
+          "code/common/menus/shop/shopactions.asm",
+          "code/common/menus/shopscreen.asm"
+        ],
+        "sourceInventory": {
+          "fileCount": 8,
+          "sourceLineCount": 4286,
+          "directCallSiteCount": 420,
+          "indirectCallSiteCount": 16,
+          "uniqueDirectTargetCount": 115,
+          "entrySymbols": {
+            "blacksmith": "BlacksmithMenu",
+            "caravan": "CaravanMenu",
+            "church": "ChurchMenu",
+            "shop": "ShopMenu",
+            "sharedSelection": "ExecuteShopScreen"
+          }
+        },
+        "sharedSelectionScreen": {
+          "entrySymbol": "ExecuteShopScreen",
+          "cancelResult": -1,
+          "confirmButtons": ["A", "C"],
+          "cancelButton": "B",
+          "selectionAddressing": "page-times-items-per-page-plus-selection",
+          "stateReadsAndWrites": ["CURRENT_SHOP_PAGE", "CURRENT_SHOP_SELECTION", "CURRENT_SHOP_PAGE_ITEMS_NUMBER", "GENERIC_LIST", "GENERIC_LIST_LENGTH"]
+        },
+        "shop": {
+          "entrySymbol": "ShopMenu",
+          "selectionMenu": "MENU_SHOP",
+          "choiceOrder": ["buy", "sell", "repair", "deals"],
+          "dispatch": "ordered-conditional-chain",
+          "actionLoop": "each non-exit action returns to the shop choice loop",
+          "exit": "diamond-menu-cancel-exits-service",
+          "listSources": ["count-prefixed-current-shop-inventory", "eligible-deals-not-in-current-shop"],
+          "confirmedEffects": {
+            "buy": ["decrease-gold", "add-item"],
+            "sell": ["increase-gold", "drop-item-by-slot", "rare-item-adds-to-deals"],
+            "repair": ["decrease-gold", "repair-item-by-slot"],
+            "deals": ["decrease-gold", "add-item", "remove-item-from-deals"]
+          }
+        },
+        "church": {
+          "entrySymbol": "ChurchMenu",
+          "selectionMenu": "MENU_CHURCH",
+          "choiceOrder": ["raise", "cure", "promote", "save"],
+          "dispatch": "ordered-conditional-chain",
+          "actionLoop": "actions converge on the save-or-return boundary before returning",
+          "exit": "diamond-menu-cancel-exits-service",
+          "confirmedEffects": {
+            "raise": ["decrease-gold", "increase-current-hp", "update-ally-mapsprite"],
+            "cure": ["decrease-gold", "set-status-effects"],
+            "promote": ["promotion-data-gated-member-selection", "set-class", "promote"],
+            "save": ["save-game"]
+          }
+        },
+        "caravan": {
+          "entrySymbol": "CaravanMenu",
+          "selectionMenu": "MENU_CARAVAN",
+          "choiceOrder": ["join", "depot", "item", "purge"],
+          "dispatch": "four-entry-relative-jump-table",
+          "actionLoop": "each action returns to the caravan choice loop",
+          "exit": "diamond-menu-cancel-exits-service",
+          "depot": {
+            "selectionMenu": "MENU_DEPOT",
+            "choiceOrder": ["look", "deposit", "derive", "drop"],
+            "dispatch": "four-entry-relative-jump-table",
+            "effects": {
+              "deposit": ["add-item-to-caravan", "drop-item-by-slot"],
+              "derive": ["add-item", "remove-item-from-caravan"],
+              "drop": ["remove-item-from-caravan", "rare-item-adds-to-deals"]
+            }
+          },
+          "item": {
+            "selectionMenu": "MENU_ITEM",
+            "choiceOrder": ["use", "give", "equip", "drop"],
+            "dispatch": "four-entry-relative-jump-table"
+          },
+          "partyEffects": ["join-battle-party", "leave-battle-party"]
+        },
+        "blacksmith": {
+          "entrySymbol": "BlacksmithMenu",
+          "dispatch": "ordered-fulfill-ready-orders-then-place-pending-order",
+          "noDiamondMenu": true,
+          "perVisitCounters": ["readyToFulfillOrdersNumber", "pendingOrdersNumber", "fulfilledOrdersNumber", "fulfillOrdersFlag"],
+          "fulfillment": ["select-recipient", "add-item", "optional-equip"],
+          "placementGuards": ["select-mithril-item", "select-eligible-promoted-customer", "confirm-order-cost", "sufficient-gold", "free-order-slot"],
+          "placementEffects": ["decrease-gold", "drop-mithril-by-slot", "pick-mithril-weapon", "clear-flag-80"],
+          "randomBoundary": "mithril-weapon-selection-includes-random-class-and-weighted-row-selection"
+        },
+        "staticBoundary": {
+          "callerDependentServiceAdmissionAndReturnState": "inferred",
+          "persistenceAcrossMapLoadSaveAndStoryProgress": "unknown",
+          "windowPortraitSoundAndInputTiming": "unknown",
+          "unbuiltAlternatePaths": ["code/common/menus/writememberlisttext.asm"]
+        }
+      },
       "inventoryBoundary": {
         "battlefieldAndFieldMenusInventoried": true,
         "shopsChurchCaravanAndBlacksmithInventoried": true,
