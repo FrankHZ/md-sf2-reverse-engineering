@@ -92,6 +92,14 @@ data-file reach 为 1,017/1,690（60.18%）：980 个文件由 68000 H1 符号�
 table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅助表、sprite-dialogue 与 Battle 01 数据。完整口径、空白子系统和
 复现命令见 [`docs/research/source-coverage.md`](./docs/research/source-coverage.md)。
 
+## Phase 2 Worker Workflow
+
+普通 Phase 2 切片由一个 project-scoped Terra worker 完成：root 线程只定义范围和验收命令，worker
+完成 static-first inventory、结构化 parser/contract、tests/docs 与 grouped H3 queue；随后 root 独立复核
+diff/evidence/counters，运行 `uv run sf2 verify` 与拥有该切片的窄 rail，扫描私有产物边界，并精确
+stage/commit。不得并行写入；worker 不得 stage/commit/push，也不默认运行 `verify --full`。该分工和
+非安全边界限制见 [ADR 0004](./docs/decisions/0004-single-terra-worker-with-root-acceptance.md)。
+
 ## 我们要交付什么
 
 最终目标不是“能把 ROM 拆开看看”，而是形成一条可持续生产新 deliverable 的流水线：
@@ -169,6 +177,8 @@ ROM 已移动到被 Git 忽略的 `local/` 工作区，移动前后 SHA-256 一�
 ```text
 AGENTS.md              agent 工作边界与完成标准
 README.md              项目合同、现状和路线
+.codex/config.toml     project-scoped Codex agent concurrency defaults
+.codex/agents/         project-scoped custom worker roles
 docs/
   research/            有来源、地址、符号和复现实验的逆向结论
   design/              从证据提炼的实现无关设计文档

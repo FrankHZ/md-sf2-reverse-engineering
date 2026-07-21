@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -731,6 +732,31 @@ def test_legacy_powershell_surface_does_not_expand() -> None:
     lines = sum(len(path.read_text(encoding="utf-8").splitlines()) for path in scripts)
     assert len(scripts) <= 36
     assert lines <= 4813
+
+
+def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> None:
+    root = Path(__file__).resolve().parents[2]
+    with (root / ".codex" / "config.toml").open("rb") as config_file:
+        config = tomllib.load(config_file)
+    with (root / ".codex" / "agents" / "terra-reverse-engineer.toml").open("rb") as agent_file:
+        agent = tomllib.load(agent_file)
+
+    agents = config["agents"]
+    assert agents["max_threads"] == 2
+    assert agents["max_depth"] == 1
+    assert agents["interrupt_message"] is True
+    assert agent["name"] == "terra_reverse_engineer"
+    assert agent["model"] == "gpt-5.6-terra"
+    assert agent["model_reasoning_effort"] == "high"
+
+    instructions = agent["developer_instructions"]
+    for required_text in (
+        "Never stage",
+        "Do not use external",
+        "verify --full",
+        "root owns commit",
+    ):
+        assert required_text in instructions
 
 
 def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:

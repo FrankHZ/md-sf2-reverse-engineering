@@ -210,6 +210,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   Python/uv 工具链、稳定 CLI，以及现有 PowerShell rails 的冻结迁移边界。
 - [`0003-static-first-batched-runtime-research.md`](./decisions/0003-static-first-batched-runtime-research.md)：
   Phase 2 先整批静态审计，再把不可静态判定的问题集中到单次 BizHawk 矩阵。
+- [`0004-single-terra-worker-with-root-acceptance.md`](./decisions/0004-single-terra-worker-with-root-acceptance.md)：
+  单一 Terra worker 完成 Phase 2 证据切片，root 线程独立复核、验证、扫描并提交的工作流边界。
 
 ## Evidence Vocabulary
 

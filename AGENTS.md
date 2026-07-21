@@ -35,12 +35,34 @@ memory store for routine work. If the user explicitly requests a one-time migrat
 still-valid, project-specific facts into their owning tracked documents; do not make the memory store
 a continuing synchronization target.
 
-Within the accepted Phase 2 direction, continue autonomously through plan, reverse engineering,
-documentation, focused verification, private-artifact scan, and commit. Do not pause for approval or
-produce a user report after every ordinary slice. Ask before a phase change, modern-engine choice,
-new distribution/licensing posture, destructive treatment of private inputs, or another decision
-that materially changes project direction. Preserve unrelated or unfinished work already present in
-the worktree and stage only the files owned by the completed slice.
+## Root/Worker Orchestration Contract
+
+For ordinary Phase 2 work, the root thread scopes one coherent slice and its acceptance commands but
+does not personally reverse engineer or implement that slice. It starts exactly one
+`terra_reverse_engineer` worker and gives it the owning document, bounded source surface, expected
+tracked outputs, and one narrow H2/H3 acceptance command. If the named role is unavailable, the root
+must explicitly spawn `gpt-5.6-terra`. Do not run parallel write workers in this shared worktree.
+
+The worker performs the slice: complete static inventory, structured parser/contract, project-owned
+tests and research documentation, and a grouped H3 question queue. It must preserve evidence labels
+and provenance, avoid all project-direction decisions, and hand the completed work back without
+staging or committing. Questions, incomplete evidence, and review findings go back to the same worker
+through a follow-up rather than causing the root to take over reverse engineering.
+
+The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
+and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
+inputs and unintended changes; stages only the accepted paths; reviews the cached diff; and commits.
+`uv run sf2 verify --full` remains a milestone, release/merge-readiness, shared-harness, or explicit
+full-parity gate, never the default worker or root command. This workflow is an operational division of
+responsibility, not a security boundary: worker instructions and root review are both required.
+
+Within the accepted Phase 2 direction, continue autonomously through the root/worker workflow: the
+root scopes, accepts, scans, and commits; the worker performs the assigned reverse engineering or
+implementation, documentation, and slice-local narrow checks. Do not pause for approval or produce a
+user report after every ordinary slice. Ask the user only before a phase change, modern-engine choice,
+new distribution/licensing posture, destructive treatment of private inputs, or another decision that
+materially changes project direction. Preserve unrelated or unfinished work already present in the
+worktree, and have the root stage only files owned by the accepted slice.
 
 When more documents exist, use these ownership boundaries:
 
