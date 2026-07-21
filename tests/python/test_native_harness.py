@@ -760,6 +760,10 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         "caller target identity",
         "physical address intervals",
         "adversarial root-style self-review",
+        "current date supplied by the execution environment",
+        "structure-shaped field names",
+        "Parse authoritative constants once",
+        "second implementation truth",
     ):
         assert required_text in instructions
 

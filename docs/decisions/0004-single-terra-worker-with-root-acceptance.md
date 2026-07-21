@@ -75,6 +75,16 @@ quality contract. Before handoff, the worker therefore checks all of the followi
    loop counters use distinct field names and prose.
 7. Static evidence does not promote hardware persistence, caller-visible lifecycle, timing, or rendered
    behavior without the appropriate runtime observation.
+8. Every new or materially revised Evidence-date field matches the actual current project date supplied by
+   the execution environment; upstream timestamps, stale copied dates, and invented future dates do not
+   stand in for the observation date.
+9. Canonical field names, fixture IDs, and design terms use original source labels or neutral structural
+   language until a semantic interpretation is proven. Original labels and later interpretations remain
+   distinguishable when their wording differs.
+10. Authoritative constants are parsed once. Dependent masks, strides, spans, widths, and counts are
+    derived and, where possible, cross-checked against an independent declaration or consumer. Fixtures
+    and schemas pin exact results, but extractor and guard logic do not duplicate the same magic literal as
+    a circular second truth.
 
 The root repeats these checks independently. A rejection returns to the same worker and becomes input to
 its next self-review; the root does not silently patch the research implementation.

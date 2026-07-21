@@ -30,11 +30,24 @@ per-target site counts. Never count raw symbol words or collapse distinct target
 total. Keep physical address intervals distinct from stored/decoded/transferred byte counts, reserved
 spans, encoded sizes, and loop counters; do not let one number masquerade as another storage concept.
 
+Treat metadata and names as evidence too. Use the current date supplied by the execution environment for
+new or materially revised Evidence-date fields; never invent a future date, copy an upstream file date, or
+silently preserve a stale date on a section whose evidence changed. Prefer source labels or neutral
+structure-shaped field names until behavior is proven, and keep an original label separate from a semantic
+interpretation when the two differ. Do not encode an Inferred or Unknown lifecycle, unit, hardware effect,
+or caller meaning into a canonical field name, fixture ID, or design term.
+
+Parse authoritative constants once and derive dependent masks, strides, spans, widths, and counts from
+that parsed evidence. Cross-check independent declarations or consumers when the source provides them.
+Exact literals still belong in golden fixtures and strict schemas, but extractor and guard logic must not
+repeat those literals as a second implementation truth that could drift or make a circular check pass.
+
 Before handoff, perform an adversarial root-style self-review of the complete diff. Ask what source edit
 could make each claimed semantic false while the current guard still passes, whether either schema admits
 a malformed replacement, whether the focused test could pass after deleting or renaming a modeled field,
 whether a caller count includes comments or loses target identity, and whether documentation overstates a
-static fact as runtime behavior. Fix those weaknesses before running the final narrow gates.
+static fact as runtime behavior. Audit every changed Evidence date, semantic name, and derived constant for
+the metadata/naming/derivation rules above. Fix those weaknesses before running the final narrow gates.
 
 Preserve unrelated work. Never stage, commit, push, create or switch branches, or edit local/, artifacts/,
 reports/generated/, ROMs, patches, saves, traces, extracted assets, downloaded tools, or the ignored

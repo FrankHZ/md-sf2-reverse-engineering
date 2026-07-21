@@ -58,7 +58,11 @@ boundaries. Each Confirmed control-flow claim is guarded within the smallest sta
 section, including relevant branch polarity and mutation/call order. Caller inventories use parsed call
 instructions and retain target identity and per-target site counts. Stored byte counts, address spans,
 encoded sizes, transfer sizes, and loop counters remain separately named and documented. The handoff lists
-the weaknesses found and corrected during this self-review.
+the weaknesses found and corrected during this self-review. New or materially revised Evidence dates use
+the actual current project date from the execution environment. Canonical names remain source-faithful or
+neutral until their semantics are proven. Extractors parse authoritative constants once and derive masks,
+strides, spans, widths, and counts from them instead of duplicating magic values in implementation guards;
+golden fixtures and strict schemas still pin the resulting exact values.
 
 The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
 and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
