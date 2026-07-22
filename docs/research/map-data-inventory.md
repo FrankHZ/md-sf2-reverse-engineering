@@ -6,12 +6,13 @@
   the nine-case entity/zone/item runtime dispatch matrix,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
   1,134 physical records, all 75 area-description targets/227 physical entries, and all 84 init
-  sources/90 setup-callable entry points, all 47 standalone setup-script files/8,058 statements,
+  sources/90 setup-callable entry points with 597 physical operations, 126 pointer-table joins, and
+  130 ordered selector-route joins, all 47 standalone setup-script files/8,058 statements,
   all 662 source-form content sections, and all 154 private blocks/layout payloads
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
 - Status: **Unknown** for direct-`rts` entity-event reachability through normal story routes, sequenced-orientation consumption,
   nonstandard description callers, presentation timing, rendered layout parity, and VDP timing
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-22
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -101,8 +102,9 @@ The same H2 rail binds the dispatcher entries and checks their source order:
 | entity | 4 bytes | entity byte or `$FD` default; byte 1 bits 0/1 turn toward actor/restore facing |
 | area description | 6 bytes | coordinate word; byte 2 gates on `d6`; byte 3 chooses text indices or relative function |
 
-Initialization calls slot 20 unless the selector returned `ms_Void`; entity-list lookup returns slot
-0. These control-flow and record-layout facts are **Confirmed** statically. The meaning of the area
+Initialization calls the init-function pointer at byte offset 20 (the sixth four-byte slot) unless the
+selector returned `ms_Void`; entity-list lookup returns the pointer at byte offset 0. These control-flow
+and record-layout facts are **Confirmed** statically. The meaning of the area
 description byte-2/`d6` check remains **Unknown**, as do side effects inside the selected scripts and
 their visible timing.
 
@@ -222,34 +224,67 @@ conditioned entries, wrapper/dispatcher rules, and call-graph evidence.
 
 ## Initialization Callables
 
-Setup slot 20 contains 126 references to 90 unique callable entries spread across 84
-`s6_initfunction*.asm` sources. Six pointers intentionally enter internal labels inside their owning
-function rather than the file's primary entry, so equating one source file with one callable would
-miss valid suffix routes. Twenty-eight targets are reused by multiple setup tables.
+**Confirmed — provenance:** the tracked `sf2-map-init-static-v1` fixture is reproduced from the USA
+ROM SHA-256 above, `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, the H1 listing,
+`data/maps/entries/*/mapsetups/s6_initfunction*.asm`, `data/maps/mapsetups.asm`, the six-pointer
+tables, `sf2enums.asm`, `sf2macros.asm`, `sf2cutscenemacros.asm`, and
+`RunMapSetupInitFunction` in `code/common/scripting/map/mapsetupsfunctions_1.asm`. Reproduce with
+`uv run sf2 h2 map-init`.
 
-Of the 90 callables, 56 are active and 34 are direct-`rts` no-ops. At setup-reference level that is
-82 active calls and 44 no-op calls. The primary 84 entry bodies contain 597 normalized statements;
-following the 126 selected targets yields 973 statement references, with at most 58 statements in
-one entry path. The static operation inventory contains 101 flag checks, 32 flag sets, three flag
-clears, 80 `script` calls to 75 distinct targets, and 45 direct calls to six targets. Thirty-five of
-those direct calls remove an entity from the map.
+**Confirmed — route and profile join:** the selector source order produces 130 route references (64
+default plus 66 flag rows). Each joins one of 126 unique six-pointer tables, that table's init-function
+pointer at byte offset 20 (the sixth four-byte slot), and one of 90 target profiles; four route
+references reuse a pointer-table identity. The 90
+profiles retain source path, symbol, H1 address, direct-`rts` shape, physical source-operation
+boundary, exact operation-index sequence, flag macro operands, script targets, direct-call targets,
+and zero-inclusive family counts. Six profiles begin at internal labels, so the 84 physical source
+bodies remain distinct from the 90 callable entry boundaries. There are 56 non-`rts` profiles and 34
+direct-`rts` profiles; the 126 pointer-table references select 82 and 44 of those profiles,
+respectively. The 597 physical operations expand to 654 profile operations and 973 pointer-table-
+weighted operation occurrences; the 130 route references weight to 1,100 occurrences. These are
+reference counts, not physical ROM byte spans or runtime execution counts. The exact route-weighted
+family map is 203 flag reads, 53 flag writes, 150 scripts, 65 direct calls, 43 entity/position
+commands, two warp/transition commands, 22 presentation commands, 102 data-movement operations, 280
+branches/jumps, and 180 terminals; its sum is construction-guarded against the 1,100 route-weighted
+occurrence count.
 
-The rail now retains a normalized operation list for every callable rather than only its body hash.
-Across the 90 unique targets that is 654 operations, with labels attached to their following
-operation. The 84 primary entries contain 119 labeled operations and 130 branches. All 130 branch
-targets resolve: 129 within the same callable view, while `ms_map52_InitFunction` intentionally
-branches to `return_5C4EC` in the adjacent `sub_5C4DC`. That cross-function edge is preserved by
-symbol and H1 address instead of being treated as an unresolved branch.
+**Confirmed — operation inventory:** the 597 physical operations are fully classified by exact parsed
+token, macro, or call form: 101 `chkFlg` reads; 36 source-level flag-write macro uses (`setFlg`,
+`clrFlg`, or `setStoryFlag`); 80 `script` invocations; 45 direct calls; 12 `setPos` commands; two
+`warp` commands; 20 `sndCom`/`txt`/`clsTxt` commands; 68 arithmetic/data-movement operations; 131
+branches or jumps; and 102 `rts`/`csc_end` terminals. The canonical unclassified list is empty. The
+130 branch targets resolve, including 129 local operation-index targets and the H1-addressed
+cross-function target `return_5C4EC` from `ms_map52_InitFunction`; no branch target is silently
+downgraded to an unresolved string.
 
-The same 84 sources contain 291 H1 labels in total. After excluding the 90 setup-callable entries,
-201 embedded programs remain with 3,718 operations and 135 intra-source symbol references. They own
-all 63 init `script` targets that are not in standalone script files. Combined with the 12 standalone-
-owned targets, every one of the 75 distinct init script targets now resolves to a canonical program.
+**Confirmed — call and script identities:** the 45 direct-call sites retain both instruction and
+effective target identity. `j_alt_YesNoPrompt` resolves to `alt_YesNoPrompt`, and
+`j_FadeOut_WaitForP1Input` resolves to `FadeOut_WaitForP1Input`; the instruction and effective maps
+are complete exact six-key observed-target maps, not broader declared target domains. All 80 `script`
+call sites carry their owning source function and physical operation index. Their 75 targets resolve
+as 63 embedded init-source programs and 12 standalone map-setup programs; a missing target definition
+now fails contract construction, so the unresolved target count is zero. This is target ownership and
+source-form resolution only, not a claim about any call's effect.
 
-These are **Confirmed** source/H1/pointer and no-op ROM-shape facts. They do not claim the story or
-presentation semantics of the called scripts. Full per-entry operations, normalized-body hashes,
-token maps, script targets, and direct-call targets stay in ignored `local/derived/map-init-static.json`; the
-tracked fixture keeps the complete aggregate operation maps and dispatcher rules.
+**Confirmed — dispatcher use sites:** `MAPSETUP_OFFSET_INIT_FUNCTION` is parsed from `sf2enums.asm`
+and cross-checked with the independently parsed `sourceFacts.pointerLayout` row `{ sourceOrder: 5,
+name: initFunction, offset: 20 }` and the symbolic `movea.l` load use site. The ordered wrapper record
+is save registers, call `GetCurrentMapSetup`, compare `-1`, branch non-missing setups to the pointer
+load, branch missing setups to restore/return, indirect `jsr (a0)`, restore, and `rts`. The extractor
+rejects enum, layout-row, load-operand, opcode, branch polarity/target, indirect-call, restore, or
+order mutation while constructing this record, before fixture comparison. This confirms source control
+flow, not a claim that a selected callee has only one observable runtime effect.
+
+**Unknown — grouped H3 queue `map-init-effects-and-presentation`:** (1) init-script side effects and
+transition persistence; (2) entity/position mutation order and visibility timing; and (3) fade,
+audio, and text presentation sequencing. No lifecycle or presentation meaning is inferred merely from
+macro or target names.
+
+The complete source-shaped object, its recursive closed schemas, all source-order constraints, and
+the golden fixture are tracked. The reproducible full payload remains
+`local/derived/map-init-static.json`; it contains metadata and normalized source facts, not extracted
+copyrighted game assets.
 
 ## Standalone Setup Scripts
 

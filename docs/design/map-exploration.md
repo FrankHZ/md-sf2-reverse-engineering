@@ -39,6 +39,8 @@ Evidence is executable through:
   `tests/fixtures/h2/canonical-map-import-v1.json`;
 - `sf2-map-events-static-v1` in
   `tests/fixtures/h2/map-events-static-v1.json`;
+- `sf2-map-init-static-v1` in
+  `tests/fixtures/h2/map-init-static-v1.json`;
 - `sf2-map-script-engine-static-v1` in
   `tests/fixtures/h2/map-script-engine-static-v1.json`;
 - `sf2-map-setup-selection-runtime-v1` in
@@ -68,10 +70,16 @@ The six-case init-dispatch matrix separately confirms that a missing map skips t
 call, while five default/flag-selected setups each call their H2-modeled init target exactly once and
 return through the original wrapper. It covers active, scripted, and direct-return targets without
 claiming that synthetic map/flag combinations reproduce their story side effects.
-Initialization resources retain ordered operations and complete branch targets, including the one
-confirmed cross-function return edge. A remake importer MAY translate recognized operations into a
-typed command IR, but MUST retain unknown operand text and MUST NOT infer script persistence or frame
-timing from opcode names alone.
+Initialization resources retain the 130 ordered selector-route joins through 126 setup tables to 90
+target profiles. Each profile keeps its physical-source operation boundary, ordered operation indices,
+exact flag operands, direct instruction/effective call identities, and script-target resolution; the
+597 physical operations, 973 pointer-table-weighted occurrences, and 1,100 route-weighted occurrences
+are not interchangeable counts. The parsed dispatcher record retains linked enum, pointer-layout row,
+and symbolic load-use-site evidence for the init-function pointer at byte offset 20 (the sixth
+four-byte slot), plus the missing-setup comparison and branches, indirect call, restore, and return
+order. A remake importer MAY translate recognized source forms into a typed command IR, but MUST retain
+unknown operand text and MUST NOT infer script persistence, entity visibility, or frame timing from
+opcode or target names alone.
 Standalone script resources likewise retain ordered commands, operand text, and resolved references
 between all 178 labels. These are importable command graphs, not proof that a modern engine may skip
 the original interpreter's state, wait, camera, dialogue, or presentation sequencing.

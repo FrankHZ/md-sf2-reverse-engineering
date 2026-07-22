@@ -1,6 +1,4 @@
-import json
 import shutil
-import subprocess
 from copy import deepcopy
 
 import pytest
@@ -1041,63 +1039,33 @@ def test_combatant_getter_schemas_are_shared_closed_and_reject_drift() -> None:
     )
 
 
-def test_combatant_distance_slice_preserves_prior_stats_siblings_from_head() -> None:
+def test_combatant_stats_sibling_contracts_remain_mirrored() -> None:
     fixture = load_json(FIXTURE)
-    head_fixture = json.loads(
-        subprocess.check_output(
-            ["git", "show", "HEAD:tests/fixtures/h2/common-stats-static-v1.json"], text=True
-        )
-    )
-    for name in ("combatantGetterContract", "combatantMutationContract", "combatantClampContract"):
-        assert (
-            fixture["expected"]["statsFacts"][name] == head_fixture["expected"]["statsFacts"][name]
-        )
+    assert set(fixture["expected"]["statsFacts"]) == {
+        "flags",
+        "party",
+        "inventories",
+        "combatantType",
+        "spells",
+        "newGame",
+        "inventoryBoundary",
+        "combatantGetterContract",
+        "combatantMutationContract",
+        "combatantClampContract",
+        "combatantDistanceContract",
+    }
     output_schema = load_json(OUTPUT_SCHEMA)
     fixture_schema = load_json(FIXTURE_SCHEMA)
-    head_output_schema = json.loads(
-        subprocess.check_output(
-            ["git", "show", "HEAD:schemas/common-stats-static.schema.json"], text=True
-        )
-    )
-    head_fixture_schema = json.loads(
-        subprocess.check_output(
-            ["git", "show", "HEAD:schemas/h2-common-stats-static-fixture.schema.json"], text=True
-        )
-    )
-    assert set(output_schema["definitions"]) - set(head_output_schema.get("definitions", {})) == {
-        "combatantDistanceFacts"
-    }
-    assert set(fixture_schema["definitions"]) - set(head_fixture_schema.get("definitions", {})) == {
-        "combatantDistanceFacts"
-    }
-    for definition in ("combatantGetterFacts", "combatantMutationFacts", "combatantClampFacts"):
-        assert (
-            output_schema["definitions"][definition]
-            == head_output_schema["definitions"][definition]
-        )
-        assert (
-            fixture_schema["definitions"][definition]
-            == head_fixture_schema["definitions"][definition]
-        )
+    for definition in (
+        "combatantGetterFacts",
+        "combatantMutationFacts",
+        "combatantClampFacts",
+        "combatantDistanceFacts",
+    ):
+        assert definition in output_schema["definitions"]
+        assert definition in fixture_schema["definitions"]
+        assert output_schema["definitions"][definition] == fixture_schema["definitions"][definition]
     assert (
         output_schema["definitions"]["combatantGetterInstructionRecord"]
-        == head_output_schema["definitions"]["combatantGetterInstructionRecord"]
+        == fixture_schema["definitions"]["combatantGetterInstructionRecord"]
     )
-    assert (
-        fixture_schema["definitions"]["combatantGetterInstructionRecord"]
-        == head_fixture_schema["definitions"]["combatantGetterInstructionRecord"]
-    )
-    assert (
-        fixture["expected"]["statsFacts"]["combatantGetterContract"]
-        == head_fixture["expected"]["statsFacts"]["combatantGetterContract"]
-    )
-    assert {
-        key: value for key, value in output_schema["properties"].items() if key != "statsFacts"
-    } == {
-        key: value for key, value in head_output_schema["properties"].items() if key != "statsFacts"
-    }
-    assert {
-        key: value for key, value in fixture_schema["properties"].items() if key != "expected"
-    } == {
-        key: value for key, value in head_fixture_schema["properties"].items() if key != "expected"
-    }

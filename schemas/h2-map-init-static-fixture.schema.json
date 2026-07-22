@@ -3,23 +3,4879 @@
   "$id": "https://example.invalid/md-sf2/schemas/h2-map-init-static-fixture.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "function", "expected"],
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstreamCommit",
+    "romSha256",
+    "function",
+    "expected"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "id": { "const": "sf2-map-init-static-v1" },
-    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-    "romSha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
-    "function": { "type": "object", "minProperties": 1, "maxProperties": 1 },
-    "expected": {
-      "type": "object", "additionalProperties": false,
-      "required": ["summary", "entryTokenCounts", "directCallTargetCounts", "scriptTargetCounts", "consumerFacts", "runtimeQuestions"],
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-init-static-v1"
+    },
+    "upstreamCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "romSha256": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "RunMapSetupInitFunction"
+      ],
       "properties": {
-        "summary": { "type": "object", "minProperties": 30, "maxProperties": 30 },
-        "entryTokenCounts": { "type": "object" },
-        "directCallTargetCounts": { "type": "object" },
-        "scriptTargetCounts": { "type": "object" },
-        "consumerFacts": { "type": "object" },
-        "runtimeQuestions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true }
+        "RunMapSetupInitFunction": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "sources",
+        "summary",
+        "entryTokenCounts",
+        "operationFamilyCounts",
+        "setupWeightedOperationFamilyCounts",
+        "routeWeightedOperationFamilyCounts",
+        "targetSetupReferenceCounts",
+        "targetRouteReferenceCounts",
+        "directCallInstructionTargetCounts",
+        "directCallEffectiveTargetCounts",
+        "scriptTargetCounts",
+        "duplicatePointerTargets",
+        "dispatcher",
+        "runtimeQuestions",
+        "primarySourceOrder",
+        "primaryOperationOrder",
+        "targetProfileOrder",
+        "routeJoinOrder",
+        "pointerTableJoinOrder",
+        "scriptTargetProfileOrder",
+        "scriptCallSiteOrder",
+        "directCallSiteOrder",
+        "unclassifiedOperations",
+        "primarySourceBodies",
+        "sourceFiles",
+        "routeJoins",
+        "pointerTableJoins",
+        "scriptTargetProfiles",
+        "scriptCallSites",
+        "directCallSites",
+        "embeddedPrograms"
+      ],
+      "properties": {
+        "scope": {
+          "const": "data/maps/entries/*/mapsetups/s6_initfunction*.asm"
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dispatcher",
+            "constants",
+            "trapMacros",
+            "cutsceneMacros",
+            "jumpInterfaceRoot"
+          ],
+          "properties": {
+            "dispatcher": {
+              "const": "code/common/scripting/map/mapsetupsfunctions_1.asm"
+            },
+            "constants": {
+              "const": "sf2enums.asm"
+            },
+            "trapMacros": {
+              "const": "sf2macros.asm"
+            },
+            "cutsceneMacros": {
+              "const": "sf2cutscenemacros.asm"
+            },
+            "jumpInterfaceRoot": {
+              "const": "code/common/tech/jumpinterfaces"
+            }
+          }
+        },
+        "summary": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceFileCount",
+                "setupPointerReferenceCount",
+                "routeReferenceCount",
+                "uniqueTargetCount",
+                "internalEntryTargetCount",
+                "aliasedTargetCount",
+                "activeFunctionCount",
+                "directReturnStubCount",
+                "activeSetupReferenceCount",
+                "directReturnStubReferenceCount",
+                "sourceStatementCount",
+                "targetProfileStatementCount",
+                "setupStatementReferenceCount",
+                "routeStatementReferenceCount",
+                "maximumFunctionStatementCount",
+                "flagReadCount",
+                "flagWriteCount",
+                "scriptCallCount",
+                "uniqueScriptTargetCount",
+                "embeddedInitSourceScriptTargetCount",
+                "standaloneScriptTargetCount",
+                "unresolvedScriptTargetCount",
+                "directCallCount",
+                "uniqueDirectCallInstructionTargetCount",
+                "uniqueDirectCallEffectiveTargetCount",
+                "jumpOperationCount",
+                "labeledOperationCount",
+                "branchOperationCount",
+                "resolvedLocalBranchCount",
+                "resolvedBranchTargetCount",
+                "externalBranchTargetCount",
+                "sourceGlobalLabelCount",
+                "embeddedProgramCount",
+                "embeddedOperationCount",
+                "embeddedTargetReferenceCount",
+                "embeddedScriptTargetCount",
+                "unclassifiedOperationCount"
+              ],
+              "properties": {
+                "sourceFileCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupPointerReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "internalEntryTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "aliasedTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "activeFunctionCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "activeSetupReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceStatementCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "targetProfileStatementCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupStatementReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeStatementReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maximumFunctionStatementCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "flagReadCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "flagWriteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "scriptCallCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueScriptTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "embeddedInitSourceScriptTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "standaloneScriptTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unresolvedScriptTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCallCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueDirectCallInstructionTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueDirectCallEffectiveTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "jumpOperationCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labeledOperationCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "branchOperationCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "resolvedLocalBranchCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "resolvedBranchTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "externalBranchTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceGlobalLabelCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "embeddedProgramCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "embeddedOperationCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "embeddedTargetReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "embeddedScriptTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unclassifiedOperationCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "sourceFileCount": 84,
+                "setupPointerReferenceCount": 126,
+                "routeReferenceCount": 130,
+                "uniqueTargetCount": 90,
+                "internalEntryTargetCount": 6,
+                "aliasedTargetCount": 28,
+                "activeFunctionCount": 56,
+                "directReturnStubCount": 34,
+                "activeSetupReferenceCount": 82,
+                "directReturnStubReferenceCount": 44,
+                "sourceStatementCount": 597,
+                "targetProfileStatementCount": 654,
+                "setupStatementReferenceCount": 973,
+                "routeStatementReferenceCount": 1100,
+                "maximumFunctionStatementCount": 58,
+                "flagReadCount": 101,
+                "flagWriteCount": 36,
+                "scriptCallCount": 80,
+                "uniqueScriptTargetCount": 75,
+                "embeddedInitSourceScriptTargetCount": 63,
+                "standaloneScriptTargetCount": 12,
+                "unresolvedScriptTargetCount": 0,
+                "directCallCount": 45,
+                "uniqueDirectCallInstructionTargetCount": 6,
+                "uniqueDirectCallEffectiveTargetCount": 6,
+                "jumpOperationCount": 1,
+                "labeledOperationCount": 119,
+                "branchOperationCount": 130,
+                "resolvedLocalBranchCount": 129,
+                "resolvedBranchTargetCount": 130,
+                "externalBranchTargetCount": 1,
+                "sourceGlobalLabelCount": 291,
+                "embeddedProgramCount": 201,
+                "embeddedOperationCount": 3718,
+                "embeddedTargetReferenceCount": 135,
+                "embeddedScriptTargetCount": 63,
+                "unclassifiedOperationCount": 0
+              }
+            }
+          ]
+        },
+        "entryTokenCounts": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "bcc.s",
+                "beq.s",
+                "bne.s",
+                "bne.w",
+                "bra.s",
+                "bra.w",
+                "chkFlg",
+                "clrFlg",
+                "clsTxt",
+                "cmp.l",
+                "cmpi.l",
+                "csc_end",
+                "divs.w",
+                "ext.l",
+                "jmp",
+                "jsr",
+                "move.b",
+                "move.l",
+                "move.w",
+                "moveq",
+                "nop",
+                "rts",
+                "script",
+                "setFlg",
+                "setPos",
+                "setStoryFlag",
+                "sndCom",
+                "swap",
+                "tst.w",
+                "txt",
+                "warp"
+              ],
+              "properties": {
+                "bcc.s": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "beq.s": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "bne.s": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "bne.w": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "bra.s": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "bra.w": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "chkFlg": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "clrFlg": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "clsTxt": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cmp.l": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cmpi.l": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "csc_end": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "divs.w": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ext.l": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "jmp": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "jsr": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "move.b": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "move.l": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "move.w": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "moveq": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "nop": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "script": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setFlg": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setPos": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setStoryFlag": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sndCom": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "swap": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "tst.w": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "txt": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "warp": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "bcc.s": 1,
+                "beq.s": 59,
+                "bne.s": 44,
+                "bne.w": 1,
+                "bra.s": 13,
+                "bra.w": 12,
+                "chkFlg": 101,
+                "clrFlg": 3,
+                "clsTxt": 1,
+                "cmp.l": 1,
+                "cmpi.l": 2,
+                "csc_end": 14,
+                "divs.w": 2,
+                "ext.l": 4,
+                "jmp": 1,
+                "jsr": 45,
+                "move.b": 7,
+                "move.l": 8,
+                "move.w": 38,
+                "moveq": 2,
+                "nop": 1,
+                "rts": 88,
+                "script": 80,
+                "setFlg": 32,
+                "setPos": 12,
+                "setStoryFlag": 1,
+                "sndCom": 6,
+                "swap": 2,
+                "tst.w": 1,
+                "txt": 13,
+                "warp": 2
+              }
+            }
+          ]
+        },
+        "operationFamilyCounts": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/familyCounts"
+            },
+            {
+              "const": {
+                "flag-read": 101,
+                "flag-write": 36,
+                "script-invocation": 80,
+                "direct-call": 45,
+                "entity-or-position-command": 12,
+                "warp-or-transition-command": 2,
+                "presentation-audio-text-command": 20,
+                "arithmetic-or-data-movement": 68,
+                "branch-or-jump": 131,
+                "terminal": 102
+              }
+            }
+          ]
+        },
+        "setupWeightedOperationFamilyCounts": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/familyCounts"
+            },
+            {
+              "const": {
+                "flag-read": 179,
+                "flag-write": 49,
+                "script-invocation": 132,
+                "direct-call": 65,
+                "entity-or-position-command": 29,
+                "warp-or-transition-command": 2,
+                "presentation-audio-text-command": 22,
+                "arithmetic-or-data-movement": 97,
+                "branch-or-jump": 236,
+                "terminal": 162
+              }
+            }
+          ]
+        },
+        "routeWeightedOperationFamilyCounts": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/familyCounts"
+            },
+            {
+              "const": {
+                "flag-read": 203,
+                "flag-write": 53,
+                "script-invocation": 150,
+                "direct-call": 65,
+                "entity-or-position-command": 43,
+                "warp-or-transition-command": 2,
+                "presentation-audio-text-command": 22,
+                "arithmetic-or-data-movement": 102,
+                "branch-or-jump": 280,
+                "terminal": 180
+              }
+            }
+          ]
+        },
+        "targetSetupReferenceCounts": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ms_map0_InitFunction",
+                "ms_map1_InitFunction",
+                "ms_map2_InitFunction",
+                "ms_map3_InitFunction",
+                "ms_map3_flag506_InitFunction",
+                "ms_map3_flag543_InitFunction",
+                "ms_map3_flag609_InitFunction",
+                "ms_map4_InitFunction",
+                "ms_map5_InitFunction",
+                "ms_map5_flag530_InitFunction",
+                "ms_map5_flag28_InitFunction",
+                "ms_map6_InitFunction",
+                "ms_map7_InitFunction",
+                "ms_map8_InitFunction",
+                "ms_map9_InitFunction",
+                "ms_map10_InitFunction",
+                "ms_map10_flag722_InitFunction",
+                "ms_map11_InitFunction",
+                "ms_map12_InitFunction",
+                "ms_map13_InitFunction",
+                "ms_map14_InitFunction",
+                "ms_map14_flag458_InitFunction",
+                "ms_map15_InitFunction",
+                "ms_map16_InitFunction",
+                "ms_map16_flag530_InitFunction",
+                "ms_map17_InitFunction",
+                "ms_map17_flag530_InitFunction",
+                "ms_map18_InitFunction",
+                "ms_map18_flag530_InitFunction",
+                "ms_map19_InitFunction",
+                "ms_map19_flag_501_InitFunction",
+                "ms_map19_flag506_InitFunction",
+                "ms_map19_flag507_InitFunction",
+                "ms_map19_flag543_InitFunction",
+                "ms_map19_flag609_InitFunction",
+                "ms_map20_InitFunction",
+                "ms_map20_flag501_InitFunction",
+                "ms_map20_flag543_InitFunction",
+                "ms_map21_InitFunction",
+                "ms_map21_flag609_InitFunction",
+                "ms_map21_flag543_InitFunction",
+                "ms_map22_InitFunction",
+                "ms_map23_InitFunction",
+                "ms_map24_InitFunction",
+                "ms_map25_InitFunction",
+                "ms_map26_InitFunction",
+                "ms_map27_InitFunction",
+                "ms_map28_InitFunction",
+                "ms_map29_InitFunction",
+                "ms_map30_InitFunction",
+                "ms_map31_InitFunction",
+                "ms_map31_flag830_InitFunction",
+                "ms_map33_InitFunction",
+                "ms_map33_flag312_InitFunction",
+                "ms_map34_InitFunction",
+                "ms_map36_InitFunction",
+                "ms_map37_InitFunction",
+                "ms_map37_flag999_InitFunction",
+                "ms_map38_InitFunction",
+                "ms_map39_InitFunction",
+                "ms_map39_flag830_InitFunction",
+                "ms_map40_InitFunction",
+                "ms_map41_InitFunction",
+                "ms_map42_InitFunction",
+                "ms_map43_InitFunction",
+                "ms_map43_flag612_InitFunction",
+                "ms_map44_flag507_InitFunction",
+                "ms_map44_flag609_InitFunction",
+                "ms_map45_InitFunction",
+                "ms_map46_InitFunction",
+                "ms_map51_InitFunction",
+                "ms_map52_InitFunction",
+                "ms_map55_InitFunction",
+                "ms_map56_InitFunction",
+                "ms_map59_InitFunction",
+                "ms_map59_flag543_InitFunction",
+                "ms_map61_InitFunction",
+                "ms_map62_InitFunction",
+                "ms_map63_InitFunction",
+                "ms_map66_InitFunction",
+                "ms_map67_InitFunction",
+                "ms_map68_InitFunction",
+                "ms_map69_InitFunction",
+                "ms_map70_InitFunction",
+                "ms_map72_InitFunction",
+                "ms_map73_InitFunction",
+                "ms_map74_InitFunction",
+                "ms_map75_InitFunction",
+                "ms_map76_InitFunction",
+                "ms_map77_InitFunction"
+              ],
+              "properties": {
+                "ms_map0_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map1_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map2_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_flag506_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map4_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map5_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map5_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map5_flag28_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map6_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map7_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map8_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map9_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map10_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map10_flag722_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map11_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map12_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map13_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map14_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map14_flag458_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map15_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map16_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map16_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map17_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map17_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map18_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map18_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag_501_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag506_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag507_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map20_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map20_flag501_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map20_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map21_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map21_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map21_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map22_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map23_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map24_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map25_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map26_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map27_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map28_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map29_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map30_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map31_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map31_flag830_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map33_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map33_flag312_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map34_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map36_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map37_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map37_flag999_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map38_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map39_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map39_flag830_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map40_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map41_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map42_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map43_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map43_flag612_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map44_flag507_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map44_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map45_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map46_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map51_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map52_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map55_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map56_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map59_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map59_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map61_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map62_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map63_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map66_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map67_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map68_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map69_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map70_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map72_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map73_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map74_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map75_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map76_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map77_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "ms_map0_InitFunction": 1,
+                "ms_map1_InitFunction": 1,
+                "ms_map2_InitFunction": 2,
+                "ms_map3_InitFunction": 1,
+                "ms_map3_flag506_InitFunction": 1,
+                "ms_map3_flag543_InitFunction": 1,
+                "ms_map3_flag609_InitFunction": 1,
+                "ms_map4_InitFunction": 1,
+                "ms_map5_InitFunction": 2,
+                "ms_map5_flag530_InitFunction": 1,
+                "ms_map5_flag28_InitFunction": 1,
+                "ms_map6_InitFunction": 3,
+                "ms_map7_InitFunction": 3,
+                "ms_map8_InitFunction": 2,
+                "ms_map9_InitFunction": 2,
+                "ms_map10_InitFunction": 1,
+                "ms_map10_flag722_InitFunction": 1,
+                "ms_map11_InitFunction": 1,
+                "ms_map12_InitFunction": 1,
+                "ms_map13_InitFunction": 4,
+                "ms_map14_InitFunction": 1,
+                "ms_map14_flag458_InitFunction": 1,
+                "ms_map15_InitFunction": 2,
+                "ms_map16_InitFunction": 2,
+                "ms_map16_flag530_InitFunction": 1,
+                "ms_map17_InitFunction": 2,
+                "ms_map17_flag530_InitFunction": 1,
+                "ms_map18_InitFunction": 1,
+                "ms_map18_flag530_InitFunction": 1,
+                "ms_map19_InitFunction": 1,
+                "ms_map19_flag_501_InitFunction": 1,
+                "ms_map19_flag506_InitFunction": 1,
+                "ms_map19_flag507_InitFunction": 1,
+                "ms_map19_flag543_InitFunction": 2,
+                "ms_map19_flag609_InitFunction": 1,
+                "ms_map20_InitFunction": 1,
+                "ms_map20_flag501_InitFunction": 3,
+                "ms_map20_flag543_InitFunction": 1,
+                "ms_map21_InitFunction": 2,
+                "ms_map21_flag609_InitFunction": 2,
+                "ms_map21_flag543_InitFunction": 1,
+                "ms_map22_InitFunction": 2,
+                "ms_map23_InitFunction": 2,
+                "ms_map24_InitFunction": 1,
+                "ms_map25_InitFunction": 1,
+                "ms_map26_InitFunction": 1,
+                "ms_map27_InitFunction": 2,
+                "ms_map28_InitFunction": 1,
+                "ms_map29_InitFunction": 1,
+                "ms_map30_InitFunction": 3,
+                "ms_map31_InitFunction": 1,
+                "ms_map31_flag830_InitFunction": 1,
+                "ms_map33_InitFunction": 3,
+                "ms_map33_flag312_InitFunction": 1,
+                "ms_map34_InitFunction": 2,
+                "ms_map36_InitFunction": 2,
+                "ms_map37_InitFunction": 1,
+                "ms_map37_flag999_InitFunction": 1,
+                "ms_map38_InitFunction": 1,
+                "ms_map39_InitFunction": 1,
+                "ms_map39_flag830_InitFunction": 1,
+                "ms_map40_InitFunction": 2,
+                "ms_map41_InitFunction": 1,
+                "ms_map42_InitFunction": 1,
+                "ms_map43_InitFunction": 1,
+                "ms_map43_flag612_InitFunction": 1,
+                "ms_map44_flag507_InitFunction": 1,
+                "ms_map44_flag609_InitFunction": 3,
+                "ms_map45_InitFunction": 1,
+                "ms_map46_InitFunction": 1,
+                "ms_map51_InitFunction": 2,
+                "ms_map52_InitFunction": 2,
+                "ms_map55_InitFunction": 1,
+                "ms_map56_InitFunction": 1,
+                "ms_map59_InitFunction": 1,
+                "ms_map59_flag543_InitFunction": 1,
+                "ms_map61_InitFunction": 2,
+                "ms_map62_InitFunction": 2,
+                "ms_map63_InitFunction": 2,
+                "ms_map66_InitFunction": 1,
+                "ms_map67_InitFunction": 1,
+                "ms_map68_InitFunction": 1,
+                "ms_map69_InitFunction": 1,
+                "ms_map70_InitFunction": 1,
+                "ms_map72_InitFunction": 1,
+                "ms_map73_InitFunction": 1,
+                "ms_map74_InitFunction": 1,
+                "ms_map75_InitFunction": 1,
+                "ms_map76_InitFunction": 1,
+                "ms_map77_InitFunction": 1
+              }
+            }
+          ]
+        },
+        "targetRouteReferenceCounts": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ms_map0_InitFunction",
+                "ms_map1_InitFunction",
+                "ms_map2_InitFunction",
+                "ms_map3_InitFunction",
+                "ms_map3_flag506_InitFunction",
+                "ms_map3_flag543_InitFunction",
+                "ms_map3_flag609_InitFunction",
+                "ms_map4_InitFunction",
+                "ms_map5_InitFunction",
+                "ms_map5_flag530_InitFunction",
+                "ms_map5_flag28_InitFunction",
+                "ms_map6_InitFunction",
+                "ms_map7_InitFunction",
+                "ms_map8_InitFunction",
+                "ms_map9_InitFunction",
+                "ms_map10_InitFunction",
+                "ms_map10_flag722_InitFunction",
+                "ms_map11_InitFunction",
+                "ms_map12_InitFunction",
+                "ms_map13_InitFunction",
+                "ms_map14_InitFunction",
+                "ms_map14_flag458_InitFunction",
+                "ms_map15_InitFunction",
+                "ms_map16_InitFunction",
+                "ms_map16_flag530_InitFunction",
+                "ms_map17_InitFunction",
+                "ms_map17_flag530_InitFunction",
+                "ms_map18_InitFunction",
+                "ms_map18_flag530_InitFunction",
+                "ms_map19_InitFunction",
+                "ms_map19_flag_501_InitFunction",
+                "ms_map19_flag506_InitFunction",
+                "ms_map19_flag507_InitFunction",
+                "ms_map19_flag543_InitFunction",
+                "ms_map19_flag609_InitFunction",
+                "ms_map20_InitFunction",
+                "ms_map20_flag501_InitFunction",
+                "ms_map20_flag543_InitFunction",
+                "ms_map21_InitFunction",
+                "ms_map21_flag609_InitFunction",
+                "ms_map21_flag543_InitFunction",
+                "ms_map22_InitFunction",
+                "ms_map23_InitFunction",
+                "ms_map24_InitFunction",
+                "ms_map25_InitFunction",
+                "ms_map26_InitFunction",
+                "ms_map27_InitFunction",
+                "ms_map28_InitFunction",
+                "ms_map29_InitFunction",
+                "ms_map30_InitFunction",
+                "ms_map31_InitFunction",
+                "ms_map31_flag830_InitFunction",
+                "ms_map33_InitFunction",
+                "ms_map33_flag312_InitFunction",
+                "ms_map34_InitFunction",
+                "ms_map36_InitFunction",
+                "ms_map37_InitFunction",
+                "ms_map37_flag999_InitFunction",
+                "ms_map38_InitFunction",
+                "ms_map39_InitFunction",
+                "ms_map39_flag830_InitFunction",
+                "ms_map40_InitFunction",
+                "ms_map41_InitFunction",
+                "ms_map42_InitFunction",
+                "ms_map43_InitFunction",
+                "ms_map43_flag612_InitFunction",
+                "ms_map44_flag507_InitFunction",
+                "ms_map44_flag609_InitFunction",
+                "ms_map45_InitFunction",
+                "ms_map46_InitFunction",
+                "ms_map51_InitFunction",
+                "ms_map52_InitFunction",
+                "ms_map55_InitFunction",
+                "ms_map56_InitFunction",
+                "ms_map59_InitFunction",
+                "ms_map59_flag543_InitFunction",
+                "ms_map61_InitFunction",
+                "ms_map62_InitFunction",
+                "ms_map63_InitFunction",
+                "ms_map66_InitFunction",
+                "ms_map67_InitFunction",
+                "ms_map68_InitFunction",
+                "ms_map69_InitFunction",
+                "ms_map70_InitFunction",
+                "ms_map72_InitFunction",
+                "ms_map73_InitFunction",
+                "ms_map74_InitFunction",
+                "ms_map75_InitFunction",
+                "ms_map76_InitFunction",
+                "ms_map77_InitFunction"
+              ],
+              "properties": {
+                "ms_map0_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map1_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map2_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_flag506_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map3_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map4_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map5_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map5_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map5_flag28_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map6_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map7_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map8_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map9_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map10_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map10_flag722_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map11_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map12_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map13_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map14_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map14_flag458_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map15_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map16_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map16_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map17_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map17_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map18_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map18_flag530_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag_501_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag506_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag507_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map19_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map20_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map20_flag501_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map20_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map21_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map21_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map21_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map22_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map23_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map24_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map25_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map26_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map27_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map28_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map29_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map30_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map31_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map31_flag830_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map33_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map33_flag312_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map34_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map36_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map37_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map37_flag999_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map38_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map39_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map39_flag830_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map40_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map41_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map42_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map43_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map43_flag612_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map44_flag507_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map44_flag609_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map45_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map46_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map51_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map52_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map55_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map56_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map59_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map59_flag543_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map61_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map62_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map63_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map66_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map67_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map68_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map69_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map70_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map72_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map73_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map74_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map75_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map76_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "ms_map77_InitFunction": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "ms_map0_InitFunction": 1,
+                "ms_map1_InitFunction": 1,
+                "ms_map2_InitFunction": 2,
+                "ms_map3_InitFunction": 1,
+                "ms_map3_flag506_InitFunction": 1,
+                "ms_map3_flag543_InitFunction": 1,
+                "ms_map3_flag609_InitFunction": 1,
+                "ms_map4_InitFunction": 1,
+                "ms_map5_InitFunction": 2,
+                "ms_map5_flag530_InitFunction": 1,
+                "ms_map5_flag28_InitFunction": 1,
+                "ms_map6_InitFunction": 3,
+                "ms_map7_InitFunction": 4,
+                "ms_map8_InitFunction": 2,
+                "ms_map9_InitFunction": 2,
+                "ms_map10_InitFunction": 1,
+                "ms_map10_flag722_InitFunction": 1,
+                "ms_map11_InitFunction": 1,
+                "ms_map12_InitFunction": 1,
+                "ms_map13_InitFunction": 4,
+                "ms_map14_InitFunction": 1,
+                "ms_map14_flag458_InitFunction": 1,
+                "ms_map15_InitFunction": 2,
+                "ms_map16_InitFunction": 2,
+                "ms_map16_flag530_InitFunction": 1,
+                "ms_map17_InitFunction": 2,
+                "ms_map17_flag530_InitFunction": 1,
+                "ms_map18_InitFunction": 1,
+                "ms_map18_flag530_InitFunction": 1,
+                "ms_map19_InitFunction": 1,
+                "ms_map19_flag_501_InitFunction": 1,
+                "ms_map19_flag506_InitFunction": 1,
+                "ms_map19_flag507_InitFunction": 1,
+                "ms_map19_flag543_InitFunction": 2,
+                "ms_map19_flag609_InitFunction": 1,
+                "ms_map20_InitFunction": 1,
+                "ms_map20_flag501_InitFunction": 3,
+                "ms_map20_flag543_InitFunction": 1,
+                "ms_map21_InitFunction": 2,
+                "ms_map21_flag609_InitFunction": 2,
+                "ms_map21_flag543_InitFunction": 1,
+                "ms_map22_InitFunction": 2,
+                "ms_map23_InitFunction": 2,
+                "ms_map24_InitFunction": 1,
+                "ms_map25_InitFunction": 1,
+                "ms_map26_InitFunction": 1,
+                "ms_map27_InitFunction": 2,
+                "ms_map28_InitFunction": 1,
+                "ms_map29_InitFunction": 1,
+                "ms_map30_InitFunction": 3,
+                "ms_map31_InitFunction": 1,
+                "ms_map31_flag830_InitFunction": 1,
+                "ms_map33_InitFunction": 5,
+                "ms_map33_flag312_InitFunction": 1,
+                "ms_map34_InitFunction": 2,
+                "ms_map36_InitFunction": 2,
+                "ms_map37_InitFunction": 1,
+                "ms_map37_flag999_InitFunction": 1,
+                "ms_map38_InitFunction": 1,
+                "ms_map39_InitFunction": 1,
+                "ms_map39_flag830_InitFunction": 1,
+                "ms_map40_InitFunction": 3,
+                "ms_map41_InitFunction": 1,
+                "ms_map42_InitFunction": 1,
+                "ms_map43_InitFunction": 1,
+                "ms_map43_flag612_InitFunction": 1,
+                "ms_map44_flag507_InitFunction": 1,
+                "ms_map44_flag609_InitFunction": 3,
+                "ms_map45_InitFunction": 1,
+                "ms_map46_InitFunction": 1,
+                "ms_map51_InitFunction": 2,
+                "ms_map52_InitFunction": 2,
+                "ms_map55_InitFunction": 1,
+                "ms_map56_InitFunction": 1,
+                "ms_map59_InitFunction": 1,
+                "ms_map59_flag543_InitFunction": 1,
+                "ms_map61_InitFunction": 2,
+                "ms_map62_InitFunction": 2,
+                "ms_map63_InitFunction": 2,
+                "ms_map66_InitFunction": 1,
+                "ms_map67_InitFunction": 1,
+                "ms_map68_InitFunction": 1,
+                "ms_map69_InitFunction": 1,
+                "ms_map70_InitFunction": 1,
+                "ms_map72_InitFunction": 1,
+                "ms_map73_InitFunction": 1,
+                "ms_map74_InitFunction": 1,
+                "ms_map75_InitFunction": 1,
+                "ms_map76_InitFunction": 1,
+                "ms_map77_InitFunction": 1
+              }
+            }
+          ]
+        },
+        "directCallInstructionTargetCounts": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ChangeEntityFacing",
+                "FadeInFromBlack",
+                "InitializeNazcaShipForceMembers",
+                "MoveEntityOutOfMap",
+                "j_FadeOut_WaitForP1Input",
+                "j_alt_YesNoPrompt"
+              ],
+              "properties": {
+                "ChangeEntityFacing": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "FadeInFromBlack": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeNazcaShipForceMembers": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "MoveEntityOutOfMap": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "j_FadeOut_WaitForP1Input": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "j_alt_YesNoPrompt": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "ChangeEntityFacing": 1,
+                "FadeInFromBlack": 5,
+                "InitializeNazcaShipForceMembers": 2,
+                "MoveEntityOutOfMap": 35,
+                "j_FadeOut_WaitForP1Input": 1,
+                "j_alt_YesNoPrompt": 1
+              }
+            }
+          ]
+        },
+        "directCallEffectiveTargetCounts": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ChangeEntityFacing",
+                "FadeInFromBlack",
+                "FadeOut_WaitForP1Input",
+                "InitializeNazcaShipForceMembers",
+                "MoveEntityOutOfMap",
+                "alt_YesNoPrompt"
+              ],
+              "properties": {
+                "ChangeEntityFacing": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "FadeInFromBlack": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "FadeOut_WaitForP1Input": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeNazcaShipForceMembers": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "MoveEntityOutOfMap": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "alt_YesNoPrompt": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "ChangeEntityFacing": 1,
+                "FadeInFromBlack": 5,
+                "FadeOut_WaitForP1Input": 1,
+                "InitializeNazcaShipForceMembers": 2,
+                "MoveEntityOutOfMap": 35,
+                "alt_YesNoPrompt": 1
+              }
+            }
+          ]
+        },
+        "scriptTargetCounts": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "cs_4FF5A",
+                "cs_503A6",
+                "cs_50806",
+                "cs_51374",
+                "cs_5137A",
+                "cs_513A0",
+                "cs_513BA",
+                "cs_513CE",
+                "cs_51742",
+                "cs_51750",
+                "cs_5247C",
+                "cs_5249E",
+                "cs_53104",
+                "cs_53176",
+                "cs_53996",
+                "cs_53B60",
+                "cs_53F2A",
+                "cs_53FD8",
+                "cs_540C0",
+                "cs_54570",
+                "cs_54E70",
+                "cs_54E78",
+                "cs_55832",
+                "cs_570B0",
+                "cs_57D22",
+                "cs_58310",
+                "cs_58FA4",
+                "cs_59656",
+                "cs_5996E",
+                "cs_59E04",
+                "cs_5A30C",
+                "cs_5A31E",
+                "cs_5ABA8",
+                "cs_5ABCC",
+                "cs_5ABE6",
+                "cs_5AC04",
+                "cs_5AC1C",
+                "cs_5AC34",
+                "cs_5AC4C",
+                "cs_5B016",
+                "cs_5C3D8",
+                "cs_5CA5E",
+                "cs_5D3AA",
+                "cs_5D63C",
+                "cs_5DD8E",
+                "cs_5DD9C",
+                "cs_5E0EE",
+                "cs_5E320",
+                "cs_5E346",
+                "cs_5EB26",
+                "cs_5EB44",
+                "cs_5EBFC",
+                "cs_5ED06",
+                "cs_5EDB8",
+                "cs_5EF60",
+                "cs_5F4AE",
+                "cs_5FA9C",
+                "cs_5FABC",
+                "cs_600B2",
+                "cs_6060E",
+                "cs_60656",
+                "cs_606AC",
+                "cs_606E0",
+                "cs_606EA",
+                "cs_607DE",
+                "cs_60C42",
+                "cs_60CA4",
+                "cs_60EB2",
+                "cs_612BE",
+                "cs_615E6",
+                "cs_62D06",
+                "cs_62D0E",
+                "cs_633B2",
+                "cs_LeaveSpecialBattle",
+                "cs_StartSpecialBattle"
+              ],
+              "properties": {
+                "cs_4FF5A": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_503A6": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_50806": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_51374": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5137A": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_513A0": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_513BA": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_513CE": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_51742": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_51750": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5247C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5249E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_53104": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_53176": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_53996": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_53B60": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_53F2A": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_53FD8": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_540C0": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_54570": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_54E70": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_54E78": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_55832": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_570B0": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_57D22": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_58310": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_58FA4": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_59656": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5996E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_59E04": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5A30C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5A31E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5ABA8": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5ABCC": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5ABE6": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5AC04": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5AC1C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5AC34": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5AC4C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5B016": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5C3D8": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5CA5E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5D3AA": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5D63C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5DD8E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5DD9C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5E0EE": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5E320": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5E346": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5EB26": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5EB44": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5EBFC": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5ED06": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5EDB8": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5EF60": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5F4AE": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5FA9C": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_5FABC": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_600B2": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_6060E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_60656": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_606AC": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_606E0": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_606EA": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_607DE": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_60C42": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_60CA4": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_60EB2": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_612BE": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_615E6": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_62D06": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_62D0E": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_633B2": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_LeaveSpecialBattle": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cs_StartSpecialBattle": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "const": {
+                "cs_4FF5A": 1,
+                "cs_503A6": 1,
+                "cs_50806": 1,
+                "cs_51374": 1,
+                "cs_5137A": 1,
+                "cs_513A0": 1,
+                "cs_513BA": 1,
+                "cs_513CE": 1,
+                "cs_51742": 1,
+                "cs_51750": 1,
+                "cs_5247C": 1,
+                "cs_5249E": 1,
+                "cs_53104": 2,
+                "cs_53176": 1,
+                "cs_53996": 1,
+                "cs_53B60": 1,
+                "cs_53F2A": 1,
+                "cs_53FD8": 4,
+                "cs_540C0": 1,
+                "cs_54570": 1,
+                "cs_54E70": 1,
+                "cs_54E78": 1,
+                "cs_55832": 1,
+                "cs_570B0": 1,
+                "cs_57D22": 1,
+                "cs_58310": 1,
+                "cs_58FA4": 1,
+                "cs_59656": 1,
+                "cs_5996E": 1,
+                "cs_59E04": 1,
+                "cs_5A30C": 1,
+                "cs_5A31E": 1,
+                "cs_5ABA8": 1,
+                "cs_5ABCC": 1,
+                "cs_5ABE6": 1,
+                "cs_5AC04": 1,
+                "cs_5AC1C": 1,
+                "cs_5AC34": 1,
+                "cs_5AC4C": 1,
+                "cs_5B016": 1,
+                "cs_5C3D8": 1,
+                "cs_5CA5E": 1,
+                "cs_5D3AA": 1,
+                "cs_5D63C": 1,
+                "cs_5DD8E": 1,
+                "cs_5DD9C": 1,
+                "cs_5E0EE": 1,
+                "cs_5E320": 1,
+                "cs_5E346": 1,
+                "cs_5EB26": 1,
+                "cs_5EB44": 1,
+                "cs_5EBFC": 1,
+                "cs_5ED06": 1,
+                "cs_5EDB8": 1,
+                "cs_5EF60": 1,
+                "cs_5F4AE": 1,
+                "cs_5FA9C": 1,
+                "cs_5FABC": 1,
+                "cs_600B2": 1,
+                "cs_6060E": 1,
+                "cs_60656": 1,
+                "cs_606AC": 1,
+                "cs_606E0": 1,
+                "cs_606EA": 1,
+                "cs_607DE": 1,
+                "cs_60C42": 1,
+                "cs_60CA4": 1,
+                "cs_60EB2": 1,
+                "cs_612BE": 1,
+                "cs_615E6": 1,
+                "cs_62D06": 1,
+                "cs_62D0E": 1,
+                "cs_633B2": 1,
+                "cs_LeaveSpecialBattle": 2,
+                "cs_StartSpecialBattle": 1
+              }
+            }
+          ]
+        },
+        "duplicatePointerTargets": {
+          "allOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/duplicatePointerTarget"
+              },
+              "minItems": 28,
+              "maxItems": 28
+            },
+            {
+              "const": [
+                {
+                  "symbol": "ms_map13_InitFunction",
+                  "setupReferenceCount": 4
+                },
+                {
+                  "symbol": "ms_map15_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map16_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map17_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map19_flag543_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map20_flag501_InitFunction",
+                  "setupReferenceCount": 3
+                },
+                {
+                  "symbol": "ms_map21_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map21_flag609_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map22_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map23_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map27_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map2_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map30_InitFunction",
+                  "setupReferenceCount": 3
+                },
+                {
+                  "symbol": "ms_map33_InitFunction",
+                  "setupReferenceCount": 3
+                },
+                {
+                  "symbol": "ms_map34_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map36_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map40_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map44_flag609_InitFunction",
+                  "setupReferenceCount": 3
+                },
+                {
+                  "symbol": "ms_map51_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map52_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map5_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map61_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map62_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map63_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map6_InitFunction",
+                  "setupReferenceCount": 3
+                },
+                {
+                  "symbol": "ms_map7_InitFunction",
+                  "setupReferenceCount": 3
+                },
+                {
+                  "symbol": "ms_map8_InitFunction",
+                  "setupReferenceCount": 2
+                },
+                {
+                  "symbol": "ms_map9_InitFunction",
+                  "setupReferenceCount": 2
+                }
+              ]
+            }
+          ]
+        },
+        "dispatcher": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/dispatcher"
+            },
+            {
+              "const": {
+                "pointerOffsetConstant": {
+                  "name": "MAPSETUP_OFFSET_INIT_FUNCTION",
+                  "value": 20
+                },
+                "pointerLayoutRow": {
+                  "sourceOrder": 5,
+                  "name": "initFunction",
+                  "offset": 20
+                },
+                "pointerLoadUseSite": {
+                  "role": "load-init-pointer",
+                  "index": 5,
+                  "opcode": "movea.l",
+                  "operandText": "MAPSETUP_OFFSET_INIT_FUNCTION(a0),a0",
+                  "offsetConstantName": "MAPSETUP_OFFSET_INIT_FUNCTION",
+                  "resolvedOffset": 20
+                },
+                "useSites": [
+                  {
+                    "role": "save-registers",
+                    "index": 0,
+                    "opcode": "movem.l",
+                    "operandText": "d0-a1,-(sp)"
+                  },
+                  {
+                    "role": "select-setup",
+                    "index": 1,
+                    "opcode": "bsr.w",
+                    "operandText": "GetCurrentMapSetup"
+                  },
+                  {
+                    "role": "missing-setup-compare",
+                    "index": 2,
+                    "opcode": "cmpi.w",
+                    "operandText": "#-1,(a0)"
+                  },
+                  {
+                    "role": "non-missing-branch",
+                    "index": 3,
+                    "opcode": "bne.s",
+                    "operandText": "loc_4750E"
+                  },
+                  {
+                    "role": "missing-setup-branch",
+                    "index": 4,
+                    "opcode": "bra.w",
+                    "operandText": "loc_47514"
+                  },
+                  {
+                    "role": "load-init-pointer",
+                    "index": 5,
+                    "opcode": "movea.l",
+                    "operandText": "MAPSETUP_OFFSET_INIT_FUNCTION(a0),a0"
+                  },
+                  {
+                    "role": "indirect-init-call",
+                    "index": 6,
+                    "opcode": "jsr",
+                    "operandText": "(a0)"
+                  },
+                  {
+                    "role": "restore-registers",
+                    "index": 7,
+                    "opcode": "movem.l",
+                    "operandText": "(sp)+,d0-a1"
+                  },
+                  {
+                    "role": "return",
+                    "index": 8,
+                    "opcode": "rts",
+                    "operandText": ""
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "runtimeQuestions": {
+          "allOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/runtimeQuestionGroup"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            {
+              "const": [
+                {
+                  "id": "map-init-effects-and-presentation",
+                  "status": "unknown",
+                  "questions": [
+                    "init-script-side-effects-and-transition-persistence",
+                    "init-entity-mutation-order-and-visibility-timing",
+                    "init-fade-audio-and-presentation-sequencing"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "primarySourceOrder": {
+          "type": "array",
+          "const": [
+            "ms_map0_InitFunction",
+            "ms_map1_InitFunction",
+            "ms_map2_InitFunction",
+            "ms_map3_InitFunction",
+            "ms_map3_flag506_InitFunction",
+            "ms_map3_flag543_InitFunction",
+            "ms_map3_flag609_InitFunction",
+            "ms_map4_InitFunction",
+            "ms_map5_InitFunction",
+            "ms_map5_flag530_InitFunction",
+            "ms_map6_InitFunction",
+            "ms_map7_InitFunction",
+            "ms_map8_InitFunction",
+            "ms_map9_InitFunction",
+            "ms_map10_InitFunction",
+            "ms_map10_flag722_InitFunction",
+            "ms_map11_InitFunction",
+            "ms_map12_InitFunction",
+            "ms_map13_InitFunction",
+            "ms_map14_InitFunction",
+            "ms_map14_flag458_InitFunction",
+            "ms_map15_InitFunction",
+            "ms_map16_InitFunction",
+            "ms_map16_flag530_InitFunction",
+            "ms_map17_InitFunction",
+            "ms_map17_flag530_InitFunction",
+            "ms_map18_InitFunction",
+            "ms_map18_flag530_InitFunction",
+            "ms_map19_InitFunction",
+            "ms_map19_flag506_InitFunction",
+            "ms_map19_flag507_InitFunction",
+            "ms_map19_flag543_InitFunction",
+            "ms_map19_flag609_InitFunction",
+            "ms_map20_InitFunction",
+            "ms_map20_flag543_InitFunction",
+            "ms_map21_InitFunction",
+            "ms_map21_flag543_InitFunction",
+            "ms_map22_InitFunction",
+            "ms_map23_InitFunction",
+            "ms_map24_InitFunction",
+            "ms_map25_InitFunction",
+            "ms_map26_InitFunction",
+            "ms_map27_InitFunction",
+            "ms_map28_InitFunction",
+            "ms_map29_InitFunction",
+            "ms_map30_InitFunction",
+            "ms_map31_InitFunction",
+            "ms_map31_flag830_InitFunction",
+            "ms_map33_InitFunction",
+            "ms_map33_flag312_InitFunction",
+            "ms_map34_InitFunction",
+            "ms_map36_InitFunction",
+            "ms_map37_InitFunction",
+            "ms_map37_flag999_InitFunction",
+            "ms_map38_InitFunction",
+            "ms_map39_InitFunction",
+            "ms_map39_flag830_InitFunction",
+            "ms_map40_InitFunction",
+            "ms_map41_InitFunction",
+            "ms_map42_InitFunction",
+            "ms_map43_InitFunction",
+            "ms_map44_flag507_InitFunction",
+            "ms_map45_InitFunction",
+            "ms_map46_InitFunction",
+            "ms_map51_InitFunction",
+            "ms_map52_InitFunction",
+            "ms_map55_InitFunction",
+            "ms_map56_InitFunction",
+            "ms_map59_InitFunction",
+            "ms_map59_flag543_InitFunction",
+            "ms_map61_InitFunction",
+            "ms_map62_InitFunction",
+            "ms_map63_InitFunction",
+            "ms_map66_InitFunction",
+            "ms_map67_InitFunction",
+            "ms_map68_InitFunction",
+            "ms_map69_InitFunction",
+            "ms_map70_InitFunction",
+            "ms_map72_InitFunction",
+            "ms_map73_InitFunction",
+            "ms_map74_InitFunction",
+            "ms_map75_InitFunction",
+            "ms_map76_InitFunction",
+            "ms_map77_InitFunction"
+          ]
+        },
+        "primaryOperationOrder": {
+          "type": "array",
+          "const": [
+            "ms_map0_InitFunction:0",
+            "ms_map1_InitFunction:0",
+            "ms_map1_InitFunction:1",
+            "ms_map1_InitFunction:2",
+            "ms_map1_InitFunction:3",
+            "ms_map1_InitFunction:4",
+            "ms_map2_InitFunction:0",
+            "ms_map3_InitFunction:0",
+            "ms_map3_InitFunction:1",
+            "ms_map3_InitFunction:2",
+            "ms_map3_InitFunction:3",
+            "ms_map3_InitFunction:4",
+            "ms_map3_InitFunction:5",
+            "ms_map3_InitFunction:6",
+            "ms_map3_InitFunction:7",
+            "ms_map3_InitFunction:8",
+            "ms_map3_InitFunction:9",
+            "ms_map3_InitFunction:10",
+            "ms_map3_InitFunction:11",
+            "ms_map3_InitFunction:12",
+            "ms_map3_InitFunction:13",
+            "ms_map3_InitFunction:14",
+            "ms_map3_flag506_InitFunction:0",
+            "ms_map3_flag506_InitFunction:1",
+            "ms_map3_flag506_InitFunction:2",
+            "ms_map3_flag506_InitFunction:3",
+            "ms_map3_flag506_InitFunction:4",
+            "ms_map3_flag543_InitFunction:0",
+            "ms_map3_flag609_InitFunction:0",
+            "ms_map3_flag609_InitFunction:1",
+            "ms_map3_flag609_InitFunction:2",
+            "ms_map3_flag609_InitFunction:3",
+            "ms_map4_InitFunction:0",
+            "ms_map4_InitFunction:1",
+            "ms_map4_InitFunction:2",
+            "ms_map4_InitFunction:3",
+            "ms_map4_InitFunction:4",
+            "ms_map4_InitFunction:5",
+            "ms_map4_InitFunction:6",
+            "ms_map5_InitFunction:0",
+            "ms_map5_flag530_InitFunction:0",
+            "ms_map5_flag530_InitFunction:1",
+            "ms_map5_flag530_InitFunction:2",
+            "ms_map5_flag530_InitFunction:3",
+            "ms_map5_flag530_InitFunction:4",
+            "ms_map5_flag530_InitFunction:5",
+            "ms_map5_flag530_InitFunction:6",
+            "ms_map5_flag530_InitFunction:7",
+            "ms_map5_flag530_InitFunction:8",
+            "ms_map5_flag530_InitFunction:9",
+            "ms_map5_flag530_InitFunction:10",
+            "ms_map5_flag530_InitFunction:11",
+            "ms_map5_flag530_InitFunction:12",
+            "ms_map5_flag530_InitFunction:13",
+            "ms_map5_flag530_InitFunction:14",
+            "ms_map5_flag530_InitFunction:15",
+            "ms_map5_flag530_InitFunction:16",
+            "ms_map5_flag530_InitFunction:17",
+            "ms_map5_flag530_InitFunction:18",
+            "ms_map5_flag530_InitFunction:19",
+            "ms_map5_flag530_InitFunction:20",
+            "ms_map5_flag530_InitFunction:21",
+            "ms_map5_flag530_InitFunction:22",
+            "ms_map5_flag530_InitFunction:23",
+            "ms_map5_flag530_InitFunction:24",
+            "ms_map5_flag530_InitFunction:25",
+            "ms_map5_flag530_InitFunction:26",
+            "ms_map5_flag530_InitFunction:27",
+            "ms_map5_flag530_InitFunction:28",
+            "ms_map5_flag530_InitFunction:29",
+            "ms_map5_flag530_InitFunction:30",
+            "ms_map5_flag530_InitFunction:31",
+            "ms_map5_flag530_InitFunction:32",
+            "ms_map5_flag530_InitFunction:33",
+            "ms_map5_flag530_InitFunction:34",
+            "ms_map5_flag530_InitFunction:35",
+            "ms_map5_flag530_InitFunction:36",
+            "ms_map5_flag530_InitFunction:37",
+            "ms_map5_flag530_InitFunction:38",
+            "ms_map5_flag530_InitFunction:39",
+            "ms_map5_flag530_InitFunction:40",
+            "ms_map5_flag530_InitFunction:41",
+            "ms_map5_flag530_InitFunction:42",
+            "ms_map5_flag530_InitFunction:43",
+            "ms_map5_flag530_InitFunction:44",
+            "ms_map5_flag530_InitFunction:45",
+            "ms_map5_flag530_InitFunction:46",
+            "ms_map5_flag530_InitFunction:47",
+            "ms_map5_flag530_InitFunction:48",
+            "ms_map5_flag530_InitFunction:49",
+            "ms_map5_flag530_InitFunction:50",
+            "ms_map5_flag530_InitFunction:51",
+            "ms_map6_InitFunction:0",
+            "ms_map6_InitFunction:1",
+            "ms_map6_InitFunction:2",
+            "ms_map6_InitFunction:3",
+            "ms_map6_InitFunction:4",
+            "ms_map6_InitFunction:5",
+            "ms_map6_InitFunction:6",
+            "ms_map6_InitFunction:7",
+            "ms_map7_InitFunction:0",
+            "ms_map7_InitFunction:1",
+            "ms_map7_InitFunction:2",
+            "ms_map7_InitFunction:3",
+            "ms_map7_InitFunction:4",
+            "ms_map7_InitFunction:5",
+            "ms_map7_InitFunction:6",
+            "ms_map8_InitFunction:0",
+            "ms_map8_InitFunction:1",
+            "ms_map8_InitFunction:2",
+            "ms_map8_InitFunction:3",
+            "ms_map8_InitFunction:4",
+            "ms_map9_InitFunction:0",
+            "ms_map9_InitFunction:1",
+            "ms_map9_InitFunction:2",
+            "ms_map9_InitFunction:3",
+            "ms_map9_InitFunction:4",
+            "ms_map9_InitFunction:5",
+            "ms_map9_InitFunction:6",
+            "ms_map9_InitFunction:7",
+            "ms_map9_InitFunction:8",
+            "ms_map9_InitFunction:9",
+            "ms_map9_InitFunction:10",
+            "ms_map9_InitFunction:11",
+            "ms_map9_InitFunction:12",
+            "ms_map10_InitFunction:0",
+            "ms_map10_InitFunction:1",
+            "ms_map10_InitFunction:2",
+            "ms_map10_InitFunction:3",
+            "ms_map10_InitFunction:4",
+            "ms_map10_InitFunction:5",
+            "ms_map10_InitFunction:6",
+            "ms_map10_InitFunction:7",
+            "ms_map10_InitFunction:8",
+            "ms_map10_InitFunction:9",
+            "ms_map10_InitFunction:10",
+            "ms_map10_InitFunction:11",
+            "ms_map10_InitFunction:12",
+            "ms_map10_InitFunction:13",
+            "ms_map10_InitFunction:14",
+            "ms_map10_InitFunction:15",
+            "ms_map10_InitFunction:16",
+            "ms_map10_InitFunction:17",
+            "ms_map10_InitFunction:18",
+            "ms_map10_InitFunction:19",
+            "ms_map10_InitFunction:20",
+            "ms_map10_flag722_InitFunction:0",
+            "ms_map10_flag722_InitFunction:1",
+            "ms_map10_flag722_InitFunction:2",
+            "ms_map10_flag722_InitFunction:3",
+            "ms_map10_flag722_InitFunction:4",
+            "ms_map10_flag722_InitFunction:5",
+            "ms_map10_flag722_InitFunction:6",
+            "ms_map10_flag722_InitFunction:7",
+            "ms_map10_flag722_InitFunction:8",
+            "ms_map11_InitFunction:0",
+            "ms_map12_InitFunction:0",
+            "ms_map12_InitFunction:1",
+            "ms_map12_InitFunction:2",
+            "ms_map12_InitFunction:3",
+            "ms_map12_InitFunction:4",
+            "ms_map12_InitFunction:5",
+            "ms_map12_InitFunction:6",
+            "ms_map12_InitFunction:7",
+            "ms_map13_InitFunction:0",
+            "ms_map13_InitFunction:1",
+            "ms_map13_InitFunction:2",
+            "ms_map13_InitFunction:3",
+            "ms_map13_InitFunction:4",
+            "ms_map13_InitFunction:5",
+            "ms_map13_InitFunction:6",
+            "ms_map13_InitFunction:7",
+            "ms_map13_InitFunction:8",
+            "ms_map13_InitFunction:9",
+            "ms_map13_InitFunction:10",
+            "ms_map13_InitFunction:11",
+            "ms_map13_InitFunction:12",
+            "ms_map14_InitFunction:0",
+            "ms_map14_InitFunction:1",
+            "ms_map14_InitFunction:2",
+            "ms_map14_InitFunction:3",
+            "ms_map14_InitFunction:4",
+            "ms_map14_InitFunction:5",
+            "ms_map14_flag458_InitFunction:0",
+            "ms_map15_InitFunction:0",
+            "ms_map16_InitFunction:0",
+            "ms_map16_InitFunction:1",
+            "ms_map16_InitFunction:2",
+            "ms_map16_InitFunction:3",
+            "ms_map16_InitFunction:4",
+            "ms_map16_flag530_InitFunction:0",
+            "ms_map17_InitFunction:0",
+            "ms_map17_InitFunction:1",
+            "ms_map17_InitFunction:2",
+            "ms_map17_InitFunction:3",
+            "ms_map17_InitFunction:4",
+            "ms_map17_InitFunction:5",
+            "ms_map17_InitFunction:6",
+            "ms_map17_InitFunction:7",
+            "ms_map17_InitFunction:8",
+            "ms_map17_InitFunction:9",
+            "ms_map17_InitFunction:10",
+            "ms_map17_flag530_InitFunction:0",
+            "ms_map18_InitFunction:0",
+            "ms_map18_flag530_InitFunction:0",
+            "ms_map18_flag530_InitFunction:1",
+            "ms_map18_flag530_InitFunction:2",
+            "ms_map18_flag530_InitFunction:3",
+            "ms_map18_flag530_InitFunction:4",
+            "ms_map18_flag530_InitFunction:5",
+            "ms_map18_flag530_InitFunction:6",
+            "ms_map18_flag530_InitFunction:7",
+            "ms_map18_flag530_InitFunction:8",
+            "ms_map19_InitFunction:0",
+            "ms_map19_InitFunction:1",
+            "ms_map19_InitFunction:2",
+            "ms_map19_InitFunction:3",
+            "ms_map19_InitFunction:4",
+            "ms_map19_InitFunction:5",
+            "ms_map19_InitFunction:6",
+            "ms_map19_flag506_InitFunction:0",
+            "ms_map19_flag506_InitFunction:1",
+            "ms_map19_flag506_InitFunction:2",
+            "ms_map19_flag506_InitFunction:3",
+            "ms_map19_flag506_InitFunction:4",
+            "ms_map19_flag506_InitFunction:5",
+            "ms_map19_flag506_InitFunction:6",
+            "ms_map19_flag506_InitFunction:7",
+            "ms_map19_flag506_InitFunction:8",
+            "ms_map19_flag506_InitFunction:9",
+            "ms_map19_flag506_InitFunction:10",
+            "ms_map19_flag506_InitFunction:11",
+            "ms_map19_flag506_InitFunction:12",
+            "ms_map19_flag506_InitFunction:13",
+            "ms_map19_flag506_InitFunction:14",
+            "ms_map19_flag506_InitFunction:15",
+            "ms_map19_flag506_InitFunction:16",
+            "ms_map19_flag507_InitFunction:0",
+            "ms_map19_flag507_InitFunction:1",
+            "ms_map19_flag507_InitFunction:2",
+            "ms_map19_flag507_InitFunction:3",
+            "ms_map19_flag543_InitFunction:0",
+            "ms_map19_flag543_InitFunction:1",
+            "ms_map19_flag543_InitFunction:2",
+            "ms_map19_flag543_InitFunction:3",
+            "ms_map19_flag543_InitFunction:4",
+            "ms_map19_flag543_InitFunction:5",
+            "ms_map19_flag543_InitFunction:6",
+            "ms_map19_flag543_InitFunction:7",
+            "ms_map19_flag543_InitFunction:8",
+            "ms_map19_flag543_InitFunction:9",
+            "ms_map19_flag543_InitFunction:10",
+            "ms_map19_flag543_InitFunction:11",
+            "ms_map19_flag543_InitFunction:12",
+            "ms_map19_flag543_InitFunction:13",
+            "ms_map19_flag543_InitFunction:14",
+            "ms_map19_flag543_InitFunction:15",
+            "ms_map19_flag543_InitFunction:16",
+            "ms_map19_flag543_InitFunction:17",
+            "ms_map19_flag543_InitFunction:18",
+            "ms_map19_flag543_InitFunction:19",
+            "ms_map19_flag543_InitFunction:20",
+            "ms_map19_flag543_InitFunction:21",
+            "ms_map19_flag543_InitFunction:22",
+            "ms_map19_flag543_InitFunction:23",
+            "ms_map19_flag543_InitFunction:24",
+            "ms_map19_flag543_InitFunction:25",
+            "ms_map19_flag543_InitFunction:26",
+            "ms_map19_flag609_InitFunction:0",
+            "ms_map19_flag609_InitFunction:1",
+            "ms_map19_flag609_InitFunction:2",
+            "ms_map19_flag609_InitFunction:3",
+            "ms_map19_flag609_InitFunction:4",
+            "ms_map20_InitFunction:0",
+            "ms_map20_InitFunction:1",
+            "ms_map20_InitFunction:2",
+            "ms_map20_InitFunction:3",
+            "ms_map20_InitFunction:4",
+            "ms_map20_InitFunction:5",
+            "ms_map20_InitFunction:6",
+            "ms_map20_InitFunction:7",
+            "ms_map20_InitFunction:8",
+            "ms_map20_InitFunction:9",
+            "ms_map20_InitFunction:10",
+            "ms_map20_InitFunction:11",
+            "ms_map20_flag543_InitFunction:0",
+            "ms_map20_flag543_InitFunction:1",
+            "ms_map20_flag543_InitFunction:2",
+            "ms_map20_flag543_InitFunction:3",
+            "ms_map20_flag543_InitFunction:4",
+            "ms_map20_flag543_InitFunction:5",
+            "ms_map20_flag543_InitFunction:6",
+            "ms_map20_flag543_InitFunction:7",
+            "ms_map20_flag543_InitFunction:8",
+            "ms_map21_InitFunction:0",
+            "ms_map21_InitFunction:1",
+            "ms_map21_InitFunction:2",
+            "ms_map21_InitFunction:3",
+            "ms_map21_InitFunction:4",
+            "ms_map21_InitFunction:5",
+            "ms_map21_InitFunction:6",
+            "ms_map21_flag543_InitFunction:0",
+            "ms_map21_flag543_InitFunction:1",
+            "ms_map21_flag543_InitFunction:2",
+            "ms_map22_InitFunction:0",
+            "ms_map22_InitFunction:1",
+            "ms_map22_InitFunction:2",
+            "ms_map22_InitFunction:3",
+            "ms_map22_InitFunction:4",
+            "ms_map22_InitFunction:5",
+            "ms_map22_InitFunction:6",
+            "ms_map22_InitFunction:7",
+            "ms_map22_InitFunction:8",
+            "ms_map22_InitFunction:9",
+            "ms_map22_InitFunction:10",
+            "ms_map23_InitFunction:0",
+            "ms_map24_InitFunction:0",
+            "ms_map24_InitFunction:1",
+            "ms_map24_InitFunction:2",
+            "ms_map24_InitFunction:3",
+            "ms_map24_InitFunction:4",
+            "ms_map24_InitFunction:5",
+            "ms_map24_InitFunction:6",
+            "ms_map24_InitFunction:7",
+            "ms_map24_InitFunction:8",
+            "ms_map24_InitFunction:9",
+            "ms_map24_InitFunction:10",
+            "ms_map24_InitFunction:11",
+            "ms_map24_InitFunction:12",
+            "ms_map24_InitFunction:13",
+            "ms_map24_InitFunction:14",
+            "ms_map24_InitFunction:15",
+            "ms_map24_InitFunction:16",
+            "ms_map24_InitFunction:17",
+            "ms_map24_InitFunction:18",
+            "ms_map24_InitFunction:19",
+            "ms_map24_InitFunction:20",
+            "ms_map24_InitFunction:21",
+            "ms_map24_InitFunction:22",
+            "ms_map24_InitFunction:23",
+            "ms_map24_InitFunction:24",
+            "ms_map24_InitFunction:25",
+            "ms_map24_InitFunction:26",
+            "ms_map24_InitFunction:27",
+            "ms_map24_InitFunction:28",
+            "ms_map24_InitFunction:29",
+            "ms_map24_InitFunction:30",
+            "ms_map24_InitFunction:31",
+            "ms_map24_InitFunction:32",
+            "ms_map24_InitFunction:33",
+            "ms_map24_InitFunction:34",
+            "ms_map24_InitFunction:35",
+            "ms_map24_InitFunction:36",
+            "ms_map24_InitFunction:37",
+            "ms_map24_InitFunction:38",
+            "ms_map24_InitFunction:39",
+            "ms_map24_InitFunction:40",
+            "ms_map24_InitFunction:41",
+            "ms_map24_InitFunction:42",
+            "ms_map24_InitFunction:43",
+            "ms_map24_InitFunction:44",
+            "ms_map24_InitFunction:45",
+            "ms_map24_InitFunction:46",
+            "ms_map24_InitFunction:47",
+            "ms_map24_InitFunction:48",
+            "ms_map24_InitFunction:49",
+            "ms_map24_InitFunction:50",
+            "ms_map24_InitFunction:51",
+            "ms_map24_InitFunction:52",
+            "ms_map24_InitFunction:53",
+            "ms_map24_InitFunction:54",
+            "ms_map24_InitFunction:55",
+            "ms_map24_InitFunction:56",
+            "ms_map25_InitFunction:0",
+            "ms_map25_InitFunction:1",
+            "ms_map25_InitFunction:2",
+            "ms_map25_InitFunction:3",
+            "ms_map26_InitFunction:0",
+            "ms_map26_InitFunction:1",
+            "ms_map26_InitFunction:2",
+            "ms_map26_InitFunction:3",
+            "ms_map26_InitFunction:4",
+            "ms_map26_InitFunction:5",
+            "ms_map26_InitFunction:6",
+            "ms_map26_InitFunction:7",
+            "ms_map26_InitFunction:8",
+            "ms_map26_InitFunction:9",
+            "ms_map27_InitFunction:0",
+            "ms_map28_InitFunction:0",
+            "ms_map29_InitFunction:0",
+            "ms_map30_InitFunction:0",
+            "ms_map30_InitFunction:1",
+            "ms_map30_InitFunction:2",
+            "ms_map30_InitFunction:3",
+            "ms_map30_InitFunction:4",
+            "ms_map30_InitFunction:5",
+            "ms_map30_InitFunction:6",
+            "ms_map31_InitFunction:0",
+            "ms_map31_flag830_InitFunction:0",
+            "ms_map31_flag830_InitFunction:1",
+            "ms_map31_flag830_InitFunction:2",
+            "ms_map31_flag830_InitFunction:3",
+            "ms_map31_flag830_InitFunction:4",
+            "ms_map31_flag830_InitFunction:5",
+            "ms_map31_flag830_InitFunction:6",
+            "ms_map31_flag830_InitFunction:7",
+            "ms_map31_flag830_InitFunction:8",
+            "ms_map33_InitFunction:0",
+            "ms_map33_InitFunction:1",
+            "ms_map33_InitFunction:2",
+            "ms_map33_InitFunction:3",
+            "ms_map33_InitFunction:4",
+            "ms_map33_InitFunction:5",
+            "ms_map33_InitFunction:6",
+            "ms_map33_InitFunction:7",
+            "ms_map33_InitFunction:8",
+            "ms_map33_InitFunction:9",
+            "ms_map33_InitFunction:10",
+            "ms_map33_InitFunction:11",
+            "ms_map33_InitFunction:12",
+            "ms_map33_InitFunction:13",
+            "ms_map33_InitFunction:14",
+            "ms_map33_InitFunction:15",
+            "ms_map33_InitFunction:16",
+            "ms_map33_InitFunction:17",
+            "ms_map33_InitFunction:18",
+            "ms_map33_InitFunction:19",
+            "ms_map33_InitFunction:20",
+            "ms_map33_InitFunction:21",
+            "ms_map33_InitFunction:22",
+            "ms_map33_InitFunction:23",
+            "ms_map33_InitFunction:24",
+            "ms_map33_InitFunction:25",
+            "ms_map33_InitFunction:26",
+            "ms_map33_InitFunction:27",
+            "ms_map33_InitFunction:28",
+            "ms_map33_InitFunction:29",
+            "ms_map33_InitFunction:30",
+            "ms_map33_InitFunction:31",
+            "ms_map33_InitFunction:32",
+            "ms_map33_InitFunction:33",
+            "ms_map33_InitFunction:34",
+            "ms_map33_InitFunction:35",
+            "ms_map33_InitFunction:36",
+            "ms_map33_InitFunction:37",
+            "ms_map33_InitFunction:38",
+            "ms_map33_InitFunction:39",
+            "ms_map33_InitFunction:40",
+            "ms_map33_InitFunction:41",
+            "ms_map33_InitFunction:42",
+            "ms_map33_InitFunction:43",
+            "ms_map33_InitFunction:44",
+            "ms_map33_InitFunction:45",
+            "ms_map33_InitFunction:46",
+            "ms_map33_InitFunction:47",
+            "ms_map33_InitFunction:48",
+            "ms_map33_InitFunction:49",
+            "ms_map33_InitFunction:50",
+            "ms_map33_InitFunction:51",
+            "ms_map33_InitFunction:52",
+            "ms_map33_InitFunction:53",
+            "ms_map33_InitFunction:54",
+            "ms_map33_InitFunction:55",
+            "ms_map33_InitFunction:56",
+            "ms_map33_InitFunction:57",
+            "ms_map33_flag312_InitFunction:0",
+            "ms_map34_InitFunction:0",
+            "ms_map36_InitFunction:0",
+            "ms_map36_InitFunction:1",
+            "ms_map36_InitFunction:2",
+            "ms_map36_InitFunction:3",
+            "ms_map36_InitFunction:4",
+            "ms_map37_InitFunction:0",
+            "ms_map37_InitFunction:1",
+            "ms_map37_InitFunction:2",
+            "ms_map37_InitFunction:3",
+            "ms_map37_InitFunction:4",
+            "ms_map37_flag999_InitFunction:0",
+            "ms_map37_flag999_InitFunction:1",
+            "ms_map37_flag999_InitFunction:2",
+            "ms_map37_flag999_InitFunction:3",
+            "ms_map37_flag999_InitFunction:4",
+            "ms_map37_flag999_InitFunction:5",
+            "ms_map38_InitFunction:0",
+            "ms_map38_InitFunction:1",
+            "ms_map38_InitFunction:2",
+            "ms_map38_InitFunction:3",
+            "ms_map38_InitFunction:4",
+            "ms_map38_InitFunction:5",
+            "ms_map38_InitFunction:6",
+            "ms_map38_InitFunction:7",
+            "ms_map38_InitFunction:8",
+            "ms_map38_InitFunction:9",
+            "ms_map38_InitFunction:10",
+            "ms_map38_InitFunction:11",
+            "ms_map38_InitFunction:12",
+            "ms_map38_InitFunction:13",
+            "ms_map38_InitFunction:14",
+            "ms_map39_InitFunction:0",
+            "ms_map39_flag830_InitFunction:0",
+            "ms_map39_flag830_InitFunction:1",
+            "ms_map39_flag830_InitFunction:2",
+            "ms_map39_flag830_InitFunction:3",
+            "ms_map40_InitFunction:0",
+            "ms_map40_InitFunction:1",
+            "ms_map40_InitFunction:2",
+            "ms_map40_InitFunction:3",
+            "ms_map41_InitFunction:0",
+            "ms_map41_InitFunction:1",
+            "ms_map41_InitFunction:2",
+            "ms_map41_InitFunction:3",
+            "ms_map42_InitFunction:0",
+            "ms_map43_InitFunction:0",
+            "ms_map43_InitFunction:1",
+            "ms_map43_InitFunction:2",
+            "ms_map43_InitFunction:3",
+            "ms_map43_InitFunction:4",
+            "ms_map43_InitFunction:5",
+            "ms_map44_flag507_InitFunction:0",
+            "ms_map44_flag507_InitFunction:1",
+            "ms_map45_InitFunction:0",
+            "ms_map45_InitFunction:1",
+            "ms_map45_InitFunction:2",
+            "ms_map45_InitFunction:3",
+            "ms_map45_InitFunction:4",
+            "ms_map45_InitFunction:5",
+            "ms_map45_InitFunction:6",
+            "ms_map46_InitFunction:0",
+            "ms_map46_InitFunction:1",
+            "ms_map51_InitFunction:0",
+            "ms_map51_InitFunction:1",
+            "ms_map51_InitFunction:2",
+            "ms_map51_InitFunction:3",
+            "ms_map52_InitFunction:0",
+            "ms_map52_InitFunction:1",
+            "ms_map55_InitFunction:0",
+            "ms_map55_InitFunction:1",
+            "ms_map55_InitFunction:2",
+            "ms_map55_InitFunction:3",
+            "ms_map55_InitFunction:4",
+            "ms_map56_InitFunction:0",
+            "ms_map59_InitFunction:0",
+            "ms_map59_InitFunction:1",
+            "ms_map59_InitFunction:2",
+            "ms_map59_InitFunction:3",
+            "ms_map59_InitFunction:4",
+            "ms_map59_InitFunction:5",
+            "ms_map59_InitFunction:6",
+            "ms_map59_InitFunction:7",
+            "ms_map59_InitFunction:8",
+            "ms_map59_InitFunction:9",
+            "ms_map59_InitFunction:10",
+            "ms_map59_InitFunction:11",
+            "ms_map59_InitFunction:12",
+            "ms_map59_InitFunction:13",
+            "ms_map59_InitFunction:14",
+            "ms_map59_InitFunction:15",
+            "ms_map59_InitFunction:16",
+            "ms_map59_InitFunction:17",
+            "ms_map59_flag543_InitFunction:0",
+            "ms_map59_flag543_InitFunction:1",
+            "ms_map59_flag543_InitFunction:2",
+            "ms_map59_flag543_InitFunction:3",
+            "ms_map61_InitFunction:0",
+            "ms_map62_InitFunction:0",
+            "ms_map63_InitFunction:0",
+            "ms_map63_InitFunction:1",
+            "ms_map63_InitFunction:2",
+            "ms_map63_InitFunction:3",
+            "ms_map66_InitFunction:0",
+            "ms_map67_InitFunction:0",
+            "ms_map68_InitFunction:0",
+            "ms_map69_InitFunction:0",
+            "ms_map70_InitFunction:0",
+            "ms_map72_InitFunction:0",
+            "ms_map72_InitFunction:1",
+            "ms_map72_InitFunction:2",
+            "ms_map72_InitFunction:3",
+            "ms_map72_InitFunction:4",
+            "ms_map72_InitFunction:5",
+            "ms_map73_InitFunction:0",
+            "ms_map73_InitFunction:1",
+            "ms_map73_InitFunction:2",
+            "ms_map73_InitFunction:3",
+            "ms_map73_InitFunction:4",
+            "ms_map73_InitFunction:5",
+            "ms_map73_InitFunction:6",
+            "ms_map73_InitFunction:7",
+            "ms_map73_InitFunction:8",
+            "ms_map73_InitFunction:9",
+            "ms_map73_InitFunction:10",
+            "ms_map73_InitFunction:11",
+            "ms_map73_InitFunction:12",
+            "ms_map74_InitFunction:0",
+            "ms_map75_InitFunction:0",
+            "ms_map76_InitFunction:0",
+            "ms_map77_InitFunction:0"
+          ]
+        },
+        "targetProfileOrder": {
+          "type": "array",
+          "const": [
+            "ms_map0_InitFunction",
+            "ms_map1_InitFunction",
+            "ms_map2_InitFunction",
+            "ms_map3_InitFunction",
+            "ms_map3_flag506_InitFunction",
+            "ms_map3_flag543_InitFunction",
+            "ms_map3_flag609_InitFunction",
+            "ms_map4_InitFunction",
+            "ms_map5_InitFunction",
+            "ms_map5_flag530_InitFunction",
+            "ms_map5_flag28_InitFunction",
+            "ms_map6_InitFunction",
+            "ms_map7_InitFunction",
+            "ms_map8_InitFunction",
+            "ms_map9_InitFunction",
+            "ms_map10_InitFunction",
+            "ms_map10_flag722_InitFunction",
+            "ms_map11_InitFunction",
+            "ms_map12_InitFunction",
+            "ms_map13_InitFunction",
+            "ms_map14_InitFunction",
+            "ms_map14_flag458_InitFunction",
+            "ms_map15_InitFunction",
+            "ms_map16_InitFunction",
+            "ms_map16_flag530_InitFunction",
+            "ms_map17_InitFunction",
+            "ms_map17_flag530_InitFunction",
+            "ms_map18_InitFunction",
+            "ms_map18_flag530_InitFunction",
+            "ms_map19_InitFunction",
+            "ms_map19_flag_501_InitFunction",
+            "ms_map19_flag506_InitFunction",
+            "ms_map19_flag507_InitFunction",
+            "ms_map19_flag543_InitFunction",
+            "ms_map19_flag609_InitFunction",
+            "ms_map20_InitFunction",
+            "ms_map20_flag501_InitFunction",
+            "ms_map20_flag543_InitFunction",
+            "ms_map21_InitFunction",
+            "ms_map21_flag609_InitFunction",
+            "ms_map21_flag543_InitFunction",
+            "ms_map22_InitFunction",
+            "ms_map23_InitFunction",
+            "ms_map24_InitFunction",
+            "ms_map25_InitFunction",
+            "ms_map26_InitFunction",
+            "ms_map27_InitFunction",
+            "ms_map28_InitFunction",
+            "ms_map29_InitFunction",
+            "ms_map30_InitFunction",
+            "ms_map31_InitFunction",
+            "ms_map31_flag830_InitFunction",
+            "ms_map33_InitFunction",
+            "ms_map33_flag312_InitFunction",
+            "ms_map34_InitFunction",
+            "ms_map36_InitFunction",
+            "ms_map37_InitFunction",
+            "ms_map37_flag999_InitFunction",
+            "ms_map38_InitFunction",
+            "ms_map39_InitFunction",
+            "ms_map39_flag830_InitFunction",
+            "ms_map40_InitFunction",
+            "ms_map41_InitFunction",
+            "ms_map42_InitFunction",
+            "ms_map43_InitFunction",
+            "ms_map43_flag612_InitFunction",
+            "ms_map44_flag507_InitFunction",
+            "ms_map44_flag609_InitFunction",
+            "ms_map45_InitFunction",
+            "ms_map46_InitFunction",
+            "ms_map51_InitFunction",
+            "ms_map52_InitFunction",
+            "ms_map55_InitFunction",
+            "ms_map56_InitFunction",
+            "ms_map59_InitFunction",
+            "ms_map59_flag543_InitFunction",
+            "ms_map61_InitFunction",
+            "ms_map62_InitFunction",
+            "ms_map63_InitFunction",
+            "ms_map66_InitFunction",
+            "ms_map67_InitFunction",
+            "ms_map68_InitFunction",
+            "ms_map69_InitFunction",
+            "ms_map70_InitFunction",
+            "ms_map72_InitFunction",
+            "ms_map73_InitFunction",
+            "ms_map74_InitFunction",
+            "ms_map75_InitFunction",
+            "ms_map76_InitFunction",
+            "ms_map77_InitFunction"
+          ]
+        },
+        "routeJoinOrder": {
+          "type": "array",
+          "const": [
+            "3:default:None:ms_map3",
+            "3:flag:609:ms_map3_flag609",
+            "3:flag:506:ms_map3_flag506",
+            "3:flag:543:ms_map3_flag543",
+            "4:default:None:ms_map4",
+            "5:default:None:ms_map5",
+            "5:flag:650:ms_map5_flag650",
+            "5:flag:530:ms_map5_flag530",
+            "5:flag:28:ms_map5_flag28",
+            "6:default:None:ms_map6",
+            "6:flag:701:ms_map6_flag701",
+            "6:flag:702:ms_map6_flag702",
+            "7:default:None:ms_map7",
+            "7:flag:701:ms_map7_flag701",
+            "7:flag:702:ms_map7",
+            "7:flag:805:ms_map7_flag805",
+            "8:default:None:ms_map8",
+            "8:flag:708:ms_map8_flag708",
+            "9:default:None:ms_map9",
+            "9:flag:518:ms_map9_flag518",
+            "10:default:None:ms_map10",
+            "10:flag:722:ms_map10_flag722",
+            "11:default:None:ms_map11",
+            "12:default:None:ms_map12",
+            "13:default:None:ms_map13",
+            "13:flag:710:ms_map13_flag710",
+            "13:flag:799:ms_map13_flag799",
+            "13:flag:513:ms_map13_flag513",
+            "14:default:None:ms_map14",
+            "14:flag:458:ms_map14_flag458",
+            "15:default:None:ms_map15",
+            "15:flag:530:ms_map15_flag530",
+            "16:default:None:ms_map16",
+            "16:flag:663:ms_map16_flag663",
+            "16:flag:530:ms_map16_flag530",
+            "17:default:None:ms_map17",
+            "17:flag:505:ms_map17_flag505",
+            "17:flag:530:ms_map17_flag530",
+            "18:default:None:ms_map18",
+            "18:flag:530:ms_map18_flag530",
+            "19:default:None:ms_map19",
+            "19:flag:501:ms_map19_flag501",
+            "19:flag:609:ms_map19_flag609",
+            "19:flag:506:ms_map19_flag506",
+            "19:flag:507:ms_map19_flag507",
+            "19:flag:543:ms_map19_flag543",
+            "19:flag:982:ms_map19_flag982",
+            "20:default:None:ms_map20",
+            "20:flag:501:ms_map20_flag501",
+            "20:flag:609:ms_map20_flag609",
+            "20:flag:506:ms_map20_flag506",
+            "20:flag:543:ms_map20_flag543",
+            "21:default:None:ms_map21",
+            "21:flag:501:ms_map21_flag501",
+            "21:flag:609:ms_map21_flag609",
+            "21:flag:506:ms_map21_flag506",
+            "21:flag:543:ms_map21_flag543",
+            "22:default:None:ms_map22",
+            "22:flag:522:ms_map22_flag522",
+            "23:default:None:ms_map23",
+            "23:flag:762:ms_map23_flag762",
+            "24:default:None:ms_map24",
+            "25:default:None:ms_map25",
+            "26:default:None:ms_map26",
+            "27:default:None:ms_map27",
+            "27:flag:523:ms_map27_flag523",
+            "28:default:None:ms_map28",
+            "29:default:None:ms_map29",
+            "30:default:None:ms_map30",
+            "30:flag:785:ms_map30_flag785",
+            "30:flag:761:ms_map30_flag761",
+            "31:default:None:ms_map31",
+            "31:flag:830:ms_map31_flag830",
+            "33:default:None:ms_map33",
+            "33:flag:523:ms_map33_flag523",
+            "33:flag:783:ms_map33",
+            "33:flag:784:ms_map33_flag784",
+            "33:flag:786:ms_map33_flag786",
+            "33:flag:22:ms_map33",
+            "34:default:None:ms_map34",
+            "34:flag:784:ms_map34_flag784",
+            "36:default:None:ms_map36",
+            "36:flag:530:ms_map36_flag530",
+            "37:default:None:ms_map37",
+            "37:flag:999:ms_map37_flag999",
+            "38:default:None:ms_map38",
+            "39:default:None:ms_map39",
+            "39:flag:830:ms_map39_flag830",
+            "40:default:None:ms_map40",
+            "40:flag:506:ms_map40_flag506",
+            "40:flag:507:ms_map40",
+            "41:default:None:ms_map41",
+            "42:default:None:ms_map42",
+            "43:default:None:ms_map43",
+            "43:flag:612:ms_map43_flag612",
+            "44:default:None:ms_map44",
+            "44:flag:609:ms_map44_flag609",
+            "44:flag:506:ms_map44_flag506",
+            "44:flag:507:ms_map44_flag507",
+            "45:default:None:ms_map45",
+            "46:default:None:ms_map46",
+            "51:default:None:ms_map51",
+            "51:flag:520:ms_map51_flag520",
+            "52:default:None:ms_map52",
+            "52:flag:512:ms_map52_flag512",
+            "55:default:None:ms_map55",
+            "56:default:None:ms_map56",
+            "59:default:None:ms_map59",
+            "59:flag:543:ms_map59_flag543",
+            "61:default:None:ms_map61",
+            "61:flag:729:ms_map61_flag729",
+            "62:default:None:ms_map62",
+            "62:flag:77:ms_map62_flag77",
+            "63:default:None:ms_map63",
+            "63:flag:29:ms_map63_flag29",
+            "0:default:None:ms_map0",
+            "1:default:None:ms_map1",
+            "2:default:None:ms_map2",
+            "2:flag:530:ms_map2_flag530",
+            "66:default:None:ms_map66",
+            "67:default:None:ms_map67",
+            "68:default:None:ms_map68",
+            "69:default:None:ms_map69",
+            "70:default:None:ms_map70",
+            "72:default:None:ms_map72",
+            "73:default:None:ms_map73",
+            "74:default:None:ms_map74",
+            "75:default:None:ms_map75",
+            "76:default:None:ms_map76",
+            "77:default:None:ms_map77"
+          ]
+        },
+        "pointerTableJoinOrder": {
+          "type": "array",
+          "const": [
+            "ms_map0",
+            "ms_map1",
+            "ms_map2",
+            "ms_map2_flag530",
+            "ms_map3",
+            "ms_map3_flag506",
+            "ms_map3_flag543",
+            "ms_map3_flag609",
+            "ms_map4",
+            "ms_map5",
+            "ms_map5_flag28",
+            "ms_map5_flag530",
+            "ms_map5_flag650",
+            "ms_map6",
+            "ms_map6_flag701",
+            "ms_map6_flag702",
+            "ms_map7",
+            "ms_map7_flag701",
+            "ms_map7_flag805",
+            "ms_map8",
+            "ms_map8_flag708",
+            "ms_map9",
+            "ms_map9_flag518",
+            "ms_map10",
+            "ms_map10_flag722",
+            "ms_map11",
+            "ms_map12",
+            "ms_map13",
+            "ms_map13_flag513",
+            "ms_map13_flag710",
+            "ms_map13_flag799",
+            "ms_map14",
+            "ms_map14_flag458",
+            "ms_map15",
+            "ms_map15_flag530",
+            "ms_map16",
+            "ms_map16_flag530",
+            "ms_map16_flag663",
+            "ms_map17",
+            "ms_map17_flag505",
+            "ms_map17_flag530",
+            "ms_map18",
+            "ms_map18_flag530",
+            "ms_map19",
+            "ms_map19_flag501",
+            "ms_map19_flag506",
+            "ms_map19_flag507",
+            "ms_map19_flag543",
+            "ms_map19_flag609",
+            "ms_map19_flag982",
+            "ms_map20",
+            "ms_map20_flag501",
+            "ms_map20_flag506",
+            "ms_map20_flag543",
+            "ms_map20_flag609",
+            "ms_map21",
+            "ms_map21_flag501",
+            "ms_map21_flag506",
+            "ms_map21_flag543",
+            "ms_map21_flag609",
+            "ms_map22",
+            "ms_map22_flag522",
+            "ms_map23",
+            "ms_map23_flag762",
+            "ms_map24",
+            "ms_map25",
+            "ms_map26",
+            "ms_map27",
+            "ms_map27_flag523",
+            "ms_map28",
+            "ms_map29",
+            "ms_map30",
+            "ms_map30_flag761",
+            "ms_map30_flag785",
+            "ms_map31",
+            "ms_map31_flag830",
+            "ms_map33",
+            "ms_map33_flag523",
+            "ms_map33_flag784",
+            "ms_map33_flag786",
+            "ms_map34",
+            "ms_map34_flag784",
+            "ms_map36",
+            "ms_map36_flag530",
+            "ms_map37",
+            "ms_map37_flag999",
+            "ms_map38",
+            "ms_map39",
+            "ms_map39_flag830",
+            "ms_map40",
+            "ms_map40_flag506",
+            "ms_map41",
+            "ms_map42",
+            "ms_map43",
+            "ms_map43_flag612",
+            "ms_map44",
+            "ms_map44_flag506",
+            "ms_map44_flag507",
+            "ms_map44_flag609",
+            "ms_map45",
+            "ms_map46",
+            "ms_map51",
+            "ms_map51_flag520",
+            "ms_map52",
+            "ms_map52_flag512",
+            "ms_map55",
+            "ms_map56",
+            "ms_map59",
+            "ms_map59_flag543",
+            "ms_map61",
+            "ms_map61_flag729",
+            "ms_map62",
+            "ms_map62_flag77",
+            "ms_map63",
+            "ms_map63_flag29",
+            "ms_map66",
+            "ms_map67",
+            "ms_map68",
+            "ms_map69",
+            "ms_map70",
+            "ms_map72",
+            "ms_map73",
+            "ms_map74",
+            "ms_map75",
+            "ms_map76",
+            "ms_map77"
+          ]
+        },
+        "scriptTargetProfileOrder": {
+          "type": "array",
+          "const": [
+            "cs_4FF5A",
+            "cs_503A6",
+            "cs_50806",
+            "cs_51374",
+            "cs_5137A",
+            "cs_513A0",
+            "cs_513BA",
+            "cs_513CE",
+            "cs_51742",
+            "cs_51750",
+            "cs_5247C",
+            "cs_5249E",
+            "cs_53104",
+            "cs_53176",
+            "cs_53996",
+            "cs_53B60",
+            "cs_53F2A",
+            "cs_53FD8",
+            "cs_540C0",
+            "cs_54570",
+            "cs_54E70",
+            "cs_54E78",
+            "cs_55832",
+            "cs_570B0",
+            "cs_57D22",
+            "cs_58310",
+            "cs_58FA4",
+            "cs_59656",
+            "cs_5996E",
+            "cs_59E04",
+            "cs_5A30C",
+            "cs_5A31E",
+            "cs_5ABA8",
+            "cs_5ABCC",
+            "cs_5ABE6",
+            "cs_5AC04",
+            "cs_5AC1C",
+            "cs_5AC34",
+            "cs_5AC4C",
+            "cs_5B016",
+            "cs_5C3D8",
+            "cs_5CA5E",
+            "cs_5D3AA",
+            "cs_5D63C",
+            "cs_5DD8E",
+            "cs_5DD9C",
+            "cs_5E0EE",
+            "cs_5E320",
+            "cs_5E346",
+            "cs_5EB26",
+            "cs_5EB44",
+            "cs_5EBFC",
+            "cs_5ED06",
+            "cs_5EDB8",
+            "cs_5EF60",
+            "cs_5F4AE",
+            "cs_5FA9C",
+            "cs_5FABC",
+            "cs_600B2",
+            "cs_6060E",
+            "cs_60656",
+            "cs_606AC",
+            "cs_606E0",
+            "cs_606EA",
+            "cs_607DE",
+            "cs_60C42",
+            "cs_60CA4",
+            "cs_60EB2",
+            "cs_612BE",
+            "cs_615E6",
+            "cs_62D06",
+            "cs_62D0E",
+            "cs_633B2",
+            "cs_LeaveSpecialBattle",
+            "cs_StartSpecialBattle"
+          ]
+        },
+        "scriptCallSiteOrder": {
+          "type": "array",
+          "const": [
+            "ms_map3_InitFunction:2:cs_513BA",
+            "ms_map3_InitFunction:6:cs_513A0",
+            "ms_map3_flag506_InitFunction:2:cs_51374",
+            "ms_map3_flag506_InitFunction:3:cs_5137A",
+            "ms_map3_flag609_InitFunction:2:cs_513CE",
+            "ms_map4_InitFunction:2:cs_51750",
+            "ms_map4_InitFunction:5:cs_51742",
+            "ms_map5_flag530_InitFunction:2:cs_607DE",
+            "ms_map5_flag530_InitFunction:5:cs_6060E",
+            "ms_map5_flag530_InitFunction:12:cs_60656",
+            "ms_map5_flag530_InitFunction:16:cs_60C42",
+            "ms_map5_flag530_InitFunction:19:cs_60EB2",
+            "ms_map5_flag530_InitFunction:21:cs_60CA4",
+            "ms_map5_flag530_InitFunction:33:cs_606AC",
+            "ms_map5_flag530_InitFunction:44:cs_606EA",
+            "ms_map5_flag530_InitFunction:47:cs_606E0",
+            "ms_map6_InitFunction:2:cs_54E70",
+            "ms_map6_InitFunction:6:cs_54E78",
+            "ms_map7_InitFunction:3:cs_55832",
+            "ms_map10_InitFunction:2:cs_570B0",
+            "ms_map12_InitFunction:2:cs_57D22",
+            "ms_map13_InitFunction:2:cs_58310",
+            "ms_map14_InitFunction:2:cs_58FA4",
+            "ms_map17_InitFunction:2:cs_5249E",
+            "ms_map17_InitFunction:8:cs_5247C",
+            "ms_map18_flag530_InitFunction:2:cs_612BE",
+            "ms_map19_InitFunction:2:cs_53104",
+            "ms_map19_InitFunction:5:cs_53104",
+            "ms_map19_flag507_InitFunction:2:cs_53FD8",
+            "ms_map19_flag543_InitFunction:12:cs_62D06",
+            "ms_map19_flag543_InitFunction:17:cs_62D0E",
+            "ms_map19_flag609_InitFunction:2:cs_53176",
+            "ms_map20_InitFunction:4:cs_53996",
+            "ms_map20_InitFunction:7:cs_53B60",
+            "ms_map20_InitFunction:10:cs_53FD8",
+            "ms_map20_flag543_InitFunction:2:cs_633B2",
+            "ms_map21_InitFunction:2:cs_53F2A",
+            "ms_map21_InitFunction:5:cs_53FD8",
+            "ms_map22_InitFunction:2:cs_59656",
+            "ms_map22_InitFunction:8:cs_5996E",
+            "ms_map24_InitFunction:23:cs_StartSpecialBattle",
+            "ms_map24_InitFunction:26:cs_LeaveSpecialBattle",
+            "ms_map24_InitFunction:54:cs_LeaveSpecialBattle",
+            "ms_map25_InitFunction:2:cs_5D3AA",
+            "ms_map26_InitFunction:2:cs_59E04",
+            "ms_map30_InitFunction:2:cs_5A30C",
+            "ms_map30_InitFunction:5:cs_5A31E",
+            "ms_map31_flag830_InitFunction:2:cs_5D63C",
+            "ms_map33_InitFunction:4:cs_5B016",
+            "ms_map33_InitFunction:9:cs_5ABA8",
+            "ms_map33_InitFunction:20:cs_5ABCC",
+            "ms_map33_InitFunction:27:cs_5ABE6",
+            "ms_map33_InitFunction:35:cs_5AC04",
+            "ms_map33_InitFunction:41:cs_5AC1C",
+            "ms_map33_InitFunction:47:cs_5AC34",
+            "ms_map33_InitFunction:53:cs_5AC4C",
+            "ms_map37_InitFunction:3:cs_5FA9C",
+            "ms_map37_flag999_InitFunction:3:cs_5FABC",
+            "ms_map38_InitFunction:7:cs_5DD8E",
+            "ms_map38_InitFunction:11:cs_5DD9C",
+            "ms_map39_flag830_InitFunction:2:cs_5E0EE",
+            "ms_map40_InitFunction:2:cs_53FD8",
+            "ms_map41_InitFunction:2:cs_5F4AE",
+            "ms_map43_InitFunction:0:cs_540C0",
+            "ms_map44_flag507_InitFunction:0:cs_54570",
+            "ms_map45_InitFunction:5:cs_600B2",
+            "ms_map51_InitFunction:2:cs_5C3D8",
+            "ms_map55_InitFunction:2:cs_5E320",
+            "ms_map55_InitFunction:3:cs_5E346",
+            "ms_map59_InitFunction:2:cs_5EB44",
+            "ms_map59_InitFunction:3:cs_5EBFC",
+            "ms_map59_InitFunction:4:cs_5ED06",
+            "ms_map59_InitFunction:5:cs_5EDB8",
+            "ms_map59_InitFunction:6:cs_5EF60",
+            "ms_map59_InitFunction:16:cs_5EB26",
+            "ms_map59_flag543_InitFunction:2:cs_615E6",
+            "ms_map63_InitFunction:2:cs_5CA5E",
+            "ms_map72_InitFunction:4:cs_4FF5A",
+            "ms_map73_InitFunction:2:cs_503A6",
+            "ms_map73_InitFunction:9:cs_50806"
+          ]
+        },
+        "directCallSiteOrder": {
+          "type": "array",
+          "const": [
+            "ms_map1_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map3_InitFunction:13:MoveEntityOutOfMap",
+            "ms_map5_flag530_InitFunction:26:MoveEntityOutOfMap",
+            "ms_map5_flag530_InitFunction:30:MoveEntityOutOfMap",
+            "ms_map8_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map9_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map9_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map9_InitFunction:11:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:9:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:11:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:13:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:15:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:17:MoveEntityOutOfMap",
+            "ms_map10_InitFunction:19:MoveEntityOutOfMap",
+            "ms_map10_flag722_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map10_flag722_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map12_InitFunction:6:MoveEntityOutOfMap",
+            "ms_map13_InitFunction:7:ChangeEntityFacing",
+            "ms_map13_InitFunction:11:MoveEntityOutOfMap",
+            "ms_map16_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map17_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map18_flag530_InitFunction:5:MoveEntityOutOfMap",
+            "ms_map18_flag530_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map19_flag506_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map19_flag506_InitFunction:5:MoveEntityOutOfMap",
+            "ms_map19_flag506_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map19_flag506_InitFunction:9:MoveEntityOutOfMap",
+            "ms_map19_flag506_InitFunction:13:MoveEntityOutOfMap",
+            "ms_map19_flag506_InitFunction:15:MoveEntityOutOfMap",
+            "ms_map19_flag543_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map19_flag543_InitFunction:7:MoveEntityOutOfMap",
+            "ms_map19_flag543_InitFunction:11:MoveEntityOutOfMap",
+            "ms_map19_flag543_InitFunction:22:FadeInFromBlack",
+            "ms_map19_flag543_InitFunction:25:FadeInFromBlack",
+            "ms_map20_flag543_InitFunction:7:FadeInFromBlack",
+            "ms_map21_flag543_InitFunction:1:FadeInFromBlack",
+            "ms_map24_InitFunction:1:FadeInFromBlack",
+            "ms_map24_InitFunction:19:j_alt_YesNoPrompt",
+            "ms_map24_InitFunction:49:j_FadeOut_WaitForP1Input",
+            "ms_map26_InitFunction:8:MoveEntityOutOfMap",
+            "ms_map36_InitFunction:3:MoveEntityOutOfMap",
+            "ms_map37_InitFunction:0:InitializeNazcaShipForceMembers",
+            "ms_map37_flag999_InitFunction:0:InitializeNazcaShipForceMembers",
+            "ms_map45_InitFunction:3:MoveEntityOutOfMap"
+          ]
+        },
+        "unclassifiedOperations": {
+          "allOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/operation"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            },
+            {
+              "const": []
+            }
+          ]
+        },
+        "primarySourceBodies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/sourceBody"
+          },
+          "minItems": 84,
+          "maxItems": 84
+        },
+        "sourceFiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/targetProfile"
+          },
+          "minItems": 90,
+          "maxItems": 90
+        },
+        "routeJoins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/routeJoin"
+          },
+          "minItems": 130,
+          "maxItems": 130
+        },
+        "pointerTableJoins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pointerJoin"
+          },
+          "minItems": 126,
+          "maxItems": 126
+        },
+        "scriptTargetProfiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/scriptProfile"
+          },
+          "minItems": 75,
+          "maxItems": 75
+        },
+        "scriptCallSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/scriptSite"
+          },
+          "minItems": 80,
+          "maxItems": 80
+        },
+        "directCallSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/directSite"
+          },
+          "minItems": 45,
+          "maxItems": 45
+        },
+        "embeddedPrograms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/embeddedProgram"
+          },
+          "minItems": 201,
+          "maxItems": 201
+        }
+      }
+    }
+  },
+  "definitions": {
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "labels",
+        "opcode",
+        "operandText",
+        "branchTargetSymbol",
+        "branchTargetAddress",
+        "localBranchTargetIndex",
+        "family",
+        "flagOperand",
+        "scriptTargetSymbol",
+        "scriptTargetAddress",
+        "scriptTargetResolution",
+        "directCallInstructionTargetSymbol",
+        "directCallInstructionTargetAddress",
+        "directCallEffectiveTargetSymbol",
+        "directCallEffectiveTargetAddress",
+        "jumpTargetSymbol",
+        "jumpTargetAddress"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "opcode": {
+          "type": "string"
+        },
+        "operandText": {
+          "type": "string"
+        },
+        "branchTargetSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "branchTargetAddress": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "localBranchTargetIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "family": {
+          "enum": [
+            "flag-read",
+            "flag-write",
+            "script-invocation",
+            "direct-call",
+            "entity-or-position-command",
+            "warp-or-transition-command",
+            "presentation-audio-text-command",
+            "arithmetic-or-data-movement",
+            "branch-or-jump",
+            "terminal"
+          ]
+        },
+        "flagOperand": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "scriptTargetSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scriptTargetAddress": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "scriptTargetResolution": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "embedded-init-source",
+            "standalone-map-setup"
+          ]
+        },
+        "directCallInstructionTargetSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "directCallInstructionTargetAddress": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "directCallEffectiveTargetSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "directCallEffectiveTargetAddress": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "jumpTargetSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "jumpTargetAddress": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "flagOperand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationIndex",
+        "opcode",
+        "value"
+      ],
+      "properties": {
+        "operationIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "enum": [
+            "chkFlg",
+            "setFlg",
+            "clrFlg",
+            "setStoryFlag"
+          ]
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "familyCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flag-read",
+        "flag-write",
+        "script-invocation",
+        "direct-call",
+        "entity-or-position-command",
+        "warp-or-transition-command",
+        "presentation-audio-text-command",
+        "arithmetic-or-data-movement",
+        "branch-or-jump",
+        "terminal"
+      ],
+      "properties": {
+        "flag-read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "flag-write": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "script-invocation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "direct-call": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entity-or-position-command": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warp-or-transition-command": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "presentation-audio-text-command": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "arithmetic-or-data-movement": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "branch-or-jump": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "terminal": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sourceBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOrder",
+        "path",
+        "sourceOwnerSymbol",
+        "address",
+        "statementCount",
+        "bodySha256",
+        "operations"
+      ],
+      "properties": {
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceOwnerSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/operation"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "targetProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileOrder",
+        "path",
+        "symbol",
+        "address",
+        "sourceOwnerSymbol",
+        "primarySourceEntry",
+        "directReturnStub",
+        "firstOperationIndex",
+        "lastOperationIndex",
+        "statementCount",
+        "operationIndices",
+        "bodySha256",
+        "tokenCounts",
+        "familyCounts",
+        "flagOperands",
+        "scriptTargets",
+        "directCallTargets",
+        "directCallOperationIndices",
+        "jumpOperationIndices"
+      ],
+      "properties": {
+        "profileOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceOwnerSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primarySourceEntry": {
+          "type": "boolean"
+        },
+        "directReturnStub": {
+          "type": "boolean"
+        },
+        "firstOperationIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lastOperationIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operationIndices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "tokenCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "bcc.s": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "beq.s": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bne.s": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bne.w": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bra.s": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bra.w": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "chkFlg": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "clrFlg": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "clsTxt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cmp.l": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cmpi.l": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "csc_end": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "divs.w": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ext.l": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jmp": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jsr": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "move.b": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "move.l": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "move.w": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "moveq": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "nop": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "script": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setFlg": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setPos": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setStoryFlag": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sndCom": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "swap": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "tst.w": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "txt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "warp": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "familyCounts": {
+          "$ref": "#/definitions/familyCounts"
+        },
+        "flagOperands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/flagOperand"
+          }
+        },
+        "scriptTargets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "directCallTargets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "directCallOperationIndices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "jumpOperationIndices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "duplicatePointerTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "setupReferenceCount"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "setupReferenceCount": {
+          "type": "integer",
+          "minimum": 2
+        }
+      }
+    },
+    "dispatchUseSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "index",
+        "opcode",
+        "operandText"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "save-registers",
+            "select-setup",
+            "missing-setup-compare",
+            "non-missing-branch",
+            "missing-setup-branch",
+            "load-init-pointer",
+            "indirect-init-call",
+            "restore-registers",
+            "return"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "string"
+        },
+        "operandText": {
+          "type": "string"
+        }
+      }
+    },
+    "dispatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pointerOffsetConstant",
+        "pointerLayoutRow",
+        "pointerLoadUseSite",
+        "useSites"
+      ],
+      "properties": {
+        "pointerOffsetConstant": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "value"
+          ],
+          "properties": {
+            "name": {
+              "const": "MAPSETUP_OFFSET_INIT_FUNCTION"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "useSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dispatchUseSite"
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "pointerLayoutRow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceOrder",
+            "name",
+            "offset"
+          ],
+          "properties": {
+            "sourceOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "name": {
+              "const": "initFunction"
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "pointerLoadUseSite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "index",
+            "opcode",
+            "operandText",
+            "offsetConstantName",
+            "resolvedOffset"
+          ],
+          "properties": {
+            "role": {
+              "const": "load-init-pointer"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "const": "movea.l"
+            },
+            "operandText": {
+              "type": "string",
+              "minLength": 1
+            },
+            "offsetConstantName": {
+              "const": "MAPSETUP_OFFSET_INIT_FUNCTION"
+            },
+            "resolvedOffset": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "runtimeQuestionGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "questions"
+      ],
+      "properties": {
+        "id": {
+          "const": "map-init-effects-and-presentation"
+        },
+        "status": {
+          "const": "unknown"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "routeJoin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOrder",
+        "map",
+        "selectorKind",
+        "selectorFlag",
+        "pointerTableSymbol",
+        "pointerTableAddress",
+        "initTargetSymbol",
+        "initTargetAddress",
+        "targetProfileSymbol",
+        "targetProfileAddress"
+      ],
+      "properties": {
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "map": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selectorKind": {
+          "enum": [
+            "default",
+            "flag"
+          ]
+        },
+        "selectorFlag": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pointerTableSymbol": {
+          "type": "string"
+        },
+        "pointerTableAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "initTargetSymbol": {
+          "type": "string"
+        },
+        "initTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetProfileSymbol": {
+          "type": "string"
+        },
+        "targetProfileAddress": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "pointerJoin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOrder",
+        "path",
+        "pointerTableSymbol",
+        "pointerTableAddress",
+        "initTargetSymbol",
+        "initTargetAddress",
+        "targetProfileSymbol",
+        "targetProfileAddress",
+        "routeReferenceSourceOrders"
+      ],
+      "properties": {
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path": {
+          "type": "string"
+        },
+        "pointerTableSymbol": {
+          "type": "string"
+        },
+        "pointerTableAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "initTargetSymbol": {
+          "type": "string"
+        },
+        "initTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetProfileSymbol": {
+          "type": "string"
+        },
+        "targetProfileAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeReferenceSourceOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "scriptProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "address",
+        "resolution",
+        "sourcePath",
+        "callSiteCount"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resolution": {
+          "enum": [
+            "embedded-init-source",
+            "standalone-map-setup"
+          ]
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scriptSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "siteOrder",
+        "sourceOwnerSymbol",
+        "sourcePath",
+        "operationIndex",
+        "targetSymbol",
+        "targetAddress",
+        "targetResolution",
+        "targetSourcePath"
+      ],
+      "properties": {
+        "siteOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceOwnerSymbol": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "operationIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetSymbol": {
+          "type": "string"
+        },
+        "targetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetResolution": {
+          "enum": [
+            "embedded-init-source",
+            "standalone-map-setup"
+          ]
+        },
+        "targetSourcePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "directSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "siteOrder",
+        "sourceOwnerSymbol",
+        "sourcePath",
+        "operationIndex",
+        "instructionTargetSymbol",
+        "instructionTargetAddress",
+        "effectiveTargetSymbol",
+        "effectiveTargetAddress"
+      ],
+      "properties": {
+        "siteOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceOwnerSymbol": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "operationIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instructionTargetSymbol": {
+          "type": "string"
+        },
+        "instructionTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveTargetSymbol": {
+          "type": "string"
+        },
+        "effectiveTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "embeddedOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "opcode",
+        "operandText",
+        "targetSymbols",
+        "targetAddresses"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "string"
+        },
+        "operandText": {
+          "type": "string"
+        },
+        "targetSymbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetAddresses": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "embeddedProgram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "address",
+        "path",
+        "kind",
+        "operations"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "path": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/embeddedOperation"
+          },
+          "minItems": 1
+        }
       }
     }
   }

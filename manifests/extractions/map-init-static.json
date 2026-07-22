@@ -1,10 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "sf2-map-init-static-v1",
-  "outputSha256": "7A11341E40DBF6871852FB6E4167DAC127A791A02F9C536DABAC3B1A46870AFC",
+  "outputSha256": "492C60FAF687F5B6510B505FC3EF7F0482F37B89620A6E9B3AAD67288100A768",
   "summary": {
     "sourceFileCount": 84,
     "setupPointerReferenceCount": 126,
+    "routeReferenceCount": 130,
     "uniqueTargetCount": 90,
     "internalEntryTargetCount": 6,
     "aliasedTargetCount": 28,
@@ -13,16 +14,21 @@
     "activeSetupReferenceCount": 82,
     "directReturnStubReferenceCount": 44,
     "sourceStatementCount": 597,
+    "targetProfileStatementCount": 654,
     "setupStatementReferenceCount": 973,
+    "routeStatementReferenceCount": 1100,
     "maximumFunctionStatementCount": 58,
-    "flagCheckCount": 101,
-    "flagSetCount": 32,
-    "flagClearCount": 3,
+    "flagReadCount": 101,
+    "flagWriteCount": 36,
     "scriptCallCount": 80,
     "uniqueScriptTargetCount": 75,
+    "embeddedInitSourceScriptTargetCount": 63,
+    "standaloneScriptTargetCount": 12,
+    "unresolvedScriptTargetCount": 0,
     "directCallCount": 45,
-    "uniqueDirectCallTargetCount": 6,
-    "moveEntityOutOfMapCallCount": 35,
+    "uniqueDirectCallInstructionTargetCount": 6,
+    "uniqueDirectCallEffectiveTargetCount": 6,
+    "jumpOperationCount": 1,
     "labeledOperationCount": 119,
     "branchOperationCount": 130,
     "resolvedLocalBranchCount": 129,
@@ -32,6 +38,7 @@
     "embeddedProgramCount": 201,
     "embeddedOperationCount": 3718,
     "embeddedTargetReferenceCount": 135,
-    "embeddedScriptTargetCount": 63
+    "embeddedScriptTargetCount": 63,
+    "unclassifiedOperationCount": 0
   }
 }
