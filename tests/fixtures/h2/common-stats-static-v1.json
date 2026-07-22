@@ -14972,6 +14972,872 @@
           "runtimeBehaviorBeyondExistingFixture": "unknown",
           "nextStaticFrontier": "GetDistanceBetweenCombatants"
         }
+      },
+      "combatantDistanceContract": {
+        "sourcePath": "code/common/stats/combatantstats_3.asm",
+        "sourceRange": {
+          "path": "code/common/stats/combatantstats_3.asm",
+          "startAddress": 37918,
+          "endAddressExclusive": 38018,
+          "physicalSpanBytes": 100
+        },
+        "instructionEncodedByteCount": 100,
+        "routineOperations": [
+          {
+            "labels": [
+              "GetDistanceBetweenCombatants"
+            ],
+            "opcode": "movem.l",
+            "operands": [
+              "d0-d1/d3-d5",
+              "-(sp)"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "move.w",
+            "operands": [
+              "d1",
+              "d5"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "clr.w",
+            "operands": [
+              "d1"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "clr.w",
+            "operands": [
+              "d2"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "clr.w",
+            "operands": [
+              "d3"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "clr.w",
+            "operands": [
+              "d4"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bsr.w",
+            "operands": [
+              "GetCombatantX"
+            ],
+            "directTarget": "GetCombatantX",
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "cmpi.b",
+            "operands": [
+              "#-1",
+              "d1"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "beq.w",
+            "operands": [
+              "@loc_3"
+            ],
+            "directTarget": null,
+            "branchTarget": "@loc_3"
+          },
+          {
+            "labels": [],
+            "opcode": "move.w",
+            "operands": [
+              "d1",
+              "d2"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bsr.w",
+            "operands": [
+              "GetCombatantY"
+            ],
+            "directTarget": "GetCombatantY",
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "cmpi.b",
+            "operands": [
+              "#-1",
+              "d1"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "beq.w",
+            "operands": [
+              "@loc_3"
+            ],
+            "directTarget": null,
+            "branchTarget": "@loc_3"
+          },
+          {
+            "labels": [],
+            "opcode": "move.w",
+            "operands": [
+              "d1",
+              "d3"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "move.w",
+            "operands": [
+              "d5",
+              "d0"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bsr.w",
+            "operands": [
+              "GetCombatantX"
+            ],
+            "directTarget": "GetCombatantX",
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "cmpi.b",
+            "operands": [
+              "#-1",
+              "d1"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "beq.w",
+            "operands": [
+              "@loc_3"
+            ],
+            "directTarget": null,
+            "branchTarget": "@loc_3"
+          },
+          {
+            "labels": [],
+            "opcode": "move.w",
+            "operands": [
+              "d1",
+              "d4"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bsr.w",
+            "operands": [
+              "GetCombatantY"
+            ],
+            "directTarget": "GetCombatantY",
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "cmpi.b",
+            "operands": [
+              "#-1",
+              "d1"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "beq.w",
+            "operands": [
+              "@loc_3"
+            ],
+            "directTarget": null,
+            "branchTarget": "@loc_3"
+          },
+          {
+            "labels": [],
+            "opcode": "move.w",
+            "operands": [
+              "d1",
+              "d5"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "sub.w",
+            "operands": [
+              "d4",
+              "d2"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bcc.s",
+            "operands": [
+              "@loc_1"
+            ],
+            "directTarget": null,
+            "branchTarget": "@loc_1"
+          },
+          {
+            "labels": [],
+            "opcode": "neg.w",
+            "operands": [
+              "d2"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [
+              "@loc_1"
+            ],
+            "opcode": "sub.w",
+            "operands": [
+              "d5",
+              "d3"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bcc.s",
+            "operands": [
+              "@loc_2"
+            ],
+            "directTarget": null,
+            "branchTarget": "@loc_2"
+          },
+          {
+            "labels": [],
+            "opcode": "neg.w",
+            "operands": [
+              "d3"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [
+              "@loc_2"
+            ],
+            "opcode": "add.w",
+            "operands": [
+              "d3",
+              "d2"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "bra.w",
+            "operands": [
+              "@Done"
+            ],
+            "directTarget": null,
+            "branchTarget": "@Done"
+          },
+          {
+            "labels": [
+              "@loc_3"
+            ],
+            "opcode": "move.w",
+            "operands": [
+              "#-1",
+              "d2"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [
+              "@Done"
+            ],
+            "opcode": "movem.l",
+            "operands": [
+              "(sp)+",
+              "d0-d1/d3-d5"
+            ],
+            "directTarget": null,
+            "branchTarget": null
+          },
+          {
+            "labels": [],
+            "opcode": "rts",
+            "operands": [],
+            "directTarget": null,
+            "branchTarget": null
+          }
+        ],
+        "abi": {
+          "inputSelectors": [
+            {
+              "register": "d0",
+              "meaningfulWidthBits": 16,
+              "widthUseSite": {
+                "instructionIndex": 14,
+                "opcode": "move.w",
+                "operands": [
+                  "d5",
+                  "d0"
+                ]
+              }
+            },
+            {
+              "register": "d1",
+              "meaningfulWidthBits": 16,
+              "widthUseSite": {
+                "instructionIndex": 1,
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "d5"
+                ]
+              }
+            }
+          ],
+          "result": {
+            "register": "d2",
+            "meaningfulWidthBits": 16,
+            "widthUseSites": [
+              {
+                "instructionIndex": 23,
+                "opcode": "sub.w",
+                "operands": [
+                  "d4",
+                  "d2"
+                ]
+              },
+              {
+                "instructionIndex": 26,
+                "opcode": "sub.w",
+                "operands": [
+                  "d5",
+                  "d3"
+                ]
+              },
+              {
+                "instructionIndex": 29,
+                "opcode": "add.w",
+                "operands": [
+                  "d3",
+                  "d2"
+                ]
+              },
+              {
+                "instructionIndex": 31,
+                "opcode": "move.w",
+                "operands": [
+                  "#-1",
+                  "d2"
+                ]
+              }
+            ]
+          },
+          "preservedRegisters": "d0-d1/d3-d5",
+          "coordinateValueWidthBits": 16,
+          "coordinateWidthUseSites": [
+            {
+              "instructionIndex": 9,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d2"
+              ]
+            },
+            {
+              "instructionIndex": 13,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d3"
+              ]
+            },
+            {
+              "instructionIndex": 18,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d4"
+              ]
+            },
+            {
+              "instructionIndex": 22,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d5"
+              ]
+            }
+          ],
+          "deltaWorkingRegisters": [
+            "d2",
+            "d3"
+          ]
+        },
+        "controlFlow": {
+          "save": {
+            "instructionIndex": 0,
+            "opcode": "movem.l",
+            "operands": [
+              "d0-d1/d3-d5",
+              "-(sp)"
+            ]
+          },
+          "targetSelectorCopy": {
+            "instructionIndex": 1,
+            "opcode": "move.w",
+            "operands": [
+              "d1",
+              "d5"
+            ]
+          },
+          "clears": [
+            {
+              "instructionIndex": 2,
+              "opcode": "clr.w",
+              "operands": [
+                "d1"
+              ]
+            },
+            {
+              "instructionIndex": 3,
+              "opcode": "clr.w",
+              "operands": [
+                "d2"
+              ]
+            },
+            {
+              "instructionIndex": 4,
+              "opcode": "clr.w",
+              "operands": [
+                "d3"
+              ]
+            },
+            {
+              "instructionIndex": 5,
+              "opcode": "clr.w",
+              "operands": [
+                "d4"
+              ]
+            }
+          ],
+          "coordinateCalls": {
+            "actorX": {
+              "call": {
+                "instructionIndex": 6,
+                "opcode": "bsr.w",
+                "operands": [
+                  "GetCombatantX"
+                ]
+              },
+              "invalidCoordinateComparison": {
+                "instructionIndex": 7,
+                "opcode": "cmpi.b",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ]
+              },
+              "invalidCoordinateBranch": {
+                "instructionIndex": 8,
+                "opcode": "beq.w",
+                "operands": [
+                  "@loc_3"
+                ],
+                "sourceTarget": "@loc_3",
+                "parsedBranchTarget": "@loc_3",
+                "conditionCode": "eq",
+                "targetInstructionIndex": 31
+              },
+              "coordinateCopy": {
+                "instructionIndex": 9,
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "d2"
+                ]
+              }
+            },
+            "actorY": {
+              "call": {
+                "instructionIndex": 10,
+                "opcode": "bsr.w",
+                "operands": [
+                  "GetCombatantY"
+                ]
+              },
+              "invalidCoordinateComparison": {
+                "instructionIndex": 11,
+                "opcode": "cmpi.b",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ]
+              },
+              "invalidCoordinateBranch": {
+                "instructionIndex": 12,
+                "opcode": "beq.w",
+                "operands": [
+                  "@loc_3"
+                ],
+                "sourceTarget": "@loc_3",
+                "parsedBranchTarget": "@loc_3",
+                "conditionCode": "eq",
+                "targetInstructionIndex": 31
+              },
+              "coordinateCopy": {
+                "instructionIndex": 13,
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "d3"
+                ]
+              }
+            },
+            "targetX": {
+              "call": {
+                "instructionIndex": 15,
+                "opcode": "bsr.w",
+                "operands": [
+                  "GetCombatantX"
+                ]
+              },
+              "invalidCoordinateComparison": {
+                "instructionIndex": 16,
+                "opcode": "cmpi.b",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ]
+              },
+              "invalidCoordinateBranch": {
+                "instructionIndex": 17,
+                "opcode": "beq.w",
+                "operands": [
+                  "@loc_3"
+                ],
+                "sourceTarget": "@loc_3",
+                "parsedBranchTarget": "@loc_3",
+                "conditionCode": "eq",
+                "targetInstructionIndex": 31
+              },
+              "coordinateCopy": {
+                "instructionIndex": 18,
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "d4"
+                ]
+              }
+            },
+            "targetY": {
+              "call": {
+                "instructionIndex": 19,
+                "opcode": "bsr.w",
+                "operands": [
+                  "GetCombatantY"
+                ]
+              },
+              "invalidCoordinateComparison": {
+                "instructionIndex": 20,
+                "opcode": "cmpi.b",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ]
+              },
+              "invalidCoordinateBranch": {
+                "instructionIndex": 21,
+                "opcode": "beq.w",
+                "operands": [
+                  "@loc_3"
+                ],
+                "sourceTarget": "@loc_3",
+                "parsedBranchTarget": "@loc_3",
+                "conditionCode": "eq",
+                "targetInstructionIndex": 31
+              },
+              "coordinateCopy": {
+                "instructionIndex": 22,
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "d5"
+                ]
+              }
+            }
+          },
+          "targetSelectorRestore": {
+            "instructionIndex": 14,
+            "opcode": "move.w",
+            "operands": [
+              "d5",
+              "d0"
+            ]
+          },
+          "firstAxis": {
+            "subtraction": {
+              "instructionIndex": 23,
+              "opcode": "sub.w",
+              "operands": [
+                "d4",
+                "d2"
+              ]
+            },
+            "noBorrowBranch": {
+              "instructionIndex": 24,
+              "opcode": "bcc.s",
+              "operands": [
+                "@loc_1"
+              ],
+              "sourceTarget": "@loc_1",
+              "parsedBranchTarget": "@loc_1",
+              "conditionCode": "cc",
+              "targetInstructionIndex": 26
+            },
+            "negativeAdjustment": {
+              "instructionIndex": 25,
+              "opcode": "neg.w",
+              "operands": [
+                "d2"
+              ]
+            }
+          },
+          "secondAxis": {
+            "subtraction": {
+              "instructionIndex": 26,
+              "opcode": "sub.w",
+              "operands": [
+                "d5",
+                "d3"
+              ]
+            },
+            "noBorrowBranch": {
+              "instructionIndex": 27,
+              "opcode": "bcc.s",
+              "operands": [
+                "@loc_2"
+              ],
+              "sourceTarget": "@loc_2",
+              "parsedBranchTarget": "@loc_2",
+              "conditionCode": "cc",
+              "targetInstructionIndex": 29
+            },
+            "negativeAdjustment": {
+              "instructionIndex": 28,
+              "opcode": "neg.w",
+              "operands": [
+                "d3"
+              ]
+            }
+          },
+          "axisCombination": {
+            "instructionIndex": 29,
+            "opcode": "add.w",
+            "operands": [
+              "d3",
+              "d2"
+            ]
+          },
+          "successConvergenceBranch": {
+            "instructionIndex": 30,
+            "opcode": "bra.w",
+            "operands": [
+              "@Done"
+            ],
+            "sourceTarget": "@Done",
+            "parsedBranchTarget": "@Done",
+            "conditionCode": "ra",
+            "targetInstructionIndex": 32
+          },
+          "invalidResult": {
+            "instructionIndex": 31,
+            "opcode": "move.w",
+            "operands": [
+              "#-1",
+              "d2"
+            ]
+          },
+          "restore": {
+            "instructionIndex": 32,
+            "opcode": "movem.l",
+            "operands": [
+              "(sp)+",
+              "d0-d1/d3-d5"
+            ]
+          },
+          "terminal": {
+            "instructionIndex": 33,
+            "opcode": "rts",
+            "operands": []
+          },
+          "instructionOrder": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33
+          ],
+          "labelInstructionIndices": {
+            "GetDistanceBetweenCombatants": 0,
+            "@loc_1": 26,
+            "@loc_2": 29,
+            "@loc_3": 31,
+            "@Done": 32
+          }
+        },
+        "jumpInterfaceAliases": {
+          "j_GetDistanceBetweenCombatants": {
+            "effectiveTarget": "GetDistanceBetweenCombatants",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          }
+        },
+        "internalDirectCallerSites": [],
+        "externalDirectCallerSites": [
+          {
+            "sourcePath": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+            "lineNumber": 88,
+            "opcode": "jsr",
+            "instructionTarget": "GetDistanceBetweenCombatants",
+            "effectiveTarget": "GetDistanceBetweenCombatants"
+          },
+          {
+            "sourcePath": "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+            "lineNumber": 78,
+            "opcode": "jsr",
+            "instructionTarget": "GetDistanceBetweenCombatants",
+            "effectiveTarget": "GetDistanceBetweenCombatants"
+          }
+        ],
+        "internalAliasCallerSites": [],
+        "externalAliasCallerSites": [],
+        "directCallerSites": [
+          {
+            "sourcePath": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+            "lineNumber": 88,
+            "opcode": "jsr",
+            "instructionTarget": "GetDistanceBetweenCombatants",
+            "effectiveTarget": "GetDistanceBetweenCombatants"
+          },
+          {
+            "sourcePath": "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+            "lineNumber": 78,
+            "opcode": "jsr",
+            "instructionTarget": "GetDistanceBetweenCombatants",
+            "effectiveTarget": "GetDistanceBetweenCombatants"
+          }
+        ],
+        "aliasCallerSites": [],
+        "callerCounts": {
+          "directSiteCount": 2,
+          "aliasSiteCount": 0,
+          "effectiveSiteCount": 2
+        },
+        "callerTargetCounts": {
+          "internalDirect": {
+            "GetDistanceBetweenCombatants": 0
+          },
+          "externalDirect": {
+            "GetDistanceBetweenCombatants": 2
+          },
+          "internalAlias": {
+            "GetDistanceBetweenCombatants": 0
+          },
+          "externalAlias": {
+            "GetDistanceBetweenCombatants": 0
+          }
+        },
+        "callerBoundary": {
+          "internalDirectSiteCount": 0,
+          "externalDirectSiteCount": 2,
+          "internalAliasSiteCount": 0,
+          "externalAliasSiteCount": 0,
+          "aliasDefinitionsAreNotCallSites": true
+        },
+        "h3Boundary": {
+          "fixtureIds": [],
+          "runtimeBehavior": "unknown",
+          "groupedQuestions": [
+            "invalid-coordinate return path",
+            "coordinate-delta boundary values",
+            "caller-visible distance use"
+          ]
+        }
       }
     },
     "alternateSources": [

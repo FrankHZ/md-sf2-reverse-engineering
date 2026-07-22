@@ -7,6 +7,7 @@ import pytest
 
 from sf2tool.h2.stats import (
     _combatant_clamp_contract,
+    _combatant_distance_contract,
     _combatant_getter_contract,
     _combatant_mutation_contract,
     build_stats_inventory,
@@ -100,6 +101,19 @@ def _copy_getter_sources(tmp_path):
     listing = tmp_path / "build/sf2build-h1.lst"
     listing.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(upstream / "build/sf2build-h1.lst", listing)
+    return disasm
+
+
+def _copy_distance_sources(tmp_path):
+    disasm = _copy_getter_sources(tmp_path)
+    for relative in (
+        "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+        "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+    ):
+        destination = disasm / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(UPSTREAM / "disasm" / relative, destination)
     return disasm
 
 
@@ -399,6 +413,139 @@ def test_combatant_clamp_contract_matches_full_fixture_and_boundaries() -> None:
     )
 
 
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_combatant_distance_contract_matches_full_fixture_and_boundaries() -> None:
+    actual = build_stats_inventory(UPSTREAM)["statsFacts"]["combatantDistanceContract"]
+    expected = load_json(FIXTURE)["expected"]["statsFacts"]["combatantDistanceContract"]
+    assert actual == expected
+    assert actual["sourceRange"] == {
+        "path": "code/common/stats/combatantstats_3.asm",
+        "startAddress": 37918,
+        "endAddressExclusive": 38018,
+        "physicalSpanBytes": 100,
+    }
+    assert actual["instructionEncodedByteCount"] == 100
+    assert actual["abi"] == {
+        "inputSelectors": [
+            {
+                "register": "d0",
+                "meaningfulWidthBits": 16,
+                "widthUseSite": {
+                    "instructionIndex": 14,
+                    "opcode": "move.w",
+                    "operands": ["d5", "d0"],
+                },
+            },
+            {
+                "register": "d1",
+                "meaningfulWidthBits": 16,
+                "widthUseSite": {
+                    "instructionIndex": 1,
+                    "opcode": "move.w",
+                    "operands": ["d1", "d5"],
+                },
+            },
+        ],
+        "result": {
+            "register": "d2",
+            "meaningfulWidthBits": 16,
+            "widthUseSites": [
+                {"instructionIndex": 23, "opcode": "sub.w", "operands": ["d4", "d2"]},
+                {"instructionIndex": 26, "opcode": "sub.w", "operands": ["d5", "d3"]},
+                {"instructionIndex": 29, "opcode": "add.w", "operands": ["d3", "d2"]},
+                {"instructionIndex": 31, "opcode": "move.w", "operands": ["#-1", "d2"]},
+            ],
+        },
+        "preservedRegisters": "d0-d1/d3-d5",
+        "coordinateValueWidthBits": 16,
+        "coordinateWidthUseSites": [
+            {"instructionIndex": 9, "opcode": "move.w", "operands": ["d1", "d2"]},
+            {"instructionIndex": 13, "opcode": "move.w", "operands": ["d1", "d3"]},
+            {"instructionIndex": 18, "opcode": "move.w", "operands": ["d1", "d4"]},
+            {"instructionIndex": 22, "opcode": "move.w", "operands": ["d1", "d5"]},
+        ],
+        "deltaWorkingRegisters": ["d2", "d3"],
+    }
+    assert actual["callerCounts"] == {
+        "directSiteCount": 2,
+        "aliasSiteCount": 0,
+        "effectiveSiteCount": 2,
+    }
+    assert actual["callerTargetCounts"] == {
+        "internalDirect": {"GetDistanceBetweenCombatants": 0},
+        "externalDirect": {"GetDistanceBetweenCombatants": 2},
+        "internalAlias": {"GetDistanceBetweenCombatants": 0},
+        "externalAlias": {"GetDistanceBetweenCombatants": 0},
+    }
+    assert actual["directCallerSites"] == [
+        {
+            "sourcePath": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+            "lineNumber": 88,
+            "opcode": "jsr",
+            "instructionTarget": "GetDistanceBetweenCombatants",
+            "effectiveTarget": "GetDistanceBetweenCombatants",
+        },
+        {
+            "sourcePath": "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+            "lineNumber": 78,
+            "opcode": "jsr",
+            "instructionTarget": "GetDistanceBetweenCombatants",
+            "effectiveTarget": "GetDistanceBetweenCombatants",
+        },
+    ]
+    assert actual["jumpInterfaceAliases"] == {
+        "j_GetDistanceBetweenCombatants": {
+            "effectiveTarget": "GetDistanceBetweenCombatants",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        }
+    }
+    assert actual["aliasCallerSites"] == []
+    assert actual["callerBoundary"] == {
+        "internalDirectSiteCount": 0,
+        "externalDirectSiteCount": 2,
+        "internalAliasSiteCount": 0,
+        "externalAliasSiteCount": 0,
+        "aliasDefinitionsAreNotCallSites": True,
+    }
+    assert actual["controlFlow"]["instructionOrder"] == list(range(34))
+    assert actual["controlFlow"]["labelInstructionIndices"] == {
+        "GetDistanceBetweenCombatants": 0,
+        "@loc_1": 26,
+        "@loc_2": 29,
+        "@loc_3": 31,
+        "@Done": 32,
+    }
+    assert actual["h3Boundary"]["fixtureIds"] == []
+
+
+def test_combatant_distance_schema_rejects_deep_drift() -> None:
+    fixture = load_json(FIXTURE)
+
+    def invalid(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["statsFacts"]["combatantDistanceContract"])
+        with pytest.raises(ValueError, match="statsFacts"):
+            validate_json(broken, FIXTURE_SCHEMA, owner="statsFacts distance contract")
+
+    invalid(lambda value: value["sourceRange"].pop("endAddressExclusive"))
+    invalid(lambda value: value["routineOperations"].reverse())
+    invalid(lambda value: value["routineOperations"][0].__setitem__("extra", True))
+    invalid(lambda value: value["controlFlow"]["coordinateCalls"].pop("targetY"))
+    invalid(
+        lambda value: value["controlFlow"]["firstAxis"]["noBorrowBranch"].__setitem__(
+            "sourceTarget", "@loc_2"
+        )
+    )
+    invalid(lambda value: value["directCallerSites"][0].__setitem__("lineNumber", 87))
+    invalid(
+        lambda value: value["callerTargetCounts"]["internalDirect"].pop(
+            "GetDistanceBetweenCombatants"
+        )
+    )
+    invalid(lambda value: value["abi"]["inputSelectors"][0]["widthUseSite"].pop("opcode"))
+    invalid(lambda value: value.__setitem__("unexpected", True))
+
+
 def test_combatant_clamp_schema_rejects_complete_shape_drift() -> None:
     fixture = load_json(FIXTURE)
     schema = load_json(FIXTURE_SCHEMA)
@@ -525,6 +672,117 @@ def test_combatant_clamp_scoped_contract_rejects_control_flow_and_data_mutations
     else:
         assert actual != expected
     assert expected["routineOrder"] == CLAMP_ROUTINES
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("needle", "replacement"),
+    (
+        ("bsr.w   GetCombatantX", "bsr.w   GetCombatantY"),
+        ("beq.w   @loc_3", "bne.w   @loc_3"),
+        ("bcc.s   @loc_1", "bcc.s   @loc_2"),
+        ("move.w  d1,d2", "move.b  d1,d2"),
+        ("sub.w   d4,d2", "sub.w   d5,d2"),
+        ("add.w   d3,d2", "sub.w   d3,d2"),
+        ("move.w  #-1,d2", "move.w  #0,d2"),
+        ("@loc_1:", "@loc_4:"),
+        ("movem.l d0-d1/d3-d5,-(sp)", "movem.l d0-d1/d3-d4,-(sp)"),
+        ("movem.l (sp)+,d0-d1/d3-d5", "movem.l (sp)+,d0-d1/d3-d4"),
+        ("rts", "nop"),
+    ),
+)
+def test_combatant_distance_function_scoped_guards_reject_mutations(
+    tmp_path, needle, replacement
+) -> None:
+    disasm = _copy_distance_sources(tmp_path)
+    source = disasm / "code/common/stats/combatantstats_3.asm"
+    text = source.read_text(encoding="utf-8")
+    start = text.index("GetDistanceBetweenCombatants:")
+    end = text.index("    ; End of function", start)
+    section = text[start:end]
+    assert needle in section
+    source.write_text(
+        text[:start] + section.replace(needle, replacement, 1) + text[end:], encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="combatant distance"):
+        _combatant_distance_contract(disasm)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_combatant_distance_inventory_scans_injected_owning_file_call(tmp_path) -> None:
+    disasm = _copy_distance_sources(tmp_path)
+    source = disasm / "code/common/stats/combatantstats_3.asm"
+    source.write_text(
+        (
+            source.read_text(encoding="utf-8")
+            + "\n                jsr     GetDistanceBetweenCombatants\n"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="direct caller inventory"):
+        _combatant_distance_contract(disasm)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("needle", "replacement"),
+    (
+        ("0000941E                            GetDistanceBetweenCombatants:",
+         "00009420                            GetDistanceBetweenCombatants:"),
+        ("0000941E 48E7 DC00", "0000941E 48E7 DC"),
+        ("00009482                                ; End of function GetDistanceBetweenCombatants",
+         "00009480                                ; End of function GetDistanceBetweenCombatants"),
+    ),
+)
+def test_combatant_distance_h1_boundary_and_encoding_guards_reject_mutations(
+    tmp_path, needle, replacement
+) -> None:
+    disasm = _copy_distance_sources(tmp_path)
+    listing = disasm.parent / "build/sf2build-h1.lst"
+    text = listing.read_text(encoding="utf-8")
+    assert needle in text
+    listing.write_text(text.replace(needle, replacement, 1), encoding="utf-8")
+    with pytest.raises(ValueError, match="combatant distance"):
+        _combatant_distance_contract(disasm)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_combatant_distance_caller_parser_ignores_non_calls_and_accepts_suffixes(tmp_path) -> None:
+    expected = load_json(FIXTURE)["expected"]["statsFacts"]["combatantDistanceContract"]
+    for directory_name, statement in (
+        ("comment", "; jsr.l GetDistanceBetweenCombatants"),
+        ("near-miss", "jsrx    GetDistanceBetweenCombatants"),
+    ):
+        disasm = _copy_distance_sources(tmp_path / directory_name)
+        source = disasm / "code/gameflow/battle/battleactions/initbattlesceneproperties.asm"
+        source.write_text(source.read_text(encoding="utf-8") + f"\n{statement}\n", encoding="utf-8")
+        assert _combatant_distance_contract(disasm) == expected
+
+    disasm = _copy_distance_sources(tmp_path / "legal-suffix")
+    source = disasm / "code/gameflow/battle/battleactions/initbattlesceneproperties.asm"
+    source.write_text(
+        (
+            source.read_text(encoding="utf-8")
+            + "\n                jsr.l   GetDistanceBetweenCombatants\n"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="direct caller inventory"):
+        _combatant_distance_contract(disasm)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_combatant_distance_caller_identity_change_fails_construction(tmp_path) -> None:
+    disasm = _copy_distance_sources(tmp_path)
+    source = disasm / "code/gameflow/battle/battleactions/isabletocounterattack.asm"
+    source.write_text(
+        source.read_text(encoding="utf-8").replace(
+            "jsr     GetDistanceBetweenCombatants", "jsr     j_GetDistanceBetweenCombatants", 1
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="direct caller inventory"):
+        _combatant_distance_contract(disasm)
 
 
 def test_combatant_mutation_schema_rejects_deep_drift() -> None:
@@ -783,17 +1041,16 @@ def test_combatant_getter_schemas_are_shared_closed_and_reject_drift() -> None:
     )
 
 
-def test_combatant_clamp_slice_preserves_getter_and_mutation_siblings_from_head() -> None:
+def test_combatant_distance_slice_preserves_prior_stats_siblings_from_head() -> None:
     fixture = load_json(FIXTURE)
     head_fixture = json.loads(
         subprocess.check_output(
             ["git", "show", "HEAD:tests/fixtures/h2/common-stats-static-v1.json"], text=True
         )
     )
-    for name in ("combatantGetterContract", "combatantMutationContract"):
+    for name in ("combatantGetterContract", "combatantMutationContract", "combatantClampContract"):
         assert (
-            fixture["expected"]["statsFacts"][name]
-            == head_fixture["expected"]["statsFacts"][name]
+            fixture["expected"]["statsFacts"][name] == head_fixture["expected"]["statsFacts"][name]
         )
     output_schema = load_json(OUTPUT_SCHEMA)
     fixture_schema = load_json(FIXTURE_SCHEMA)
@@ -808,12 +1065,12 @@ def test_combatant_clamp_slice_preserves_getter_and_mutation_siblings_from_head(
         )
     )
     assert set(output_schema["definitions"]) - set(head_output_schema.get("definitions", {})) == {
-        "combatantClampFacts"
+        "combatantDistanceFacts"
     }
     assert set(fixture_schema["definitions"]) - set(head_fixture_schema.get("definitions", {})) == {
-        "combatantClampFacts"
+        "combatantDistanceFacts"
     }
-    for definition in ("combatantGetterFacts", "combatantMutationFacts"):
+    for definition in ("combatantGetterFacts", "combatantMutationFacts", "combatantClampFacts"):
         assert (
             output_schema["definitions"][definition]
             == head_output_schema["definitions"][definition]

@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-21
+- Evidence date: 2026-07-22
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -114,8 +114,8 @@ The current evidence is deep but narrow:
   8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
   Common stats now inventories all 20 files and models flags, party/inventory services, spell
   learning, new-game order, the complete 31-entry getter corpus, complete 53-entry mutation wrapper
-  corpus, and seven-routine byte/word/long clamp algorithm/caller contract. Seventeen have independent
-  evidence; three
+  corpus, seven-routine byte/word/long clamp algorithm/caller contract, and final combatant-distance
+  function contract. Seventeen have independent evidence; three
   unassembled alternate item sources are tracked but excluded from strict reach rather than borrowing
   their canonical twins.
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,

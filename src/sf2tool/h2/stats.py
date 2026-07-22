@@ -19,6 +19,7 @@ from sf2tool.h2.menus import (
 )
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
+from sf2tool.source_text import read_upstream_text
 
 ID = "sf2-common-stats-static-v1"
 SOURCE_ROOT = Path("code/common/stats")
@@ -2205,11 +2206,335 @@ def _combatant_clamp_contract(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _combatant_distance_contract(disasm: Path) -> dict[str, Any]:
+    """Extract the bounded source contract for GetDistanceBetweenCombatants."""
+    path = disasm / SOURCE_ROOT / "combatantstats_3.asm"
+    source = path.read_text(encoding="utf-8")
+    listing = (disasm.parent / "build/sf2build-h1.lst").read_text(encoding="utf-8")
+    name = "GetDistanceBetweenCombatants"
+    start = source.find(f"{name}:")
+    end = source.find("\n    ; End of function", start)
+    if start < 0 or end < 0 or source.find("\n    ; End of function", end + 1) != -1:
+        raise ValueError("combatant distance bounded function surface drift")
+    section = source[start:end]
+    records = _shop_instruction_records(section)
+    label_match = re.search(rf"^([0-9A-F]{{8}})\s+{name}:$", listing, re.MULTILINE)
+    listing_end = re.search(rf"^([0-9A-F]{{8}})\s+; End of function {name}$", listing, re.MULTILINE)
+    if not label_match or not listing_end:
+        raise ValueError("combatant distance H1 boundary drift")
+    start_address = int(label_match.group(1), 16)
+    end_address = int(listing_end.group(1), 16)
+    listing_section = listing[label_match.start() : listing_end.start()]
+    encoded: list[tuple[int, int]] = []
+    for line in listing_section.splitlines():
+        match = re.match(r"^([0-9A-F]{8})\s+([0-9A-F ]{4,})\s+", line)
+        if match and (hex_bytes := match.group(2).replace(" ", "")):
+            if len(hex_bytes) % 2:
+                raise ValueError("combatant distance encoded instruction byte-pair drift")
+            encoded.append((int(match.group(1), 16), len(hex_bytes) // 2))
+    if len(encoded) != len(records):
+        raise ValueError("combatant distance H1 instruction-record count drift")
+    if not encoded or encoded[0][0] != start_address:
+        raise ValueError("combatant distance encoded instruction start drift")
+    for index in range(1, len(encoded)):
+        previous_address, previous_size = encoded[index - 1]
+        address, _ = encoded[index]
+        if address != previous_address + previous_size:
+            raise ValueError("combatant distance encoded instruction continuity drift")
+    if encoded[-1][0] + encoded[-1][1] != end_address:
+        raise ValueError("combatant distance encoded instruction boundary drift")
+    if sum(size for _, size in encoded) != end_address - start_address:
+        raise ValueError("combatant distance encoded byte count drift")
+
+    def exact(index: int, opcode: str, operands: list[str], description: str) -> dict[str, Any]:
+        if (
+            index >= len(records)
+            or records[index]["opcode"] != opcode
+            or records[index]["operands"] != operands
+        ):
+            raise ValueError(f"combatant distance {description} drift")
+        return {"instructionIndex": index, "opcode": opcode, "operands": operands}
+
+    label_instruction_indices = {
+        label: index
+        for index, record in enumerate(records)
+        for label in record["labels"]
+    }
+    expected_label_instruction_indices = {
+        name: 0,
+        "@loc_1": 26,
+        "@loc_2": 29,
+        "@loc_3": 31,
+        "@Done": 32,
+    }
+    if label_instruction_indices != expected_label_instruction_indices:
+        raise ValueError("combatant distance local-label placement drift")
+
+    def branch(index: int, opcode: str, target: str, description: str) -> dict[str, Any]:
+        item = exact(index, opcode, [target], description)
+        if records[index]["branchTarget"] != target or target not in label_instruction_indices:
+            raise ValueError(f"combatant distance {description} target drift")
+        item["sourceTarget"] = target
+        item["parsedBranchTarget"] = records[index]["branchTarget"]
+        item["conditionCode"] = opcode[1:].split(".")[0]
+        item["targetInstructionIndex"] = label_instruction_indices[target]
+        return item
+
+    def coordinate_call(
+        call_index: int, target: str, copy_index: int | None, copy_destination: str | None
+    ) -> dict[str, Any]:
+        call = exact(call_index, "bsr.w", [target], f"{target} call")
+        invalid_compare = exact(
+            call_index + 1, "cmpi.b", ["#-1", "d1"], f"{target} invalid comparison"
+        )
+        invalid_branch = branch(call_index + 2, "beq.w", "@loc_3", f"{target} invalid branch")
+        item = {
+            "call": call,
+            "invalidCoordinateComparison": invalid_compare,
+            "invalidCoordinateBranch": invalid_branch,
+        }
+        if copy_index is not None and copy_destination is not None:
+            item["coordinateCopy"] = exact(
+                copy_index, "move.w", ["d1", copy_destination], f"{target} copy"
+            )
+        else:
+            item["coordinateCopy"] = None
+        return item
+
+    coordinate_calls = {
+        "actorX": coordinate_call(6, "GetCombatantX", 9, "d2"),
+        "actorY": coordinate_call(10, "GetCombatantY", 13, "d3"),
+        "targetX": coordinate_call(15, "GetCombatantX", 18, "d4"),
+        "targetY": coordinate_call(19, "GetCombatantY", 22, "d5"),
+    }
+    axis_x = {
+        "subtraction": exact(23, "sub.w", ["d4", "d2"], "first coordinate subtraction"),
+        "noBorrowBranch": branch(24, "bcc.s", "@loc_1", "first absolute branch"),
+        "negativeAdjustment": exact(25, "neg.w", ["d2"], "first negative adjustment"),
+    }
+    axis_y = {
+        "subtraction": exact(26, "sub.w", ["d5", "d3"], "second coordinate subtraction"),
+        "noBorrowBranch": branch(27, "bcc.s", "@loc_2", "second absolute branch"),
+        "negativeAdjustment": exact(28, "neg.w", ["d3"], "second negative adjustment"),
+    }
+    ordered = list(range(34))
+    if len(records) != len(ordered):
+        raise ValueError("combatant distance instruction count drift")
+    width_bits = {"b": 8, "w": 16, "l": 32}
+
+    def width_from_use_site(item: dict[str, Any], description: str) -> int:
+        suffix = item["opcode"].partition(".")[2]
+        if suffix not in width_bits:
+            raise ValueError(f"combatant distance {description} width suffix drift")
+        return width_bits[suffix]
+
+    selector_width_uses = [
+        exact(1, "move.w", ["d1", "d5"], "target selector width use"),
+        exact(14, "move.w", ["d5", "d0"], "actor selector width use"),
+    ]
+    selector_widths = [
+        width_from_use_site(item, "selector") for item in selector_width_uses
+    ]
+    if len(set(selector_widths)) != 1:
+        raise ValueError("combatant distance selector width agreement drift")
+    coordinate_width_uses = [
+        coordinate_calls[key]["coordinateCopy"]
+        for key in ("actorX", "actorY", "targetX", "targetY")
+    ]
+    if any(item is None for item in coordinate_width_uses):
+        raise ValueError("combatant distance coordinate copy width use drift")
+    coordinate_widths = [
+        width_from_use_site(item, "coordinate")
+        for item in coordinate_width_uses
+        if item is not None
+    ]
+    if len(set(coordinate_widths)) != 1:
+        raise ValueError("combatant distance coordinate width agreement drift")
+    result_width_uses = [axis_x["subtraction"], axis_y["subtraction"], exact(
+        29, "add.w", ["d3", "d2"], "result width use"
+    ), exact(31, "move.w", ["#-1", "d2"], "invalid result width use")]
+    result_widths = [width_from_use_site(item, "result") for item in result_width_uses]
+    if len(set(result_widths)) != 1:
+        raise ValueError("combatant distance result width agreement drift")
+    delta_working_registers = [
+        axis_x["subtraction"]["operands"][1],
+        axis_y["subtraction"]["operands"][1],
+    ]
+    if exact(29, "add.w", ["d3", "d2"], "axis-combination register order")["operands"] != [
+        delta_working_registers[1],
+        delta_working_registers[0],
+    ]:
+        raise ValueError("combatant distance axis-combination register relation drift")
+    aliases = _shop_jump_aliases(disasm, {name})
+    expected_aliases = {
+        "j_GetDistanceBetweenCombatants": {
+            "effectiveTarget": name,
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        }
+    }
+    if aliases != expected_aliases:
+        raise ValueError("combatant distance jump-interface alias definition drift")
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    call_pattern = re.compile(r"^\s*(bsr|jsr)(?:\.[bswl])?\s+([^\s,;]+)", re.IGNORECASE)
+    direct_sites: list[dict[str, Any]] = []
+    alias_sites: list[dict[str, Any]] = []
+    for candidate in sorted((disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix()):
+        for line_number, raw in enumerate(read_upstream_text(candidate).splitlines(), start=1):
+            match = call_pattern.match(raw.split(";", 1)[0])
+            if not match:
+                continue
+            instruction_target = re.sub(r"\(.*$", "", match.group(2))
+            effective_target = alias_targets.get(instruction_target, instruction_target)
+            if effective_target != name:
+                continue
+            fact = {
+                "sourcePath": candidate.relative_to(disasm).as_posix(),
+                "lineNumber": line_number,
+                "opcode": match.group(1).lower(),
+                "instructionTarget": instruction_target,
+                "effectiveTarget": effective_target,
+            }
+            (alias_sites if instruction_target in aliases else direct_sites).append(fact)
+    direct_sites.sort(key=lambda item: (item["sourcePath"], item["lineNumber"]))
+    alias_sites.sort(key=lambda item: (item["sourcePath"], item["lineNumber"]))
+    owning_path = path.relative_to(disasm).as_posix()
+    internal_direct = [item for item in direct_sites if item["sourcePath"] == owning_path]
+    external_direct = [item for item in direct_sites if item["sourcePath"] != owning_path]
+    internal_alias = [item for item in alias_sites if item["sourcePath"] == owning_path]
+    external_alias = [item for item in alias_sites if item["sourcePath"] != owning_path]
+    canonical_external_direct = [
+        {
+            "sourcePath": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+            "lineNumber": 88,
+            "opcode": "jsr",
+            "instructionTarget": name,
+            "effectiveTarget": name,
+        },
+        {
+            "sourcePath": "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+            "lineNumber": 78,
+            "opcode": "jsr",
+            "instructionTarget": name,
+            "effectiveTarget": name,
+        },
+    ]
+    if external_direct != canonical_external_direct or internal_direct or alias_sites:
+        raise ValueError("combatant distance direct caller inventory drift")
+    declared_effective_targets = (name,)
+
+    def caller_target_counts(sites: list[dict[str, Any]]) -> dict[str, int]:
+        counts = {target: 0 for target in declared_effective_targets}
+        for site in sites:
+            counts[site["effectiveTarget"]] += 1
+        return counts
+
+    caller_target_counts_by_boundary = {
+        "internalDirect": caller_target_counts(internal_direct),
+        "externalDirect": caller_target_counts(external_direct),
+        "internalAlias": caller_target_counts(internal_alias),
+        "externalAlias": caller_target_counts(external_alias),
+    }
+    h3_fixtures = []
+    for fixture_path in sorted(repo_path("tests/fixtures/h3").glob("*.json")):
+        fixture = load_json(fixture_path)
+        if name in json.dumps(fixture, sort_keys=True):
+            h3_fixtures.append(fixture["id"])
+    if h3_fixtures:
+        raise ValueError("combatant distance H3 fixture boundary drift")
+    return {
+        "sourcePath": "code/common/stats/combatantstats_3.asm",
+        "sourceRange": {
+            "path": "code/common/stats/combatantstats_3.asm",
+            "startAddress": start_address,
+            "endAddressExclusive": end_address,
+            "physicalSpanBytes": end_address - start_address,
+        },
+        "instructionEncodedByteCount": sum(size for _, size in encoded),
+        "routineOperations": records,
+        "abi": {
+            "inputSelectors": [
+                {
+                    "register": "d0",
+                    "meaningfulWidthBits": selector_widths[1],
+                    "widthUseSite": selector_width_uses[1],
+                },
+                {
+                    "register": "d1",
+                    "meaningfulWidthBits": selector_widths[0],
+                    "widthUseSite": selector_width_uses[0],
+                },
+            ],
+            "result": {
+                "register": "d2",
+                "meaningfulWidthBits": result_widths[0],
+                "widthUseSites": result_width_uses,
+            },
+            "preservedRegisters": exact(
+                0, "movem.l", ["d0-d1/d3-d5", "-(sp)"], "preserved-register source"
+            )["operands"][0],
+            "coordinateValueWidthBits": coordinate_widths[0],
+            "coordinateWidthUseSites": coordinate_width_uses,
+            "deltaWorkingRegisters": delta_working_registers,
+        },
+        "controlFlow": {
+            "save": exact(0, "movem.l", ["d0-d1/d3-d5", "-(sp)"], "save"),
+            "targetSelectorCopy": exact(1, "move.w", ["d1", "d5"], "target selector copy"),
+            "clears": [
+                exact(2, "clr.w", ["d1"], "clear d1"),
+                exact(3, "clr.w", ["d2"], "clear d2"),
+                exact(4, "clr.w", ["d3"], "clear d3"),
+                exact(5, "clr.w", ["d4"], "clear d4"),
+            ],
+            "coordinateCalls": coordinate_calls,
+            "targetSelectorRestore": exact(14, "move.w", ["d5", "d0"], "target selector restore"),
+            "firstAxis": axis_x,
+            "secondAxis": axis_y,
+            "axisCombination": exact(29, "add.w", ["d3", "d2"], "axis combination"),
+            "successConvergenceBranch": branch(30, "bra.w", "@Done", "success convergence"),
+            "invalidResult": exact(31, "move.w", ["#-1", "d2"], "invalid result"),
+            "restore": exact(32, "movem.l", ["(sp)+", "d0-d1/d3-d5"], "restore"),
+            "terminal": exact(33, "rts", [], "terminal"),
+            "instructionOrder": ordered,
+            "labelInstructionIndices": label_instruction_indices,
+        },
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerSites": internal_direct,
+        "externalDirectCallerSites": external_direct,
+        "internalAliasCallerSites": internal_alias,
+        "externalAliasCallerSites": external_alias,
+        "directCallerSites": direct_sites,
+        "aliasCallerSites": alias_sites,
+        "callerCounts": {
+            "directSiteCount": len(direct_sites),
+            "aliasSiteCount": len(alias_sites),
+            "effectiveSiteCount": len(direct_sites) + len(alias_sites),
+        },
+        "callerTargetCounts": caller_target_counts_by_boundary,
+        "callerBoundary": {
+            "internalDirectSiteCount": len(internal_direct),
+            "externalDirectSiteCount": len(external_direct),
+            "internalAliasSiteCount": len(internal_alias),
+            "externalAliasSiteCount": len(external_alias),
+            "aliasDefinitionsAreNotCallSites": True,
+        },
+        "h3Boundary": {
+            "fixtureIds": h3_fixtures,
+            "runtimeBehavior": "unknown",
+            "groupedQuestions": [
+                "invalid-coordinate return path",
+                "coordinate-delta boundary values",
+                "caller-visible distance use",
+            ],
+        },
+    }
+
+
 def _stats_facts(disasm: Path) -> dict[str, Any]:
     root = disasm / SOURCE_ROOT
     combatant_getters = _combatant_getter_contract(disasm)
     combatant_mutations = _combatant_mutation_contract(disasm)
     combatant_clamps = _combatant_clamp_contract(disasm)
+    combatant_distance = _combatant_distance_contract(disasm)
     _require_ordered_fragments(
         root / "gameflags.asm",
         [
@@ -2365,6 +2690,7 @@ def _stats_facts(disasm: Path) -> dict[str, Any]:
         "combatantGetterContract": combatant_getters,
         "combatantMutationContract": combatant_mutations,
         "combatantClampContract": combatant_clamps,
+        "combatantDistanceContract": combatant_distance,
     }
 
 

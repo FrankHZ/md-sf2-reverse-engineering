@@ -49,12 +49,13 @@
         },
         "statsFacts": {
           "type": "object",
-          "minProperties": 10,
-          "maxProperties": 10,
+          "minProperties": 11,
+          "maxProperties": 11,
           "required": [
             "combatantGetterContract",
             "combatantMutationContract",
-            "combatantClampContract"
+            "combatantClampContract",
+            "combatantDistanceContract"
           ],
           "properties": {
             "combatantGetterContract": {
@@ -65,6 +66,9 @@
             },
             "combatantClampContract": {
               "$ref": "#/definitions/combatantClampFacts"
+            },
+            "combatantDistanceContract": {
+              "$ref": "#/definitions/combatantDistanceFacts"
             }
           }
         },
@@ -35717,6 +35721,2511 @@
             },
             "nextStaticFrontier": {
               "const": "GetDistanceBetweenCombatants"
+            }
+          }
+        }
+      }
+    },
+    "combatantDistanceFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceRange",
+        "instructionEncodedByteCount",
+        "routineOperations",
+        "abi",
+        "controlFlow",
+        "jumpInterfaceAliases",
+        "internalDirectCallerSites",
+        "externalDirectCallerSites",
+        "internalAliasCallerSites",
+        "externalAliasCallerSites",
+        "directCallerSites",
+        "aliasCallerSites",
+        "callerCounts",
+        "callerTargetCounts",
+        "callerBoundary",
+        "h3Boundary"
+      ],
+      "properties": {
+        "sourcePath": {
+          "const": "code/common/stats/combatantstats_3.asm"
+        },
+        "sourceRange": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "startAddress",
+            "endAddressExclusive",
+            "physicalSpanBytes"
+          ],
+          "properties": {
+            "path": {
+              "const": "code/common/stats/combatantstats_3.asm"
+            },
+            "startAddress": {
+              "const": 37918
+            },
+            "endAddressExclusive": {
+              "const": 38018
+            },
+            "physicalSpanBytes": {
+              "const": 100
+            }
+          }
+        },
+        "instructionEncodedByteCount": {
+          "const": 100
+        },
+        "routineOperations": {
+          "allOf": [
+            {
+              "type": "array",
+              "minItems": 34,
+              "maxItems": 34,
+              "items": {
+                "$ref": "#/definitions/combatantGetterInstructionRecord"
+              }
+            },
+            {
+              "const": [
+                {
+                  "labels": [
+                    "GetDistanceBetweenCombatants"
+                  ],
+                  "opcode": "movem.l",
+                  "operands": [
+                    "d0-d1/d3-d5",
+                    "-(sp)"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d1",
+                    "d5"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "clr.w",
+                  "operands": [
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "clr.w",
+                  "operands": [
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "clr.w",
+                  "operands": [
+                    "d3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "clr.w",
+                  "operands": [
+                    "d4"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bsr.w",
+                  "operands": [
+                    "GetCombatantX"
+                  ],
+                  "directTarget": "GetCombatantX",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#-1",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "beq.w",
+                  "operands": [
+                    "@loc_3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@loc_3"
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d1",
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bsr.w",
+                  "operands": [
+                    "GetCombatantY"
+                  ],
+                  "directTarget": "GetCombatantY",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#-1",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "beq.w",
+                  "operands": [
+                    "@loc_3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@loc_3"
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d1",
+                    "d3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d5",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bsr.w",
+                  "operands": [
+                    "GetCombatantX"
+                  ],
+                  "directTarget": "GetCombatantX",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#-1",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "beq.w",
+                  "operands": [
+                    "@loc_3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@loc_3"
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d1",
+                    "d4"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bsr.w",
+                  "operands": [
+                    "GetCombatantY"
+                  ],
+                  "directTarget": "GetCombatantY",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#-1",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "beq.w",
+                  "operands": [
+                    "@loc_3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@loc_3"
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d1",
+                    "d5"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "sub.w",
+                  "operands": [
+                    "d4",
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bcc.s",
+                  "operands": [
+                    "@loc_1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@loc_1"
+                },
+                {
+                  "labels": [],
+                  "opcode": "neg.w",
+                  "operands": [
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [
+                    "@loc_1"
+                  ],
+                  "opcode": "sub.w",
+                  "operands": [
+                    "d5",
+                    "d3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bcc.s",
+                  "operands": [
+                    "@loc_2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@loc_2"
+                },
+                {
+                  "labels": [],
+                  "opcode": "neg.w",
+                  "operands": [
+                    "d3"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [
+                    "@loc_2"
+                  ],
+                  "opcode": "add.w",
+                  "operands": [
+                    "d3",
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bra.w",
+                  "operands": [
+                    "@Done"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@Done"
+                },
+                {
+                  "labels": [
+                    "@loc_3"
+                  ],
+                  "opcode": "move.w",
+                  "operands": [
+                    "#-1",
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [
+                    "@Done"
+                  ],
+                  "opcode": "movem.l",
+                  "operands": [
+                    "(sp)+",
+                    "d0-d1/d3-d5"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "rts",
+                  "operands": [],
+                  "directTarget": null,
+                  "branchTarget": null
+                }
+              ]
+            }
+          ]
+        },
+        "abi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "inputSelectors",
+            "result",
+            "preservedRegisters",
+            "coordinateValueWidthBits",
+            "coordinateWidthUseSites",
+            "deltaWorkingRegisters"
+          ],
+          "properties": {
+            "inputSelectors": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "register",
+                    "meaningfulWidthBits",
+                    "widthUseSite"
+                  ],
+                  "properties": {
+                    "register": {
+                      "const": "d0"
+                    },
+                    "meaningfulWidthBits": {
+                      "const": 16
+                    },
+                    "widthUseSite": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 14
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d5"
+                            },
+                            {
+                              "const": "d0"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "register",
+                    "meaningfulWidthBits",
+                    "widthUseSite"
+                  ],
+                  "properties": {
+                    "register": {
+                      "const": "d1"
+                    },
+                    "meaningfulWidthBits": {
+                      "const": 16
+                    },
+                    "widthUseSite": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 1
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d1"
+                            },
+                            {
+                              "const": "d5"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "additionalItems": false
+            },
+            "result": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "meaningfulWidthBits",
+                "widthUseSites"
+              ],
+              "properties": {
+                "register": {
+                  "const": "d2"
+                },
+                "meaningfulWidthBits": {
+                  "const": 16
+                },
+                "widthUseSites": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 23
+                        },
+                        "opcode": {
+                          "const": "sub.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d4"
+                            },
+                            {
+                              "const": "d2"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 26
+                        },
+                        "opcode": {
+                          "const": "sub.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d5"
+                            },
+                            {
+                              "const": "d3"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 29
+                        },
+                        "opcode": {
+                          "const": "add.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d3"
+                            },
+                            {
+                              "const": "d2"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 31
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "#-1"
+                            },
+                            {
+                              "const": "d2"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "preservedRegisters": {
+              "const": "d0-d1/d3-d5"
+            },
+            "coordinateValueWidthBits": {
+              "const": 16
+            },
+            "coordinateWidthUseSites": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 9
+                    },
+                    "opcode": {
+                      "const": "move.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": "d1"
+                        },
+                        {
+                          "const": "d2"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 13
+                    },
+                    "opcode": {
+                      "const": "move.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": "d1"
+                        },
+                        {
+                          "const": "d3"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 18
+                    },
+                    "opcode": {
+                      "const": "move.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": "d1"
+                        },
+                        {
+                          "const": "d4"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 22
+                    },
+                    "opcode": {
+                      "const": "move.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": "d1"
+                        },
+                        {
+                          "const": "d5"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              ],
+              "additionalItems": false
+            },
+            "deltaWorkingRegisters": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "const": "d2"
+                },
+                {
+                  "const": "d3"
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "controlFlow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "save",
+            "targetSelectorCopy",
+            "clears",
+            "coordinateCalls",
+            "targetSelectorRestore",
+            "firstAxis",
+            "secondAxis",
+            "axisCombination",
+            "successConvergenceBranch",
+            "invalidResult",
+            "restore",
+            "terminal",
+            "instructionOrder",
+            "labelInstructionIndices"
+          ],
+          "properties": {
+            "save": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 0
+                },
+                "opcode": {
+                  "const": "movem.l"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "d0-d1/d3-d5"
+                    },
+                    {
+                      "const": "-(sp)"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "targetSelectorCopy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 1
+                },
+                "opcode": {
+                  "const": "move.w"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "d1"
+                    },
+                    {
+                      "const": "d5"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "clears": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 2
+                    },
+                    "opcode": {
+                      "const": "clr.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "d1"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 3
+                    },
+                    "opcode": {
+                      "const": "clr.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "d2"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 4
+                    },
+                    "opcode": {
+                      "const": "clr.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "d3"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 5
+                    },
+                    "opcode": {
+                      "const": "clr.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "d4"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              ],
+              "additionalItems": false
+            },
+            "coordinateCalls": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "actorX",
+                "actorY",
+                "targetX",
+                "targetY"
+              ],
+              "properties": {
+                "actorX": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "call",
+                    "invalidCoordinateComparison",
+                    "invalidCoordinateBranch",
+                    "coordinateCopy"
+                  ],
+                  "properties": {
+                    "call": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 6
+                        },
+                        "opcode": {
+                          "const": "bsr.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "GetCombatantX"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateComparison": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 7
+                        },
+                        "opcode": {
+                          "const": "cmpi.b"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "#-1"
+                            },
+                            {
+                              "const": "d1"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateBranch": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands",
+                        "sourceTarget",
+                        "parsedBranchTarget",
+                        "conditionCode",
+                        "targetInstructionIndex"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 8
+                        },
+                        "opcode": {
+                          "const": "beq.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "@loc_3"
+                            }
+                          ],
+                          "additionalItems": false
+                        },
+                        "sourceTarget": {
+                          "const": "@loc_3"
+                        },
+                        "parsedBranchTarget": {
+                          "const": "@loc_3"
+                        },
+                        "conditionCode": {
+                          "const": "eq"
+                        },
+                        "targetInstructionIndex": {
+                          "const": 31
+                        }
+                      }
+                    },
+                    "coordinateCopy": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 9
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d1"
+                            },
+                            {
+                              "const": "d2"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  }
+                },
+                "actorY": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "call",
+                    "invalidCoordinateComparison",
+                    "invalidCoordinateBranch",
+                    "coordinateCopy"
+                  ],
+                  "properties": {
+                    "call": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 10
+                        },
+                        "opcode": {
+                          "const": "bsr.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "GetCombatantY"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateComparison": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 11
+                        },
+                        "opcode": {
+                          "const": "cmpi.b"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "#-1"
+                            },
+                            {
+                              "const": "d1"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateBranch": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands",
+                        "sourceTarget",
+                        "parsedBranchTarget",
+                        "conditionCode",
+                        "targetInstructionIndex"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 12
+                        },
+                        "opcode": {
+                          "const": "beq.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "@loc_3"
+                            }
+                          ],
+                          "additionalItems": false
+                        },
+                        "sourceTarget": {
+                          "const": "@loc_3"
+                        },
+                        "parsedBranchTarget": {
+                          "const": "@loc_3"
+                        },
+                        "conditionCode": {
+                          "const": "eq"
+                        },
+                        "targetInstructionIndex": {
+                          "const": 31
+                        }
+                      }
+                    },
+                    "coordinateCopy": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 13
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d1"
+                            },
+                            {
+                              "const": "d3"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  }
+                },
+                "targetX": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "call",
+                    "invalidCoordinateComparison",
+                    "invalidCoordinateBranch",
+                    "coordinateCopy"
+                  ],
+                  "properties": {
+                    "call": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 15
+                        },
+                        "opcode": {
+                          "const": "bsr.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "GetCombatantX"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateComparison": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 16
+                        },
+                        "opcode": {
+                          "const": "cmpi.b"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "#-1"
+                            },
+                            {
+                              "const": "d1"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateBranch": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands",
+                        "sourceTarget",
+                        "parsedBranchTarget",
+                        "conditionCode",
+                        "targetInstructionIndex"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 17
+                        },
+                        "opcode": {
+                          "const": "beq.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "@loc_3"
+                            }
+                          ],
+                          "additionalItems": false
+                        },
+                        "sourceTarget": {
+                          "const": "@loc_3"
+                        },
+                        "parsedBranchTarget": {
+                          "const": "@loc_3"
+                        },
+                        "conditionCode": {
+                          "const": "eq"
+                        },
+                        "targetInstructionIndex": {
+                          "const": 31
+                        }
+                      }
+                    },
+                    "coordinateCopy": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 18
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d1"
+                            },
+                            {
+                              "const": "d4"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  }
+                },
+                "targetY": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "call",
+                    "invalidCoordinateComparison",
+                    "invalidCoordinateBranch",
+                    "coordinateCopy"
+                  ],
+                  "properties": {
+                    "call": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 19
+                        },
+                        "opcode": {
+                          "const": "bsr.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "GetCombatantY"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateComparison": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 20
+                        },
+                        "opcode": {
+                          "const": "cmpi.b"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "#-1"
+                            },
+                            {
+                              "const": "d1"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    },
+                    "invalidCoordinateBranch": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands",
+                        "sourceTarget",
+                        "parsedBranchTarget",
+                        "conditionCode",
+                        "targetInstructionIndex"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 21
+                        },
+                        "opcode": {
+                          "const": "beq.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": [
+                            {
+                              "const": "@loc_3"
+                            }
+                          ],
+                          "additionalItems": false
+                        },
+                        "sourceTarget": {
+                          "const": "@loc_3"
+                        },
+                        "parsedBranchTarget": {
+                          "const": "@loc_3"
+                        },
+                        "conditionCode": {
+                          "const": "eq"
+                        },
+                        "targetInstructionIndex": {
+                          "const": 31
+                        }
+                      }
+                    },
+                    "coordinateCopy": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instructionIndex",
+                        "opcode",
+                        "operands"
+                      ],
+                      "properties": {
+                        "instructionIndex": {
+                          "const": 22
+                        },
+                        "opcode": {
+                          "const": "move.w"
+                        },
+                        "operands": {
+                          "type": "array",
+                          "minItems": 2,
+                          "maxItems": 2,
+                          "items": [
+                            {
+                              "const": "d1"
+                            },
+                            {
+                              "const": "d5"
+                            }
+                          ],
+                          "additionalItems": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetSelectorRestore": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 14
+                },
+                "opcode": {
+                  "const": "move.w"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "d5"
+                    },
+                    {
+                      "const": "d0"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "firstAxis": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "subtraction",
+                "noBorrowBranch",
+                "negativeAdjustment"
+              ],
+              "properties": {
+                "subtraction": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 23
+                    },
+                    "opcode": {
+                      "const": "sub.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": "d4"
+                        },
+                        {
+                          "const": "d2"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "noBorrowBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands",
+                    "sourceTarget",
+                    "parsedBranchTarget",
+                    "conditionCode",
+                    "targetInstructionIndex"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 24
+                    },
+                    "opcode": {
+                      "const": "bcc.s"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "@loc_1"
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "sourceTarget": {
+                      "const": "@loc_1"
+                    },
+                    "parsedBranchTarget": {
+                      "const": "@loc_1"
+                    },
+                    "conditionCode": {
+                      "const": "cc"
+                    },
+                    "targetInstructionIndex": {
+                      "const": 26
+                    }
+                  }
+                },
+                "negativeAdjustment": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 25
+                    },
+                    "opcode": {
+                      "const": "neg.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "d2"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            },
+            "secondAxis": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "subtraction",
+                "noBorrowBranch",
+                "negativeAdjustment"
+              ],
+              "properties": {
+                "subtraction": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 26
+                    },
+                    "opcode": {
+                      "const": "sub.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": "d5"
+                        },
+                        {
+                          "const": "d3"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "noBorrowBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands",
+                    "sourceTarget",
+                    "parsedBranchTarget",
+                    "conditionCode",
+                    "targetInstructionIndex"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 27
+                    },
+                    "opcode": {
+                      "const": "bcc.s"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "@loc_2"
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "sourceTarget": {
+                      "const": "@loc_2"
+                    },
+                    "parsedBranchTarget": {
+                      "const": "@loc_2"
+                    },
+                    "conditionCode": {
+                      "const": "cc"
+                    },
+                    "targetInstructionIndex": {
+                      "const": 29
+                    }
+                  }
+                },
+                "negativeAdjustment": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "const": 28
+                    },
+                    "opcode": {
+                      "const": "neg.w"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "d3"
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            },
+            "axisCombination": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 29
+                },
+                "opcode": {
+                  "const": "add.w"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "d3"
+                    },
+                    {
+                      "const": "d2"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "successConvergenceBranch": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands",
+                "sourceTarget",
+                "parsedBranchTarget",
+                "conditionCode",
+                "targetInstructionIndex"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 30
+                },
+                "opcode": {
+                  "const": "bra.w"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "const": "@Done"
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "sourceTarget": {
+                  "const": "@Done"
+                },
+                "parsedBranchTarget": {
+                  "const": "@Done"
+                },
+                "conditionCode": {
+                  "const": "ra"
+                },
+                "targetInstructionIndex": {
+                  "const": 32
+                }
+              }
+            },
+            "invalidResult": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 31
+                },
+                "opcode": {
+                  "const": "move.w"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "#-1"
+                    },
+                    {
+                      "const": "d2"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "restore": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 32
+                },
+                "opcode": {
+                  "const": "movem.l"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "(sp)+"
+                    },
+                    {
+                      "const": "d0-d1/d3-d5"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "terminal": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "const": 33
+                },
+                "opcode": {
+                  "const": "rts"
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 0,
+                  "items": [],
+                  "additionalItems": false
+                }
+              }
+            },
+            "instructionOrder": {
+              "type": "array",
+              "minItems": 34,
+              "maxItems": 34,
+              "items": [
+                {
+                  "const": 0
+                },
+                {
+                  "const": 1
+                },
+                {
+                  "const": 2
+                },
+                {
+                  "const": 3
+                },
+                {
+                  "const": 4
+                },
+                {
+                  "const": 5
+                },
+                {
+                  "const": 6
+                },
+                {
+                  "const": 7
+                },
+                {
+                  "const": 8
+                },
+                {
+                  "const": 9
+                },
+                {
+                  "const": 10
+                },
+                {
+                  "const": 11
+                },
+                {
+                  "const": 12
+                },
+                {
+                  "const": 13
+                },
+                {
+                  "const": 14
+                },
+                {
+                  "const": 15
+                },
+                {
+                  "const": 16
+                },
+                {
+                  "const": 17
+                },
+                {
+                  "const": 18
+                },
+                {
+                  "const": 19
+                },
+                {
+                  "const": 20
+                },
+                {
+                  "const": 21
+                },
+                {
+                  "const": 22
+                },
+                {
+                  "const": 23
+                },
+                {
+                  "const": 24
+                },
+                {
+                  "const": 25
+                },
+                {
+                  "const": 26
+                },
+                {
+                  "const": 27
+                },
+                {
+                  "const": 28
+                },
+                {
+                  "const": 29
+                },
+                {
+                  "const": 30
+                },
+                {
+                  "const": 31
+                },
+                {
+                  "const": 32
+                },
+                {
+                  "const": 33
+                }
+              ],
+              "additionalItems": false
+            },
+            "labelInstructionIndices": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetDistanceBetweenCombatants",
+                "@loc_1",
+                "@loc_2",
+                "@loc_3",
+                "@Done"
+              ],
+              "properties": {
+                "GetDistanceBetweenCombatants": {
+                  "const": 0
+                },
+                "@loc_1": {
+                  "const": 26
+                },
+                "@loc_2": {
+                  "const": 29
+                },
+                "@loc_3": {
+                  "const": 31
+                },
+                "@Done": {
+                  "const": 32
+                }
+              }
+            }
+          }
+        },
+        "jumpInterfaceAliases": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "j_GetDistanceBetweenCombatants"
+          ],
+          "properties": {
+            "j_GetDistanceBetweenCombatants": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "effectiveTarget",
+                "sourcePath"
+              ],
+              "properties": {
+                "effectiveTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                },
+                "sourcePath": {
+                  "const": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+                }
+              }
+            }
+          }
+        },
+        "internalDirectCallerSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": [],
+          "additionalItems": false
+        },
+        "externalDirectCallerSites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "lineNumber",
+                "opcode",
+                "instructionTarget",
+                "effectiveTarget"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "const": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm"
+                },
+                "lineNumber": {
+                  "const": 88
+                },
+                "opcode": {
+                  "const": "jsr"
+                },
+                "instructionTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                },
+                "effectiveTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "lineNumber",
+                "opcode",
+                "instructionTarget",
+                "effectiveTarget"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "const": "code/gameflow/battle/battleactions/isabletocounterattack.asm"
+                },
+                "lineNumber": {
+                  "const": 78
+                },
+                "opcode": {
+                  "const": "jsr"
+                },
+                "instructionTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                },
+                "effectiveTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                }
+              }
+            }
+          ],
+          "additionalItems": false
+        },
+        "internalAliasCallerSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": [],
+          "additionalItems": false
+        },
+        "externalAliasCallerSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": [],
+          "additionalItems": false
+        },
+        "directCallerSites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "lineNumber",
+                "opcode",
+                "instructionTarget",
+                "effectiveTarget"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "const": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm"
+                },
+                "lineNumber": {
+                  "const": 88
+                },
+                "opcode": {
+                  "const": "jsr"
+                },
+                "instructionTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                },
+                "effectiveTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "lineNumber",
+                "opcode",
+                "instructionTarget",
+                "effectiveTarget"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "const": "code/gameflow/battle/battleactions/isabletocounterattack.asm"
+                },
+                "lineNumber": {
+                  "const": 78
+                },
+                "opcode": {
+                  "const": "jsr"
+                },
+                "instructionTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                },
+                "effectiveTarget": {
+                  "const": "GetDistanceBetweenCombatants"
+                }
+              }
+            }
+          ],
+          "additionalItems": false
+        },
+        "aliasCallerSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": [],
+          "additionalItems": false
+        },
+        "callerCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "directSiteCount",
+            "aliasSiteCount",
+            "effectiveSiteCount"
+          ],
+          "properties": {
+            "directSiteCount": {
+              "const": 2
+            },
+            "aliasSiteCount": {
+              "const": 0
+            },
+            "effectiveSiteCount": {
+              "const": 2
+            }
+          }
+        },
+        "callerTargetCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "internalDirect",
+            "externalDirect",
+            "internalAlias",
+            "externalAlias"
+          ],
+          "properties": {
+            "internalDirect": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetDistanceBetweenCombatants"
+              ],
+              "properties": {
+                "GetDistanceBetweenCombatants": {
+                  "const": 0
+                }
+              }
+            },
+            "externalDirect": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetDistanceBetweenCombatants"
+              ],
+              "properties": {
+                "GetDistanceBetweenCombatants": {
+                  "const": 2
+                }
+              }
+            },
+            "internalAlias": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetDistanceBetweenCombatants"
+              ],
+              "properties": {
+                "GetDistanceBetweenCombatants": {
+                  "const": 0
+                }
+              }
+            },
+            "externalAlias": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetDistanceBetweenCombatants"
+              ],
+              "properties": {
+                "GetDistanceBetweenCombatants": {
+                  "const": 0
+                }
+              }
+            }
+          }
+        },
+        "callerBoundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "internalDirectSiteCount",
+            "externalDirectSiteCount",
+            "internalAliasSiteCount",
+            "externalAliasSiteCount",
+            "aliasDefinitionsAreNotCallSites"
+          ],
+          "properties": {
+            "internalDirectSiteCount": {
+              "const": 0
+            },
+            "externalDirectSiteCount": {
+              "const": 2
+            },
+            "internalAliasSiteCount": {
+              "const": 0
+            },
+            "externalAliasSiteCount": {
+              "const": 0
+            },
+            "aliasDefinitionsAreNotCallSites": {
+              "const": true
+            }
+          }
+        },
+        "h3Boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fixtureIds",
+            "runtimeBehavior",
+            "groupedQuestions"
+          ],
+          "properties": {
+            "fixtureIds": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 0,
+              "items": [],
+              "additionalItems": false
+            },
+            "runtimeBehavior": {
+              "const": "unknown"
+            },
+            "groupedQuestions": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": [
+                {
+                  "const": "invalid-coordinate return path"
+                },
+                {
+                  "const": "coordinate-delta boundary values"
+                },
+                {
+                  "const": "caller-visible distance use"
+                }
+              ],
+              "additionalItems": false
             }
           }
         }

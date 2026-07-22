@@ -2,12 +2,12 @@
 
 - Status: **Confirmed** for the pinned 20-file inventory, flags/party/caravan/deals routing,
   combatant-type encoding, spell-learning outcomes, new-game order, alternate-source ownership, and
-  the complete 31-entry getter, 53-entry mutation, and seven-routine clamp-helper
-  instruction/ABI/caller contracts
+  the complete 31-entry getter, 53-entry mutation, seven-routine clamp-helper, and final
+  combatant-distance instruction/ABI/caller contracts
 - Status: **Inferred** for UI-facing helper intent not reproduced through callers
 - Status: **Unknown** for caller-dependent inventory UI, caller-dependent getter edge behavior, and
   caller-dependent mutation outcomes beyond the existing H3 clamp fixture matrix
-- Evidence date: 2026-07-21
+- Evidence date: 2026-07-22
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -39,8 +39,8 @@ in one 586-byte physical interval (`0x82D0..0x851A`). The exact fixture
 `sf2-common-stats-static-v1`, `src/sf2tool/h2/stats.py`, both mirrored schemas, and
 `tests/python/test_common_stats.py` retain every routine's complete instruction/local-label corpus,
 H1 address, offset use-site, lower helper, width, terminal, aliases, and instruction-scoped callers.
-Reproduce with `uv run sf2 h2 common-stats`; observed 2026-07-21 canonical SHA-256 is
-`D979AC018B895D73DF21619E81CB225794CD248420EFAFA6F90C894022BDF09D`.
+Reproduce with `uv run sf2 h2 common-stats`; observed 2026-07-22 canonical SHA-256 is
+`E9A59AD35815F78345CBB35BED7DE21521AC4E4C6C44E5227BDF64DD07517D76`.
 
 `combatantstats_3.asm` is consulted only for the ABI used here: its three dependency routines retain
 the parsed instruction records, static ally/enemy/error branch polarity, derived 56-byte entry stride,
@@ -74,7 +74,7 @@ algorithms are separately modelled below; this wrapper surface alone does not es
 `uv run sf2 h2 common-stats` parses the seven routine entries in source order, their H1 addresses,
 the complete instruction/local-label corpora, and `BYTE_MASK=255`, `TWO_TURN_THRESHOLD=128`, and
 `TURN_AGILITY_MASK=127` from `sf2enums.asm`. The observed canonical extraction digest on
-2026-07-21 is `580CE7333A1910A99E7A17D83CAEC169E5D41442B10FAF01872B502A7D8F3E5C`.
+2026-07-22 is `E9A59AD35815F78345CBB35BED7DE21521AC4E4C6C44E5227BDF64DD07517D76`.
 
 The six byte/word/long helpers retain exact entry-call, field access, arithmetic, branch,
 comparison/assignment, preservation/restoration, write, normalization, and terminal records. The
@@ -102,8 +102,34 @@ four increase-byte cases, one increase-word case, one increase-seven-bits case, 
 cases. It does not cover `DecreaseAndClampWord`, `IncreaseAndClampLong`, `DecreaseAndClampLong`, or a
 decrease-current-ATT outcome. A future grouped launch must introduce a new fixture/case matrix for those
 questions rather than implying that this fixture ID covers them. This slice performs no emulator run and
-makes no runtime lifecycle or presentation claim. The next static frontier is
-`GetDistanceBetweenCombatants`.
+makes no runtime lifecycle or presentation claim.
+
+## Combatant Distance Contract
+
+**Confirmed — static function contract.** Pinned `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6` supplies the final function in
+`code/common/stats/combatantstats_3.asm`: `GetDistanceBetweenCombatants` at `0x941E` through the
+listing-derived exclusive boundary `0x9482`. Its 100-byte physical interval is also exactly 100 encoded
+instruction bytes; that count is recorded separately from the source's 34 instruction records.
+
+The source comment and exact instruction sequence establish two 16-bit selector inputs in `d0`/`d1`,
+a 16-bit `d2` result, and preservation of `d0-d1/d3-d5`. It obtains actor X/Y then target X/Y through
+ordered `GetCombatantX`/`GetCombatantY` calls, branches to the `d2=-1` path after any byte-sized
+`-1` coordinate comparison, otherwise subtracts, takes carry-clear/no-borrow branches, conditionally
+negates each axis, and then adds the two word values. This is a **Confirmed** source-shaped
+axis-combination rule; caller-visible behavior and coordinate semantics beyond the source comments
+remain **Unknown**.
+
+The parsed caller inventory has two direct `jsr` sites—`initbattlesceneproperties.asm:88` and
+`isabletocounterattack.asm:78`—and no calls through the defined
+`j_GetDistanceBetweenCombatants` jump-interface alias. The alias definition is recorded separately and
+is not counted as a behavior caller. No existing H3 fixture references this function; one future grouped
+matrix should cover invalid-coordinate, coordinate-delta/word-wrap boundary, and caller-visible-distance
+questions.
+
+The strict contract is `statsFacts.combatantDistanceContract` in
+`tests/fixtures/h2/common-stats-static-v1.json` under fixture ID `sf2-common-stats-static-v1`.
+Reproduce with `uv run sf2 h2 common-stats`.
 
 ## Alternate Source Boundary
 
