@@ -10,7 +10,7 @@
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
   transitions that static control flow cannot reproduce
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-21
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -128,18 +128,62 @@ the pinned `master` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`, the H1 en
 (`0x21FD2`), `ChurchMenu` (`0x20A02`), `ShopMenu` (`0x20064`), and `ExecuteShopScreen` (`0x147FA`)
 were already bound by this rail.
 
-`ShopMenu` and `ChurchMenu` each use an ordered choice chain after `ExecuteDiamondMenu`; their
-respective source orders are buy/sell/repair/deals and raise/cure/promote/save. A diamond-menu
-cancel exits either service. Non-exit shop actions return to its choice loop. The shared selection
-screen accepts A/C, cancels with B returning `-1`, and resolves the selected byte in `GENERIC_LIST`
-using `CURRENT_SHOP_PAGE * ITEMS_PER_SHOP_PAGE + CURRENT_SHOP_SELECTION`. The page multiplier is
-implemented as shifts/adds rather than a multiply instruction.
+**Confirmed — Shop static contract.** The Shop parser is pinned to upstream `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/menus/shop/shopactions.asm:ShopMenu` (`0x20064`) and
+`code/common/menus/shopscreen.asm:ExecuteShopScreen` (`0x147FA`). Its exact fixture is
+`sf2-common-menus-static-v1` at `tests/fixtures/h2/common-menus-static-v1.json`, and the parser,
+strict output schema, mirrored fixture schema, and focused source-mutation tests are
+`src/sf2tool/h2/menus.py`, `schemas/common-menus-static.schema.json`,
+`schemas/h2-common-menus-static-fixture.schema.json`, and
+`tests/python/test_common_menus.py`. Reproduce with `uv run sf2 h2 common-menus`.
+Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
+`DA65132B3C6844DF09DC95E248AD5920DF210F9C05E0248D8D028E174FB77F56`.
 
-The shop source directly proves gold/item effects at the helper boundary: buy decreases gold and
-adds an item; sell increases gold, drops the selected item, and adds a rare sale to deals; repair
-decreases gold and repairs the selected slot; deals purchase decreases gold, adds an item, and
-removes it from deals. The count-prefixed current-shop list and the deals-only-not-current-shop list
-are separate inputs to that same selection screen.
+`ShopMenu` enters `j_ExecuteDiamondMenu` with `MENU_SHOP`; its local chain compares selector values
+`0`, `1`, and `2` for Buy, Sell, and Repair, respectively, and falls through to the Deals section.
+This records the actual local branch structure rather than assuming an unobserved selector domain.
+The diamond-menu cancel comparison is `-1`; the common shop selection screen returns `-1` on B and
+confirms with C then A in source order. Every Buy, Sell, Repair, and Deals source operation is
+fixture-pinned as an ordered record of local labels, opcode, operands, direct target, and branch
+target; this includes move/add/subtract dataflow as well as calls and branches. Buy/Sell/Repair loop
+through their local action labels; Deals includes both the action-loop branch to
+`@CheckChoice_Deals` and the cancellation/no-stock branch to `loc_20088`.
+
+Price and eligibility facts are **Confirmed** source dataflow, not runtime amount claims: each of
+Buy, Sell, Repair, and Deals has its own `ITEMDEF_OFFSET_PRICE = 6` word-load record. Sell then
+executes `ITEMSELLPRICE_MULTIPLIER = 3` followed by `ITEMSELLPRICE_BITSHIFTRIGHT = 2`; Repair
+executes a word right shift of `2`. The per-route records prevent one route's load or transform from
+validating another. Buy and Deals compare the loaded price with gold before their recipient paths,
+and test `COMBATANT_ITEMSLOTS = 4` with `bcs` before their add-item calls. Sell separately tests
+`ITEMTYPE_UNSELLABLE` and `ITEMTYPE_RARE`; Repair tests `ITEMENTRY_BIT_BROKEN`. The contract does
+not promote a rounding rule, a UI prompt interpretation, or helper-internal resource semantics beyond
+those named source calls.
+
+The parser also closes the local list helpers. `PopulateShopInventoryList` copies the count-prefixed
+current-shop row into `GENERIC_LIST`; `GetShopInventoryAddress` walks preceding count-prefixed rows
+from `CURRENT_SHOP_INDEX`. `DetermineDealsItemsNotInCurrentShop` initializes its `dbf` counter from
+`DEALS_ITEMS_COUNTER = 0x7F`, includes only nonzero `j_GetDealsItemAmount` entries whose membership
+helper does not find them in the current-shop row, and increments `GENERIC_LIST_LENGTH`. Thus the
+stored list count, the inclusive counter value, and the copied entry bytes remain distinct fields.
+`ExecuteShopScreen` uses `ITEMS_PER_SHOP_PAGE = 6` for page/selection addressing; its literal
+initial-screen multiplier is cross-checked against that parsed constant instead of becoming a second
+implementation constant.
+
+The direct-caller inventory is also **Confirmed** instruction-scoped evidence. It resolves the two
+pinned jump interfaces while retaining both identities: `j_ShopMenu` in
+`code/common/tech/jumpinterfaces/s05_jumpinterface.asm` jumps to `ShopMenu`, and
+`j_ExecuteShopScreen` in `code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm` jumps to
+`ExecuteShopScreen`. After comment stripping, the complete pinned `code/**/*.asm` scan finds one
+`j_ShopMenu` call in `code/common/scripting/map/mapscriptengine_2.asm` and one in
+`code/gameflow/special/battletest.asm`, both effective `ShopMenu` sites; it finds three
+`j_ExecuteShopScreen` calls in `code/common/menus/caravan/caravanactions_1.asm`, all effective
+`ExecuteShopScreen` sites. `shopactions.asm` retains two more `j_ExecuteShopScreen` calls and the
+local-helper counts `PopulateShopInventoryList: 1`,
+`DetermineDealsItemsNotInCurrentShop: 1`, `DoesCurrentShopContainItem: 1`,
+`GetShopInventoryAddress: 2`, and `WaitForMusicResumeAndPlayerInput_Shop: 2`;
+`shopscreen.asm` has none of those target calls. Effective external counts are therefore Shop 2 and
+selection-screen 3; absence of another direct call remains not an unreachability claim.
 
 Church choice 0 iterates current force members and can decrease gold, restore current HP, and update
 the ally map sprite; choice 1 can decrease gold and replace status effects; choice 2 selects a

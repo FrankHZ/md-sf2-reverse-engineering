@@ -13,6 +13,7 @@ from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.battlefield import _require_ordered_fragments
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
+from sf2tool.source_text import read_upstream_text
 
 ID = "sf2-common-menus-static-v1"
 SOURCE_ROOT = Path("code/common/menus")
@@ -43,8 +44,7 @@ def _canonical_bytes(value: dict[str, Any]) -> bytes:
 
 def _layout_menu_paths(disasm: Path) -> set[str]:
     layout = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in sorted((disasm / "layout").glob("*.asm"))
+        path.read_text(encoding="utf-8") for path in sorted((disasm / "layout").glob("*.asm"))
     )
     return {
         match.replace("\\", "/")
@@ -123,9 +123,560 @@ def _require_service_section(
         )
 
 
+def _shop_section(source: str, start: str, end: str) -> str:
+    begin = source.find(start)
+    finish = source.find(end, begin + len(start))
+    if begin < 0 or finish < 0:
+        raise ValueError(f"shop section boundary drift: {start}..{end}")
+    return source[begin:finish]
+
+
+_SHOP_CALL_PATTERN = re.compile(
+    r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*:\s*)?(?:bsr|jsr)(?:\.[bswl])?\s+([^\s,;]+)\s*$",
+    re.IGNORECASE,
+)
+_SHOP_DIRECT_TARGET_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_SHOP_REGISTER_TARGETS = {
+    *(f"a{index}" for index in range(8)),
+    *(f"d{index}" for index in range(8)),
+    "sp",
+    "pc",
+}
+
+
+def _shop_direct_target(operand: str) -> str | None:
+    """Return a direct symbol operand, excluding indexed/register call forms."""
+    operand = re.sub(r"\.[bwl]$", "", operand, flags=re.IGNORECASE)
+    if operand.endswith("(pc)"):
+        operand = operand[:-4]
+    if operand.startswith("(") and operand.endswith(")"):
+        operand = operand[1:-1]
+    if (
+        not _SHOP_DIRECT_TARGET_PATTERN.fullmatch(operand)
+        or operand.lower() in _SHOP_REGISTER_TARGETS
+    ):
+        return None
+    return operand
+
+
+def _shop_calls(section: str) -> list[str]:
+    """Read direct bsr/jsr target order from instruction fields only."""
+    targets: list[str] = []
+    for raw_line in section.splitlines():
+        match = _SHOP_CALL_PATTERN.match(raw_line.split(";", 1)[0])
+        if match and (target := _shop_direct_target(match.group(1))) is not None:
+            targets.append(target)
+    return targets
+
+
+def _shop_operands(operand_text: str) -> list[str]:
+    """Split an ASM operand list without splitting indexed-address commas."""
+    operands: list[str] = []
+    current: list[str] = []
+    depth = 0
+    for character in operand_text.strip():
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        if character == "," and depth == 0:
+            operands.append("".join(current).strip())
+            current = []
+            continue
+        current.append(character)
+    if current:
+        operands.append("".join(current).strip())
+    return operands
+
+
+def _shop_instruction_records(section: str) -> list[dict[str, Any]]:
+    """Preserve local labels, opcode, operands, and direct/branch target identity."""
+    records: list[dict[str, Any]] = []
+    pending_labels: list[str] = []
+    branch_opcodes = {
+        "bcc",
+        "bcs",
+        "beq",
+        "bge",
+        "bgt",
+        "ble",
+        "blt",
+        "bmi",
+        "bne",
+        "bpl",
+        "bra",
+        "bvc",
+        "bvs",
+        "dbf",
+    }
+    for raw in section.splitlines():
+        statement = raw.split(";", 1)[0].strip()
+        if not statement:
+            continue
+        label = re.fullmatch(r"([@A-Za-z_][A-Za-z0-9_@]*):", statement)
+        if label:
+            pending_labels.append(label.group(1))
+            continue
+        match = re.fullmatch(r"([A-Za-z][A-Za-z0-9_]*)(\.[A-Za-z])?\s*(.*)", statement)
+        if not match:
+            continue
+        opcode = match.group(1).lower() + (match.group(2) or "").lower()
+        operands = _shop_operands(match.group(3))
+        direct_target = None
+        call_match = _SHOP_CALL_PATTERN.match(statement)
+        if call_match:
+            direct_target = _shop_direct_target(call_match.group(1))
+        opcode_base = opcode.split(".", 1)[0]
+        branch_target = operands[-1] if opcode_base in branch_opcodes and operands else None
+        records.append(
+            {
+                "labels": pending_labels,
+                "opcode": opcode,
+                "operands": operands,
+                "directTarget": direct_target,
+                "branchTarget": branch_target,
+            }
+        )
+        pending_labels = []
+    return records
+
+
+def _shop_direct_call_occurrences(
+    path: Path, alias_targets: dict[str, str], effective_targets: set[str]
+) -> list[dict[str, Any]]:
+    """Count direct call instructions with both alias spelling and resolved target retained."""
+    counts: Counter[tuple[str, str]] = Counter()
+    for raw in read_upstream_text(path).splitlines():
+        match = _SHOP_CALL_PATTERN.match(raw.split(";", 1)[0])
+        instruction_target = _shop_direct_target(match.group(1)) if match else None
+        effective_target = alias_targets.get(instruction_target, instruction_target)
+        if instruction_target and effective_target in effective_targets:
+            counts[(instruction_target, effective_target)] += 1
+    return [
+        {
+            "instructionTarget": instruction_target,
+            "effectiveTarget": effective_target,
+            "siteCount": site_count,
+        }
+        for (instruction_target, effective_target), site_count in sorted(counts.items())
+    ]
+
+
+def _shop_jump_aliases(disasm: Path, effective_targets: set[str]) -> dict[str, dict[str, str]]:
+    """Resolve the direct jump-interface aliases used by Shop callers."""
+    aliases: dict[str, dict[str, str]] = {}
+    interface_root = disasm / "code/common/tech/jumpinterfaces"
+    for path in sorted(interface_root.rglob("*.asm"), key=lambda value: value.as_posix()):
+        pending_label: str | None = None
+        for raw in read_upstream_text(path).splitlines():
+            statement = raw.split(";", 1)[0].strip()
+            label = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*):", statement)
+            if label:
+                pending_label = label.group(1)
+                continue
+            if pending_label is None:
+                continue
+            jump = re.fullmatch(r"jmp(?:\.[bswl])?\s+([^\s,;]+)", statement, re.IGNORECASE)
+            if jump and (target := _shop_direct_target(jump.group(1))) in effective_targets:
+                aliases[pending_label] = {
+                    "effectiveTarget": target,
+                    "sourcePath": path.relative_to(disasm).as_posix(),
+                }
+            if statement:
+                pending_label = None
+    return dict(sorted(aliases.items()))
+
+
+def _require_ordered_shop_section(
+    path: Path, start_marker: str, end_marker: str, fragments: tuple[str, ...]
+) -> None:
+    """Guard the local Shop block, including branch/order-sensitive fragments."""
+    section = _shop_section(read_upstream_text(path), start_marker, end_marker)
+    position = 0
+    for fragment in fragments:
+        position = section.find(fragment, position)
+        if position < 0:
+            raise ValueError(
+                f"shop control-flow drift in {path.name} ({start_marker}): {fragment}"
+            )
+        position += len(fragment)
+
+
+def _shop_static_contract(root: Path) -> dict[str, Any]:
+    """Parse the Shop-only static state/control-flow surface."""
+    actions = read_upstream_text(root / "shop/shopactions.asm")
+    screen = read_upstream_text(root / "shopscreen.asm")
+    enums = read_upstream_text(root.parents[2] / "sf2enums.asm")
+    enum_names = (
+        "ITEMSELLPRICE_MULTIPLIER",
+        "ITEMSELLPRICE_BITSHIFTRIGHT",
+        "ITEMDEF_OFFSET_PRICE",
+        "COMBATANT_ITEMSLOTS",
+        "ITEMS_PER_SHOP_PAGE",
+        "DEALS_ITEMS_COUNTER",
+    )
+    enum_values: dict[str, int] = {}
+    for name in enum_names:
+        match = re.search(rf"^{name}:\s+equ\s+(\$[0-9A-Fa-f]+|\d+)", enums, re.MULTILINE)
+        if not match:
+            raise ValueError(f"shop enum drift: {name}")
+        raw = match.group(1)
+        enum_values[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+    routes = {
+        "buy": _shop_section(actions, "@CheckChoice_Buy:", "@CheckChoice_Sell:"),
+        "sell": _shop_section(actions, "@CheckChoice_Sell:", "@CheckChoice_Repair:"),
+        "repair": _shop_section(actions, "@CheckChoice_Repair:", "@CheckChoice_Deals:"),
+        "deals": _shop_section(actions, "@CheckChoice_Deals:", "PopulateShopInventoryList:"),
+    }
+    compared_choice_values = [
+        int(value)
+        for value in re.findall(
+            r"@CheckChoice_[A-Za-z]+:\s+cmpi\.w\s+#(\d+),d0", actions
+        )
+    ]
+    if len(compared_choice_values) != len(routes) - 1:
+        raise ValueError("shop choice comparison chain drift")
+    route_calls = {name: _shop_calls(section) for name, section in routes.items()}
+    route_operations = {
+        name: _shop_instruction_records(section) for name, section in routes.items()
+    }
+    required = {
+        "buy": ["j_GetItemDefinitionAddress", "j_GetGold", "j_DecreaseGold", "j_AddItem"],
+        "sell": [
+            "j_GetItemDefinitionAddress",
+            "j_IncreaseGold",
+            "j_DropItemBySlot",
+            "j_AddItemToDeals",
+        ],
+        "repair": [
+            "j_GetItemDefinitionAddress",
+            "j_GetGold",
+            "j_DecreaseGold",
+            "j_RepairItemBySlot",
+        ],
+        "deals": [
+            "DetermineDealsItemsNotInCurrentShop",
+            "j_GetGold",
+            "j_DecreaseGold",
+            "j_AddItem",
+            "j_RemoveItemFromDeals",
+        ],
+    }
+    for route, targets in required.items():
+        try:
+            positions = [route_calls[route].index(target) for target in targets]
+        except ValueError as error:
+            raise ValueError(f"shop {route} required call drift") from error
+        if positions != sorted(positions):
+            raise ValueError(f"shop {route} ordered call drift")
+    route_price_loads: dict[str, dict[str, Any]] = {}
+    for route, records in route_operations.items():
+        loads = [
+            record
+            for record in records
+            if re.fullmatch(r"move\.[bwl]", record["opcode"])
+            and record["operands"]
+            and record["operands"][0] == "ITEMDEF_OFFSET_PRICE(a0)"
+        ]
+        if len(loads) != 1:
+            raise ValueError(f"shop {route} item-price load drift")
+        load = loads[0]
+        width_by_suffix = {".b": 8, ".w": 16, ".l": 32}
+        route_price_loads[route] = {
+            "itemDefinitionPriceLoadWidthBits": width_by_suffix[load["opcode"][-2:]],
+            "transformOpcodes": [
+                record["opcode"]
+                for record in records[records.index(load) + 1 :]
+                if record["opcode"] in {"mulu.w", "lsr.w", "lsr.l"}
+            ],
+        }
+    sell_multiplier = re.search(r"mulu\.w\s+#([A-Z_]+),d0", routes["sell"])
+    sell_shift = re.search(r"lsr\.l\s+#([A-Z_]+),d0", routes["sell"])
+    repair_shift = re.search(r"lsr\.w\s+#(\d+),d0", routes["repair"])
+    page_scale = re.search(r"mulu\.w\s+#(\d+),d0", screen)
+    if not all((sell_multiplier, sell_shift, repair_shift, page_scale)):
+        raise ValueError("shop price or page arithmetic drift")
+    if int(page_scale.group(1)) != enum_values["ITEMS_PER_SHOP_PAGE"]:
+        raise ValueError("shop page-size declarations disagree")
+    eligibility_labels = {
+        "unsellableTypeLabel": re.search(r"andi\.b\s+#([A-Z_]+),d1", routes["sell"]),
+        "rareTypeLabel": re.search(
+            r"andi\.b\s+#([A-Z_]+),d1", routes["sell"][routes["sell"].find("@NotKeyItem:") :]
+        ),
+        "brokenItemBitLabel": re.search(r"btst\s+#([A-Z_]+),d2", routes["repair"]),
+    }
+    if not all(eligibility_labels.values()):
+        raise ValueError("shop eligibility label drift")
+    for route, fragments in {
+        "buy": (
+            "cmpi.w  #0,d0",
+            "bne.w   @CheckChoice_Sell",
+            "cmp.l   d0,d1",
+            "bcc.s   byte_2013C",
+            "cmpi.w  #COMBATANT_ITEMSLOTS,d2",
+            "bcs.s   loc_201AC",
+            "jsr     j_DecreaseGold",
+            "jsr     j_AddItem",
+            "bra.w   byte_200CE",
+        ),
+        "sell": (
+            "cmpi.w  #1,d0",
+            "bne.w   @CheckChoice_Repair",
+            "mulu.w  #ITEMSELLPRICE_MULTIPLIER,d0",
+            "lsr.l   #ITEMSELLPRICE_BITSHIFTRIGHT,d0",
+            "andi.b  #ITEMTYPE_UNSELLABLE,d1",
+            "andi.b  #ITEMTYPE_RARE,d1",
+            "jsr     j_IncreaseGold",
+            "jsr     j_DropItemBySlot",
+            "jsr     j_AddItemToDeals",
+            "bra.w   byte_202D2",
+        ),
+        "repair": (
+            "cmpi.w  #2,d0",
+            "bne.w   @CheckChoice_Deals",
+            "lsr.w   #2,d0",
+            "btst    #ITEMENTRY_BIT_BROKEN,d2",
+            "bne.w   loc_204DC",
+            "cmp.l   d0,d1",
+            "bcc.s   loc_2051A",
+            "jsr     j_DecreaseGold",
+            "jsr     j_RepairItemBySlot",
+            "bra.w   byte_2044A",
+        ),
+        "deals": (
+            "jsr     DetermineDealsItemsNotInCurrentShop(pc)",
+            "tst.w   ((GENERIC_LIST_LENGTH-$1000000)).w",
+            "bne.s   byte_205C8",
+            "cmp.l   d0,d1",
+            "bcc.s   byte_20630",
+            "cmpi.w  #COMBATANT_ITEMSLOTS,d2",
+            "bcs.s   loc_206A0",
+            "jsr     j_DecreaseGold",
+            "jsr     j_AddItem",
+            "jsr     j_RemoveItemFromDeals",
+            "bra.w   @CheckChoice_Deals",
+        ),
+    }.items():
+        _require_ordered_shop_section(
+            root / "shop/shopactions.asm",
+            f"@CheckChoice_{route.capitalize()}:",
+            {
+                "buy": "@CheckChoice_Sell:",
+                "sell": "@CheckChoice_Repair:",
+                "repair": "@CheckChoice_Deals:",
+                "deals": "PopulateShopInventoryList:",
+            }[route],
+            fragments,
+        )
+    _require_ordered_shop_section(
+        root / "shop/shopactions.asm",
+        "ShopMenu:",
+        "@CheckChoice_Buy:",
+        (
+            "jsr     j_ExecuteDiamondMenu",
+            "cmpi.w  #-1,d0",
+            "beq.s   @ExitShop",
+            "bra.w   @CheckChoice_Buy",
+        ),
+    )
+    _require_ordered_shop_section(
+        root / "shop/shopactions.asm",
+        "PopulateShopInventoryList:",
+        "DetermineDealsItemsNotInCurrentShop:",
+        (
+            "bsr.s   GetShopInventoryAddress",
+            "move.b  (a0)+,d7",
+            "move.w  d7,((GENERIC_LIST_LENGTH-$1000000)).w",
+            "dbf     d7,@Loop",
+        ),
+    )
+    _require_ordered_shop_section(
+        root / "shop/shopactions.asm",
+        "DetermineDealsItemsNotInCurrentShop:",
+        "DoesCurrentShopContainItem:",
+        (
+            "moveq   #DEALS_ITEMS_COUNTER,d7",
+            "jsr     j_GetDealsItemAmount",
+            "tst.b   d2",
+            "bsr.w   DoesCurrentShopContainItem",
+            "addq.w  #1,((GENERIC_LIST_LENGTH-$1000000)).w",
+            "dbf     d7,@Loop",
+        ),
+    )
+    _require_ordered_shop_section(
+        root / "shop/shopactions.asm",
+        "DoesCurrentShopContainItem:",
+        "GetShopInventoryAddress:",
+        (
+            "bsr.w   GetShopInventoryAddress",
+            "cmp.b   (a0)+,d1",
+            "beq.w   @Done",
+            "dbf     d7,@Loop",
+        ),
+    )
+    _require_ordered_shop_section(
+        root / "shop/shopactions.asm",
+        "GetShopInventoryAddress:",
+        "; End of function GetShopInventoryAddress",
+        (
+            "move.b  (CURRENT_SHOP_INDEX).l,d7",
+            "subq.b  #1,d7",
+            "bcs.w   @Done",
+            "adda.w  d0,a0",
+            "dbf     d7,@Loop",
+        ),
+    )
+    targets = {
+        "ShopMenu",
+        "ExecuteShopScreen",
+        "PopulateShopInventoryList",
+        "DetermineDealsItemsNotInCurrentShop",
+        "DoesCurrentShopContainItem",
+        "GetShopInventoryAddress",
+        "WaitForMusicResumeAndPlayerInput_Shop",
+    }
+    disasm = root.parents[2]
+    aliases = _shop_jump_aliases(disasm, targets)
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    external_callers = {
+        path.relative_to(disasm).as_posix(): occurrences
+        for path in sorted((disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix())
+        if path != root / "shop/shopactions.asm"
+        if path != root / "shopscreen.asm"
+        if (occurrences := _shop_direct_call_occurrences(path, alias_targets, targets))
+    }
+    internal_callers = {
+        path.relative_to(disasm).as_posix(): _shop_direct_call_occurrences(
+            path, alias_targets, targets
+        )
+        for path in (root / "shop/shopactions.asm", root / "shopscreen.asm")
+    }
+
+    def effective_site_counts(
+        callers: dict[str, list[dict[str, Any]]]
+    ) -> dict[str, int]:
+        return {
+            target: sum(
+                occurrence["siteCount"]
+                for occurrences in callers.values()
+                for occurrence in occurrences
+                if occurrence["effectiveTarget"] == target
+            )
+            for target in sorted(targets)
+        }
+
+    return {
+        "entrySymbol": "ShopMenu",
+        "sourcePaths": [
+            path.relative_to(disasm).as_posix()
+            for path in (root / "shop/shopactions.asm", root / "shopscreen.asm")
+        ],
+        "choiceDispatch": {
+            "menuLabel": re.search(r"moveq\s+#(MENU_SHOP),d2", actions).group(1),
+            "comparedChoiceValues": compared_choice_values,
+            "comparedRouteOrder": list(routes)[:-1],
+            "fallthroughRoute": next(reversed(routes)),
+        },
+        "routeCalls": route_calls,
+        "routeOperations": route_operations,
+        "prices": {
+            "itemDefinitionPriceOffsetBytes": enum_values["ITEMDEF_OFFSET_PRICE"],
+            "routePriceDataflow": route_price_loads,
+            "sellMultiplier": enum_values[sell_multiplier.group(1)],
+            "sellRightShiftBits": enum_values[sell_shift.group(1)],
+            "repairRightShiftBits": int(repair_shift.group(1)),
+        },
+        "eligibility": {
+            "inventoryCapacity": enum_values["COMBATANT_ITEMSLOTS"],
+            **{name: match.group(1) for name, match in eligibility_labels.items()},
+        },
+        "listConstruction": {
+            "shopInventoryBuilder": "PopulateShopInventoryList",
+            "dealsBuilder": "DetermineDealsItemsNotInCurrentShop",
+            "pageItems": enum_values["ITEMS_PER_SHOP_PAGE"],
+            "selectionAddressingInstructions": [
+                instruction.strip()
+                for instruction in re.findall(
+                    r"^\s*((?:mulu\.w\s+#ITEMS_PER_SHOP_PAGE|add\.w\s+\(\(CURRENT_SHOP_SELECTION).*?)$",
+                    _shop_section(screen, "@Confirm:", "@loc_15:"),
+                    re.MULTILINE,
+                )
+            ],
+            "dealsCounterInclusive": enum_values["DEALS_ITEMS_COUNTER"],
+        },
+        "mutations": {
+            name: [
+                target
+                for target in calls
+                if re.fullmatch(
+                    r"j_(?:Increase|Decrease|Add|Drop|Remove|Repair)[A-Za-z0-9_]*", target
+                )
+            ]
+            for name, calls in route_calls.items()
+        },
+        "unconditionalBranchTargets": {
+            name: re.findall(r"\bbra\.[bswl]\s+([^\s;]+)", section)
+            for name, section in routes.items()
+        },
+        "entryControlFlow": [
+            line.split(";", 1)[0].rstrip()
+            for line in _shop_section(actions, "ShopMenu:", "@CheckChoice_Buy:").splitlines()
+            if re.match(r"\s*(?:jsr|cmp|beq|bra|rts)", line)
+        ],
+        "helperControlFlow": {
+            "shopInventory": [
+                line.strip()
+                for line in _shop_section(
+                    actions, "PopulateShopInventoryList:", "DetermineDealsItemsNotInCurrentShop:"
+                ).splitlines()
+                if re.match(r"\s*(?:bsr|move|subq|dbf|rts)", line)
+            ],
+            "deals": [
+                line.strip()
+                for line in _shop_section(
+                    actions, "DetermineDealsItemsNotInCurrentShop:", "DoesCurrentShopContainItem:"
+                ).splitlines()
+                if re.match(r"\s*(?:jsr|tst|beq|move|addq|dbf|rts)", line)
+            ],
+            "currentShopMembership": [
+                line.strip()
+                for line in _shop_section(
+                    actions, "DoesCurrentShopContainItem:", "GetShopInventoryAddress:"
+                ).splitlines()
+                if re.match(r"\s*(?:bsr|move|subq|cmp|beq|dbf|rts)", line)
+            ],
+            "shopInventoryAddress": [
+                line.strip()
+                for line in actions[actions.find("GetShopInventoryAddress:") :].splitlines()
+                if re.match(r"\s*(?:move|subq|bcs|adda|dbf|rts)", line)
+            ],
+        },
+        "selectionScreen": {
+            "cancelValue": int(
+                re.search(
+                    r"moveq\s+#(-?\d+),d0", _shop_section(screen, "@Cancel:", "@Confirm:")
+                ).group(1)
+            ),
+            "confirmInputBits": re.findall(
+                r"btst\s+#(INPUT_BIT_[AC]),", _shop_section(screen, "@CheckRight:", "@loc_12:")
+            ),
+            "cancelInputBit": re.search(
+                r"btst\s+#(INPUT_BIT_B),", _shop_section(screen, "@CheckRight:", "@loc_12:")
+            ).group(1),
+        },
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerOccurrences": internal_callers,
+        "internalEffectiveDirectCallSiteCounts": effective_site_counts(internal_callers),
+        "externalDirectCallerOccurrences": external_callers,
+        "externalEffectiveDirectCallSiteCounts": effective_site_counts(external_callers),
+        "indirectBehavior": {"directCallInventoryDoesNotEstablishReachability": True},
+    }
+
+
 def _service_state_machines(disasm: Path) -> dict[str, Any]:
     """Extract the built service-menu control-flow boundary without interpreting UI timing."""
     root = disasm / SOURCE_ROOT
+    shop_contract = _shop_static_contract(root)
     if not all((disasm / path).is_file() for path in SERVICE_SOURCE_PATHS):
         raise ValueError("service-menu source boundary is incomplete")
     service_files = [
@@ -397,8 +948,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
         ],
     )
     blacksmith_sources = "\n".join(
-        (disasm / path).read_text(encoding="utf-8")
-        for path in SERVICE_SOURCE_PATHS[:2]
+        (disasm / path).read_text(encoding="utf-8") for path in SERVICE_SOURCE_PATHS[:2]
     )
     if "ExecuteDiamondMenu" in blacksmith_sources:
         raise ValueError("blacksmith service unexpectedly enters ExecuteDiamondMenu")
@@ -433,24 +983,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
                 "GENERIC_LIST_LENGTH",
             ],
         },
-        "shop": {
-            "entrySymbol": "ShopMenu",
-            "selectionMenu": "MENU_SHOP",
-            "choiceOrder": ["buy", "sell", "repair", "deals"],
-            "dispatch": "ordered-conditional-chain",
-            "actionLoop": "each non-exit action returns to the shop choice loop",
-            "exit": "diamond-menu-cancel-exits-service",
-            "listSources": [
-                "count-prefixed-current-shop-inventory",
-                "eligible-deals-not-in-current-shop",
-            ],
-            "confirmedEffects": {
-                "buy": ["decrease-gold", "add-item"],
-                "sell": ["increase-gold", "drop-item-by-slot", "rare-item-adds-to-deals"],
-                "repair": ["decrease-gold", "repair-item-by-slot"],
-                "deals": ["decrease-gold", "add-item", "remove-item-from-deals"],
-            },
-        },
+        "shop": shop_contract,
         "church": {
             "entrySymbol": "ChurchMenu",
             "selectionMenu": "MENU_CHURCH",

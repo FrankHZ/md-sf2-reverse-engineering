@@ -5,7 +5,7 @@
 - **Unknown original behavior:** caller admission/return effects, persistence across map/save reload,
   input/audio/window/portrait timing, and final presentation composition.
 - Remake status: implementation-neutral static contract; runtime lifecycle remains incomplete.
-- Evidence date: 2026-07-20
+- Evidence date: 2026-07-21
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-common-menus-static-v1` in
@@ -29,6 +29,18 @@ Shop, church, caravan, depot, and item surfaces cancel through the common diamon
 the shared selection screen returns `-1` on B and confirms on A/C. Shop and caravan loop back to
 their action menus after non-exit actions. The blacksmith sequence is visit-driven rather than a
 diamond-menu loop.
+
+### Shop source boundary
+
+The Shop design contract consumes only the **Confirmed** static source boundary in
+`sf2-common-menus-static-v1`: Buy and Deals invoke decrease-gold then add-item; Deals then invokes
+remove-item-from-deals; Sell invokes increase-gold then drop-item and conditionally reaches the
+rare-item Deals helper; Repair invokes decrease-gold then repair-item-by-slot. Its source parser also
+pins selector comparisons, price arithmetic inputs, capacity/type/broken-item guards, list routing,
+and structured source instruction order. It retains jump-interface caller identity separately from
+the effective Shop/selection target. It does not turn the observed helper names, branch labels, or
+static input bits into a claim about player-visible timing, caller return state, persistence, or
+presentation.
 
 ## Boundaries for a Future Remake
 

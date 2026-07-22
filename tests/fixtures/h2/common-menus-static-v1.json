@@ -49,8 +49,16 @@
   "expected": {
     "menuFacts": {
       "diamondMenu": {
-        "choiceByDirection": { "up": 0, "left": 1, "right": 2, "down": 3 },
-        "confirmButtons": ["A", "C"],
+        "choiceByDirection": {
+          "up": 0,
+          "left": 1,
+          "right": 2,
+          "down": 3
+        },
+        "confirmButtons": [
+          "A",
+          "C"
+        ],
         "cancelButton": "B",
         "cancelResult": -1,
         "optionalCallbackOnOpenAndSelectionChange": true,
@@ -64,14 +72,25 @@
         "cancelResult": -1,
         "leftSelectsYes": true,
         "rightSelectsNo": true,
-        "confirmButtons": ["A", "C"],
+        "confirmButtons": [
+          "A",
+          "C"
+        ],
         "movesDialogueAndGoldWindowsWhenPresent": true
       },
       "numberPrompt": {
-        "directionDeltas": { "right": 1, "left": -1, "down": 10, "up": -10 },
+        "directionDeltas": {
+          "right": 1,
+          "left": -1,
+          "down": 10,
+          "up": -10
+        },
         "clampsToCallerMinimum": true,
         "clampsToCallerMaximum": true,
-        "confirmButtons": ["A", "C"],
+        "confirmButtons": [
+          "A",
+          "C"
+        ],
         "cancelButton": "B",
         "cancelResult": -1,
         "idleRngRange": 256,
@@ -87,15 +106,42 @@
       "fieldItems": {
         "dispatchPairCount": 9,
         "pairs": [
-          { "itemIndex": 3, "effect": "fieldItem_CurePoison" },
-          { "itemIndex": 5, "effect": "fieldItem_CurePoisonAndParalysis" },
-          { "itemIndex": 9, "effect": "fieldItem_IncreaseAtt" },
-          { "itemIndex": 10, "effect": "fieldItem_IncreaseDef" },
-          { "itemIndex": 11, "effect": "fieldItem_IncreaseAgi" },
-          { "itemIndex": 12, "effect": "fieldItem_IncreaseMov" },
-          { "itemIndex": 13, "effect": "fieldItem_IncreaseHp" },
-          { "itemIndex": 14, "effect": "fieldItem_IncreaseMp" },
-          { "itemIndex": 15, "effect": "fieldItem_LevelUp" }
+          {
+            "itemIndex": 3,
+            "effect": "fieldItem_CurePoison"
+          },
+          {
+            "itemIndex": 5,
+            "effect": "fieldItem_CurePoisonAndParalysis"
+          },
+          {
+            "itemIndex": 9,
+            "effect": "fieldItem_IncreaseAtt"
+          },
+          {
+            "itemIndex": 10,
+            "effect": "fieldItem_IncreaseDef"
+          },
+          {
+            "itemIndex": 11,
+            "effect": "fieldItem_IncreaseAgi"
+          },
+          {
+            "itemIndex": 12,
+            "effect": "fieldItem_IncreaseMov"
+          },
+          {
+            "itemIndex": 13,
+            "effect": "fieldItem_IncreaseHp"
+          },
+          {
+            "itemIndex": 14,
+            "effect": "fieldItem_IncreaseMp"
+          },
+          {
+            "itemIndex": 15,
+            "effect": "fieldItem_LevelUp"
+          }
         ],
         "terminator": 65535,
         "masksItemEntryToIndex": true,
@@ -137,79 +183,4798 @@
         "sharedSelectionScreen": {
           "entrySymbol": "ExecuteShopScreen",
           "cancelResult": -1,
-          "confirmButtons": ["A", "C"],
+          "confirmButtons": [
+            "A",
+            "C"
+          ],
           "cancelButton": "B",
           "selectionAddressing": "page-times-items-per-page-plus-selection",
-          "stateReadsAndWrites": ["CURRENT_SHOP_PAGE", "CURRENT_SHOP_SELECTION", "CURRENT_SHOP_PAGE_ITEMS_NUMBER", "GENERIC_LIST", "GENERIC_LIST_LENGTH"]
+          "stateReadsAndWrites": [
+            "CURRENT_SHOP_PAGE",
+            "CURRENT_SHOP_SELECTION",
+            "CURRENT_SHOP_PAGE_ITEMS_NUMBER",
+            "GENERIC_LIST",
+            "GENERIC_LIST_LENGTH"
+          ]
         },
         "shop": {
           "entrySymbol": "ShopMenu",
-          "selectionMenu": "MENU_SHOP",
-          "choiceOrder": ["buy", "sell", "repair", "deals"],
-          "dispatch": "ordered-conditional-chain",
-          "actionLoop": "each non-exit action returns to the shop choice loop",
-          "exit": "diamond-menu-cancel-exits-service",
-          "listSources": ["count-prefixed-current-shop-inventory", "eligible-deals-not-in-current-shop"],
-          "confirmedEffects": {
-            "buy": ["decrease-gold", "add-item"],
-            "sell": ["increase-gold", "drop-item-by-slot", "rare-item-adds-to-deals"],
-            "repair": ["decrease-gold", "repair-item-by-slot"],
-            "deals": ["decrease-gold", "add-item", "remove-item-from-deals"]
+          "sourcePaths": [
+            "code/common/menus/shop/shopactions.asm",
+            "code/common/menus/shopscreen.asm"
+          ],
+          "choiceDispatch": {
+            "menuLabel": "MENU_SHOP",
+            "comparedChoiceValues": [
+              0,
+              1,
+              2
+            ],
+            "comparedRouteOrder": [
+              "buy",
+              "sell",
+              "repair"
+            ],
+            "fallthroughRoute": "deals"
+          },
+          "routeCalls": {
+            "buy": [
+              "PopulateShopInventoryList",
+              "j_ExecuteShopScreen",
+              "j_GetItemDefinitionAddress",
+              "j_alt_YesNoPrompt",
+              "j_GetGold",
+              "j_UpdateForce",
+              "j_ExecuteMembersListScreenOnItemSummaryPage",
+              "j_GetItemBySlotAndHeldItemsNumber",
+              "j_alt_YesNoPrompt",
+              "j_GetEquipmentType",
+              "j_IsWeaponOrRingEquippable",
+              "j_alt_YesNoPrompt",
+              "j_DecreaseGold",
+              "j_AddItem",
+              "j_IsWeaponOrRingEquippable",
+              "j_alt_YesNoPrompt",
+              "j_GetEquipmentType",
+              "j_GetEquippedWeapon",
+              "j_UnequipItemBySlotIfNotCursed",
+              "j_GetEquippedRing",
+              "j_UnequipItemBySlotIfNotCursed",
+              "j_GetItemBySlotAndHeldItemsNumber",
+              "j_EquipItemBySlot",
+              "WaitForMusicResumeAndPlayerInput_Shop"
+            ],
+            "sell": [
+              "j_UpdateForce",
+              "j_ExecuteMembersListScreenOnItemSummaryPage",
+              "j_GetItemDefinitionAddress",
+              "j_alt_YesNoPrompt",
+              "j_GetEquipmentType",
+              "j_GetEquippedWeapon",
+              "j_IsItemCursed",
+              "j_GetEquippedRing",
+              "j_IsItemCursed",
+              "j_IncreaseGold",
+              "j_DropItemBySlot",
+              "j_AddItemToDeals"
+            ],
+            "repair": [
+              "j_UpdateForce",
+              "j_ExecuteMembersListScreenOnItemSummaryPage",
+              "j_GetItemDefinitionAddress",
+              "j_GetCombatantEntryAddress",
+              "j_alt_YesNoPrompt",
+              "j_GetGold",
+              "j_GetEquipmentType",
+              "j_GetEquippedWeapon",
+              "j_IsItemCursed",
+              "j_GetEquippedRing",
+              "j_IsItemCursed",
+              "j_DecreaseGold",
+              "j_RepairItemBySlot"
+            ],
+            "deals": [
+              "DetermineDealsItemsNotInCurrentShop",
+              "j_ExecuteShopScreen",
+              "j_GetItemDefinitionAddress",
+              "j_alt_YesNoPrompt",
+              "j_GetGold",
+              "j_UpdateForce",
+              "j_ExecuteMembersListScreenOnItemSummaryPage",
+              "j_GetItemBySlotAndHeldItemsNumber",
+              "j_alt_YesNoPrompt",
+              "j_GetEquipmentType",
+              "j_IsWeaponOrRingEquippable",
+              "j_alt_YesNoPrompt",
+              "j_DecreaseGold",
+              "j_AddItem",
+              "j_RemoveItemFromDeals",
+              "j_IsWeaponOrRingEquippable",
+              "j_alt_YesNoPrompt",
+              "j_GetEquipmentType",
+              "j_GetEquippedWeapon",
+              "j_UnequipItemBySlotIfNotCursed",
+              "j_GetEquippedRing",
+              "j_UnequipItemBySlotIfNotCursed",
+              "j_GetItemBySlotAndHeldItemsNumber",
+              "j_EquipItemBySlot",
+              "WaitForMusicResumeAndPlayerInput_Shop",
+              "PlayMusicAfterCurrentOne",
+              "WaitForPlayerInput"
+            ]
+          },
+          "routeOperations": {
+            "buy": [
+              {
+                "labels": [
+                  "@CheckChoice_Buy"
+                ],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@CheckChoice_Sell"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckChoice_Sell"
+              },
+              {
+                "labels": [
+                  "byte_200CE"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "162"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "PopulateShopInventoryList(pc)"
+                ],
+                "directTarget": "PopulateShopInventoryList",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "nop",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteShopScreen"
+                ],
+                "directTarget": "j_ExecuteShopScreen",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_207CC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207CC"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "selectedItem(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemDefinitionAddress"
+                ],
+                "directTarget": "j_GetItemDefinitionAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "ITEMDEF_OFFSET_PRICE(a0)",
+                  "itemPrice(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "((DIALOGUE_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "((CURRENT_ITEM_PRICE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "163"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_20120"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20120"
+              },
+              {
+                "labels": [
+                  "byte_20118"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "164"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_202C2"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202C2"
+              },
+              {
+                "labels": [
+                  "loc_20120"
+                ],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetGold"
+                ],
+                "directTarget": "j_GetGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "d1",
+                  "currentGold(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.l",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.s",
+                "operands": [
+                  "byte_2013C"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2013C"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "165"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_202C2"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202C2"
+              },
+              {
+                "labels": [
+                  "byte_2013C",
+                  "@SelectRecipient_Buy"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "166"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UpdateForce"
+                ],
+                "directTarget": "j_UpdateForce",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "((GENERIC_LIST_LENGTH-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((TARGETS_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.b",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_2015E"
+                ],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "(a1)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "loc_2015E"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2015E"
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_USE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_20118"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20118"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "member(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemBySlotAndHeldItemsNumber"
+                ],
+                "directTarget": "j_GetItemBySlotAndHeldItemsNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#COMBATANT_ITEMSLOTS",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcs.s",
+                "operands": [
+                  "loc_201AC"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_201AC"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "168"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_2013C"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2013C"
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_20118"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20118"
+              },
+              {
+                "labels": [
+                  "loc_201AC"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_201E4"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_201E4"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsWeaponOrRingEquippable"
+                ],
+                "directTarget": "j_IsWeaponOrRingEquippable",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcs.s",
+                "operands": [
+                  "loc_201E4"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_201E4"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "167"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "byte_2013C"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2013C"
+              },
+              {
+                "labels": [
+                  "loc_201E4"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_DecreaseGold"
+                ],
+                "directTarget": "j_DecreaseGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_AddItem"
+                ],
+                "directTarget": "j_AddItem",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsWeaponOrRingEquippable"
+                ],
+                "directTarget": "j_IsWeaponOrRingEquippable",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "byte_202BE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202BE"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "173"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "byte_202BE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202BE"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_2025E"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2025E"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedWeapon"
+                ],
+                "directTarget": "j_GetEquippedWeapon",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_2028A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2028A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UnequipItemBySlotIfNotCursed"
+                ],
+                "directTarget": "j_UnequipItemBySlotIfNotCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_2028A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2028A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "176"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_202BE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202BE"
+              },
+              {
+                "labels": [
+                  "loc_2025E"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedRing"
+                ],
+                "directTarget": "j_GetEquippedRing",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_2028A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2028A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UnequipItemBySlotIfNotCursed"
+                ],
+                "directTarget": "j_UnequipItemBySlotIfNotCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_2028A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2028A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "176"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_202BE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202BE"
+              },
+              {
+                "labels": [
+                  "loc_2028A"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemBySlotAndHeldItemsNumber"
+                ],
+                "directTarget": "j_GetItemBySlotAndHeldItemsNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_EquipItemBySlot"
+                ],
+                "directTarget": "j_EquipItemBySlot",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "byte_202B8"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202B8"
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "MUSIC_CURSED_ITEM"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "WaitForMusicResumeAndPlayerInput_Shop(pc)"
+                ],
+                "directTarget": "WaitForMusicResumeAndPlayerInput_Shop",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "nop",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "175"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "loc_202BC"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_202BC"
+              },
+              {
+                "labels": [
+                  "byte_202B8"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "174"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_202BC"
+                ],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_202C2"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202C2"
+              },
+              {
+                "labels": [
+                  "byte_202BE"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "169"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_202C2"
+                ],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_200CE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_200CE"
+              }
+            ],
+            "sell": [
+              {
+                "labels": [
+                  "@CheckChoice_Sell"
+                ],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@CheckChoice_Repair"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckChoice_Repair"
+              },
+              {
+                "labels": [
+                  "byte_202D2"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "177"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UpdateForce"
+                ],
+                "directTarget": "j_UpdateForce",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "((GENERIC_LIST_LENGTH-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((TARGETS_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.b",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_202F4"
+                ],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "(a1)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "loc_202F4"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_202F4"
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_GIVE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#ITEM_NOTHING",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_207CC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207CC"
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "rareItemFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "member(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "itemSlot(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "selectedItem(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemDefinitionAddress"
+                ],
+                "directTarget": "j_GetItemDefinitionAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "ITEMDEF_OFFSET_PRICE(a0)",
+                  "itemPrice(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "ITEMDEF_OFFSET_TYPE(a0)",
+                  "itemTypeBitfield(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#ITEMSELLPRICE_MULTIPLIER",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsr.l",
+                "operands": [
+                  "#ITEMSELLPRICE_BITSHIFTRIGHT",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "d0",
+                  "currentGold(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "itemTypeBitfield(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "andi.b",
+                "operands": [
+                  "#ITEMTYPE_UNSELLABLE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.b",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@NotKeyItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@NotKeyItem"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "180"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_2043A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2043A"
+              },
+              {
+                "labels": [
+                  "@NotKeyItem"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "currentGold(a6)",
+                  "((DIALOGUE_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "itemTypeBitfield(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "andi.b",
+                "operands": [
+                  "#ITEMTYPE_RARE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.b",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_20384"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20384"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "rareItemFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "183"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "@ConfirmSale"
+                ],
+                "directTarget": null,
+                "branchTarget": "@ConfirmSale"
+              },
+              {
+                "labels": [
+                  "byte_20384",
+                  "@NotRareItem"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "178"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@ConfirmSale"
+                ],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_2039C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2039C"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "179"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_2043A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2043A"
+              },
+              {
+                "labels": [
+                  "loc_2039C"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_203DC"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_203DC"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedWeapon"
+                ],
+                "directTarget": "j_GetEquippedWeapon",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "loc_2040C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2040C"
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_2040C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2040C"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsItemCursed"
+                ],
+                "directTarget": "j_IsItemCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "loc_2040C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2040C"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "184"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_2043A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2043A"
+              },
+              {
+                "labels": [
+                  "loc_203DC"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedRing"
+                ],
+                "directTarget": "j_GetEquippedRing",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "loc_2040C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2040C"
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_2040C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2040C"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsItemCursed"
+                ],
+                "directTarget": "j_IsItemCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "loc_2040C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2040C"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "184"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_2043A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2043A"
+              },
+              {
+                "labels": [
+                  "loc_2040C"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "currentGold(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IncreaseGold"
+                ],
+                "directTarget": "j_IncreaseGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_DropItemBySlot"
+                ],
+                "directTarget": "j_DropItemBySlot",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "rareItemFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_20436"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20436"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_AddItemToDeals"
+                ],
+                "directTarget": "j_AddItemToDeals",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_20436",
+                  "@NotDealsItem"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "181"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_2043A"
+                ],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_202D2"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_202D2"
+              }
+            ],
+            "repair": [
+              {
+                "labels": [
+                  "@CheckChoice_Repair"
+                ],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@CheckChoice_Deals"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckChoice_Deals"
+              },
+              {
+                "labels": [
+                  "byte_2044A"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "186"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UpdateForce"
+                ],
+                "directTarget": "j_UpdateForce",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "((GENERIC_LIST_LENGTH-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((TARGETS_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.b",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_2046C"
+                ],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "(a1)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "loc_2046C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2046C"
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_GIVE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#ITEM_NOTHING",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_207CC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207CC"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "member(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "itemSlot(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "selectedItem(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemDefinitionAddress"
+                ],
+                "directTarget": "j_GetItemDefinitionAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "ITEMDEF_OFFSET_PRICE(a0)",
+                  "itemPrice(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsr.w",
+                "operands": [
+                  "#2",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "itemPrice(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetCombatantEntryAddress"
+                ],
+                "directTarget": "j_GetCombatantEntryAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "COMBATANT_OFFSET_ITEMS(a0,d1.w)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "btst",
+                "operands": [
+                  "#ITEMENTRY_BIT_BROKEN",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_204DC"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_204DC"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "188"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_205AC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_205AC"
+              },
+              {
+                "labels": [
+                  "loc_204DC"
+                ],
+                "opcode": "clr.l",
+                "operands": [
+                  "((DIALOGUE_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "((CURRENT_ITEM_PRICE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "187"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_204FE"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_204FE"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "179"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_205AC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_205AC"
+              },
+              {
+                "labels": [
+                  "loc_204FE"
+                ],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetGold"
+                ],
+                "directTarget": "j_GetGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "d1",
+                  "currentGold(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.l",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.s",
+                "operands": [
+                  "loc_2051A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2051A"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "189"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_205AC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_205AC"
+              },
+              {
+                "labels": [
+                  "loc_2051A"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#ITEMTYPE_BIT_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_2055A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2055A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedWeapon"
+                ],
+                "directTarget": "j_GetEquippedWeapon",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "loc_2058A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2058A"
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_2058A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2058A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsItemCursed"
+                ],
+                "directTarget": "j_IsItemCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "loc_2058A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2058A"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "190"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_205AC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_205AC"
+              },
+              {
+                "labels": [
+                  "loc_2055A"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedRing"
+                ],
+                "directTarget": "j_GetEquippedRing",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "loc_2058A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2058A"
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_2058A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2058A"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsItemCursed"
+                ],
+                "directTarget": "j_IsItemCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "loc_2058A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2058A"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "190"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_205AC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_205AC"
+              },
+              {
+                "labels": [
+                  "loc_2058A"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_DecreaseGold"
+                ],
+                "directTarget": "j_DecreaseGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_RepairItemBySlot"
+                ],
+                "directTarget": "j_RepairItemBySlot",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "191"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "192"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_205AC"
+                ],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_2044A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2044A"
+              }
+            ],
+            "deals": [
+              {
+                "labels": [
+                  "@CheckChoice_Deals"
+                ],
+                "opcode": "jsr",
+                "operands": [
+                  "DetermineDealsItemsNotInCurrentShop(pc)"
+                ],
+                "directTarget": "DetermineDealsItemsNotInCurrentShop",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "nop",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "tst.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "byte_205C8"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_205C8"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "172"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_207CC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207CC"
+              },
+              {
+                "labels": [
+                  "byte_205C8"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "171"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteShopScreen"
+                ],
+                "directTarget": "j_ExecuteShopScreen",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_207CC"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207CC"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "selectedItem(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemDefinitionAddress"
+                ],
+                "directTarget": "j_GetItemDefinitionAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "ITEMDEF_OFFSET_PRICE(a0)",
+                  "itemPrice(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "((DIALOGUE_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "((CURRENT_ITEM_PRICE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "163"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_20614"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20614"
+              },
+              {
+                "labels": [
+                  "byte_2060C"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "164"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_207C4"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C4"
+              },
+              {
+                "labels": [
+                  "loc_20614"
+                ],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetGold"
+                ],
+                "directTarget": "j_GetGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "d1",
+                  "currentGold(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.l",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.s",
+                "operands": [
+                  "byte_20630"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20630"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "165"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_207C4"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C4"
+              },
+              {
+                "labels": [
+                  "byte_20630"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "166"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UpdateForce"
+                ],
+                "directTarget": "j_UpdateForce",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "((GENERIC_LIST_LENGTH-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((TARGETS_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.b",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_20652"
+                ],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "(a1)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "loc_20652"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20652"
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_USE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_2060C"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2060C"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "member(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemBySlotAndHeldItemsNumber"
+                ],
+                "directTarget": "j_GetItemBySlotAndHeldItemsNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#COMBATANT_ITEMSLOTS",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcs.s",
+                "operands": [
+                  "loc_206A0"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_206A0"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "168"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_20630"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20630"
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_2060C"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_2060C"
+              },
+              {
+                "labels": [
+                  "loc_206A0"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_206D8"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_206D8"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsWeaponOrRingEquippable"
+                ],
+                "directTarget": "j_IsWeaponOrRingEquippable",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcs.s",
+                "operands": [
+                  "loc_206D8"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_206D8"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "167"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "byte_20630"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_20630"
+              },
+              {
+                "labels": [
+                  "loc_206D8"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemPrice(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_DecreaseGold"
+                ],
+                "directTarget": "j_DecreaseGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_AddItem"
+                ],
+                "directTarget": "j_AddItem",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_RemoveItemFromDeals"
+                ],
+                "directTarget": "j_RemoveItemFromDeals",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsWeaponOrRingEquippable"
+                ],
+                "directTarget": "j_IsWeaponOrRingEquippable",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "byte_207C0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C0"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "173"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "byte_207C0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C0"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "selectedItem(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_2075C"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_2075C"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedWeapon"
+                ],
+                "directTarget": "j_GetEquippedWeapon",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_20788"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20788"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UnequipItemBySlotIfNotCursed"
+                ],
+                "directTarget": "j_UnequipItemBySlotIfNotCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_20788"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20788"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "176"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_207C0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C0"
+              },
+              {
+                "labels": [
+                  "loc_2075C"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedRing"
+                ],
+                "directTarget": "j_GetEquippedRing",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "loc_20788"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20788"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UnequipItemBySlotIfNotCursed"
+                ],
+                "directTarget": "j_UnequipItemBySlotIfNotCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "loc_20788"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20788"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "176"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_207C0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C0"
+              },
+              {
+                "labels": [
+                  "loc_20788"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemBySlotAndHeldItemsNumber"
+                ],
+                "directTarget": "j_GetItemBySlotAndHeldItemsNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_EquipItemBySlot"
+                ],
+                "directTarget": "j_EquipItemBySlot",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "byte_207BA"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207BA"
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "MUSIC_CURSED_ITEM"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "WaitForMusicResumeAndPlayerInput_Shop(pc)"
+                ],
+                "directTarget": "WaitForMusicResumeAndPlayerInput_Shop",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "nop",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "member(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "175"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "loc_207BE"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_207BE"
+              },
+              {
+                "labels": [
+                  "byte_207BA"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "174"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_207BE"
+                ],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_207C4"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_207C4"
+              },
+              {
+                "labels": [
+                  "byte_207C0"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "169"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_207C4"
+                ],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@CheckChoice_Deals"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckChoice_Deals"
+              },
+              {
+                "labels": [
+                  "byte_207CC"
+                ],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "loc_20088"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_20088"
+              },
+              {
+                "labels": [],
+                "opcode": "modend",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "WaitForMusicResumeAndPlayerInput_Shop"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#SOUND_COMMAND_PLAY_PREVIOUS_MUSIC",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(PlayMusicAfterCurrentOne).w"
+                ],
+                "directTarget": "PlayMusicAfterCurrentOne",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WaitForPlayerInput).w"
+                ],
+                "directTarget": "WaitForPlayerInput",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ]
+          },
+          "prices": {
+            "itemDefinitionPriceOffsetBytes": 6,
+            "routePriceDataflow": {
+              "buy": {
+                "itemDefinitionPriceLoadWidthBits": 16,
+                "transformOpcodes": []
+              },
+              "sell": {
+                "itemDefinitionPriceLoadWidthBits": 16,
+                "transformOpcodes": [
+                  "mulu.w",
+                  "lsr.l"
+                ]
+              },
+              "repair": {
+                "itemDefinitionPriceLoadWidthBits": 16,
+                "transformOpcodes": [
+                  "lsr.w"
+                ]
+              },
+              "deals": {
+                "itemDefinitionPriceLoadWidthBits": 16,
+                "transformOpcodes": []
+              }
+            },
+            "sellMultiplier": 3,
+            "sellRightShiftBits": 2,
+            "repairRightShiftBits": 2
+          },
+          "eligibility": {
+            "inventoryCapacity": 4,
+            "unsellableTypeLabel": "ITEMTYPE_UNSELLABLE",
+            "rareTypeLabel": "ITEMTYPE_RARE",
+            "brokenItemBitLabel": "ITEMENTRY_BIT_BROKEN"
+          },
+          "listConstruction": {
+            "shopInventoryBuilder": "PopulateShopInventoryList",
+            "dealsBuilder": "DetermineDealsItemsNotInCurrentShop",
+            "pageItems": 6,
+            "selectionAddressingInstructions": [
+              "mulu.w  #ITEMS_PER_SHOP_PAGE,d1",
+              "add.w   ((CURRENT_SHOP_SELECTION-$1000000)).w,d1"
+            ],
+            "dealsCounterInclusive": 127
+          },
+          "mutations": {
+            "buy": [
+              "j_DecreaseGold",
+              "j_AddItem"
+            ],
+            "sell": [
+              "j_IncreaseGold",
+              "j_DropItemBySlot",
+              "j_AddItemToDeals"
+            ],
+            "repair": [
+              "j_DecreaseGold",
+              "j_RepairItemBySlot"
+            ],
+            "deals": [
+              "j_DecreaseGold",
+              "j_AddItem",
+              "j_RemoveItemFromDeals"
+            ]
+          },
+          "unconditionalBranchTargets": {
+            "buy": [
+              "byte_202C2",
+              "byte_202C2",
+              "byte_20118",
+              "byte_202BE",
+              "byte_202BE",
+              "loc_202BC",
+              "byte_202C2",
+              "byte_200CE"
+            ],
+            "sell": [
+              "byte_2043A",
+              "@ConfirmSale",
+              "byte_2043A",
+              "byte_2043A",
+              "byte_2043A",
+              "byte_202D2"
+            ],
+            "repair": [
+              "byte_205AC",
+              "byte_205AC",
+              "byte_205AC",
+              "byte_205AC",
+              "byte_205AC",
+              "byte_2044A"
+            ],
+            "deals": [
+              "byte_207CC",
+              "byte_207C4",
+              "byte_207C4",
+              "byte_2060C",
+              "byte_207C0",
+              "byte_207C0",
+              "loc_207BE",
+              "byte_207C4",
+              "@CheckChoice_Deals",
+              "loc_20088"
+            ]
+          },
+          "entryControlFlow": [
+            "                jsr     j_OpenPortraitWindow",
+            "                jsr     j_ClosePortraitWindow",
+            "                jsr     j_ExecuteDiamondMenu",
+            "                cmpi.w  #-1,d0",
+            "                beq.s   @ExitShop",
+            "                bra.w   @CheckChoice_Buy",
+            "                jsr     j_OpenPortraitWindow",
+            "                jsr     j_ClosePortraitWindow",
+            "                rts"
+          ],
+          "helperControlFlow": {
+            "shopInventory": [
+              "bsr.s   GetShopInventoryAddress",
+              "move.b  (a0)+,d7",
+              "move.w  d7,((GENERIC_LIST_LENGTH-$1000000)).w",
+              "subq.b  #1,d7",
+              "move.b  (a0)+,(a1)+",
+              "dbf     d7,@Loop",
+              "rts"
+            ],
+            "deals": [
+              "movem.l d1-d2/d7-a0,-(sp)",
+              "moveq   #DEALS_ITEMS_COUNTER,d7",
+              "jsr     j_GetDealsItemAmount",
+              "tst.b   d2",
+              "beq.w   @Next",
+              "beq.w   @Next",
+              "move.b  d1,(a0)+",
+              "addq.w  #1,((GENERIC_LIST_LENGTH-$1000000)).w",
+              "addq.w  #1,d1",
+              "dbf     d7,@Loop",
+              "movem.l (sp)+,d1-d2/d7-a0",
+              "rts"
+            ],
+            "currentShopMembership": [
+              "movem.l d7-a0,-(sp)",
+              "bsr.w   GetShopInventoryAddress",
+              "move.b  (a0)+,d7",
+              "subq.b  #1,d7",
+              "cmp.b   (a0)+,d1",
+              "beq.w   @Done",
+              "dbf     d7,@Loop",
+              "movem.l (sp)+,d7-a0",
+              "rts"
+            ],
+            "shopInventoryAddress": [
+              "movem.l d0/d7,-(sp)",
+              "move.b  (CURRENT_SHOP_INDEX).l,d7",
+              "subq.b  #1,d7",
+              "bcs.w   @Done           ; if current shop index = 0, we're done",
+              "move.b  (a0)+,d0",
+              "adda.w  d0,a0",
+              "dbf     d7,@Loop",
+              "movem.l (sp)+,d0/d7",
+              "rts"
+            ]
+          },
+          "selectionScreen": {
+            "cancelValue": -1,
+            "confirmInputBits": [
+              "INPUT_BIT_C",
+              "INPUT_BIT_A"
+            ],
+            "cancelInputBit": "INPUT_BIT_B"
+          },
+          "jumpInterfaceAliases": {
+            "j_ExecuteShopScreen": {
+              "effectiveTarget": "ExecuteShopScreen",
+              "sourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm"
+            },
+            "j_ShopMenu": {
+              "effectiveTarget": "ShopMenu",
+              "sourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm"
+            }
+          },
+          "internalDirectCallerOccurrences": {
+            "code/common/menus/shop/shopactions.asm": [
+              {
+                "instructionTarget": "DetermineDealsItemsNotInCurrentShop",
+                "effectiveTarget": "DetermineDealsItemsNotInCurrentShop",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "DoesCurrentShopContainItem",
+                "effectiveTarget": "DoesCurrentShopContainItem",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "GetShopInventoryAddress",
+                "effectiveTarget": "GetShopInventoryAddress",
+                "siteCount": 2
+              },
+              {
+                "instructionTarget": "PopulateShopInventoryList",
+                "effectiveTarget": "PopulateShopInventoryList",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "WaitForMusicResumeAndPlayerInput_Shop",
+                "effectiveTarget": "WaitForMusicResumeAndPlayerInput_Shop",
+                "siteCount": 2
+              },
+              {
+                "instructionTarget": "j_ExecuteShopScreen",
+                "effectiveTarget": "ExecuteShopScreen",
+                "siteCount": 2
+              }
+            ],
+            "code/common/menus/shopscreen.asm": []
+          },
+          "internalEffectiveDirectCallSiteCounts": {
+            "DetermineDealsItemsNotInCurrentShop": 1,
+            "DoesCurrentShopContainItem": 1,
+            "ExecuteShopScreen": 2,
+            "GetShopInventoryAddress": 2,
+            "PopulateShopInventoryList": 1,
+            "ShopMenu": 0,
+            "WaitForMusicResumeAndPlayerInput_Shop": 2
+          },
+          "externalDirectCallerOccurrences": {
+            "code/common/menus/caravan/caravanactions_1.asm": [
+              {
+                "instructionTarget": "j_ExecuteShopScreen",
+                "effectiveTarget": "ExecuteShopScreen",
+                "siteCount": 3
+              }
+            ],
+            "code/common/scripting/map/mapscriptengine_2.asm": [
+              {
+                "instructionTarget": "j_ShopMenu",
+                "effectiveTarget": "ShopMenu",
+                "siteCount": 1
+              }
+            ],
+            "code/gameflow/special/battletest.asm": [
+              {
+                "instructionTarget": "j_ShopMenu",
+                "effectiveTarget": "ShopMenu",
+                "siteCount": 1
+              }
+            ]
+          },
+          "externalEffectiveDirectCallSiteCounts": {
+            "DetermineDealsItemsNotInCurrentShop": 0,
+            "DoesCurrentShopContainItem": 0,
+            "ExecuteShopScreen": 3,
+            "GetShopInventoryAddress": 0,
+            "PopulateShopInventoryList": 0,
+            "ShopMenu": 2,
+            "WaitForMusicResumeAndPlayerInput_Shop": 0
+          },
+          "indirectBehavior": {
+            "directCallInventoryDoesNotEstablishReachability": true
           }
         },
         "church": {
           "entrySymbol": "ChurchMenu",
           "selectionMenu": "MENU_CHURCH",
-          "choiceOrder": ["raise", "cure", "promote", "save"],
+          "choiceOrder": [
+            "raise",
+            "cure",
+            "promote",
+            "save"
+          ],
           "dispatch": "ordered-conditional-chain",
           "actionLoop": "actions converge on the save-or-return boundary before returning",
           "exit": "diamond-menu-cancel-exits-service",
           "confirmedEffects": {
-            "raise": ["decrease-gold", "increase-current-hp", "update-ally-mapsprite"],
-            "cure": ["decrease-gold", "set-status-effects"],
-            "promote": ["promotion-data-gated-member-selection", "set-class", "promote"],
-            "save": ["save-game"]
+            "raise": [
+              "decrease-gold",
+              "increase-current-hp",
+              "update-ally-mapsprite"
+            ],
+            "cure": [
+              "decrease-gold",
+              "set-status-effects"
+            ],
+            "promote": [
+              "promotion-data-gated-member-selection",
+              "set-class",
+              "promote"
+            ],
+            "save": [
+              "save-game"
+            ]
           }
         },
         "caravan": {
           "entrySymbol": "CaravanMenu",
           "selectionMenu": "MENU_CARAVAN",
-          "choiceOrder": ["join", "depot", "item", "purge"],
+          "choiceOrder": [
+            "join",
+            "depot",
+            "item",
+            "purge"
+          ],
           "dispatch": "four-entry-relative-jump-table",
           "actionLoop": "each action returns to the caravan choice loop",
           "exit": "diamond-menu-cancel-exits-service",
           "depot": {
             "selectionMenu": "MENU_DEPOT",
-            "choiceOrder": ["look", "deposit", "derive", "drop"],
+            "choiceOrder": [
+              "look",
+              "deposit",
+              "derive",
+              "drop"
+            ],
             "dispatch": "four-entry-relative-jump-table",
             "effects": {
-              "deposit": ["add-item-to-caravan", "drop-item-by-slot"],
-              "derive": ["add-item", "remove-item-from-caravan"],
-              "drop": ["remove-item-from-caravan", "rare-item-adds-to-deals"]
+              "deposit": [
+                "add-item-to-caravan",
+                "drop-item-by-slot"
+              ],
+              "derive": [
+                "add-item",
+                "remove-item-from-caravan"
+              ],
+              "drop": [
+                "remove-item-from-caravan",
+                "rare-item-adds-to-deals"
+              ]
             }
           },
           "item": {
             "selectionMenu": "MENU_ITEM",
-            "choiceOrder": ["use", "give", "equip", "drop"],
+            "choiceOrder": [
+              "use",
+              "give",
+              "equip",
+              "drop"
+            ],
             "dispatch": "four-entry-relative-jump-table"
           },
-          "partyEffects": ["join-battle-party", "leave-battle-party"]
+          "partyEffects": [
+            "join-battle-party",
+            "leave-battle-party"
+          ]
         },
         "blacksmith": {
           "entrySymbol": "BlacksmithMenu",
           "dispatch": "ordered-fulfill-ready-orders-then-place-pending-order",
           "noDiamondMenu": true,
-          "perVisitCounters": ["readyToFulfillOrdersNumber", "pendingOrdersNumber", "fulfilledOrdersNumber", "fulfillOrdersFlag"],
-          "fulfillment": ["select-recipient", "add-item", "optional-equip"],
-          "placementGuards": ["select-mithril-item", "select-eligible-promoted-customer", "confirm-order-cost", "sufficient-gold", "free-order-slot"],
-          "placementEffects": ["decrease-gold", "drop-mithril-by-slot", "pick-mithril-weapon", "clear-flag-80"],
+          "perVisitCounters": [
+            "readyToFulfillOrdersNumber",
+            "pendingOrdersNumber",
+            "fulfilledOrdersNumber",
+            "fulfillOrdersFlag"
+          ],
+          "fulfillment": [
+            "select-recipient",
+            "add-item",
+            "optional-equip"
+          ],
+          "placementGuards": [
+            "select-mithril-item",
+            "select-eligible-promoted-customer",
+            "confirm-order-cost",
+            "sufficient-gold",
+            "free-order-slot"
+          ],
+          "placementEffects": [
+            "decrease-gold",
+            "drop-mithril-by-slot",
+            "pick-mithril-weapon",
+            "clear-flag-80"
+          ],
           "randomBoundary": "mithril-weapon-selection-includes-random-class-and-weighted-row-selection"
         },
         "staticBoundary": {
           "callerDependentServiceAdmissionAndReturnState": "inferred",
           "persistenceAcrossMapLoadSaveAndStoryProgress": "unknown",
           "windowPortraitSoundAndInputTiming": "unknown",
-          "unbuiltAlternatePaths": ["code/common/menus/writememberlisttext.asm"]
+          "unbuiltAlternatePaths": [
+            "code/common/menus/writememberlisttext.asm"
+          ]
         }
       },
       "inventoryBoundary": {
