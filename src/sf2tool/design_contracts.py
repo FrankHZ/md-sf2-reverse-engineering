@@ -138,6 +138,11 @@ CONTRACTS = {
             "sf2-battle-ai-action-choice-runtime-v1"
         ),
     },
+    "docs/design/window-system.md": {
+        "tests/fixtures/h2/remaining-core-static-v1.json": "sf2-remaining-core-static-v1",
+        "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
+        "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
+    },
 }
 
 

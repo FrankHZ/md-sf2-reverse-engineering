@@ -15,7 +15,10 @@
       "vectorEntryCount": 64,
       "horizontalInterruptLevel": 4,
       "verticalInterruptLevel": 6,
-      "namedTrapRange": [0, 9],
+      "namedTrapRange": [
+        0,
+        9
+      ],
       "productCode": "GM MK-1315 -00",
       "headerChecksum": 35105,
       "romEndAddress": 2097151,
@@ -24,14 +27,478 @@
       "regionCode": "U"
     },
     "windowFacts": {
-      "windowSlotCount": 8,
-      "windowEntrySizeBytes": 16,
-      "createFailureSentinel": -1,
-      "specialTurboAnimationLength": 1,
-      "movementUsesPerSlotBitfield": true,
-      "movementUsesLinearIntegerInterpolation": true,
-      "vintOwnsWindowAnimationAndDma": true,
-      "windowTileAddressUsesPackedCoordinates": true
+      "sourcePath": "code/common/windows/windowengine.asm",
+      "sourceLineCount": 644,
+      "functionEntries": {
+        "InitializeWindowProperties": 18374,
+        "CreateWindow": 18434,
+        "SetWindowDestination": 18534,
+        "FixWindowsPositions": 18592,
+        "sub_48BE": 18622,
+        "CopyPlaneALayoutForWindows": 18642,
+        "MoveWindowWithSfx": 18676,
+        "MoveWindow": 18680,
+        "DeleteWindow": 18734,
+        "WaitForWindowMovementEnd": 18812,
+        "VInt_UpdateWindows": 18824,
+        "sub_4AC8": 19144,
+        "sub_4B5C": 19292,
+        "sub_4BEA": 19434,
+        "GetWindowEntryAddress": 19512,
+        "GetWindowTileAddress": 19524
+      },
+      "sourceLabels": {
+        "addresses": {
+          "WINDOW_LAYOUTS_END_POINTER": 16754810,
+          "WINDOW_ENTRIES": 16754814,
+          "FIX_WINDOWS_POSITIONS_TOGGLE": 16754942,
+          "UPDATE_WINDOWS_TOGGLE": 16754943,
+          "MOVING_WINDOWS_BITFIELD": 16754944,
+          "DIALOGUE_WINDOW_INDEX": 16756588,
+          "PORTRAIT_WINDOW_INDEX": 16756864,
+          "TIMER_WINDOW_INDEX": 16756874,
+          "SPECIAL_TURBO_TOGGLE": 16756904,
+          "WINDOW_IS_PRESENT": 16757055,
+          "HIDE_WINDOWS_TOGGLE": 16757146,
+          "WINDOW_TILE_LAYOUTS": 16758784,
+          "PLANE_A_MAP_LAYOUT": 16760832,
+          "PLANE_A_MAP_AND_WINDOWS_LAYOUT": 16762880
+        },
+        "enumValues": {
+          "BYTE_SHIFT_COUNT": 8,
+          "NIBBLE_SHIFT_COUNT": 4,
+          "BYTE_MASK": 255,
+          "WINDOW_ENTRIES_COUNTER": 7,
+          "WINDOW_ENTRY_SIZE": 16,
+          "WINDOW_ENTRIES_LONGWORD_COUNTER": 31,
+          "WINDOWDEF_OFFSET_ACTIVE": 0,
+          "WINDOWDEF_OFFSET_LAYOUT_ADDRESS": 2,
+          "WINDOWDEF_OFFSET_WIDTH": 4,
+          "WINDOWDEF_OFFSET_HEIGHT": 5,
+          "WINDOWDEF_OFFSET_X": 6,
+          "WINDOWDEF_OFFSET_Y": 7,
+          "WINDOWDEF_OFFSET_ANIM_ORIG_X": 8,
+          "WINDOWDEF_OFFSET_ANIM_ORIG_Y": 9,
+          "WINDOWDEF_OFFSET_ANIM_DEST_X": 10,
+          "WINDOWDEF_OFFSET_ANIM_DEST_Y": 11,
+          "WINDOWDEF_OFFSET_ANIM_LENGTH": 12,
+          "WINDOWDEF_OFFSET_ANIM_COUNTER": 13,
+          "NEXT_WINDOWDEF": 16,
+          "MAP_CURRENT": 255,
+          "SFX_MENU_SWITCH": 65
+        }
+      },
+      "derived": {
+        "windowSlotCount": 8,
+        "entrySizeBytes": 16,
+        "entryAddressShiftBits": 4,
+        "clearLongwordCount": 32,
+        "clearSpanBytes": 128,
+        "layoutTileWordBytes": 2,
+        "mapTileColumns": 32,
+        "mapCoordinateXMask": 31,
+        "mapRowStrideBytes": 64,
+        "coordinateXShiftBits": 8,
+        "coordinateYMask": 255
+      },
+      "entryLayout": {
+        "fields": [
+          {
+            "offsetBytes": 0,
+            "widthBytes": 4,
+            "sourceAccess": "(a0)",
+            "role": "layoutAddressAndActiveTest"
+          },
+          {
+            "offsetBytes": 4,
+            "widthBytes": 1,
+            "sourceAccess": "WINDOWDEF_OFFSET_WIDTH",
+            "role": "width"
+          },
+          {
+            "offsetBytes": 5,
+            "widthBytes": 1,
+            "sourceAccess": "WINDOWDEF_OFFSET_HEIGHT",
+            "role": "height"
+          },
+          {
+            "offsetBytes": 6,
+            "widthBytes": 2,
+            "sourceAccess": "WINDOWDEF_OFFSET_X",
+            "role": "packedPosition"
+          },
+          {
+            "offsetBytes": 8,
+            "widthBytes": 2,
+            "sourceAccess": "WINDOWDEF_OFFSET_ANIM_ORIG_X",
+            "role": "packedAnimationOrigin"
+          },
+          {
+            "offsetBytes": 10,
+            "widthBytes": 2,
+            "sourceAccess": "WINDOWDEF_OFFSET_ANIM_DEST_X",
+            "role": "packedAnimationDestination"
+          },
+          {
+            "offsetBytes": 12,
+            "widthBytes": 1,
+            "sourceAccess": "WINDOWDEF_OFFSET_ANIM_LENGTH",
+            "role": "animationLength"
+          },
+          {
+            "offsetBytes": 13,
+            "widthBytes": 1,
+            "sourceAccess": "WINDOWDEF_OFFSET_ANIM_COUNTER",
+            "role": "animationCounter"
+          },
+          {
+            "offsetBytes": 14,
+            "widthBytes": 1,
+            "sourceAccess": "$E(a2)",
+            "role": "unlabeledByte14"
+          },
+          {
+            "offsetBytes": 15,
+            "widthBytes": 1,
+            "sourceAccess": "$F(a2)",
+            "role": "unlabeledByte15"
+          }
+        ],
+        "packedSize": {
+          "widthSourceByteOffset": 4,
+          "heightSourceByteOffset": 5
+        },
+        "packedCoordinate": {
+          "xShiftBits": 8,
+          "yMask": 255
+        }
+      },
+      "operations": {
+        "initialize": {
+          "clearsEntriesBeforeResettingLayoutEnd": true,
+          "layoutEndAddress": 16758784,
+          "windowIsPresentWhenCurrentMapDiffersFromMapCurrent": true,
+          "resetsWindowIndices": [
+            "PORTRAIT_WINDOW_INDEX",
+            "DIALOGUE_WINDOW_INDEX",
+            "TIMER_WINDOW_INDEX"
+          ]
+        },
+        "create": {
+          "freeSlotUsesZeroLowWordTest": true,
+          "failureSentinel": -1,
+          "copiesPlaneALayoutOnlyAtInitialLayoutEnd": true,
+          "layoutBytesFormula": "widthTimesHeightTimesLayoutTileWordBytes",
+          "initialPackedAnimationLengthAndCounter": [
+            1,
+            1
+          ],
+          "clearsUnlabeledBytes14And15": true
+        },
+        "setDestination": {
+          "requiresActiveEntryAndNoCurrentMovement": true,
+          "sentinelPackedCoordinate": 32896,
+          "sentinelUsesCurrentPackedPosition": true,
+          "writesOriginThenDestinationThenAnimationLength": true,
+          "animationLength": 256
+        },
+        "fixPositions": {
+          "copiesPlaneABeforeIteratingSlots": true,
+          "iteratesAllSlotsInAscendingOrder": true,
+          "usesSetDestinationSentinel": true
+        },
+        "move": {
+          "specialTurboForcesAnimationLength": 1,
+          "sentinelPackedCoordinate": 32896,
+          "writesOriginThenDestinationThenLengthThenClearsCounter": true
+        },
+        "moveWithSfx": {
+          "sourceMacro": "sndCom SFX_MENU_SWITCH",
+          "fallsThroughToMoveWindow": true
+        },
+        "delete": {
+          "clearsSelectedEntryLayoutAddressBeforeScan": true,
+          "recomputesLayoutEndFromHighestRemainingLayoutAddress": true,
+          "noRemainingEntryResetsLayoutEndToBase": true,
+          "layoutBytesFormula": "widthTimesHeightTimesLayoutTileWordBytes"
+        },
+        "wait": {
+          "waitsForVIntBeforeTestingMovingBitfield": true,
+          "repeatsWhileAnyMovingBitIsSet": true
+        },
+        "vint": {
+          "returnsWhenLayoutEndEqualsBase": true,
+          "clearsMovingBitfieldBeforeFirstSlotPass": true,
+          "firstPassRestoresMovingWindowsBeforeInterpolation": true,
+          "secondPassUsesSignedIntegerLinearInterpolation": true,
+          "hidingSkipsImmediateComposition": true,
+          "byte14TriggersCompositionThenClears": true,
+          "byte15TriggersRestoreThenClears": true,
+          "hideFixTransitionRestoresPlaneABeforeMarkingFix": true,
+          "showFixTransitionCallsFixWindowsPositions": true,
+          "updateToggleQueuesPlaneAThenEnablesQueueProcessingThenClearsToggle": true,
+          "queuedDmaDestinationArgument": 49152,
+          "queuedDmaLengthArgument": 1024,
+          "queuedDmaIncrementArgument": 2
+        },
+        "composition": {
+          "composeFunction": "sub_4AC8",
+          "restoreFunction": "sub_4B5C",
+          "mapCoordinateHorizontalExclusive": 32,
+          "mapCoordinateVerticalExclusive": 28,
+          "setsUpdateToggleWhenNotHidden": true
+        }
+      },
+      "addressFormulas": {
+        "windowEntryAddress": "WINDOW_ENTRIES plus slotIndexTimesEntrySizeBytes",
+        "windowTileAddress": "layoutAddress plus (packedCoordinateYTimesWidthPlusPackedCoordinateX)TimesLayoutTileWordBytes",
+        "mapLayoutOffset": "(packedCoordinateYTimesMapTileColumnsPlusPackedCoordinateXModuloMapTileColumns)TimesLayoutTileWordBytes"
+      },
+      "internalDirectCallSiteCounts": {
+        "CopyPlaneALayoutForWindows": 3,
+        "FixWindowsPositions": 1,
+        "GetWindowEntryAddress": 5,
+        "SetWindowDestination": 1,
+        "sub_4AC8": 2,
+        "sub_4B5C": 2,
+        "sub_4BEA": 2
+      },
+      "externalDirectCallerOccurrences": {
+        "code/common/maps/animations.asm": {
+          "CopyPlaneALayoutForWindows": 1,
+          "FixWindowsPositions": 1
+        },
+        "code/common/maps/mapload.asm": {
+          "InitializeWindowProperties": 1
+        },
+        "code/common/menus/battlefieldsettingswindow.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 2,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/debugsetflag.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/diamondmenu.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 2,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/endingkiss.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "SetWindowDestination": 1
+        },
+        "code/common/menus/equipmenu.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 1,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/goldwindow.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 1,
+          "MoveWindowWithSfx": 3,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/itemmenu.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 4,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/landeffectwindow.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 1,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/magicmenu.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 5,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 3,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/memberscreen.asm": {
+          "CreateWindow": 4,
+          "DeleteWindow": 4,
+          "GetWindowTileAddress": 5,
+          "MoveWindowWithSfx": 8,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/memberslistscreen.asm": {
+          "CreateWindow": 3,
+          "DeleteWindow": 3,
+          "GetWindowTileAddress": 6,
+          "MoveWindowWithSfx": 10,
+          "SetWindowDestination": 7,
+          "WaitForWindowMovementEnd": 8
+        },
+        "code/common/menus/minimapscreen.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 2,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/ministatuswindow.asm": {
+          "CreateWindow": 3,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 3,
+          "InitializeWindowProperties": 1,
+          "MoveWindow": 4,
+          "MoveWindowWithSfx": 2,
+          "WaitForWindowMovementEnd": 4
+        },
+        "code/common/menus/nameallyscreen.asm": {
+          "CreateWindow": 3,
+          "DeleteWindow": 3,
+          "MoveWindowWithSfx": 6,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/nameunderportraitwindow.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 2,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/numberprompt.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 2,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/portraitfunctions.asm": {
+          "GetWindowTileAddress": 1,
+          "SetWindowDestination": 1
+        },
+        "code/common/menus/portraitwindow.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 2,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/shopscreen.asm": {
+          "CreateWindow": 3,
+          "DeleteWindow": 3,
+          "MoveWindow": 4,
+          "MoveWindowWithSfx": 6,
+          "SetWindowDestination": 3,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/menus/timerwindow.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowTileAddress": 1,
+          "SetWindowDestination": 3
+        },
+        "code/common/menus/unusedsub_156A8.asm": {
+          "MoveWindowWithSfx": 2
+        },
+        "code/common/menus/yesnoprompt.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "MoveWindowWithSfx": 7,
+          "SetWindowDestination": 2,
+          "WaitForWindowMovementEnd": 2
+        },
+        "code/common/scripting/text/textfunctions_1.asm": {
+          "GetWindowEntryAddress": 1,
+          "SetWindowDestination": 1
+        },
+        "code/common/scripting/text/textfunctions_2.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "GetWindowEntryAddress": 1,
+          "MoveWindow": 5,
+          "SetWindowDestination": 1,
+          "WaitForWindowMovementEnd": 1
+        },
+        "code/gameflow/battle/battlevints.asm": {
+          "InitializeWindowProperties": 1
+        },
+        "code/gameflow/special/battletest.asm": {
+          "InitializeWindowProperties": 1
+        },
+        "code/gameflow/start/gameinit.asm": {
+          "InitializeWindowProperties": 1
+        },
+        "code/specialscreens/witch/witchfunctions.asm": {
+          "InitializeWindowProperties": 1
+        },
+        "code/specialscreens/witch/witchmainmenu.asm": {
+          "CreateWindow": 1,
+          "DeleteWindow": 1,
+          "SetWindowDestination": 3
+        },
+        "code/specialscreens/witch/witchstart.asm": {
+          "InitializeWindowProperties": 1
+        }
+      },
+      "externalDirectCallSiteCounts": {
+        "InitializeWindowProperties": 7,
+        "CreateWindow": 33,
+        "SetWindowDestination": 33,
+        "FixWindowsPositions": 1,
+        "sub_48BE": 0,
+        "CopyPlaneALayoutForWindows": 1,
+        "MoveWindowWithSfx": 66,
+        "MoveWindow": 13,
+        "DeleteWindow": 31,
+        "WaitForWindowMovementEnd": 45,
+        "VInt_UpdateWindows": 0,
+        "sub_4AC8": 0,
+        "sub_4B5C": 0,
+        "sub_4BEA": 0,
+        "GetWindowEntryAddress": 2,
+        "GetWindowTileAddress": 30
+      },
+      "externalLongwordPointerOccurrences": {
+        "code/gameflow/battle/battlescenes/initializebattlescene.asm": {
+          "VInt_UpdateWindows": 1
+        },
+        "code/gameflow/battle/battlevints.asm": {
+          "VInt_UpdateWindows": 1
+        },
+        "code/gameflow/special/battletest.asm": {
+          "VInt_UpdateWindows": 1
+        },
+        "code/gameflow/start/gameinit.asm": {
+          "VInt_UpdateWindows": 1
+        },
+        "code/specialscreens/witch/witchfunctions.asm": {
+          "VInt_UpdateWindows": 1
+        },
+        "code/specialscreens/witch/witchstart.asm": {
+          "VInt_UpdateWindows": 1
+        }
+      },
+      "indirectBehavior": {
+        "longwordPointerReferencesAreNotDirectCallSites": true,
+        "zeroDirectCallerCountDoesNotEstablishUnreachability": true
+      },
+      "runtimeQuestions": [
+        "window-presentation-matrix-animation-hide-fix-scroll-clip-and-dma"
+      ]
     },
     "debugFacts": {
       "battleTestJoinedAllyCount": 29,
@@ -40,12 +507,30 @@
       "battleTestMaxShopIndex": 100,
       "battleTestBowieStatValue": 99,
       "configurationToggleCount": 4,
-      "configurationToggles": ["special-turbo", "control-opponent", "auto-battle", "game-completed"],
+      "configurationToggles": [
+        "special-turbo",
+        "control-opponent",
+        "auto-battle",
+        "game-completed"
+      ],
       "soundTestRequiresStartUpAndCompletedFlag": true,
-      "debugBattleActionTargets": ["Attack", "Magic", "Item", "EndTurn", "BurstRock", "Muddle", "PrismLaser"],
+      "debugBattleActionTargets": [
+        "Attack",
+        "Magic",
+        "Item",
+        "EndTurn",
+        "BurstRock",
+        "Muddle",
+        "PrismLaser"
+      ],
       "debugBattleActionCount": 7,
       "debugHitOverrideCount": 4,
-      "debugHitOverrides": ["dodge", "critical", "double", "counter"]
+      "debugHitOverrides": [
+        "dodge",
+        "critical",
+        "double",
+        "counter"
+      ]
     },
     "runtimeQuestions": [
       "window-animation-hide-scroll-and-dma-frames",

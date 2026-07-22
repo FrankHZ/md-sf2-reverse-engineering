@@ -1,20 +1,2022 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SF2 remaining primary core static fixture",
-  "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "upstreamCommit",
+    "function",
+    "expected"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-remaining-core-static-v1" },
-    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
-    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 5, "maxProperties": 5, "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-remaining-core-static-v1"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "upstreamCommit": {
+      "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+    },
+    "function": {
+      "type": "object",
+      "minProperties": 5,
+      "maxProperties": 5,
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
     "expected": {
-      "type": "object", "additionalProperties": false,
-      "required": ["headerFacts", "windowFacts", "debugFacts", "runtimeQuestions"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "headerFacts",
+        "windowFacts",
+        "debugFacts",
+        "runtimeQuestions"
+      ],
       "properties": {
-        "headerFacts": { "type": "object" }, "windowFacts": { "type": "object" },
-        "debugFacts": { "type": "object" },
-        "runtimeQuestions": { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true }
+        "headerFacts": {
+          "type": "object"
+        },
+        "windowFacts": {
+          "$ref": "#/definitions/windowFacts"
+        },
+        "debugFacts": {
+          "type": "object"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "definitions": {
+    "windowFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceLineCount",
+        "functionEntries",
+        "sourceLabels",
+        "derived",
+        "entryLayout",
+        "operations",
+        "addressFormulas",
+        "internalDirectCallSiteCounts",
+        "externalDirectCallerOccurrences",
+        "externalDirectCallSiteCounts",
+        "externalLongwordPointerOccurrences",
+        "indirectBehavior",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "sourcePath": {
+          "const": "code/common/windows/windowengine.asm"
+        },
+        "sourceLineCount": {
+          "const": 644
+        },
+        "functionEntries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "InitializeWindowProperties",
+            "CreateWindow",
+            "SetWindowDestination",
+            "FixWindowsPositions",
+            "sub_48BE",
+            "CopyPlaneALayoutForWindows",
+            "MoveWindowWithSfx",
+            "MoveWindow",
+            "DeleteWindow",
+            "WaitForWindowMovementEnd",
+            "VInt_UpdateWindows",
+            "sub_4AC8",
+            "sub_4B5C",
+            "sub_4BEA",
+            "GetWindowEntryAddress",
+            "GetWindowTileAddress"
+          ],
+          "properties": {
+            "InitializeWindowProperties": {
+              "const": 18374
+            },
+            "CreateWindow": {
+              "const": 18434
+            },
+            "SetWindowDestination": {
+              "const": 18534
+            },
+            "FixWindowsPositions": {
+              "const": 18592
+            },
+            "sub_48BE": {
+              "const": 18622
+            },
+            "CopyPlaneALayoutForWindows": {
+              "const": 18642
+            },
+            "MoveWindowWithSfx": {
+              "const": 18676
+            },
+            "MoveWindow": {
+              "const": 18680
+            },
+            "DeleteWindow": {
+              "const": 18734
+            },
+            "WaitForWindowMovementEnd": {
+              "const": 18812
+            },
+            "VInt_UpdateWindows": {
+              "const": 18824
+            },
+            "sub_4AC8": {
+              "const": 19144
+            },
+            "sub_4B5C": {
+              "const": 19292
+            },
+            "sub_4BEA": {
+              "const": 19434
+            },
+            "GetWindowEntryAddress": {
+              "const": 19512
+            },
+            "GetWindowTileAddress": {
+              "const": 19524
+            }
+          }
+        },
+        "sourceLabels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "addresses",
+            "enumValues"
+          ],
+          "properties": {
+            "addresses": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WINDOW_LAYOUTS_END_POINTER",
+                "WINDOW_ENTRIES",
+                "FIX_WINDOWS_POSITIONS_TOGGLE",
+                "UPDATE_WINDOWS_TOGGLE",
+                "MOVING_WINDOWS_BITFIELD",
+                "DIALOGUE_WINDOW_INDEX",
+                "PORTRAIT_WINDOW_INDEX",
+                "TIMER_WINDOW_INDEX",
+                "SPECIAL_TURBO_TOGGLE",
+                "WINDOW_IS_PRESENT",
+                "HIDE_WINDOWS_TOGGLE",
+                "WINDOW_TILE_LAYOUTS",
+                "PLANE_A_MAP_LAYOUT",
+                "PLANE_A_MAP_AND_WINDOWS_LAYOUT"
+              ],
+              "properties": {
+                "WINDOW_LAYOUTS_END_POINTER": {
+                  "const": 16754810
+                },
+                "WINDOW_ENTRIES": {
+                  "const": 16754814
+                },
+                "FIX_WINDOWS_POSITIONS_TOGGLE": {
+                  "const": 16754942
+                },
+                "UPDATE_WINDOWS_TOGGLE": {
+                  "const": 16754943
+                },
+                "MOVING_WINDOWS_BITFIELD": {
+                  "const": 16754944
+                },
+                "DIALOGUE_WINDOW_INDEX": {
+                  "const": 16756588
+                },
+                "PORTRAIT_WINDOW_INDEX": {
+                  "const": 16756864
+                },
+                "TIMER_WINDOW_INDEX": {
+                  "const": 16756874
+                },
+                "SPECIAL_TURBO_TOGGLE": {
+                  "const": 16756904
+                },
+                "WINDOW_IS_PRESENT": {
+                  "const": 16757055
+                },
+                "HIDE_WINDOWS_TOGGLE": {
+                  "const": 16757146
+                },
+                "WINDOW_TILE_LAYOUTS": {
+                  "const": 16758784
+                },
+                "PLANE_A_MAP_LAYOUT": {
+                  "const": 16760832
+                },
+                "PLANE_A_MAP_AND_WINDOWS_LAYOUT": {
+                  "const": 16762880
+                }
+              }
+            },
+            "enumValues": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "BYTE_SHIFT_COUNT",
+                "NIBBLE_SHIFT_COUNT",
+                "BYTE_MASK",
+                "WINDOW_ENTRIES_COUNTER",
+                "WINDOW_ENTRY_SIZE",
+                "WINDOW_ENTRIES_LONGWORD_COUNTER",
+                "WINDOWDEF_OFFSET_ACTIVE",
+                "WINDOWDEF_OFFSET_LAYOUT_ADDRESS",
+                "WINDOWDEF_OFFSET_WIDTH",
+                "WINDOWDEF_OFFSET_HEIGHT",
+                "WINDOWDEF_OFFSET_X",
+                "WINDOWDEF_OFFSET_Y",
+                "WINDOWDEF_OFFSET_ANIM_ORIG_X",
+                "WINDOWDEF_OFFSET_ANIM_ORIG_Y",
+                "WINDOWDEF_OFFSET_ANIM_DEST_X",
+                "WINDOWDEF_OFFSET_ANIM_DEST_Y",
+                "WINDOWDEF_OFFSET_ANIM_LENGTH",
+                "WINDOWDEF_OFFSET_ANIM_COUNTER",
+                "NEXT_WINDOWDEF",
+                "MAP_CURRENT",
+                "SFX_MENU_SWITCH"
+              ],
+              "properties": {
+                "BYTE_SHIFT_COUNT": {
+                  "const": 8
+                },
+                "NIBBLE_SHIFT_COUNT": {
+                  "const": 4
+                },
+                "BYTE_MASK": {
+                  "const": 255
+                },
+                "WINDOW_ENTRIES_COUNTER": {
+                  "const": 7
+                },
+                "WINDOW_ENTRY_SIZE": {
+                  "const": 16
+                },
+                "WINDOW_ENTRIES_LONGWORD_COUNTER": {
+                  "const": 31
+                },
+                "WINDOWDEF_OFFSET_ACTIVE": {
+                  "const": 0
+                },
+                "WINDOWDEF_OFFSET_LAYOUT_ADDRESS": {
+                  "const": 2
+                },
+                "WINDOWDEF_OFFSET_WIDTH": {
+                  "const": 4
+                },
+                "WINDOWDEF_OFFSET_HEIGHT": {
+                  "const": 5
+                },
+                "WINDOWDEF_OFFSET_X": {
+                  "const": 6
+                },
+                "WINDOWDEF_OFFSET_Y": {
+                  "const": 7
+                },
+                "WINDOWDEF_OFFSET_ANIM_ORIG_X": {
+                  "const": 8
+                },
+                "WINDOWDEF_OFFSET_ANIM_ORIG_Y": {
+                  "const": 9
+                },
+                "WINDOWDEF_OFFSET_ANIM_DEST_X": {
+                  "const": 10
+                },
+                "WINDOWDEF_OFFSET_ANIM_DEST_Y": {
+                  "const": 11
+                },
+                "WINDOWDEF_OFFSET_ANIM_LENGTH": {
+                  "const": 12
+                },
+                "WINDOWDEF_OFFSET_ANIM_COUNTER": {
+                  "const": 13
+                },
+                "NEXT_WINDOWDEF": {
+                  "const": 16
+                },
+                "MAP_CURRENT": {
+                  "const": 255
+                },
+                "SFX_MENU_SWITCH": {
+                  "const": 65
+                }
+              }
+            }
+          }
+        },
+        "derived": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "windowSlotCount",
+            "entrySizeBytes",
+            "entryAddressShiftBits",
+            "clearLongwordCount",
+            "clearSpanBytes",
+            "layoutTileWordBytes",
+            "mapTileColumns",
+            "mapCoordinateXMask",
+            "mapRowStrideBytes",
+            "coordinateXShiftBits",
+            "coordinateYMask"
+          ],
+          "properties": {
+            "windowSlotCount": {
+              "const": 8
+            },
+            "entrySizeBytes": {
+              "const": 16
+            },
+            "entryAddressShiftBits": {
+              "const": 4
+            },
+            "clearLongwordCount": {
+              "const": 32
+            },
+            "clearSpanBytes": {
+              "const": 128
+            },
+            "layoutTileWordBytes": {
+              "const": 2
+            },
+            "mapTileColumns": {
+              "const": 32
+            },
+            "mapCoordinateXMask": {
+              "const": 31
+            },
+            "mapRowStrideBytes": {
+              "const": 64
+            },
+            "coordinateXShiftBits": {
+              "const": 8
+            },
+            "coordinateYMask": {
+              "const": 255
+            }
+          }
+        },
+        "entryLayout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fields",
+            "packedSize",
+            "packedCoordinate"
+          ],
+          "properties": {
+            "fields": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 0
+                    },
+                    "widthBytes": {
+                      "const": 4
+                    },
+                    "sourceAccess": {
+                      "const": "(a0)"
+                    },
+                    "role": {
+                      "const": "layoutAddressAndActiveTest"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 4
+                    },
+                    "widthBytes": {
+                      "const": 1
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_WIDTH"
+                    },
+                    "role": {
+                      "const": "width"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 5
+                    },
+                    "widthBytes": {
+                      "const": 1
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_HEIGHT"
+                    },
+                    "role": {
+                      "const": "height"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 6
+                    },
+                    "widthBytes": {
+                      "const": 2
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_X"
+                    },
+                    "role": {
+                      "const": "packedPosition"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 8
+                    },
+                    "widthBytes": {
+                      "const": 2
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_ANIM_ORIG_X"
+                    },
+                    "role": {
+                      "const": "packedAnimationOrigin"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 10
+                    },
+                    "widthBytes": {
+                      "const": 2
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_ANIM_DEST_X"
+                    },
+                    "role": {
+                      "const": "packedAnimationDestination"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 12
+                    },
+                    "widthBytes": {
+                      "const": 1
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_ANIM_LENGTH"
+                    },
+                    "role": {
+                      "const": "animationLength"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 13
+                    },
+                    "widthBytes": {
+                      "const": 1
+                    },
+                    "sourceAccess": {
+                      "const": "WINDOWDEF_OFFSET_ANIM_COUNTER"
+                    },
+                    "role": {
+                      "const": "animationCounter"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 14
+                    },
+                    "widthBytes": {
+                      "const": 1
+                    },
+                    "sourceAccess": {
+                      "const": "$E(a2)"
+                    },
+                    "role": {
+                      "const": "unlabeledByte14"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "offsetBytes",
+                    "widthBytes",
+                    "sourceAccess",
+                    "role"
+                  ],
+                  "properties": {
+                    "offsetBytes": {
+                      "const": 15
+                    },
+                    "widthBytes": {
+                      "const": 1
+                    },
+                    "sourceAccess": {
+                      "const": "$F(a2)"
+                    },
+                    "role": {
+                      "const": "unlabeledByte15"
+                    }
+                  }
+                }
+              ],
+              "minItems": 10,
+              "maxItems": 10,
+              "additionalItems": false
+            },
+            "packedSize": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "widthSourceByteOffset",
+                "heightSourceByteOffset"
+              ],
+              "properties": {
+                "widthSourceByteOffset": {
+                  "const": 4
+                },
+                "heightSourceByteOffset": {
+                  "const": 5
+                }
+              }
+            },
+            "packedCoordinate": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "xShiftBits",
+                "yMask"
+              ],
+              "properties": {
+                "xShiftBits": {
+                  "const": 8
+                },
+                "yMask": {
+                  "const": 255
+                }
+              }
+            }
+          }
+        },
+        "operations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "initialize",
+            "create",
+            "setDestination",
+            "fixPositions",
+            "move",
+            "moveWithSfx",
+            "delete",
+            "wait",
+            "vint",
+            "composition"
+          ],
+          "properties": {
+            "initialize": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "clearsEntriesBeforeResettingLayoutEnd",
+                "layoutEndAddress",
+                "windowIsPresentWhenCurrentMapDiffersFromMapCurrent",
+                "resetsWindowIndices"
+              ],
+              "properties": {
+                "clearsEntriesBeforeResettingLayoutEnd": {
+                  "const": true
+                },
+                "layoutEndAddress": {
+                  "const": 16758784
+                },
+                "windowIsPresentWhenCurrentMapDiffersFromMapCurrent": {
+                  "const": true
+                },
+                "resetsWindowIndices": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "const": "PORTRAIT_WINDOW_INDEX"
+                    },
+                    {
+                      "const": "DIALOGUE_WINDOW_INDEX"
+                    },
+                    {
+                      "const": "TIMER_WINDOW_INDEX"
+                    }
+                  ],
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "additionalItems": false
+                }
+              }
+            },
+            "create": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "freeSlotUsesZeroLowWordTest",
+                "failureSentinel",
+                "copiesPlaneALayoutOnlyAtInitialLayoutEnd",
+                "layoutBytesFormula",
+                "initialPackedAnimationLengthAndCounter",
+                "clearsUnlabeledBytes14And15"
+              ],
+              "properties": {
+                "freeSlotUsesZeroLowWordTest": {
+                  "const": true
+                },
+                "failureSentinel": {
+                  "const": -1
+                },
+                "copiesPlaneALayoutOnlyAtInitialLayoutEnd": {
+                  "const": true
+                },
+                "layoutBytesFormula": {
+                  "const": "widthTimesHeightTimesLayoutTileWordBytes"
+                },
+                "initialPackedAnimationLengthAndCounter": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "const": 1
+                    },
+                    {
+                      "const": 1
+                    }
+                  ],
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                },
+                "clearsUnlabeledBytes14And15": {
+                  "const": true
+                }
+              }
+            },
+            "setDestination": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requiresActiveEntryAndNoCurrentMovement",
+                "sentinelPackedCoordinate",
+                "sentinelUsesCurrentPackedPosition",
+                "writesOriginThenDestinationThenAnimationLength",
+                "animationLength"
+              ],
+              "properties": {
+                "requiresActiveEntryAndNoCurrentMovement": {
+                  "const": true
+                },
+                "sentinelPackedCoordinate": {
+                  "const": 32896
+                },
+                "sentinelUsesCurrentPackedPosition": {
+                  "const": true
+                },
+                "writesOriginThenDestinationThenAnimationLength": {
+                  "const": true
+                },
+                "animationLength": {
+                  "const": 256
+                }
+              }
+            },
+            "fixPositions": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "copiesPlaneABeforeIteratingSlots",
+                "iteratesAllSlotsInAscendingOrder",
+                "usesSetDestinationSentinel"
+              ],
+              "properties": {
+                "copiesPlaneABeforeIteratingSlots": {
+                  "const": true
+                },
+                "iteratesAllSlotsInAscendingOrder": {
+                  "const": true
+                },
+                "usesSetDestinationSentinel": {
+                  "const": true
+                }
+              }
+            },
+            "move": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "specialTurboForcesAnimationLength",
+                "sentinelPackedCoordinate",
+                "writesOriginThenDestinationThenLengthThenClearsCounter"
+              ],
+              "properties": {
+                "specialTurboForcesAnimationLength": {
+                  "const": 1
+                },
+                "sentinelPackedCoordinate": {
+                  "const": 32896
+                },
+                "writesOriginThenDestinationThenLengthThenClearsCounter": {
+                  "const": true
+                }
+              }
+            },
+            "moveWithSfx": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceMacro",
+                "fallsThroughToMoveWindow"
+              ],
+              "properties": {
+                "sourceMacro": {
+                  "const": "sndCom SFX_MENU_SWITCH"
+                },
+                "fallsThroughToMoveWindow": {
+                  "const": true
+                }
+              }
+            },
+            "delete": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "clearsSelectedEntryLayoutAddressBeforeScan",
+                "recomputesLayoutEndFromHighestRemainingLayoutAddress",
+                "noRemainingEntryResetsLayoutEndToBase",
+                "layoutBytesFormula"
+              ],
+              "properties": {
+                "clearsSelectedEntryLayoutAddressBeforeScan": {
+                  "const": true
+                },
+                "recomputesLayoutEndFromHighestRemainingLayoutAddress": {
+                  "const": true
+                },
+                "noRemainingEntryResetsLayoutEndToBase": {
+                  "const": true
+                },
+                "layoutBytesFormula": {
+                  "const": "widthTimesHeightTimesLayoutTileWordBytes"
+                }
+              }
+            },
+            "wait": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "waitsForVIntBeforeTestingMovingBitfield",
+                "repeatsWhileAnyMovingBitIsSet"
+              ],
+              "properties": {
+                "waitsForVIntBeforeTestingMovingBitfield": {
+                  "const": true
+                },
+                "repeatsWhileAnyMovingBitIsSet": {
+                  "const": true
+                }
+              }
+            },
+            "vint": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "returnsWhenLayoutEndEqualsBase",
+                "clearsMovingBitfieldBeforeFirstSlotPass",
+                "firstPassRestoresMovingWindowsBeforeInterpolation",
+                "secondPassUsesSignedIntegerLinearInterpolation",
+                "hidingSkipsImmediateComposition",
+                "byte14TriggersCompositionThenClears",
+                "byte15TriggersRestoreThenClears",
+                "hideFixTransitionRestoresPlaneABeforeMarkingFix",
+                "showFixTransitionCallsFixWindowsPositions",
+                "updateToggleQueuesPlaneAThenEnablesQueueProcessingThenClearsToggle",
+                "queuedDmaDestinationArgument",
+                "queuedDmaLengthArgument",
+                "queuedDmaIncrementArgument"
+              ],
+              "properties": {
+                "returnsWhenLayoutEndEqualsBase": {
+                  "const": true
+                },
+                "clearsMovingBitfieldBeforeFirstSlotPass": {
+                  "const": true
+                },
+                "firstPassRestoresMovingWindowsBeforeInterpolation": {
+                  "const": true
+                },
+                "secondPassUsesSignedIntegerLinearInterpolation": {
+                  "const": true
+                },
+                "hidingSkipsImmediateComposition": {
+                  "const": true
+                },
+                "byte14TriggersCompositionThenClears": {
+                  "const": true
+                },
+                "byte15TriggersRestoreThenClears": {
+                  "const": true
+                },
+                "hideFixTransitionRestoresPlaneABeforeMarkingFix": {
+                  "const": true
+                },
+                "showFixTransitionCallsFixWindowsPositions": {
+                  "const": true
+                },
+                "updateToggleQueuesPlaneAThenEnablesQueueProcessingThenClearsToggle": {
+                  "const": true
+                },
+                "queuedDmaDestinationArgument": {
+                  "const": 49152
+                },
+                "queuedDmaLengthArgument": {
+                  "const": 1024
+                },
+                "queuedDmaIncrementArgument": {
+                  "const": 2
+                }
+              }
+            },
+            "composition": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "composeFunction",
+                "restoreFunction",
+                "mapCoordinateHorizontalExclusive",
+                "mapCoordinateVerticalExclusive",
+                "setsUpdateToggleWhenNotHidden"
+              ],
+              "properties": {
+                "composeFunction": {
+                  "const": "sub_4AC8"
+                },
+                "restoreFunction": {
+                  "const": "sub_4B5C"
+                },
+                "mapCoordinateHorizontalExclusive": {
+                  "const": 32
+                },
+                "mapCoordinateVerticalExclusive": {
+                  "const": 28
+                },
+                "setsUpdateToggleWhenNotHidden": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        "addressFormulas": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "windowEntryAddress",
+            "windowTileAddress",
+            "mapLayoutOffset"
+          ],
+          "properties": {
+            "windowEntryAddress": {
+              "const": "WINDOW_ENTRIES plus slotIndexTimesEntrySizeBytes"
+            },
+            "windowTileAddress": {
+              "const": "layoutAddress plus (packedCoordinateYTimesWidthPlusPackedCoordinateX)TimesLayoutTileWordBytes"
+            },
+            "mapLayoutOffset": {
+              "const": "(packedCoordinateYTimesMapTileColumnsPlusPackedCoordinateXModuloMapTileColumns)TimesLayoutTileWordBytes"
+            }
+          }
+        },
+        "internalDirectCallSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyPlaneALayoutForWindows",
+            "FixWindowsPositions",
+            "GetWindowEntryAddress",
+            "SetWindowDestination",
+            "sub_4AC8",
+            "sub_4B5C",
+            "sub_4BEA"
+          ],
+          "properties": {
+            "CopyPlaneALayoutForWindows": {
+              "const": 3
+            },
+            "FixWindowsPositions": {
+              "const": 1
+            },
+            "GetWindowEntryAddress": {
+              "const": 5
+            },
+            "SetWindowDestination": {
+              "const": 1
+            },
+            "sub_4AC8": {
+              "const": 2
+            },
+            "sub_4B5C": {
+              "const": 2
+            },
+            "sub_4BEA": {
+              "const": 2
+            }
+          }
+        },
+        "externalDirectCallerOccurrences": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code/common/maps/animations.asm",
+            "code/common/maps/mapload.asm",
+            "code/common/menus/battlefieldsettingswindow.asm",
+            "code/common/menus/debugsetflag.asm",
+            "code/common/menus/diamondmenu.asm",
+            "code/common/menus/endingkiss.asm",
+            "code/common/menus/equipmenu.asm",
+            "code/common/menus/goldwindow.asm",
+            "code/common/menus/itemmenu.asm",
+            "code/common/menus/landeffectwindow.asm",
+            "code/common/menus/magicmenu.asm",
+            "code/common/menus/memberscreen.asm",
+            "code/common/menus/memberslistscreen.asm",
+            "code/common/menus/minimapscreen.asm",
+            "code/common/menus/ministatuswindow.asm",
+            "code/common/menus/nameallyscreen.asm",
+            "code/common/menus/nameunderportraitwindow.asm",
+            "code/common/menus/numberprompt.asm",
+            "code/common/menus/portraitfunctions.asm",
+            "code/common/menus/portraitwindow.asm",
+            "code/common/menus/shopscreen.asm",
+            "code/common/menus/timerwindow.asm",
+            "code/common/menus/unusedsub_156A8.asm",
+            "code/common/menus/yesnoprompt.asm",
+            "code/common/scripting/text/textfunctions_1.asm",
+            "code/common/scripting/text/textfunctions_2.asm",
+            "code/gameflow/battle/battlevints.asm",
+            "code/gameflow/special/battletest.asm",
+            "code/gameflow/start/gameinit.asm",
+            "code/specialscreens/witch/witchfunctions.asm",
+            "code/specialscreens/witch/witchmainmenu.asm",
+            "code/specialscreens/witch/witchstart.asm"
+          ],
+          "properties": {
+            "code/common/maps/animations.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CopyPlaneALayoutForWindows",
+                "FixWindowsPositions"
+              ],
+              "properties": {
+                "CopyPlaneALayoutForWindows": {
+                  "const": 1
+                },
+                "FixWindowsPositions": {
+                  "const": 1
+                }
+              }
+            },
+            "code/common/maps/mapload.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "InitializeWindowProperties"
+              ],
+              "properties": {
+                "InitializeWindowProperties": {
+                  "const": 1
+                }
+              }
+            },
+            "code/common/menus/battlefieldsettingswindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/debugsetflag.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/diamondmenu.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 2
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/endingkiss.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "SetWindowDestination"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                }
+              }
+            },
+            "code/common/menus/equipmenu.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/goldwindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 3
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/itemmenu.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 4
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/landeffectwindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/magicmenu.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 5
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 3
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/memberscreen.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 4
+                },
+                "DeleteWindow": {
+                  "const": 4
+                },
+                "GetWindowTileAddress": {
+                  "const": 5
+                },
+                "MoveWindowWithSfx": {
+                  "const": 8
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/memberslistscreen.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 3
+                },
+                "DeleteWindow": {
+                  "const": 3
+                },
+                "GetWindowTileAddress": {
+                  "const": 6
+                },
+                "MoveWindowWithSfx": {
+                  "const": 10
+                },
+                "SetWindowDestination": {
+                  "const": 7
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 8
+                }
+              }
+            },
+            "code/common/menus/minimapscreen.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/ministatuswindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "InitializeWindowProperties",
+                "MoveWindow",
+                "MoveWindowWithSfx",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 3
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 3
+                },
+                "InitializeWindowProperties": {
+                  "const": 1
+                },
+                "MoveWindow": {
+                  "const": 4
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 4
+                }
+              }
+            },
+            "code/common/menus/nameallyscreen.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 3
+                },
+                "DeleteWindow": {
+                  "const": 3
+                },
+                "MoveWindowWithSfx": {
+                  "const": 6
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/nameunderportraitwindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/numberprompt.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/portraitfunctions.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetWindowTileAddress",
+                "SetWindowDestination"
+              ],
+              "properties": {
+                "GetWindowTileAddress": {
+                  "const": 1
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                }
+              }
+            },
+            "code/common/menus/portraitwindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 2
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/shopscreen.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindow",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 3
+                },
+                "DeleteWindow": {
+                  "const": 3
+                },
+                "MoveWindow": {
+                  "const": 4
+                },
+                "MoveWindowWithSfx": {
+                  "const": 6
+                },
+                "SetWindowDestination": {
+                  "const": 3
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/timerwindow.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowTileAddress",
+                "SetWindowDestination"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowTileAddress": {
+                  "const": 1
+                },
+                "SetWindowDestination": {
+                  "const": 3
+                }
+              }
+            },
+            "code/common/menus/unusedsub_156A8.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "MoveWindowWithSfx"
+              ],
+              "properties": {
+                "MoveWindowWithSfx": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/menus/yesnoprompt.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "MoveWindowWithSfx",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "MoveWindowWithSfx": {
+                  "const": 7
+                },
+                "SetWindowDestination": {
+                  "const": 2
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 2
+                }
+              }
+            },
+            "code/common/scripting/text/textfunctions_1.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetWindowEntryAddress",
+                "SetWindowDestination"
+              ],
+              "properties": {
+                "GetWindowEntryAddress": {
+                  "const": 1
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                }
+              }
+            },
+            "code/common/scripting/text/textfunctions_2.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "GetWindowEntryAddress",
+                "MoveWindow",
+                "SetWindowDestination",
+                "WaitForWindowMovementEnd"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "GetWindowEntryAddress": {
+                  "const": 1
+                },
+                "MoveWindow": {
+                  "const": 5
+                },
+                "SetWindowDestination": {
+                  "const": 1
+                },
+                "WaitForWindowMovementEnd": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/battle/battlevints.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "InitializeWindowProperties"
+              ],
+              "properties": {
+                "InitializeWindowProperties": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/special/battletest.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "InitializeWindowProperties"
+              ],
+              "properties": {
+                "InitializeWindowProperties": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/start/gameinit.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "InitializeWindowProperties"
+              ],
+              "properties": {
+                "InitializeWindowProperties": {
+                  "const": 1
+                }
+              }
+            },
+            "code/specialscreens/witch/witchfunctions.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "InitializeWindowProperties"
+              ],
+              "properties": {
+                "InitializeWindowProperties": {
+                  "const": 1
+                }
+              }
+            },
+            "code/specialscreens/witch/witchmainmenu.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CreateWindow",
+                "DeleteWindow",
+                "SetWindowDestination"
+              ],
+              "properties": {
+                "CreateWindow": {
+                  "const": 1
+                },
+                "DeleteWindow": {
+                  "const": 1
+                },
+                "SetWindowDestination": {
+                  "const": 3
+                }
+              }
+            },
+            "code/specialscreens/witch/witchstart.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "InitializeWindowProperties"
+              ],
+              "properties": {
+                "InitializeWindowProperties": {
+                  "const": 1
+                }
+              }
+            }
+          }
+        },
+        "externalDirectCallSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "InitializeWindowProperties",
+            "CreateWindow",
+            "SetWindowDestination",
+            "FixWindowsPositions",
+            "sub_48BE",
+            "CopyPlaneALayoutForWindows",
+            "MoveWindowWithSfx",
+            "MoveWindow",
+            "DeleteWindow",
+            "WaitForWindowMovementEnd",
+            "VInt_UpdateWindows",
+            "sub_4AC8",
+            "sub_4B5C",
+            "sub_4BEA",
+            "GetWindowEntryAddress",
+            "GetWindowTileAddress"
+          ],
+          "properties": {
+            "InitializeWindowProperties": {
+              "const": 7
+            },
+            "CreateWindow": {
+              "const": 33
+            },
+            "SetWindowDestination": {
+              "const": 33
+            },
+            "FixWindowsPositions": {
+              "const": 1
+            },
+            "sub_48BE": {
+              "const": 0
+            },
+            "CopyPlaneALayoutForWindows": {
+              "const": 1
+            },
+            "MoveWindowWithSfx": {
+              "const": 66
+            },
+            "MoveWindow": {
+              "const": 13
+            },
+            "DeleteWindow": {
+              "const": 31
+            },
+            "WaitForWindowMovementEnd": {
+              "const": 45
+            },
+            "VInt_UpdateWindows": {
+              "const": 0
+            },
+            "sub_4AC8": {
+              "const": 0
+            },
+            "sub_4B5C": {
+              "const": 0
+            },
+            "sub_4BEA": {
+              "const": 0
+            },
+            "GetWindowEntryAddress": {
+              "const": 2
+            },
+            "GetWindowTileAddress": {
+              "const": 30
+            }
+          }
+        },
+        "externalLongwordPointerOccurrences": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code/gameflow/battle/battlescenes/initializebattlescene.asm",
+            "code/gameflow/battle/battlevints.asm",
+            "code/gameflow/special/battletest.asm",
+            "code/gameflow/start/gameinit.asm",
+            "code/specialscreens/witch/witchfunctions.asm",
+            "code/specialscreens/witch/witchstart.asm"
+          ],
+          "properties": {
+            "code/gameflow/battle/battlescenes/initializebattlescene.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "VInt_UpdateWindows"
+              ],
+              "properties": {
+                "VInt_UpdateWindows": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/battle/battlevints.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "VInt_UpdateWindows"
+              ],
+              "properties": {
+                "VInt_UpdateWindows": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/special/battletest.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "VInt_UpdateWindows"
+              ],
+              "properties": {
+                "VInt_UpdateWindows": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/start/gameinit.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "VInt_UpdateWindows"
+              ],
+              "properties": {
+                "VInt_UpdateWindows": {
+                  "const": 1
+                }
+              }
+            },
+            "code/specialscreens/witch/witchfunctions.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "VInt_UpdateWindows"
+              ],
+              "properties": {
+                "VInt_UpdateWindows": {
+                  "const": 1
+                }
+              }
+            },
+            "code/specialscreens/witch/witchstart.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "VInt_UpdateWindows"
+              ],
+              "properties": {
+                "VInt_UpdateWindows": {
+                  "const": 1
+                }
+              }
+            }
+          }
+        },
+        "indirectBehavior": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "longwordPointerReferencesAreNotDirectCallSites",
+            "zeroDirectCallerCountDoesNotEstablishUnreachability"
+          ],
+          "properties": {
+            "longwordPointerReferencesAreNotDirectCallSites": {
+              "const": true
+            },
+            "zeroDirectCallerCountDoesNotEstablishUnreachability": {
+              "const": true
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": [
+            {
+              "const": "window-presentation-matrix-animation-hide-fix-scroll-clip-and-dma"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1,
+          "additionalItems": false
+        }
       }
     }
   }

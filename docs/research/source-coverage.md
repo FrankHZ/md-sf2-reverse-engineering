@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-20
+- Evidence date: 2026-07-21
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -231,8 +231,10 @@ The current evidence is deep but narrow:
   save/reset/cheat/effect control structure are static contracts; rendered parity and five
   oversized DMA tails are queued as three presentation matrices.
   The ROM header, window engine, battle test, configuration mode, and debug battle actions close the
-  final five primary layout sources. Header/vector, eight-slot window, and debug route shapes are
-  static contracts; window/debug presentation remains queued.
+  final five primary layout sources. The window contract now records all 16 stable entries, 32
+  instruction-scoped external direct-caller files, six separate VInt pointer references, the 16-byte
+  entry layout, derived allocation/address formulas, and VInt composition/DMA call order; only the
+  grouped window/debug presentation matrices remain queued.
   The first complete data-directory batch now inventories all 18 files under `data/battles/global`.
   Seventeen are layout-owned and H1-addressed; the unused all-zero `global/afterbattlejoins.asm`
   alternate is hashed but excluded rather than borrowing the cutscene table's same-named symbol.

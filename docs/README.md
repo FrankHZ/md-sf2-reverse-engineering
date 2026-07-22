@@ -204,6 +204,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   save/load/copy/delete 静态合同，以及留给 H3 的持久化和断电边界。
 - [`input-system.md`](./design/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
   helper 与控制器/时序未知边界。
+- [`window-system.md`](./design/window-system.md)：八槽 window entry、layout 分配/回收、packed
+  coordinate 寻址、VInt composition/DMA 调用顺序，以及呈现时序未知边界。
 - [`randomness.md`](./design/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG 与有界采样的
   静态/运行时合同，以及 retry 与 seed-copy 隔离边界。
 
