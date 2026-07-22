@@ -138,7 +138,7 @@ strict output schema, mirrored fixture schema, and focused source-mutation tests
 `schemas/h2-common-menus-static-fixture.schema.json`, and
 `tests/python/test_common_menus.py`. Reproduce with `uv run sf2 h2 common-menus`.
 Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
-`157936FE16684908F5B9EFE05F4D6982C6573193A737CEA50CC661DD84DB46BE`.
+`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
 
 `ShopMenu` enters `j_ExecuteDiamondMenu` with `MENU_SHOP`; its local chain compares selector values
 `0`, `1`, and `2` for Buy, Sell, and Repair, respectively, and falls through to the Deals section.
@@ -191,7 +191,7 @@ selection-screen 3; absence of another direct call remains not an unreachability
 `churchactions_2.asm` helper surface. It uses the same exact `sf2-common-menus-static-v1` fixture,
 both mirrored schemas, and `tests/python/test_common_menus.py`; reproduce with
 `uv run sf2 h2 common-menus`. Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
-`157936FE16684908F5B9EFE05F4D6982C6573193A737CEA50CC661DD84DB46BE`.
+`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
 
 `ChurchMenu` enters `j_ExecuteDiamondMenu` with `MENU_CHURCH`, compares selector values `0`, `1`,
 and `2` for Raise, Cure, and Promote, and falls through to Save. Its `-1` comparison branches to
@@ -233,7 +233,7 @@ helper file `caravanactions_2.asm` (`0x228A8..0x229CA`). The physical spans are 
 respectively; they remain separate from the 64-item storage capacity, 4-slot member capacity, word
 relative-table entry width, item-definition offsets, and `dbf` loop counters. Reproduce with
 `uv run sf2 h2 common-menus`; observed result on 2026-07-21 is `Status: PASS`, canonical SHA-256
-`157936FE16684908F5B9EFE05F4D6982C6573193A737CEA50CC661DD84DB46BE`.
+`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
 
 The top word-relative table is, in source order, `caravanMenu_Join`, `caravanMenu_Depot`,
 `caravanMenu_Item`, and `caravanMenu_Purge`; its selector doubles `d0`, its `-1` branch targets
@@ -260,14 +260,36 @@ it finds one effective site each in exploration VInt and battle-test, and zero-i
 external effective-target totals remain fixture-pinned. Direct callers do not prove service admission,
 return state, or reachability, which remain **Inferred** and **Unknown** in the grouped H3 queue.
 
-`BlacksmithMenu` has no diamond-menu dispatch. On each visit it zeros four stack-local counters,
-updates the force list, counts pending/ready orders, fulfills ready orders when flag 80 permits, and
-otherwise enters order placement while capacity remains. Placement requires mithril, an eligible
-promoted customer, confirmation, enough gold, and a free order slot; its direct effects decrease
-gold, remove mithril from the selected slot, choose a mithril weapon, and clear flag 80. Fulfillment
-selects a recipient, adds the selected weapon, and can offer equip. The pinned source also proves
-the BRN/RDBN random class boundary and weighted row selection inside `PickMithrilWeapon`; its
-cross-map/save persistence is not statically established here.
+**Confirmed — Blacksmith static contract.** Pinned upstream `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6` supplies eight complete named-function records across
+`blacksmithactions.asm` (`0x21A3A..0x21EB6`) and `pickmithrilweapon.asm`
+(`0x21ED6..0x21F62`). The 1,148-byte and 140-byte physical spans remain distinct from the 24-byte
+stack frame, four order slots, two-byte order storage width, inclusive counters, and eight-byte weapon
+row stride. Reproduce with `uv run sf2 h2 common-menus`; observed 2026-07-21 SHA-256 is
+`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
+
+The source confirms four visit-local counter clears; the force-copy length transfer from
+`TARGETS_LIST_LENGTH` to `GENERIC_LIST_LENGTH`; byte `(a0)+` to `(a1)+` copying; a byte decrement and
+`dbf @CopyForceMembersList_Loop`; and the distinct `TARGETS_LIST_LENGTH` word load into `d7` that
+supplies that loop counter. The same literal flag 80 appears at the `j_CheckFlag` and later
+`j_ClearFlag` use sites. Fulfillment records cancellation/full-inventory/equippability/cursed branches
+and the exact add-item, word storage-clear, fulfilled-count increment, optional-equip sequence.
+Placement records the source-ordered material-selection cancellation, mithril match, customer-selection
+cancellation, promotion, eligible-class, confirmation, and gold gates, followed by decrease-gold,
+drop-by-slot, `PickMithrilWeapon`, literal-80 load, and flag-clear. The max-order comparison is a
+separate post-placement continuation branch, not an admission gate. Fulfillment separately records
+recipient cancellation, inventory capacity, equipment type, equippability, optional-equip confirmation,
+weapon/ring cursed-unequip rejection, and newly-equipped curse outcome branches.
+The cross-owned class/weapon tables are checked only for count/prefix/row shape: the class list loads a
+word prefix, decrements it, and loops with `dbf`; it contains 15 eligible classes, while the item-owned
+tables have nine source class groups and eight weapon rows. `PickMithrilWeapon` preserves initial row 0,
+the BRN/RDBN fallback RNG bound/zero-to-row-2 branch/convergence, the group-prefix/class-match inner
+and outer loops, byte parameter/item reads, parameter-to-RNG-range transfer, result branch, and weighted
+loop. Its parameter column is cross-checked to the item-auxiliary-owned `[16, 8, 4, 1]` denominator
+sequence. The separate two-byte order-slot search retains empty/occupied polarity, stride load/add,
+loop target, and word write.
+Persistence, RNG distribution, prompt meaning/timing, caller admission, and direct-call reachability
+remain **Inferred** or **Unknown** in the existing grouped H3 queue.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/service-interactions.md). It deliberately consumes only the

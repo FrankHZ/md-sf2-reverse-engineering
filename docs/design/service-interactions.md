@@ -23,7 +23,7 @@ timing.
 | Shop | buy, sell, repair, deals | Buy/deals remove gold before granting an item; a deals purchase also removes its deals entry. Selling grants gold, removes the member-held item, and routes rare items to deals. Repair removes gold and repairs the selected item slot. |
 | Church | raise, cure, promote, save | Raise restores current HP after payment; cure replaces status bits after payment; promotion is data/member-gated before class change/promotion; save reaches the save operation. |
 | Caravan | join, depot, item, purge | The top, depot, and item selectors are source-ordered word-relative tables. Deposit calls storage-add before member-slot drop; derive and give retain distinct normal/exchange call sequences; rare-drop branches can call the deals helper. |
-| Blacksmith | fulfill ready orders, then place pending order | No diamond action menu. Placement consumes mithril and gold only after eligibility/confirmation/capacity guards; fulfillment grants the ready weapon to a selected member. |
+| Blacksmith | fulfill ready orders, then place pending order | No diamond menu. Static source preserves ready/pending counting, fulfillment storage-clear/add/equip order, placement gates and payment/drop/pick/flag order, plus the bounded weapon-row picker. |
 
 Shop, church, caravan, depot, and item surfaces cancel through the common diamond/selection boundary;
 the shared selection screen returns `-1` on B and confirms on A/C. Shop and caravan loop back to
@@ -63,6 +63,20 @@ selection-action handoff, not as a proven equipment lifecycle. Physical ROM span
 item-definition offsets, capacities, and loop counters remain distinct contract fields. Alias-resolved
 direct callers record instruction spelling and effective target, but do not imply runtime admission,
 return state, persistence, timing, or presentation.
+
+### Blacksmith source boundary
+
+The Blacksmith design contract consumes only the **Confirmed** static source boundary: a 24-byte local
+frame clears its four named counters before processing; byte force copying and the paired literal-80
+check/clear sites are separately recorded, including the `TARGETS_LIST_LENGTH` `d7` counter-source
+load. Fulfillment retains recipient cancellation/capacity/equipment
+branches and its add-item, word order-storage clear, count increment, optional-equip sequence. Placement
+keeps the source-ordered material/customer cancellation, mithril, promotion/class, confirmation, and gold
+gates, then its decrease-gold, drop-by-slot, picker, literal-80 load, flag-clear order; the max-order
+comparison is a post-placement continuation branch. The picker retains source-shaped prefixed-class
+scanning, initial-row and BRN/RDBN fallback branch, parameter-to-RNG-range/result loop, item-auxiliary
+parameter denominators, and two-byte slot search/write loop—not a runtime promise about RNG
+distribution, persistence, prompt meaning, caller admission, or presentation.
 
 ## Boundaries for a Future Remake
 

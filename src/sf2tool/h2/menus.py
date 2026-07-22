@@ -1531,12 +1531,914 @@ def _caravan_static_contract(root: Path) -> dict[str, Any]:
     }
 
 
+def _blacksmith_function_section(source: str, symbol: str) -> str:
+    start = source.find(f"{symbol}:")
+    if start < 0:
+        raise ValueError(f"blacksmith function drift: {symbol}")
+    finish = source.find("; End of function", start)
+    if finish < 0:
+        raise ValueError(f"blacksmith function end drift: {symbol}")
+    return source[start:finish]
+
+
+def _require_ordered_blacksmith_function(
+    source: str, symbol: str, fragments: tuple[str, ...]
+) -> None:
+    """Guard Blacksmith control flow within its named source function."""
+    section = _blacksmith_function_section(source, symbol)
+    position = 0
+    for fragment in fragments:
+        position = section.find(fragment, position)
+        if position < 0:
+            raise ValueError(f"blacksmith control-flow drift in {symbol}: {fragment}")
+        position += len(fragment)
+
+
+def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
+    """Parse the Blacksmith source surface before interpreting its static relationships."""
+    actions = read_upstream_text(root / "blacksmith/blacksmithactions.asm")
+    picker = read_upstream_text(root / "blacksmith/pickmithrilweapon.asm")
+    enums = read_upstream_text(root.parents[2] / "sf2enums.asm")
+    constant_names = (
+        "BLACKSMITH_MAX_ORDERS_NUMBER",
+        "BLACKSMITH_ORDERS_COUNTER",
+        "BLACKSMITH_MITHRIL_ITEM",
+        "BLACKSMITH_ORDER_COST",
+        "CHAR_CLASS_FIRSTPROMOTED",
+        "COMBATANT_ITEMSLOTS",
+        "MITHRIL_WEAPON_CLASSES_COUNTER",
+        "MITHRIL_WEAPON_ORDER_SLOT_SIZE",
+        "MITHRIL_WEAPONS_PER_CLASS_COUNTER",
+        "SOUND_COMMAND_PLAY_PREVIOUS_MUSIC",
+    )
+    constants: dict[str, int] = {}
+    for name in constant_names:
+        match = re.search(rf"^{name}:\s+equ\s+(\$[0-9A-Fa-f]+|\d+)", enums, re.MULTILINE)
+        if not match:
+            raise ValueError(f"blacksmith constant drift: {name}")
+        raw = match.group(1)
+        constants[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+    operation_sources = {
+        "BlacksmithMenu": actions,
+        "ProcessBlacksmithOrders": actions,
+        "BlacksmithAction_FulfillOrder": actions,
+        "BlacksmithAction_PlaceOrder": actions,
+        "WaitForMusicResumeAndPlayerInput_Blacksmith": actions,
+        "CountPendingAndReadyToFulfillOrders": actions,
+        "IsClassBlacksmithEligible": actions,
+        "PickMithrilWeapon": picker,
+    }
+    operations = {
+        symbol: _shop_instruction_records(_blacksmith_function_section(source, symbol))
+        for symbol, source in operation_sources.items()
+    }
+
+    def immediate(record: dict[str, Any], operand_index: int = 0) -> tuple[str, int]:
+        return _caravan_constant_operand(record["operands"][operand_index], constants)
+
+    def calls(symbol: str, targets: set[str]) -> list[str]:
+        return [
+            record["directTarget"]
+            for record in operations[symbol]
+            if record["directTarget"] in targets
+        ]
+
+    for symbol, fragments in {
+        "BlacksmithMenu": (
+            "link    a6,#-24",
+            "clr.w   readyToFulfillOrdersNumber(a6)",
+            "clr.w   pendingOrdersNumber(a6)",
+            "clr.w   fulfilledOrdersNumber(a6)",
+            "clr.w   fulfillOrdersFlag(a6)",
+            "bsr.w   ProcessBlacksmithOrders",
+        ),
+        "ProcessBlacksmithOrders": (
+            "jsr     j_UpdateForce",
+            "move.w  ((TARGETS_LIST_LENGTH-$1000000)).w,((GENERIC_LIST_LENGTH-$1000000)).w",
+            "move.w  ((TARGETS_LIST_LENGTH-$1000000)).w,d7",
+            "subq.b  #1,d7",
+            "move.b  (a0)+,(a1)+",
+            "dbf     d7,@CopyForceMembersList_Loop",
+            "bsr.w   CountPendingAndReadyToFulfillOrders",
+            "move.w  #BLACKSMITH_MAX_ORDERS_NUMBER,d7",
+            "bsr.w   BlacksmithAction_FulfillOrder",
+            "bsr.w   BlacksmithAction_PlaceOrder",
+        ),
+        "BlacksmithAction_FulfillOrder": (
+            "cmpi.w  #-1,d0",
+            "bne.s   @IsMemberInventoryFull",
+            "cmpi.w  #COMBATANT_ITEMSLOTS,d2",
+            "bcs.s   @CheckEquipmentType",
+            "cmpi.w  #EQUIPMENTTYPE_TOOL,d2",
+            "beq.s   @AddItem",
+            "jsr     j_IsWeaponOrRingEquippable",
+            "bcs.s   @AddItem",
+            "jsr     j_AddItem",
+            "move.w  #0,(a1)",
+            "addi.w  #1,fulfilledOrdersNumber(a6)",
+            "bcc.w   byte_21CD0",
+            "cmpi.w  #0,d0",
+            "bne.w   byte_21CD0",
+            "jsr     j_UnequipItemBySlotIfNotCursed",
+            "cmpi.w  #2,d2",
+            "bne.w   @EquipNewItem",
+            "jsr     j_UnequipItemBySlotIfNotCursed",
+            "cmpi.w  #2,d2",
+            "bne.w   @EquipNewItem",
+            "jsr     j_EquipItemBySlot",
+            "cmpi.w  #2,d2",
+            "bne.s   byte_21CC8",
+        ),
+        "BlacksmithAction_PlaceOrder": (
+            "cmpi.w  #-1,d0",
+            "beq.w   @Done",
+            "cmpi.w  #BLACKSMITH_MITHRIL_ITEM,d2",
+            "beq.w   byte_21D1A",
+            "cmpi.w  #-1,d0",
+            "beq.s   byte_21CDE",
+            "cmpi.w  #CHAR_CLASS_FIRSTPROMOTED,d1",
+            "bcc.w   @IsCustomerClassEligible",
+            "bsr.w   IsClassBlacksmithEligible",
+            "cmpi.w  #0,d0",
+            "beq.w   @ConfirmOrder",
+            "jsr     j_alt_YesNoPrompt",
+            "cmpi.w  #0,d0",
+            "beq.s   @CheckGold",
+            "cmpi.l  #BLACKSMITH_ORDER_COST,d1",
+            "bcc.w   @PlaceOrder",
+            "jsr     j_DecreaseGold",
+            "jsr     j_DropItemBySlot",
+            "bsr.w   PickMithrilWeapon",
+            "move.w  #80,d1",
+            "jsr     j_ClearFlag",
+            "cmpi.w  #BLACKSMITH_MAX_ORDERS_NUMBER,d0",
+            "bne.s   byte_21E16",
+        ),
+        "CountPendingAndReadyToFulfillOrders": (
+            "move.w  #80,d1",
+            "jsr     j_CheckFlag",
+            "beq.w   @Continue",
+            "move.w  #BLACKSMITH_MAX_ORDERS_NUMBER,d7",
+            "addi.w  #1,readyToFulfillOrdersNumber(a6)",
+            "addi.w  #1,pendingOrdersNumber(a6)",
+            "dbf     d7,@Loop",
+        ),
+        "IsClassBlacksmithEligible": (
+            "move.w  (a0)+,d7",
+            "subq.w  #1,d7",
+            "dbf     d7,@Loop",
+        ),
+        "PickMithrilWeapon": (
+            "move.w  #MITHRIL_WEAPON_CLASSES_COUNTER,d7",
+            "move.w  (a0)+,d6",
+            "subq.w  #1,d6",
+            "move.w  (a0)+,d1",
+            "move.w  clientClass(a6),d2",
+            "cmp.w   d1,d2",
+            "beq.w   @GetWeaponsEntryAddress",
+            "dbf     d6,@FindCharacterClass_Loop",
+            "addi.w  #1,d0",
+            "dbf     d7,@FindWeaponClass_Loop",
+            "move.w  #2,d6",
+            "jsr     (GenerateRandomNumber).w",
+            "cmpi.w  #0,d7",
+            "bne.w   @GetWeaponsEntryAddress",
+            "move.w  #2,d0",
+            "lsl.w   #3,d0",
+            "move.w  #MITHRIL_WEAPONS_PER_CLASS_COUNTER,d5",
+            "move.b  (a0)+,d0",
+            "move.b  (a0)+,d1",
+            "move.w  d0,d6",
+            "jsr     (GenerateRandomNumber).w",
+            "cmpi.w  #0,d7",
+            "beq.w   @LoadIndex",
+            "dbf     d5,@PickWeapon_Loop",
+            "move.w  #BLACKSMITH_ORDERS_COUNTER,d7",
+            "cmpi.w  #0,(a0)",
+            "bne.w   @Next",
+            "move.w  d1,(a0)",
+            "@Next:",
+            "adda.w  d0,a0",
+            "dbf     d7,@LoadIndex_Loop",
+        ),
+    }.items():
+        _require_ordered_blacksmith_function(operation_sources[symbol], symbol, fragments)
+
+    frame_link = next(
+        record
+        for record in operations["BlacksmithMenu"]
+        if record["opcode"] == "link" and record["operands"][0] == "a6"
+    )
+    frame_size = abs(int(frame_link["operands"][1][1:]))
+    frame_declarations = dict(
+        (name, int(offset))
+        for name, offset in re.findall(
+                r"^\s*([A-Za-z][A-Za-z0-9]*)\s*=\s*(-\d+)\s*$",
+            actions[: actions.find("BlacksmithMenu:")],
+            re.MULTILINE,
+        )
+    )
+    counter_names = (
+        "readyToFulfillOrdersNumber",
+        "fulfilledOrdersNumber",
+        "pendingOrdersNumber",
+        "fulfillOrdersFlag",
+    )
+    counter_offsets = {name: frame_declarations[name] for name in counter_names}
+    if frame_size != max(abs(offset) for offset in frame_declarations.values()):
+        raise ValueError("blacksmith frame declaration/link drift")
+    initialization_order = [
+        record["operands"][0].removesuffix("(a6)")
+        for record in operations["BlacksmithMenu"]
+        if record["opcode"] == "clr.w"
+        and record["operands"][0].removesuffix("(a6)") in counter_names
+    ]
+    max_orders_record = next(
+        record
+        for record in operations["ProcessBlacksmithOrders"]
+        if record["opcode"] == "move.w"
+        and record["operands"] == ["#BLACKSMITH_MAX_ORDERS_NUMBER", "d7"]
+    )
+    max_orders_name, max_orders = immediate(max_orders_record)
+    order_counter_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "move.w"
+        and record["operands"] == ["#BLACKSMITH_ORDERS_COUNTER", "d7"]
+    )
+    order_counter_name, order_counter = immediate(order_counter_record)
+    slot_shift = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "lsl.w" and record["operands"] == ["#3", "d0"]
+    )
+    row_stride_bytes = 1 << int(slot_shift["operands"][0][1:])
+    slot_stride_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "adda.w" and record["operands"] == ["d0", "a0"]
+    )
+    slot_width_record = next(
+        record
+        for record in operations["BlacksmithAction_FulfillOrder"]
+        if record["opcode"] == "lsl.w" and record["operands"] == ["#1", "d6"]
+    )
+    order_slot_width_bytes = 1 << int(slot_width_record["operands"][0][1:])
+    storage_clear_record = next(
+        record
+        for record in operations["BlacksmithAction_FulfillOrder"]
+        if record["opcode"] == "move.w" and record["operands"] == ["#0", "(a1)"]
+    )
+    slot_size_name = "MITHRIL_WEAPON_ORDER_SLOT_SIZE"
+    if (
+        max_orders_name != "BLACKSMITH_MAX_ORDERS_NUMBER"
+        or order_counter_name != "BLACKSMITH_ORDERS_COUNTER"
+        or order_counter + 1 != max_orders
+        or constants[slot_size_name] != order_slot_width_bytes
+        or slot_stride_record["operands"] != ["d0", "a0"]
+    ):
+        raise ValueError("blacksmith order capacity/width relation drift")
+    mithril_compare = next(
+        record
+        for record in operations["BlacksmithAction_PlaceOrder"]
+        if record["opcode"] == "cmpi.w" and record["operands"][1] == "d2"
+    )
+    mithril_name, mithril_item = immediate(mithril_compare)
+    promotion_compare = next(
+        record
+        for record in operations["BlacksmithAction_PlaceOrder"]
+        if record["opcode"] == "cmpi.w" and record["operands"][1] == "d1"
+    )
+    promotion_name, promotion_class = immediate(promotion_compare)
+    gold_compare = next(
+        record
+        for record in operations["BlacksmithAction_PlaceOrder"]
+        if record["opcode"] == "cmpi.l" and record["operands"][1] == "d1"
+    )
+    gold_name, order_cost = immediate(gold_compare)
+    inventory_compare = next(
+        record
+        for record in operations["BlacksmithAction_FulfillOrder"]
+        if record["opcode"] == "cmpi.w" and record["operands"][1] == "d2"
+    )
+    inventory_name, inventory_capacity = immediate(inventory_compare)
+    class_counter_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "move.w" and record["operands"][1] == "d7"
+        and record["operands"][0] == "#MITHRIL_WEAPON_CLASSES_COUNTER"
+    )
+    class_counter_name, class_counter = immediate(class_counter_record)
+    weapon_counter_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "move.w" and record["operands"][1] == "d5"
+    )
+    weapon_counter_name, weapon_counter = immediate(weapon_counter_record)
+    fallback_bound_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "move.w" and record["operands"] == ["#2", "d6"]
+    )
+    fallback_random_bound = int(fallback_bound_record["operands"][0][1:])
+    fallback_compare = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "cmpi.w" and record["operands"] == ["#0", "d7"]
+    )
+    fallback_branch = operations["PickMithrilWeapon"][
+        operations["PickMithrilWeapon"].index(fallback_compare) + 1
+    ]
+    fallback_row_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "move.w" and record["operands"] == ["#2", "d0"]
+    )
+    initial_group_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "clr.w" and record["operands"] == ["d0"]
+    )
+    fallback_convergence_record = next(
+        record
+        for record in operations["PickMithrilWeapon"]
+        if "@GetWeaponsEntryAddress" in record["labels"]
+    )
+    data_root = root.parents[2] / "data/stats"
+    eligible = read_upstream_text(data_root / "allies/classes/blacksmitheligibleclasses.asm")
+    weapons = read_upstream_text(data_root / "items/mithrilweapons.asm")
+    eligible_classes = re.search(r"^\s*classes\s+([^\r\n]+)", eligible, re.MULTILINE)
+    class_groups = re.findall(r"^\s*classes\s+([^\r\n]+)", weapons, re.MULTILINE)
+    weapon_rows = re.findall(r"^\s*mithrilWeapons\s+", weapons, re.MULTILINE)
+    if (
+        not eligible_classes
+        or len(class_groups) != class_counter + 2
+        or len(weapon_rows) != class_counter + 1
+    ):
+        raise ValueError("blacksmith cross-owned class/weapon table shape drift")
+    if (
+        mithril_name != "BLACKSMITH_MITHRIL_ITEM"
+        or promotion_name != "CHAR_CLASS_FIRSTPROMOTED"
+        or gold_name != "BLACKSMITH_ORDER_COST"
+        or inventory_name != "COMBATANT_ITEMSLOTS"
+        or class_counter_name != "MITHRIL_WEAPON_CLASSES_COUNTER"
+        or weapon_counter_name != "MITHRIL_WEAPONS_PER_CLASS_COUNTER"
+        or row_stride_bytes != 2 * (weapon_counter + 1)
+    ):
+        raise ValueError("blacksmith use-site operand/row relation drift")
+
+    def find(symbol: str, predicate) -> dict[str, Any]:
+        try:
+            return next(record for record in operations[symbol] if predicate(record))
+        except StopIteration as error:
+            raise ValueError(f"blacksmith parsed use-site drift: {symbol}") from error
+
+    def successor(symbol: str, record: dict[str, Any]) -> dict[str, Any]:
+        index = next(
+            index
+            for index, candidate in enumerate(operations[symbol])
+            if candidate is record
+        )
+        return operations[symbol][index + 1]
+
+    def after(
+        symbol: str, start: dict[str, Any], predicate
+    ) -> dict[str, Any]:
+        start_index = next(
+            index
+            for index, candidate in enumerate(operations[symbol])
+            if candidate is start
+        )
+        try:
+            return next(
+                record for record in operations[symbol][start_index + 1 :] if predicate(record)
+            )
+        except StopIteration as error:
+            raise ValueError(f"blacksmith ordered use-site drift: {symbol}") from error
+
+    def conditional_branch(
+        name: str, symbol: str, operation: dict[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "name": name,
+            "operation": operation,
+            "branch": successor(symbol, operation),
+        }
+
+    process_copy_length = find(
+        "ProcessBlacksmithOrders",
+        lambda record: record["opcode"] == "move.w"
+        and record["operands"]
+        == ["((TARGETS_LIST_LENGTH-$1000000)).w", "((GENERIC_LIST_LENGTH-$1000000)).w"],
+    )
+    process_copy_counter_source = after(
+        "ProcessBlacksmithOrders",
+        process_copy_length,
+        lambda record: record["opcode"] == "move.w"
+        and record["operands"][1] == "d7",
+    )
+    process_copy_width = find(
+        "ProcessBlacksmithOrders",
+        lambda record: record["opcode"] == "move.b" and record["operands"] == ["(a0)+", "(a1)+"],
+    )
+    process_copy_adjust = find(
+        "ProcessBlacksmithOrders",
+        lambda record: record["opcode"] == "subq.b" and record["operands"] == ["#1", "d7"],
+    )
+    process_copy_loop = find(
+        "ProcessBlacksmithOrders",
+        lambda record: record["opcode"] == "dbf"
+        and record["branchTarget"] == "@CopyForceMembersList_Loop",
+    )
+    readiness_flag_load = find(
+        "CountPendingAndReadyToFulfillOrders",
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["#80", "d1"],
+    )
+    readiness_check = successor("CountPendingAndReadyToFulfillOrders", readiness_flag_load)
+    clear_flag_load = find(
+        "BlacksmithAction_PlaceOrder",
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["#80", "d1"],
+    )
+    clear_flag_call = successor("BlacksmithAction_PlaceOrder", clear_flag_load)
+    readiness_flag = int(readiness_flag_load["operands"][0][1:])
+    clear_flag = int(clear_flag_load["operands"][0][1:])
+    if (
+        readiness_flag != clear_flag
+        or readiness_check["directTarget"] != "j_CheckFlag"
+        or clear_flag_call["directTarget"] != "j_ClearFlag"
+    ):
+        raise ValueError("blacksmith flag-80 use-site relation drift")
+    fulfill_add = find(
+        "BlacksmithAction_FulfillOrder",
+        lambda record: record["directTarget"] == "j_AddItem",
+    )
+    fulfill_increment = find(
+        "BlacksmithAction_FulfillOrder",
+        lambda record: record["opcode"] == "addi.w"
+        and record["operands"] == ["#1", "fulfilledOrdersNumber(a6)"],
+    )
+    fulfill_equip = [
+        record
+        for record in operations["BlacksmithAction_FulfillOrder"]
+        if record["directTarget"] == "j_EquipItemBySlot"
+    ][-1]
+    fulfill_cancel = find(
+        "BlacksmithAction_FulfillOrder",
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#-1", "d0"],
+    )
+    fulfill_curse = [
+        record
+        for record in operations["BlacksmithAction_FulfillOrder"]
+        if record["opcode"] == "cmpi.w" and record["operands"] == ["#2", "d2"]
+    ][-1]
+    fulfill_inventory = inventory_compare
+    fulfill_equipment_type = find(
+        "BlacksmithAction_FulfillOrder",
+        lambda record: record["opcode"] == "cmpi.w"
+        and record["operands"] == ["#EQUIPMENTTYPE_TOOL", "d2"],
+    )
+    fulfill_equippability = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_equipment_type,
+        lambda record: record["directTarget"] == "j_IsWeaponOrRingEquippable",
+    )
+    fulfill_post_add_equippability = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_increment,
+        lambda record: record["directTarget"] == "j_IsWeaponOrRingEquippable",
+    )
+    fulfill_optional_prompt = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_post_add_equippability,
+        lambda record: record["directTarget"] == "j_alt_YesNoPrompt",
+    )
+    fulfill_optional_confirmation = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_optional_prompt,
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#0", "d0"],
+    )
+    fulfill_weapon_unequip = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_optional_confirmation,
+        lambda record: record["directTarget"] == "j_UnequipItemBySlotIfNotCursed",
+    )
+    fulfill_weapon_curse = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_weapon_unequip,
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#2", "d2"],
+    )
+    fulfill_ring_unequip = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_weapon_curse,
+        lambda record: record["directTarget"] == "j_UnequipItemBySlotIfNotCursed",
+    )
+    fulfill_ring_curse = after(
+        "BlacksmithAction_FulfillOrder",
+        fulfill_ring_unequip,
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#2", "d2"],
+    )
+    place_material_cancel = find(
+        "BlacksmithAction_PlaceOrder",
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#-1", "d0"],
+    )
+    place_customer_cancel = after(
+        "BlacksmithAction_PlaceOrder",
+        mithril_compare,
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#-1", "d0"],
+    )
+    place_eligibility_call = after(
+        "BlacksmithAction_PlaceOrder",
+        promotion_compare,
+        lambda record: record["directTarget"] == "IsClassBlacksmithEligible",
+    )
+    place_eligibility_result = after(
+        "BlacksmithAction_PlaceOrder",
+        place_eligibility_call,
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#0", "d0"],
+    )
+    place_confirmation_prompt = after(
+        "BlacksmithAction_PlaceOrder",
+        place_eligibility_result,
+        lambda record: record["directTarget"] == "j_alt_YesNoPrompt",
+    )
+    place_confirmation_result = after(
+        "BlacksmithAction_PlaceOrder",
+        place_confirmation_prompt,
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#0", "d0"],
+    )
+    place_capacity = find(
+        "BlacksmithAction_PlaceOrder",
+        lambda record: record["opcode"] == "cmpi.w"
+        and record["operands"] == ["#BLACKSMITH_MAX_ORDERS_NUMBER", "d0"],
+    )
+    prefix_load = find(
+        "IsClassBlacksmithEligible",
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["(a0)+", "d7"],
+    )
+    prefix_decrement = successor("IsClassBlacksmithEligible", prefix_load)
+    prefix_loop = find(
+        "IsClassBlacksmithEligible",
+        lambda record: record["opcode"] == "dbf" and record["branchTarget"] == "@Loop",
+    )
+    picker_reads = [
+        record
+        for record in operations["PickMithrilWeapon"]
+        if record["opcode"] == "move.b" and record["operands"][0] == "(a0)+"
+    ]
+    order_slot_empty = find(
+        "PickMithrilWeapon",
+        lambda record: record["opcode"] == "cmpi.w" and record["operands"] == ["#0", "(a0)"],
+    )
+    order_slot_write = find(
+        "PickMithrilWeapon",
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["d1", "(a0)"],
+    )
+    group_prefix_read = find(
+        "PickMithrilWeapon",
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["(a0)+", "d6"],
+    )
+    group_prefix_decrement = successor("PickMithrilWeapon", group_prefix_read)
+    class_read = after(
+        "PickMithrilWeapon",
+        group_prefix_decrement,
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["(a0)+", "d1"],
+    )
+    character_class_read = successor("PickMithrilWeapon", class_read)
+    class_compare = successor("PickMithrilWeapon", character_class_read)
+    class_match_branch = successor("PickMithrilWeapon", class_compare)
+    class_inner_loop = after(
+        "PickMithrilWeapon",
+        class_match_branch,
+        lambda record: record["opcode"] == "dbf"
+        and record["branchTarget"] == "@FindCharacterClass_Loop",
+    )
+    group_index_increment = successor("PickMithrilWeapon", class_inner_loop)
+    group_outer_loop = successor("PickMithrilWeapon", group_index_increment)
+    weighted_parameter_read = after(
+        "PickMithrilWeapon",
+        weapon_counter_record,
+        lambda record: record["opcode"] == "move.b" and record["operands"] == ["(a0)+", "d0"],
+    )
+    weighted_item_read = successor("PickMithrilWeapon", weighted_parameter_read)
+    weighted_parameter_range = successor("PickMithrilWeapon", weighted_item_read)
+    weighted_rng_call = successor("PickMithrilWeapon", weighted_parameter_range)
+    weighted_result_compare = successor("PickMithrilWeapon", weighted_rng_call)
+    weighted_result_branch = successor("PickMithrilWeapon", weighted_result_compare)
+    weighted_loop = successor("PickMithrilWeapon", weighted_result_branch)
+    order_slot_occupied_branch = successor("PickMithrilWeapon", order_slot_empty)
+    order_slot_stride_load = after(
+        "PickMithrilWeapon",
+        order_slot_write,
+        lambda record: record["opcode"] == "move.w" and record["operands"] == ["#2", "d0"],
+    )
+    order_slot_stride_add = successor("PickMithrilWeapon", order_slot_stride_load)
+    order_slot_loop = successor("PickMithrilWeapon", order_slot_stride_add)
+    parameter_item_pairs = re.findall(
+        r"^\s*(?:mithrilWeapons\s+)?(\d+),\s*([A-Z][A-Z0-9_]*)",
+        weapons,
+        re.MULTILINE,
+    )
+    parameter_rows = [
+        [int(parameter) for parameter, _item in parameter_item_pairs[index : index + 4]]
+        for index in range(0, len(parameter_item_pairs), 4)
+    ]
+    denominators = parameter_rows[0] if parameter_rows else []
+    if (
+        process_copy_counter_source["operands"][0] != process_copy_length["operands"][0]
+        or process_copy_counter_source["operands"][1] != "d7"
+        or process_copy_loop["opcode"] != "dbf"
+        or prefix_decrement["opcode"] != "subq.w"
+        or prefix_loop["opcode"] != "dbf"
+        or len(picker_reads) != 2
+        or initial_group_record["opcode"] != "clr.w"
+        or fallback_row_record["operands"] != ["#2", "d0"]
+        or group_prefix_decrement["operands"] != ["#1", "d6"]
+        or class_compare["operands"] != ["d1", "d2"]
+        or class_inner_loop["operands"] != ["d6", "@FindCharacterClass_Loop"]
+        or group_index_increment["operands"] != ["#1", "d0"]
+        or group_outer_loop["operands"] != ["d7", "@FindWeaponClass_Loop"]
+        or weighted_parameter_range["operands"] != ["d0", "d6"]
+        or weighted_rng_call["directTarget"] != "GenerateRandomNumber"
+        or weighted_result_compare["operands"] != ["#0", "d7"]
+        or weighted_result_branch["branchTarget"] != "@LoadIndex"
+        or weighted_loop["operands"] != ["d5", "@PickWeapon_Loop"]
+        or order_slot_occupied_branch["branchTarget"] != "@Next"
+        or order_slot_stride_add["operands"] != ["d0", "a0"]
+        or order_slot_loop["operands"] != ["d7", "@LoadIndex_Loop"]
+        or len(parameter_item_pairs) != len(weapon_rows) * (weapon_counter + 1)
+        or parameter_rows != [denominators] * len(weapon_rows)
+        or denominators != [16, 8, 4, 1]
+    ):
+        raise ValueError("blacksmith copy/list/picker use-site relation drift")
+    targets = set(operation_sources)
+    disasm = root.parents[2]
+    aliases = _shop_jump_aliases(disasm, targets)
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    source_paths = tuple(
+        root / path
+        for path in ("blacksmith/blacksmithactions.asm", "blacksmith/pickmithrilweapon.asm")
+    )
+    internal = {
+        path.relative_to(disasm).as_posix(): _shop_direct_call_occurrences(
+            path, alias_targets, targets
+        )
+        for path in source_paths
+    }
+    external = {
+        path.relative_to(disasm).as_posix(): occurrences
+        for path in sorted((disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix())
+        if path not in source_paths
+        if (occurrences := _shop_direct_call_occurrences(path, alias_targets, targets))
+    }
+
+    def effective_counts(callers: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
+        return {
+            target: sum(
+                occurrence["siteCount"]
+                for occurrences in callers.values()
+                for occurrence in occurrences
+                if occurrence["effectiveTarget"] == target
+            )
+            for target in sorted(targets)
+        }
+
+    return {
+        "entrySymbol": "BlacksmithMenu",
+        "sourcePaths": [
+            "code/common/menus/blacksmith/blacksmithactions.asm",
+            "code/common/menus/blacksmith/pickmithrilweapon.asm",
+        ],
+        "constants": constants,
+        "sourceRanges": [
+            _caravan_range(actions, "code/common/menus/blacksmith/blacksmithactions.asm"),
+            _caravan_range(picker, "code/common/menus/blacksmith/pickmithrilweapon.asm"),
+        ],
+        "frame": {
+            "frameSizeBytes": frame_size,
+            "counterOffsetsBytes": counter_offsets,
+            "initializationOrder": initialization_order,
+        },
+        "derived": {
+            "process": {
+                "forceCopy": {
+                    "sourceLengthOperand": process_copy_length["operands"][0],
+                    "destinationLengthOperand": process_copy_length["operands"][1],
+                    "counterSource": process_copy_counter_source,
+                    "counterSourceOperand": process_copy_counter_source["operands"][0],
+                    "counterDestination": process_copy_counter_source["operands"][1],
+                    "entryCopyOpcode": process_copy_width["opcode"],
+                    "entryCopyOperands": process_copy_width["operands"],
+                    "counterAdjustment": process_copy_adjust,
+                    "counterLoopOpcode": process_copy_loop["opcode"],
+                    "loopTarget": process_copy_loop["branchTarget"],
+                },
+                "readiness": {
+                    "flagId": readiness_flag,
+                    "checkFlagLoad": readiness_flag_load,
+                    "checkCall": readiness_check["directTarget"],
+                    "clearFlagLoad": clear_flag_load,
+                    "clearCall": clear_flag_call["directTarget"],
+                },
+            },
+            "orders": {
+                "maximumSlots": max_orders,
+                "inclusiveCounter": order_counter,
+                "slotWidthBytes": order_slot_width_bytes,
+                "storageWriteOpcode": storage_clear_record["opcode"],
+            },
+            "fulfill": {
+                "inventoryCapacity": inventory_capacity,
+                "inventoryFullBranchOpcode": successor(
+                    "BlacksmithAction_FulfillOrder", inventory_compare
+                )["opcode"],
+                "mutationCalls": calls(
+                    "BlacksmithAction_FulfillOrder", {"j_AddItem", "j_EquipItemBySlot"}
+                ),
+                "orderedMutationSequence": [
+                    fulfill_add,
+                    storage_clear_record,
+                    fulfill_increment,
+                    fulfill_equip,
+                ],
+                "branchSequence": [
+                    conditional_branch(
+                        "recipientCancel", "BlacksmithAction_FulfillOrder", fulfill_cancel
+                    ),
+                    conditional_branch(
+                        "inventoryCapacity", "BlacksmithAction_FulfillOrder", fulfill_inventory
+                    ),
+                    conditional_branch(
+                        "equipmentType", "BlacksmithAction_FulfillOrder", fulfill_equipment_type
+                    ),
+                    conditional_branch(
+                        "equippability", "BlacksmithAction_FulfillOrder", fulfill_equippability
+                    ),
+                    conditional_branch(
+                        "optionalEquipEligibility",
+                        "BlacksmithAction_FulfillOrder",
+                        fulfill_post_add_equippability,
+                    ),
+                    conditional_branch(
+                        "optionalEquipConfirmation",
+                        "BlacksmithAction_FulfillOrder",
+                        fulfill_optional_confirmation,
+                    ),
+                    conditional_branch(
+                        "weaponCurseRejection",
+                        "BlacksmithAction_FulfillOrder",
+                        fulfill_weapon_curse,
+                    ),
+                    conditional_branch(
+                        "ringCurseRejection", "BlacksmithAction_FulfillOrder", fulfill_ring_curse
+                    ),
+                    conditional_branch(
+                        "newlyEquippedCurseOutcome",
+                        "BlacksmithAction_FulfillOrder",
+                        fulfill_curse,
+                    ),
+                ],
+            },
+            "place": {
+                "mithrilItem": mithril_item,
+                "promotionClassFloor": promotion_class,
+                "orderCost": order_cost,
+                "goldBranchTarget": successor("BlacksmithAction_PlaceOrder", gold_compare)[
+                    "branchTarget"
+                ],
+                "mutationCalls": calls(
+                    "BlacksmithAction_PlaceOrder",
+                    {"j_DecreaseGold", "j_DropItemBySlot", "PickMithrilWeapon", "j_ClearFlag"},
+                ),
+                "gateSequence": [
+                    conditional_branch(
+                        "materialSelectionCancel",
+                        "BlacksmithAction_PlaceOrder",
+                        place_material_cancel,
+                    ),
+                    conditional_branch(
+                        "mithrilMatch", "BlacksmithAction_PlaceOrder", mithril_compare
+                    ),
+                    conditional_branch(
+                        "customerSelectionCancel",
+                        "BlacksmithAction_PlaceOrder",
+                        place_customer_cancel,
+                    ),
+                    conditional_branch(
+                        "promotionFloor", "BlacksmithAction_PlaceOrder", promotion_compare
+                    ),
+                    conditional_branch(
+                        "eligibilityResult",
+                        "BlacksmithAction_PlaceOrder",
+                        place_eligibility_result,
+                    ),
+                    conditional_branch(
+                        "confirmationResult",
+                        "BlacksmithAction_PlaceOrder",
+                        place_confirmation_result,
+                    ),
+                    conditional_branch(
+                        "goldComparison", "BlacksmithAction_PlaceOrder", gold_compare
+                    ),
+                ],
+                "postPlacementCapacityBranch": conditional_branch(
+                    "postPlacementCapacity",
+                    "BlacksmithAction_PlaceOrder",
+                    place_capacity,
+                ),
+                "orderedMutationSequence": [
+                    find(
+                        "BlacksmithAction_PlaceOrder",
+                        lambda record: record["directTarget"] == "j_DecreaseGold",
+                    ),
+                    find(
+                        "BlacksmithAction_PlaceOrder",
+                        lambda record: record["directTarget"] == "j_DropItemBySlot",
+                    ),
+                    find(
+                        "BlacksmithAction_PlaceOrder",
+                        lambda record: record["directTarget"] == "PickMithrilWeapon",
+                    ),
+                    clear_flag_load,
+                    clear_flag_call,
+                ],
+            },
+            "classLists": {
+                "eligibleClassCount": len(eligible_classes.group(1).split(",")),
+                "eligiblePrefix": {
+                    "loadOpcode": prefix_load["opcode"],
+                    "decrementOpcode": prefix_decrement["opcode"],
+                    "loopTarget": prefix_loop["branchTarget"],
+                },
+                "mithrilWeaponClassGroups": len(class_groups),
+                "weaponRows": len(weapon_rows),
+            },
+            "pick": {
+                "classGroupInclusiveCounter": class_counter,
+                "weightedRowInclusiveCounter": weapon_counter,
+                "rowStrideBytes": row_stride_bytes,
+                "initialGroupRowIndexOpcode": initial_group_record["opcode"],
+                "initialGroupRowIndex": 0,
+                "fallbackRandomBound": fallback_random_bound,
+                "fallback": {
+                    "compareValue": int(fallback_compare["operands"][0][1:]),
+                    "branchOpcode": fallback_branch["opcode"],
+                    "nonzeroTarget": fallback_branch["branchTarget"],
+                    "zeroResultRowIndex": int(fallback_row_record["operands"][0][1:]),
+                    "convergenceLabel": fallback_convergence_record["labels"][0],
+                },
+                "classGroupScan": {
+                    "prefixRead": group_prefix_read,
+                    "prefixDecrement": group_prefix_decrement,
+                    "classRead": class_read,
+                    "characterClassRead": character_class_read,
+                    "classCompare": class_compare,
+                    "classMatchBranch": class_match_branch,
+                    "innerLoop": class_inner_loop,
+                    "groupIndexIncrement": group_index_increment,
+                    "outerLoop": group_outer_loop,
+                },
+                "weightedRngLoop": {
+                    "parameterRead": weighted_parameter_read,
+                    "itemRead": weighted_item_read,
+                    "parameterToRngRange": weighted_parameter_range,
+                    "rngCall": weighted_rng_call,
+                    "resultCompare": weighted_result_compare,
+                    "resultBranch": weighted_result_branch,
+                    "loop": weighted_loop,
+                    "parameterColumnDenominators": {
+                        "owner": "item-auxiliary",
+                        "sourcePath": "data/stats/items/mithrilweapons.asm",
+                        "values": denominators[:4],
+                    },
+                },
+                "orderSlot": {
+                    "emptyCompare": order_slot_empty,
+                    "occupiedBranch": order_slot_occupied_branch,
+                    "scanCounter": order_counter,
+                    "strideLoad": order_slot_stride_load,
+                    "strideAdd": order_slot_stride_add,
+                    "loop": order_slot_loop,
+                    "write": order_slot_write,
+                },
+            },
+        },
+        "functionOperations": operations,
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerOccurrences": internal,
+        "internalEffectiveDirectCallSiteCounts": effective_counts(internal),
+        "externalDirectCallerOccurrences": external,
+        "externalEffectiveDirectCallSiteCounts": effective_counts(external),
+        "indirectBehavior": {"directCallInventoryDoesNotEstablishReachability": True},
+    }
+
+
 def _service_state_machines(disasm: Path) -> dict[str, Any]:
     """Extract the built service-menu control-flow boundary without interpreting UI timing."""
     root = disasm / SOURCE_ROOT
     shop_contract = _shop_static_contract(root)
     church_contract = _church_static_contract(root)
     caravan_contract = _caravan_static_contract(root)
+    blacksmith_contract = _blacksmith_static_contract(root)
     if not all((disasm / path).is_file() for path in SERVICE_SOURCE_PATHS):
         raise ValueError("service-menu source boundary is incomplete")
     service_files = [
@@ -1846,34 +2748,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
         "shop": shop_contract,
         "church": church_contract,
         "caravan": caravan_contract,
-        "blacksmith": {
-            "entrySymbol": "BlacksmithMenu",
-            "dispatch": "ordered-fulfill-ready-orders-then-place-pending-order",
-            "noDiamondMenu": True,
-            "perVisitCounters": [
-                "readyToFulfillOrdersNumber",
-                "pendingOrdersNumber",
-                "fulfilledOrdersNumber",
-                "fulfillOrdersFlag",
-            ],
-            "fulfillment": ["select-recipient", "add-item", "optional-equip"],
-            "placementGuards": [
-                "select-mithril-item",
-                "select-eligible-promoted-customer",
-                "confirm-order-cost",
-                "sufficient-gold",
-                "free-order-slot",
-            ],
-            "placementEffects": [
-                "decrease-gold",
-                "drop-mithril-by-slot",
-                "pick-mithril-weapon",
-                "clear-flag-80",
-            ],
-            "randomBoundary": (
-                "mithril-weapon-selection-includes-random-class-and-weighted-row-selection"
-            ),
-        },
+        "blacksmith": blacksmith_contract,
         "staticBoundary": {
             "callerDependentServiceAdmissionAndReturnState": "inferred",
             "persistenceAcrossMapLoadSaveAndStoryProgress": "unknown",

@@ -4,6 +4,7 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2.menus import (
+    _blacksmith_static_contract,
     _caravan_static_contract,
     _church_static_contract,
     _shop_direct_call_occurrences,
@@ -234,6 +235,109 @@ def test_caravan_contract_starts_with_relative_dispatch_inventory() -> None:
     }
 
 
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_blacksmith_contract_starts_with_complete_named_function_records() -> None:
+    blacksmith = _blacksmith_static_contract(UPSTREAM / "disasm/code/common/menus")
+    assert blacksmith["sourcePaths"] == [
+        "code/common/menus/blacksmith/blacksmithactions.asm",
+        "code/common/menus/blacksmith/pickmithrilweapon.asm",
+    ]
+    assert set(blacksmith["functionOperations"]) == {
+        "BlacksmithMenu",
+        "ProcessBlacksmithOrders",
+        "BlacksmithAction_FulfillOrder",
+        "BlacksmithAction_PlaceOrder",
+        "WaitForMusicResumeAndPlayerInput_Blacksmith",
+        "CountPendingAndReadyToFulfillOrders",
+        "IsClassBlacksmithEligible",
+        "PickMithrilWeapon",
+    }
+    assert blacksmith["functionOperations"]["BlacksmithMenu"][0] == {
+        "labels": ["BlacksmithMenu"],
+        "opcode": "movem.l",
+        "operands": ["d0-a5", "-(sp)"],
+        "directTarget": None,
+        "branchTarget": None,
+    }
+    assert [
+        (
+            gate["name"],
+            gate["operation"]["operands"],
+            gate["branch"]["opcode"],
+            gate["branch"]["branchTarget"],
+        )
+        for gate in blacksmith["derived"]["place"]["gateSequence"]
+    ] == [
+        ("materialSelectionCancel", ["#-1", "d0"], "beq.w", "@Done"),
+        ("mithrilMatch", ["#BLACKSMITH_MITHRIL_ITEM", "d2"], "beq.w", "byte_21D1A"),
+        ("customerSelectionCancel", ["#-1", "d0"], "beq.s", "byte_21CDE"),
+        (
+            "promotionFloor",
+            ["#CHAR_CLASS_FIRSTPROMOTED", "d1"],
+            "bcc.w",
+            "@IsCustomerClassEligible",
+        ),
+        ("eligibilityResult", ["#0", "d0"], "beq.w", "@ConfirmOrder"),
+        ("confirmationResult", ["#0", "d0"], "beq.s", "@CheckGold"),
+        ("goldComparison", ["#BLACKSMITH_ORDER_COST", "d1"], "bcc.w", "@PlaceOrder"),
+    ]
+    assert [branch["name"] for branch in blacksmith["derived"]["fulfill"]["branchSequence"]] == [
+        "recipientCancel",
+        "inventoryCapacity",
+        "equipmentType",
+        "equippability",
+        "optionalEquipEligibility",
+        "optionalEquipConfirmation",
+        "weaponCurseRejection",
+        "ringCurseRejection",
+        "newlyEquippedCurseOutcome",
+    ]
+    force_copy = blacksmith["derived"]["process"]["forceCopy"]
+    assert force_copy["counterSource"] == {
+        "labels": [],
+        "opcode": "move.w",
+        "operands": ["((TARGETS_LIST_LENGTH-$1000000)).w", "d7"],
+        "directTarget": None,
+        "branchTarget": None,
+    }
+    assert force_copy["counterSourceOperand"] == force_copy["sourceLengthOperand"]
+    assert force_copy["counterDestination"] == "d7"
+    pick = blacksmith["derived"]["pick"]
+    assert [
+        pick["classGroupScan"][name]["opcode"]
+        for name in (
+            "prefixRead",
+            "prefixDecrement",
+            "classRead",
+            "characterClassRead",
+            "classCompare",
+            "classMatchBranch",
+            "innerLoop",
+            "groupIndexIncrement",
+            "outerLoop",
+        )
+    ] == ["move.w", "subq.w", "move.w", "move.w", "cmp.w", "beq.w", "dbf", "addi.w", "dbf"]
+    assert [
+        pick["weightedRngLoop"][name]["operands"]
+        for name in ("parameterRead", "itemRead", "parameterToRngRange", "resultCompare", "loop")
+    ] == [
+        ["(a0)+", "d0"],
+        ["(a0)+", "d1"],
+        ["d0", "d6"],
+        ["#0", "d7"],
+        ["d5", "@PickWeapon_Loop"],
+    ]
+    assert pick["weightedRngLoop"]["parameterColumnDenominators"] == {
+        "owner": "item-auxiliary",
+        "sourcePath": "data/stats/items/mithrilweapons.asm",
+        "values": [16, 8, 4, 1],
+    }
+    assert [
+        pick["orderSlot"][name]["branchTarget"]
+        for name in ("occupiedBranch", "loop")
+    ] == ["@Next", "@LoadIndex_Loop"]
+
+
 def _copy_church_source_root(tmp_path):
     disasm = tmp_path / "disasm"
     source_root = UPSTREAM / "disasm"
@@ -260,6 +364,123 @@ def _copy_caravan_source_root(tmp_path):
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source_root / relative, destination)
     return disasm / "code/common/menus"
+
+
+def _copy_blacksmith_source_root(tmp_path):
+    disasm = tmp_path / "disasm"
+    source_root = UPSTREAM / "disasm"
+    for relative in (
+        "sf2enums.asm",
+        "code/common/menus/blacksmith/blacksmithactions.asm",
+        "code/common/menus/blacksmith/pickmithrilweapon.asm",
+        "data/stats/allies/classes/blacksmitheligibleclasses.asm",
+        "data/stats/items/mithrilweapons.asm",
+    ):
+        destination = disasm / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_root / relative, destination)
+    return disasm / "code/common/menus"
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("relative", "needle", "replacement"),
+    (
+        ("blacksmithactions.asm", "link    a6,#-24", "link    a6,#-22"),
+        (
+            "blacksmithactions.asm",
+            "cmpi.w  #BLACKSMITH_MITHRIL_ITEM,d2",
+            "cmpi.w  #COMBATANT_ITEMSLOTS,d2",
+        ),
+        (
+            "blacksmithactions.asm",
+            "cmpi.l  #BLACKSMITH_ORDER_COST,d1",
+            "cmpi.l  #BLACKSMITH_MITHRIL_ITEM,d1",
+        ),
+        ("blacksmithactions.asm", "beq.w   @ConfirmOrder", "bne.w   @ConfirmOrder"),
+        ("blacksmithactions.asm", "move.w  #80,d1", "move.w  #81,d1"),
+        ("blacksmithactions.asm", "move.w  #0,(a1)", "move.b  #0,(a1)"),
+        ("blacksmithactions.asm", "move.b  (a0)+,(a1)+", "move.w  (a0)+,(a1)+"),
+        ("blacksmithactions.asm", "subq.b  #1,d7", "subq.w  #1,d7"),
+        (
+            "blacksmithactions.asm",
+            "move.w  ((TARGETS_LIST_LENGTH-$1000000)).w,d7",
+            "move.w  ((GENERIC_LIST_LENGTH-$1000000)).w,d7",
+        ),
+        (
+            "blacksmithactions.asm",
+            "dbf     d7,@CopyForceMembersList_Loop",
+            "dbf     d7,@Loop",
+        ),
+        ("pickmithrilweapon.asm", "lsl.w   #3,d0", "lsl.w   #2,d0"),
+        ("pickmithrilweapon.asm", "move.w  #2,d6", "move.w  #1,d6"),
+        (
+            "pickmithrilweapon.asm",
+            "bne.w   @GetWeaponsEntryAddress",
+            "beq.w   @GetWeaponsEntryAddress",
+        ),
+        ("pickmithrilweapon.asm", "move.b  (a0)+,d1", "move.w  (a0)+,d1"),
+        ("pickmithrilweapon.asm", "cmpi.w  #0,(a0)", "cmpi.w  #1,(a0)"),
+        ("pickmithrilweapon.asm", "subq.w  #1,d6", "subq.w  #2,d6"),
+        (
+            "pickmithrilweapon.asm",
+            "dbf     d6,@FindCharacterClass_Loop",
+            "dbf     d6,@FindWeaponClass_Loop",
+        ),
+        ("pickmithrilweapon.asm", "move.w  d0,d6", "move.w  d1,d6"),
+        ("pickmithrilweapon.asm", "beq.w   @LoadIndex", "bne.w   @LoadIndex"),
+        ("pickmithrilweapon.asm", "bne.w   @Next", "beq.w   @Next"),
+        (
+            "pickmithrilweapon.asm",
+            "dbf     d7,@LoadIndex_Loop",
+            "dbf     d7,@PickWeapon_Loop",
+        ),
+    ),
+)
+def test_blacksmith_source_mutations_fail_before_fixture_comparison(
+    tmp_path, relative, needle, replacement
+) -> None:
+    root = _copy_blacksmith_source_root(tmp_path)
+    source = root / "blacksmith" / relative
+    source.write_text(
+        source.read_text(encoding="latin-1").replace(needle, replacement, 1),
+        encoding="latin-1",
+    )
+    with pytest.raises(ValueError, match="blacksmith"):
+        _blacksmith_static_contract(root)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("section_symbol", "needle", "replacement", "occurrence"),
+    (
+        ("BlacksmithAction_PlaceOrder", "cmpi.w  #-1,d0", "cmpi.w  #-2,d0", 2),
+        ("BlacksmithAction_PlaceOrder", "cmpi.w  #0,d0", "cmpi.w  #1,d0", 2),
+        ("BlacksmithAction_PlaceOrder", "move.w  #80,d1", "move.w  #81,d1", 1),
+        ("BlacksmithAction_FulfillOrder", "cmpi.w  #2,d2", "cmpi.w  #3,d2", 3),
+        (
+            "BlacksmithAction_PlaceOrder",
+            "jsr     j_DropItemBySlot\n                bsr.w   PickMithrilWeapon",
+            "bsr.w   PickMithrilWeapon\n                jsr     j_DropItemBySlot",
+            1,
+        ),
+    ),
+)
+def test_blacksmith_duplicate_branch_and_order_mutations_are_scoped(
+    tmp_path, section_symbol, needle, replacement, occurrence
+) -> None:
+    root = _copy_blacksmith_source_root(tmp_path)
+    source_path = root / "blacksmith/blacksmithactions.asm"
+    source = source_path.read_text(encoding="latin-1")
+    section_start = source.index(f"{section_symbol}:")
+    section = source[section_start:]
+    start = -1
+    for _ in range(occurrence):
+        start = section.index(needle, start + 1)
+    section = section[:start] + section[start:].replace(needle, replacement, 1)
+    source_path.write_text(source[:section_start] + section, encoding="latin-1")
+    with pytest.raises(ValueError, match="blacksmith"):
+        _blacksmith_static_contract(root)
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -556,8 +777,12 @@ def test_service_menu_state_machine_contract_covers_built_services() -> None:
         "j_AddItem",
         "j_RemoveItemFromCaravan",
     ]
-    assert machines["blacksmith"]["noDiamondMenu"] is True
-    assert machines["blacksmith"]["placementEffects"][-1] == "clear-flag-80"
+    assert machines["blacksmith"]["derived"]["place"]["mutationCalls"] == [
+        "j_DecreaseGold",
+        "j_DropItemBySlot",
+        "PickMithrilWeapon",
+        "j_ClearFlag",
+    ]
     assert machines["sharedSelectionScreen"]["cancelResult"] == -1
     assert machines["sharedSelectionScreen"]["confirmButtons"] == ["A", "C"]
     assert (
@@ -650,6 +875,77 @@ def test_church_contract_matches_fixture_and_uses_compact_instruction_schema() -
     )
     expect_invalid(
         lambda church: church["routeDerived"]["promote"].__setitem__("minimumLevel", 19)
+    )
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_blacksmith_contract_matches_fixture_and_uses_compact_instruction_schema() -> None:
+    fixture = load_json(FIXTURE)
+    blacksmith = build_menu_inventory(UPSTREAM)["menuFacts"]["serviceStateMachines"]["blacksmith"]
+    assert blacksmith == fixture["expected"]["menuFacts"]["serviceStateMachines"]["blacksmith"]
+    assert blacksmith["derived"] == fixture["expected"]["menuFacts"]["serviceStateMachines"][
+        "blacksmith"
+    ]["derived"]
+    assert blacksmith["sourceRanges"] == [
+        {
+            "path": "code/common/menus/blacksmith/blacksmithactions.asm",
+            "startAddress": 137786,
+            "endAddressExclusive": 138934,
+            "physicalSpanBytes": 1148,
+        },
+        {
+            "path": "code/common/menus/blacksmith/pickmithrilweapon.asm",
+            "startAddress": 138966,
+            "endAddressExclusive": 139106,
+            "physicalSpanBytes": 140,
+        },
+    ]
+    output_schema = load_json(OUTPUT_SCHEMA)
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    assert (
+        output_schema["definitions"]["blacksmithFacts"]
+        == fixture_schema["definitions"]["blacksmithFacts"]
+    )
+    function_schemas = output_schema["definitions"]["blacksmithFacts"]["properties"][
+        "functionOperations"
+    ]["properties"]
+    assert all(
+        schema["allOf"][0]["items"] == {"$ref": "#/definitions/blacksmithInstructionRecord"}
+        and isinstance(schema["allOf"][1]["const"], list)
+        for schema in function_schemas.values()
+    )
+
+    def expect_invalid(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["blacksmith"])
+        with pytest.raises(ValueError, match="blacksmith"):
+            validate_json(broken, FIXTURE_SCHEMA, owner="blacksmith contract")
+
+    expect_invalid(lambda blacksmith: blacksmith.pop("constants"))
+    expect_invalid(lambda blacksmith: blacksmith.__setitem__("extra", True))
+    expect_invalid(lambda blacksmith: blacksmith["derived"]["orders"].pop("slotWidthBytes"))
+    expect_invalid(
+        lambda blacksmith: blacksmith["derived"]["process"]["forceCopy"].pop(
+            "entryCopyOperands"
+        )
+    )
+    expect_invalid(
+        lambda blacksmith: blacksmith["derived"]["process"]["readiness"].pop(
+            "checkFlagLoad"
+        )
+    )
+    expect_invalid(
+        lambda blacksmith: blacksmith["derived"]["fulfill"].__setitem__(
+            "unexpectedMutation", True
+        )
+    )
+    expect_invalid(
+        lambda blacksmith: blacksmith["derived"]["pick"].__setitem__("rowStrideBytes", 4)
+    )
+    expect_invalid(
+        lambda blacksmith: blacksmith["functionOperations"].__setitem__(
+            "PickMithrilWeapon", blacksmith["functionOperations"]["PickMithrilWeapon"][::-1]
+        )
     )
 
 

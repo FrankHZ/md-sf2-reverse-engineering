@@ -17607,33 +17607,4159 @@
         },
         "blacksmith": {
           "entrySymbol": "BlacksmithMenu",
-          "dispatch": "ordered-fulfill-ready-orders-then-place-pending-order",
-          "noDiamondMenu": true,
-          "perVisitCounters": [
-            "readyToFulfillOrdersNumber",
-            "pendingOrdersNumber",
-            "fulfilledOrdersNumber",
-            "fulfillOrdersFlag"
+          "sourcePaths": [
+            "code/common/menus/blacksmith/blacksmithactions.asm",
+            "code/common/menus/blacksmith/pickmithrilweapon.asm"
           ],
-          "fulfillment": [
-            "select-recipient",
-            "add-item",
-            "optional-equip"
+          "constants": {
+            "BLACKSMITH_MAX_ORDERS_NUMBER": 4,
+            "BLACKSMITH_ORDERS_COUNTER": 3,
+            "BLACKSMITH_MITHRIL_ITEM": 123,
+            "BLACKSMITH_ORDER_COST": 5000,
+            "CHAR_CLASS_FIRSTPROMOTED": 12,
+            "COMBATANT_ITEMSLOTS": 4,
+            "MITHRIL_WEAPON_CLASSES_COUNTER": 7,
+            "MITHRIL_WEAPON_ORDER_SLOT_SIZE": 2,
+            "MITHRIL_WEAPONS_PER_CLASS_COUNTER": 3,
+            "SOUND_COMMAND_PLAY_PREVIOUS_MUSIC": 251
+          },
+          "sourceRanges": [
+            {
+              "path": "code/common/menus/blacksmith/blacksmithactions.asm",
+              "startAddress": 137786,
+              "endAddressExclusive": 138934,
+              "physicalSpanBytes": 1148
+            },
+            {
+              "path": "code/common/menus/blacksmith/pickmithrilweapon.asm",
+              "startAddress": 138966,
+              "endAddressExclusive": 139106,
+              "physicalSpanBytes": 140
+            }
           ],
-          "placementGuards": [
-            "select-mithril-item",
-            "select-eligible-promoted-customer",
-            "confirm-order-cost",
-            "sufficient-gold",
-            "free-order-slot"
-          ],
-          "placementEffects": [
-            "decrease-gold",
-            "drop-mithril-by-slot",
-            "pick-mithril-weapon",
-            "clear-flag-80"
-          ],
-          "randomBoundary": "mithril-weapon-selection-includes-random-class-and-weighted-row-selection"
+          "frame": {
+            "frameSizeBytes": 24,
+            "counterOffsetsBytes": {
+              "readyToFulfillOrdersNumber": -18,
+              "fulfilledOrdersNumber": -16,
+              "pendingOrdersNumber": -14,
+              "fulfillOrdersFlag": -20
+            },
+            "initializationOrder": [
+              "readyToFulfillOrdersNumber",
+              "pendingOrdersNumber",
+              "fulfilledOrdersNumber",
+              "fulfillOrdersFlag"
+            ]
+          },
+          "derived": {
+            "process": {
+              "forceCopy": {
+                "sourceLengthOperand": "((TARGETS_LIST_LENGTH-$1000000)).w",
+                "destinationLengthOperand": "((GENERIC_LIST_LENGTH-$1000000)).w",
+                "counterSource": {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "((TARGETS_LIST_LENGTH-$1000000)).w",
+                    "d7"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "counterSourceOperand": "((TARGETS_LIST_LENGTH-$1000000)).w",
+                "counterDestination": "d7",
+                "entryCopyOpcode": "move.b",
+                "entryCopyOperands": [
+                  "(a0)+",
+                  "(a1)+"
+                ],
+                "counterAdjustment": {
+                  "labels": [],
+                  "opcode": "subq.b",
+                  "operands": [
+                    "#1",
+                    "d7"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "counterLoopOpcode": "dbf",
+                "loopTarget": "@CopyForceMembersList_Loop"
+              },
+              "readiness": {
+                "flagId": 80,
+                "checkFlagLoad": {
+                  "labels": [
+                    "CountPendingAndReadyToFulfillOrders"
+                  ],
+                  "opcode": "move.w",
+                  "operands": [
+                    "#80",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "checkCall": "j_CheckFlag",
+                "clearFlagLoad": {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "#80",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "clearCall": "j_ClearFlag"
+              }
+            },
+            "orders": {
+              "maximumSlots": 4,
+              "inclusiveCounter": 3,
+              "slotWidthBytes": 2,
+              "storageWriteOpcode": "move.w"
+            },
+            "fulfill": {
+              "inventoryCapacity": 4,
+              "inventoryFullBranchOpcode": "bcs.s",
+              "mutationCalls": [
+                "j_AddItem",
+                "j_EquipItemBySlot"
+              ],
+              "orderedMutationSequence": [
+                {
+                  "labels": [],
+                  "opcode": "jsr",
+                  "operands": [
+                    "j_AddItem"
+                  ],
+                  "directTarget": "j_AddItem",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "#0",
+                    "(a1)"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "addi.w",
+                  "operands": [
+                    "#1",
+                    "fulfilledOrdersNumber(a6)"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "jsr",
+                  "operands": [
+                    "j_EquipItemBySlot"
+                  ],
+                  "directTarget": "j_EquipItemBySlot",
+                  "branchTarget": null
+                }
+              ],
+              "branchSequence": [
+                {
+                  "name": "recipientCancel",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#-1",
+                      "d0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bne.s",
+                    "operands": [
+                      "@IsMemberInventoryFull"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@IsMemberInventoryFull"
+                  }
+                },
+                {
+                  "name": "inventoryCapacity",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#COMBATANT_ITEMSLOTS",
+                      "d2"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bcs.s",
+                    "operands": [
+                      "@CheckEquipmentType"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@CheckEquipmentType"
+                  }
+                },
+                {
+                  "name": "equipmentType",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#EQUIPMENTTYPE_TOOL",
+                      "d2"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "beq.s",
+                    "operands": [
+                      "@AddItem"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@AddItem"
+                  }
+                },
+                {
+                  "name": "equippability",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "jsr",
+                    "operands": [
+                      "j_IsWeaponOrRingEquippable"
+                    ],
+                    "directTarget": "j_IsWeaponOrRingEquippable",
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bcs.s",
+                    "operands": [
+                      "@AddItem"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@AddItem"
+                  }
+                },
+                {
+                  "name": "optionalEquipEligibility",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "jsr",
+                    "operands": [
+                      "j_IsWeaponOrRingEquippable"
+                    ],
+                    "directTarget": "j_IsWeaponOrRingEquippable",
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bcc.w",
+                    "operands": [
+                      "byte_21CD0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "byte_21CD0"
+                  }
+                },
+                {
+                  "name": "optionalEquipConfirmation",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#0",
+                      "d0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bne.w",
+                    "operands": [
+                      "byte_21CD0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "byte_21CD0"
+                  }
+                },
+                {
+                  "name": "weaponCurseRejection",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#2",
+                      "d2"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bne.w",
+                    "operands": [
+                      "@EquipNewItem"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@EquipNewItem"
+                  }
+                },
+                {
+                  "name": "ringCurseRejection",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#2",
+                      "d2"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bne.w",
+                    "operands": [
+                      "@EquipNewItem"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@EquipNewItem"
+                  }
+                },
+                {
+                  "name": "newlyEquippedCurseOutcome",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#2",
+                      "d2"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bne.s",
+                    "operands": [
+                      "byte_21CC8"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "byte_21CC8"
+                  }
+                }
+              ]
+            },
+            "place": {
+              "mithrilItem": 123,
+              "promotionClassFloor": 12,
+              "orderCost": 5000,
+              "goldBranchTarget": "@PlaceOrder",
+              "mutationCalls": [
+                "j_DecreaseGold",
+                "j_DropItemBySlot",
+                "PickMithrilWeapon",
+                "j_ClearFlag"
+              ],
+              "gateSequence": [
+                {
+                  "name": "materialSelectionCancel",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#-1",
+                      "d0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "beq.w",
+                    "operands": [
+                      "@Done"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@Done"
+                  }
+                },
+                {
+                  "name": "mithrilMatch",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#BLACKSMITH_MITHRIL_ITEM",
+                      "d2"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "beq.w",
+                    "operands": [
+                      "byte_21D1A"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "byte_21D1A"
+                  }
+                },
+                {
+                  "name": "customerSelectionCancel",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#-1",
+                      "d0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "beq.s",
+                    "operands": [
+                      "byte_21CDE"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "byte_21CDE"
+                  }
+                },
+                {
+                  "name": "promotionFloor",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#CHAR_CLASS_FIRSTPROMOTED",
+                      "d1"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bcc.w",
+                    "operands": [
+                      "@IsCustomerClassEligible"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@IsCustomerClassEligible"
+                  }
+                },
+                {
+                  "name": "eligibilityResult",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#0",
+                      "d0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "beq.w",
+                    "operands": [
+                      "@ConfirmOrder"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@ConfirmOrder"
+                  }
+                },
+                {
+                  "name": "confirmationResult",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.w",
+                    "operands": [
+                      "#0",
+                      "d0"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "beq.s",
+                    "operands": [
+                      "@CheckGold"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@CheckGold"
+                  }
+                },
+                {
+                  "name": "goldComparison",
+                  "operation": {
+                    "labels": [],
+                    "opcode": "cmpi.l",
+                    "operands": [
+                      "#BLACKSMITH_ORDER_COST",
+                      "d1"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": null
+                  },
+                  "branch": {
+                    "labels": [],
+                    "opcode": "bcc.w",
+                    "operands": [
+                      "@PlaceOrder"
+                    ],
+                    "directTarget": null,
+                    "branchTarget": "@PlaceOrder"
+                  }
+                }
+              ],
+              "postPlacementCapacityBranch": {
+                "name": "postPlacementCapacity",
+                "operation": {
+                  "labels": [],
+                  "opcode": "cmpi.w",
+                  "operands": [
+                    "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "branch": {
+                  "labels": [],
+                  "opcode": "bne.s",
+                  "operands": [
+                    "byte_21E16"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "byte_21E16"
+                }
+              },
+              "orderedMutationSequence": [
+                {
+                  "labels": [],
+                  "opcode": "jsr",
+                  "operands": [
+                    "j_DecreaseGold"
+                  ],
+                  "directTarget": "j_DecreaseGold",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "jsr",
+                  "operands": [
+                    "j_DropItemBySlot"
+                  ],
+                  "directTarget": "j_DropItemBySlot",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bsr.w",
+                  "operands": [
+                    "PickMithrilWeapon"
+                  ],
+                  "directTarget": "PickMithrilWeapon",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "#80",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "jsr",
+                  "operands": [
+                    "j_ClearFlag"
+                  ],
+                  "directTarget": "j_ClearFlag",
+                  "branchTarget": null
+                }
+              ]
+            },
+            "classLists": {
+              "eligibleClassCount": 15,
+              "eligiblePrefix": {
+                "loadOpcode": "move.w",
+                "decrementOpcode": "subq.w",
+                "loopTarget": "@Loop"
+              },
+              "mithrilWeaponClassGroups": 9,
+              "weaponRows": 8
+            },
+            "pick": {
+              "classGroupInclusiveCounter": 7,
+              "weightedRowInclusiveCounter": 3,
+              "rowStrideBytes": 8,
+              "initialGroupRowIndexOpcode": "clr.w",
+              "initialGroupRowIndex": 0,
+              "fallbackRandomBound": 2,
+              "fallback": {
+                "compareValue": 0,
+                "branchOpcode": "bne.w",
+                "nonzeroTarget": "@GetWeaponsEntryAddress",
+                "zeroResultRowIndex": 2,
+                "convergenceLabel": "@GetWeaponsEntryAddress"
+              },
+              "classGroupScan": {
+                "prefixRead": {
+                  "labels": [
+                    "@FindWeaponClass_Loop"
+                  ],
+                  "opcode": "move.w",
+                  "operands": [
+                    "(a0)+",
+                    "d6"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "prefixDecrement": {
+                  "labels": [],
+                  "opcode": "subq.w",
+                  "operands": [
+                    "#1",
+                    "d6"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "classRead": {
+                  "labels": [
+                    "@FindCharacterClass_Loop"
+                  ],
+                  "opcode": "move.w",
+                  "operands": [
+                    "(a0)+",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "characterClassRead": {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "clientClass(a6)",
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "classCompare": {
+                  "labels": [],
+                  "opcode": "cmp.w",
+                  "operands": [
+                    "d1",
+                    "d2"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "classMatchBranch": {
+                  "labels": [],
+                  "opcode": "beq.w",
+                  "operands": [
+                    "@GetWeaponsEntryAddress"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@GetWeaponsEntryAddress"
+                },
+                "innerLoop": {
+                  "labels": [],
+                  "opcode": "dbf",
+                  "operands": [
+                    "d6",
+                    "@FindCharacterClass_Loop"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@FindCharacterClass_Loop"
+                },
+                "groupIndexIncrement": {
+                  "labels": [],
+                  "opcode": "addi.w",
+                  "operands": [
+                    "#1",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "outerLoop": {
+                  "labels": [],
+                  "opcode": "dbf",
+                  "operands": [
+                    "d7",
+                    "@FindWeaponClass_Loop"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@FindWeaponClass_Loop"
+                }
+              },
+              "weightedRngLoop": {
+                "parameterRead": {
+                  "labels": [],
+                  "opcode": "move.b",
+                  "operands": [
+                    "(a0)+",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "itemRead": {
+                  "labels": [],
+                  "opcode": "move.b",
+                  "operands": [
+                    "(a0)+",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "parameterToRngRange": {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d0",
+                    "d6"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "rngCall": {
+                  "labels": [],
+                  "opcode": "jsr",
+                  "operands": [
+                    "(GenerateRandomNumber).w"
+                  ],
+                  "directTarget": "GenerateRandomNumber",
+                  "branchTarget": null
+                },
+                "resultCompare": {
+                  "labels": [],
+                  "opcode": "cmpi.w",
+                  "operands": [
+                    "#0",
+                    "d7"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "resultBranch": {
+                  "labels": [],
+                  "opcode": "beq.w",
+                  "operands": [
+                    "@LoadIndex"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@LoadIndex"
+                },
+                "loop": {
+                  "labels": [],
+                  "opcode": "dbf",
+                  "operands": [
+                    "d5",
+                    "@PickWeapon_Loop"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@PickWeapon_Loop"
+                },
+                "parameterColumnDenominators": {
+                  "owner": "item-auxiliary",
+                  "sourcePath": "data/stats/items/mithrilweapons.asm",
+                  "values": [
+                    16,
+                    8,
+                    4,
+                    1
+                  ]
+                }
+              },
+              "orderSlot": {
+                "emptyCompare": {
+                  "labels": [
+                    "@LoadIndex_Loop"
+                  ],
+                  "opcode": "cmpi.w",
+                  "operands": [
+                    "#0",
+                    "(a0)"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "occupiedBranch": {
+                  "labels": [],
+                  "opcode": "bne.w",
+                  "operands": [
+                    "@Next"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@Next"
+                },
+                "scanCounter": 3,
+                "strideLoad": {
+                  "labels": [
+                    "@Next"
+                  ],
+                  "opcode": "move.w",
+                  "operands": [
+                    "#2",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "strideAdd": {
+                  "labels": [],
+                  "opcode": "adda.w",
+                  "operands": [
+                    "d0",
+                    "a0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                "loop": {
+                  "labels": [],
+                  "opcode": "dbf",
+                  "operands": [
+                    "d7",
+                    "@LoadIndex_Loop"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@LoadIndex_Loop"
+                },
+                "write": {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d1",
+                    "(a0)"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                }
+              }
+            }
+          },
+          "functionOperations": {
+            "BlacksmithMenu": [
+              {
+                "labels": [
+                  "BlacksmithMenu"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "d0-a5",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "link",
+                "operands": [
+                  "a6",
+                  "#-24"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_PORTRAIT-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.s",
+                "operands": [
+                  "byte_21A50"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21A50"
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_OpenPortraitWindow"
+                ],
+                "directTarget": "j_OpenPortraitWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_21A50"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "194"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ClosePortraitWindow"
+                ],
+                "directTarget": "j_ClosePortraitWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "readyToFulfillOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "pendingOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "fulfilledOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "fulfillOrdersFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "ProcessBlacksmithOrders"
+                ],
+                "directTarget": "ProcessBlacksmithOrders",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_PORTRAIT-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.s",
+                "operands": [
+                  "byte_21A7C"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21A7C"
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_OpenPortraitWindow"
+                ],
+                "directTarget": "j_OpenPortraitWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_21A7C"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "198"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ClosePortraitWindow"
+                ],
+                "directTarget": "j_ClosePortraitWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "unlk",
+                "operands": [
+                  "a6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movem.l",
+                "operands": [
+                  "(sp)+",
+                  "d0-a5"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "ProcessBlacksmithOrders": [
+              {
+                "labels": [
+                  "ProcessBlacksmithOrders"
+                ],
+                "opcode": "module",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UpdateForce"
+                ],
+                "directTarget": "j_UpdateForce",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "((GENERIC_LIST_LENGTH-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((TARGETS_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((TARGETS_LIST_LENGTH-$1000000)).w",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.b",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@CopyForceMembersList_Loop"
+                ],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "(a1)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@CopyForceMembersList_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CopyForceMembersList_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "CountPendingAndReadyToFulfillOrders"
+                ],
+                "directTarget": "CountPendingAndReadyToFulfillOrders",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#1",
+                  "fulfillOrdersFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@CheckReadyToFulfillOrders"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckReadyToFulfillOrders"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@FulfillOrders_Loop"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)+",
+                  "itemIndex(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "itemIndex(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@Next"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Next"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d7",
+                  "ordersCounter(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addi.w",
+                "operands": [
+                  "#1",
+                  "ordersCounter(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "BlacksmithAction_FulfillOrder"
+                ],
+                "directTarget": "BlacksmithAction_FulfillOrder",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Next"
+                ],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@FulfillOrders_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@FulfillOrders_Loop"
+              },
+              {
+                "labels": [
+                  "@CheckReadyToFulfillOrders"
+                ],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "readyToFulfillOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@CheckPendingOrders"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckPendingOrders"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "readyToFulfillOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "pendingOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sub.w",
+                "operands": [
+                  "fulfilledOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@Return"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Return"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "196"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Call_PlaceOrder"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Call_PlaceOrder"
+              },
+              {
+                "labels": [
+                  "@CheckPendingOrders"
+                ],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "pendingOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_21B38"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21B38"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "206"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "readyToFulfillOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "pendingOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sub.w",
+                "operands": [
+                  "fulfilledOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@Return"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Return"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "196"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Call_PlaceOrder"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Call_PlaceOrder"
+              },
+              {
+                "labels": [
+                  "byte_21B38",
+                  "@StartOrder"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "195"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Call_PlaceOrder"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "BlacksmithAction_PlaceOrder"
+                ],
+                "directTarget": "BlacksmithAction_PlaceOrder",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Return"
+                ],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "BlacksmithAction_FulfillOrder": [
+              {
+                "labels": [
+                  "BlacksmithAction_FulfillOrder"
+                ],
+                "opcode": "module",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movem.l",
+                "operands": [
+                  "d0-a1",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "207"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "166"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_21B58"
+                ],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_USE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "@IsMemberInventoryFull"
+                ],
+                "directTarget": null,
+                "branchTarget": "@IsMemberInventoryFull"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "197"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "@IsMemberInventoryFull"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "clientMember(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemBySlotAndHeldItemsNumber"
+                ],
+                "directTarget": "j_GetItemBySlotAndHeldItemsNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#COMBATANT_ITEMSLOTS",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcs.s",
+                "operands": [
+                  "@CheckEquipmentType"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckEquipmentType"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "208"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_21B58"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21B58"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "197"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "@CheckEquipmentType"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_TOOL",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@AddItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@AddItem"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsWeaponOrRingEquippable"
+                ],
+                "directTarget": "j_IsWeaponOrRingEquippable",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcs.s",
+                "operands": [
+                  "@AddItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@AddItem"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "167"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "byte_21B58"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21B58"
+              },
+              {
+                "labels": [
+                  "@AddItem"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_AddItem"
+                ],
+                "directTarget": "j_AddItem",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sub.w",
+                "operands": [
+                  "ordersCounter(a6)",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsl.w",
+                "operands": [
+                  "#1",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "d6",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(a1)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#0",
+                  "(a1)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addi.w",
+                "operands": [
+                  "#1",
+                  "fulfilledOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_IsWeaponOrRingEquippable"
+                ],
+                "directTarget": "j_IsWeaponOrRingEquippable",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "byte_21CD0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CD0"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "173"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "byte_21CD0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CD0"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemIndex(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquipmentType"
+                ],
+                "directTarget": "j_GetEquipmentType",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#EQUIPMENTTYPE_WEAPON",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "@HasRingEquipped"
+                ],
+                "directTarget": null,
+                "branchTarget": "@HasRingEquipped"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedWeapon"
+                ],
+                "directTarget": "j_GetEquippedWeapon",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@EquipNewItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@EquipNewItem"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UnequipItemBySlotIfNotCursed"
+                ],
+                "directTarget": "j_UnequipItemBySlotIfNotCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@EquipNewItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@EquipNewItem"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "176"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_21CD0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CD0"
+              },
+              {
+                "labels": [
+                  "@HasRingEquipped"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetEquippedRing"
+                ],
+                "directTarget": "j_GetEquippedRing",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@EquipNewItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@EquipNewItem"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_UnequipItemBySlotIfNotCursed"
+                ],
+                "directTarget": "j_UnequipItemBySlotIfNotCursed",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@EquipNewItem"
+                ],
+                "directTarget": null,
+                "branchTarget": "@EquipNewItem"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "176"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_21CD0"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CD0"
+              },
+              {
+                "labels": [
+                  "@EquipNewItem"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemBySlotAndHeldItemsNumber"
+                ],
+                "directTarget": "j_GetItemBySlotAndHeldItemsNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_EquipItemBySlot"
+                ],
+                "directTarget": "j_EquipItemBySlot",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "byte_21CC8"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CC8"
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "MUSIC_CURSED_ITEM"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WaitForMusicResumeAndPlayerInput_Blacksmith"
+                ],
+                "directTarget": "WaitForMusicResumeAndPlayerInput_Blacksmith",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "175"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "byte_21CC8",
+                  "@NotCursed"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "174"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "byte_21CD0",
+                  "@DoNotEquipNewItem"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "209"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Done"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "(sp)+",
+                  "d0-a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "BlacksmithAction_PlaceOrder": [
+              {
+                "labels": [
+                  "BlacksmithAction_PlaceOrder"
+                ],
+                "opcode": "module",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movem.l",
+                "operands": [
+                  "d0-d2",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "byte_21CDE",
+                  "@StartNewOrder"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "199"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_GIVE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#ITEM_NOTHING",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "clientMember(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "itemSlot(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "itemIndex(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#BLACKSMITH_MITHRIL_ITEM",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_21D1A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21D1A"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "200"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_21CDE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CDE"
+              },
+              {
+                "labels": [
+                  "byte_21D1A",
+                  "@ProcessOrder"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "201"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#ITEM_SUBMENU_ACTION_USE",
+                  "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#ITEM_NOTHING",
+                  "((SELECTED_ITEM_INDEX-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ExecuteMembersListScreenOnItemSummaryPage"
+                ],
+                "directTarget": "j_ExecuteMembersListScreenOnItemSummaryPage",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "byte_21CDE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CDE"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "targetMember(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetClass"
+                ],
+                "directTarget": "j_GetClass",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "clientClass(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#CHAR_CLASS_FIRSTPROMOTED",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "@IsCustomerClassEligible"
+                ],
+                "directTarget": null,
+                "branchTarget": "@IsCustomerClassEligible"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "targetMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "211"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_21D1A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21D1A"
+              },
+              {
+                "labels": [
+                  "@IsCustomerClassEligible"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "IsClassBlacksmithEligible"
+                ],
+                "directTarget": "IsClassBlacksmithEligible",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@ConfirmOrder"
+                ],
+                "directTarget": null,
+                "branchTarget": "@ConfirmOrder"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "targetMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "212"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "byte_21D1A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21D1A"
+              },
+              {
+                "labels": [
+                  "@ConfirmOrder"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "targetMember(a6)",
+                  "((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "#BLACKSMITH_ORDER_COST",
+                  "((DIALOGUE_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "202"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_OpenGoldWindow"
+                ],
+                "directTarget": "j_OpenGoldWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_CloseGoldWindow"
+                ],
+                "directTarget": "j_CloseGoldWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@CheckGold"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckGold"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "197"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "byte_21D1A"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21D1A"
+              },
+              {
+                "labels": [
+                  "@CheckGold"
+                ],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetGold"
+                ],
+                "directTarget": "j_GetGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "d1",
+                  "currentGold(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.l",
+                "operands": [
+                  "#BLACKSMITH_ORDER_COST",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bcc.w",
+                "operands": [
+                  "@PlaceOrder"
+                ],
+                "directTarget": null,
+                "branchTarget": "@PlaceOrder"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "203"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "@PlaceOrder"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "#BLACKSMITH_ORDER_COST",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_DecreaseGold"
+                ],
+                "directTarget": "j_DecreaseGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addi.w",
+                "operands": [
+                  "#1",
+                  "pendingOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientMember(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemSlot(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_DropItemBySlot"
+                ],
+                "directTarget": "j_DropItemBySlot",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "PickMithrilWeapon"
+                ],
+                "directTarget": "PickMithrilWeapon",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#80",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_ClearFlag"
+                ],
+                "directTarget": "j_ClearFlag",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "204"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "205"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "pendingOrdersNumber(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "readyToFulfillOrdersNumber(a6)",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "fulfilledOrdersNumber(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sub.w",
+                "operands": [
+                  "d2",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "byte_21E16"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21E16"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "210"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "byte_21E16",
+                  "@InquireAboutNewOrder"
+                ],
+                "opcode": "txt",
+                "operands": [
+                  "196"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_alt_YesNoPrompt"
+                ],
+                "directTarget": "j_alt_YesNoPrompt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "byte_21CDE"
+                ],
+                "directTarget": null,
+                "branchTarget": "byte_21CDE"
+              },
+              {
+                "labels": [],
+                "opcode": "txt",
+                "operands": [
+                  "197"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clstxt",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Done"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "(sp)+",
+                  "d0-d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "WaitForMusicResumeAndPlayerInput_Blacksmith": [
+              {
+                "labels": [
+                  "WaitForMusicResumeAndPlayerInput_Blacksmith"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#SOUND_COMMAND_PLAY_PREVIOUS_MUSIC",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(PlayMusicAfterCurrentOne).w"
+                ],
+                "directTarget": "PlayMusicAfterCurrentOne",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WaitForPlayerInput).w"
+                ],
+                "directTarget": "WaitForPlayerInput",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "CountPendingAndReadyToFulfillOrders": [
+              {
+                "labels": [
+                  "CountPendingAndReadyToFulfillOrders"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#80",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_CheckFlag"
+                ],
+                "directTarget": "j_CheckFlag",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@Continue"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Continue"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "fulfillOrdersFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Continue"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#BLACKSMITH_MAX_ORDERS_NUMBER",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Loop"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)+",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@Next"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Next"
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#1",
+                  "fulfillOrdersFlag(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "@IncrementPlacedOrders"
+                ],
+                "directTarget": null,
+                "branchTarget": "@IncrementPlacedOrders"
+              },
+              {
+                "labels": [],
+                "opcode": "addi.w",
+                "operands": [
+                  "#1",
+                  "readyToFulfillOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Next"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Next"
+              },
+              {
+                "labels": [
+                  "@IncrementPlacedOrders"
+                ],
+                "opcode": "addi.w",
+                "operands": [
+                  "#1",
+                  "pendingOrdersNumber(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Next"
+                ],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "IsClassBlacksmithEligible": [
+              {
+                "labels": [
+                  "IsClassBlacksmithEligible"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "d1-d2/d7-a0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "list_BlacksmithEligibleClasses(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)+",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Loop"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)+",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientClass(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "d1",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Done"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "(sp)+",
+                  "d1-d2/d7-a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "PickMithrilWeapon": [
+              {
+                "labels": [
+                  "PickMithrilWeapon"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "d0-a0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "list_MithrilWeaponClasses(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#MITHRIL_WEAPON_CLASSES_COUNTER",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@FindWeaponClass_Loop"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)+",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@FindCharacterClass_Loop"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "(a0)+",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "clientClass(a6)",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "d1",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@GetWeaponsEntryAddress"
+                ],
+                "directTarget": null,
+                "branchTarget": "@GetWeaponsEntryAddress"
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d6",
+                  "@FindCharacterClass_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@FindCharacterClass_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "addi.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@FindWeaponClass_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@FindWeaponClass_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#2",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(GenerateRandomNumber).w"
+                ],
+                "directTarget": "GenerateRandomNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@GetWeaponsEntryAddress"
+                ],
+                "directTarget": null,
+                "branchTarget": "@GetWeaponsEntryAddress"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#2",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@GetWeaponsEntryAddress"
+                ],
+                "opcode": "lsl.w",
+                "operands": [
+                  "#3",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "table_MithrilWeapons(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "d0",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#MITHRIL_WEAPONS_PER_CLASS_COUNTER",
+                  "d5"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@PickWeapon_Loop"
+                ],
+                "opcode": "clr.w",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0)+",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(GenerateRandomNumber).w"
+                ],
+                "directTarget": "GenerateRandomNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.w",
+                "operands": [
+                  "@LoadIndex"
+                ],
+                "directTarget": null,
+                "branchTarget": "@LoadIndex"
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d5",
+                  "@PickWeapon_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@PickWeapon_Loop"
+              },
+              {
+                "labels": [
+                  "@LoadIndex"
+                ],
+                "opcode": "lea",
+                "operands": [
+                  "((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#BLACKSMITH_ORDERS_COUNTER",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@LoadIndex_Loop"
+                ],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#0",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@Next"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Next"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@Done"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Done"
+              },
+              {
+                "labels": [
+                  "@Next"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#2",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "d0",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@LoadIndex_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@LoadIndex_Loop"
+              },
+              {
+                "labels": [
+                  "@Done"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "(sp)+",
+                  "d0-a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ]
+          },
+          "jumpInterfaceAliases": {
+            "j_BlacksmithMenu": {
+              "effectiveTarget": "BlacksmithMenu",
+              "sourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm"
+            }
+          },
+          "internalDirectCallerOccurrences": {
+            "code/common/menus/blacksmith/blacksmithactions.asm": [
+              {
+                "instructionTarget": "BlacksmithAction_FulfillOrder",
+                "effectiveTarget": "BlacksmithAction_FulfillOrder",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "BlacksmithAction_PlaceOrder",
+                "effectiveTarget": "BlacksmithAction_PlaceOrder",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "CountPendingAndReadyToFulfillOrders",
+                "effectiveTarget": "CountPendingAndReadyToFulfillOrders",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "IsClassBlacksmithEligible",
+                "effectiveTarget": "IsClassBlacksmithEligible",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "PickMithrilWeapon",
+                "effectiveTarget": "PickMithrilWeapon",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "ProcessBlacksmithOrders",
+                "effectiveTarget": "ProcessBlacksmithOrders",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "WaitForMusicResumeAndPlayerInput_Blacksmith",
+                "effectiveTarget": "WaitForMusicResumeAndPlayerInput_Blacksmith",
+                "siteCount": 1
+              }
+            ],
+            "code/common/menus/blacksmith/pickmithrilweapon.asm": []
+          },
+          "internalEffectiveDirectCallSiteCounts": {
+            "BlacksmithAction_FulfillOrder": 1,
+            "BlacksmithAction_PlaceOrder": 1,
+            "BlacksmithMenu": 0,
+            "CountPendingAndReadyToFulfillOrders": 1,
+            "IsClassBlacksmithEligible": 1,
+            "PickMithrilWeapon": 1,
+            "ProcessBlacksmithOrders": 1,
+            "WaitForMusicResumeAndPlayerInput_Blacksmith": 1
+          },
+          "externalDirectCallerOccurrences": {
+            "code/common/scripting/map/mapscriptengine_2.asm": [
+              {
+                "instructionTarget": "j_BlacksmithMenu",
+                "effectiveTarget": "BlacksmithMenu",
+                "siteCount": 1
+              }
+            ]
+          },
+          "externalEffectiveDirectCallSiteCounts": {
+            "BlacksmithAction_FulfillOrder": 0,
+            "BlacksmithAction_PlaceOrder": 0,
+            "BlacksmithMenu": 1,
+            "CountPendingAndReadyToFulfillOrders": 0,
+            "IsClassBlacksmithEligible": 0,
+            "PickMithrilWeapon": 0,
+            "ProcessBlacksmithOrders": 0,
+            "WaitForMusicResumeAndPlayerInput_Blacksmith": 0
+          },
+          "indirectBehavior": {
+            "directCallInventoryDoesNotEstablishReachability": true
+          }
         },
         "staticBoundary": {
           "callerDependentServiceAdmissionAndReturnState": "inferred",
