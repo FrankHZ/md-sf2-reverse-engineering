@@ -1,3 +1,4 @@
+import json
 import shutil
 from copy import deepcopy
 
@@ -7,6 +8,7 @@ from sf2tool.h2.menus import (
     _blacksmith_static_contract,
     _caravan_static_contract,
     _church_static_contract,
+    _shared_selection_screen_contract,
     _shop_direct_call_occurrences,
     _shop_static_contract,
     build_menu_inventory,
@@ -622,6 +624,7 @@ def _copy_shop_source_root(tmp_path):
     source_root = UPSTREAM / "disasm"
     for relative in (
         "sf2enums.asm",
+        "code/common/tech/bytecopy.asm",
         "code/common/menus/shop/shopactions.asm",
         "code/common/menus/shopscreen.asm",
     ):
@@ -651,6 +654,62 @@ def test_shop_source_guards_reject_semantic_mutations(tmp_path, needle, replacem
     )
     with pytest.raises(ValueError, match="shop"):
         _shop_static_contract(root)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("needle", "replacement"),
+    (
+        ("bne.w   @Cancel", "beq.w   @Cancel"),
+        ("bne.w   @Confirm", "beq.w   @Confirm"),
+        ("moveq   #-1,d0", "moveq   #-2,d0"),
+        ("moveq   #-20,d1", "moveq   #-19,d1"),
+        (
+            "btst    #INPUT_BIT_C,((CURRENT_PLAYER_INPUT-$1000000)).w\n"
+            "                bne.w   @Confirm\n"
+            "                btst    #INPUT_BIT_A,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_A,((CURRENT_PLAYER_INPUT-$1000000)).w\n"
+            "                bne.w   @Confirm\n"
+            "                btst    #INPUT_BIT_C,((CURRENT_PLAYER_INPUT-$1000000)).w",
+        ),
+        ("mulu.w  #6,d0", "mulu.w  #5,d0"),
+        ("btst    #INPUT_BIT_RIGHT", "btst    #INPUT_BIT_LEFT"),
+        ("btst    #INPUT_BIT_LEFT", "btst    #INPUT_BIT_RIGHT"),
+        ("btst    #INPUT_BIT_UP", "btst    #INPUT_BIT_DOWN"),
+        ("btst    #INPUT_BIT_DOWN", "btst    #INPUT_BIT_UP"),
+        (
+            "move.w  #5,((CURRENT_SHOP_SELECTION-$1000000)).w",
+            "move.w  #4,((CURRENT_SHOP_SELECTION-$1000000)).w",
+        ),
+        ("moveq   #ITEMS_PER_SHOP_PAGE,d1", "moveq   #5,d1"),
+        ("lsl.w   #5,d0", "lsl.w   #4,d0"),
+        (
+            "lea     layout_ShopInventoryWindow(pc), a0",
+            "lea     layout_ShopInventoryWindowChanged(pc), a0",
+        ),
+        (
+            "movea.l inventoryWindowLayoutEndAddress(a6),a1",
+            "movea.l inventoryWindowLayoutEndAddressChanged(a6),a1",
+        ),
+        ("move.w  #324,d7", "move.w  #323,d7"),
+        ("move.w  #1599,d7", "move.w  #1598,d7"),
+        ("move.l  #-1,(a0)+", "move.w  #-1,(a0)+"),
+        ("dbf     d7,@Clear_Loop", "dbf     d7,@Clear_LoopChanged"),
+        ("dbf     d7,@Loop", "dbf     d7,@LoopChanged"),
+        ("bra.s   MoveSelectedItemInfoWindow", "bra.s   sub_14EC0"),
+    ),
+)
+def test_shared_selection_source_guards_reject_semantic_mutations(
+    tmp_path, needle, replacement
+) -> None:
+    root = _copy_shop_source_root(tmp_path)
+    source = root / "shopscreen.asm"
+    source.write_text(
+        source.read_text(encoding="latin-1").replace(needle, replacement, 1),
+        encoding="latin-1",
+    )
+    with pytest.raises(ValueError, match="shop"):
+        _shared_selection_screen_contract(root.parents[2], root)
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -783,14 +842,276 @@ def test_service_menu_state_machine_contract_covers_built_services() -> None:
         "PickMithrilWeapon",
         "j_ClearFlag",
     ]
-    assert machines["sharedSelectionScreen"]["cancelResult"] == -1
-    assert machines["sharedSelectionScreen"]["confirmButtons"] == ["A", "C"]
-    assert (
-        machines["sharedSelectionScreen"]["selectionAddressing"]
-        == "page-times-items-per-page-plus-selection"
-    )
+    shared_selection = machines["sharedSelectionScreen"]
+    assert shared_selection["entrySymbol"] == "ExecuteShopScreen"
+    assert shared_selection["constants"]["ITEMS_PER_SHOP_PAGE"] == 6
+    assert set(shared_selection["routineOperations"]) == {
+        "ExecuteShopScreen",
+        "LoadShopInventoryHighlightSprites",
+        "WriteGoldAmount",
+        "WriteItemNameAndGoldAmount",
+        "LoadItemIconsAndPriceTagTiles",
+        "LoadPriceTagTiles",
+        "LoadIconPixelsInShopScreen",
+        "GetCurrentShopSelection",
+        "sub_14D0C",
+        "sub_14D6A",
+        "sub_14DBE",
+        "sub_14DC0",
+        "sub_14E06",
+        "sub_14E5E",
+        "ShiftShopInventoryWindowLayout",
+        "sub_14EC0",
+        "MoveSelectedItemInfoWindow",
+    }
+    assert shared_selection["inputBranches"] == {
+        "sourceOrder": ["cancel", "confirmC", "confirmA"],
+        "cancel": {"button": "B", "testIndex": 123, "branchIndex": 124},
+        "confirmC": {"button": "C", "testIndex": 125, "branchIndex": 126},
+        "confirmA": {"button": "A", "testIndex": 127, "branchIndex": 128},
+        "cancelResult": {"name": "minusOneResult", "instructionIndex": 132},
+        "confirmSelectionFormula": {
+            "routine": "ExecuteShopScreen",
+            "pageLoadIndex": 134,
+            "pageMultiplierIndex": 135,
+            "selectionAddIndex": 136,
+            "listBaseIndex": 137,
+            "resultByteReadIndex": 138,
+            "resultMaskIndex": 139,
+        },
+    }
+    navigation = shared_selection["navigation"]
+    assert navigation == {
+        "right": {
+            "routine": "ExecuteShopScreen",
+            "references": [
+                {"name": name, "instructionIndex": index}
+                for name, index in (
+                    ("selectedIndexCandidateLoad", 48),
+                    ("inputTest", 49),
+                    ("inputAbsentBranch", 50),
+                    ("pageLoad", 51),
+                    ("pageScale", 52),
+                    ("globalListCandidateAdd", 53),
+                    ("globalListCandidateIncrement", 54),
+                    ("globalListLengthCompare", 55),
+                    ("globalListBoundBranch", 56),
+                    ("selectedIndexIncrement", 57),
+                    ("pageLocalCountCompare", 59),
+                    ("pageLocalBoundBranch", 60),
+                    ("pageIncrement", 61),
+                    ("selectionReset", 62),
+                    ("shiftDirectionReset", 63),
+                    ("scrollHelperCall", 64),
+                    ("scrollHelperConvergence", 65),
+                    ("selectionStore", 66),
+                    ("partialPageHelperCall", 67),
+                    ("partialPageConvergence", 68),
+                )
+            ],
+        },
+        "left": {
+            "routine": "ExecuteShopScreen",
+            "references": [
+                {"name": name, "instructionIndex": index}
+                for name, index in (
+                    ("selectedIndexCandidateLoad", 69),
+                    ("inputTest", 70),
+                    ("inputAbsentBranch", 71),
+                    ("pageLoad", 72),
+                    ("pageScale", 73),
+                    ("globalListCandidateAdd", 74),
+                    ("globalListBoundBranch", 75),
+                    ("selectedIndexDecrement", 76),
+                    ("pageLocalBoundBranch", 78),
+                    ("pageDecrement", 79),
+                    ("selectionReset", 80),
+                    ("shiftDirectionSet", 81),
+                    ("scrollHelperCall", 82),
+                    ("scrollHelperConvergence", 83),
+                    ("selectionStore", 84),
+                    ("partialPageHelperCall", 85),
+                    ("partialPageConvergence", 86),
+                )
+            ],
+        },
+        "up": {
+            "routine": "ExecuteShopScreen",
+            "references": [
+                {"name": name, "instructionIndex": index}
+                for name, index in (
+                    ("inputTest", 87),
+                    ("inputAbsentBranch", 88),
+                    ("pageZeroTest", 89),
+                    ("pageZeroBoundBranch", 90),
+                    ("pageDecrement", 91),
+                    ("shiftDirectionSet", 93),
+                    ("scrollHelperConvergence", 94),
+                )
+            ],
+        },
+        "down": {
+            "routine": "ExecuteShopScreen",
+            "references": [
+                {"name": name, "instructionIndex": index}
+                for name, index in (
+                    ("inputTest", 95),
+                    ("inputAbsentBranch", 96),
+                    ("nextPageCandidateLoad", 97),
+                    ("nextPageCandidateIncrement", 98),
+                    ("nextPageScale", 99),
+                    ("globalListLengthCompare", 100),
+                    ("globalListBoundBranch", 101),
+                    ("pageIncrement", 102),
+                    ("selectedIndexLoad", 104),
+                    ("pageLoadForPartialCount", 105),
+                    ("partialPageScaleCopy", 106),
+                    ("partialPageScaleDouble", 107),
+                    ("partialPageScaleAdd", 108),
+                    ("partialPageScaleDoubleFinal", 109),
+                    ("globalListLengthLoad", 110),
+                    ("partialPageLengthSubtract", 111),
+                    ("partialPageCountCompare", 112),
+                    ("partialPageBoundBranch", 113),
+                    ("partialPageCountCap", 114),
+                    ("pageItemCountStore", 115),
+                    ("selectionClampCompare", 116),
+                    ("selectionClampBranch", 117),
+                    ("selectionClampDecrement", 118),
+                    ("selectionClampLoop", 119),
+                    ("selectionStore", 120),
+                    ("shiftDirectionReset", 121),
+                    ("scrollHelperConvergence", 122),
+                )
+            ],
+        },
+    }
+    assert shared_selection["routineOperations"]["LoadShopInventoryHighlightSprites"][
+        shared_selection["highlightSemantics"]["selectionShiftIndex"]
+    ]["operands"] == ["#5", "d0"]
+    assert shared_selection["resourceTransfers"]["LoadItemIconsAndPriceTagTiles"] == {
+        "routine": "LoadItemIconsAndPriceTagTiles",
+        "copyBytesTransfers": [
+            {
+                "name": "inventoryLayoutCopy",
+                "sourceOperandInstructionIndex": 1,
+                "destinationOperandInstructionIndex": 0,
+                "storedCountOperandInstructionIndex": 2,
+                "storedCountValue": 324,
+                "copyCallInstructionIndex": 3,
+                "copyCountUnit": "bytes",
+                "transferredByteCount": 324,
+            }
+        ],
+        "loopWrites": [
+            {
+                "name": "clearLoop",
+                "sourceOperandInstructionIndex": 7,
+                "destinationOperandInstructionIndex": 7,
+                "storedCountOperandInstructionIndex": 6,
+                "storedCountValue": 1599,
+                "writeInstructionIndex": 7,
+                "writeOpcodeWidthBits": 32,
+                "loopInstructionIndex": 8,
+                "inclusiveCounter": True,
+                "iterationCount": 1600,
+                "longwordWriteCount": 1600,
+                "loopTarget": "@Clear_Loop",
+                "exitConvergenceInstructionIndex": 9,
+            },
+            {
+                "name": "itemLoop",
+                "sourceOperandInstructionIndex": 28,
+                "destinationOperandInstructionIndex": 38,
+                "storedCountOperandInstructionIndex": 22,
+                "storedCountOperand": "d1",
+                "writeInstructionIndex": 38,
+                "writeOpcodeWidthBits": 16,
+                "loopInstructionIndex": 41,
+                "inclusiveCounter": True,
+                "loopTarget": "@Main_Loop",
+                "exitConvergenceInstructionIndex": 42,
+            },
+        ],
+        "vintDmaArgumentInstructionIndexes": [42, 43, 44, 45, 46, 47],
+        "terminalConvergence": {"name": "terminalOperation", "instructionIndex": 48},
+    }
+    assert shared_selection["resourceTransfers"]["WriteItemNameAndGoldAmount"][
+        "namedOperations"
+    ][0] == {
+        "name": "itemNameText",
+        "sourceOperandInstructionIndex": 6,
+        "destinationOperandInstructionIndex": 7,
+        "preCallD1ArgumentInstructionIndex": 9,
+        "preCallD1ArgumentValue": -20,
+        "writeCallInstructionIndex": 10,
+    }
     assert machines["staticBoundary"]["callerDependentServiceAdmissionAndReturnState"] == "inferred"
     assert machines["staticBoundary"]["persistenceAcrossMapLoadSaveAndStoryProgress"] == "unknown"
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_shared_selection_contract_matches_fixture_and_rejects_nested_drift() -> None:
+    fixture = load_json(FIXTURE)
+    shared = build_menu_inventory(UPSTREAM)["menuFacts"]["serviceStateMachines"][
+        "sharedSelectionScreen"
+    ]
+    assert (
+        shared == fixture["expected"]["menuFacts"]["serviceStateMachines"]["sharedSelectionScreen"]
+    )
+    output_schema = load_json(OUTPUT_SCHEMA)
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    assert (
+        output_schema["definitions"]["sharedSelectionInstructionRecord"]
+        == fixture_schema["definitions"]["sharedSelectionInstructionRecord"]
+    )
+    assert (
+        output_schema["definitions"]["sharedSelectionFacts"]
+        == fixture_schema["definitions"]["sharedSelectionFacts"]
+    )
+    for schema in (output_schema, fixture_schema):
+        assert (
+            schema["definitions"]["sharedSelectionInstructionRecord"]["additionalProperties"]
+            is False
+        )
+        facts = schema["definitions"]["sharedSelectionFacts"]
+        routine_schemas = facts["properties"]["routineOperations"]["properties"].values()
+        assert all(
+            records["allOf"][0]["items"]
+            == {"$ref": "#/definitions/sharedSelectionInstructionRecord"}
+            and isinstance(records["allOf"][1]["const"], list)
+            for records in routine_schemas
+        )
+        assert len(list(routine_schemas)) == 17
+        assert len(json.dumps(facts, sort_keys=True)) < 250_000
+        assert (
+            len(
+                json.dumps(
+                    schema["definitions"]["sharedSelectionInstructionRecord"], sort_keys=True
+                )
+            )
+            < 1_000
+        )
+
+    def expect_invalid(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["sharedSelectionScreen"])
+        with pytest.raises(ValueError, match="sharedSelectionScreen"):
+            validate_json(broken, FIXTURE_SCHEMA, owner="sharedSelectionScreen contract")
+
+    expect_invalid(lambda shared: shared.pop("navigation"))
+    expect_invalid(lambda shared: shared["inputBranches"]["cancel"].pop("branchIndex"))
+    expect_invalid(
+        lambda shared: shared["highlightSemantics"].__setitem__("unexpectedCoordinate", 0)
+    )
+    expect_invalid(
+        lambda shared: shared["resourceTransfers"]["LoadPriceTagTiles"].pop("loopWrites")
+    )
+    expect_invalid(
+        lambda shared: shared["resourceTransfers"]["WriteItemNameAndGoldAmount"][
+            "namedOperations"
+        ][0].pop("preCallD1ArgumentValue")
+    )
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -817,6 +1138,7 @@ def test_shop_contract_matches_fixture_and_schemas_are_closed() -> None:
                 closed(child)
 
     closed(output_schema["definitions"]["shopFacts"])
+
     def expect_invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["shop"])

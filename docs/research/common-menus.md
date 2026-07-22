@@ -5,7 +5,8 @@
   header/palette/tile loading boundaries, plus the complete diamond-menu/yes-no compressed graphics
   and uncompressed item/spell/other icon storage/copy/highlight corpora, and the complete assembled
   UI/window layout, spell-level pointer, diamond-border, and direct menu-tile corpus, plus the
-  count-prefixed shop and sequential mithril-selection data contracts
+  count-prefixed shop and sequential mithril-selection data contracts, and the complete 17-routine
+  shared shop/caravan selection-screen instruction and caller corpus
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -138,13 +139,14 @@ strict output schema, mirrored fixture schema, and focused source-mutation tests
 `schemas/h2-common-menus-static-fixture.schema.json`, and
 `tests/python/test_common_menus.py`. Reproduce with `uv run sf2 h2 common-menus`.
 Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
-`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
+`9D9D1E3B7F847193307DA6E3C0114D33597EE4E7667E99EDFD1C7EF362426DB6`.
 
 `ShopMenu` enters `j_ExecuteDiamondMenu` with `MENU_SHOP`; its local chain compares selector values
 `0`, `1`, and `2` for Buy, Sell, and Repair, respectively, and falls through to the Deals section.
 This records the actual local branch structure rather than assuming an unobserved selector domain.
-The diamond-menu cancel comparison is `-1`; the common shop selection screen returns `-1` on B and
-confirms with C then A in source order. Every Buy, Sell, Repair, and Deals source operation is
+The diamond-menu cancel comparison is `-1`; the common shop selection screen tests B, then C, then A
+in source order, returns `-1` on B, and confirms on the first C/A branch taken. Every Buy, Sell,
+Repair, and Deals source operation is
 fixture-pinned as an ordered record of local labels, opcode, operands, direct target, and branch
 target; this includes move/add/subtract dataflow as well as calls and branches. Buy/Sell/Repair loop
 through their local action labels; Deals includes both the action-loop branch to
@@ -170,6 +172,22 @@ stored list count, the inclusive counter value, and the copied entry bytes remai
 initial-screen multiplier is cross-checked against that parsed constant instead of becoming a second
 implementation constant.
 
+**Confirmed — shared selection-screen inventory.** `shopscreen.asm` is parsed as one 1,794-byte
+physical source interval (`0x147FA..0x14EFC`) with complete instruction records for its 17 named
+routines and separately scoped local labels. The contract retains entry/window creation, directional
+input sections, confirm/cancel and cleanup sections, highlight, gold/name, icon/price-tag, selection,
+and window-scroll helper records, plus alias-aware zero-inclusive caller totals. This is static source
+shape only: input-repeat timing, DMA completion, rendered appearance, and caller admission/lifecycle
+remain **Unknown** or **Inferred** in the existing grouped H3 queue.
+
+`code/common/tech/bytecopy.asm:CopyBytes` documents `a0` source, `a1` destination, and `d7.w`
+length, so the initial inventory-layout call's stored count is 324 bytes. Separately, the icon/price
+routine's `#1599` `dbf` counter yields 1,600 longword clear writes; price-tag blank tiles use 32
+longword writes and icon pixels use 48 longword writes. Those counters, derived iteration counts,
+longword widths, and the 1,794-byte physical code interval are distinct fixture fields. The VInt DMA
+argument records are retained as source operands only; they do not establish a transfer unit, timing,
+or rendered result.
+
 The direct-caller inventory is also **Confirmed** instruction-scoped evidence. It resolves the two
 pinned jump interfaces while retaining both identities: `j_ShopMenu` in
 `code/common/tech/jumpinterfaces/s05_jumpinterface.asm` jumps to `ShopMenu`, and
@@ -191,7 +209,7 @@ selection-screen 3; absence of another direct call remains not an unreachability
 `churchactions_2.asm` helper surface. It uses the same exact `sf2-common-menus-static-v1` fixture,
 both mirrored schemas, and `tests/python/test_common_menus.py`; reproduce with
 `uv run sf2 h2 common-menus`. Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
-`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
+`9D9D1E3B7F847193307DA6E3C0114D33597EE4E7667E99EDFD1C7EF362426DB6`.
 
 `ChurchMenu` enters `j_ExecuteDiamondMenu` with `MENU_CHURCH`, compares selector values `0`, `1`,
 and `2` for Raise, Cure, and Promote, and falls through to Save. Its `-1` comparison branches to
@@ -233,7 +251,7 @@ helper file `caravanactions_2.asm` (`0x228A8..0x229CA`). The physical spans are 
 respectively; they remain separate from the 64-item storage capacity, 4-slot member capacity, word
 relative-table entry width, item-definition offsets, and `dbf` loop counters. Reproduce with
 `uv run sf2 h2 common-menus`; observed result on 2026-07-21 is `Status: PASS`, canonical SHA-256
-`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
+`9D9D1E3B7F847193307DA6E3C0114D33597EE4E7667E99EDFD1C7EF362426DB6`.
 
 The top word-relative table is, in source order, `caravanMenu_Join`, `caravanMenu_Depot`,
 `caravanMenu_Item`, and `caravanMenu_Purge`; its selector doubles `d0`, its `-1` branch targets
@@ -266,7 +284,7 @@ return state, or reachability, which remain **Inferred** and **Unknown** in the 
 (`0x21ED6..0x21F62`). The 1,148-byte and 140-byte physical spans remain distinct from the 24-byte
 stack frame, four order slots, two-byte order storage width, inclusive counters, and eight-byte weapon
 row stride. Reproduce with `uv run sf2 h2 common-menus`; observed 2026-07-21 SHA-256 is
-`D2062217BB687757787307DF941142F2133C215427ADB80D266631D0887AE5C3`.
+`9D9D1E3B7F847193307DA6E3C0114D33597EE4E7667E99EDFD1C7EF362426DB6`.
 
 The source confirms four visit-local counter clears; the force-copy length transfer from
 `TARGETS_LIST_LENGTH` to `GENERIC_LIST_LENGTH`; byte `(a0)+` to `(a1)+` copying; a byte decrement and

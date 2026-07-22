@@ -182,20 +182,6100 @@
         },
         "sharedSelectionScreen": {
           "entrySymbol": "ExecuteShopScreen",
-          "cancelResult": -1,
-          "confirmButtons": [
-            "A",
-            "C"
-          ],
-          "cancelButton": "B",
-          "selectionAddressing": "page-times-items-per-page-plus-selection",
-          "stateReadsAndWrites": [
-            "CURRENT_SHOP_PAGE",
-            "CURRENT_SHOP_SELECTION",
-            "CURRENT_SHOP_PAGE_ITEMS_NUMBER",
-            "GENERIC_LIST",
-            "GENERIC_LIST_LENGTH"
-          ]
+          "sourcePath": "code/common/menus/shopscreen.asm",
+          "sourceRange": {
+            "path": "code/common/menus/shopscreen.asm",
+            "startAddress": 83962,
+            "endAddressExclusive": 85756,
+            "physicalSpanBytes": 1794
+          },
+          "constants": {
+            "ITEMS_PER_SHOP_PAGE": 6,
+            "WINDOW_SHOP_INVENTORY_SIZE": 6918,
+            "WINDOW_SHOP_INVENTORY_DEST": 759,
+            "WINDOW_SHOP_ITEM_NAME_AND_PRICE_SIZE": 2565,
+            "WINDOW_SHOP_ITEM_NAME_AND_PRICE_DEST": 62982,
+            "WINDOW_SHOP_GOLD_SIZE": 2308,
+            "WINDOW_SHOP_GOLD_DEST": 8215,
+            "ICON_PIXELS_LONGWORD_COUNTER": 47
+          },
+          "routineOperations": {
+            "ExecuteShopScreen": [
+              {
+                "labels": [
+                  "ExecuteShopScreen"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#6",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.s",
+                "operands": [
+                  "@loc_1"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_1"
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_1"
+                ],
+                "opcode": "link",
+                "operands": [
+                  "a6",
+                  "#-240"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#WINDOW_SHOP_INVENTORY_SIZE",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#WINDOW_SHOP_INVENTORY_DEST",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CreateWindow).l"
+                ],
+                "directTarget": "CreateWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "inventoryWindowSlot(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "a1",
+                  "inventoryWindowLayoutEndAddress(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "LoadItemIconsAndPriceTagTiles"
+                ],
+                "directTarget": "LoadItemIconsAndPriceTagTiles",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#WINDOW_SHOP_ITEM_NAME_AND_PRICE_SIZE",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#WINDOW_SHOP_ITEM_NAME_AND_PRICE_DEST",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CreateWindow).l"
+                ],
+                "directTarget": "CreateWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "itemNameAndPriceWindowSlot(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "a1",
+                  "itemNameAndPriceWindowLayoutEndAddress(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteItemNameAndGoldAmount"
+                ],
+                "directTarget": "WriteItemNameAndGoldAmount",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#WINDOW_SHOP_GOLD_SIZE",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#WINDOW_SHOP_GOLD_DEST",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CreateWindow).l"
+                ],
+                "directTarget": "CreateWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "goldWindowSlot(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "a1",
+                  "goldWindowLayoutEndAddress(a6)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteGoldAmount"
+                ],
+                "directTarget": "WriteGoldAmount",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "inventoryWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$201",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindowWithSfx).l"
+                ],
+                "directTarget": "MoveWindowWithSfx",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemNameAndPriceWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$106",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsl.w",
+                "operands": [
+                  "#2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsl.w",
+                "operands": [
+                  "#BYTE_SHIFT_COUNT",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindowWithSfx).l"
+                ],
+                "directTarget": "MoveWindowWithSfx",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "goldWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$1617",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindowWithSfx).l"
+                ],
+                "directTarget": "MoveWindowWithSfx",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "tiles_ShopInventoryItemHighlight(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "($FE00).l",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$100",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(ApplyVIntVramDmaOnCompressedTiles).w"
+                ],
+                "directTarget": "ApplyVIntVramDmaOnCompressedTiles",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WaitForWindowMovementEnd).l"
+                ],
+                "directTarget": "WaitForWindowMovementEnd",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "MoveSelectedItemInfoWindow"
+                ],
+                "directTarget": "MoveSelectedItemInfoWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@CheckRight"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_RIGHT",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@CheckLeft"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckLeft"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#1",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bge.s",
+                "operands": [
+                  "@CheckLeft"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckLeft"
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "SFX_MENU_SELECTION"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE_ITEMS_NUMBER-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.s",
+                "operands": [
+                  "@loc_3"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_3"
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#1",
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.b",
+                "operands": [
+                  "((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "ShiftShopInventoryWindowLayout"
+                ],
+                "directTarget": "ShiftShopInventoryWindowLayout",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@loc_12"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_12"
+              },
+              {
+                "labels": [
+                  "@loc_3"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14EC0"
+                ],
+                "directTarget": "sub_14EC0",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@loc_12"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_12"
+              },
+              {
+                "labels": [
+                  "@CheckLeft"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_LEFT",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@CheckUp"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckUp"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ble.s",
+                "operands": [
+                  "@CheckUp"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckUp"
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "SFX_MENU_SELECTION"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bge.s",
+                "operands": [
+                  "@loc_5"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_5"
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#5",
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#1",
+                  "((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "ShiftShopInventoryWindowLayout"
+                ],
+                "directTarget": "ShiftShopInventoryWindowLayout",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@loc_12"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_12"
+              },
+              {
+                "labels": [
+                  "@loc_5"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14EC0"
+                ],
+                "directTarget": "sub_14EC0",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@loc_12"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_12"
+              },
+              {
+                "labels": [
+                  "@CheckUp"
+                ],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_UP",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@CheckDown"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckDown"
+              },
+              {
+                "labels": [],
+                "opcode": "tst.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@CheckDown"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckDown"
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "SFX_MENU_SELECTION"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "#1",
+                  "((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "ShiftShopInventoryWindowLayout"
+                ],
+                "directTarget": "ShiftShopInventoryWindowLayout",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@CheckDown"
+                ],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_DOWN",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@loc_11"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_11"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#1",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bge.s",
+                "operands": [
+                  "@loc_11"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_11"
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#1",
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sndcom",
+                "operands": [
+                  "SFX_MENU_SELECTION"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d2",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sub.w",
+                "operands": [
+                  "d2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ble.s",
+                "operands": [
+                  "@loc_8"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_8"
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_8"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "((CURRENT_SHOP_PAGE_ITEMS_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_9"
+                ],
+                "opcode": "cmp.w",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.w",
+                "operands": [
+                  "@loc_10"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_10"
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "@loc_9"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_9"
+              },
+              {
+                "labels": [
+                  "@loc_10"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.b",
+                "operands": [
+                  "((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "ShiftShopInventoryWindowLayout"
+                ],
+                "directTarget": "ShiftShopInventoryWindowLayout",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_11"
+                ],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_B",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@Cancel"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Cancel"
+              },
+              {
+                "labels": [],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_C",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@Confirm"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Confirm"
+              },
+              {
+                "labels": [],
+                "opcode": "btst",
+                "operands": [
+                  "#INPUT_BIT_A",
+                  "((CURRENT_PLAYER_INPUT-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.w",
+                "operands": [
+                  "@Confirm"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Confirm"
+              },
+              {
+                "labels": [
+                  "@loc_12"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "LoadShopInventoryHighlightSprites"
+                ],
+                "directTarget": "LoadShopInventoryHighlightSprites",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WaitForVInt).w"
+                ],
+                "directTarget": "WaitForVInt",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@CheckRight"
+                ],
+                "directTarget": null,
+                "branchTarget": "@CheckRight"
+              },
+              {
+                "labels": [
+                  "@Cancel"
+                ],
+                "opcode": "moveq",
+                "operands": [
+                  "#-1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "@loc_15"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_15"
+              },
+              {
+                "labels": [
+                  "@Confirm"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0,d1.w)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "andi.w",
+                "operands": [
+                  "#BYTE_MASK",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_15"
+                ],
+                "opcode": "movem.w",
+                "operands": [
+                  "d0-d1",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.w",
+                "operands": [
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.s",
+                "operands": [
+                  "LoadShopInventoryHighlightSprites"
+                ],
+                "directTarget": "LoadShopInventoryHighlightSprites",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((DIALOGUE_WINDOW_INDEX-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@Exit"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Exit"
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$8080",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindow).l"
+                ],
+                "directTarget": "MoveWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Exit"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "inventoryWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$2F7",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindowWithSfx).l"
+                ],
+                "directTarget": "MoveWindowWithSfx",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemNameAndPriceWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$F606",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindowWithSfx).l"
+                ],
+                "directTarget": "MoveWindowWithSfx",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "goldWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$2017",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindowWithSfx).l"
+                ],
+                "directTarget": "MoveWindowWithSfx",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WaitForWindowMovementEnd).l"
+                ],
+                "directTarget": "WaitForWindowMovementEnd",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "goldWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(DeleteWindow).l"
+                ],
+                "directTarget": "DeleteWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemNameAndPriceWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(DeleteWindow).l"
+                ],
+                "directTarget": "DeleteWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "inventoryWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(DeleteWindow).l"
+                ],
+                "directTarget": "DeleteWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movem.w",
+                "operands": [
+                  "(sp)+",
+                  "d0-d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "unlk",
+                "operands": [
+                  "a6"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "LoadShopInventoryHighlightSprites": [
+              {
+                "labels": [
+                  "LoadShopInventoryHighlightSprites"
+                ],
+                "opcode": "lea",
+                "operands": [
+                  "(SPRITE_BATTLE_CURSOR).l",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#7",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bge.s",
+                "operands": [
+                  "@loc_1"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_1"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "VDPSPRITE_OFFSET_X(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "@loc_2"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_2"
+              },
+              {
+                "labels": [
+                  "@loc_1"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsl.w",
+                "operands": [
+                  "#5",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addi.w",
+                "operands": [
+                  "#156",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "VDPSPRITE_OFFSET_X(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#145",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_2"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPSPRITESIZE_V4|VDPSPRITESIZE_H4|9",
+                  "VDPSPRITE_OFFSET_SIZE(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPTILE_PORTRAITTILE49|VDPTILE_PALETTE3|VDPTILE_PRIORITY",
+                  "VDPSPRITE_OFFSET_TILE(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addq.l",
+                "operands": [
+                  "#VDP_SPRITE_ENTRY_SIZE",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "VDPSPRITE_OFFSET_X(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "tst.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@loc_4"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_4"
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#7",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.s",
+                "operands": [
+                  "@loc_3"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_3"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#152",
+                  "VDPSPRITE_OFFSET_X(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#144",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_3"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPSPRITESIZE_V1|VDPSPRITESIZE_H1|$A",
+                  "VDPSPRITE_OFFSET_SIZE(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPTILE_V_ARROW|VDPTILE_FLIP|VDPTILE_PALETTE3|VDPTILE_PRIORITY",
+                  "VDPSPRITE_OFFSET_TILE(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_4"
+                ],
+                "opcode": "addq.l",
+                "operands": [
+                  "#VDP_SPRITE_ENTRY_SIZE",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1",
+                  "VDPSPRITE_OFFSET_X(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmp.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bge.s",
+                "operands": [
+                  "@loc_6"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_6"
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#7",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "blt.s",
+                "operands": [
+                  "@loc_5"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_5"
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#344",
+                  "VDPSPRITE_OFFSET_X(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#168",
+                  "(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_5"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPSPRITESIZE_V1|VDPSPRITESIZE_H1|$10",
+                  "VDPSPRITE_OFFSET_SIZE(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPTILE_V_ARROW|VDPTILE_PALETTE3|VDPTILE_PRIORITY",
+                  "VDPSPRITE_OFFSET_TILE(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_6"
+                ],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "@loc_7"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_7"
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#20",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_7"
+                ],
+                "opcode": "bra.w",
+                "operands": [
+                  "LinkHighlightSprites"
+                ],
+                "directTarget": null,
+                "branchTarget": "LinkHighlightSprites"
+              }
+            ],
+            "WriteGoldAmount": [
+              {
+                "labels": [
+                  "WriteGoldAmount"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#$904",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "goldWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteWindowTiles"
+                ],
+                "directTarget": "WriteWindowTiles",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "aGold(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "goldWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$14",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#-18",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#10",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteTilesFromAsciiWithRegularFont"
+                ],
+                "directTarget": "WriteTilesFromAsciiWithRegularFont",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetGold"
+                ],
+                "directTarget": "j_GetGold",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "goldWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$26",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#7",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "WriteTilesFromNumber"
+                ],
+                "directTarget": "WriteTilesFromNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "WriteItemNameAndGoldAmount": [
+              {
+                "labels": [
+                  "WriteItemNameAndGoldAmount"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "#$A05",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "itemNameAndPriceWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteWindowTiles"
+                ],
+                "directTarget": "WriteWindowTiles",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "GetCurrentShopSelection"
+                ],
+                "directTarget": "GetCurrentShopSelection",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemName"
+                ],
+                "directTarget": "j_GetItemName",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "itemNameAndPriceWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$16",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#-20",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteTilesFromAsciiWithRegularFont"
+                ],
+                "directTarget": "WriteTilesFromAsciiWithRegularFont",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemDefinitionAddress"
+                ],
+                "directTarget": "j_GetItemDefinitionAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "ITEMDEF_OFFSET_PRICE(a0)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "itemNameAndPriceWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$44",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#5",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "WriteTilesFromNumber"
+                ],
+                "directTarget": "WriteTilesFromNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "LoadItemIconsAndPriceTagTiles": [
+              {
+                "labels": [
+                  "LoadItemIconsAndPriceTagTiles"
+                ],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindow(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#324",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "*+4"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "(byte_FF6942).l",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#1599",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Clear_Loop"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "#-1",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@Clear_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Clear_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "d0",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((GENERIC_LIST_LENGTH-$1000000)).w",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "sub.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ble.s",
+                "operands": [
+                  "@loc_1"
+                ],
+                "directTarget": null,
+                "branchTarget": "@loc_1"
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#ITEMS_PER_SHOP_PAGE",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@loc_1"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "((CURRENT_SHOP_PAGE_ITEMS_NUMBER-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "subq.w",
+                "operands": [
+                  "#1",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "(FF6802_LOADING_SPACE).l",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$3C",
+                  "a2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Main_Loop"
+                ],
+                "opcode": "clr.w",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "(a1)+",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d7",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "LoadIconPixelsInShopScreen"
+                ],
+                "directTarget": "LoadIconPixelsInShopScreen",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "a0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "j_GetItemDefinitionAddress"
+                ],
+                "directTarget": "j_GetItemDefinitionAddress",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "clr.l",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "ITEMDEF_OFFSET_PRICE(a0)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "(sp)+",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "LoadPriceTagTiles"
+                ],
+                "directTarget": "LoadPriceTagTiles",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#VDPTILE_SHOP_PRICE_TAG_STRING|VDPTILE_PALETTE3|VDPTILE_PRIORITY",
+                  "(a2)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "addq.l",
+                "operands": [
+                  "#VDP_SPRITE_ENTRY_SIZE",
+                  "a2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@Main_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Main_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "(FF6802_LOADING_SPACE).l",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "($B800).l",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$3C0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#2",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(ApplyVIntVramDma).w"
+                ],
+                "directTarget": "ApplyVIntVramDma",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WaitForDmaQueueProcessing).w"
+                ],
+                "directTarget": "WaitForDmaQueueProcessing",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "LoadPriceTagTiles": [
+              {
+                "labels": [
+                  "LoadPriceTagTiles"
+                ],
+                "opcode": "movem.l",
+                "operands": [
+                  "a1-a2",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "andi.l",
+                "operands": [
+                  "#WORD_MASK",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "a0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "tiles_PriceTagBlank(pc)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#31",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@LoadBlankTiles_Loop"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@LoadBlankTiles_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@LoadBlankTiles_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "(sp)+",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$14",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(WriteAsciiNumber).w"
+                ],
+                "directTarget": "WriteAsciiNumber",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((byte_FFDE85-$1000000)).w",
+                  "a2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Main_Loop"
+                ],
+                "opcode": "clr.w",
+                "operands": [
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "(a2)+",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "cmpi.w",
+                "operands": [
+                  "#$20",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "beq.s",
+                "operands": [
+                  "@Next"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Next"
+              },
+              {
+                "labels": [],
+                "opcode": "subi.w",
+                "operands": [
+                  "#$30",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "mulu.w",
+                "operands": [
+                  "#$14",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "tiles_PriceTagNumbers(pc)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "d0",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "@Continue"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Continue"
+              },
+              {
+                "labels": [
+                  "@Next"
+                ],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$14",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Continue"
+                ],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@Main_Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Main_Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "addq.w",
+                "operands": [
+                  "#8",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movem.l",
+                "operands": [
+                  "(sp)+",
+                  "a1-a2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "LoadIconPixelsInShopScreen": [
+              {
+                "labels": [
+                  "LoadIconPixelsInShopScreen"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "a1",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "-(sp)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "(p_Icons).l",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lsl.w",
+                "operands": [
+                  "#6",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "d0",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#ICON_PIXELS_LONGWORD_COUNTER",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "@Loop"
+                ],
+                "opcode": "move.l",
+                "operands": [
+                  "(a1)+",
+                  "(a0)+"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "dbf",
+                "operands": [
+                  "d7",
+                  "@Loop"
+                ],
+                "directTarget": null,
+                "branchTarget": "@Loop"
+              },
+              {
+                "labels": [],
+                "opcode": "ori.w",
+                "operands": [
+                  "#$F",
+                  "-2(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ori.w",
+                "operands": [
+                  "#$F000",
+                  "-36(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ori.w",
+                "operands": [
+                  "#$F",
+                  "-158(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ori.w",
+                "operands": [
+                  "#$F000",
+                  "-192(a0)"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "(sp)+",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "GetCurrentShopSelection": [
+              {
+                "labels": [
+                  "GetCurrentShopSelection"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_PAGE-$1000000)).w",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "d0",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d0",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "add.w",
+                "operands": [
+                  "d1",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "((GENERIC_LIST-$1000000)).w",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.b",
+                "operands": [
+                  "(a0,d0.w)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "andi.w",
+                "operands": [
+                  "#BYTE_MASK",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "sub_14D0C": [
+              {
+                "labels": [
+                  "sub_14D0C"
+                ],
+                "opcode": "module",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "*+4"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "a0",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#162",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#54",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#108",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#162",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#216",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_14D4A"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "inventoryWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$8080",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(SetWindowDestination).l"
+                ],
+                "directTarget": "SetWindowDestination",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemNameAndPriceWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$8080",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(SetWindowDestination).l"
+                ],
+                "directTarget": "SetWindowDestination",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jmp",
+                "operands": [
+                  "(WaitForVInt).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ],
+            "sub_14D6A": [
+              {
+                "labels": [
+                  "sub_14D6A"
+                ],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$36",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$6C",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "inventoryWindowLayoutLoadingSpace(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$A2",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#108",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14DBE"
+                ],
+                "directTarget": "sub_14DBE",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "inventoryWindowLayoutLoadingSpace(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$36",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#216",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              }
+            ],
+            "sub_14DBE": [
+              {
+                "labels": [
+                  "sub_14DBE"
+                ],
+                "opcode": "bra.s",
+                "operands": [
+                  "loc_14D4A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14D4A"
+              }
+            ],
+            "sub_14DC0": [
+              {
+                "labels": [
+                  "sub_14DC0"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "*+4"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "a0",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$36",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$A2",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#108",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$36",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$6C",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.w",
+                "operands": [
+                  "loc_14D4A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14D4A"
+              }
+            ],
+            "sub_14E06": [
+              {
+                "labels": [
+                  "sub_14E06"
+                ],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$A2",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "layout_ShopInventoryWindowLayoutSpacer(pc)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$D8",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#54",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "inventoryWindowLayoutLoadingSpace(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$6C",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$36",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#108",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14E5E"
+                ],
+                "directTarget": "sub_14E5E",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "inventoryWindowLayoutLoadingSpace(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#$36",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#216",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              }
+            ],
+            "sub_14E5E": [
+              {
+                "labels": [
+                  "sub_14E5E"
+                ],
+                "opcode": "bra.w",
+                "operands": [
+                  "loc_14D4A"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14D4A"
+              }
+            ],
+            "ShiftShopInventoryWindowLayout": [
+              {
+                "labels": [
+                  "ShiftShopInventoryWindowLayout"
+                ],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#54",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "inventoryWindowLayoutLoadingSpace(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#216",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "tst.b",
+                "operands": [
+                  "((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_14E82"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14E82"
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14D0C"
+                ],
+                "directTarget": "sub_14D0C",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "loc_14E86"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14E86"
+              },
+              {
+                "labels": [
+                  "loc_14E82"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14DC0"
+                ],
+                "directTarget": "sub_14DC0",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_14E86"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "LoadItemIconsAndPriceTagTiles"
+                ],
+                "directTarget": "LoadItemIconsAndPriceTagTiles",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "movea.l",
+                "operands": [
+                  "inventoryWindowLayoutEndAddress(a6)",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "adda.w",
+                "operands": [
+                  "#54",
+                  "a0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "lea",
+                "operands": [
+                  "inventoryWindowLayoutLoadingSpace(a6)",
+                  "a1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#216",
+                  "d7"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(CopyBytes).w"
+                ],
+                "directTarget": "CopyBytes",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "tst.b",
+                "operands": [
+                  "((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bne.s",
+                "operands": [
+                  "loc_14EAA"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14EAA"
+              },
+              {
+                "labels": [],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14D6A"
+                ],
+                "directTarget": "sub_14D6A",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "loc_14EAE"
+                ],
+                "directTarget": null,
+                "branchTarget": "loc_14EAE"
+              },
+              {
+                "labels": [
+                  "loc_14EAA"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "sub_14E06"
+                ],
+                "directTarget": "sub_14E06",
+                "branchTarget": null
+              },
+              {
+                "labels": [
+                  "loc_14EAE"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "inventoryWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$201",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindow).l"
+                ],
+                "directTarget": "MoveWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "bra.s",
+                "operands": [
+                  "MoveSelectedItemInfoWindow"
+                ],
+                "directTarget": null,
+                "branchTarget": "MoveSelectedItemInfoWindow"
+              }
+            ],
+            "sub_14EC0": [
+              {
+                "labels": [
+                  "sub_14EC0"
+                ],
+                "opcode": "move.w",
+                "operands": [
+                  "itemNameAndPriceWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$2000",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(SetWindowDestination).l"
+                ],
+                "directTarget": "SetWindowDestination",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "inventoryWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "#$201",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindow).l"
+                ],
+                "directTarget": "MoveWindow",
+                "branchTarget": null
+              }
+            ],
+            "MoveSelectedItemInfoWindow": [
+              {
+                "labels": [
+                  "MoveSelectedItemInfoWindow"
+                ],
+                "opcode": "bsr.w",
+                "operands": [
+                  "WriteItemNameAndGoldAmount"
+                ],
+                "directTarget": "WriteItemNameAndGoldAmount",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "itemNameAndPriceWindowSlot(a6)",
+                  "d0"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "move.w",
+                "operands": [
+                  "((CURRENT_SHOP_SELECTION-$1000000)).w",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ror.w",
+                "operands": [
+                  "#6",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "ori.w",
+                "operands": [
+                  "#$106",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#4",
+                  "d2"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "jsr",
+                "operands": [
+                  "(MoveWindow).l"
+                ],
+                "directTarget": "MoveWindow",
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "moveq",
+                "operands": [
+                  "#10",
+                  "d1"
+                ],
+                "directTarget": null,
+                "branchTarget": null
+              },
+              {
+                "labels": [],
+                "opcode": "rts",
+                "operands": [],
+                "directTarget": null,
+                "branchTarget": null
+              }
+            ]
+          },
+          "entryStateAndWindowFlow": {
+            "routine": "ExecuteShopScreen",
+            "preflightIndexes": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "windowCreationAndOpenIndexes": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47
+            ],
+            "cleanupAndReturnIndexes": [
+              149,
+              150,
+              151,
+              152,
+              153,
+              154,
+              155,
+              156,
+              157,
+              158,
+              159,
+              160,
+              161,
+              162,
+              163,
+              164,
+              165,
+              166,
+              167,
+              168,
+              169,
+              170
+            ]
+          },
+          "inputBranches": {
+            "sourceOrder": [
+              "cancel",
+              "confirmC",
+              "confirmA"
+            ],
+            "cancel": {
+              "button": "B",
+              "testIndex": 123,
+              "branchIndex": 124
+            },
+            "confirmC": {
+              "button": "C",
+              "testIndex": 125,
+              "branchIndex": 126
+            },
+            "confirmA": {
+              "button": "A",
+              "testIndex": 127,
+              "branchIndex": 128
+            },
+            "cancelResult": {
+              "name": "minusOneResult",
+              "instructionIndex": 132
+            },
+            "confirmSelectionFormula": {
+              "routine": "ExecuteShopScreen",
+              "pageLoadIndex": 134,
+              "pageMultiplierIndex": 135,
+              "selectionAddIndex": 136,
+              "listBaseIndex": 137,
+              "resultByteReadIndex": 138,
+              "resultMaskIndex": 139
+            }
+          },
+          "navigation": {
+            "right": {
+              "routine": "ExecuteShopScreen",
+              "references": [
+                {
+                  "name": "selectedIndexCandidateLoad",
+                  "instructionIndex": 48
+                },
+                {
+                  "name": "inputTest",
+                  "instructionIndex": 49
+                },
+                {
+                  "name": "inputAbsentBranch",
+                  "instructionIndex": 50
+                },
+                {
+                  "name": "pageLoad",
+                  "instructionIndex": 51
+                },
+                {
+                  "name": "pageScale",
+                  "instructionIndex": 52
+                },
+                {
+                  "name": "globalListCandidateAdd",
+                  "instructionIndex": 53
+                },
+                {
+                  "name": "globalListCandidateIncrement",
+                  "instructionIndex": 54
+                },
+                {
+                  "name": "globalListLengthCompare",
+                  "instructionIndex": 55
+                },
+                {
+                  "name": "globalListBoundBranch",
+                  "instructionIndex": 56
+                },
+                {
+                  "name": "selectedIndexIncrement",
+                  "instructionIndex": 57
+                },
+                {
+                  "name": "pageLocalCountCompare",
+                  "instructionIndex": 59
+                },
+                {
+                  "name": "pageLocalBoundBranch",
+                  "instructionIndex": 60
+                },
+                {
+                  "name": "pageIncrement",
+                  "instructionIndex": 61
+                },
+                {
+                  "name": "selectionReset",
+                  "instructionIndex": 62
+                },
+                {
+                  "name": "shiftDirectionReset",
+                  "instructionIndex": 63
+                },
+                {
+                  "name": "scrollHelperCall",
+                  "instructionIndex": 64
+                },
+                {
+                  "name": "scrollHelperConvergence",
+                  "instructionIndex": 65
+                },
+                {
+                  "name": "selectionStore",
+                  "instructionIndex": 66
+                },
+                {
+                  "name": "partialPageHelperCall",
+                  "instructionIndex": 67
+                },
+                {
+                  "name": "partialPageConvergence",
+                  "instructionIndex": 68
+                }
+              ]
+            },
+            "left": {
+              "routine": "ExecuteShopScreen",
+              "references": [
+                {
+                  "name": "selectedIndexCandidateLoad",
+                  "instructionIndex": 69
+                },
+                {
+                  "name": "inputTest",
+                  "instructionIndex": 70
+                },
+                {
+                  "name": "inputAbsentBranch",
+                  "instructionIndex": 71
+                },
+                {
+                  "name": "pageLoad",
+                  "instructionIndex": 72
+                },
+                {
+                  "name": "pageScale",
+                  "instructionIndex": 73
+                },
+                {
+                  "name": "globalListCandidateAdd",
+                  "instructionIndex": 74
+                },
+                {
+                  "name": "globalListBoundBranch",
+                  "instructionIndex": 75
+                },
+                {
+                  "name": "selectedIndexDecrement",
+                  "instructionIndex": 76
+                },
+                {
+                  "name": "pageLocalBoundBranch",
+                  "instructionIndex": 78
+                },
+                {
+                  "name": "pageDecrement",
+                  "instructionIndex": 79
+                },
+                {
+                  "name": "selectionReset",
+                  "instructionIndex": 80
+                },
+                {
+                  "name": "shiftDirectionSet",
+                  "instructionIndex": 81
+                },
+                {
+                  "name": "scrollHelperCall",
+                  "instructionIndex": 82
+                },
+                {
+                  "name": "scrollHelperConvergence",
+                  "instructionIndex": 83
+                },
+                {
+                  "name": "selectionStore",
+                  "instructionIndex": 84
+                },
+                {
+                  "name": "partialPageHelperCall",
+                  "instructionIndex": 85
+                },
+                {
+                  "name": "partialPageConvergence",
+                  "instructionIndex": 86
+                }
+              ]
+            },
+            "up": {
+              "routine": "ExecuteShopScreen",
+              "references": [
+                {
+                  "name": "inputTest",
+                  "instructionIndex": 87
+                },
+                {
+                  "name": "inputAbsentBranch",
+                  "instructionIndex": 88
+                },
+                {
+                  "name": "pageZeroTest",
+                  "instructionIndex": 89
+                },
+                {
+                  "name": "pageZeroBoundBranch",
+                  "instructionIndex": 90
+                },
+                {
+                  "name": "pageDecrement",
+                  "instructionIndex": 91
+                },
+                {
+                  "name": "shiftDirectionSet",
+                  "instructionIndex": 93
+                },
+                {
+                  "name": "scrollHelperConvergence",
+                  "instructionIndex": 94
+                }
+              ]
+            },
+            "down": {
+              "routine": "ExecuteShopScreen",
+              "references": [
+                {
+                  "name": "inputTest",
+                  "instructionIndex": 95
+                },
+                {
+                  "name": "inputAbsentBranch",
+                  "instructionIndex": 96
+                },
+                {
+                  "name": "nextPageCandidateLoad",
+                  "instructionIndex": 97
+                },
+                {
+                  "name": "nextPageCandidateIncrement",
+                  "instructionIndex": 98
+                },
+                {
+                  "name": "nextPageScale",
+                  "instructionIndex": 99
+                },
+                {
+                  "name": "globalListLengthCompare",
+                  "instructionIndex": 100
+                },
+                {
+                  "name": "globalListBoundBranch",
+                  "instructionIndex": 101
+                },
+                {
+                  "name": "pageIncrement",
+                  "instructionIndex": 102
+                },
+                {
+                  "name": "selectedIndexLoad",
+                  "instructionIndex": 104
+                },
+                {
+                  "name": "pageLoadForPartialCount",
+                  "instructionIndex": 105
+                },
+                {
+                  "name": "partialPageScaleCopy",
+                  "instructionIndex": 106
+                },
+                {
+                  "name": "partialPageScaleDouble",
+                  "instructionIndex": 107
+                },
+                {
+                  "name": "partialPageScaleAdd",
+                  "instructionIndex": 108
+                },
+                {
+                  "name": "partialPageScaleDoubleFinal",
+                  "instructionIndex": 109
+                },
+                {
+                  "name": "globalListLengthLoad",
+                  "instructionIndex": 110
+                },
+                {
+                  "name": "partialPageLengthSubtract",
+                  "instructionIndex": 111
+                },
+                {
+                  "name": "partialPageCountCompare",
+                  "instructionIndex": 112
+                },
+                {
+                  "name": "partialPageBoundBranch",
+                  "instructionIndex": 113
+                },
+                {
+                  "name": "partialPageCountCap",
+                  "instructionIndex": 114
+                },
+                {
+                  "name": "pageItemCountStore",
+                  "instructionIndex": 115
+                },
+                {
+                  "name": "selectionClampCompare",
+                  "instructionIndex": 116
+                },
+                {
+                  "name": "selectionClampBranch",
+                  "instructionIndex": 117
+                },
+                {
+                  "name": "selectionClampDecrement",
+                  "instructionIndex": 118
+                },
+                {
+                  "name": "selectionClampLoop",
+                  "instructionIndex": 119
+                },
+                {
+                  "name": "selectionStore",
+                  "instructionIndex": 120
+                },
+                {
+                  "name": "shiftDirectionReset",
+                  "instructionIndex": 121
+                },
+                {
+                  "name": "scrollHelperConvergence",
+                  "instructionIndex": 122
+                }
+              ]
+            }
+          },
+          "selectionFormula": {
+            "routine": "GetCurrentShopSelection",
+            "pageLoadIndex": 0,
+            "pageTimesItemsPerPageAndSelectionIndexes": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "resultByteReadIndex": 8,
+            "maskIndex": 9
+          },
+          "highlightSemantics": {
+            "routine": "LoadShopInventoryHighlightSprites",
+            "selectionShiftIndex": 7,
+            "selectionCoordinateAddIndex": 8,
+            "spriteEntryStrideIndex": 13,
+            "pageBoundMultiplierIndex": 29,
+            "branchIndexes": [
+              2,
+              5,
+              17,
+              19,
+              31,
+              33,
+              39,
+              41
+            ],
+            "terminalOperationIndex": 41
+          },
+          "resourceTransfers": {
+            "WriteGoldAmount": {
+              "routine": "WriteGoldAmount",
+              "namedOperations": [
+                {
+                  "name": "goldLabelText",
+                  "sourceOperandInstructionIndex": 3,
+                  "destinationOperandInstructionIndex": 4,
+                  "storedCountOperandInstructionIndex": 7,
+                  "storedCountValue": 10,
+                  "writeCallInstructionIndex": 8
+                },
+                {
+                  "name": "goldNumber",
+                  "sourceOperandInstructionIndex": 9,
+                  "destinationOperandInstructionIndex": 11,
+                  "storedCountOperandInstructionIndex": 13,
+                  "storedCountValue": 7,
+                  "writeCallInstructionIndex": 14
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 15
+              }
+            },
+            "WriteItemNameAndGoldAmount": {
+              "routine": "WriteItemNameAndGoldAmount",
+              "namedOperations": [
+                {
+                  "name": "itemNameText",
+                  "sourceOperandInstructionIndex": 6,
+                  "destinationOperandInstructionIndex": 7,
+                  "preCallD1ArgumentInstructionIndex": 9,
+                  "preCallD1ArgumentValue": -20,
+                  "writeCallInstructionIndex": 10
+                },
+                {
+                  "name": "itemPriceNumber",
+                  "sourceOperandInstructionIndex": 14,
+                  "destinationOperandInstructionIndex": 15,
+                  "storedCountOperandInstructionIndex": 17,
+                  "storedCountValue": 5,
+                  "writeCallInstructionIndex": 18
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 19
+              }
+            },
+            "LoadItemIconsAndPriceTagTiles": {
+              "routine": "LoadItemIconsAndPriceTagTiles",
+              "copyBytesTransfers": [
+                {
+                  "name": "inventoryLayoutCopy",
+                  "sourceOperandInstructionIndex": 1,
+                  "destinationOperandInstructionIndex": 0,
+                  "storedCountOperandInstructionIndex": 2,
+                  "storedCountValue": 324,
+                  "copyCallInstructionIndex": 3,
+                  "copyCountUnit": "bytes",
+                  "transferredByteCount": 324
+                }
+              ],
+              "loopWrites": [
+                {
+                  "name": "clearLoop",
+                  "sourceOperandInstructionIndex": 7,
+                  "destinationOperandInstructionIndex": 7,
+                  "storedCountOperandInstructionIndex": 6,
+                  "storedCountValue": 1599,
+                  "writeInstructionIndex": 7,
+                  "writeOpcodeWidthBits": 32,
+                  "loopInstructionIndex": 8,
+                  "inclusiveCounter": true,
+                  "iterationCount": 1600,
+                  "longwordWriteCount": 1600,
+                  "loopTarget": "@Clear_Loop",
+                  "exitConvergenceInstructionIndex": 9
+                },
+                {
+                  "name": "itemLoop",
+                  "sourceOperandInstructionIndex": 28,
+                  "destinationOperandInstructionIndex": 38,
+                  "storedCountOperandInstructionIndex": 22,
+                  "storedCountOperand": "d1",
+                  "writeInstructionIndex": 38,
+                  "writeOpcodeWidthBits": 16,
+                  "loopInstructionIndex": 41,
+                  "inclusiveCounter": true,
+                  "loopTarget": "@Main_Loop",
+                  "exitConvergenceInstructionIndex": 42
+                }
+              ],
+              "vintDmaArgumentInstructionIndexes": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 48
+              }
+            },
+            "LoadPriceTagTiles": {
+              "routine": "LoadPriceTagTiles",
+              "loopWrites": [
+                {
+                  "name": "blankTileLongwordLoop",
+                  "sourceOperandInstructionIndex": 5,
+                  "destinationOperandInstructionIndex": 5,
+                  "storedCountOperandInstructionIndex": 4,
+                  "storedCountValue": 31,
+                  "writeInstructionIndex": 5,
+                  "writeOpcodeWidthBits": 32,
+                  "loopInstructionIndex": 6,
+                  "inclusiveCounter": true,
+                  "iterationCount": 32,
+                  "longwordWriteCount": 32,
+                  "loopTarget": "@LoadBlankTiles_Loop",
+                  "exitConvergenceInstructionIndex": 7
+                },
+                {
+                  "name": "digitCharacterLoop",
+                  "sourceOperandInstructionIndex": 13,
+                  "destinationOperandInstructionIndex": 20,
+                  "storedCountOperandInstructionIndex": 11,
+                  "storedCountValue": 4,
+                  "writeInstructionIndex": 20,
+                  "writeOpcodeWidthBits": 32,
+                  "loopInstructionIndex": 27,
+                  "inclusiveCounter": true,
+                  "iterationCount": 5,
+                  "longwordWriteCount": 5,
+                  "loopTarget": "@Main_Loop",
+                  "exitConvergenceInstructionIndex": 28
+                }
+              ],
+              "digitTileLongwordWriteInstructionIndexes": [
+                20,
+                21,
+                22,
+                23,
+                24
+              ],
+              "digitTileLongwordCountPerNonSpaceCharacter": 5,
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 30
+              }
+            },
+            "LoadIconPixelsInShopScreen": {
+              "routine": "LoadIconPixelsInShopScreen",
+              "loopWrites": [
+                {
+                  "name": "iconPixelLongwordLoop",
+                  "sourceOperandInstructionIndex": 9,
+                  "destinationOperandInstructionIndex": 9,
+                  "storedCountOperandInstructionIndex": 8,
+                  "storedCountValue": 47,
+                  "writeInstructionIndex": 9,
+                  "writeOpcodeWidthBits": 32,
+                  "loopInstructionIndex": 10,
+                  "inclusiveCounter": true,
+                  "iterationCount": 48,
+                  "longwordWriteCount": 48,
+                  "loopTarget": "@Loop",
+                  "exitConvergenceInstructionIndex": 11
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 17
+              }
+            }
+          },
+          "windowScrollHelperFlows": {
+            "sub_14D0C": {
+              "routine": "sub_14D0C",
+              "stateAccesses": [
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 2
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 9
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 14
+                },
+                {
+                  "fieldName": "inventoryWindowSlot",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 17
+                },
+                {
+                  "fieldName": "itemNameAndPriceWindowSlot",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 20
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 7
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 12
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 16
+                },
+                {
+                  "name": "SetWindowDestination",
+                  "instructionIndex": 19
+                },
+                {
+                  "name": "SetWindowDestination",
+                  "instructionIndex": 22
+                }
+              ],
+              "branches": [],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 23
+              }
+            },
+            "sub_14D6A": {
+              "routine": "sub_14D6A",
+              "stateAccesses": [
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 1
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 6
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutLoadingSpace",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 10
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 11
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutLoadingSpace",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 16
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 17
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 4
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 9
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 14
+                },
+                {
+                  "name": "sub_14DBE",
+                  "instructionIndex": 15
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 20
+                }
+              ],
+              "branches": [],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 20
+              }
+            },
+            "sub_14DBE": {
+              "routine": "sub_14DBE",
+              "stateAccesses": [],
+              "directCalls": [],
+              "branches": [
+                {
+                  "name": "loc_14D4A",
+                  "instructionIndex": 0
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 0
+              }
+            },
+            "sub_14DC0": {
+              "routine": "sub_14DC0",
+              "stateAccesses": [
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 1
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 8
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 13
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 6
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 11
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 16
+                }
+              ],
+              "branches": [
+                {
+                  "name": "loc_14D4A",
+                  "instructionIndex": 17
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 17
+              }
+            },
+            "sub_14E06": {
+              "routine": "sub_14E06",
+              "stateAccesses": [
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 1
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 6
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutLoadingSpace",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 10
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 11
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutLoadingSpace",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 17
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 18
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 4
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 9
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 15
+                },
+                {
+                  "name": "sub_14E5E",
+                  "instructionIndex": 16
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 21
+                }
+              ],
+              "branches": [],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 21
+              }
+            },
+            "sub_14E5E": {
+              "routine": "sub_14E5E",
+              "stateAccesses": [],
+              "directCalls": [],
+              "branches": [
+                {
+                  "name": "loc_14D4A",
+                  "instructionIndex": 0
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 0
+              }
+            },
+            "ShiftShopInventoryWindowLayout": {
+              "routine": "ShiftShopInventoryWindowLayout",
+              "stateAccesses": [
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 0
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutLoadingSpace",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 2
+                },
+                {
+                  "fieldName": "WINDOW_LAYOUT_SHIFT_DIRECTION",
+                  "scope": "global",
+                  "mode": "read",
+                  "instructionIndex": 5
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutEndAddress",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 11
+                },
+                {
+                  "fieldName": "inventoryWindowLayoutLoadingSpace",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 13
+                },
+                {
+                  "fieldName": "WINDOW_LAYOUT_SHIFT_DIRECTION",
+                  "scope": "global",
+                  "mode": "read",
+                  "instructionIndex": 16
+                },
+                {
+                  "fieldName": "inventoryWindowSlot",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 21
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 4
+                },
+                {
+                  "name": "sub_14D0C",
+                  "instructionIndex": 7
+                },
+                {
+                  "name": "sub_14DC0",
+                  "instructionIndex": 9
+                },
+                {
+                  "name": "LoadItemIconsAndPriceTagTiles",
+                  "instructionIndex": 10
+                },
+                {
+                  "name": "CopyBytes",
+                  "instructionIndex": 15
+                },
+                {
+                  "name": "sub_14D6A",
+                  "instructionIndex": 18
+                },
+                {
+                  "name": "sub_14E06",
+                  "instructionIndex": 20
+                },
+                {
+                  "name": "MoveWindow",
+                  "instructionIndex": 24
+                }
+              ],
+              "branches": [
+                {
+                  "name": "loc_14E82",
+                  "instructionIndex": 6
+                },
+                {
+                  "name": "loc_14E86",
+                  "instructionIndex": 8
+                },
+                {
+                  "name": "loc_14EAA",
+                  "instructionIndex": 17
+                },
+                {
+                  "name": "loc_14EAE",
+                  "instructionIndex": 19
+                },
+                {
+                  "name": "MoveSelectedItemInfoWindow",
+                  "instructionIndex": 25
+                }
+              ],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 25
+              }
+            },
+            "sub_14EC0": {
+              "routine": "sub_14EC0",
+              "stateAccesses": [
+                {
+                  "fieldName": "itemNameAndPriceWindowSlot",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 0
+                },
+                {
+                  "fieldName": "inventoryWindowSlot",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 3
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "SetWindowDestination",
+                  "instructionIndex": 2
+                },
+                {
+                  "name": "MoveWindow",
+                  "instructionIndex": 6
+                }
+              ],
+              "branches": [],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 6
+              }
+            },
+            "MoveSelectedItemInfoWindow": {
+              "routine": "MoveSelectedItemInfoWindow",
+              "stateAccesses": [
+                {
+                  "fieldName": "itemNameAndPriceWindowSlot",
+                  "scope": "stackLocal",
+                  "mode": "read",
+                  "instructionIndex": 1
+                },
+                {
+                  "fieldName": "CURRENT_SHOP_SELECTION",
+                  "scope": "global",
+                  "mode": "read",
+                  "instructionIndex": 2
+                }
+              ],
+              "directCalls": [
+                {
+                  "name": "WriteItemNameAndGoldAmount",
+                  "instructionIndex": 0
+                },
+                {
+                  "name": "MoveWindow",
+                  "instructionIndex": 6
+                }
+              ],
+              "branches": [],
+              "terminalConvergence": {
+                "name": "terminalOperation",
+                "instructionIndex": 8
+              }
+            }
+          },
+          "jumpInterfaceAliases": {
+            "j_ExecuteShopScreen": {
+              "effectiveTarget": "ExecuteShopScreen",
+              "sourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm"
+            }
+          },
+          "internalDirectCallerOccurrences": {
+            "code/common/menus/shopscreen.asm": [
+              {
+                "instructionTarget": "GetCurrentShopSelection",
+                "effectiveTarget": "GetCurrentShopSelection",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "LoadIconPixelsInShopScreen",
+                "effectiveTarget": "LoadIconPixelsInShopScreen",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "LoadItemIconsAndPriceTagTiles",
+                "effectiveTarget": "LoadItemIconsAndPriceTagTiles",
+                "siteCount": 2
+              },
+              {
+                "instructionTarget": "LoadPriceTagTiles",
+                "effectiveTarget": "LoadPriceTagTiles",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "LoadShopInventoryHighlightSprites",
+                "effectiveTarget": "LoadShopInventoryHighlightSprites",
+                "siteCount": 2
+              },
+              {
+                "instructionTarget": "MoveSelectedItemInfoWindow",
+                "effectiveTarget": "MoveSelectedItemInfoWindow",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "ShiftShopInventoryWindowLayout",
+                "effectiveTarget": "ShiftShopInventoryWindowLayout",
+                "siteCount": 4
+              },
+              {
+                "instructionTarget": "WriteGoldAmount",
+                "effectiveTarget": "WriteGoldAmount",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "WriteItemNameAndGoldAmount",
+                "effectiveTarget": "WriteItemNameAndGoldAmount",
+                "siteCount": 2
+              },
+              {
+                "instructionTarget": "sub_14D0C",
+                "effectiveTarget": "sub_14D0C",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "sub_14D6A",
+                "effectiveTarget": "sub_14D6A",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "sub_14DBE",
+                "effectiveTarget": "sub_14DBE",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "sub_14DC0",
+                "effectiveTarget": "sub_14DC0",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "sub_14E06",
+                "effectiveTarget": "sub_14E06",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "sub_14E5E",
+                "effectiveTarget": "sub_14E5E",
+                "siteCount": 1
+              },
+              {
+                "instructionTarget": "sub_14EC0",
+                "effectiveTarget": "sub_14EC0",
+                "siteCount": 2
+              }
+            ]
+          },
+          "internalEffectiveDirectCallSiteCounts": {
+            "ExecuteShopScreen": 0,
+            "GetCurrentShopSelection": 1,
+            "LoadIconPixelsInShopScreen": 1,
+            "LoadItemIconsAndPriceTagTiles": 2,
+            "LoadPriceTagTiles": 1,
+            "LoadShopInventoryHighlightSprites": 2,
+            "MoveSelectedItemInfoWindow": 1,
+            "ShiftShopInventoryWindowLayout": 4,
+            "WriteGoldAmount": 1,
+            "WriteItemNameAndGoldAmount": 2,
+            "sub_14D0C": 1,
+            "sub_14D6A": 1,
+            "sub_14DBE": 1,
+            "sub_14DC0": 1,
+            "sub_14E06": 1,
+            "sub_14E5E": 1,
+            "sub_14EC0": 2
+          },
+          "externalDirectCallerOccurrences": {
+            "code/common/menus/caravan/caravanactions_1.asm": [
+              {
+                "instructionTarget": "j_ExecuteShopScreen",
+                "effectiveTarget": "ExecuteShopScreen",
+                "siteCount": 3
+              }
+            ],
+            "code/common/menus/goldwindow.asm": [
+              {
+                "instructionTarget": "WriteGoldAmount",
+                "effectiveTarget": "WriteGoldAmount",
+                "siteCount": 2
+              }
+            ],
+            "code/common/menus/shop/shopactions.asm": [
+              {
+                "instructionTarget": "j_ExecuteShopScreen",
+                "effectiveTarget": "ExecuteShopScreen",
+                "siteCount": 2
+              }
+            ]
+          },
+          "externalEffectiveDirectCallSiteCounts": {
+            "ExecuteShopScreen": 5,
+            "GetCurrentShopSelection": 0,
+            "LoadIconPixelsInShopScreen": 0,
+            "LoadItemIconsAndPriceTagTiles": 0,
+            "LoadPriceTagTiles": 0,
+            "LoadShopInventoryHighlightSprites": 0,
+            "MoveSelectedItemInfoWindow": 0,
+            "ShiftShopInventoryWindowLayout": 0,
+            "WriteGoldAmount": 2,
+            "WriteItemNameAndGoldAmount": 0,
+            "sub_14D0C": 0,
+            "sub_14D6A": 0,
+            "sub_14DBE": 0,
+            "sub_14DC0": 0,
+            "sub_14E06": 0,
+            "sub_14E5E": 0,
+            "sub_14EC0": 0
+          },
+          "staticBoundary": {
+            "hardwareTiming": "unknown",
+            "renderedAppearance": "unknown",
+            "callerLifecycleAndAdmission": "inferred"
+          }
         },
         "shop": {
           "entrySymbol": "ShopMenu",

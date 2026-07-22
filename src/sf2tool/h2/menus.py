@@ -294,14 +294,21 @@ def _require_ordered_shop_section(
 ) -> None:
     """Guard the local Shop block, including branch/order-sensitive fragments."""
     section = _shop_section(read_upstream_text(path), start_marker, end_marker)
+    lines = [
+        re.sub(r"\s+", " ", line.split(";", 1)[0].strip())
+        for line in section.splitlines()
+        if line.split(";", 1)[0].strip()
+    ]
     position = 0
     for fragment in fragments:
-        position = section.find(fragment, position)
-        if position < 0:
+        expected = re.sub(r"\s+", " ", fragment.strip())
+        try:
+            position = lines.index(expected, position)
+        except ValueError:
             raise ValueError(
                 f"shop control-flow drift in {path.name} ({start_marker}): {fragment}"
-            )
-        position += len(fragment)
+            ) from None
+        position += 1
 
 
 def _shop_static_contract(root: Path) -> dict[str, Any]:
@@ -332,9 +339,7 @@ def _shop_static_contract(root: Path) -> dict[str, Any]:
     }
     compared_choice_values = [
         int(value)
-        for value in re.findall(
-            r"@CheckChoice_[A-Za-z]+:\s+cmpi\.w\s+#(\d+),d0", actions
-        )
+        for value in re.findall(r"@CheckChoice_[A-Za-z]+:\s+cmpi\.w\s+#(\d+),d0", actions)
     ]
     if len(compared_choice_values) != len(routes) - 1:
         raise ValueError("shop choice comparison chain drift")
@@ -554,9 +559,7 @@ def _shop_static_contract(root: Path) -> dict[str, Any]:
         for path in (root / "shop/shopactions.asm", root / "shopscreen.asm")
     }
 
-    def effective_site_counts(
-        callers: dict[str, list[dict[str, Any]]]
-    ) -> dict[str, int]:
+    def effective_site_counts(callers: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
         return {
             target: sum(
                 occurrence["siteCount"]
@@ -791,6 +794,7 @@ def _church_static_contract(root: Path) -> dict[str, Any]:
         )
         for path in (root / "church/churchactions_1.asm", root / "church/churchactions_2.asm")
     }
+
     def effective_counts(callers: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
         return {
             target: sum(
@@ -801,6 +805,7 @@ def _church_static_contract(root: Path) -> dict[str, Any]:
             )
             for target in sorted(targets)
         }
+
     choice_records = [operations[name][0] for name in list(routes)[:-1]]
     cancel_compare = next(
         record
@@ -809,12 +814,14 @@ def _church_static_contract(root: Path) -> dict[str, Any]:
     )
     cancel_branch = entry_operations[entry_operations.index(cancel_compare) + 1]
     cure_price_load = next(
-        record for record in operations["cure"]
+        record
+        for record in operations["cure"]
         if record["opcode"] == "move.w" and record["operands"] == ["ITEMDEF_OFFSET_PRICE(a0)", "d4"]
     )
     try:
         cure_price_shift = next(
-            record for record in operations["cure"]
+            record
+            for record in operations["cure"]
             if record["opcode"] == "lsr.w" and record["operands"] == ["#2", "d4"]
         )
     except StopIteration as error:
@@ -1162,11 +1169,7 @@ def _caravan_static_contract(root: Path) -> dict[str, Any]:
         constants[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
 
     def direct_calls(records: list[dict[str, Any]], targets: set[str]) -> list[str]:
-        return [
-            record["directTarget"]
-            for record in records
-            if record["directTarget"] in targets
-        ]
+        return [record["directTarget"] for record in records if record["directTarget"] in targets]
 
     def submenu_dispatch(symbol: str, table_name: str) -> dict[str, Any]:
         records = operations[symbol]
@@ -1306,20 +1309,17 @@ def _caravan_static_contract(root: Path) -> dict[str, Any]:
         "depot": next(
             record
             for record in operations["depotDrop"]
-            if record["opcode"] == "btst"
-            and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
+            if record["opcode"] == "btst" and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
         ),
         "item": next(
             record
             for record in operations["itemDrop"]
-            if record["opcode"] == "btst"
-            and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
+            if record["opcode"] == "btst" and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
         ),
         "unsellable": next(
             record
             for record in helper_operations["IsItemUnsellable"]
-            if record["opcode"] == "btst"
-            and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
+            if record["opcode"] == "btst" and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
         ),
     }
     rare_bit_names_and_values = {
@@ -1363,9 +1363,10 @@ def _caravan_static_contract(root: Path) -> dict[str, Any]:
         semantic_sections["depotDeriveNormal"], {"j_AddItem", "j_RemoveItemFromCaravan"}
     ) != ["j_AddItem", "j_RemoveItemFromCaravan"]:
         raise ValueError("caravan depot derive normal mutation order drift")
-    if direct_calls(
-        semantic_sections["itemGiveNormal"], {"j_AddItem", "j_RemoveItemBySlot"}
-    ) != ["j_AddItem", "j_RemoveItemBySlot"]:
+    if direct_calls(semantic_sections["itemGiveNormal"], {"j_AddItem", "j_RemoveItemBySlot"}) != [
+        "j_AddItem",
+        "j_RemoveItemBySlot",
+    ]:
         raise ValueError("caravan item give normal mutation order drift")
     targets = {
         "CaravanMenu",
@@ -1510,8 +1511,7 @@ def _caravan_static_contract(root: Path) -> dict[str, Any]:
                     record["operands"][0][1:]
                     for record in operations["itemEquip"]
                     if record["opcode"] == "move.b"
-                    and record["operands"][1]
-                    == "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                    and record["operands"][1] == "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
                 ),
                 "dropMutationCalls": direct_calls(
                     operations["itemDrop"],
@@ -1733,7 +1733,7 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     frame_declarations = dict(
         (name, int(offset))
         for name, offset in re.findall(
-                r"^\s*([A-Za-z][A-Za-z0-9]*)\s*=\s*(-\d+)\s*$",
+            r"^\s*([A-Za-z][A-Za-z0-9]*)\s*=\s*(-\d+)\s*$",
             actions[: actions.find("BlacksmithMenu:")],
             re.MULTILINE,
         )
@@ -1825,7 +1825,8 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     class_counter_record = next(
         record
         for record in operations["PickMithrilWeapon"]
-        if record["opcode"] == "move.w" and record["operands"][1] == "d7"
+        if record["opcode"] == "move.w"
+        and record["operands"][1] == "d7"
         and record["operands"][0] == "#MITHRIL_WEAPON_CLASSES_COUNTER"
     )
     class_counter_name, class_counter = immediate(class_counter_record)
@@ -1895,19 +1896,13 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
 
     def successor(symbol: str, record: dict[str, Any]) -> dict[str, Any]:
         index = next(
-            index
-            for index, candidate in enumerate(operations[symbol])
-            if candidate is record
+            index for index, candidate in enumerate(operations[symbol]) if candidate is record
         )
         return operations[symbol][index + 1]
 
-    def after(
-        symbol: str, start: dict[str, Any], predicate
-    ) -> dict[str, Any]:
+    def after(symbol: str, start: dict[str, Any], predicate) -> dict[str, Any]:
         start_index = next(
-            index
-            for index, candidate in enumerate(operations[symbol])
-            if candidate is start
+            index for index, candidate in enumerate(operations[symbol]) if candidate is start
         )
         try:
             return next(
@@ -1916,9 +1911,7 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
         except StopIteration as error:
             raise ValueError(f"blacksmith ordered use-site drift: {symbol}") from error
 
-    def conditional_branch(
-        name: str, symbol: str, operation: dict[str, Any]
-    ) -> dict[str, Any]:
+    def conditional_branch(name: str, symbol: str, operation: dict[str, Any]) -> dict[str, Any]:
         return {
             "name": name,
             "operation": operation,
@@ -1927,15 +1920,16 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
 
     process_copy_length = find(
         "ProcessBlacksmithOrders",
-        lambda record: record["opcode"] == "move.w"
-        and record["operands"]
-        == ["((TARGETS_LIST_LENGTH-$1000000)).w", "((GENERIC_LIST_LENGTH-$1000000)).w"],
+        lambda record: (
+            record["opcode"] == "move.w"
+            and record["operands"]
+            == ["((TARGETS_LIST_LENGTH-$1000000)).w", "((GENERIC_LIST_LENGTH-$1000000)).w"]
+        ),
     )
     process_copy_counter_source = after(
         "ProcessBlacksmithOrders",
         process_copy_length,
-        lambda record: record["opcode"] == "move.w"
-        and record["operands"][1] == "d7",
+        lambda record: record["opcode"] == "move.w" and record["operands"][1] == "d7",
     )
     process_copy_width = find(
         "ProcessBlacksmithOrders",
@@ -1947,8 +1941,9 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     )
     process_copy_loop = find(
         "ProcessBlacksmithOrders",
-        lambda record: record["opcode"] == "dbf"
-        and record["branchTarget"] == "@CopyForceMembersList_Loop",
+        lambda record: (
+            record["opcode"] == "dbf" and record["branchTarget"] == "@CopyForceMembersList_Loop"
+        ),
     )
     readiness_flag_load = find(
         "CountPendingAndReadyToFulfillOrders",
@@ -1974,8 +1969,10 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     )
     fulfill_increment = find(
         "BlacksmithAction_FulfillOrder",
-        lambda record: record["opcode"] == "addi.w"
-        and record["operands"] == ["#1", "fulfilledOrdersNumber(a6)"],
+        lambda record: (
+            record["opcode"] == "addi.w"
+            and record["operands"] == ["#1", "fulfilledOrdersNumber(a6)"]
+        ),
     )
     fulfill_equip = [
         record
@@ -1994,8 +1991,9 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     fulfill_inventory = inventory_compare
     fulfill_equipment_type = find(
         "BlacksmithAction_FulfillOrder",
-        lambda record: record["opcode"] == "cmpi.w"
-        and record["operands"] == ["#EQUIPMENTTYPE_TOOL", "d2"],
+        lambda record: (
+            record["opcode"] == "cmpi.w" and record["operands"] == ["#EQUIPMENTTYPE_TOOL", "d2"]
+        ),
     )
     fulfill_equippability = after(
         "BlacksmithAction_FulfillOrder",
@@ -2068,8 +2066,10 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     )
     place_capacity = find(
         "BlacksmithAction_PlaceOrder",
-        lambda record: record["opcode"] == "cmpi.w"
-        and record["operands"] == ["#BLACKSMITH_MAX_ORDERS_NUMBER", "d0"],
+        lambda record: (
+            record["opcode"] == "cmpi.w"
+            and record["operands"] == ["#BLACKSMITH_MAX_ORDERS_NUMBER", "d0"]
+        ),
     )
     prefix_load = find(
         "IsClassBlacksmithEligible",
@@ -2109,8 +2109,9 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     class_inner_loop = after(
         "PickMithrilWeapon",
         class_match_branch,
-        lambda record: record["opcode"] == "dbf"
-        and record["branchTarget"] == "@FindCharacterClass_Loop",
+        lambda record: (
+            record["opcode"] == "dbf" and record["branchTarget"] == "@FindCharacterClass_Loop"
+        ),
     )
     group_index_increment = successor("PickMithrilWeapon", class_inner_loop)
     group_outer_loop = successor("PickMithrilWeapon", group_index_increment)
@@ -2432,6 +2433,747 @@ def _blacksmith_static_contract(root: Path) -> dict[str, Any]:
     }
 
 
+def _shared_selection_screen_contract(disasm: Path, root: Path) -> dict[str, Any]:
+    """Parse the shared shop/caravan selection screen as source-shaped static facts."""
+    source_path = root / "shopscreen.asm"
+    source = read_upstream_text(source_path)
+    enums = read_upstream_text(disasm / "sf2enums.asm")
+    copy_bytes_source = read_upstream_text(disasm / "code/common/tech/bytecopy.asm")
+    if "; In: a0 = Source, a1 = Destination, d7.w = Length" not in copy_bytes_source:
+        raise ValueError("shared selection CopyBytes ABI drift")
+    _require_ordered_shop_section(
+        source_path,
+        "ExecuteShopScreen:",
+        "LoadShopInventoryHighlightSprites:",
+        (
+            "mulu.w  #6,d0",
+            "btst    #INPUT_BIT_RIGHT,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_LEFT,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_UP,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_DOWN,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "btst    #INPUT_BIT_B,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "bne.w   @Cancel",
+            "btst    #INPUT_BIT_C,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "bne.w   @Confirm",
+            "btst    #INPUT_BIT_A,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "bne.w   @Confirm",
+            "moveq   #-1,d0",
+            "mulu.w  #ITEMS_PER_SHOP_PAGE,d1",
+            "move.b  (a0,d1.w),d0",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "LoadShopInventoryHighlightSprites:",
+        "WriteGoldAmount:",
+        (
+            "lsl.w   #5,d0",
+            "addi.w  #156,d0",
+            "addq.l  #VDP_SPRITE_ENTRY_SIZE,a0",
+            "mulu.w  #ITEMS_PER_SHOP_PAGE,d0",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "@CheckLeft:",
+        "@CheckUp:",
+        (
+            "btst    #INPUT_BIT_LEFT,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "ble.s   @CheckUp",
+            "move.w  #5,((CURRENT_SHOP_SELECTION-$1000000)).w",
+            "move.b  #1,((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w",
+            "bra.w   @loc_12",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "@CheckDown:",
+        "@loc_11:",
+        (
+            "btst    #INPUT_BIT_DOWN,((CURRENT_PLAYER_INPUT-$1000000)).w",
+            "mulu.w  #ITEMS_PER_SHOP_PAGE,d2",
+            "ble.s   @loc_8",
+            "moveq   #ITEMS_PER_SHOP_PAGE,d1",
+            "move.w  d1,((CURRENT_SHOP_PAGE_ITEMS_NUMBER-$1000000)).w",
+            "bne.s   @loc_9",
+            "clr.b   ((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "LoadItemIconsAndPriceTagTiles:",
+        "LoadPriceTagTiles:",
+        (
+            "movea.l inventoryWindowLayoutEndAddress(a6),a1",
+            "lea     layout_ShopInventoryWindow(pc), a0",
+            "move.w  #324,d7",
+            "jsr     (CopyBytes).w",
+            "move.w  #1599,d7",
+            "move.l  #-1,(a0)+",
+            "dbf     d7,@Clear_Loop",
+            "dbf     d7,@Main_Loop",
+            "move.w  #$3C0,d0",
+            "jsr     (ApplyVIntVramDma).w",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "LoadPriceTagTiles:",
+        "LoadIconPixelsInShopScreen:",
+        (
+            "moveq   #31,d7",
+            "move.l  (a1)+,(a0)+",
+            "dbf     d7,@LoadBlankTiles_Loop",
+            "moveq   #4,d7",
+            "dbf     d7,@Main_Loop",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "WriteItemNameAndGoldAmount:",
+        "LoadItemIconsAndPriceTagTiles:",
+        (
+            "moveq   #-20,d1",
+            "bsr.w   WriteTilesFromAsciiWithRegularFont",
+            "moveq   #5,d7",
+            "jsr     WriteTilesFromNumber",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "LoadIconPixelsInShopScreen:",
+        "GetCurrentShopSelection:",
+        (
+            "moveq   #ICON_PIXELS_LONGWORD_COUNTER,d7",
+            "move.l  (a1)+,(a0)+",
+            "dbf     d7,@Loop",
+        ),
+    )
+    _require_ordered_shop_section(
+        source_path,
+        "ShiftShopInventoryWindowLayout:",
+        "sub_14EC0:",
+        (
+            "tst.b   ((WINDOW_LAYOUT_SHIFT_DIRECTION-$1000000)).w",
+            "bne.s   loc_14E82",
+            "bra.s   loc_14E86",
+            "bne.s   loc_14EAA",
+            "bra.s   loc_14EAE",
+            "bra.s   MoveSelectedItemInfoWindow",
+        ),
+    )
+    constant_names = (
+        "ITEMS_PER_SHOP_PAGE",
+        "WINDOW_SHOP_INVENTORY_SIZE",
+        "WINDOW_SHOP_INVENTORY_DEST",
+        "WINDOW_SHOP_ITEM_NAME_AND_PRICE_SIZE",
+        "WINDOW_SHOP_ITEM_NAME_AND_PRICE_DEST",
+        "WINDOW_SHOP_GOLD_SIZE",
+        "WINDOW_SHOP_GOLD_DEST",
+        "ICON_PIXELS_LONGWORD_COUNTER",
+    )
+    constants: dict[str, int] = {}
+    for name in constant_names:
+        match = re.search(rf"^{name}:\s+equ\s+(\$[0-9A-Fa-f]+|\d+)", enums, re.MULTILINE)
+        if not match:
+            raise ValueError(f"shared selection constant drift: {name}")
+        raw = match.group(1)
+        constants[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+    routine_names = re.findall(
+        r"^\s*; End of function ([A-Za-z_][A-Za-z0-9_]*).*?$", source, re.MULTILINE
+    )
+
+    def routine_section(name: str) -> str:
+        start = source.find(f"{name}:")
+        end = source.find("\n    ; End of function", start)
+        if start < 0 or end < 0:
+            raise ValueError(f"shared selection routine boundary drift: {name}")
+        return source[start:end]
+
+    routines = {name: _shop_instruction_records(routine_section(name)) for name in routine_names}
+    targets = set(routines)
+    aliases = _shop_jump_aliases(disasm, targets)
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    internal = {
+        "code/common/menus/shopscreen.asm": _shop_direct_call_occurrences(
+            source_path, alias_targets, targets
+        )
+    }
+    external = {
+        path.relative_to(disasm).as_posix(): occurrences
+        for path in sorted((disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix())
+        if path != source_path
+        if (occurrences := _shop_direct_call_occurrences(path, alias_targets, targets))
+    }
+
+    def totals(callers: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
+        return {
+            target: sum(
+                occurrence["siteCount"]
+                for occurrences in callers.values()
+                for occurrence in occurrences
+                if occurrence["effectiveTarget"] == target
+            )
+            for target in sorted(targets)
+        }
+
+    entry = routines["ExecuteShopScreen"]
+    selection = routines["GetCurrentShopSelection"]
+    highlight = routines["LoadShopInventoryHighlightSprites"]
+
+    def locate(records: list[dict[str, Any]], predicate) -> dict[str, Any]:
+        try:
+            return next(record for record in records if predicate(record))
+        except StopIteration as error:
+            raise ValueError("shared selection parsed use-site drift") from error
+
+    def following(records: list[dict[str, Any]], record: dict[str, Any]) -> dict[str, Any]:
+        index = next(index for index, candidate in enumerate(records) if candidate is record)
+        return records[index + 1]
+
+    def state_accesses(routine: str) -> list[dict[str, Any]]:
+        """Classify source-faithful local/global operands without naming their lifecycle."""
+        accesses: list[dict[str, Any]] = []
+        for instruction_index, record in enumerate(routines[routine]):
+            opcode = record["opcode"]
+            for operand_index, operand in enumerate(record["operands"]):
+                local = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\(a6\)", operand)
+                global_state = re.search(r"\(\(([A-Z][A-Z0-9_]+)-\$1000000\)\)\.w", operand)
+                if not local and not global_state:
+                    continue
+                if opcode.startswith(("cmp", "btst", "tst")):
+                    mode = "read"
+                elif opcode.startswith("clr"):
+                    mode = "write"
+                elif opcode.startswith(("add", "sub", "ori", "andi", "lsl", "lsr", "ror")):
+                    mode = "readWrite" if operand_index == len(record["operands"]) - 1 else "read"
+                elif len(record["operands"]) == 1:
+                    mode = "read"
+                else:
+                    mode = "read" if operand_index == 0 else "write"
+                accesses.append(
+                    {
+                        "fieldName": (local or global_state).group(1),
+                        "scope": "stackLocal" if local else "global",
+                        "mode": mode,
+                        "instructionIndex": instruction_index,
+                    }
+                )
+        return accesses
+
+    def labelled_section(records: list[dict[str, Any]], label: str) -> list[dict[str, Any]]:
+        start = next(index for index, record in enumerate(records) if label in record["labels"])
+        end = next(
+            (
+                index
+                for index, record in enumerate(records[start + 1 :], start + 1)
+                if record["labels"]
+            ),
+            len(records),
+        )
+        return records[start:end]
+
+    input_sections = {
+        name: labelled_section(entry, name)
+        for name in (
+            "@CheckRight",
+            "@CheckLeft",
+            "@CheckUp",
+            "@CheckDown",
+            "@loc_11",
+            "@Cancel",
+            "@Confirm",
+            "@Exit",
+        )
+    }
+    button_tests = input_sections["@loc_11"]
+    cancel_test = locate(
+        button_tests,
+        lambda record: record["opcode"] == "btst" and "INPUT_BIT_B" in record["operands"][0],
+    )
+    confirm_c_test = locate(
+        button_tests,
+        lambda record: record["opcode"] == "btst" and "INPUT_BIT_C" in record["operands"][0],
+    )
+    confirm_a_test = locate(
+        button_tests,
+        lambda record: record["opcode"] == "btst" and "INPUT_BIT_A" in record["operands"][0],
+    )
+    cancel_result = locate(
+        input_sections["@Cancel"],
+        lambda record: record["opcode"] == "moveq" and record["operands"] == ["#-1", "d0"],
+    )
+    selection_page_load = selection[0]
+    selection_scale = selection[1:5]
+    selection_final_read = locate(
+        selection,
+        lambda record: record["opcode"] == "move.b" and record["operands"] == ["(a0,d0.w)", "d0"],
+    )
+    highlight_selection_shift = locate(
+        highlight,
+        lambda record: record["opcode"] == "lsl.w" and record["operands"] == ["#5", "d0"],
+    )
+    highlight_coordinate_add = following(highlight, highlight_selection_shift)
+    highlight_sprite_stride = locate(
+        highlight,
+        lambda record: (
+            record["opcode"] == "addq.l" and record["operands"] == ["#VDP_SPRITE_ENTRY_SIZE", "a0"]
+        ),
+    )
+    highlight_page_bound = locate(
+        highlight,
+        lambda record: (
+            record["opcode"] == "mulu.w" and record["operands"] == ["#ITEMS_PER_SHOP_PAGE", "d0"]
+        ),
+    )
+    helper_flows = {
+        name: {
+            "directCalls": [record for record in routines[name] if record["directTarget"]],
+            "branches": [record for record in routines[name] if record["branchTarget"]],
+            "terminalOperation": routines[name][-1],
+        }
+        for name in (
+            "sub_14D0C",
+            "sub_14D6A",
+            "sub_14DBE",
+            "sub_14DC0",
+            "sub_14E06",
+            "sub_14E5E",
+            "ShiftShopInventoryWindowLayout",
+            "sub_14EC0",
+            "MoveSelectedItemInfoWindow",
+        )
+    }
+
+    def indexes(routine: str, records: list[dict[str, Any]]) -> list[int]:
+        corpus = routines[routine]
+        return [
+            next(index for index, candidate in enumerate(corpus) if candidate is record)
+            for record in records
+        ]
+
+    def index(routine: str, record: dict[str, Any]) -> int:
+        return indexes(routine, [record])[0]
+
+    def named_reference(name: str, routine: str, record: dict[str, Any]) -> dict[str, Any]:
+        return {"name": name, "instructionIndex": index(routine, record)}
+
+    def named_entry_references(specification: list[tuple[str, int]]) -> list[dict[str, Any]]:
+        return [
+            named_reference(name, "ExecuteShopScreen", entry[instruction_index])
+            for name, instruction_index in specification
+        ]
+
+    navigation_indexes = {
+        "right": {
+            "routine": "ExecuteShopScreen",
+            "references": named_entry_references(
+                [
+                    ("selectedIndexCandidateLoad", 48),
+                    ("inputTest", 49),
+                    ("inputAbsentBranch", 50),
+                    ("pageLoad", 51),
+                    ("pageScale", 52),
+                    ("globalListCandidateAdd", 53),
+                    ("globalListCandidateIncrement", 54),
+                    ("globalListLengthCompare", 55),
+                    ("globalListBoundBranch", 56),
+                    ("selectedIndexIncrement", 57),
+                    ("pageLocalCountCompare", 59),
+                    ("pageLocalBoundBranch", 60),
+                    ("pageIncrement", 61),
+                    ("selectionReset", 62),
+                    ("shiftDirectionReset", 63),
+                    ("scrollHelperCall", 64),
+                    ("scrollHelperConvergence", 65),
+                    ("selectionStore", 66),
+                    ("partialPageHelperCall", 67),
+                    ("partialPageConvergence", 68),
+                ]
+            ),
+        },
+        "left": {
+            "routine": "ExecuteShopScreen",
+            "references": named_entry_references(
+                [
+                    ("selectedIndexCandidateLoad", 69),
+                    ("inputTest", 70),
+                    ("inputAbsentBranch", 71),
+                    ("pageLoad", 72),
+                    ("pageScale", 73),
+                    ("globalListCandidateAdd", 74),
+                    ("globalListBoundBranch", 75),
+                    ("selectedIndexDecrement", 76),
+                    ("pageLocalBoundBranch", 78),
+                    ("pageDecrement", 79),
+                    ("selectionReset", 80),
+                    ("shiftDirectionSet", 81),
+                    ("scrollHelperCall", 82),
+                    ("scrollHelperConvergence", 83),
+                    ("selectionStore", 84),
+                    ("partialPageHelperCall", 85),
+                    ("partialPageConvergence", 86),
+                ]
+            ),
+        },
+        "up": {
+            "routine": "ExecuteShopScreen",
+            "references": named_entry_references(
+                [
+                    ("inputTest", 87),
+                    ("inputAbsentBranch", 88),
+                    ("pageZeroTest", 89),
+                    ("pageZeroBoundBranch", 90),
+                    ("pageDecrement", 91),
+                    ("shiftDirectionSet", 93),
+                    ("scrollHelperConvergence", 94),
+                ]
+            ),
+        },
+        "down": {
+            "routine": "ExecuteShopScreen",
+            "references": named_entry_references(
+                [
+                    ("inputTest", 95),
+                    ("inputAbsentBranch", 96),
+                    ("nextPageCandidateLoad", 97),
+                    ("nextPageCandidateIncrement", 98),
+                    ("nextPageScale", 99),
+                    ("globalListLengthCompare", 100),
+                    ("globalListBoundBranch", 101),
+                    ("pageIncrement", 102),
+                    ("selectedIndexLoad", 104),
+                    ("pageLoadForPartialCount", 105),
+                    ("partialPageScaleCopy", 106),
+                    ("partialPageScaleDouble", 107),
+                    ("partialPageScaleAdd", 108),
+                    ("partialPageScaleDoubleFinal", 109),
+                    ("globalListLengthLoad", 110),
+                    ("partialPageLengthSubtract", 111),
+                    ("partialPageCountCompare", 112),
+                    ("partialPageBoundBranch", 113),
+                    ("partialPageCountCap", 114),
+                    ("pageItemCountStore", 115),
+                    ("selectionClampCompare", 116),
+                    ("selectionClampBranch", 117),
+                    ("selectionClampDecrement", 118),
+                    ("selectionClampLoop", 119),
+                    ("selectionStore", 120),
+                    ("shiftDirectionReset", 121),
+                    ("scrollHelperConvergence", 122),
+                ]
+            ),
+        },
+    }
+    helper_indexes = {
+        name: {
+            "routine": name,
+            "stateAccesses": state_accesses(name),
+            "directCalls": [
+                named_reference(record["directTarget"], name, record)
+                for record in facts["directCalls"]
+            ],
+            "branches": [
+                named_reference(record["branchTarget"], name, record)
+                for record in facts["branches"]
+            ],
+            "terminalConvergence": named_reference(
+                "terminalOperation", name, facts["terminalOperation"]
+            ),
+        }
+        for name, facts in helper_flows.items()
+    }
+
+    def immediate_value(record: dict[str, Any]) -> int:
+        raw = record["operands"][0].removeprefix("#")
+        if raw in constants:
+            return constants[raw]
+        return int(raw[1:], 16) if raw.startswith("$") else int(raw)
+
+    def transfer_reference(
+        name: str,
+        routine: str,
+        *,
+        source_index: int,
+        destination_index: int,
+        count_index: int | None = None,
+        call_index: int | None = None,
+        write_index: int | None = None,
+        loop_index: int | None = None,
+        exit_index: int | None = None,
+    ) -> dict[str, Any]:
+        fact: dict[str, Any] = {
+            "name": name,
+            "sourceOperandInstructionIndex": source_index,
+            "destinationOperandInstructionIndex": destination_index,
+        }
+        if count_index is not None:
+            fact["storedCountOperandInstructionIndex"] = count_index
+            count_operand = routines[routine][count_index]["operands"][0]
+            if count_operand.startswith("#"):
+                fact["storedCountValue"] = immediate_value(routines[routine][count_index])
+            else:
+                fact["storedCountOperand"] = count_operand
+        if call_index is not None:
+            fact["copyCallInstructionIndex"] = call_index
+            fact["copyCountUnit"] = "bytes"
+            if "storedCountValue" in fact:
+                fact["transferredByteCount"] = fact["storedCountValue"]
+        if write_index is not None:
+            fact["writeInstructionIndex"] = write_index
+            fact["writeOpcodeWidthBits"] = {"move.b": 8, "move.w": 16, "move.l": 32}[
+                routines[routine][write_index]["opcode"]
+            ]
+        if loop_index is not None:
+            fact["loopInstructionIndex"] = loop_index
+            fact["inclusiveCounter"] = True
+            if "storedCountValue" in fact:
+                fact["iterationCount"] = fact["storedCountValue"] + 1
+                if fact.get("writeOpcodeWidthBits") == 32:
+                    fact["longwordWriteCount"] = fact["iterationCount"]
+            fact["loopTarget"] = routines[routine][loop_index]["branchTarget"]
+        if exit_index is not None:
+            fact["exitConvergenceInstructionIndex"] = exit_index
+        return fact
+
+    resource_indexes = {
+        "WriteGoldAmount": {
+            "routine": "WriteGoldAmount",
+            "namedOperations": [
+                {
+                    "name": "goldLabelText",
+                    "sourceOperandInstructionIndex": 3,
+                    "destinationOperandInstructionIndex": 4,
+                    "storedCountOperandInstructionIndex": 7,
+                    "storedCountValue": immediate_value(routines["WriteGoldAmount"][7]),
+                    "writeCallInstructionIndex": 8,
+                },
+                {
+                    "name": "goldNumber",
+                    "sourceOperandInstructionIndex": 9,
+                    "destinationOperandInstructionIndex": 11,
+                    "storedCountOperandInstructionIndex": 13,
+                    "storedCountValue": immediate_value(routines["WriteGoldAmount"][13]),
+                    "writeCallInstructionIndex": 14,
+                },
+            ],
+            "terminalConvergence": named_reference(
+                "terminalOperation", "WriteGoldAmount", routines["WriteGoldAmount"][-1]
+            ),
+        },
+        "WriteItemNameAndGoldAmount": {
+            "routine": "WriteItemNameAndGoldAmount",
+            "namedOperations": [
+                {
+                    "name": "itemNameText",
+                    "sourceOperandInstructionIndex": 6,
+                    "destinationOperandInstructionIndex": 7,
+                    "preCallD1ArgumentInstructionIndex": 9,
+                    "preCallD1ArgumentValue": immediate_value(
+                        routines["WriteItemNameAndGoldAmount"][9]
+                    ),
+                    "writeCallInstructionIndex": 10,
+                },
+                {
+                    "name": "itemPriceNumber",
+                    "sourceOperandInstructionIndex": 14,
+                    "destinationOperandInstructionIndex": 15,
+                    "storedCountOperandInstructionIndex": 17,
+                    "storedCountValue": immediate_value(routines["WriteItemNameAndGoldAmount"][17]),
+                    "writeCallInstructionIndex": 18,
+                },
+            ],
+            "terminalConvergence": named_reference(
+                "terminalOperation",
+                "WriteItemNameAndGoldAmount",
+                routines["WriteItemNameAndGoldAmount"][-1],
+            ),
+        },
+        "LoadItemIconsAndPriceTagTiles": {
+            "routine": "LoadItemIconsAndPriceTagTiles",
+            "copyBytesTransfers": [
+                transfer_reference(
+                    "inventoryLayoutCopy",
+                    "LoadItemIconsAndPriceTagTiles",
+                    source_index=1,
+                    destination_index=0,
+                    count_index=2,
+                    call_index=3,
+                ),
+            ],
+            "loopWrites": [
+                transfer_reference(
+                    "clearLoop",
+                    "LoadItemIconsAndPriceTagTiles",
+                    source_index=7,
+                    destination_index=7,
+                    count_index=6,
+                    write_index=7,
+                    loop_index=8,
+                    exit_index=9,
+                ),
+                transfer_reference(
+                    "itemLoop",
+                    "LoadItemIconsAndPriceTagTiles",
+                    source_index=28,
+                    destination_index=38,
+                    count_index=22,
+                    write_index=38,
+                    loop_index=41,
+                    exit_index=42,
+                ),
+            ],
+            "vintDmaArgumentInstructionIndexes": [42, 43, 44, 45, 46, 47],
+            "terminalConvergence": named_reference(
+                "terminalOperation",
+                "LoadItemIconsAndPriceTagTiles",
+                routines["LoadItemIconsAndPriceTagTiles"][-1],
+            ),
+        },
+        "LoadPriceTagTiles": {
+            "routine": "LoadPriceTagTiles",
+            "loopWrites": [
+                transfer_reference(
+                    "blankTileLongwordLoop",
+                    "LoadPriceTagTiles",
+                    source_index=5,
+                    destination_index=5,
+                    count_index=4,
+                    write_index=5,
+                    loop_index=6,
+                    exit_index=7,
+                ),
+                transfer_reference(
+                    "digitCharacterLoop",
+                    "LoadPriceTagTiles",
+                    source_index=13,
+                    destination_index=20,
+                    count_index=11,
+                    write_index=20,
+                    loop_index=27,
+                    exit_index=28,
+                ),
+            ],
+            "digitTileLongwordWriteInstructionIndexes": [20, 21, 22, 23, 24],
+            "digitTileLongwordCountPerNonSpaceCharacter": 5,
+            "terminalConvergence": named_reference(
+                "terminalOperation", "LoadPriceTagTiles", routines["LoadPriceTagTiles"][-1]
+            ),
+        },
+        "LoadIconPixelsInShopScreen": {
+            "routine": "LoadIconPixelsInShopScreen",
+            "loopWrites": [
+                transfer_reference(
+                    "iconPixelLongwordLoop",
+                    "LoadIconPixelsInShopScreen",
+                    source_index=9,
+                    destination_index=9,
+                    count_index=8,
+                    write_index=9,
+                    loop_index=10,
+                    exit_index=11,
+                ),
+            ],
+            "terminalConvergence": named_reference(
+                "terminalOperation",
+                "LoadIconPixelsInShopScreen",
+                routines["LoadIconPixelsInShopScreen"][-1],
+            ),
+        },
+    }
+    if (
+        constants["ITEMS_PER_SHOP_PAGE"] != 6
+        or not any(record["operands"] == ["#-1", "d0"] for record in entry)
+        or not any(record["operands"] == ["#BYTE_MASK", "d0"] for record in selection)
+    ):
+        raise ValueError("shared selection entry/selection relation drift")
+    return {
+        "entrySymbol": "ExecuteShopScreen",
+        "sourcePath": "code/common/menus/shopscreen.asm",
+        "sourceRange": _caravan_range(source, "code/common/menus/shopscreen.asm"),
+        "constants": constants,
+        "routineOperations": routines,
+        "entryStateAndWindowFlow": {
+            "routine": "ExecuteShopScreen",
+            "preflightIndexes": list(range(7)),
+            "windowCreationAndOpenIndexes": list(
+                range(7, entry.index(input_sections["@CheckRight"][0]))
+            ),
+            "cleanupAndReturnIndexes": indexes("ExecuteShopScreen", input_sections["@Exit"]),
+        },
+        "inputBranches": {
+            "sourceOrder": ["cancel", "confirmC", "confirmA"],
+            "cancel": {
+                "button": "B",
+                "testIndex": index("ExecuteShopScreen", cancel_test),
+                "branchIndex": index("ExecuteShopScreen", following(button_tests, cancel_test)),
+            },
+            "confirmC": {
+                "button": "C",
+                "testIndex": index("ExecuteShopScreen", confirm_c_test),
+                "branchIndex": index("ExecuteShopScreen", following(button_tests, confirm_c_test)),
+            },
+            "confirmA": {
+                "button": "A",
+                "testIndex": index("ExecuteShopScreen", confirm_a_test),
+                "branchIndex": index("ExecuteShopScreen", following(button_tests, confirm_a_test)),
+            },
+            "cancelResult": named_reference("minusOneResult", "ExecuteShopScreen", cancel_result),
+            "confirmSelectionFormula": {
+                "routine": "ExecuteShopScreen",
+                "pageLoadIndex": 134,
+                "pageMultiplierIndex": 135,
+                "selectionAddIndex": 136,
+                "listBaseIndex": 137,
+                "resultByteReadIndex": 138,
+                "resultMaskIndex": 139,
+            },
+        },
+        "navigation": navigation_indexes,
+        "selectionFormula": {
+            "routine": "GetCurrentShopSelection",
+            "pageLoadIndex": index("GetCurrentShopSelection", selection_page_load),
+            "pageTimesItemsPerPageAndSelectionIndexes": indexes(
+                "GetCurrentShopSelection", selection_scale
+            ),
+            "resultByteReadIndex": index("GetCurrentShopSelection", selection_final_read),
+            "maskIndex": len(selection) - 2,
+        },
+        "highlightSemantics": {
+            "routine": "LoadShopInventoryHighlightSprites",
+            "selectionShiftIndex": index(
+                "LoadShopInventoryHighlightSprites", highlight_selection_shift
+            ),
+            "selectionCoordinateAddIndex": index(
+                "LoadShopInventoryHighlightSprites", highlight_coordinate_add
+            ),
+            "spriteEntryStrideIndex": index(
+                "LoadShopInventoryHighlightSprites", highlight_sprite_stride
+            ),
+            "pageBoundMultiplierIndex": index(
+                "LoadShopInventoryHighlightSprites", highlight_page_bound
+            ),
+            "branchIndexes": indexes(
+                "LoadShopInventoryHighlightSprites",
+                [record for record in highlight if record["branchTarget"]],
+            ),
+            "terminalOperationIndex": len(highlight) - 1,
+        },
+        "resourceTransfers": resource_indexes,
+        "windowScrollHelperFlows": helper_indexes,
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerOccurrences": internal,
+        "internalEffectiveDirectCallSiteCounts": totals(internal),
+        "externalDirectCallerOccurrences": external,
+        "externalEffectiveDirectCallSiteCounts": totals(external),
+        "staticBoundary": {
+            "hardwareTiming": "unknown",
+            "renderedAppearance": "unknown",
+            "callerLifecycleAndAdmission": "inferred",
+        },
+    }
+
+
 def _service_state_machines(disasm: Path) -> dict[str, Any]:
     """Extract the built service-menu control-flow boundary without interpreting UI timing."""
     root = disasm / SOURCE_ROOT
@@ -2439,6 +3181,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
     church_contract = _church_static_contract(root)
     caravan_contract = _caravan_static_contract(root)
     blacksmith_contract = _blacksmith_static_contract(root)
+    shared_selection_contract = _shared_selection_screen_contract(disasm, root)
     if not all((disasm / path).is_file() for path in SERVICE_SOURCE_PATHS):
         raise ValueError("service-menu source boundary is incomplete")
     service_files = [
@@ -2731,20 +3474,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
                 "sharedSelection": "ExecuteShopScreen",
             },
         },
-        "sharedSelectionScreen": {
-            "entrySymbol": "ExecuteShopScreen",
-            "cancelResult": -1,
-            "confirmButtons": ["A", "C"],
-            "cancelButton": "B",
-            "selectionAddressing": "page-times-items-per-page-plus-selection",
-            "stateReadsAndWrites": [
-                "CURRENT_SHOP_PAGE",
-                "CURRENT_SHOP_SELECTION",
-                "CURRENT_SHOP_PAGE_ITEMS_NUMBER",
-                "GENERIC_LIST",
-                "GENERIC_LIST_LENGTH",
-            ],
-        },
+        "sharedSelectionScreen": shared_selection_contract,
         "shop": shop_contract,
         "church": church_contract,
         "caravan": caravan_contract,

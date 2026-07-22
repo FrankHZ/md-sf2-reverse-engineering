@@ -26,7 +26,9 @@ timing.
 | Blacksmith | fulfill ready orders, then place pending order | No diamond menu. Static source preserves ready/pending counting, fulfillment storage-clear/add/equip order, placement gates and payment/drop/pick/flag order, plus the bounded weapon-row picker. |
 
 Shop, church, caravan, depot, and item surfaces cancel through the common diamond/selection boundary;
-the shared selection screen returns `-1` on B and confirms on A/C. Shop and caravan loop back to
+the shared selection screen has source-shaped entry, navigation, selection, resource-load, and cleanup
+records; its B→C→A test/result order remains a source-level fact rather than a lifecycle guarantee. Shop
+and caravan loop back to
 their action menus after non-exit actions. The blacksmith sequence is visit-driven rather than a
 diamond-menu loop.
 
