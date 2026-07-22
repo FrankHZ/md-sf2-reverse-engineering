@@ -113,8 +113,9 @@ The current evidence is deep but narrow:
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
   8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
   Common stats now inventories all 20 files and models flags, party/inventory services, spell
-  learning, and new-game order. Seventeen have independent evidence; three unassembled alternate
-  item sources are tracked but excluded from strict reach rather than borrowing their canonical twins.
+  learning, new-game order, and the complete 31-entry `combatantstats_1.asm` getter corpus/ABI/caller
+  boundary. Seventeen have independent evidence; three unassembled alternate item sources are tracked
+  but excluded from strict reach rather than borrowing their canonical twins.
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
   text controls, field items, and the built eight-source shop/church/caravan/blacksmith state-machine
   surface are static contracts; one overlapping member-list alternate remains excluded, while UI,

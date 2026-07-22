@@ -88,6 +88,5146 @@
         "itemDefinitionHelpersInventoried": true,
         "existingLevelGoldAndDerivedStatRailsRetained": true,
         "callerDependentUiAndItemEffectsRemainQueued": true
+      },
+      "combatantGetterContract": {
+        "sourcePath": "code/common/stats/combatantstats_1.asm",
+        "sourceRange": {
+          "path": "code/common/stats/combatantstats_1.asm",
+          "startAddress": 33488,
+          "endAddressExclusive": 34074,
+          "physicalSpanBytes": 586
+        },
+        "routineOrder": [
+          "GetCombatantName",
+          "GetClass",
+          "GetLevel",
+          "GetMaxHp",
+          "GetCurrentHp",
+          "GetMaxMp",
+          "GetCurrentMp",
+          "GetBaseAtt",
+          "GetCurrentAtt",
+          "GetBaseDef",
+          "GetCurrentDef",
+          "GetBaseAgi",
+          "GetCurrentAgi",
+          "GetBaseMov",
+          "GetCurrentMov",
+          "GetBaseResistance",
+          "GetCurrentResistance",
+          "GetBaseProwess",
+          "GetCurrentProwess",
+          "GetStatusEffects",
+          "GetCombatantX",
+          "GetCombatantY",
+          "GetCurrentExp",
+          "GetMovetype",
+          "GetAiCommandset",
+          "GetMoveOrders",
+          "GetTriggerRegions",
+          "GetActivationBitfield",
+          "GetEnemy",
+          "GetKills",
+          "GetDefeats"
+        ],
+        "routineAddresses": {
+          "GetCombatantName": 33488,
+          "GetClass": 33542,
+          "GetLevel": 33558,
+          "GetMaxHp": 33574,
+          "GetCurrentHp": 33590,
+          "GetMaxMp": 33606,
+          "GetCurrentMp": 33622,
+          "GetBaseAtt": 33638,
+          "GetCurrentAtt": 33654,
+          "GetBaseDef": 33670,
+          "GetCurrentDef": 33686,
+          "GetBaseAgi": 33702,
+          "GetCurrentAgi": 33718,
+          "GetBaseMov": 33734,
+          "GetCurrentMov": 33750,
+          "GetBaseResistance": 33766,
+          "GetCurrentResistance": 33782,
+          "GetBaseProwess": 33798,
+          "GetCurrentProwess": 33814,
+          "GetStatusEffects": 33830,
+          "GetCombatantX": 33846,
+          "GetCombatantY": 33864,
+          "GetCurrentExp": 33882,
+          "GetMovetype": 33898,
+          "GetAiCommandset": 33920,
+          "GetMoveOrders": 33940,
+          "GetTriggerRegions": 33968,
+          "GetActivationBitfield": 33996,
+          "GetEnemy": 34012,
+          "GetKills": 34042,
+          "GetDefeats": 34058
+        },
+        "constants": {
+          "COMBATANT_BIT_ENEMY": 7,
+          "ALLYNAME_CHARACTERS_COUNTER": 9,
+          "NIBBLE_SHIFT_COUNT": 4,
+          "BYTE_SHIFT_COUNT": 8,
+          "BYTE_LOWER_NIBBLE_MASK": 15,
+          "BYTE_MASK": 255,
+          "COMBATANT_ALLIES_SPACE_END_MINUS_ONE": 31,
+          "COMBATANT_ENEMIES_START": 128,
+          "COMBATANT_ENEMIES_SPACE_END": 160,
+          "COMBATANT_ENEMIES_START_MINUS_ALLIES_SPACE_END": 96,
+          "COMBATANT_OFFSET_CLASS": 10,
+          "COMBATANT_OFFSET_LEVEL": 11,
+          "COMBATANT_OFFSET_HP_MAX": 12,
+          "COMBATANT_OFFSET_HP_CURRENT": 14,
+          "COMBATANT_OFFSET_MP_MAX": 16,
+          "COMBATANT_OFFSET_MP_CURRENT": 17,
+          "COMBATANT_OFFSET_ATT_BASE": 18,
+          "COMBATANT_OFFSET_ATT_CURRENT": 19,
+          "COMBATANT_OFFSET_DEF_BASE": 20,
+          "COMBATANT_OFFSET_DEF_CURRENT": 21,
+          "COMBATANT_OFFSET_AGI_BASE": 22,
+          "COMBATANT_OFFSET_AGI_CURRENT": 23,
+          "COMBATANT_OFFSET_MOV_BASE": 24,
+          "COMBATANT_OFFSET_MOV_CURRENT": 25,
+          "COMBATANT_OFFSET_RESIST_BASE": 26,
+          "COMBATANT_OFFSET_RESIST_CURRENT": 28,
+          "COMBATANT_OFFSET_PROWESS_BASE": 30,
+          "COMBATANT_OFFSET_PROWESS_CURRENT": 31,
+          "COMBATANT_OFFSET_STATUSEFFECTS": 44,
+          "COMBATANT_OFFSET_X": 46,
+          "COMBATANT_OFFSET_Y": 47,
+          "COMBATANT_OFFSET_EXP": 48,
+          "COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET": 49,
+          "COMBATANT_OFFSET_MOVE_ORDERS": 50,
+          "COMBATANT_OFFSET_TRIGGER_REGIONS": 54,
+          "COMBATANT_OFFSET_ACTIVATION_BITFIELD": 52,
+          "COMBATANT_OFFSET_ENEMY_INDEX": 55,
+          "COMBATANT_OFFSET_ALLY_KILLS": 50,
+          "COMBATANT_OFFSET_ALLY_DEFEATS": 54
+        },
+        "routineOperations": {
+          "GetCombatantName": [
+            {
+              "labels": [
+                "GetCombatantName"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d0-d1",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "btst",
+              "operands": [
+                "#COMBATANT_BIT_ENEMY",
+                "d0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bne.s",
+              "operands": [
+                "@Enemy"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Enemy"
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#ALLYNAME_CHARACTERS_COUNTER",
+                "d0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "clr.w",
+              "operands": [
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@CountNameLength_Loop"
+              ],
+              "opcode": "tst.b",
+              "operands": [
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "beq.s",
+              "operands": [
+                "@Break"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Break"
+            },
+            {
+              "labels": [],
+              "opcode": "addq.w",
+              "operands": [
+                "#1",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "dbf",
+              "operands": [
+                "d0",
+                "@CountNameLength_Loop"
+              ],
+              "directTarget": null,
+              "branchTarget": "@CountNameLength_Loop"
+            },
+            {
+              "labels": [
+                "@Break"
+              ],
+              "opcode": "bra.s",
+              "operands": [
+                "@Done"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Done"
+            },
+            {
+              "labels": [
+                "@Enemy"
+              ],
+              "opcode": "clr.w",
+              "operands": [
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetEnemy"
+              ],
+              "directTarget": "GetEnemy",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movea.l",
+              "operands": [
+                "(p_table_EnemyNames).l",
+                "a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "FindName"
+              ],
+              "directTarget": "FindName",
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@Done"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d0-d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetClass": [
+            {
+              "labels": [
+                "GetClass"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_CLASS",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetLevel": [
+            {
+              "labels": [
+                "GetLevel"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_LEVEL",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetMaxHp": [
+            {
+              "labels": [
+                "GetMaxHp"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_HP_MAX",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentHp": [
+            {
+              "labels": [
+                "GetCurrentHp"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_HP_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetMaxMp": [
+            {
+              "labels": [
+                "GetMaxMp"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MP_MAX",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentMp": [
+            {
+              "labels": [
+                "GetCurrentMp"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MP_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetBaseAtt": [
+            {
+              "labels": [
+                "GetBaseAtt"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_ATT_BASE",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentAtt": [
+            {
+              "labels": [
+                "GetCurrentAtt"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_ATT_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetBaseDef": [
+            {
+              "labels": [
+                "GetBaseDef"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_DEF_BASE",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentDef": [
+            {
+              "labels": [
+                "GetCurrentDef"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_DEF_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetBaseAgi": [
+            {
+              "labels": [
+                "GetBaseAgi"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_AGI_BASE",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentAgi": [
+            {
+              "labels": [
+                "GetCurrentAgi"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_AGI_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetBaseMov": [
+            {
+              "labels": [
+                "GetBaseMov"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MOV_BASE",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentMov": [
+            {
+              "labels": [
+                "GetCurrentMov"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MOV_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetBaseResistance": [
+            {
+              "labels": [
+                "GetBaseResistance"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_RESIST_BASE",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentResistance": [
+            {
+              "labels": [
+                "GetCurrentResistance"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_RESIST_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetBaseProwess": [
+            {
+              "labels": [
+                "GetBaseProwess"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_PROWESS_BASE",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentProwess": [
+            {
+              "labels": [
+                "GetCurrentProwess"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_PROWESS_CURRENT",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetStatusEffects": [
+            {
+              "labels": [
+                "GetStatusEffects"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_STATUSEFFECTS",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCombatantX": [
+            {
+              "labels": [
+                "GetCombatantX"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_X",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "ext.w",
+              "operands": [
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCombatantY": [
+            {
+              "labels": [
+                "GetCombatantY"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_Y",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "ext.w",
+              "operands": [
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetCurrentExp": [
+            {
+              "labels": [
+                "GetCurrentExp"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_EXP",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetMovetype": [
+            {
+              "labels": [
+                "GetMovetype"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "lsr.w",
+              "operands": [
+                "#NIBBLE_SHIFT_COUNT",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_LOWER_NIBBLE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetAiCommandset": [
+            {
+              "labels": [
+                "GetAiCommandset"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_LOWER_NIBBLE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetMoveOrders": [
+            {
+              "labels": [
+                "GetMoveOrders"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_MOVE_ORDERS",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d2"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "lsr.w",
+              "operands": [
+                "#BYTE_SHIFT_COUNT",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_MASK",
+                "d2"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetTriggerRegions": [
+            {
+              "labels": [
+                "GetTriggerRegions"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_TRIGGER_REGIONS",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d2"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "lsr.w",
+              "operands": [
+                "#NIBBLE_SHIFT_COUNT",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_LOWER_NIBBLE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_LOWER_NIBBLE_MASK",
+                "d2"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetActivationBitfield": [
+            {
+              "labels": [
+                "GetActivationBitfield"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_ACTIVATION_BITFIELD",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetEnemy": [
+            {
+              "labels": [
+                "GetEnemy"
+              ],
+              "opcode": "btst",
+              "operands": [
+                "#COMBATANT_BIT_ENEMY",
+                "d0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bne.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Continue"
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "#-1",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "GetKills"
+              ],
+              "directTarget": null,
+              "branchTarget": "GetKills"
+            },
+            {
+              "labels": [
+                "@Continue"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_ENEMY_INDEX",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantByte"
+              ],
+              "directTarget": "GetCombatantByte",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetKills": [
+            {
+              "labels": [
+                "GetKills"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_ALLY_KILLS",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "GetDefeats": [
+            {
+              "labels": [
+                "GetDefeats"
+              ],
+              "opcode": "movem.l",
+              "operands": [
+                "d7-a0",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "moveq",
+              "operands": [
+                "#COMBATANT_OFFSET_ALLY_DEFEATS",
+                "d7"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantWord"
+              ],
+              "directTarget": "GetCombatantWord",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.l",
+              "operands": [
+                "(sp)+",
+                "d7-a0"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ]
+        },
+        "entryAddressAbi": {
+          "sourcePath": "code/common/stats/combatantstats_3.asm",
+          "routines": {
+            "GetCombatantEntryAddress": {
+              "routineAddress": 37518,
+              "operations": [
+                {
+                  "labels": [
+                    "GetCombatantEntryAddress"
+                  ],
+                  "opcode": "movem.w",
+                  "operands": [
+                    "d0-d1",
+                    "-(sp)"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#COMBATANT_ENEMIES_START",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bcc.s",
+                  "operands": [
+                    "@Enemy"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@Enemy"
+                },
+                {
+                  "labels": [],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#COMBATANT_ALLIES_SPACE_END_MINUS_ONE",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bhi.s",
+                  "operands": [
+                    "@ErrorHandling"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@ErrorHandling"
+                },
+                {
+                  "labels": [],
+                  "opcode": "bra.s",
+                  "operands": [
+                    "@GetAddress"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@GetAddress"
+                },
+                {
+                  "labels": [
+                    "@Enemy"
+                  ],
+                  "opcode": "cmpi.b",
+                  "operands": [
+                    "#COMBATANT_ENEMIES_SPACE_END",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "bhi.s",
+                  "operands": [
+                    "@ErrorHandling"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@ErrorHandling"
+                },
+                {
+                  "labels": [],
+                  "opcode": "subi.b",
+                  "operands": [
+                    "#COMBATANT_ENEMIES_START_MINUS_ALLIES_SPACE_END",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [
+                    "@GetAddress"
+                  ],
+                  "opcode": "andi.w",
+                  "operands": [
+                    "#BYTE_MASK",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "lsl.w",
+                  "operands": [
+                    "#3",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "d0",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "lsl.w",
+                  "operands": [
+                    "#3",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "sub.w",
+                  "operands": [
+                    "d1",
+                    "d0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "lea",
+                  "operands": [
+                    "((COMBATANT_DATA-$1000000)).w",
+                    "a0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "adda.w",
+                  "operands": [
+                    "d0",
+                    "a0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "movem.w",
+                  "operands": [
+                    "(sp)+",
+                    "d0-d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "rts",
+                  "operands": [],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [
+                    "@ErrorHandling"
+                  ],
+                  "opcode": "movem.w",
+                  "operands": [
+                    "(sp)+",
+                    "d0-d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.l",
+                  "operands": [
+                    "#'CNUM'",
+                    "(ERRCODE_BYTE0).l"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.l",
+                  "operands": [
+                    "(sp)",
+                    "(ERRCODE_BYTE4).l"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "trap",
+                  "operands": [
+                    "#VINT_FUNCTIONS"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "dc.w",
+                  "operands": [
+                    "VINTS_DEACTIVATE"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "dc.l",
+                  "operands": [
+                    "0"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [
+                    "@InfiniteLoop"
+                  ],
+                  "opcode": "bra.s",
+                  "operands": [
+                    "@InfiniteLoop"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": "@InfiniteLoop"
+                }
+              ],
+              "validRoutes": {
+                "ally": {
+                  "enemyThresholdComparisonInstructionIndex": 1,
+                  "enemyThresholdBranchInstructionIndex": 2,
+                  "enemyThresholdBranchTarget": "@Enemy",
+                  "enemyThresholdBranchTaken": false,
+                  "upperBoundComparisonInstructionIndex": 3,
+                  "errorBranchInstructionIndex": 4,
+                  "errorBranchTarget": "@ErrorHandling",
+                  "errorBranchTaken": false,
+                  "addressBranchInstructionIndex": 5,
+                  "addressBranchTarget": "@GetAddress"
+                },
+                "enemy": {
+                  "enemyThresholdComparisonInstructionIndex": 1,
+                  "enemyThresholdBranchInstructionIndex": 2,
+                  "enemyThresholdBranchTarget": "@Enemy",
+                  "enemyThresholdBranchTaken": true,
+                  "upperBoundComparisonInstructionIndex": 6,
+                  "errorBranchInstructionIndex": 7,
+                  "errorBranchTarget": "@ErrorHandling",
+                  "errorBranchTaken": false,
+                  "indexAdjustmentInstructionIndex": 8
+                }
+              },
+              "errorRoutes": {
+                "allyAboveUpperBound": {
+                  "comparisonInstructionIndex": 3,
+                  "branchInstructionIndex": 4,
+                  "branchTarget": "@ErrorHandling",
+                  "branchTaken": true
+                },
+                "enemyAboveUpperBound": {
+                  "comparisonInstructionIndex": 6,
+                  "branchInstructionIndex": 7,
+                  "branchTarget": "@ErrorHandling",
+                  "branchTaken": true
+                }
+              },
+              "addressCalculation": {
+                "selectorMaskConstant": "BYTE_MASK",
+                "selectorMaskValue": 255,
+                "selectorMaskInstructionIndex": 9,
+                "leftShiftCount": 3,
+                "leftShiftInstructionIndexes": [
+                  10,
+                  12
+                ],
+                "copyInstructionIndex": 11,
+                "subtractInstructionIndex": 13,
+                "entryStrideBytes": 56,
+                "baseLoadInstructionIndex": 14,
+                "addressAddInstructionIndex": 15,
+                "restoreInstructionIndex": 16,
+                "terminalInstructionIndex": 17
+              },
+              "errorHandling": {
+                "restoreInstructionIndex": 18,
+                "errorCodeWriteInstructionIndex": 19,
+                "errorReturnAddressWriteInstructionIndex": 20,
+                "trapInstructionIndex": 21,
+                "vintFunctionArgumentInstructionIndex": 22,
+                "vintArgumentInstructionIndex": 23,
+                "infiniteLoopInstructionIndex": 24,
+                "infiniteLoopTarget": "@InfiniteLoop"
+              }
+            },
+            "GetCombatantByte": {
+              "routineAddress": 37624,
+              "operations": [
+                {
+                  "labels": [
+                    "GetCombatantByte"
+                  ],
+                  "opcode": "bsr.s",
+                  "operands": [
+                    "GetCombatantEntryAddress"
+                  ],
+                  "directTarget": "GetCombatantEntryAddress",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "clr.w",
+                  "operands": [
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.b",
+                  "operands": [
+                    "(a0,d7.w)",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "rts",
+                  "operands": [],
+                  "directTarget": null,
+                  "branchTarget": null
+                }
+              ],
+              "entryAddressCallInstructionIndex": 0,
+              "read": {
+                "zeroInitializationInstructionIndex": 1,
+                "readInstructionIndex": 2,
+                "readOpcode": "move.b",
+                "sourceOperand": "(a0,d7.w)",
+                "destinationRegister": "d1"
+              },
+              "terminalInstructionIndex": 3
+            },
+            "GetCombatantWord": {
+              "routineAddress": 37634,
+              "operations": [
+                {
+                  "labels": [
+                    "GetCombatantWord"
+                  ],
+                  "opcode": "bsr.s",
+                  "operands": [
+                    "GetCombatantEntryAddress"
+                  ],
+                  "directTarget": "GetCombatantEntryAddress",
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "move.w",
+                  "operands": [
+                    "(a0,d7.w)",
+                    "d1"
+                  ],
+                  "directTarget": null,
+                  "branchTarget": null
+                },
+                {
+                  "labels": [],
+                  "opcode": "rts",
+                  "operands": [],
+                  "directTarget": null,
+                  "branchTarget": null
+                }
+              ],
+              "entryAddressCallInstructionIndex": 0,
+              "read": {
+                "readInstructionIndex": 1,
+                "readOpcode": "move.w",
+                "sourceOperand": "(a0,d7.w)",
+                "destinationRegister": "d1"
+              },
+              "terminalInstructionIndex": 2
+            }
+          }
+        },
+        "getters": {
+          "GetClass": {
+            "routineAddress": 33542,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_CLASS",
+              "value": 10,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetLevel": {
+            "routineAddress": 33558,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_LEVEL",
+              "value": 11,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetMaxHp": {
+            "routineAddress": 33574,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_HP_MAX",
+              "value": 12,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentHp": {
+            "routineAddress": 33590,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_HP_CURRENT",
+              "value": 14,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetMaxMp": {
+            "routineAddress": 33606,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MP_MAX",
+              "value": 16,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentMp": {
+            "routineAddress": 33622,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MP_CURRENT",
+              "value": 17,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetBaseAtt": {
+            "routineAddress": 33638,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_ATT_BASE",
+              "value": 18,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentAtt": {
+            "routineAddress": 33654,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_ATT_CURRENT",
+              "value": 19,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetBaseDef": {
+            "routineAddress": 33670,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_DEF_BASE",
+              "value": 20,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentDef": {
+            "routineAddress": 33686,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_DEF_CURRENT",
+              "value": 21,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetBaseAgi": {
+            "routineAddress": 33702,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_AGI_BASE",
+              "value": 22,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentAgi": {
+            "routineAddress": 33718,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_AGI_CURRENT",
+              "value": 23,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetBaseMov": {
+            "routineAddress": 33734,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MOV_BASE",
+              "value": 24,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentMov": {
+            "routineAddress": 33750,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MOV_CURRENT",
+              "value": 25,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetBaseResistance": {
+            "routineAddress": 33766,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_RESIST_BASE",
+              "value": 26,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentResistance": {
+            "routineAddress": 33782,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_RESIST_CURRENT",
+              "value": 28,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetBaseProwess": {
+            "routineAddress": 33798,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_PROWESS_BASE",
+              "value": 30,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCurrentProwess": {
+            "routineAddress": 33814,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_PROWESS_CURRENT",
+              "value": 31,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetStatusEffects": {
+            "routineAddress": 33830,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_STATUSEFFECTS",
+              "value": 44,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCombatantX": {
+            "routineAddress": 33846,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_X",
+              "value": 46,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 5,
+              "signExtendInstructionIndex": 3
+            }
+          },
+          "GetCombatantY": {
+            "routineAddress": 33864,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_Y",
+              "value": 47,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 5,
+              "signExtendInstructionIndex": 3
+            }
+          },
+          "GetCurrentExp": {
+            "routineAddress": 33882,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_EXP",
+              "value": 48,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetMovetype": {
+            "routineAddress": 33898,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET",
+              "value": 49,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "outputRegister": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 6
+            },
+            "highNibble": {
+              "sourceRegister": "d1",
+              "outputRegister": "d1",
+              "mask": {
+                "constant": "BYTE_LOWER_NIBBLE_MASK",
+                "value": 15,
+                "instructionIndex": 4
+              },
+              "shift": {
+                "constant": "NIBBLE_SHIFT_COUNT",
+                "value": 4,
+                "instructionIndex": 3
+              }
+            }
+          },
+          "GetAiCommandset": {
+            "routineAddress": 33920,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET",
+              "value": 49,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "outputRegister": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 5
+            },
+            "lowNibble": {
+              "sourceRegister": "d1",
+              "outputRegister": "d1",
+              "mask": {
+                "constant": "BYTE_LOWER_NIBBLE_MASK",
+                "value": 15,
+                "instructionIndex": 3
+              }
+            }
+          },
+          "GetMoveOrders": {
+            "routineAddress": 33940,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_MOVE_ORDERS",
+              "value": 50,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "primaryOutputRegister": "d1",
+              "secondaryOutputRegister": "d2",
+              "widthBits": 16,
+              "terminalInstructionIndex": 8
+            },
+            "splitValue": {
+              "copy": {
+                "sourceRegister": "d1",
+                "destinationRegister": "d2",
+                "instructionIndex": 3
+              },
+              "highByte": {
+                "sourceRegister": "d1",
+                "outputRegister": "d1",
+                "mask": {
+                  "constant": "BYTE_MASK",
+                  "value": 255,
+                  "instructionIndex": 5
+                },
+                "shift": {
+                  "constant": "BYTE_SHIFT_COUNT",
+                  "value": 8,
+                  "instructionIndex": 4
+                }
+              },
+              "lowByte": {
+                "sourceRegister": "d2",
+                "outputRegister": "d2",
+                "mask": {
+                  "constant": "BYTE_MASK",
+                  "value": 255,
+                  "instructionIndex": 6
+                }
+              }
+            }
+          },
+          "GetTriggerRegions": {
+            "routineAddress": 33968,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_TRIGGER_REGIONS",
+              "value": 54,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "primaryOutputRegister": "d1",
+              "secondaryOutputRegister": "d2",
+              "widthBits": 16,
+              "terminalInstructionIndex": 8
+            },
+            "splitValue": {
+              "copy": {
+                "sourceRegister": "d1",
+                "destinationRegister": "d2",
+                "instructionIndex": 3
+              },
+              "highNibble": {
+                "sourceRegister": "d1",
+                "outputRegister": "d1",
+                "mask": {
+                  "constant": "BYTE_LOWER_NIBBLE_MASK",
+                  "value": 15,
+                  "instructionIndex": 5
+                },
+                "shift": {
+                  "constant": "NIBBLE_SHIFT_COUNT",
+                  "value": 4,
+                  "instructionIndex": 4
+                }
+              },
+              "lowNibble": {
+                "sourceRegister": "d2",
+                "outputRegister": "d2",
+                "mask": {
+                  "constant": "BYTE_LOWER_NIBBLE_MASK",
+                  "value": 15,
+                  "instructionIndex": 6
+                }
+              }
+            }
+          },
+          "GetActivationBitfield": {
+            "routineAddress": 33996,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_ACTIVATION_BITFIELD",
+              "value": 52,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetKills": {
+            "routineAddress": 34042,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_ALLY_KILLS",
+              "value": 50,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetDefeats": {
+            "routineAddress": 34058,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "entryAddressAbi": "GetCombatantEntryAddress"
+            },
+            "field": {
+              "constant": "COMBATANT_OFFSET_ALLY_DEFEATS",
+              "value": 54,
+              "loadInstructionIndex": 1,
+              "helperCallInstructionIndex": 2,
+              "helper": "GetCombatantWord",
+              "readWidthBits": 16
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "terminalInstructionIndex": 4
+            }
+          },
+          "GetCombatantName": {
+            "routineAddress": 33488,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "enemyBitTestInstructionIndex": 1,
+              "enemyBranchInstructionIndex": 2
+            },
+            "allyNameSource": {
+              "entryAddressCallInstructionIndex": 3,
+              "lengthCounterConstant": "ALLYNAME_CHARACTERS_COUNTER",
+              "lengthCounterValue": 9,
+              "lengthCounterInitializationInstructionIndex": 4,
+              "lengthZeroInitializationInstructionIndex": 5,
+              "byteTestInstructionIndex": 6,
+              "breakBranchInstructionIndex": 7,
+              "incrementInstructionIndex": 8,
+              "lengthLoopInstructionIndex": 9,
+              "doneBranchInstructionIndex": 10
+            },
+            "enemyNameSource": {
+              "enemyIndexCallInstructionIndex": 12,
+              "nameTableLoadInstructionIndex": 13,
+              "findNameCallInstructionIndex": 14
+            },
+            "return": {
+              "addressRegister": "a0",
+              "lengthRegister": "d7",
+              "restoreInstructionIndex": 15,
+              "terminalInstructionIndex": 16
+            }
+          },
+          "GetEnemy": {
+            "routineAddress": 34012,
+            "selector": {
+              "register": "d0",
+              "widthBits": 8,
+              "enemyBitTestInstructionIndex": 0,
+              "enemyBranchInstructionIndex": 1
+            },
+            "nonEnemy": {
+              "minusOneResultInstructionIndex": 2,
+              "terminalInstructionIndex": 3,
+              "sourceUnreachableBranchInstructionIndex": 4
+            },
+            "enemy": {
+              "fieldConstant": "COMBATANT_OFFSET_ENEMY_INDEX",
+              "fieldValue": 55,
+              "fieldLoadInstructionIndex": 6,
+              "helperCallInstructionIndex": 7,
+              "helper": "GetCombatantByte",
+              "readWidthBits": 8
+            },
+            "return": {
+              "register": "d1",
+              "widthBits": 16,
+              "restoreInstructionIndex": 8,
+              "terminalInstructionIndex": 9
+            }
+          }
+        },
+        "jumpInterfaceAliases": {
+          "j_GetActivationBitfield": {
+            "effectiveTarget": "GetActivationBitfield",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetBaseAgi": {
+            "effectiveTarget": "GetBaseAgi",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetBaseAtt": {
+            "effectiveTarget": "GetBaseAtt",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetBaseDef": {
+            "effectiveTarget": "GetBaseDef",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetBaseMov": {
+            "effectiveTarget": "GetBaseMov",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetBaseProwess": {
+            "effectiveTarget": "GetBaseProwess",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetBaseResistance": {
+            "effectiveTarget": "GetBaseResistance",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetClass": {
+            "effectiveTarget": "GetClass",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCombatantName": {
+            "effectiveTarget": "GetCombatantName",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCombatantX": {
+            "effectiveTarget": "GetCombatantX",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCombatantY": {
+            "effectiveTarget": "GetCombatantY",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentAgi": {
+            "effectiveTarget": "GetCurrentAgi",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentAtt": {
+            "effectiveTarget": "GetCurrentAtt",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentDef": {
+            "effectiveTarget": "GetCurrentDef",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentExp": {
+            "effectiveTarget": "GetCurrentExp",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentHp": {
+            "effectiveTarget": "GetCurrentHp",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentMov": {
+            "effectiveTarget": "GetCurrentMov",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentMp": {
+            "effectiveTarget": "GetCurrentMp",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentProwess": {
+            "effectiveTarget": "GetCurrentProwess",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetCurrentResistance": {
+            "effectiveTarget": "GetCurrentResistance",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetDefeats": {
+            "effectiveTarget": "GetDefeats",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetEnemy": {
+            "effectiveTarget": "GetEnemy",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetKills": {
+            "effectiveTarget": "GetKills",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetLevel": {
+            "effectiveTarget": "GetLevel",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetMaxHp": {
+            "effectiveTarget": "GetMaxHp",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetMaxMp": {
+            "effectiveTarget": "GetMaxMp",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetMoveOrders": {
+            "effectiveTarget": "GetMoveOrders",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetMovetype": {
+            "effectiveTarget": "GetMovetype",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetStatusEffects": {
+            "effectiveTarget": "GetStatusEffects",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          },
+          "j_GetTriggerRegions": {
+            "effectiveTarget": "GetTriggerRegions",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm"
+          }
+        },
+        "internalDirectCallerOccurrences": {
+          "code/common/stats/combatantstats_1.asm": [
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ]
+        },
+        "internalEffectiveDirectCallSiteCounts": {
+          "GetCombatantName": 0,
+          "GetClass": 0,
+          "GetLevel": 0,
+          "GetMaxHp": 0,
+          "GetCurrentHp": 0,
+          "GetMaxMp": 0,
+          "GetCurrentMp": 0,
+          "GetBaseAtt": 0,
+          "GetCurrentAtt": 0,
+          "GetBaseDef": 0,
+          "GetCurrentDef": 0,
+          "GetBaseAgi": 0,
+          "GetCurrentAgi": 0,
+          "GetBaseMov": 0,
+          "GetCurrentMov": 0,
+          "GetBaseResistance": 0,
+          "GetCurrentResistance": 0,
+          "GetBaseProwess": 0,
+          "GetCurrentProwess": 0,
+          "GetStatusEffects": 0,
+          "GetCombatantX": 0,
+          "GetCombatantY": 0,
+          "GetCurrentExp": 0,
+          "GetMovetype": 0,
+          "GetAiCommandset": 0,
+          "GetMoveOrders": 0,
+          "GetTriggerRegions": 0,
+          "GetActivationBitfield": 0,
+          "GetEnemy": 1,
+          "GetKills": 0,
+          "GetDefeats": 0
+        },
+        "externalDirectCallerOccurrences": {
+          "code/common/menus/blacksmith/blacksmithactions.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/caravan/caravanactions_1.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/church/churchactions_1.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 2
+            }
+          ],
+          "code/common/menus/church/churchactions_2.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/equipmenu.asm": [
+            {
+              "instructionTarget": "j_GetCurrentAgi",
+              "effectiveTarget": "GetCurrentAgi",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentDef",
+              "effectiveTarget": "GetCurrentDef",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/getallyportrait.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/item/fielditemeffects.asm": [
+            {
+              "instructionTarget": "j_GetBaseMov",
+              "effectiveTarget": "GetBaseMov",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/common/menus/main/mainactions.asm": [
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/memberscreen.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentAgi",
+              "effectiveTarget": "GetCurrentAgi",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentDef",
+              "effectiveTarget": "GetCurrentDef",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentExp",
+              "effectiveTarget": "GetCurrentExp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 4
+            },
+            {
+              "instructionTarget": "j_GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetDefeats",
+              "effectiveTarget": "GetDefeats",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetKills",
+              "effectiveTarget": "GetKills",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/memberslistscreen.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentAgi",
+              "effectiveTarget": "GetCurrentAgi",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "j_GetCurrentDef",
+              "effectiveTarget": "GetCurrentDef",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "j_GetCurrentExp",
+              "effectiveTarget": "GetCurrentExp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/common/menus/ministatuswindow.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/nameallyscreen.asm": [
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/nameunderportraitwindow.asm": [
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/unusedsub_156A8.asm": [
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 1
+            }
+          ],
+          "code/common/menus/writememberlisttext.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentAgi",
+              "effectiveTarget": "GetCurrentAgi",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentDef",
+              "effectiveTarget": "GetCurrentDef",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentExp",
+              "effectiveTarget": "GetCurrentExp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/scripting/entity/entityfunctions_1.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "j_GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 3
+            }
+          ],
+          "code/common/scripting/entity/getallymapsprite.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/scripting/entity/getcombatantmapsprite.asm": [
+            {
+              "instructionTarget": "j_GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/common/scripting/map/headquartersfunctions.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/scripting/map/mapscriptengine_1.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            }
+          ],
+          "code/common/scripting/map/mapscriptengine_2.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/scripting/map/resetalliesstats.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/common/scripting/text/textfunctions_1.asm": [
+            {
+              "instructionTarget": "j_GetCombatantName",
+              "effectiveTarget": "GetCombatantName",
+              "siteCount": 3
+            }
+          ],
+          "code/common/stats/combatantstats_3.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 2
+            }
+          ],
+          "code/common/stats/getcombatanttype.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/common/stats/items/fielditemeffects.asm": [
+            {
+              "instructionTarget": "j_GetBaseMov",
+              "effectiveTarget": "GetBaseMov",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/common/stats/levelup.asm": [
+            {
+              "instructionTarget": "GetBaseAgi",
+              "effectiveTarget": "GetBaseAgi",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetBaseAtt",
+              "effectiveTarget": "GetBaseAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetBaseDef",
+              "effectiveTarget": "GetBaseDef",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetBaseProwess",
+              "effectiveTarget": "GetBaseProwess",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            }
+          ],
+          "code/common/stats/newgame.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            }
+          ],
+          "code/common/stats/updatecombatantstats.asm": [
+            {
+              "instructionTarget": "GetBaseAgi",
+              "effectiveTarget": "GetBaseAgi",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetBaseAtt",
+              "effectiveTarget": "GetBaseAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetBaseDef",
+              "effectiveTarget": "GetBaseDef",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/attack.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 3
+            }
+          ],
+          "code/gameflow/battle/ai/command/attack/adjusttargetpriority.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/attack/determinebattleaction.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/attack/prioritizetargets.asm": [
+            {
+              "instructionTarget": "GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentDef",
+              "effectiveTarget": "GetCurrentDef",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/attack/targetprioritizationhelperfunctions.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 6
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 6
+            }
+          ],
+          "code/gameflow/battle/ai/command/heal.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/ai/command/heal/calculatehealtargetpriority.asm": [
+            {
+              "instructionTarget": "GetAiCommandset",
+              "effectiveTarget": "GetAiCommandset",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/heal/determinehealingspelllevel.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/heal/doescombatantrequirehealing.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/ai/command/heal/iscombatantatlessthanhalfhp.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm": [
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/ai/command/move.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 4
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 4
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/moveorder.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMoveOrders",
+              "effectiveTarget": "GetMoveOrders",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/moveorder/buildmovestringformoveorder.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/support.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm": [
+            {
+              "instructionTarget": "GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/ai/determineaistandbymovement_1.asm": [
+            {
+              "instructionTarget": "GetMoveOrders",
+              "effectiveTarget": "GetMoveOrders",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/determineaistandbymovement_2.asm": [
+            {
+              "instructionTarget": "GetMoveOrders",
+              "effectiveTarget": "GetMoveOrders",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetTriggerRegions",
+              "effectiveTarget": "GetTriggerRegions",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/gethighestusablespelllevel.asm": [
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/iscombatantconfused.asm": [
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/ai/movementhelperfunctions.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 4
+            },
+            {
+              "instructionTarget": "j_GetMoveOrders",
+              "effectiveTarget": "GetMoveOrders",
+              "siteCount": 4
+            }
+          ],
+          "code/gameflow/battle/ai/startaicontrol.asm": [
+            {
+              "instructionTarget": "GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetAiCommandset",
+              "effectiveTarget": "GetAiCommandset",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMoveOrders",
+              "effectiveTarget": "GetMoveOrders",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetTriggerRegions",
+              "effectiveTarget": "GetTriggerRegions",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/animateaction.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/battleactionsengine_2.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/calculatedamage.asm": [
+            {
+              "instructionTarget": "GetCurrentAtt",
+              "effectiveTarget": "GetCurrentAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentDef",
+              "effectiveTarget": "GetCurrentDef",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/calculatespelldamage.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/castspell.asm": [
+            {
+              "instructionTarget": "GetBaseAgi",
+              "effectiveTarget": "GetBaseAgi",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetBaseAtt",
+              "effectiveTarget": "GetBaseAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetBaseDef",
+              "effectiveTarget": "GetBaseDef",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetBaseMov",
+              "effectiveTarget": "GetBaseMov",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 21
+            }
+          ],
+          "code/gameflow/battle/battleactions/createbattlesceneanimation.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/createbattlescenemessage.asm": [
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/determinecriticalhit.asm": [
+            {
+              "instructionTarget": "GetCurrentProwess",
+              "effectiveTarget": "GetCurrentProwess",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/determinedodge.asm": [
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/determinedoubleandcounter.asm": [
+            {
+              "instructionTarget": "GetCurrentProwess",
+              "effectiveTarget": "GetCurrentProwess",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/determineineffectiveattack.asm": [
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/dropenemyitem.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/earnexp.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/getresistancetospell.asm": [
+            {
+              "instructionTarget": "GetCurrentResistance",
+              "effectiveTarget": "GetCurrentResistance",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/getspellanimation.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/inflictailment.asm": [
+            {
+              "instructionTarget": "GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentProwess",
+              "effectiveTarget": "GetCurrentProwess",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/inflictcursedamage.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/inflictdamage.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleactions/initbattlesceneproperties.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 4
+            }
+          ],
+          "code/gameflow/battle/battleactions/isabletocounterattack.asm": [
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleactions/sorttargets.asm": [
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/battlefieldengine.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battlefield/buildactionrangegrids.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/buildtargetsarray.asm": [
+            {
+              "instructionTarget": "GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/checkfortrappedchest.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetTriggerRegions",
+              "effectiveTarget": "GetTriggerRegions",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/determineattackpositionformoveorder.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/getactionrange.asm": [
+            {
+              "instructionTarget": "GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/getmoveorderposition.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/getmovestringdestination.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/getreachabletargets.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/initializemovementarrays.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentMov",
+              "effectiveTarget": "GetCurrentMov",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/populatetargetslist.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battlefield/updatemovablegrid.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefield/updateoccupiedterrainfunctions.asm": [
+            {
+              "instructionTarget": "GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefunctions/battlefunctions_0.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 5
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 5
+            }
+          ],
+          "code/gameflow/battle/battlefunctions/battlefunctions_2.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 7
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 7
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlefunctions/battlefunctions_3.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battlefunctions/executeindividualturn.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 4
+            }
+          ],
+          "code/gameflow/battle/battleloop/activateenemies.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop/countremainingcombatants.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 3
+            }
+          ],
+          "code/gameflow/battle/battleloop/heallivingandimmortalallies.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop/initializecombatants.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetBaseAtt",
+              "effectiveTarget": "GetBaseAtt",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop/killallenemies.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop/populateenemyspawns.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 6
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetTriggerRegions",
+              "effectiveTarget": "GetTriggerRegions",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battleloop/processafterturneffects.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 3
+            },
+            {
+              "instructionTarget": "j_GetCurrentMp",
+              "effectiveTarget": "GetCurrentMp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 8
+            }
+          ],
+          "code/gameflow/battle/battleloop/triggerregions.asm": [
+            {
+              "instructionTarget": "j_GetActivationBitfield",
+              "effectiveTarget": "GetActivationBitfield",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetTriggerRegions",
+              "effectiveTarget": "GetTriggerRegions",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop/turnorderfunctions.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentAgi",
+              "effectiveTarget": "GetCurrentAgi",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop/upgradeenemies.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battleloop_2.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlescenes/battlesceneengine_0.asm": [
+            {
+              "instructionTarget": "j_GetCurrentExp",
+              "effectiveTarget": "GetCurrentExp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/battlescenes/battlesceneengine_1.asm": [
+            {
+              "instructionTarget": "j_GetClass",
+              "effectiveTarget": "GetClass",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlescenes/battlesceneengine_2.asm": [
+            {
+              "instructionTarget": "j_GetMovetype",
+              "effectiveTarget": "GetMovetype",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/battlescenes/getbattlescenebackground.asm": [
+            {
+              "instructionTarget": "j_GetEnemy",
+              "effectiveTarget": "GetEnemy",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 3
+            }
+          ],
+          "code/gameflow/battle/cutscenes/battleendcutscenesend.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/battle/cutscenes/battleendcutscenesstart.asm": [
+            {
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp",
+              "siteCount": 2
+            }
+          ],
+          "code/gameflow/battle/getlaserfacing.asm": [
+            {
+              "instructionTarget": "j_GetCombatantX",
+              "effectiveTarget": "GetCombatantX",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetCombatantY",
+              "effectiveTarget": "GetCombatantY",
+              "siteCount": 1
+            }
+          ],
+          "code/gameflow/special/battletest.asm": [
+            {
+              "instructionTarget": "j_GetBaseAgi",
+              "effectiveTarget": "GetBaseAgi",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetBaseAtt",
+              "effectiveTarget": "GetBaseAtt",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetBaseDef",
+              "effectiveTarget": "GetBaseDef",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetLevel",
+              "effectiveTarget": "GetLevel",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp",
+              "siteCount": 1
+            }
+          ]
+        },
+        "externalEffectiveDirectCallSiteCounts": {
+          "GetCombatantName": 13,
+          "GetClass": 32,
+          "GetLevel": 15,
+          "GetMaxHp": 25,
+          "GetCurrentHp": 85,
+          "GetMaxMp": 13,
+          "GetCurrentMp": 16,
+          "GetBaseAtt": 6,
+          "GetCurrentAtt": 10,
+          "GetBaseDef": 6,
+          "GetCurrentDef": 9,
+          "GetBaseAgi": 6,
+          "GetCurrentAgi": 6,
+          "GetBaseMov": 3,
+          "GetCurrentMov": 8,
+          "GetBaseResistance": 0,
+          "GetCurrentResistance": 1,
+          "GetBaseProwess": 1,
+          "GetCurrentProwess": 4,
+          "GetStatusEffects": 63,
+          "GetCombatantX": 55,
+          "GetCombatantY": 48,
+          "GetCurrentExp": 4,
+          "GetMovetype": 15,
+          "GetAiCommandset": 3,
+          "GetMoveOrders": 9,
+          "GetTriggerRegions": 6,
+          "GetActivationBitfield": 20,
+          "GetEnemy": 20,
+          "GetKills": 1,
+          "GetDefeats": 1
+        },
+        "staticBoundary": {
+          "callerVisibleMeaning": "inferred",
+          "callerAndRuntimeOutcome": "unknown",
+          "setterAndClampFollowup": "unknown"
+        }
       }
     },
     "alternateSources": [

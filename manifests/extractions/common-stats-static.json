@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-common-stats-static-v1",
-  "outputSha256": "A1D59714EAE2EB74A310B90EE94BFC641329E1A2232D7BFCC7E346094A973E39",
+  "outputSha256": "C9E15A0339EA472297A8B21EDA48797D68F6E8DE49ACB5FA8CE142F2D9527CFC",
   "summary": {
     "fileCount": 20,
     "sourceLineCount": 5149,
