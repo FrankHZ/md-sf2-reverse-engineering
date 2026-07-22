@@ -2,10 +2,10 @@
 
 - Status: **Confirmed** for the pinned 20-file inventory, flags/party/caravan/deals routing,
   combatant-type encoding, spell-learning outcomes, new-game order, alternate-source ownership, and
-  the complete 31-entry `combatantstats_1.asm` getter instruction/ABI/caller contract
+  the complete 31-entry getter and 53-entry mutation instruction/ABI/caller contracts
 - Status: **Inferred** for UI-facing helper intent not reproduced through callers
-- Status: **Unknown** for caller-dependent inventory UI, caller-dependent getter edge behavior, and
-  remaining setter/clamp behavior
+- Status: **Unknown** for caller-dependent inventory UI, caller-dependent getter edge behavior,
+  clamp-helper algorithms, and caller-dependent mutation outcomes
 - Evidence date: 2026-07-21
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -39,7 +39,7 @@ in one 586-byte physical interval (`0x82D0..0x851A`). The exact fixture
 `tests/python/test_common_stats.py` retain every routine's complete instruction/local-label corpus,
 H1 address, offset use-site, lower helper, width, terminal, aliases, and instruction-scoped callers.
 Reproduce with `uv run sf2 h2 common-stats`; observed 2026-07-21 canonical SHA-256 is
-`C9E15A0339EA472297A8B21EDA48797D68F6E8DE49ACB5FA8CE142F2D9527CFC`.
+`D979AC018B895D73DF21619E81CB225794CD248420EFAFA6F90C894022BDF09D`.
 
 `combatantstats_3.asm` is consulted only for the ABI used here: its three dependency routines retain
 the parsed instruction records, static ally/enemy/error branch polarity, derived 56-byte entry stride,
@@ -49,14 +49,26 @@ not semantic booleans. This does not model its setters or clamp helpers. `GetCom
 separate ally entry/name-length and enemy-index/name-table/`FindName` source paths. The composite
 move-type, AI commandset, move-order, and trigger-region getters retain named copy, shift, and mask
 operations rather than inferred gameplay behavior. The static invalid-selector error route is
-**Confirmed**; caller-visible meaning remains **Inferred**, while runtime outcome and all
-setters/clamps remain **Unknown**.
+**Confirmed**; caller-visible meaning remains **Inferred**, while runtime outcome, clamp-helper
+algorithms, and caller-dependent mutation outcomes remain **Unknown**.
+
+## Combatant Mutation Wrapper Contract
+
+**Confirmed — static wrapper surface.** The same pinned source supplies 53 entries in
+`code/common/stats/combatantstats_2.asm`, from `LoadAllyName` through `DecreaseCurrentMov`.
+The contract records every complete instruction/local-label corpus, H1 address, selector/value or
+delta width, field use-site, lower helper boundary, preservation/terminal order, and alias-aware
+caller map. Direct setters, increase/decrease wrappers, `LoadAllyName`, packed move-order/trigger
+merges, guarded kills/defeats, and current HP/MP maximum-read paths remain source-shaped forms.
+Only the called `combatantstats_3.asm` helper ABI records are included: entry-address call,
+read/write access mode and widths, `d0`/`d1`/`d7` roles, clamp `d5`/`d6` arguments, and terminal.
+Clamp algorithms themselves remain **Unknown** at this slice boundary.
 
 ### H3 Runtime-Question Queue
 
-One grouped later H3 launch should cover caller-dependent invalid-selector, UI, and persistence edge
-cases after the adjacent setter/clamp source surface has its own static contract. This slice starts no
-emulator and makes no claim about runtime presentation or caller lifecycle.
+The next static frontier is the full `combatantstats_3.asm` clamp-algorithm contract. One grouped
+later H3 launch can then cover invalid-selector, clamp, caller, UI, and persistence edge cases. This
+slice starts no emulator and makes no claim about runtime presentation or caller lifecycle.
 
 ## Alternate Source Boundary
 
