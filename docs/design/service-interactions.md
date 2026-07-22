@@ -42,6 +42,15 @@ the effective Shop/selection target. It does not turn the observed helper names,
 static input bits into a claim about player-visible timing, caller return state, persistence, or
 presentation.
 
+### Church source boundary
+
+The Church design contract consumes only the **Confirmed** static route boundary: Raise's source order
+is payment, HP increase, then ally-map-sprite update; Cure's status-write paths preserve separate
+poison/stun/curse masks and costs; Promote preserves its level/data gates and class-then-promotion
+call order; Save reaches its named save call and records its separate suspend branch. The contract does
+not treat selector values, helper names, status masks, or jump-interface callers as a runtime promise
+about service admission, persistence, prompt timing, or rendered presentation.
+
 ## Boundaries for a Future Remake
 
 This contract does not establish which maps/NPCs admit each service, whether cancellation has

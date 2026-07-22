@@ -185,11 +185,46 @@ local-helper counts `PopulateShopInventoryList: 1`,
 `shopscreen.asm` has none of those target calls. Effective external counts are therefore Shop 2 and
 selection-screen 3; absence of another direct call remains not an unreachability claim.
 
-Church choice 0 iterates current force members and can decrease gold, restore current HP, and update
-the ally map sprite; choice 1 can decrease gold and replace status effects; choice 2 selects a
-promotion-data-eligible member before `SetClass`/`Promote`; choice 3 enters `SaveGame`. The exact
-save continuation, caller return meaning, and player-visible sequencing are not inferred from those
-direct calls.
+**Confirmed — Church static contract.** The Church parser is pinned to upstream `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/menus/church/churchactions_1.asm:ChurchMenu` (`0x20A02`), and the directly used
+`churchactions_2.asm` helper surface. It uses the same exact `sf2-common-menus-static-v1` fixture,
+both mirrored schemas, and `tests/python/test_common_menus.py`; reproduce with
+`uv run sf2 h2 common-menus`. Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
+`B22046E0762E4A72518CF4F0473185EF328BBFF57F5FB02F58B67CF493A1B73C`.
+
+`ChurchMenu` enters `j_ExecuteDiamondMenu` with `MENU_CHURCH`, compares selector values `0`, `1`,
+and `2` for Raise, Cure, and Promote, and falls through to Save. Its `-1` comparison branches to
+`@ExitMenu`. The full source statement record corpus preserves labels, opcode, operands, direct target,
+and branch target for the four route sections and the complete second action-file helper surface.
+
+Raise iterates the current-force result list with `d7`, skips a member when `j_GetCurrentHp` is above
+zero, computes level times `CHURCHMENU_PER_LEVEL_RAISE_COST = 10`, and conditionally adds
+`CHURCHMENU_RAISE_COST_EXTRA_WHEN_PROMOTED = 200` after its promotion-data result. After the gold
+comparison's `bcc` branch it calls `j_DecreaseGold`, `j_IncreaseCurrentHp` with `CHAR_STATCAP_HP`,
+and `UpdateAllyMapsprite` in that order. This is **Confirmed** source control flow; the final HP
+value, prompt timing, and caller-visible outcome are not inferred.
+
+Cure has separately recorded poison, stun, and curse paths. The parser derives poison cost `10`, stun
+cost `20`, and the source masks `STATUSEFFECT_POISON = 2`, `STATUSEFFECT_STUN = 1`,
+`STATUSEFFECT_CURSE = 4`, and `STATUSEFFECT_MASK = 0xFFFF`. Poison/stun clear their respective bit
+with the source subtraction expression before `j_SetStatusEffects`; curse cost is built from each
+cursed held item's price shifted right by two. These are distinct status masks, loop counters, and
+price operands, not a claim that all status effects share one lifecycle.
+
+Promotion counts members only after regular-base promotion data and
+`CHURCHMENU_MIN_PROMOTABLE_LEVEL = 20` pass their branches. Its structured corpus retains the
+regular/special promotion-section searches, special-item loop, SORC branch, item removal path, and
+the exact `j_SetClass` then `j_Promote` call order. Save records `SaveGame`, the post-save continue
+comparison, and the alternate `WitchSuspend` jump as separate source operands. The runtime meaning of
+save continuation, special-promotion availability, and class/UI presentation remains **Unknown**.
+
+The caller inventory is **Confirmed** and alias-aware. `j_ChurchMenu` in
+`code/common/tech/jumpinterfaces/s05_jumpinterface.asm` resolves to `ChurchMenu`; direct effective
+Church call sites are map-script engine 1, exploration VInt 1, and battle-test 2. It separately
+retains five direct `WaitForMusicResumeAndPlayerInput` sites in main-menu actions. This direct-call
+inventory does not establish admission reachability or a caller return contract; those remain
+**Inferred** in the grouped service H3 queue.
 
 `CaravanMenu` uses a four-entry relative jump table in this exact order: join, depot, item, purge;
 each action returns to the caravan loop, while cancel exits. Depot is a nested four-entry table

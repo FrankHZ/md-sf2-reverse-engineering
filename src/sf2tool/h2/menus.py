@@ -199,7 +199,9 @@ def _shop_instruction_records(section: str) -> list[dict[str, Any]]:
         "beq",
         "bge",
         "bgt",
+        "bhi",
         "ble",
+        "blo",
         "blt",
         "bmi",
         "bne",
@@ -673,10 +675,240 @@ def _shop_static_contract(root: Path) -> dict[str, Any]:
     }
 
 
+def _church_static_contract(root: Path) -> dict[str, Any]:
+    """Parse the Church entry, route sections, and local promotion helper source surface."""
+    actions = read_upstream_text(root / "church/churchactions_1.asm")
+    helpers = read_upstream_text(root / "church/churchactions_2.asm")
+    enums = read_upstream_text(root.parents[2] / "sf2enums.asm")
+    constant_names = (
+        "CHURCHMENU_PER_LEVEL_RAISE_COST",
+        "CHURCHMENU_CURE_POISON_COST",
+        "CHURCHMENU_CURE_STUN_COST",
+        "CHURCHMENU_MIN_PROMOTABLE_LEVEL",
+        "CHURCHMENU_RAISE_COST_EXTRA_WHEN_PROMOTED",
+        "STATUSEFFECT_POISON",
+        "STATUSEFFECT_STUN",
+        "STATUSEFFECT_CURSE",
+        "STATUSEFFECT_MASK",
+        "CHAR_STATCAP_HP",
+        "ITEMDEF_OFFSET_PRICE",
+    )
+    constants: dict[str, int] = {}
+    for name in constant_names:
+        match = re.search(rf"^{name}:\s+equ\s+(\$[0-9A-Fa-f]+|\d+)", enums, re.MULTILINE)
+        if not match:
+            raise ValueError(f"church constant drift: {name}")
+        raw = match.group(1)
+        constants[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+    routes = {
+        "raise": _shop_section(actions, "@CheckRaiseAction:", "@CheckCureAction:"),
+        "cure": _shop_section(actions, "@CheckCureAction:", "@CheckPromoAction:"),
+        "promote": _shop_section(actions, "@CheckPromoAction:", "@StartSave:"),
+        "save": _shop_section(actions, "@StartSave:", "; End of function ChurchMenu"),
+    }
+    entry_operations = _shop_instruction_records(
+        _shop_section(actions, "ChurchMenu:", "@CheckRaiseAction:")
+    )
+    operations = {name: _shop_instruction_records(section) for name, section in routes.items()}
+    helper_operations = _shop_instruction_records(helpers)
+    if not any(
+        record["opcode"] == "cmpi.w"
+        and record["operands"] == ["#CHURCHMENU_MIN_PROMOTABLE_LEVEL", "d1"]
+        for record in helper_operations
+    ):
+        raise ValueError("church promotion-level helper cross-check drift")
+    for route, fragments in {
+        "raise": (
+            "cmpi.w  #0,d0",
+            "jsr     j_GetCurrentHp",
+            "bhi.w   @RaiseNextMember",
+            "mulu.w  #CHURCHMENU_PER_LEVEL_RAISE_COST,d1",
+            "bcc.s   @DoRaise",
+            "jsr     j_DecreaseGold",
+            "jsr     j_IncreaseCurrentHp",
+            "bsr.w   UpdateAllyMapsprite",
+        ),
+        "cure": (
+            "cmpi.w  #1,d0",
+            "andi.w  #STATUSEFFECT_POISON,d3",
+            "andi.w  #(STATUSEFFECT_MASK-STATUSEFFECT_POISON),d1",
+            "jsr     j_SetStatusEffects",
+            "andi.w  #STATUSEFFECT_CURSE,d2",
+        ),
+        "promote": (
+            "cmpi.w  #2,d0",
+            "cmpi.w  #CHURCHMENU_MIN_PROMOTABLE_LEVEL,d1",
+            "jsr     j_SetClass",
+            "jsr     j_Promote",
+            "bra.w   @StartPromo",
+        ),
+        "save": (
+            "jsr     (SaveGame).w",
+            "cmpi.w  #0,d0",
+            "beq.w   @ExitMenu",
+            "jmp     (WitchSuspend).w",
+        ),
+    }.items():
+        _require_ordered_shop_section(
+            root / "church/churchactions_1.asm",
+            {
+                "raise": "@CheckRaiseAction:",
+                "cure": "@CheckCureAction:",
+                "promote": "@CheckPromoAction:",
+                "save": "@StartSave:",
+            }[route],
+            {
+                "raise": "@CheckCureAction:",
+                "cure": "@CheckPromoAction:",
+                "promote": "@StartSave:",
+                "save": "; End of function ChurchMenu",
+            }[route],
+            fragments,
+        )
+    targets = {
+        "ChurchMenu",
+        "CountPromotableMembers",
+        "GetPromotionData",
+        "FindPromotionSection",
+        "ReplaceSpellsWithSorcDefaults",
+        "Church_GetCurrentForceMemberInfo",
+        "Church_CureStun",
+        "WaitForMusicResumeAndPlayerInput",
+        "UpdateAllyMapsprite",
+    }
+    disasm = root.parents[2]
+    aliases = _shop_jump_aliases(disasm, targets)
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    external = {
+        path.relative_to(disasm).as_posix(): occurrences
+        for path in sorted((disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix())
+        if path not in (root / "church/churchactions_1.asm", root / "church/churchactions_2.asm")
+        if (occurrences := _shop_direct_call_occurrences(path, alias_targets, targets))
+    }
+    internal = {
+        path.relative_to(disasm).as_posix(): _shop_direct_call_occurrences(
+            path, alias_targets, targets
+        )
+        for path in (root / "church/churchactions_1.asm", root / "church/churchactions_2.asm")
+    }
+    def effective_counts(callers: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
+        return {
+            target: sum(
+                occurrence["siteCount"]
+                for occurrences in callers.values()
+                for occurrence in occurrences
+                if occurrence["effectiveTarget"] == target
+            )
+            for target in sorted(targets)
+        }
+    choice_records = [operations[name][0] for name in list(routes)[:-1]]
+    cancel_compare = next(
+        record
+        for record in entry_operations
+        if record["opcode"] == "cmpi.w" and record["operands"] == ["#-1", "d0"]
+    )
+    cancel_branch = entry_operations[entry_operations.index(cancel_compare) + 1]
+    cure_price_load = next(
+        record for record in operations["cure"]
+        if record["opcode"] == "move.w" and record["operands"] == ["ITEMDEF_OFFSET_PRICE(a0)", "d4"]
+    )
+    try:
+        cure_price_shift = next(
+            record for record in operations["cure"]
+            if record["opcode"] == "lsr.w" and record["operands"] == ["#2", "d4"]
+        )
+    except StopIteration as error:
+        raise ValueError("church cure price-shift drift") from error
+    return {
+        "entrySymbol": "ChurchMenu",
+        "sourcePaths": [
+            path.relative_to(disasm).as_posix()
+            for path in (root / "church/churchactions_1.asm", root / "church/churchactions_2.asm")
+        ],
+        "choiceDispatch": {
+            "menuLabel": re.search(r"moveq\s+#(MENU_CHURCH),d2", actions).group(1),
+            "comparedChoiceValues": [int(record["operands"][0][1:]) for record in choice_records],
+            "comparedRouteOrder": ["raise", "cure", "promote"],
+            "fallthroughRoute": "save",
+            "cancelValue": int(cancel_compare["operands"][0][1:]),
+            "cancelBranchTarget": cancel_branch["branchTarget"],
+        },
+        "constants": constants,
+        "routeDerived": {
+            "raise": {
+                "levelCostMultiplier": constants["CHURCHMENU_PER_LEVEL_RAISE_COST"],
+                "promotedExtraCost": constants["CHURCHMENU_RAISE_COST_EXTRA_WHEN_PROMOTED"],
+                "aliveBranchOpcode": next(
+                    record["opcode"]
+                    for record in operations["raise"]
+                    if record["branchTarget"] == "@RaiseNextMember"
+                    and not record["opcode"].startswith("bra")
+                ),
+                "goldBranchTarget": next(
+                    record["branchTarget"]
+                    for record in operations["raise"]
+                    if record["opcode"] == "bcc.s"
+                ),
+                "mutationCalls": [
+                    record["directTarget"]
+                    for record in operations["raise"]
+                    if record["directTarget"]
+                    in {"j_DecreaseGold", "j_IncreaseCurrentHp", "UpdateAllyMapsprite"}
+                ],
+                "hpCap": constants["CHAR_STATCAP_HP"],
+            },
+            "cure": {
+                "poisonCost": constants["CHURCHMENU_CURE_POISON_COST"],
+                "stunCost": constants["CHURCHMENU_CURE_STUN_COST"],
+                "statusMasks": {
+                    "poison": constants["STATUSEFFECT_POISON"],
+                    "stun": constants["STATUSEFFECT_STUN"],
+                    "curse": constants["STATUSEFFECT_CURSE"],
+                    "allStatusBits": constants["STATUSEFFECT_MASK"],
+                },
+                "curseItemPrice": {
+                    "itemDefinitionOffsetBytes": constants["ITEMDEF_OFFSET_PRICE"],
+                    "loadWidthBits": 16 if cure_price_load["opcode"] == "move.w" else 0,
+                    "rightShiftBits": int(cure_price_shift["operands"][0][1:]),
+                },
+            },
+            "promote": {
+                "minimumLevel": constants["CHURCHMENU_MIN_PROMOTABLE_LEVEL"],
+                "classAndPromotionCalls": [
+                    record["directTarget"]
+                    for record in operations["promote"]
+                    if record["directTarget"] in {"j_SetClass", "j_Promote"}
+                ],
+            },
+            "save": {
+                "saveCallOperand": next(
+                    record["operands"][0]
+                    for record in operations["save"]
+                    if record["opcode"] == "jsr" and record["operands"] == ["(SaveGame).w"]
+                ),
+                "suspendJumpOperand": next(
+                    record["operands"][0]
+                    for record in operations["save"]
+                    if record["opcode"] == "jmp" and record["operands"] == ["(WitchSuspend).w"]
+                ),
+            },
+        },
+        "routeOperations": operations,
+        "helperOperations": helper_operations,
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerOccurrences": internal,
+        "internalEffectiveDirectCallSiteCounts": effective_counts(internal),
+        "externalDirectCallerOccurrences": external,
+        "externalEffectiveDirectCallSiteCounts": effective_counts(external),
+        "indirectBehavior": {"directCallInventoryDoesNotEstablishReachability": True},
+    }
+
+
 def _service_state_machines(disasm: Path) -> dict[str, Any]:
     """Extract the built service-menu control-flow boundary without interpreting UI timing."""
     root = disasm / SOURCE_ROOT
     shop_contract = _shop_static_contract(root)
+    church_contract = _church_static_contract(root)
     if not all((disasm / path).is_file() for path in SERVICE_SOURCE_PATHS):
         raise ValueError("service-menu source boundary is incomplete")
     service_files = [
@@ -984,20 +1216,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
             ],
         },
         "shop": shop_contract,
-        "church": {
-            "entrySymbol": "ChurchMenu",
-            "selectionMenu": "MENU_CHURCH",
-            "choiceOrder": ["raise", "cure", "promote", "save"],
-            "dispatch": "ordered-conditional-chain",
-            "actionLoop": "actions converge on the save-or-return boundary before returning",
-            "exit": "diamond-menu-cancel-exits-service",
-            "confirmedEffects": {
-                "raise": ["decrease-gold", "increase-current-hp", "update-ally-mapsprite"],
-                "cure": ["decrease-gold", "set-status-effects"],
-                "promote": ["promotion-data-gated-member-selection", "set-class", "promote"],
-                "save": ["save-game"],
-            },
-        },
+        "church": church_contract,
         "caravan": {
             "entrySymbol": "CaravanMenu",
             "selectionMenu": "MENU_CARAVAN",
