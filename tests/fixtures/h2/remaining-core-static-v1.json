@@ -501,40 +501,425 @@
       ]
     },
     "debugFacts": {
-      "battleTestJoinedAllyCount": 29,
-      "battleTestWholeForceCount": 30,
-      "battleTestMaxBattleIndex": 49,
-      "battleTestMaxShopIndex": 100,
-      "battleTestBowieStatValue": 99,
-      "configurationToggleCount": 4,
-      "configurationToggles": [
-        "special-turbo",
-        "control-opponent",
-        "auto-battle",
-        "game-completed"
+      "sourceFiles": {
+        "battletest": {
+          "path": "code/gameflow/special/battletest.asm",
+          "lineCount": 258
+        },
+        "configurationmode": {
+          "path": "code/gameflow/special/configurationmode.asm",
+          "lineCount": 64
+        },
+        "debugmodebattleactions": {
+          "path": "code/gameflow/special/debugmodebattleactions.asm",
+          "lineCount": 152
+        }
+      },
+      "functionEntries": {
+        "DebugModeBattleTest": 30364,
+        "LoadAllyStatsDecimalDigits": 30908,
+        "LevelUpWholeForce": 31008,
+        "GetDecimalDigits": 31024,
+        "CheatModeConfiguration": 32314,
+        "DebugModeActionSelect": 39578,
+        "DebugModeSelectTargetEnemy": 39748,
+        "DebugModeSelectHits": 39768
+      },
+      "sourceLabels": {
+        "addresses": {
+          "DEBUG_MODE_TOGGLE": 16756905,
+          "SPECIAL_TURBO_TOGGLE": 16756904,
+          "CONTROL_OPPONENT_TOGGLE": 16756906,
+          "AUTO_BATTLE_TOGGLE": 16756907,
+          "CONFIGURATION_MODE_TOGGLE": 16756908,
+          "SAVE_FLAGS": 2105397,
+          "CURRENT_BATTLEACTION": 16758318,
+          "CURRENT_BATTLE": 16774930,
+          "CURRENT_SHOP_INDEX": 16758482
+        },
+        "enumValues": {
+          "ALLY_BOWIE": 0,
+          "BATTLES_DEBUG_MAX_INDEX": 49,
+          "SHOPS_DEBUG_MAX_INDEX": 100,
+          "COMBATANT_ALLIES_COUNTER": 29,
+          "COMBATANT_ALLIES_NUMBER": 30,
+          "COMBATANT_ENEMIES_START": 128,
+          "COMBATANT_ENEMIES_END": 159,
+          "SPELLENTRY_LEVELS_NUMBER": 4,
+          "SPELLENTRY_SPELLS_NUMBER": 42,
+          "ITEMINDEX_MAX": 127,
+          "BATTLE_VERSUS_PRISM_FLOWERS": 36,
+          "BATTLE_INTRO_CUTSCENE_FLAGS_START": 450,
+          "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL": 7,
+          "FLAG_INDEX_FOLLOWERS_ASTRAL": 70,
+          "INPUT_BIT_START": 7,
+          "INPUT_BIT_UP": 0,
+          "VINT_FUNCTIONS": 9,
+          "VINTS_ADD": 1
+        }
+      },
+      "derived": {
+        "wholeForceCount": 30,
+        "joinedRosterCount": 29,
+        "genericListEntryCount": 32,
+        "actionCount": 7,
+        "actionMaxIndex": 6,
+        "enemyTargetCount": 32,
+        "magicLevelFirstIndex": 1,
+        "magicLevelLastIndex": 4
+      },
+      "battleTest": {
+        "initialization": {
+          "setToggleLabels": [
+            "DEBUG_MODE_TOGGLE",
+            "SPECIAL_TURBO_TOGGLE"
+          ],
+          "joinedAllyIds": [
+            "ALLY_SARAH",
+            "ALLY_CHESTER",
+            "ALLY_JAHA",
+            "ALLY_KAZIN",
+            "ALLY_SLADE",
+            "ALLY_KIWI",
+            "ALLY_PETER",
+            "ALLY_MAY",
+            "ALLY_GERHALT",
+            "ALLY_LUKE",
+            "ALLY_ROHDE",
+            "ALLY_RICK",
+            "ALLY_ELRIC",
+            "ALLY_ERIC",
+            "ALLY_KARNA",
+            "ALLY_RANDOLF",
+            "ALLY_TYRIN",
+            "ALLY_JANET",
+            "ALLY_HIGINS",
+            "ALLY_SKREECH",
+            "ALLY_TAYA",
+            "ALLY_FRAYJA",
+            "ALLY_JARO",
+            "ALLY_GYAN",
+            "ALLY_SHEELA",
+            "ALLY_ZYNK",
+            "ALLY_CHAZ",
+            "ALLY_LEMON",
+            "ALLY_CLAUDE"
+          ],
+          "bowieIdLabel": "ALLY_BOWIE",
+          "bowieStatValue": 99,
+          "bowieStatSetterTargets": [
+            "j_SetBaseAgi",
+            "j_SetBaseAtt",
+            "j_SetBaseDef",
+            "j_SetMaxHp",
+            "j_SetCurrentAgi",
+            "j_SetCurrentAtt",
+            "j_SetCurrentDef",
+            "j_SetCurrentHp"
+          ],
+          "vintAddPointerTarget": "VInt_UpdateWindows"
+        },
+        "genericList": {
+          "lengthLabel": "COMBATANT_ALLIES_NUMBER",
+          "entryValues": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ]
+        },
+        "flow": {
+          "battlePromptRange": [
+            0,
+            49
+          ],
+          "negativeBattleChoiceTarget": "DebugLevelUp",
+          "cutscenePromptRange": [
+            0,
+            1
+          ],
+          "nonzeroCutsceneSetsFlagOffsetLabel": "BATTLE_INTRO_CUTSCENE_FLAGS_START",
+          "followerFlagLabel": "FLAG_INDEX_FOLLOWERS_ASTRAL",
+          "battleMapCoordinateEntrySizeLabel": "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL",
+          "serviceRouteTargets": [
+            "j_BattleLoop",
+            "j_ChurchMenu",
+            "j_ShopMenu",
+            "j_FieldMenu",
+            "j_CaravanMenu"
+          ],
+          "shopPromptRange": [
+            0,
+            100
+          ],
+          "shopIndexWriteLabel": "CURRENT_SHOP_INDEX",
+          "membersResultControlFlow": {
+            "testInstruction": "tst.b d0",
+            "firstBranchOpcode": "bne.w",
+            "firstBranchTarget": "byte_77DE",
+            "fallthroughBranchOpcode": "bpl.s",
+            "fallthroughBranchTarget": "@loc_4",
+            "fallthroughChurchTarget": "j_ChurchMenu",
+            "fallthroughChurchBlockIsStaticallyUnreachable": true,
+            "fallthroughLevelUpTarget": "LevelUpWholeForce"
+          }
+        },
+        "statDisplay": {
+          "allyLoopCount": 30,
+          "recordStrideBytes": 16,
+          "wordOffsets": [
+            0,
+            2,
+            4,
+            6,
+            8,
+            10
+          ],
+          "orderedCallTargets": [
+            "j_GetLevel",
+            "GetDecimalDigits",
+            "j_GetMaxHp",
+            "j_SetCurrentHp",
+            "GetDecimalDigits",
+            "j_GetMaxMp",
+            "j_SetCurrentMp",
+            "GetDecimalDigits",
+            "j_GetBaseAtt",
+            "GetDecimalDigits",
+            "j_GetBaseDef",
+            "GetDecimalDigits",
+            "j_GetBaseAgi",
+            "GetDecimalDigits"
+          ],
+          "wholeForceLevelUpCallTargets": [
+            "j_LevelUp"
+          ]
+        }
+      },
+      "configuration": {
+        "inputGate": {
+          "requiredInputBitLabel": "INPUT_BIT_START",
+          "soundTestInputBitLabel": "INPUT_BIT_UP",
+          "completedSaveFlagBit": 7,
+          "soundTestBranchOpcode": "bne.w",
+          "soundTestTarget": "j_SoundTest",
+          "soundTestTransferDoesNotPushReturnAddress": true,
+          "configurationEnableLabel": "CONFIGURATION_MODE_TOGGLE"
+        },
+        "choices": [
+          {
+            "textId": 450,
+            "nonzeroBranchOpcode": "bne.s",
+            "nonzeroBranchTarget": "byte_7E78",
+            "zeroWriteValue": -1,
+            "zeroWriteLabel": "SPECIAL_TURBO_TOGGLE"
+          },
+          {
+            "textId": 451,
+            "nonzeroBranchOpcode": "bne.s",
+            "nonzeroBranchTarget": "byte_7E8C",
+            "zeroWriteValue": -1,
+            "zeroWriteLabel": "CONTROL_OPPONENT_TOGGLE"
+          },
+          {
+            "textId": 452,
+            "nonzeroBranchOpcode": "bne.s",
+            "nonzeroBranchTarget": "byte_7EA0",
+            "zeroWriteValue": -1,
+            "zeroWriteLabel": "AUTO_BATTLE_TOGGLE"
+          },
+          {
+            "textId": 455,
+            "nonzeroBranchOpcode": "bne.s",
+            "nonzeroBranchTarget": "@ClearGameCompleted",
+            "zeroSetBit": 7,
+            "zeroExitInstruction": "bra.s   byte_7EC0",
+            "nonzeroLabel": "@ClearGameCompleted:",
+            "nonzeroClearBit": 7
+          }
+        ]
+      },
+      "battleActions": {
+        "selection": {
+          "promptRange": [
+            0,
+            6
+          ],
+          "cancelValue": -1,
+          "actionWriteLabel": "CURRENT_BATTLEACTION",
+          "relativeJumpTableBase": "rjt_DebugModeBattleactions",
+          "relativeJumpTargets": [
+            "Attack",
+            "Magic",
+            "Item",
+            "EndTurn",
+            "BurstRock",
+            "Muddle",
+            "PrismLaser"
+          ]
+        },
+        "routes": {
+          "Attack": {
+            "orderedCallTargets": [
+              "DebugModeSelectTargetEnemy"
+            ],
+            "wordWriteCount": 1
+          },
+          "Magic": {
+            "levelPromptRange": [
+              1,
+              4
+            ],
+            "levelSubtract": 1,
+            "levelShiftBits": 6,
+            "spellPromptRange": [
+              0,
+              42
+            ],
+            "orderedCallTargets": [
+              "j_NumberPrompt",
+              "j_NumberPrompt",
+              "DebugModeSelectTargetEnemy"
+            ],
+            "wordWriteCount": 2
+          },
+          "Item": {
+            "itemPromptRange": [
+              0,
+              127
+            ],
+            "valuePromptRange": [
+              0,
+              3
+            ],
+            "orderedCallTargets": [
+              "j_NumberPrompt",
+              "DebugModeSelectTargetEnemy",
+              "j_NumberPrompt"
+            ],
+            "wordWriteCount": 3
+          },
+          "EndTurn": {
+            "branchInstruction": "bra.w   @Done"
+          },
+          "BurstRock": {
+            "branchInstruction": "bra.w   @Done"
+          },
+          "Muddle": {
+            "branchInstruction": "bra.w   @Done"
+          },
+          "PrismLaser": {
+            "writeLabel": "BATTLE_VERSUS_PRISM_FLOWERS"
+          }
+        },
+        "targetEnemyPromptRange": [
+          128,
+          159
+        ],
+        "magicSpellPromptRange": [
+          0,
+          42
+        ],
+        "itemPromptRange": [
+          0,
+          127
+        ],
+        "itemValuePromptRange": [
+          0,
+          3
+        ],
+        "prismLaserBattleLabel": "BATTLE_VERSUS_PRISM_FLOWERS",
+        "hitOverrides": [
+          {
+            "sourceAlias": "debugDodge",
+            "stackOffset": -23
+          },
+          {
+            "sourceAlias": "debugCritical",
+            "stackOffset": -22
+          },
+          {
+            "sourceAlias": "debugDouble",
+            "stackOffset": -21
+          },
+          {
+            "sourceAlias": "debugCounter",
+            "stackOffset": -20
+          }
+        ]
+      },
+      "internalDirectCallSiteCounts": {
+        "code/gameflow/special/battletest.asm": {
+          "CheatModeConfiguration": 1,
+          "GetDecimalDigits": 6,
+          "LevelUpWholeForce": 1,
+          "LoadAllyStatsDecimalDigits": 1
+        },
+        "code/gameflow/special/configurationmode.asm": {},
+        "code/gameflow/special/debugmodebattleactions.asm": {
+          "DebugModeSelectTargetEnemy": 3
+        }
+      },
+      "externalDirectCallerOccurrences": {
+        "code/gameflow/battle/battleactions/battleactionsengine_1.asm": {
+          "DebugModeActionSelect": 1,
+          "DebugModeSelectHits": 1
+        },
+        "code/specialscreens/witch/witchstart.asm": {
+          "CheatModeConfiguration": 2
+        }
+      },
+      "externalDirectCallSiteCounts": {
+        "DebugModeBattleTest": 0,
+        "LoadAllyStatsDecimalDigits": 0,
+        "LevelUpWholeForce": 0,
+        "GetDecimalDigits": 0,
+        "CheatModeConfiguration": 2,
+        "DebugModeActionSelect": 1,
+        "DebugModeSelectTargetEnemy": 0,
+        "DebugModeSelectHits": 1
+      },
+      "externalLongwordPointerOccurrences": {},
+      "indirectBehavior": {
+        "longwordPointerReferencesAreNotDirectCallSites": true,
+        "zeroDirectCallerCountDoesNotEstablishUnreachability": true
+      },
+      "runtimeQuestions": [
+        "debug-flow-input-chords-menu-selection-and-action-state-matrix"
       ],
-      "soundTestRequiresStartUpAndCompletedFlag": true,
-      "debugBattleActionTargets": [
-        "Attack",
-        "Magic",
-        "Item",
-        "EndTurn",
-        "BurstRock",
-        "Muddle",
-        "PrismLaser"
-      ],
-      "debugBattleActionCount": 7,
-      "debugHitOverrideCount": 4,
-      "debugHitOverrides": [
-        "dodge",
-        "critical",
-        "double",
-        "counter"
-      ]
+      "debugBattleActionCount": 7
     },
     "runtimeQuestions": [
       "window-animation-hide-scroll-and-dma-frames",
-      "debug-configuration-input-and-menu-presentation"
+      "debug-flow-input-chords-menu-selection-and-action-state-matrix"
     ]
   }
 }

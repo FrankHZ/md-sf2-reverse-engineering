@@ -233,8 +233,10 @@ The current evidence is deep but narrow:
   The ROM header, window engine, battle test, configuration mode, and debug battle actions close the
   final five primary layout sources. The window contract now records all 16 stable entries, 32
   instruction-scoped external direct-caller files, six separate VInt pointer references, the 16-byte
-  entry layout, derived allocation/address formulas, and VInt composition/DMA call order; only the
-  grouped window/debug presentation matrices remain queued.
+  entry layout, derived allocation/address formulas, and VInt composition/DMA call order. The bounded
+  three-file debug contract additionally pins eight H1 entries, the ordered 29-label roster, four
+  configuration choices, seven action-table routes, four stack-alias writes, and the complete
+  instruction-scoped caller map; only the grouped window/debug presentation matrices remain queued.
   The first complete data-directory batch now inventories all 18 files under `data/battles/global`.
   Seventeen are layout-owned and H1-addressed; the unused all-zero `global/afterbattlejoins.asm`
   alternate is hashed but excluded rather than borrowing the cutscene table's same-named symbol.

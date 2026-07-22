@@ -90,17 +90,51 @@ The engine-neutral static boundary is in [`window-system.md`](../design/window-s
 
 ## Development and Debug Flows
 
-The battle-test path joins the 29 non-Bowie allies, operates on the full 30-member roster, sets
-Bowie's selected test stats to 99, and exposes battle indexes through 49 and shop indexes through
-100. It connects battle, church, shop, field, caravan, members-list, and whole-force level-up tools.
+**Confirmed.** The three debug sources contain eight H1-bound global entries: the battle-test entry
+and its three local helpers, configuration entry, battle-action selector, target prompt, and hit-choice
+helper. The H2 fixture records their exact H1 addresses; `sf2const.asm` and `sf2enums.asm` are parsed
+once for nine RAM labels and 18 enum values. The contract keeps the physical RAM addresses, prompt
+bounds, roster counts, loop counters, and per-record byte stride separate.
 
-Configuration mode owns four toggles: Special Turbo, Control Opponent, Auto Battle, and Game
-Completed. Sound-test routing requires Start+Up and the completed bit, but the US sound-test target
-is the return-only stub documented in the special-screen inventory.
+**Confirmed.** `DebugModeBattleTest` first writes the debug and Special Turbo toggles, then calls
+`j_JoinForce` for the exact ordered 29-label non-Bowie roster. It next applies source value 99 through
+eight named Bowie stat setters, registers `VInt_UpdateWindows` as a VInt add-pointer, writes a
+30-length generic-list declaration alongside its exact stored 0..31 byte sequence, and calls
+`CheatModeConfiguration`. The guarded flow sends a negative battle prompt result to the member/level-up
+loop; otherwise its zero-to-49 battle selection, optional zero-to-one cutscene flag path, follower flag,
+seven-byte map-coordinate stride, and battle → church → zero-to-100 shop → field → caravan call order
+are source facts. The members result first tests byte `d0` and branches back on nonzero; its only
+fallthrough therefore has zero and then takes the following `bpl` to whole-force level-up. The source
+still contains a church-call block between those branches, but it is statically unreachable under that
+preceding `tst`/`bne`/`bpl` sequence. Its runtime meaning is **Unknown** rather than a claimed negative
+route. Its stat-display helper loops all 30 ally slots, stores six
+packed-decimal words at offsets 0, 2, 4, 6, 8, and 10 of each 16-byte record, and refreshes current HP
+and MP after their maximum getters.
 
-The debug battle-action table has seven routes: Attack, Magic, Item, End Turn, Burst Rock, Muddle,
-and Prism Laser. A separate helper can force four battle-scene outcomes: dodge, critical, double,
-and counter.
+**Confirmed.** `CheatModeConfiguration` first requires Start. Its next Up-bit/completed-bit `bne.w`
+conditionally transfers directly to `j_SoundTest` without pushing a return address; this three-file
+slice does not claim the target implementation or sound-test presentation. The existing special-screen
+inventory separately records that the US target implementation is an `rts` stub. Without that edge it requires the
+configuration toggle, then presents text IDs 450, 451, 452, and 455 in order. A zero response writes
+`-1` to the three named toggle bytes; the fourth response sets or clears save-flag bit 7.
+
+**Confirmed.** The action selector admits values zero through six, returns on `-1`, stores the selected
+word, then uses the exact seven-entry relative table in order: Attack, Magic, Item, EndTurn, BurstRock,
+Muddle, PrismLaser. Attack and Magic/Item target calls stay distinct from the table dispatch. Magic
+combines its one-to-four level selection with a six-bit shift before its zero-to-42 spell selection;
+Item uses zero-to-127 and then zero-to-three prompts; target selection is 128 through 159; PrismLaser
+writes the source-labelled battle value. The hit helper executes four prompt/test/`seq` triples in
+source order to the separately recorded stack aliases `debugDodge`, `debugCritical`, `debugDouble`, and
+`debugCounter` at offsets -23 through -20. These are source writes, not a runtime claim that every
+caller exposes the debug UI.
+
+**Confirmed.** Comment-stripped instruction parsing finds two external caller files: one battle-actions
+file has one site each for `DebugModeActionSelect` and `DebugModeSelectHits`, and the witch start file
+has two `CheatModeConfiguration` sites. Direct-call zeros are retained for the other five targets and do
+not assert unreachability; no external `dc.l` pointer occurrence is found in this bounded scan.
+
+**Inferred.** The labels and route structure strongly suggest developer tooling, but caller admission,
+prompt cancellation semantics beyond the checked branches, and player-visible results remain unobserved.
 
 ## Concentrated Runtime Queue
 
@@ -108,10 +142,12 @@ No emulator was launched for this inventory. The window queue is one future gene
 matrix: allocation/failure and delete-end-pointer boundaries; ordinary and Special-Turbo movement;
 hide/fix transitions; composition/clipping/scroll offsets; and the VInt/DMA queue before/after frames.
 It must share setup and VInt/VDP observation points rather than add one-case fixtures. The separate
-configuration/debug input and menu-presentation queue remains unchanged.
+debug-flow queue is `debug-flow-input-chords-menu-selection-and-action-state-matrix`: one grouped
+matrix for Start/Up/completed-bit admission, configuration responses, action selection/cancel, and
+the four stack-alias writes.
 
-The debug-only paths are preservation evidence, not remake requirements unless a later design
-decision explicitly retains developer tools.
+The debug-only paths are preservation evidence, not remake requirements unless a later design decision
+explicitly retains developer tools.
 
 ## Reproduction
 
@@ -121,3 +157,6 @@ uv run sf2 research-index test
 ```
 
 Generated JSON stays under ignored `local/derived/remaining-core-static.json`.
+The H2 command validates `schemas/remaining-core-static.schema.json` and
+`schemas/h2-remaining-core-static-fixture.schema.json`, fixture ID
+`sf2-remaining-core-static-v1`, pinned upstream commit, H1 entries, and canonical output hash.

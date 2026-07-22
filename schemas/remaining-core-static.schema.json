@@ -115,9 +115,7 @@
       "$ref": "#/definitions/windowFacts"
     },
     "debugFacts": {
-      "type": "object",
-      "minProperties": 12,
-      "maxProperties": 12
+      "$ref": "#/definitions/debugFacts"
     },
     "runtimeQuestions": {
       "type": "array",
@@ -2086,6 +2084,1606 @@
           "minItems": 1,
           "maxItems": 1,
           "additionalItems": false
+        }
+      }
+    },
+    "debugFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceFiles",
+        "functionEntries",
+        "sourceLabels",
+        "derived",
+        "battleTest",
+        "configuration",
+        "battleActions",
+        "internalDirectCallSiteCounts",
+        "externalDirectCallerOccurrences",
+        "externalDirectCallSiteCounts",
+        "externalLongwordPointerOccurrences",
+        "indirectBehavior",
+        "runtimeQuestions",
+        "debugBattleActionCount"
+      ],
+      "properties": {
+        "sourceFiles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "battletest",
+            "configurationmode",
+            "debugmodebattleactions"
+          ],
+          "properties": {
+            "battletest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "lineCount"
+              ],
+              "properties": {
+                "path": {
+                  "const": "code/gameflow/special/battletest.asm"
+                },
+                "lineCount": {
+                  "const": 258
+                }
+              }
+            },
+            "configurationmode": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "lineCount"
+              ],
+              "properties": {
+                "path": {
+                  "const": "code/gameflow/special/configurationmode.asm"
+                },
+                "lineCount": {
+                  "const": 64
+                }
+              }
+            },
+            "debugmodebattleactions": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "lineCount"
+              ],
+              "properties": {
+                "path": {
+                  "const": "code/gameflow/special/debugmodebattleactions.asm"
+                },
+                "lineCount": {
+                  "const": 152
+                }
+              }
+            }
+          }
+        },
+        "functionEntries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DebugModeBattleTest",
+            "LoadAllyStatsDecimalDigits",
+            "LevelUpWholeForce",
+            "GetDecimalDigits",
+            "CheatModeConfiguration",
+            "DebugModeActionSelect",
+            "DebugModeSelectTargetEnemy",
+            "DebugModeSelectHits"
+          ],
+          "properties": {
+            "DebugModeBattleTest": {
+              "const": 30364
+            },
+            "LoadAllyStatsDecimalDigits": {
+              "const": 30908
+            },
+            "LevelUpWholeForce": {
+              "const": 31008
+            },
+            "GetDecimalDigits": {
+              "const": 31024
+            },
+            "CheatModeConfiguration": {
+              "const": 32314
+            },
+            "DebugModeActionSelect": {
+              "const": 39578
+            },
+            "DebugModeSelectTargetEnemy": {
+              "const": 39748
+            },
+            "DebugModeSelectHits": {
+              "const": 39768
+            }
+          }
+        },
+        "sourceLabels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "addresses",
+            "enumValues"
+          ],
+          "properties": {
+            "addresses": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DEBUG_MODE_TOGGLE",
+                "SPECIAL_TURBO_TOGGLE",
+                "CONTROL_OPPONENT_TOGGLE",
+                "AUTO_BATTLE_TOGGLE",
+                "CONFIGURATION_MODE_TOGGLE",
+                "SAVE_FLAGS",
+                "CURRENT_BATTLEACTION",
+                "CURRENT_BATTLE",
+                "CURRENT_SHOP_INDEX"
+              ],
+              "properties": {
+                "DEBUG_MODE_TOGGLE": {
+                  "const": 16756905
+                },
+                "SPECIAL_TURBO_TOGGLE": {
+                  "const": 16756904
+                },
+                "CONTROL_OPPONENT_TOGGLE": {
+                  "const": 16756906
+                },
+                "AUTO_BATTLE_TOGGLE": {
+                  "const": 16756907
+                },
+                "CONFIGURATION_MODE_TOGGLE": {
+                  "const": 16756908
+                },
+                "SAVE_FLAGS": {
+                  "const": 2105397
+                },
+                "CURRENT_BATTLEACTION": {
+                  "const": 16758318
+                },
+                "CURRENT_BATTLE": {
+                  "const": 16774930
+                },
+                "CURRENT_SHOP_INDEX": {
+                  "const": 16758482
+                }
+              }
+            },
+            "enumValues": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ALLY_BOWIE",
+                "BATTLES_DEBUG_MAX_INDEX",
+                "SHOPS_DEBUG_MAX_INDEX",
+                "COMBATANT_ALLIES_COUNTER",
+                "COMBATANT_ALLIES_NUMBER",
+                "COMBATANT_ENEMIES_START",
+                "COMBATANT_ENEMIES_END",
+                "SPELLENTRY_LEVELS_NUMBER",
+                "SPELLENTRY_SPELLS_NUMBER",
+                "ITEMINDEX_MAX",
+                "BATTLE_VERSUS_PRISM_FLOWERS",
+                "BATTLE_INTRO_CUTSCENE_FLAGS_START",
+                "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL",
+                "FLAG_INDEX_FOLLOWERS_ASTRAL",
+                "INPUT_BIT_START",
+                "INPUT_BIT_UP",
+                "VINT_FUNCTIONS",
+                "VINTS_ADD"
+              ],
+              "properties": {
+                "ALLY_BOWIE": {
+                  "const": 0
+                },
+                "BATTLES_DEBUG_MAX_INDEX": {
+                  "const": 49
+                },
+                "SHOPS_DEBUG_MAX_INDEX": {
+                  "const": 100
+                },
+                "COMBATANT_ALLIES_COUNTER": {
+                  "const": 29
+                },
+                "COMBATANT_ALLIES_NUMBER": {
+                  "const": 30
+                },
+                "COMBATANT_ENEMIES_START": {
+                  "const": 128
+                },
+                "COMBATANT_ENEMIES_END": {
+                  "const": 159
+                },
+                "SPELLENTRY_LEVELS_NUMBER": {
+                  "const": 4
+                },
+                "SPELLENTRY_SPELLS_NUMBER": {
+                  "const": 42
+                },
+                "ITEMINDEX_MAX": {
+                  "const": 127
+                },
+                "BATTLE_VERSUS_PRISM_FLOWERS": {
+                  "const": 36
+                },
+                "BATTLE_INTRO_CUTSCENE_FLAGS_START": {
+                  "const": 450
+                },
+                "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL": {
+                  "const": 7
+                },
+                "FLAG_INDEX_FOLLOWERS_ASTRAL": {
+                  "const": 70
+                },
+                "INPUT_BIT_START": {
+                  "const": 7
+                },
+                "INPUT_BIT_UP": {
+                  "const": 0
+                },
+                "VINT_FUNCTIONS": {
+                  "const": 9
+                },
+                "VINTS_ADD": {
+                  "const": 1
+                }
+              }
+            }
+          }
+        },
+        "derived": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "wholeForceCount",
+            "joinedRosterCount",
+            "genericListEntryCount",
+            "actionCount",
+            "actionMaxIndex",
+            "enemyTargetCount",
+            "magicLevelFirstIndex",
+            "magicLevelLastIndex"
+          ],
+          "properties": {
+            "wholeForceCount": {
+              "const": 30
+            },
+            "joinedRosterCount": {
+              "const": 29
+            },
+            "genericListEntryCount": {
+              "const": 32
+            },
+            "actionCount": {
+              "const": 7
+            },
+            "actionMaxIndex": {
+              "const": 6
+            },
+            "enemyTargetCount": {
+              "const": 32
+            },
+            "magicLevelFirstIndex": {
+              "const": 1
+            },
+            "magicLevelLastIndex": {
+              "const": 4
+            }
+          }
+        },
+        "battleTest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "initialization",
+            "genericList",
+            "flow",
+            "statDisplay"
+          ],
+          "properties": {
+            "initialization": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "setToggleLabels",
+                "joinedAllyIds",
+                "bowieIdLabel",
+                "bowieStatValue",
+                "bowieStatSetterTargets",
+                "vintAddPointerTarget"
+              ],
+              "properties": {
+                "setToggleLabels": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": "DEBUG_MODE_TOGGLE"
+                    },
+                    {
+                      "const": "SPECIAL_TURBO_TOGGLE"
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "joinedAllyIds": {
+                  "type": "array",
+                  "minItems": 29,
+                  "maxItems": 29,
+                  "items": [
+                    {
+                      "const": "ALLY_SARAH"
+                    },
+                    {
+                      "const": "ALLY_CHESTER"
+                    },
+                    {
+                      "const": "ALLY_JAHA"
+                    },
+                    {
+                      "const": "ALLY_KAZIN"
+                    },
+                    {
+                      "const": "ALLY_SLADE"
+                    },
+                    {
+                      "const": "ALLY_KIWI"
+                    },
+                    {
+                      "const": "ALLY_PETER"
+                    },
+                    {
+                      "const": "ALLY_MAY"
+                    },
+                    {
+                      "const": "ALLY_GERHALT"
+                    },
+                    {
+                      "const": "ALLY_LUKE"
+                    },
+                    {
+                      "const": "ALLY_ROHDE"
+                    },
+                    {
+                      "const": "ALLY_RICK"
+                    },
+                    {
+                      "const": "ALLY_ELRIC"
+                    },
+                    {
+                      "const": "ALLY_ERIC"
+                    },
+                    {
+                      "const": "ALLY_KARNA"
+                    },
+                    {
+                      "const": "ALLY_RANDOLF"
+                    },
+                    {
+                      "const": "ALLY_TYRIN"
+                    },
+                    {
+                      "const": "ALLY_JANET"
+                    },
+                    {
+                      "const": "ALLY_HIGINS"
+                    },
+                    {
+                      "const": "ALLY_SKREECH"
+                    },
+                    {
+                      "const": "ALLY_TAYA"
+                    },
+                    {
+                      "const": "ALLY_FRAYJA"
+                    },
+                    {
+                      "const": "ALLY_JARO"
+                    },
+                    {
+                      "const": "ALLY_GYAN"
+                    },
+                    {
+                      "const": "ALLY_SHEELA"
+                    },
+                    {
+                      "const": "ALLY_ZYNK"
+                    },
+                    {
+                      "const": "ALLY_CHAZ"
+                    },
+                    {
+                      "const": "ALLY_LEMON"
+                    },
+                    {
+                      "const": "ALLY_CLAUDE"
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "bowieIdLabel": {
+                  "const": "ALLY_BOWIE"
+                },
+                "bowieStatValue": {
+                  "const": 99
+                },
+                "bowieStatSetterTargets": {
+                  "type": "array",
+                  "minItems": 8,
+                  "maxItems": 8,
+                  "items": [
+                    {
+                      "const": "j_SetBaseAgi"
+                    },
+                    {
+                      "const": "j_SetBaseAtt"
+                    },
+                    {
+                      "const": "j_SetBaseDef"
+                    },
+                    {
+                      "const": "j_SetMaxHp"
+                    },
+                    {
+                      "const": "j_SetCurrentAgi"
+                    },
+                    {
+                      "const": "j_SetCurrentAtt"
+                    },
+                    {
+                      "const": "j_SetCurrentDef"
+                    },
+                    {
+                      "const": "j_SetCurrentHp"
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "vintAddPointerTarget": {
+                  "const": "VInt_UpdateWindows"
+                }
+              }
+            },
+            "genericList": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "lengthLabel",
+                "entryValues"
+              ],
+              "properties": {
+                "lengthLabel": {
+                  "const": "COMBATANT_ALLIES_NUMBER"
+                },
+                "entryValues": {
+                  "type": "array",
+                  "minItems": 32,
+                  "maxItems": 32,
+                  "items": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "const": 1
+                    },
+                    {
+                      "const": 2
+                    },
+                    {
+                      "const": 3
+                    },
+                    {
+                      "const": 4
+                    },
+                    {
+                      "const": 5
+                    },
+                    {
+                      "const": 6
+                    },
+                    {
+                      "const": 7
+                    },
+                    {
+                      "const": 8
+                    },
+                    {
+                      "const": 9
+                    },
+                    {
+                      "const": 10
+                    },
+                    {
+                      "const": 11
+                    },
+                    {
+                      "const": 12
+                    },
+                    {
+                      "const": 13
+                    },
+                    {
+                      "const": 14
+                    },
+                    {
+                      "const": 15
+                    },
+                    {
+                      "const": 16
+                    },
+                    {
+                      "const": 17
+                    },
+                    {
+                      "const": 18
+                    },
+                    {
+                      "const": 19
+                    },
+                    {
+                      "const": 20
+                    },
+                    {
+                      "const": 21
+                    },
+                    {
+                      "const": 22
+                    },
+                    {
+                      "const": 23
+                    },
+                    {
+                      "const": 24
+                    },
+                    {
+                      "const": 25
+                    },
+                    {
+                      "const": 26
+                    },
+                    {
+                      "const": 27
+                    },
+                    {
+                      "const": 28
+                    },
+                    {
+                      "const": 29
+                    },
+                    {
+                      "const": 30
+                    },
+                    {
+                      "const": 31
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "flow": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "battlePromptRange",
+                "negativeBattleChoiceTarget",
+                "cutscenePromptRange",
+                "nonzeroCutsceneSetsFlagOffsetLabel",
+                "followerFlagLabel",
+                "battleMapCoordinateEntrySizeLabel",
+                "serviceRouteTargets",
+                "shopPromptRange",
+                "shopIndexWriteLabel",
+                "membersResultControlFlow"
+              ],
+              "properties": {
+                "battlePromptRange": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "const": 49
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "negativeBattleChoiceTarget": {
+                  "const": "DebugLevelUp"
+                },
+                "cutscenePromptRange": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "const": 1
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "nonzeroCutsceneSetsFlagOffsetLabel": {
+                  "const": "BATTLE_INTRO_CUTSCENE_FLAGS_START"
+                },
+                "followerFlagLabel": {
+                  "const": "FLAG_INDEX_FOLLOWERS_ASTRAL"
+                },
+                "battleMapCoordinateEntrySizeLabel": {
+                  "const": "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL"
+                },
+                "serviceRouteTargets": {
+                  "type": "array",
+                  "minItems": 5,
+                  "maxItems": 5,
+                  "items": [
+                    {
+                      "const": "j_BattleLoop"
+                    },
+                    {
+                      "const": "j_ChurchMenu"
+                    },
+                    {
+                      "const": "j_ShopMenu"
+                    },
+                    {
+                      "const": "j_FieldMenu"
+                    },
+                    {
+                      "const": "j_CaravanMenu"
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "shopPromptRange": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "const": 100
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "shopIndexWriteLabel": {
+                  "const": "CURRENT_SHOP_INDEX"
+                },
+                "membersResultControlFlow": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "testInstruction",
+                    "firstBranchOpcode",
+                    "firstBranchTarget",
+                    "fallthroughBranchOpcode",
+                    "fallthroughBranchTarget",
+                    "fallthroughChurchTarget",
+                    "fallthroughChurchBlockIsStaticallyUnreachable",
+                    "fallthroughLevelUpTarget"
+                  ],
+                  "properties": {
+                    "testInstruction": {
+                      "const": "tst.b d0"
+                    },
+                    "firstBranchOpcode": {
+                      "const": "bne.w"
+                    },
+                    "firstBranchTarget": {
+                      "const": "byte_77DE"
+                    },
+                    "fallthroughBranchOpcode": {
+                      "const": "bpl.s"
+                    },
+                    "fallthroughBranchTarget": {
+                      "const": "@loc_4"
+                    },
+                    "fallthroughChurchTarget": {
+                      "const": "j_ChurchMenu"
+                    },
+                    "fallthroughChurchBlockIsStaticallyUnreachable": {
+                      "const": true
+                    },
+                    "fallthroughLevelUpTarget": {
+                      "const": "LevelUpWholeForce"
+                    }
+                  }
+                }
+              }
+            },
+            "statDisplay": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "allyLoopCount",
+                "recordStrideBytes",
+                "wordOffsets",
+                "orderedCallTargets",
+                "wholeForceLevelUpCallTargets"
+              ],
+              "properties": {
+                "allyLoopCount": {
+                  "const": 30
+                },
+                "recordStrideBytes": {
+                  "const": 16
+                },
+                "wordOffsets": {
+                  "type": "array",
+                  "minItems": 6,
+                  "maxItems": 6,
+                  "items": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "const": 2
+                    },
+                    {
+                      "const": 4
+                    },
+                    {
+                      "const": 6
+                    },
+                    {
+                      "const": 8
+                    },
+                    {
+                      "const": 10
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "orderedCallTargets": {
+                  "type": "array",
+                  "minItems": 14,
+                  "maxItems": 14,
+                  "items": [
+                    {
+                      "const": "j_GetLevel"
+                    },
+                    {
+                      "const": "GetDecimalDigits"
+                    },
+                    {
+                      "const": "j_GetMaxHp"
+                    },
+                    {
+                      "const": "j_SetCurrentHp"
+                    },
+                    {
+                      "const": "GetDecimalDigits"
+                    },
+                    {
+                      "const": "j_GetMaxMp"
+                    },
+                    {
+                      "const": "j_SetCurrentMp"
+                    },
+                    {
+                      "const": "GetDecimalDigits"
+                    },
+                    {
+                      "const": "j_GetBaseAtt"
+                    },
+                    {
+                      "const": "GetDecimalDigits"
+                    },
+                    {
+                      "const": "j_GetBaseDef"
+                    },
+                    {
+                      "const": "GetDecimalDigits"
+                    },
+                    {
+                      "const": "j_GetBaseAgi"
+                    },
+                    {
+                      "const": "GetDecimalDigits"
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "wholeForceLevelUpCallTargets": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "const": "j_LevelUp"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            }
+          }
+        },
+        "configuration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "inputGate",
+            "choices"
+          ],
+          "properties": {
+            "inputGate": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requiredInputBitLabel",
+                "soundTestInputBitLabel",
+                "completedSaveFlagBit",
+                "soundTestBranchOpcode",
+                "soundTestTarget",
+                "soundTestTransferDoesNotPushReturnAddress",
+                "configurationEnableLabel"
+              ],
+              "properties": {
+                "requiredInputBitLabel": {
+                  "const": "INPUT_BIT_START"
+                },
+                "soundTestInputBitLabel": {
+                  "const": "INPUT_BIT_UP"
+                },
+                "completedSaveFlagBit": {
+                  "const": 7
+                },
+                "soundTestBranchOpcode": {
+                  "const": "bne.w"
+                },
+                "soundTestTarget": {
+                  "const": "j_SoundTest"
+                },
+                "soundTestTransferDoesNotPushReturnAddress": {
+                  "const": true
+                },
+                "configurationEnableLabel": {
+                  "const": "CONFIGURATION_MODE_TOGGLE"
+                }
+              }
+            },
+            "choices": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "textId",
+                    "nonzeroBranchOpcode",
+                    "nonzeroBranchTarget",
+                    "zeroWriteValue",
+                    "zeroWriteLabel"
+                  ],
+                  "properties": {
+                    "textId": {
+                      "const": 450
+                    },
+                    "nonzeroBranchOpcode": {
+                      "const": "bne.s"
+                    },
+                    "nonzeroBranchTarget": {
+                      "const": "byte_7E78"
+                    },
+                    "zeroWriteValue": {
+                      "const": -1
+                    },
+                    "zeroWriteLabel": {
+                      "const": "SPECIAL_TURBO_TOGGLE"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "textId",
+                    "nonzeroBranchOpcode",
+                    "nonzeroBranchTarget",
+                    "zeroWriteValue",
+                    "zeroWriteLabel"
+                  ],
+                  "properties": {
+                    "textId": {
+                      "const": 451
+                    },
+                    "nonzeroBranchOpcode": {
+                      "const": "bne.s"
+                    },
+                    "nonzeroBranchTarget": {
+                      "const": "byte_7E8C"
+                    },
+                    "zeroWriteValue": {
+                      "const": -1
+                    },
+                    "zeroWriteLabel": {
+                      "const": "CONTROL_OPPONENT_TOGGLE"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "textId",
+                    "nonzeroBranchOpcode",
+                    "nonzeroBranchTarget",
+                    "zeroWriteValue",
+                    "zeroWriteLabel"
+                  ],
+                  "properties": {
+                    "textId": {
+                      "const": 452
+                    },
+                    "nonzeroBranchOpcode": {
+                      "const": "bne.s"
+                    },
+                    "nonzeroBranchTarget": {
+                      "const": "byte_7EA0"
+                    },
+                    "zeroWriteValue": {
+                      "const": -1
+                    },
+                    "zeroWriteLabel": {
+                      "const": "AUTO_BATTLE_TOGGLE"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "textId",
+                    "nonzeroBranchOpcode",
+                    "nonzeroBranchTarget",
+                    "zeroSetBit",
+                    "zeroExitInstruction",
+                    "nonzeroLabel",
+                    "nonzeroClearBit"
+                  ],
+                  "properties": {
+                    "textId": {
+                      "const": 455
+                    },
+                    "nonzeroBranchOpcode": {
+                      "const": "bne.s"
+                    },
+                    "nonzeroBranchTarget": {
+                      "const": "@ClearGameCompleted"
+                    },
+                    "zeroSetBit": {
+                      "const": 7
+                    },
+                    "zeroExitInstruction": {
+                      "const": "bra.s   byte_7EC0"
+                    },
+                    "nonzeroLabel": {
+                      "const": "@ClearGameCompleted:"
+                    },
+                    "nonzeroClearBit": {
+                      "const": 7
+                    }
+                  }
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "battleActions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "selection",
+            "routes",
+            "targetEnemyPromptRange",
+            "magicSpellPromptRange",
+            "itemPromptRange",
+            "itemValuePromptRange",
+            "prismLaserBattleLabel",
+            "hitOverrides"
+          ],
+          "properties": {
+            "selection": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "promptRange",
+                "cancelValue",
+                "actionWriteLabel",
+                "relativeJumpTableBase",
+                "relativeJumpTargets"
+              ],
+              "properties": {
+                "promptRange": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "const": 0
+                    },
+                    {
+                      "const": 6
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "cancelValue": {
+                  "const": -1
+                },
+                "actionWriteLabel": {
+                  "const": "CURRENT_BATTLEACTION"
+                },
+                "relativeJumpTableBase": {
+                  "const": "rjt_DebugModeBattleactions"
+                },
+                "relativeJumpTargets": {
+                  "type": "array",
+                  "minItems": 7,
+                  "maxItems": 7,
+                  "items": [
+                    {
+                      "const": "Attack"
+                    },
+                    {
+                      "const": "Magic"
+                    },
+                    {
+                      "const": "Item"
+                    },
+                    {
+                      "const": "EndTurn"
+                    },
+                    {
+                      "const": "BurstRock"
+                    },
+                    {
+                      "const": "Muddle"
+                    },
+                    {
+                      "const": "PrismLaser"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "routes": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Attack",
+                "Magic",
+                "Item",
+                "EndTurn",
+                "BurstRock",
+                "Muddle",
+                "PrismLaser"
+              ],
+              "properties": {
+                "Attack": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "orderedCallTargets",
+                    "wordWriteCount"
+                  ],
+                  "properties": {
+                    "orderedCallTargets": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "const": "DebugModeSelectTargetEnemy"
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "wordWriteCount": {
+                      "const": 1
+                    }
+                  }
+                },
+                "Magic": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "levelPromptRange",
+                    "levelSubtract",
+                    "levelShiftBits",
+                    "spellPromptRange",
+                    "orderedCallTargets",
+                    "wordWriteCount"
+                  ],
+                  "properties": {
+                    "levelPromptRange": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": 1
+                        },
+                        {
+                          "const": 4
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "levelSubtract": {
+                      "const": 1
+                    },
+                    "levelShiftBits": {
+                      "const": 6
+                    },
+                    "spellPromptRange": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": 0
+                        },
+                        {
+                          "const": 42
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "orderedCallTargets": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "const": "j_NumberPrompt"
+                        },
+                        {
+                          "const": "j_NumberPrompt"
+                        },
+                        {
+                          "const": "DebugModeSelectTargetEnemy"
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "wordWriteCount": {
+                      "const": 2
+                    }
+                  }
+                },
+                "Item": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "itemPromptRange",
+                    "valuePromptRange",
+                    "orderedCallTargets",
+                    "wordWriteCount"
+                  ],
+                  "properties": {
+                    "itemPromptRange": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": 0
+                        },
+                        {
+                          "const": 127
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "valuePromptRange": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "const": 0
+                        },
+                        {
+                          "const": 3
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "orderedCallTargets": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": [
+                        {
+                          "const": "j_NumberPrompt"
+                        },
+                        {
+                          "const": "DebugModeSelectTargetEnemy"
+                        },
+                        {
+                          "const": "j_NumberPrompt"
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "wordWriteCount": {
+                      "const": 3
+                    }
+                  }
+                },
+                "EndTurn": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "branchInstruction"
+                  ],
+                  "properties": {
+                    "branchInstruction": {
+                      "const": "bra.w   @Done"
+                    }
+                  }
+                },
+                "BurstRock": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "branchInstruction"
+                  ],
+                  "properties": {
+                    "branchInstruction": {
+                      "const": "bra.w   @Done"
+                    }
+                  }
+                },
+                "Muddle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "branchInstruction"
+                  ],
+                  "properties": {
+                    "branchInstruction": {
+                      "const": "bra.w   @Done"
+                    }
+                  }
+                },
+                "PrismLaser": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "writeLabel"
+                  ],
+                  "properties": {
+                    "writeLabel": {
+                      "const": "BATTLE_VERSUS_PRISM_FLOWERS"
+                    }
+                  }
+                }
+              }
+            },
+            "targetEnemyPromptRange": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "const": 128
+                },
+                {
+                  "const": 159
+                }
+              ],
+              "additionalItems": false
+            },
+            "magicSpellPromptRange": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "const": 0
+                },
+                {
+                  "const": 42
+                }
+              ],
+              "additionalItems": false
+            },
+            "itemPromptRange": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "const": 0
+                },
+                {
+                  "const": 127
+                }
+              ],
+              "additionalItems": false
+            },
+            "itemValuePromptRange": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "const": 0
+                },
+                {
+                  "const": 3
+                }
+              ],
+              "additionalItems": false
+            },
+            "prismLaserBattleLabel": {
+              "const": "BATTLE_VERSUS_PRISM_FLOWERS"
+            },
+            "hitOverrides": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceAlias",
+                    "stackOffset"
+                  ],
+                  "properties": {
+                    "sourceAlias": {
+                      "const": "debugDodge"
+                    },
+                    "stackOffset": {
+                      "const": -23
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceAlias",
+                    "stackOffset"
+                  ],
+                  "properties": {
+                    "sourceAlias": {
+                      "const": "debugCritical"
+                    },
+                    "stackOffset": {
+                      "const": -22
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceAlias",
+                    "stackOffset"
+                  ],
+                  "properties": {
+                    "sourceAlias": {
+                      "const": "debugDouble"
+                    },
+                    "stackOffset": {
+                      "const": -21
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceAlias",
+                    "stackOffset"
+                  ],
+                  "properties": {
+                    "sourceAlias": {
+                      "const": "debugCounter"
+                    },
+                    "stackOffset": {
+                      "const": -20
+                    }
+                  }
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "internalDirectCallSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code/gameflow/special/battletest.asm",
+            "code/gameflow/special/configurationmode.asm",
+            "code/gameflow/special/debugmodebattleactions.asm"
+          ],
+          "properties": {
+            "code/gameflow/special/battletest.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CheatModeConfiguration",
+                "GetDecimalDigits",
+                "LevelUpWholeForce",
+                "LoadAllyStatsDecimalDigits"
+              ],
+              "properties": {
+                "CheatModeConfiguration": {
+                  "const": 1
+                },
+                "GetDecimalDigits": {
+                  "const": 6
+                },
+                "LevelUpWholeForce": {
+                  "const": 1
+                },
+                "LoadAllyStatsDecimalDigits": {
+                  "const": 1
+                }
+              }
+            },
+            "code/gameflow/special/configurationmode.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            },
+            "code/gameflow/special/debugmodebattleactions.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DebugModeSelectTargetEnemy"
+              ],
+              "properties": {
+                "DebugModeSelectTargetEnemy": {
+                  "const": 3
+                }
+              }
+            }
+          }
+        },
+        "externalDirectCallerOccurrences": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+            "code/specialscreens/witch/witchstart.asm"
+          ],
+          "properties": {
+            "code/gameflow/battle/battleactions/battleactionsengine_1.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DebugModeActionSelect",
+                "DebugModeSelectHits"
+              ],
+              "properties": {
+                "DebugModeActionSelect": {
+                  "const": 1
+                },
+                "DebugModeSelectHits": {
+                  "const": 1
+                }
+              }
+            },
+            "code/specialscreens/witch/witchstart.asm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CheatModeConfiguration"
+              ],
+              "properties": {
+                "CheatModeConfiguration": {
+                  "const": 2
+                }
+              }
+            }
+          }
+        },
+        "externalDirectCallSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DebugModeBattleTest",
+            "LoadAllyStatsDecimalDigits",
+            "LevelUpWholeForce",
+            "GetDecimalDigits",
+            "CheatModeConfiguration",
+            "DebugModeActionSelect",
+            "DebugModeSelectTargetEnemy",
+            "DebugModeSelectHits"
+          ],
+          "properties": {
+            "DebugModeBattleTest": {
+              "const": 0
+            },
+            "LoadAllyStatsDecimalDigits": {
+              "const": 0
+            },
+            "LevelUpWholeForce": {
+              "const": 0
+            },
+            "GetDecimalDigits": {
+              "const": 0
+            },
+            "CheatModeConfiguration": {
+              "const": 2
+            },
+            "DebugModeActionSelect": {
+              "const": 1
+            },
+            "DebugModeSelectTargetEnemy": {
+              "const": 0
+            },
+            "DebugModeSelectHits": {
+              "const": 1
+            }
+          }
+        },
+        "externalLongwordPointerOccurrences": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        },
+        "indirectBehavior": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "longwordPointerReferencesAreNotDirectCallSites",
+            "zeroDirectCallerCountDoesNotEstablishUnreachability"
+          ],
+          "properties": {
+            "longwordPointerReferencesAreNotDirectCallSites": {
+              "const": true
+            },
+            "zeroDirectCallerCountDoesNotEstablishUnreachability": {
+              "const": true
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": [
+            {
+              "const": "debug-flow-input-chords-menu-selection-and-action-state-matrix"
+            }
+          ],
+          "additionalItems": false
+        },
+        "debugBattleActionCount": {
+          "const": 7
         }
       }
     }

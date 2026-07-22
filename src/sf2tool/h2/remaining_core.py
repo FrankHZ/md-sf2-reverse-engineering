@@ -53,6 +53,52 @@ WINDOW_FUNCTIONS = (
     "GetWindowEntryAddress",
     "GetWindowTileAddress",
 )
+DEBUG_SOURCE_PATHS = (
+    Path("code/gameflow/special/battletest.asm"),
+    Path("code/gameflow/special/configurationmode.asm"),
+    Path("code/gameflow/special/debugmodebattleactions.asm"),
+)
+DEBUG_FUNCTIONS = (
+    "DebugModeBattleTest",
+    "LoadAllyStatsDecimalDigits",
+    "LevelUpWholeForce",
+    "GetDecimalDigits",
+    "CheatModeConfiguration",
+    "DebugModeActionSelect",
+    "DebugModeSelectTargetEnemy",
+    "DebugModeSelectHits",
+)
+DEBUG_ENUM_CONSTANTS = (
+    "ALLY_BOWIE",
+    "BATTLES_DEBUG_MAX_INDEX",
+    "SHOPS_DEBUG_MAX_INDEX",
+    "COMBATANT_ALLIES_COUNTER",
+    "COMBATANT_ALLIES_NUMBER",
+    "COMBATANT_ENEMIES_START",
+    "COMBATANT_ENEMIES_END",
+    "SPELLENTRY_LEVELS_NUMBER",
+    "SPELLENTRY_SPELLS_NUMBER",
+    "ITEMINDEX_MAX",
+    "BATTLE_VERSUS_PRISM_FLOWERS",
+    "BATTLE_INTRO_CUTSCENE_FLAGS_START",
+    "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL",
+    "FLAG_INDEX_FOLLOWERS_ASTRAL",
+    "INPUT_BIT_START",
+    "INPUT_BIT_UP",
+    "VINT_FUNCTIONS",
+    "VINTS_ADD",
+)
+DEBUG_ADDRESS_CONSTANTS = (
+    "DEBUG_MODE_TOGGLE",
+    "SPECIAL_TURBO_TOGGLE",
+    "CONTROL_OPPONENT_TOGGLE",
+    "AUTO_BATTLE_TOGGLE",
+    "CONFIGURATION_MODE_TOGGLE",
+    "SAVE_FLAGS",
+    "CURRENT_BATTLEACTION",
+    "CURRENT_BATTLE",
+    "CURRENT_SHOP_INDEX",
+)
 MANIFEST = repo_path("manifests/extractions/remaining-core-static.json")
 SCHEMA = repo_path("schemas/remaining-core-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/remaining-core-static-v1.json")
@@ -158,6 +204,51 @@ def _window_longword_pointer_counts(path: Path, targets: set[str]) -> dict[str, 
         if match and match.group(1) in targets:
             counts[match.group(1)] += 1
     return dict(sorted(counts.items()))
+
+
+def _debug_section(source: str, name: str) -> str:
+    start = source.find(f"{name}:")
+    end = source.find(f"; End of function {name}", start)
+    if start < 0 or end < 0:
+        raise ValueError(f"debug section boundary drift: {name}")
+    return source[start:end]
+
+
+def _require_debug_ordered_section(source: str, name: str, fragments: tuple[str, ...]) -> None:
+    section = _debug_section(source, name)
+    position = 0
+    for fragment in fragments:
+        position = section.find(fragment, position)
+        if position < 0:
+            raise ValueError(f"debug ordered section semantic drift at {name}: {fragment}")
+        position += len(fragment)
+
+
+def _debug_local_block(section: str, start_label: str, end_label: str) -> str:
+    start = section.find(f"{start_label}:")
+    end = section.find(f"{end_label}:", start)
+    if start < 0 or end < 0:
+        raise ValueError(f"debug local block boundary drift: {start_label}..{end_label}")
+    return section[start:end]
+
+
+def _debug_direct_targets(section: str) -> list[str]:
+    targets: list[str] = []
+    for raw_line in section.splitlines():
+        match = _WINDOW_CALL_PATTERN.match(raw_line.split(";", 1)[0])
+        if match and _WINDOW_DIRECT_TARGET_PATTERN.fullmatch(match.group(1)):
+            targets.append(match.group(1))
+    return targets
+
+
+def _debug_direct_call_counts(path: Path, targets: set[str]) -> dict[str, int]:
+    """Count direct debug bsr/jsr instructions, excluding comments and data."""
+    return _window_direct_call_counts(path, targets)
+
+
+def _debug_longword_pointer_counts(path: Path, targets: set[str]) -> dict[str, int]:
+    """Count debug dc.l references separately from direct call instructions."""
+    return _window_longword_pointer_counts(path, targets)
 
 
 def _window_doubling_scale(section: str, owner: str) -> int:
@@ -764,69 +855,511 @@ def _window_facts(disasm: Path, listing: str) -> dict[str, Any]:
     }
 
 
-def _debug_facts(sources: dict[str, str]) -> dict[str, Any]:
-    battle = sources["code/gameflow/special/battletest.asm"]
-    config = sources["code/gameflow/special/configurationmode.asm"]
-    actions = sources["code/gameflow/special/debugmodebattleactions.asm"]
+def _debug_facts(disasm: Path, listing: str) -> dict[str, Any]:
+    """Extract static developer/debug flow without assigning runtime semantics."""
+    paths = {path.name: disasm / path for path in DEBUG_SOURCE_PATHS}
+    battle = read_upstream_text(paths["battletest.asm"])
+    config = read_upstream_text(paths["configurationmode.asm"])
+    actions = read_upstream_text(paths["debugmodebattleactions.asm"])
+    enums = _read_window_equ_values(disasm / WINDOW_ENUM_PATH, DEBUG_ENUM_CONSTANTS)
+    addresses = _read_window_equ_values(disasm / WINDOW_CONST_PATH, DEBUG_ADDRESS_CONSTANTS)
+    function_entries = {name: _listing_address(listing, name) for name in DEBUG_FUNCTIONS}
+
     joined_allies = re.findall(r"moveq\s+#(ALLY_[A-Z0-9_]+),d0\s+bsr\.w\s+j_JoinForce", battle)
-    if len(joined_allies) != 29:
+    ally_count = enums["COMBATANT_ALLIES_COUNTER"] + 1
+    if ally_count != enums["COMBATANT_ALLIES_NUMBER"]:
+        raise ValueError("debug ally counter/number relation drift")
+    if len(joined_allies) != ally_count - 1:
         raise ValueError("debug battle-test force roster drift")
+    if len(set(joined_allies)) != len(joined_allies) or "ALLY_BOWIE" in joined_allies:
+        raise ValueError("debug battle-test roster identity drift")
+    generic_values = [
+        byte
+        for literal in re.findall(r"move\.l\s+#\$([0-9A-Fa-f]+),\(a0\)\+", battle)
+        for byte in bytes.fromhex(literal.zfill(8))
+    ]
+    if generic_values != list(range(len(generic_values))):
+        raise ValueError("debug generic ally list value/order drift")
     action_table = re.search(
         r"rjt_DebugModeBattleactions:(?P<body>.*?)(?=^@Attack:)", actions, re.MULTILINE | re.DOTALL
     )
     if not action_table:
         raise ValueError("debug battle-action table is missing")
-    action_targets = re.findall(r"dc\.w\s+@([A-Za-z0-9_]+)-", action_table.group("body"))
-    _require_fragments(
+    action_entries = re.findall(
+        r"^\s*dc\.w\s+@([A-Za-z0-9_]+)-([A-Za-z_][A-Za-z0-9_]*)\s*$",
+        action_table.group("body"),
+        re.MULTILINE,
+    )
+    if not action_entries:
+        raise ValueError("debug battle-action table entries are missing")
+    action_targets = [target for target, _ in action_entries]
+    action_table_bases = {base for _, base in action_entries}
+    if action_table_bases != {"rjt_DebugModeBattleactions"}:
+        raise ValueError("debug battle-action relative-table base drift")
+    action_count = len(action_targets)
+    action_select_section = _debug_section(actions, "DebugModeActionSelect")
+    attack_block = _debug_local_block(action_select_section, "@Attack", "@Magic")
+    magic_block = _debug_local_block(action_select_section, "@Magic", "@Item")
+    item_block = _debug_local_block(action_select_section, "@Item", "@EndTurn")
+    end_turn_block = _debug_local_block(action_select_section, "@EndTurn", "@BurstRock")
+    burst_rock_block = _debug_local_block(action_select_section, "@BurstRock", "@Muddle")
+    muddle_block = _debug_local_block(action_select_section, "@Muddle", "@PrismLaser")
+    action_limit_match = re.search(
+        r"moveq\s+#(\d+),d2\s+jsr\s+j_NumberPrompt", action_select_section
+    )
+    bowie_value_match = re.search(r"moveq\s+#ALLY_BOWIE,d0\s+move\.w\s+#(\d+),d1", battle)
+    magic_first_match = re.search(r"@Magic:\s+moveq\s+#(\d+),d0", action_select_section)
+    magic_shift_match = re.search(r"lsl\.w\s+#(\d+),d3", magic_block)
+    item_limits = re.findall(
+        r"moveq\s+#(\d+),d2",
+        item_block,
+    )
+    record_stride_match = re.search(
+        r"adda\.w\s+#(\d+),a0", _debug_section(battle, "LoadAllyStatsDecimalDigits")
+    )
+    stat_word_offsets = [
+        int(offset or 0)
+        for offset in re.findall(
+            r"move\.w\s+d1,(\d*)\(a0\)", _debug_section(battle, "LoadAllyStatsDecimalDigits")
+        )
+    ]
+    bowie_setter_targets = _debug_direct_targets(
+        battle[
+            battle.find("moveq   #ALLY_BOWIE,d0") : battle.find(
+                "sndCom", battle.find("moveq   #ALLY_BOWIE,d0")
+            )
+        ]
+    )
+    stats_section = _debug_section(battle, "LoadAllyStatsDecimalDigits")
+    stat_call_targets = _debug_direct_targets(stats_section)
+    level_up_section = _debug_section(battle, "LevelUpWholeForce")
+    level_up_call_targets = _debug_direct_targets(level_up_section)
+    config_section = _debug_section(config, "CheatModeConfiguration")
+    config_text_ids = [
+        int(value) for value in re.findall(r'txt\s+(\d+)\s+;\s+"\{CLEAR\}', config_section)
+    ]
+    config_branches = re.findall(r"^\s*(bne\.s)\s+([^\s\r\n]+)", config_section, re.MULTILINE)
+    config_writes = [
+        (int(value), label)
+        for value, label in re.findall(
+            r"move\.b\s+#(-?\d+),\(\(([^-]+)-\$1000000\)\)\.w", config_section
+        )
+    ]
+    completed_set_match = re.search(r"bset\s+#(\d+),\(SAVE_FLAGS\)\.l", config_section)
+    completed_clear_match = re.search(r"bclr\s+#(\d+),\(SAVE_FLAGS\)\.l", config_section)
+    completed_transition_match = re.search(
+        r"bset\s+#\d+,\(SAVE_FLAGS\)\.l\s+([^\r\n]+)\r?\n([^\r\n]+)\r?\n\s+bclr",
+        config_section,
+    )
+    completed_bit_match = re.search(r"btst\s+#(\d+),\(SAVE_FLAGS\)\.l", config_section)
+    if (
+        not action_limit_match
+        or not bowie_value_match
+        or not magic_first_match
+        or not magic_shift_match
+        or len(item_limits) != 1
+        or not record_stride_match
+        or len(stat_word_offsets) != 6
+        or len(bowie_setter_targets) != 8
+        or len(stat_call_targets) != 14
+        or level_up_call_targets != ["j_LevelUp"]
+        or len(config_text_ids) != 4
+        or len(config_branches) != 4
+        or len(config_writes) != 3
+        or not completed_set_match
+        or not completed_clear_match
+        or not completed_transition_match
+        or not completed_bit_match
+    ):
+        raise ValueError("debug source immediate extraction drift")
+    action_max_index = int(action_limit_match.group(1))
+    bowie_stat_value = int(bowie_value_match.group(1))
+    magic_level_first_index = int(magic_first_match.group(1))
+    magic_level_shift_bits = int(magic_shift_match.group(1))
+    item_value_max = int(item_limits[0])
+    completed_flag_bit = int(completed_bit_match.group(1))
+    configuration_choices = [
+        {
+            "textId": config_text_ids[index],
+            "nonzeroBranchOpcode": config_branches[index][0],
+            "nonzeroBranchTarget": config_branches[index][1],
+            "zeroWriteValue": config_writes[index][0],
+            "zeroWriteLabel": config_writes[index][1],
+        }
+        for index in range(len(config_writes))
+    ]
+    completed_choice = {
+        "textId": config_text_ids[-1],
+        "nonzeroBranchOpcode": config_branches[-1][0],
+        "nonzeroBranchTarget": config_branches[-1][1],
+        "zeroSetBit": int(completed_set_match.group(1)),
+        "zeroExitInstruction": completed_transition_match.group(1).strip(),
+        "nonzeroLabel": completed_transition_match.group(2).strip(),
+        "nonzeroClearBit": int(completed_clear_match.group(1)),
+    }
+    if action_max_index != action_count - 1:
+        raise ValueError("debug action prompt/table range drift")
+    stack_offsets = {
+        name: int(offset)
+        for name, offset in re.findall(
+            r"^(debug(?:Dodge|Critical|Double|Counter))\s+=\s+(-?\d+)\s*$", actions, re.MULTILINE
+        )
+    }
+    hit_names = ["debugDodge", "debugCritical", "debugDouble", "debugCounter"]
+    if list(stack_offsets) != hit_names:
+        raise ValueError("debug hit override stack aliases drift")
+
+    _require_debug_ordered_section(
         battle,
+        "DebugModeBattleTest",
         (
-            "move.w  #99,d1",
-            "#BATTLES_DEBUG_MAX_INDEX",
-            "#SHOPS_DEBUG_MAX_INDEX",
-            "LevelUpWholeForce:",
+            "move.b  #-1,((DEBUG_MODE_TOGGLE-$1000000)).w",
+            "move.b  #-1,((SPECIAL_TURBO_TOGGLE-$1000000)).w",
+            "moveq   #ALLY_SARAH,d0",
+            "bsr.w   j_JoinForce",
+            "moveq   #ALLY_CLAUDE,d0",
+            "bsr.w   j_JoinForce",
+            "moveq   #ALLY_BOWIE,d0",
+            f"move.w  #{bowie_stat_value},d1",
+            *(f"bsr.w   {target}" for target in bowie_setter_targets),
+            "trap    #VINT_FUNCTIONS",
+            "dc.w VINTS_ADD",
+            "dc.l VInt_UpdateWindows",
+            "move.w  #COMBATANT_ALLIES_NUMBER,(GENERIC_LIST_LENGTH).l",
+            "bsr.w   CheatModeConfiguration",
+            "move.w  #BATTLES_DEBUG_MAX_INDEX,d2",
+            "jsr     j_NumberPrompt",
+            "tst.w   d0",
+            "blt.w   @DebugLevelUp",
+            "move.w  #1,d2",
+            "jsr     j_NumberPrompt",
+            "beq.s   @DebugSetFlags",
+            "addi.w  #BATTLE_INTRO_CUTSCENE_FLAGS_START,d1",
+            "jsr     j_SetFlag",
+            "move.w  #FLAG_INDEX_FOLLOWERS_ASTRAL,d0",
+            "jsr     j_DebugSetFlag",
+            "mulu.w  #BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL,d0",
+            "jsr     j_BattleLoop",
+            "jsr     j_ChurchMenu",
+            "move.w  #SHOPS_DEBUG_MAX_INDEX,d2",
+            "jsr     j_NumberPrompt",
+            "move.b  d0,((CURRENT_SHOP_INDEX-$1000000)).w",
+            "jsr     j_ShopMenu",
+            "jsr     j_FieldMenu",
+            "jsr     j_CaravanMenu",
         ),
-        "battle test",
     )
-    _require_fragments(
+    _require_debug_ordered_section(
+        battle,
+        "DebugModeBattleTest",
+        (
+            "@DebugLevelUp:",
+            "bsr.w   LoadAllyStatsDecimalDigits",
+            "jsr     j_ExecuteMembersListScreenOnMainSummaryPage",
+            "tst.b   d0",
+            "bne.w   byte_77DE",
+            "bpl.s   @loc_4",
+            "jsr     j_ChurchMenu",
+            "bsr.w   LevelUpWholeForce",
+            "bra.s   @DebugLevelUp",
+        ),
+    )
+    _require_debug_ordered_section(
+        battle,
+        "LoadAllyStatsDecimalDigits",
+        (
+            "moveq   #COMBATANT_ALLIES_COUNTER,d7",
+            "clr.w   d0",
+            *tuple(f"bsr.w   {target}" for target in stat_call_targets),
+            f"adda.w  #{record_stride_match.group(1)},a0",
+            "addq.w  #1,d0",
+            "dbf     d7,@Loop",
+        ),
+    )
+    _require_debug_ordered_section(
+        battle,
+        "LevelUpWholeForce",
+        (
+            "moveq   #COMBATANT_ALLIES_COUNTER,d7",
+            "clr.w   d0",
+            "bsr.w   j_LevelUp",
+            "addq.w  #1,d0",
+            "dbf     d7,@Loop",
+        ),
+    )
+    _require_debug_ordered_section(
         config,
+        "CheatModeConfiguration",
         (
-            "SPECIAL_TURBO_TOGGLE",
-            "CONTROL_OPPONENT_TOGGLE",
-            "AUTO_BATTLE_TOGGLE",
-            "bset    #7,(SAVE_FLAGS).l",
-            "bclr    #7,(SAVE_FLAGS).l",
-            "j_SoundTest",
+            "btst    #INPUT_BIT_START,((PLAYER_1_INPUT-$1000000)).w",
+            "beq.w   @Return",
+            "btst    #INPUT_BIT_UP,((PLAYER_1_INPUT-$1000000)).w",
+            "beq.s   @IsConfigurationModeOn",
+            f"btst    #{completed_flag_bit},(SAVE_FLAGS).l",
+            "bne.w   j_SoundTest",
+            "tst.b   ((CONFIGURATION_MODE_TOGGLE-$1000000)).w",
+            "beq.w   @Return",
+            *tuple(
+                fragment
+                for choice in configuration_choices
+                for fragment in (
+                    f"txt     {choice['textId']}",
+                    "jsr     j_alt_YesNoPrompt",
+                    "tst.w   d0",
+                    f"{choice['nonzeroBranchOpcode']}   {choice['nonzeroBranchTarget']}",
+                    (
+                        f"move.b  #{choice['zeroWriteValue']},"
+                        f"(({choice['zeroWriteLabel']}-$1000000)).w"
+                    ),
+                )
+            ),
+            f"txt     {completed_choice['textId']}",
+            "jsr     j_alt_YesNoPrompt",
+            "tst.w   d0",
+            (
+                f"{completed_choice['nonzeroBranchOpcode']}   "
+                f"{completed_choice['nonzeroBranchTarget']}"
+            ),
+            f"bset    #{completed_choice['zeroSetBit']},(SAVE_FLAGS).l",
+            completed_choice["zeroExitInstruction"],
+            completed_choice["nonzeroLabel"],
+            f"bclr    #{completed_choice['nonzeroClearBit']},(SAVE_FLAGS).l",
         ),
-        "configuration mode",
     )
-    _require_fragments(
+    _require_debug_ordered_section(
         actions,
+        "DebugModeActionSelect",
         (
-            "seq     debugDodge(a2)",
-            "seq     debugCritical(a2)",
-            "seq     debugDouble(a2)",
-            "seq     debugCounter(a2)",
+            f"moveq   #{action_max_index},d2",
+            "jsr     j_NumberPrompt",
+            "cmpi.b  #-1,d0",
+            "beq.w   @Done",
+            "move.w  d0,(a0)+",
+            "add.w   d0,d0",
+            "move.w  rjt_DebugModeBattleactions(pc,d0.w),d0",
+            "jmp     rjt_DebugModeBattleactions(pc,d0.w)",
         ),
-        "debug hit selection",
     )
+    _require_debug_ordered_section(
+        actions,
+        "DebugModeActionSelect",
+        (
+            "@Attack:",
+            "bsr.w   DebugModeSelectTargetEnemy",
+            "move.w  d0,(a0)+",
+            "bra.w   @Done",
+            "@Magic:",
+            f"moveq   #{magic_level_first_index},d0",
+            f"moveq   #{magic_level_first_index},d1",
+            "moveq   #SPELLENTRY_LEVELS_NUMBER,d2",
+            "jsr     j_NumberPrompt",
+            "move.w  d0,d3",
+            f"subq.w  #{magic_level_first_index},d3",
+            f"lsl.w   #{magic_level_shift_bits},d3",
+            "moveq   #0,d0",
+            "moveq   #0,d1",
+            "moveq   #SPELLENTRY_SPELLS_NUMBER,d2",
+            "jsr     j_NumberPrompt",
+            "add.w   d3,d0",
+            "move.w  d0,(a0)+",
+            "bsr.w   DebugModeSelectTargetEnemy",
+            "move.w  d0,(a0)+",
+            "bra.w   @Done",
+            "@Item:",
+            "moveq   #0,d0",
+            "moveq   #0,d1",
+            "moveq   #ITEMINDEX_MAX,d2",
+            "jsr     j_NumberPrompt",
+            "move.w  d0,(a0)+",
+            "bsr.w   DebugModeSelectTargetEnemy",
+            "move.w  d0,(a0)+",
+            "moveq   #0,d0",
+            "moveq   #0,d1",
+            f"moveq   #{item_value_max},d2",
+            "jsr     j_NumberPrompt",
+            "move.w  d0,(a0)+",
+            "bra.w   @Done",
+            "@EndTurn:",
+            "bra.w   @Done",
+            "@BurstRock:",
+            "bra.w   @Done",
+            "@Muddle:",
+            "bra.w   @Done",
+            "@PrismLaser:",
+            "move.b  #BATTLE_VERSUS_PRISM_FLOWERS,((CURRENT_BATTLE-$1000000)).w",
+        ),
+    )
+    _require_debug_ordered_section(
+        actions,
+        "DebugModeSelectHits",
+        tuple(
+            fragment
+            for name in hit_names
+            for fragment in ("jsr     j_YesNoPrompt", "tst.w   d0", f"seq     {name}(a2)")
+        ),
+    )
+
+    callers: dict[str, dict[str, int]] = {}
+    pointer_references: dict[str, dict[str, int]] = {}
+    targets = set(DEBUG_FUNCTIONS)
+    for path in sorted((disasm / "code").rglob("*.asm"), key=lambda item: item.as_posix()):
+        relative = path.relative_to(disasm)
+        if relative in DEBUG_SOURCE_PATHS:
+            continue
+        counts = _debug_direct_call_counts(path, targets)
+        if counts:
+            callers[relative.as_posix()] = counts
+        pointer_counts = _debug_longword_pointer_counts(path, targets)
+        if pointer_counts:
+            pointer_references[relative.as_posix()] = pointer_counts
+    external_counts = {
+        target: sum(counts.get(target, 0) for counts in callers.values())
+        for target in DEBUG_FUNCTIONS
+    }
+    internal_counts = {
+        path.relative_to(disasm).as_posix(): _debug_direct_call_counts(path, targets)
+        for path in paths.values()
+    }
+
     return {
-        "battleTestJoinedAllyCount": len(joined_allies),
-        "battleTestWholeForceCount": 30,
-        "battleTestMaxBattleIndex": 49,
-        "battleTestMaxShopIndex": 100,
-        "battleTestBowieStatValue": 99,
-        "configurationToggleCount": 4,
-        "configurationToggles": [
-            "special-turbo",
-            "control-opponent",
-            "auto-battle",
-            "game-completed",
-        ],
-        "soundTestRequiresStartUpAndCompletedFlag": True,
-        "debugBattleActionTargets": action_targets,
-        "debugBattleActionCount": len(action_targets),
-        "debugHitOverrideCount": 4,
-        "debugHitOverrides": ["dodge", "critical", "double", "counter"],
+        "sourceFiles": {
+            key.removesuffix(".asm"): {
+                "path": path.relative_to(disasm).as_posix(),
+                "lineCount": len(read_upstream_text(path).splitlines()),
+            }
+            for key, path in paths.items()
+        },
+        "functionEntries": function_entries,
+        "sourceLabels": {"addresses": addresses, "enumValues": enums},
+        "derived": {
+            "wholeForceCount": ally_count,
+            "joinedRosterCount": len(joined_allies),
+            "genericListEntryCount": len(generic_values),
+            "actionCount": action_count,
+            "actionMaxIndex": action_max_index,
+            "enemyTargetCount": enums["COMBATANT_ENEMIES_END"]
+            - enums["COMBATANT_ENEMIES_START"]
+            + 1,
+            "magicLevelFirstIndex": magic_level_first_index,
+            "magicLevelLastIndex": enums["SPELLENTRY_LEVELS_NUMBER"],
+        },
+        "battleTest": {
+            "initialization": {
+                "setToggleLabels": ["DEBUG_MODE_TOGGLE", "SPECIAL_TURBO_TOGGLE"],
+                "joinedAllyIds": joined_allies,
+                "bowieIdLabel": "ALLY_BOWIE",
+                "bowieStatValue": bowie_stat_value,
+                "bowieStatSetterTargets": bowie_setter_targets,
+                "vintAddPointerTarget": "VInt_UpdateWindows",
+            },
+            "genericList": {
+                "lengthLabel": "COMBATANT_ALLIES_NUMBER",
+                "entryValues": generic_values,
+            },
+            "flow": {
+                "battlePromptRange": [0, enums["BATTLES_DEBUG_MAX_INDEX"]],
+                "negativeBattleChoiceTarget": "DebugLevelUp",
+                "cutscenePromptRange": [0, 1],
+                "nonzeroCutsceneSetsFlagOffsetLabel": "BATTLE_INTRO_CUTSCENE_FLAGS_START",
+                "followerFlagLabel": "FLAG_INDEX_FOLLOWERS_ASTRAL",
+                "battleMapCoordinateEntrySizeLabel": "BATTLEMAPCOORDINATES_ENTRY_SIZE_FULL",
+                "serviceRouteTargets": [
+                    "j_BattleLoop",
+                    "j_ChurchMenu",
+                    "j_ShopMenu",
+                    "j_FieldMenu",
+                    "j_CaravanMenu",
+                ],
+                "shopPromptRange": [0, enums["SHOPS_DEBUG_MAX_INDEX"]],
+                "shopIndexWriteLabel": "CURRENT_SHOP_INDEX",
+                "membersResultControlFlow": {
+                    "testInstruction": "tst.b d0",
+                    "firstBranchOpcode": "bne.w",
+                    "firstBranchTarget": "byte_77DE",
+                    "fallthroughBranchOpcode": "bpl.s",
+                    "fallthroughBranchTarget": "@loc_4",
+                    "fallthroughChurchTarget": "j_ChurchMenu",
+                    "fallthroughChurchBlockIsStaticallyUnreachable": True,
+                    "fallthroughLevelUpTarget": "LevelUpWholeForce",
+                },
+            },
+            "statDisplay": {
+                "allyLoopCount": ally_count,
+                "recordStrideBytes": int(record_stride_match.group(1)),
+                "wordOffsets": stat_word_offsets,
+                "orderedCallTargets": stat_call_targets,
+                "wholeForceLevelUpCallTargets": level_up_call_targets,
+            },
+        },
+        "configuration": {
+            "inputGate": {
+                "requiredInputBitLabel": "INPUT_BIT_START",
+                "soundTestInputBitLabel": "INPUT_BIT_UP",
+                "completedSaveFlagBit": completed_flag_bit,
+                "soundTestBranchOpcode": "bne.w",
+                "soundTestTarget": "j_SoundTest",
+                "soundTestTransferDoesNotPushReturnAddress": True,
+                "configurationEnableLabel": "CONFIGURATION_MODE_TOGGLE",
+            },
+            "choices": [*configuration_choices, completed_choice],
+        },
+        "battleActions": {
+            "selection": {
+                "promptRange": [0, action_max_index],
+                "cancelValue": -1,
+                "actionWriteLabel": "CURRENT_BATTLEACTION",
+                "relativeJumpTableBase": next(iter(action_table_bases)),
+                "relativeJumpTargets": action_targets,
+            },
+            "routes": {
+                "Attack": {
+                    "orderedCallTargets": _debug_direct_targets(attack_block),
+                    "wordWriteCount": len(re.findall(r"move\.w\s+d0,\(a0\)\+", attack_block)),
+                },
+                "Magic": {
+                    "levelPromptRange": [
+                        magic_level_first_index,
+                        enums["SPELLENTRY_LEVELS_NUMBER"],
+                    ],
+                    "levelSubtract": magic_level_first_index,
+                    "levelShiftBits": magic_level_shift_bits,
+                    "spellPromptRange": [0, enums["SPELLENTRY_SPELLS_NUMBER"]],
+                    "orderedCallTargets": _debug_direct_targets(magic_block),
+                    "wordWriteCount": len(re.findall(r"move\.w\s+d0,\(a0\)\+", magic_block)),
+                },
+                "Item": {
+                    "itemPromptRange": [0, enums["ITEMINDEX_MAX"]],
+                    "valuePromptRange": [0, item_value_max],
+                    "orderedCallTargets": _debug_direct_targets(item_block),
+                    "wordWriteCount": len(re.findall(r"move\.w\s+d0,\(a0\)\+", item_block)),
+                },
+                "EndTurn": {"branchInstruction": end_turn_block.splitlines()[2].strip()},
+                "BurstRock": {"branchInstruction": burst_rock_block.splitlines()[2].strip()},
+                "Muddle": {"branchInstruction": muddle_block.splitlines()[2].strip()},
+                "PrismLaser": {"writeLabel": "BATTLE_VERSUS_PRISM_FLOWERS"},
+            },
+            "targetEnemyPromptRange": [
+                enums["COMBATANT_ENEMIES_START"],
+                enums["COMBATANT_ENEMIES_END"],
+            ],
+            "magicSpellPromptRange": [0, enums["SPELLENTRY_SPELLS_NUMBER"]],
+            "itemPromptRange": [0, enums["ITEMINDEX_MAX"]],
+            "itemValuePromptRange": [0, item_value_max],
+            "prismLaserBattleLabel": "BATTLE_VERSUS_PRISM_FLOWERS",
+            "hitOverrides": [
+                {"sourceAlias": name, "stackOffset": stack_offsets[name]} for name in hit_names
+            ],
+        },
+        "internalDirectCallSiteCounts": internal_counts,
+        "externalDirectCallerOccurrences": callers,
+        "externalDirectCallSiteCounts": external_counts,
+        "externalLongwordPointerOccurrences": pointer_references,
+        "indirectBehavior": {
+            "longwordPointerReferencesAreNotDirectCallSites": True,
+            "zeroDirectCallerCountDoesNotEstablishUnreachability": True,
+        },
+        "runtimeQuestions": ["debug-flow-input-chords-menu-selection-and-action-state-matrix"],
+        "debugBattleActionCount": action_count,
     }
 
 
@@ -893,10 +1426,10 @@ def build_remaining_core_inventory(upstream_path: Path) -> dict[str, Any]:
         "externalDirectCallTargets": sorted(target for target in calls if target not in labels),
         "headerFacts": _header_facts(sources["code/romheader.asm"]),
         "windowFacts": _window_facts(disasm, listing),
-        "debugFacts": _debug_facts(sources),
+        "debugFacts": _debug_facts(disasm, listing),
         "runtimeQuestions": [
             "window-animation-hide-scroll-and-dma-frames",
-            "debug-configuration-input-and-menu-presentation",
+            "debug-flow-input-chords-menu-selection-and-action-state-matrix",
         ],
         "files": files,
     }
