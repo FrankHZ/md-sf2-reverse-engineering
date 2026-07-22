@@ -22,6 +22,11 @@ The role is defined in `.codex/agents/terra-reverse-engineer.toml`; `.codex/conf
 project to two agent threads and one nesting level. When role selection is unavailable to the current
 surface, the root explicitly selects `gpt-5.6-terra` when spawning the worker.
 
+The role remains at `xhigh` reasoning effort. Tested bounded checkpoints improved execution without
+requiring a broader model change: the Shop slice needed many partial/rejection rounds, while Church and
+Caravan each needed one narrow semantic-root rejection. Keep `xhigh`; do not raise the ordinary worker to
+`max` or `ultra` on this history alone.
+
 ## Why
 
 Phase 2 has a mature static-first and batched-runtime cadence, but discovery, documentation, and final
@@ -110,6 +115,17 @@ quality contract. Before handoff, the worker therefore checks all of the followi
 19. The first worker turn begins implementation after repository orientation. If capacity requires internal
     checkpoints, every checkpoint contains a tested bounded change, is resumed from the current diff, and
     is reported as partial rather than acceptance-ready. A no-progress return names a concrete blocker.
+20. A reported semantic summary (constant, mask, offset, width, selector scale, capacity, branch, call
+    order, or caller total) identifies its specific parsed use-site record, table, or operand. Symbolic
+    operands resolve through the one authoritative constants map where applicable, and the parser validates
+    identity, order, polarity, and width against that use-site relationship; independently parsed inputs do
+    not establish a derivation.
+21. A smallest-scope source mutation of the reported use-site operand, opcode, or order makes parser
+    construction fail before golden-fixture comparison. Fixture/schema exactness alone is not a derivation
+    guard. Internal and external effective-target total maps are zero-inclusive across the complete declared
+    target set, not merely positive occurrences.
+22. The worker's pre-handoff summary-provenance audit asks whether every reported derived field links to a
+    parsed use site and to a mutation capable of falsifying it before fixture comparison.
 
 The root repeats these checks independently. A rejection returns to the same worker and becomes input to
 its next self-review; the root does not silently patch the research implementation.
@@ -119,4 +135,6 @@ its next self-review; the root does not silently patch the research implementati
 - Normal Phase 2 work has one accountable author and one independent acceptor.
 - Worker handoffs become durable input to review rather than a substitute for evidence in tracked docs.
 - The root may reject or return a slice, but it should not silently complete the worker's research.
+- The tested checkpoint/review history supports retaining `xhigh` reasoning effort; it is not evidence for
+  raising the ordinary worker to `max` or `ultra`.
 - The existing evidence, copyright, and verification rules remain unchanged.

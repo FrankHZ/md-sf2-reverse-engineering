@@ -66,6 +66,16 @@ golden fixtures and strict schemas still pin the resulting exact values. Boolean
 string cardinality, and arithmetic identities do not qualify as derivation. Both schemas close every nested
 object recursively and focused mutation tests reject missing, renamed, extra, reordered, and out-of-bound
 content. Changed parsers cover positive, negative, boundary, comment, and legal instruction-suffix cases.
+Reported semantic summaries—constants, masks, offsets, widths, selector scales, capacities, branches, call
+orders, and caller totals—must identify the specific parsed use-site record/table/operand that expresses
+the relationship, resolve symbols through the one parsed constants map where applicable, and validate
+identity/order/polarity/width there. Independently parsing a constant and an instruction corpus is not a
+derivation. A smallest-scope source mutation of that use-site operand/opcode/order must make parser
+construction fail before golden-fixture comparison; fixture/schema exactness is not a derivation guard.
+Caller effective-target total maps are zero-inclusive across the complete declared target set for both
+internal and external inventories, not only positive occurrences. The worker's pre-handoff
+summary-provenance audit asks whether every reported derived field has both a parsed use-site link and a
+mutation capable of falsifying it.
 Workers do not use file-wide lint suppression or include unrelated formatting/generated churn. When chat
 context is compact, they recover from the repository, current diff, and explicit slice contract before
 asking the root a precise blocking question. Large exact corpora use one closed reusable record schema plus

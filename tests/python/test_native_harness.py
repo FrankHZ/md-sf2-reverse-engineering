@@ -740,6 +740,12 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         config = tomllib.load(config_file)
     with (root / ".codex" / "agents" / "terra-reverse-engineer.toml").open("rb") as agent_file:
         agent = tomllib.load(agent_file)
+    agents_guide = (root / "AGENTS.md").read_text(encoding="utf-8")
+    adr = " ".join(
+        (root / "docs" / "decisions" / "0004-single-terra-worker-with-root-acceptance.md")
+        .read_text(encoding="utf-8")
+        .split()
+    )
 
     agents = config["agents"]
     assert agents["max_threads"] == 2
@@ -778,8 +784,25 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         "zero effective-caller count",
         "Begin implementation during the first assigned turn",
         "tested, bounded repository change",
+        "specific parsed use-site record",
+        "smallest-scope source mutation",
+        "zero-inclusive across the complete declared target set",
+        "pre-handoff summary-provenance audit",
     ):
         assert required_text in instructions
+    for required_text in (
+        "fixture/schema exactness is not a derivation guard",
+        "Caller effective-target total maps are zero-inclusive",
+        "summary-provenance audit",
+    ):
+        assert required_text in agents_guide
+    for required_text in (
+        "Shop slice needed many partial/rejection rounds",
+        "one narrow semantic-root rejection",
+        "Keep `xhigh`; do not raise",
+        "Fixture/schema exactness alone is not a derivation guard",
+    ):
+        assert required_text in adr
 
 
 def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:

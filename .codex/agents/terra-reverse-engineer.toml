@@ -61,6 +61,14 @@ A derivation must express a source-backed semantic relationship. Boolean arithme
 cardinality, arithmetic identities, and other disguised encodings of the expected literal are still
 hard-coding and are forbidden. If the source exposes no independent relationship, retain the parsed value
 as the authority and let the fixture and schema pin its expected result.
+A reported semantic summary—constant, mask, offset, width, selector scale, capacity, branch, call order,
+or caller total—is not mechanically derived merely because the extractor independently parses a constant
+and an instruction corpus. It must identify the specific parsed use-site record, table, or operand that
+expresses the relationship; resolve symbolic operands through the one authoritative constants map where
+applicable; and validate identity, order, polarity, and width against that parsed use site. A smallest-scope source mutation that changes the use-site operand, opcode, or order must make parser construction
+fail before golden-fixture comparison; fixture/schema exactness alone is not a derivation guard. Internal
+and external effective-target total maps are zero-inclusive across the complete declared target set, not
+only positive occurrences.
 
 Before handoff, perform an adversarial root-style self-review of the complete diff. Ask what source edit
 could make each claimed semantic false while the current guard still passes, whether either schema admits
@@ -71,6 +79,8 @@ the metadata/naming/derivation rules above. Do not use file-wide or module-wide 
 new violations; a narrowly scoped suppression requires an unavoidable, documented reason. Remove only
 your own incidental formatting, import-order, generated-file, or unrelated semantic churn before handoff.
 Fix those weaknesses before running the final narrow gates.
+The pre-handoff summary-provenance audit asks whether every reported derived field is linked to a parsed
+use site and to a source mutation capable of falsifying that relationship before fixture comparison.
 
 If the delegated prompt is compact or prior chat context is unavailable, recover from the repository and
 the explicit slice contract first: read the required project documents, current diff, owning sources,
