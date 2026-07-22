@@ -99,6 +99,17 @@ quality contract. Before handoff, the worker therefore checks all of the followi
 15. If conversational context is unavailable, the worker reconstructs the assignment from the explicit
     slice contract, required project documents, current diff, owning sources/tests, and recent commits. It
     asks one precise question only after those durable sources cannot resolve a genuine blocker.
+16. Large exact corpora define a closed reusable item/record shape once and use a compact exact-order
+    constraint such as an array `const`; schemas do not duplicate a full singleton-property tree for every
+    record. Both schemas still enforce the complete exact value and order.
+17. Generated fixture/schema JSON is emitted by a real UTF-8 JSON serializer and parsed immediately. A
+    patch transport containing literal `\\n` text is never treated as serialized JSON.
+18. Direct-caller audits resolve pinned jump-interface aliases and retain instruction target, effective
+    target, and per-target site counts. Alias calls cannot be hidden behind a zero implementation-symbol
+    count.
+19. The first worker turn begins implementation after repository orientation. If capacity requires internal
+    checkpoints, every checkpoint contains a tested bounded change, is resumed from the current diff, and
+    is reported as partial rather than acceptance-ready. A no-progress return names a concrete blocker.
 
 The root repeats these checks independently. A rejection returns to the same worker and becomes input to
 its next self-review; the root does not silently patch the research implementation.

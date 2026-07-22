@@ -772,6 +772,12 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         "container or string",
         "file-wide or module-wide lint suppressions",
         "Do not return a no-op",
+        "compact `const`",
+        "Python's JSON encoder",
+        "jump-interface alias",
+        "zero effective-caller count",
+        "Begin implementation during the first assigned turn",
+        "tested, bounded repository change",
     ):
         assert required_text in instructions
 

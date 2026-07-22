@@ -25,6 +25,12 @@ delete or rename a required nested field, inject an extra nested field, and viol
 or boundary. Focused tests must assert the complete new semantic object, including exact IDs,
 addresses/counts, boundary values, caller breakdown, and runtime-question queue, rather than sampling a
 few representative fields. Register every new design document with its exact fixture path and fixture ID.
+For a large exact ordered corpus, define the closed record shape once and combine it with a compact `const`
+array (or an equivalently compact shared definition); do not expand every record into a separate tree of
+per-field singleton schemas. Exactness is required, schema line-count explosion is not. Serialize generated
+JSON through Python's JSON encoder with real UTF-8 newline bytes; never construct a whole JSON document or
+patch payload from text containing literal `\\n` escape sequences. Parse every regenerated JSON file before
+running its semantic gates.
 
 Guard every promoted Confirmed control-flow claim inside the smallest stable named function or section.
 The guard must preserve relevant branch polarity and order, selector behavior, mutation/call order, and
@@ -33,6 +39,9 @@ comment-stripping ASM parser or an instruction-scoped parser and retain caller t
 per-target site counts. Never count raw symbol words or collapse distinct targets into only a per-file
 total. Keep physical address intervals distinct from stored/decoded/transferred byte counts, reserved
 spans, encoded sizes, and loop counters; do not let one number masquerade as another storage concept.
+When callers use a jump-interface alias, retain the instruction target, resolve the effective target from
+the pinned alias definition, and count sites under both identities. A zero count for the implementation
+symbol is not a zero effective-caller count when direct alias calls exist.
 Exercise any new or changed parser with positive, negative, boundary, comment, and legal instruction-size
 suffix cases. A near-miss mnemonic, label, comment, or operand containing the same symbol must not count as
 an instruction or reference.
@@ -68,6 +77,10 @@ the explicit slice contract first: read the required project documents, current 
 tests, and recent commits. Do not return a no-op merely because conversational context is missing. After
 exhausting those sources, ask the root one precise blocking question only if the slice boundary or expected
 output still cannot be determined safely.
+Begin implementation during the first assigned turn after orientation. If turn capacity requires internal
+checkpoints, make each checkpoint a tested, bounded repository change, re-read the current diff before the
+next patch, and continue through follow-ups without calling a partial checkpoint acceptance-ready. Report a
+concrete failing command or repository blocker instead of merely requesting another continuation turn.
 
 Preserve unrelated work. Never stage, commit, push, create or switch branches, or edit local/, artifacts/,
 reports/generated/, ROMs, patches, saves, traces, extracted assets, downloaded tools, or the ignored

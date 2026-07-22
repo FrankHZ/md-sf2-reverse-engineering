@@ -68,7 +68,11 @@ object recursively and focused mutation tests reject missing, renamed, extra, re
 content. Changed parsers cover positive, negative, boundary, comment, and legal instruction-suffix cases.
 Workers do not use file-wide lint suppression or include unrelated formatting/generated churn. When chat
 context is compact, they recover from the repository, current diff, and explicit slice contract before
-asking the root a precise blocking question.
+asking the root a precise blocking question. Large exact corpora use one closed reusable record schema plus
+a compact exact-order constraint instead of per-record schema expansion; generated JSON uses a real JSON
+serializer and is parsed before gates. Caller audits resolve jump-interface aliases while retaining both
+instruction and effective target identities. A worker begins implementation in its first assigned turn;
+capacity checkpoints must contain a tested bounded change and are never presented as completed handoffs.
 
 The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
 and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
