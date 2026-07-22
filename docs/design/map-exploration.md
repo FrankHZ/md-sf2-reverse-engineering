@@ -168,6 +168,17 @@ item values. It uses a private instrumented ROM whose 50-byte trampoline only su
 wrapper inputs; each selected script entry is replaced with `rts`, so script side effects and
 presentation remain outside this confirmed selection contract.
 
+The same `sf2-map-events-static-v1` fixture records the source-owned event contract without treating
+routes as duplicate records: 1,134 physical macro/ROM records join to 915 target profiles; 378
+pointer-table category joins and 390 ordered selector-route category joins refer to their table
+profiles. An importer MUST preserve each record's ordered operand text, table-relative target
+expression, resolved address, source/H1 owner identity, and the distinction among physical, pointer-
+weighted, and route-weighted counts. Same-address labels remain evidence, not a license to choose a
+semantic alias. The map44 raw zone-default expression is an explicit exceptional boundary and MUST
+remain separate from a labeled target. This contract establishes selection and target identity only;
+it MUST NOT be used to infer selected script lifecycle, transition persistence, facing, or visible
+presentation.
+
 Direct-`rts` entity-event targets are explicit empty handlers, not record arrays. Map 55 and the
 flag-512 map 52 setup pair them with empty entity lists. The default map 52 setup instead initializes
 four non-ally entities, which receive clean-state event indices 128-131; the original interaction

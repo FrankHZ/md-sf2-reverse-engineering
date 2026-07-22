@@ -17,6 +17,7 @@ from sf2tool.source_text import read_upstream_text
 
 ID = "sf2-map-events-static-v1"
 SOURCE_ROOT = Path("data/maps/entries")
+MAP_SETUP_MACROS_PATH = Path("sf2mapsetupmacros.asm")
 MANIFEST = repo_path("manifests/extractions/map-events-static.json")
 SCHEMA = repo_path("schemas/map-events-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/map-events-static-v1.json")
@@ -92,6 +93,218 @@ def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
 
 
+def _macro_block(source: str, macro: str) -> tuple[str, int]:
+    match = re.search(rf"(?ms)^{re.escape(macro)}:\s+macro\s*$.*?^\s*endm\s*$", source)
+    if match is None:
+        raise ValueError(f"map event macro definition is missing: {macro}")
+    return match.group(0), source[: match.start()].count("\n") + 1
+
+
+def _directive_width(directive: str) -> int:
+    return {"dc.b": 1, "dc.w": 2, "dc.l": 4}[directive]
+
+
+def _macro_definition(source: str, macro: str, kind: str) -> dict[str, Any]:
+    """Parse byte-emitting macro positions that bind a source use site to a record."""
+    block, definition_line = _macro_block(source, macro)
+    directives: list[dict[str, Any]] = []
+    for raw_line in block.splitlines():
+        line = raw_line.split(";", 1)[0].strip()
+        if not line or line == f"{macro}: macro" or line == "endm":
+            continue
+        parts = line.split(None, 1)
+        if len(parts) != 2 or parts[0] not in {"dc.b", "dc.w", "dc.l"}:
+            raise ValueError(f"map event macro directive drift: {macro}: {line!r}")
+        positions = [int(value) for value in re.findall(r"\\(\d+)", parts[1])]
+        directives.append(
+            {
+                "sourceOrder": len(directives),
+                "directive": parts[0],
+                "operandText": parts[1],
+                "widthBytes": _directive_width(parts[0]),
+                "argumentPositions": positions,
+            }
+        )
+    if not directives:
+        raise ValueError(f"map event macro has no byte-emitting directives: {macro}")
+    target_directives = [
+        directive
+        for directive in directives
+        if directive["directive"] == "dc.w" and re.fullmatch(r"\\(\d+)", directive["operandText"])
+    ]
+    if len(target_directives) != 1:
+        raise ValueError(f"map event macro target operand drift: {macro}")
+    if target_directives[0]["sourceOrder"] != len(directives) - 1:
+        raise ValueError(f"map event macro target directive order drift: {macro}")
+    target_position = target_directives[0]["argumentPositions"][0]
+    argument_positions = sorted(
+        {position for directive in directives for position in directive["argumentPositions"]}
+    )
+    if argument_positions != list(range(1, max(argument_positions, default=0) + 1)):
+        raise ValueError(f"map event macro argument positions drift: {macro}")
+    marker: int | None = None
+    if kind == "default":
+        first_operand = directives[0]["operandText"]
+        marker_match = re.fullmatch(r"\$([0-9A-Fa-f]+)", first_operand)
+        if marker_match is None:
+            raise ValueError(f"map event default macro marker drift: {macro}")
+        literal = int(marker_match.group(1), 16)
+        marker = literal >> ((directives[0]["widthBytes"] - 1) * 8)
+    return {
+        "macro": macro,
+        "kind": kind,
+        "definitionLine": definition_line,
+        "argumentCount": max(argument_positions, default=0),
+        "targetOperandPosition": target_position,
+        "defaultMarker": marker,
+        "encodedRecordBytes": sum(directive["widthBytes"] for directive in directives),
+        "emittedDirectives": directives,
+    }
+
+
+def _event_macro_definitions(disasm: Path) -> dict[str, list[dict[str, Any]]]:
+    source = read_upstream_text(disasm / MAP_SETUP_MACROS_PATH)
+    definitions: dict[str, list[dict[str, Any]]] = {}
+    for category, config in CATEGORY_CONFIG.items():
+        category_definitions = [
+            _macro_definition(source, macro, "specific") for macro in config["specificMacros"]
+        ] + [_macro_definition(source, macro, "default") for macro in config["defaultMacros"]]
+        if any(
+            definition["encodedRecordBytes"] != config["recordBytes"]
+            for definition in category_definitions
+        ):
+            raise ValueError(f"map event macro record width drift: {category}")
+        definitions[category] = category_definitions
+    return definitions
+
+
+def _split_macro_operands(text: str) -> list[str]:
+    operands: list[str] = []
+    start = 0
+    depth = 0
+    for index, character in enumerate(text):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth < 0:
+                raise ValueError(f"map event macro operand has unmatched ')': {text!r}")
+        elif character == "," and depth == 0:
+            operands.append(text[start:index].strip())
+            start = index + 1
+    if depth != 0:
+        raise ValueError(f"map event macro operand has unmatched '(': {text!r}")
+    operands.append(text[start:].strip())
+    if not all(operands):
+        raise ValueError(f"map event macro has empty operand: {text!r}")
+    return operands
+
+
+def _relative_target_expression(expression: str, table_symbol: str) -> dict[str, Any]:
+    """Parse the source expression whose signed word is decoded from the table base."""
+    compact = re.sub(r"\s+", "", expression)
+    masked_to_16_bits = False
+    mask_match = re.fullmatch(r"\((.+)\)&\$FFFF", compact, re.IGNORECASE)
+    if mask_match is not None:
+        compact = mask_match.group(1)
+        masked_to_16_bits = True
+    target_match = re.fullmatch(
+        rf"(?P<symbol>[A-Za-z_][A-Za-z0-9_]*)(?P<adjustment>[+-](?:\$[0-9A-Fa-f]+|\d+))?"
+        rf"-(?P<base>{re.escape(table_symbol)})",
+        compact,
+    )
+    if target_match is None:
+        raise ValueError(
+            f"map event target expression does not resolve from its table base: {expression!r}"
+        )
+    adjustment_text = target_match.group("adjustment")
+    adjustment = 0
+    if adjustment_text:
+        sign = -1 if adjustment_text.startswith("-") else 1
+        token = adjustment_text[1:]
+        adjustment = sign * (int(token[1:], 16) if token.startswith("$") else int(token))
+    return {
+        "targetExpression": expression,
+        "targetBaseSymbol": target_match.group("symbol"),
+        "targetBaseAdjustment": adjustment,
+        "relativeBaseSymbol": target_match.group("base"),
+        "maskedTo16Bits": masked_to_16_bits,
+    }
+
+
+def _event_macro_use_sites(
+    source: str,
+    *,
+    category: str,
+    path: str,
+    table_symbol: str,
+    definitions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Parse exact event-macro source rows without matching comments or near-miss names."""
+    by_macro = {definition["macro"]: definition for definition in definitions}
+    sites: list[dict[str, Any]] = []
+    for line_number, raw_line in enumerate(source.splitlines(), start=1):
+        line = raw_line.split(";", 1)[0].strip()
+        line = re.sub(r"^[A-Za-z_][A-Za-z0-9_]*:\s*", "", line).strip()
+        if not line:
+            continue
+        match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)\s+(.+)", line)
+        if match is None or match.group(1) not in by_macro:
+            continue
+        macro = match.group(1)
+        definition = by_macro[macro]
+        operands = _split_macro_operands(match.group(2))
+        if len(operands) != definition["argumentCount"]:
+            raise ValueError(f"map event macro operand count drift: {path}:{line_number}")
+        expression = operands[definition["targetOperandPosition"] - 1]
+        sites.append(
+            {
+                "sourceOrder": len(sites),
+                "sourcePath": path,
+                "sourceLine": line_number,
+                "sourceTableSymbol": table_symbol,
+                "macro": macro,
+                "kind": definition["kind"],
+                "operandTexts": operands,
+                "sourceDefaultMarker": definition["defaultMarker"],
+                "sourceMarkerWord": None,
+                **_relative_target_expression(expression, table_symbol),
+            }
+        )
+    if category == "zoneEvents" and table_symbol == RAW_ZONE_DEFAULT_SYMBOL:
+        raw_rows = [
+            (line_number, raw_line.split(";", 1)[0].strip())
+            for line_number, raw_line in enumerate(source.splitlines(), start=1)
+            if raw_line.split(";", 1)[0].strip()
+        ]
+        if len(raw_rows) < 3:
+            raise ValueError("map 44 raw zone-default marker is missing")
+        marker_match = re.fullmatch(r"dc\.w\s+\$([0-9A-Fa-f]{1,4})", raw_rows[1][1])
+        if marker_match is None:
+            raise ValueError("map 44 raw zone-default marker form drift")
+        marker_word = int(marker_match.group(1), 16)
+        marker_operand = f"${marker_match.group(1)}"
+        target_line, target_statement = raw_rows[2]
+        raw_match = re.fullmatch(r"dc\.w\s+(.+)", target_statement)
+        if raw_match is None:
+            raise ValueError("map 44 raw zone-default target expression drift")
+        sites.append(
+            {
+                "sourceOrder": len(sites),
+                "sourcePath": path,
+                "sourceLine": target_line,
+                "sourceTableSymbol": table_symbol,
+                "macro": "raw-zone-default-expression",
+                "kind": "default",
+                "operandTexts": [marker_operand, raw_match.group(1)],
+                "sourceDefaultMarker": marker_word >> 8,
+                "sourceMarkerWord": marker_word,
+                **_relative_target_expression(raw_match.group(1), table_symbol),
+            }
+        )
+    return sites
+
+
 def _decode_event_record(
     category: str, table_address: int, record_address: int, data: bytes
 ) -> dict[str, Any]:
@@ -110,9 +323,7 @@ def _decode_event_record(
     elif category == "zoneEvents":
         record.update({"x": data[0], "y": data[1]})
     elif category == "itemEvents":
-        record.update(
-            {"x": data[0], "y": data[1], "facing": data[2], "item": data[3]}
-        )
+        record.update({"x": data[0], "y": data[1], "facing": data[2], "item": data[3]})
     else:
         raise ValueError(f"unknown map event category: {category}")
     return record
@@ -135,8 +346,7 @@ def _event_matches(category: str, record: dict[str, Any], query: dict[str, int])
         return record["entity"] == (query["entity"] & 0xFF)
     if category == "zoneEvents":
         return all(
-            record[field] == 0xFF or record[field] == (query[field] & 0xFF)
-            for field in ("x", "y")
+            record[field] == 0xFF or record[field] == (query[field] & 0xFF) for field in ("x", "y")
         )
     if category == "itemEvents":
         coordinates_match = all(
@@ -202,8 +412,11 @@ def _selection_cases(
 
 
 def _source_rows(
-    disasm: Path, addresses: dict[str, int], category: str
-) -> tuple[list[dict[str, Any]], dict[int, str]]:
+    disasm: Path,
+    addresses: dict[str, int],
+    category: str,
+    definitions: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[int, dict[str, Any]]]:
     config = CATEGORY_CONFIG[category]
     paths = sorted(
         (
@@ -214,13 +427,10 @@ def _source_rows(
         key=lambda path: path.as_posix(),
     )
     files: list[dict[str, Any]] = []
-    record_kinds: dict[int, str] = {}
-    known_macros = {
-        **{macro: "specific" for macro in config["specificMacros"]},
-        **{macro: "default" for macro in config["defaultMacros"]},
-    }
+    source_records: dict[int, dict[str, Any]] = {}
     for path in paths:
         source = read_upstream_text(path)
+        relative_path = path.relative_to(disasm).as_posix()
         labels = re.findall(r"^([A-Za-z_][A-Za-z0-9_]*):", source, re.MULTILINE)
         if not labels or labels[0] not in addresses:
             raise ValueError(f"{category} source has no H1-bound entry label: {path}")
@@ -230,39 +440,52 @@ def _source_rows(
         if is_stub and _instruction_tokens(source) != ["rts"]:
             raise ValueError(f"{category} direct-return stub shape drift: {symbol}")
 
-        kinds: list[str] = []
-        macro_counts: Counter[str] = Counter()
-        for raw_line in source.splitlines():
-            line = raw_line.split(";", 1)[0].strip()
-            line = re.sub(r"^[A-Za-z_][A-Za-z0-9_]*:\s*", "", line)
-            match = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\b", line)
-            if match and match.group(1) in known_macros:
-                macro = match.group(1)
-                kinds.append(known_macros[macro])
-                macro_counts[macro] += 1
+        use_sites = _event_macro_use_sites(
+            source,
+            category=category,
+            path=relative_path,
+            table_symbol=symbol,
+            definitions=definitions,
+        )
+        kinds = [site["kind"] for site in use_sites]
+        macro_counts: Counter[str] = Counter(site["macro"] for site in use_sites)
         is_raw_default = category == "zoneEvents" and symbol == RAW_ZONE_DEFAULT_SYMBOL
-        if is_raw_default:
-            if kinds or "dc.w $FD00" not in source or "byte_54868+4" not in source:
-                raise ValueError("map 44 raw zone-default exception shape drift")
-            kinds.append("default")
-        if is_stub and kinds:
+        if is_raw_default and [site["macro"] for site in use_sites] != [
+            "raw-zone-default-expression"
+        ]:
+            raise ValueError("map 44 raw zone-default exception shape drift")
+        if is_stub and use_sites:
             raise ValueError(f"direct-return stub unexpectedly owns table records: {symbol}")
         if not is_stub and (not kinds or kinds[-1] != "default"):
             raise ValueError(f"{category} table lacks a final default record: {symbol}")
 
-        for index, kind in enumerate(kinds):
+        source_order_start = len(source_records)
+        for index, site in enumerate(use_sites):
             record_address = address + index * config["recordBytes"]
-            if record_address in record_kinds:
+            if record_address in source_records:
                 raise ValueError(
                     f"overlapping source-owned map event record at 0x{record_address:X}"
                 )
-            record_kinds[record_address] = kind
+            source_records[record_address] = {
+                **site,
+                "recordSourceOrder": len(source_records),
+                "tableRecordIndex": index,
+                "recordAddress": record_address,
+            }
         files.append(
             {
-                "path": path.relative_to(disasm).as_posix(),
+                "sourceOrder": len(files),
+                "path": relative_path,
                 "symbol": symbol,
                 "address": address,
                 "recordCount": len(kinds),
+                "encodedRecordBytes": len(kinds) * config["recordBytes"],
+                "recordSpanStartAddress": address if kinds else None,
+                "recordSpanEndAddressExclusive": (
+                    address + len(kinds) * config["recordBytes"] if kinds else None
+                ),
+                "recordSourceOrderStart": source_order_start if kinds else None,
+                "recordSourceOrderEndInclusive": (len(source_records) - 1 if kinds else None),
                 "specificRecordCount": kinds.count("specific"),
                 "defaultRecordCount": kinds.count("default"),
                 "macroCounts": dict(sorted(macro_counts.items())),
@@ -270,7 +493,46 @@ def _source_rows(
                 "rawDefaultException": is_raw_default,
             }
         )
-    return files, record_kinds
+    return files, source_records
+
+
+def _join_source_rom_record(
+    category: str,
+    decoded: dict[str, Any],
+    source_record: dict[str, Any],
+    addresses: dict[str, int],
+) -> dict[str, Any]:
+    """Guard the source operand/ROM-relative-target relationship for one record."""
+    if source_record["kind"] != decoded["kind"]:
+        raise ValueError(f"{category} source/ROM record kind drift at 0x{decoded['address']:X}")
+    if source_record["recordAddress"] != decoded["address"]:
+        raise ValueError(f"{category} source/ROM record address drift at 0x{decoded['address']:X}")
+    source_marker = source_record["sourceDefaultMarker"]
+    if decoded["kind"] == "default":
+        if source_marker is None:
+            raise ValueError(f"{category} source default marker is missing")
+        decoded_marker = decoded["entity"] if category == "entityEvents" else decoded["x"]
+        if source_marker != decoded_marker:
+            raise ValueError(
+                f"{category} source/ROM default marker relationship drift at "
+                f"0x{decoded['address']:X}"
+            )
+    elif source_marker is not None:
+        raise ValueError(f"{category} specific source unexpectedly declares default marker")
+    source_marker_word = source_record["sourceMarkerWord"]
+    if source_marker_word is not None and (
+        category != "zoneEvents" or source_marker_word != ((decoded["x"] << 8) | decoded["y"])
+    ):
+        raise ValueError(f"{category} raw source marker word/ROM relationship drift")
+    target_base = source_record["targetBaseSymbol"]
+    if target_base not in addresses:
+        raise ValueError(f"{category} source target lacks H1 base label: {target_base}")
+    source_target_address = addresses[target_base] + source_record["targetBaseAdjustment"]
+    if source_target_address != decoded["resolvedTargetAddress"]:
+        raise ValueError(
+            f"{category} source/ROM target relationship drift at 0x{decoded['address']:X}"
+        )
+    return {**decoded, **source_record, "category": category}
 
 
 def _category_contract(
@@ -279,9 +541,10 @@ def _category_contract(
     rom: bytes,
     setup: dict[str, Any],
     category: str,
+    definitions: list[dict[str, Any]],
 ) -> dict[str, Any]:
     config = CATEGORY_CONFIG[category]
-    files, source_record_kinds = _source_rows(disasm, addresses, category)
+    files, source_records = _source_rows(disasm, addresses, category, definitions)
     targets = [table["targets"][category] for table in setup["pointerTables"]]
     target_counts = Counter(target["symbol"] for target in targets)
     unique_targets = {target["symbol"]: target["address"] for target in targets}
@@ -294,7 +557,7 @@ def _category_contract(
     for symbol, address in sorted(unique_targets.items()):
         source_row = source_by_symbol[symbol]
         if source_row["directReturnStub"]:
-            if rom[address : address + 2] != b"\x4E\x75":
+            if rom[address : address + 2] != b"\x4e\x75":
                 raise ValueError(f"{category} direct-return stub ROM drift: {symbol}")
             continue
         records: list[dict[str, Any]] = []
@@ -304,13 +567,14 @@ def _category_contract(
             if len(raw) != config["recordBytes"] or len(records) >= 48:
                 raise ValueError(f"{category} table has no bounded default record: {symbol}")
             decoded = _decode_event_record(category, address, cursor, raw)
-            expected_kind = source_record_kinds.get(cursor)
-            if expected_kind != decoded["kind"]:
+            source_record = source_records.get(cursor)
+            if source_record is None:
                 raise ValueError(f"{category} source/ROM record drift at 0x{cursor:X}")
             if cursor in physical_records:
                 raise ValueError(f"{category} physical records overlap at 0x{cursor:X}")
-            physical_records[cursor] = decoded
-            records.append(decoded)
+            joined = _join_source_rom_record(category, decoded, source_record, addresses)
+            physical_records[cursor] = joined
+            records.append(joined)
             cursor += config["recordBytes"]
             if decoded["kind"] == "default":
                 break
@@ -320,11 +584,18 @@ def _category_contract(
             {
                 "symbol": symbol,
                 "address": address,
+                "sourcePath": source_row["path"],
+                "directReturnStub": False,
                 "recordCount": len(records),
+                "encodedRecordBytes": len(records) * config["recordBytes"],
+                "recordSpanStartAddress": records[0]["address"],
+                "recordSpanEndAddressExclusive": cursor,
+                "recordSourceOrderStart": records[0]["recordSourceOrder"],
+                "recordSourceOrderEndInclusive": records[-1]["recordSourceOrder"],
                 "records": records,
             }
         )
-    if set(physical_records) != set(source_record_kinds):
+    if set(physical_records) != set(source_records):
         raise ValueError(f"{category} source records are not exactly covered by setup tables")
 
     physical_kinds = Counter(record["kind"] for record in physical_records.values())
@@ -369,6 +640,446 @@ def _category_contract(
     }
 
 
+def _label_owners(
+    disasm: Path, addresses: dict[str, int], wanted_addresses: set[int]
+) -> dict[int, list[dict[str, Any]]]:
+    """Return every source/H1 label at a target address, retaining same-address labels."""
+    owners: dict[int, list[dict[str, Any]]] = {address: [] for address in wanted_addresses}
+    for path in sorted(disasm.rglob("*.asm")):
+        relative_path = path.relative_to(disasm).as_posix()
+        for line_number, line in enumerate(read_upstream_text(path).splitlines(), start=1):
+            match = re.match(r"^\s*([A-Za-z_][A-Za-z0-9_]*):", line)
+            if match is None:
+                continue
+            symbol = match.group(1)
+            address = addresses.get(symbol)
+            if address not in owners:
+                continue
+            owners[address].append(
+                {
+                    "symbol": symbol,
+                    "sourcePath": relative_path,
+                    "sourceLine": line_number,
+                }
+            )
+    for address in owners:
+        owners[address].sort(
+            key=lambda owner: (owner["sourcePath"], owner["sourceLine"], owner["symbol"])
+        )
+    return owners
+
+
+def _ownership_class(record: dict[str, Any], owner_path: str) -> str:
+    if record["macro"] == "raw-zone-default-expression":
+        return "raw-expression-boundary"
+    if owner_path == record["sourcePath"]:
+        return "same-event-source"
+    if owner_path.startswith("data/maps/entries/"):
+        return "other-map-source"
+    if owner_path.startswith("code/"):
+        return "common-code"
+    return "other-source"
+
+
+def _record_target_ownership(
+    record: dict[str, Any],
+    addresses: dict[str, int],
+    owners: dict[int, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    """Resolve one decoded record to an exact owner, keeping raw map44 distinct."""
+    target_address = record["resolvedTargetAddress"]
+    labels = owners.get(target_address, [])
+    base_address = addresses[record["targetBaseSymbol"]]
+    if record["macro"] == "raw-zone-default-expression":
+        base_labels = owners.get(base_address, [])
+        if not base_labels:
+            raise ValueError("map event target ownership unresolved raw expression base")
+        owner = base_labels[0]
+        canonical_symbol = "raw-map44-zone-default-expression-boundary"
+        target_h1_address: int | None = None
+    else:
+        if not labels:
+            raise ValueError("map event target ownership unresolved exact target")
+        owner_paths = {label["sourcePath"] for label in labels}
+        if len(owner_paths) != 1:
+            raise ValueError("map event target ownership ambiguous exact target")
+        owner = labels[0]
+        canonical_symbol = owner["symbol"]
+        target_h1_address = target_address
+    return {
+        "targetCanonicalSymbol": canonical_symbol,
+        "targetAddressLabels": labels,
+        "targetH1Address": target_h1_address,
+        "targetBaseH1Address": base_address,
+        "targetOwnerSourcePath": owner["sourcePath"],
+        "targetOwnerSourceLine": owner["sourceLine"],
+        "targetOwnershipClass": _ownership_class(record, owner["sourcePath"]),
+    }
+
+
+def _join_target_ownership(
+    disasm: Path, addresses: dict[str, int], categories: dict[str, dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Join each source/ROM event record to an exact source/H1 target owner."""
+    records = [
+        record
+        for category in categories.values()
+        for table in category["tables"]
+        for record in table["records"]
+    ]
+    target_addresses = {record["resolvedTargetAddress"] for record in records}
+    target_addresses.update(addresses[record["targetBaseSymbol"]] for record in records)
+    owners = _label_owners(disasm, addresses, target_addresses)
+    unresolved: list[dict[str, Any]] = []
+    ambiguous: list[dict[str, Any]] = []
+    for record in records:
+        try:
+            record.update(_record_target_ownership(record, addresses, owners))
+        except ValueError as error:
+            issue = {
+                "recordAddress": record["address"],
+                "targetExpression": record["targetExpression"],
+            }
+            if "ambiguous" in str(error):
+                issue["resolvedTargetAddress"] = record["resolvedTargetAddress"]
+                issue["targetAddressLabels"] = owners.get(record["resolvedTargetAddress"], [])
+                ambiguous.append(issue)
+            else:
+                unresolved.append(issue)
+    if unresolved or ambiguous:
+        raise ValueError(
+            "map event target ownership is incomplete: "
+            f"unresolved={len(unresolved)}, ambiguous={len(ambiguous)}"
+        )
+    profiles_by_identity: dict[tuple[int, str], dict[str, Any]] = {}
+    for record in records:
+        identity = (record["resolvedTargetAddress"], record["targetCanonicalSymbol"])
+        profile = profiles_by_identity.setdefault(
+            identity,
+            {
+                "profileOrder": len(profiles_by_identity),
+                "canonicalSymbol": record["targetCanonicalSymbol"],
+                "targetAddress": record["resolvedTargetAddress"],
+                "targetH1Address": record["targetH1Address"],
+                "targetBaseH1Address": record["targetBaseH1Address"],
+                "targetAddressLabels": record["targetAddressLabels"],
+                "ownerSourcePath": record["targetOwnerSourcePath"],
+                "ownerSourceLine": record["targetOwnerSourceLine"],
+                "ownershipClass": record["targetOwnershipClass"],
+                "physicalRecordCount": 0,
+                "categories": [],
+            },
+        )
+        profile["physicalRecordCount"] += 1
+        if record["category"] not in profile["categories"]:
+            profile["categories"].append(record["category"])
+    profiles = list(profiles_by_identity.values())
+    return profiles, unresolved, ambiguous
+
+
+def _event_table_profiles(categories: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Index the complete declared category target surface, including RTS stubs."""
+    profiles: dict[str, dict[str, Any]] = {}
+    for category, value in categories.items():
+        for source_file in value["sourceFiles"]:
+            symbol = source_file["symbol"]
+            if symbol in profiles:
+                raise ValueError(f"map event table profile duplicates symbol: {symbol}")
+            source_file["category"] = category
+            profiles[symbol] = source_file
+    return profiles
+
+
+def _setup_category_joins(
+    setup: dict[str, Any], categories: dict[str, dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Retain each setup-table category target without duplicating physical records."""
+    profiles = _event_table_profiles(categories)
+    pointer_tables = {table["symbol"]: table for table in setup["pointerTables"]}
+    joins: list[dict[str, Any]] = []
+    route_joins: list[dict[str, Any]] = []
+    for pointer_order, pointer_table in enumerate(setup["pointerTables"]):
+        for category in CATEGORY_CONFIG:
+            target = pointer_table["targets"][category]
+            profile = profiles.get(target["symbol"])
+            if profile is None or profile["category"] != category:
+                raise ValueError(
+                    f"map event setup target lacks category profile: {target['symbol']}"
+                )
+            if target["address"] != profile["address"]:
+                raise ValueError(f"map event setup target address drift: {target['symbol']}")
+            joins.append(
+                {
+                    "sourceOrder": len(joins),
+                    "pointerTableSourceOrder": pointer_order,
+                    "pointerTableSymbol": pointer_table["symbol"],
+                    "pointerTableAddress": pointer_table["address"],
+                    "category": category,
+                    "eventTableSymbol": target["symbol"],
+                    "eventTableAddress": target["address"],
+                    "directReturnStub": profile["directReturnStub"],
+                    "physicalRecordCount": profile["recordCount"],
+                }
+            )
+    route_selector_order = 0
+    for route_order, route in enumerate(setup["routes"]):
+        selectors = [("default", None, route["defaultPointer"])] + [
+            ("flag", variant["flag"], variant["pointer"]) for variant in route["flagVariants"]
+        ]
+        for selector_order, (selector_kind, flag, pointer_symbol) in enumerate(selectors):
+            pointer_table = pointer_tables.get(pointer_symbol)
+            if pointer_table is None:
+                raise ValueError(f"map event route lacks setup pointer table: {pointer_symbol}")
+            for category in CATEGORY_CONFIG:
+                target = pointer_table["targets"][category]
+                profile = profiles.get(target["symbol"])
+                if profile is None or profile["category"] != category:
+                    raise ValueError(
+                        f"map event route target lacks category profile: {target['symbol']}"
+                    )
+                if target["address"] != profile["address"]:
+                    raise ValueError(f"map event route target address drift: {target['symbol']}")
+                route_joins.append(
+                    {
+                        "sourceOrder": len(route_joins),
+                        "routeSourceOrder": route_order,
+                        "routeSelectorSourceOrder": route_selector_order,
+                        "routeMap": route["map"],
+                        "selectorSourceOrder": selector_order,
+                        "selectorKind": selector_kind,
+                        "flag": flag,
+                        "pointerTableSymbol": pointer_symbol,
+                        "pointerTableAddress": pointer_table["address"],
+                        "category": category,
+                        "eventTableSymbol": target["symbol"],
+                        "eventTableAddress": target["address"],
+                        "directReturnStub": profile["directReturnStub"],
+                        "physicalRecordCount": profile["recordCount"],
+                    }
+                )
+            route_selector_order += 1
+    expected_pointer_category_joins = len(setup["pointerTables"]) * len(CATEGORY_CONFIG)
+    expected_route_category_joins = setup["summary"]["routePointerReferenceCount"] * len(
+        CATEGORY_CONFIG
+    )
+    if len(joins) != expected_pointer_category_joins:
+        raise ValueError("map event setup category join cardinality drift")
+    if len(route_joins) != expected_route_category_joins:
+        raise ValueError("map event route category join cardinality drift")
+    if route_selector_order != setup["summary"]["routePointerReferenceCount"]:
+        raise ValueError("map event route selector source-order drift")
+    return joins, route_joins
+
+
+def _apply_reference_counts(
+    setup: dict[str, Any],
+    categories: dict[str, dict[str, Any]],
+    setup_joins: list[dict[str, Any]],
+    route_joins: list[dict[str, Any]],
+    target_profiles: list[dict[str, Any]],
+) -> None:
+    """Derive table and target multiplicities from parsed joins, not record duplication."""
+    table_profiles = _event_table_profiles(categories)
+    tables_by_category = {
+        category: {table["symbol"]: table for table in value["tables"]}
+        for category, value in categories.items()
+    }
+
+    def join_records(join: dict[str, Any]) -> list[dict[str, Any]]:
+        table = tables_by_category[join["category"]].get(join["eventTableSymbol"])
+        if table is None:
+            if join["directReturnStub"]:
+                return []
+            raise ValueError(
+                "map event category join lacks a decoded non-stub table: "
+                f"{join['eventTableSymbol']}"
+            )
+        if join["directReturnStub"] or table["address"] != join["eventTableAddress"]:
+            raise ValueError(f"map event category join identity drift: {join['eventTableSymbol']}")
+        return table["records"]
+
+    profile_by_identity = {
+        (profile["targetAddress"], profile["canonicalSymbol"]): profile
+        for profile in target_profiles
+    }
+    setup_counts = Counter(join["eventTableSymbol"] for join in setup_joins)
+    route_counts = Counter(join["eventTableSymbol"] for join in route_joins)
+    route_category_counts = Counter(join["category"] for join in route_joins)
+    for table in table_profiles.values():
+        symbol = table["symbol"]
+        table["setupReferenceCount"] = setup_counts[symbol]
+        table["routeReferenceCount"] = route_counts[symbol]
+    for profile in target_profiles:
+        profile["setupRecordReferenceCount"] = 0
+        profile["routeRecordReferenceCount"] = 0
+    setup_record_counts: Counter[str] = Counter()
+    for join in setup_joins:
+        for event_record in join_records(join):
+            identity = (
+                event_record["resolvedTargetAddress"],
+                event_record["targetCanonicalSymbol"],
+            )
+            if identity not in profile_by_identity:
+                raise ValueError("map event setup record lacks a target profile")
+            profile_by_identity[identity]["setupRecordReferenceCount"] += 1
+            setup_record_counts[join["category"]] += 1
+    route_record_counts: Counter[str] = Counter()
+    for join in route_joins:
+        for event_record in join_records(join):
+            identity = (
+                event_record["resolvedTargetAddress"],
+                event_record["targetCanonicalSymbol"],
+            )
+            if identity not in profile_by_identity:
+                raise ValueError("map event route record lacks a target profile")
+            profile_by_identity[identity]["routeRecordReferenceCount"] += 1
+            route_record_counts[join["category"]] += 1
+    route_stub_counts = Counter(
+        join["category"] for join in route_joins if join["directReturnStub"]
+    )
+    for category, value in categories.items():
+        summary = value["summary"]
+        summary["routeSelectorReferenceCount"] = setup["summary"]["routePointerReferenceCount"]
+        summary["routeCategoryJoinCount"] = route_category_counts[category]
+        summary["routeRecordReferenceCount"] = route_record_counts[category]
+        summary["routeDirectReturnStubReferenceCount"] = route_stub_counts[category]
+
+
+def _reconcile_event_reference_counts(
+    categories: dict[str, dict[str, Any]],
+    target_profiles: list[dict[str, Any]],
+    setup_joins: list[dict[str, Any]],
+    route_joins: list[dict[str, Any]],
+    summary: dict[str, Any],
+) -> None:
+    """Cross-check every physical and weighted count from parsed records and joins."""
+    tables_by_category = {
+        category: {table["symbol"]: table for table in value["tables"]}
+        for category, value in categories.items()
+    }
+
+    def join_records(join: dict[str, Any]) -> list[dict[str, Any]]:
+        table = tables_by_category[join["category"]].get(join["eventTableSymbol"])
+        if table is None:
+            if join["directReturnStub"]:
+                return []
+            raise ValueError(
+                "map event reconciliation lacks a decoded non-stub table: "
+                f"{join['eventTableSymbol']}"
+            )
+        if join["directReturnStub"] or table["address"] != join["eventTableAddress"]:
+            raise ValueError(
+                f"map event reconciliation join identity drift: {join['eventTableSymbol']}"
+            )
+        return table["records"]
+
+    physical_counts: Counter[str] = Counter()
+    physical_kinds: dict[str, Counter[str]] = {category: Counter() for category in categories}
+    profile_physical_counts: Counter[tuple[int, str]] = Counter()
+    for category, value in categories.items():
+        for table in value["tables"]:
+            for record in table["records"]:
+                identity = (record["resolvedTargetAddress"], record["targetCanonicalSymbol"])
+                physical_counts[category] += 1
+                physical_kinds[category][record["kind"]] += 1
+                profile_physical_counts[identity] += 1
+
+    setup_join_counts = Counter(join["category"] for join in setup_joins)
+    route_join_counts = Counter(join["category"] for join in route_joins)
+    setup_record_counts: Counter[str] = Counter()
+    route_record_counts: Counter[str] = Counter()
+    setup_kind_counts: dict[str, Counter[str]] = {category: Counter() for category in categories}
+    route_kind_counts: dict[str, Counter[str]] = {category: Counter() for category in categories}
+    profile_setup_counts: Counter[tuple[int, str]] = Counter()
+    profile_route_counts: Counter[tuple[int, str]] = Counter()
+    for join in setup_joins:
+        for record in join_records(join):
+            identity = (record["resolvedTargetAddress"], record["targetCanonicalSymbol"])
+            setup_record_counts[join["category"]] += 1
+            setup_kind_counts[join["category"]][record["kind"]] += 1
+            profile_setup_counts[identity] += 1
+    for join in route_joins:
+        for record in join_records(join):
+            identity = (record["resolvedTargetAddress"], record["targetCanonicalSymbol"])
+            route_record_counts[join["category"]] += 1
+            route_kind_counts[join["category"]][record["kind"]] += 1
+            profile_route_counts[identity] += 1
+
+    profiles_by_identity = {
+        (profile["targetAddress"], profile["canonicalSymbol"]): profile
+        for profile in target_profiles
+    }
+    if set(profiles_by_identity) != set(profile_physical_counts):
+        raise ValueError("map event target profile physical identity coverage drift")
+    for identity, profile in profiles_by_identity.items():
+        expected = (
+            profile_physical_counts[identity],
+            profile_setup_counts[identity],
+            profile_route_counts[identity],
+        )
+        observed = (
+            profile["physicalRecordCount"],
+            profile["setupRecordReferenceCount"],
+            profile["routeRecordReferenceCount"],
+        )
+        if observed != expected:
+            raise ValueError(f"map event target profile weighted-count drift: {identity}")
+
+    profile_totals: Counter[str] = Counter()
+    for profile in target_profiles:
+        profile_totals["physical"] += profile["physicalRecordCount"]
+        profile_totals["setup"] += profile["setupRecordReferenceCount"]
+        profile_totals["route"] += profile["routeRecordReferenceCount"]
+    parsed_totals = (
+        sum(physical_counts.values()),
+        sum(setup_record_counts.values()),
+        sum(route_record_counts.values()),
+    )
+    if (
+        profile_totals["physical"],
+        profile_totals["setup"],
+        profile_totals["route"],
+    ) != parsed_totals:
+        raise ValueError("map event target profile aggregate reconciliation drift")
+
+    selector_orders = {join["routeSelectorSourceOrder"] for join in route_joins}
+    route_stub_counts = Counter(
+        join["category"] for join in route_joins if join["directReturnStub"]
+    )
+    for category, value in categories.items():
+        category_summary = value["summary"]
+        expected_summary = {
+            "physicalRecordCount": physical_counts[category],
+            "specificPhysicalRecordCount": physical_kinds[category]["specific"],
+            "defaultPhysicalRecordCount": physical_kinds[category]["default"],
+            "setupPointerReferenceCount": setup_join_counts[category],
+            "setupRecordReferenceCount": setup_record_counts[category],
+            "specificSetupRecordReferenceCount": setup_kind_counts[category]["specific"],
+            "defaultSetupRecordReferenceCount": setup_kind_counts[category]["default"],
+            "routeSelectorReferenceCount": len(selector_orders),
+            "routeCategoryJoinCount": route_join_counts[category],
+            "routeRecordReferenceCount": route_record_counts[category],
+            "routeDirectReturnStubReferenceCount": route_stub_counts[category],
+        }
+        for field, expected in expected_summary.items():
+            if category_summary[field] != expected:
+                raise ValueError(f"map event category reconciliation drift: {category}.{field}")
+
+    global_expected = {
+        "physicalRecordCount": sum(physical_counts.values()),
+        "setupPointerReferenceCount": len(setup_joins),
+        "setupRecordReferenceCount": sum(setup_record_counts.values()),
+        "routeSelectorReferenceCount": len(selector_orders),
+        "routeCategoryJoinCount": len(route_joins),
+        "routeRecordReferenceCount": sum(route_record_counts.values()),
+        "recordTargetProfileCount": len(profiles_by_identity),
+        "setupCategoryJoinCount": len(setup_joins),
+    }
+    for field, expected in global_expected.items():
+        if summary[field] != expected:
+            raise ValueError(f"map event global reconciliation drift: {field}")
+
+
 def _consumer_facts(setup: dict[str, Any]) -> dict[str, Any]:
     dispatch = setup["sourceFacts"]["dispatch"]
     return {
@@ -381,9 +1092,7 @@ def _consumer_facts(setup: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _entity_event_reachability_facts(
-    disasm: Path, addresses: dict[str, int]
-) -> dict[str, Any]:
+def _entity_event_reachability_facts(disasm: Path, addresses: dict[str, int]) -> dict[str, Any]:
     sources = {
         "ProcessPlayerAction": read_upstream_text(
             disasm / "code/gameflow/exploration/explorationvints.asm"
@@ -459,10 +1168,24 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     if setup["upstream"]["commit"] != commit:
         raise ValueError("map events/setup provenance drift")
 
+    macro_definitions = _event_macro_definitions(disasm)
     categories = {
-        category: _category_contract(disasm, addresses, rom, setup, category)
+        category: _category_contract(
+            disasm, addresses, rom, setup, category, macro_definitions[category]
+        )
         for category in CATEGORY_CONFIG
     }
+    record_target_profiles, unresolved_record_targets, ambiguous_record_targets = (
+        _join_target_ownership(disasm, addresses, categories)
+    )
+    setup_category_joins, route_category_joins = _setup_category_joins(setup, categories)
+    _apply_reference_counts(
+        setup,
+        categories,
+        setup_category_joins,
+        route_category_joins,
+        record_target_profiles,
+    )
     entity_target_refs = [
         table["targets"]["entityEvents"]["symbol"] for table in setup["pointerTables"]
     ]
@@ -515,15 +1238,19 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         "address": addresses[RAW_ZONE_DEFAULT_SYMBOL],
         "relativeOffset": raw_record["relativeOffset"],
         "resolvedTargetAddress": raw_record["resolvedTargetAddress"],
+        "targetExpression": raw_record["targetExpression"],
+        "targetBaseSymbol": raw_record["targetBaseSymbol"],
+        "targetBaseH1Address": raw_record["targetBaseH1Address"],
+        "targetBaseAdjustment": raw_record["targetBaseAdjustment"],
+        "targetOwnerSourcePath": raw_record["targetOwnerSourcePath"],
+        "targetOwnerSourceLine": raw_record["targetOwnerSourceLine"],
         "pointsInsideCutsceneEntityList": raw_record["resolvedTargetAddress"]
         == addresses["byte_54868"] + 4,
     }
     if not raw_zone_default["pointsInsideCutsceneEntityList"]:
         raise ValueError("map 44 raw zone-default target drift")
 
-    category_summaries = {
-        category: value["summary"] for category, value in categories.items()
-    }
+    category_summaries = {category: value["summary"] for category, value in categories.items()}
     summary = {
         "sourceFileCount": sum(row["sourceFileCount"] for row in category_summaries.values()),
         "setupPointerReferenceCount": sum(
@@ -561,7 +1288,21 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             row["maximumTableRecordCount"] for row in category_summaries.values()
         ),
         "selectionCaseCount": len(SELECTION_INPUTS),
+        "recordTargetProfileCount": len(record_target_profiles),
+        "setupCategoryJoinCount": len(setup_category_joins),
+        "routeCategoryJoinCount": len(route_category_joins),
+        "routeSelectorReferenceCount": setup["summary"]["routePointerReferenceCount"],
+        "routeRecordReferenceCount": sum(
+            row["routeRecordReferenceCount"] for row in category_summaries.values()
+        ),
     }
+    _reconcile_event_reference_counts(
+        categories,
+        record_target_profiles,
+        setup_category_joins,
+        route_category_joins,
+        summary,
+    )
     selection_cases = _selection_cases(setup, categories)
     return {
         "schemaVersion": 1,
@@ -575,12 +1316,51 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         "sourceMacroCounts": {
             category: value["sourceMacroCounts"] for category, value in categories.items()
         },
+        "eventMacroDefinitions": {
+            "sourcePath": MAP_SETUP_MACROS_PATH.as_posix(),
+            "categories": macro_definitions,
+        },
         "consumerFacts": _consumer_facts(setup),
-        "entityEventReachabilityFacts": _entity_event_reachability_facts(
-            disasm, addresses
-        ),
+        "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
         "directReturnStubs": direct_return_stubs,
         "rawZoneDefaultException": raw_zone_default,
+        "unresolvedRecordTargets": unresolved_record_targets,
+        "ambiguousRecordTargets": ambiguous_record_targets,
+        "recordTargetProfiles": record_target_profiles,
+        "setupCategoryJoins": setup_category_joins,
+        "routeCategoryJoins": route_category_joins,
+        "categorySourceFileOrders": {
+            category: [
+                f"{source_file['sourceOrder']}:{source_file['symbol']}:{source_file['address']}"
+                for source_file in value["sourceFiles"]
+            ]
+            for category, value in categories.items()
+        },
+        "categoryDecodedTableOrders": {
+            category: [f"{table['symbol']}:{table['address']}" for table in value["tables"]]
+            for category, value in categories.items()
+        },
+        "physicalRecordOrder": [
+            f"{category}:{record['recordSourceOrder']}:{record['address']}"
+            for category, value in categories.items()
+            for record in sorted(
+                (record for table in value["tables"] for record in table["records"]),
+                key=lambda record: record["recordSourceOrder"],
+            )
+        ],
+        "recordTargetProfileOrder": [
+            f"{profile['canonicalSymbol']}:{profile['targetAddress']}"
+            for profile in record_target_profiles
+        ],
+        "setupCategoryJoinOrder": [
+            f"{join['pointerTableSymbol']}:{join['category']}:{join['eventTableSymbol']}"
+            for join in setup_category_joins
+        ],
+        "routeCategoryJoinOrder": [
+            f"{join['routeSourceOrder']}:{join['selectorSourceOrder']}:"
+            f"{join['category']}:{join['eventTableSymbol']}"
+            for join in route_category_joins
+        ],
         "selectionCases": selection_cases,
         "runtimeQuestions": [
             "entity-event-direct-return-stub-normal-story-route-reachability",
@@ -591,6 +1371,18 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     }
 
 
+def _verify_complete_map_events_fixture(fixture: dict[str, Any], output: dict[str, Any]) -> None:
+    """Reject a legal-shape fixture/output replacement that changes canonical evidence."""
+    if (
+        fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or fixture["romSha256"] != output["romSha256"]
+        or fixture["function"] != output["function"]
+    ):
+        raise ValueError("map events provenance/address drift")
+    if fixture["expected"] != output:
+        raise ValueError("map events complete semantic fixture drift")
+
+
 def verify_map_events_contract(
     rom_path: Path, upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -599,25 +1391,7 @@ def verify_map_events_contract(
     manifest = load_json(MANIFEST)
     output = build_map_events_contract(rom_path, upstream_path)
     validate_json(output, SCHEMA, owner="map events static contract")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != output["romSha256"]
-        or fixture["function"] != output["function"]
-    ):
-        raise ValueError("map events provenance/address drift")
-    for field in (
-        "summary",
-        "categorySummaries",
-        "sourceMacroCounts",
-        "consumerFacts",
-        "entityEventReachabilityFacts",
-        "directReturnStubs",
-        "rawZoneDefaultException",
-        "selectionCases",
-        "runtimeQuestions",
-    ):
-        if fixture["expected"][field] != output[field]:
-            raise ValueError(f"map events {field} drift")
+    _verify_complete_map_events_fixture(fixture, output)
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"] or output["summary"] != manifest["summary"]:
         raise ValueError("map events canonical output drift")

@@ -146,16 +146,31 @@ writes remain separate assignment domains.
 ## Entity, Zone, and Item Event Tables
 
 The event-table rail follows all three event slots from the 126 setup tables, decodes each unique
-target from ROM until its `$FD` default record, and checks every record address and kind against its
-owning source macros. Relative branch words resolve from the start of the table, matching the
-dispatcher rather than the current record address.
+target from ROM until its `$FD` default record, and checks every physical record against its owning
+macro use site: source path/line, macro name, ordered operands, table-relative expression, record
+index, decoded address, and resolved target. Relative branch words resolve from the start of the
+table, matching the dispatcher rather than the current record address. The parsed macro definitions
+in `sf2mapsetupmacros.asm` bind each target operand position, `$FD` default marker, emitted byte
+width, and directive order before the source/ROM comparison.
 
-| Category | Source files / unique targets | Decoded tables | Physical records | Setup-level references |
-| --- | ---: | ---: | ---: | ---: |
-| entity | 105 | 103 | 850 (747 specific + 103 default) | 998 |
-| zone | 84 | 84 | 202 (118 specific + 84 default) | 313 |
-| item | 74 | 74 | 82 (8 specific + 74 default) | 140 |
-| **Total** | **263** | **261** | **1,134** | **1,451** |
+| Category | Source files / unique targets | Decoded tables | Physical records | Pointer-table targets | Pointer-weighted records | Selector-route targets | Route-weighted records |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| entity | 105 | 103 | 850 (747 specific + 103 default) | 126 | 998 | 130 | 1,031 |
+| zone | 84 | 84 | 202 (118 specific + 84 default) | 126 | 313 | 130 | 326 |
+| item | 74 | 74 | 82 (8 specific + 74 default) | 126 | 140 | 130 | 144 |
+| **Total** | **263** | **261** | **1,134** | **378** | **1,451** | **390** | **1,501** |
+
+All 1,134 physical records join to 915 resolved-target profiles. The 378 pointer-table category
+joins and 390 ordered selector-route category joins retain table identity, including direct-`rts`
+stubs, without duplicating physical records. Every ordinary resolved address has an exact H1/source
+label owner in this pinned corpus; same-address labels remain an explicit label array, and a missing
+or multi-source owner is a construction failure rather than an inferred target meaning. These source,
+H1, ROM, and join facts are **Confirmed**. The evidence is the pinned
+`ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`sf2mapsetupmacros.asm` macro definitions, the 263 `s2_entityevents*.asm`,
+`s3_zoneevents*.asm`, and `s5_itemevents*.asm` sources, `build/sf2build-h1.lst`, ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, and
+`uv run sf2 h2 map-events` (observed: 1,134 / 915 / 378 / 390 / zero unresolved / zero ambiguous).
 
 The difference between 263 unique targets and 261 decoded tables is explicit: entity-event targets
 `ms_map52_EntityEvents` and `ms_map55_EntityEvents` are two-byte direct-`rts` stubs, not `$FD`-ended
@@ -173,13 +188,19 @@ not a valid `$FD`-ended table. Whether normal story entrances, terrain, the zone
 always prevent that adjacency remains **Unknown** and is the narrower retained runtime question.
 
 Map 44 has the other source exception: its zone default is written as raw `dc.w` values instead of
-`msDefaultZoneEvent`, and its relative word resolves to `0x5486C`, four bytes into the cutscene entity
-list beginning at `byte_54868`. The upstream source labels this as a bug. The exact bytes, offset 1,044,
-and target are **Confirmed**; no intended behavior is inferred from the bad pointer.
+`msDefaultZoneEvent`, and its relative word `byte_54868+4-ms_map44_ZoneEvents` resolves to `0x5486C`,
+four bytes into the cutscene entity list beginning at H1 address `byte_54868 = 0x54868` in
+`data/maps/entries/map06/mapsetups/s1_entities.asm:19`. Its profile deliberately retains the raw
+expression boundary instead of inventing a label at the interior address. The upstream source labels
+this as a bug. The exact bytes, offset 1,044, base owner, and resolved target are **Confirmed**; no
+intended behavior is inferred from the bad pointer.
 
 The complete tables and decoded branch targets stay in ignored
-`local/derived/map-events-static.json`. The tracked fixture keeps category totals, dispatcher rules,
-macro counts, and both exception families without redistributing event content.
+`local/derived/map-events-static.json`. The tracked fixture
+`tests/fixtures/h2/map-events-static-v1.json` carries the complete structured semantic object; its
+closed output/fixture schemas use reusable category record definitions plus compact exact-order arrays.
+It preserves macro contracts, source/ROM/owner joins, target profiles, pointer and selector-route
+multiplicities, and both exception families without redistributing event content.
 
 The H2 rail now evaluates nine representative queries directly against those complete decoded tables.
 Entity cases cover a late specific match and the default; zone cases cover exact coordinates,
@@ -188,6 +209,16 @@ cover the `$7F` index mask, a facing mismatch that falls through to default, and
 case retains its selected setup/table, physical record address, record kind, flags where applicable,
 and resolved target address. These are **Confirmed** static first-match contracts and the input table
 for the grouped H3, not claims about the called script's side effects.
+
+### Grouped H3 Runtime Questions
+
+- **Unknown — normal-story direct-`rts` reachability:** observe map 52's non-empty setup across normal
+  entry, terrain, cutscene, and flag-512 contexts; this is a caller/state question, not evidence that
+  the two-byte target is a record table.
+- **Unknown — selected script effects and persistence:** observe state changes, transitions, and
+  save/reload persistence after the already-confirmed selection boundary.
+- **Unknown — facing and presentation timing:** observe entity-facing restoration, portrait behavior,
+  and visible timing after dispatch; static flags and target ownership do not establish these effects.
 
 ## Area-Description Wrappers and Tables
 
