@@ -342,9 +342,9 @@ common stats rail 再 inventory 全部 20 个文件、5,149 行，固定 flags�
 spell learning 和 new-game 顺序。17 个文件具有独立证据；三个未被 layout include 的 alternate
 item source 不借用 canonical 地址，因此严格 reach 只增 12 个至 60.98%。field-item dispatch 由
 实际 layout include 的 common-menu 文件继续承接。该 rail 随后闭合
-`combatantstats_1.asm` 的 31 个 getter 及 `combatantstats_2.asm` 的 53 个 mutation wrapper、完整
-instruction corpus、H1 地址、ABI 和 instruction-scoped caller inventory；完整 clamp algorithm 与
-caller-dependent edge cases 仍在后续静态/H3 队列。
+`combatantstats_1.asm` 的 31 个 getter、`combatantstats_2.asm` 的 53 个 mutation wrapper 和
+`combatantstats_3.asm` 的七个 clamp helper，均有完整 instruction corpus、H1 地址、ABI 和
+instruction-scoped caller inventory；剩余 caller-dependent edge cases 留在分组 H3 队列。
 common menus rail 随后 inventory 42 个文件、14,827 行，其中 41 个 layout-owned 文件各自绑定
 H1 地址；唯一 member-list alternate source 仅做 range/hash 对照。diamond、yes/no、number prompt、
 文本控制、九组 field-item dispatch 以及五个 service menu 入口形成静态合同，使严格 reach 升到

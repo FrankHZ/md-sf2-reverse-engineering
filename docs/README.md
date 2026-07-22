@@ -77,7 +77,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
-  field-item dispatch、spell learning、新游戏顺序和未 include 的 alternate source 边界。
+  field-item dispatch、spell learning、新游戏顺序、getter/mutation/clamp 静态合同和
+  未 include 的 alternate source 边界。
 - [`common-menus.md`](./research/common-menus.md)：共享菜单 42 文件、提示框/文本控制、field-item
   dispatch、商店/教堂/车队/铁匠的完整静态服务状态机、diamond/yes-no 压缩图形、完整 icon storage/copy/highlight
   合同、27 个 leaf UI layout/2,394 个 VDP word、spell-level pointer 与 diamond-border 合同及

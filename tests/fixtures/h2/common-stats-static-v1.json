@@ -12624,6 +12624,2354 @@
           "clampAlgorithm": "unknown",
           "callerAndRuntimeOutcome": "unknown"
         }
+      },
+      "combatantClampContract": {
+        "sourcePath": "code/common/stats/combatantstats_3.asm",
+        "sourceRange": {
+          "path": "code/common/stats/combatantstats_3.asm",
+          "startAddress": 37650,
+          "endAddressExclusive": 37918,
+          "physicalSpanBytes": 268
+        },
+        "boundedFunctionOrder": [
+          "IncreaseAndClampByte",
+          "IncreaseAndClamp7Bits",
+          "DecreaseAndClampByte",
+          "IncreaseAndClampWord",
+          "DecreaseAndClampWord",
+          "IncreaseAndClampLong",
+          "DecreaseAndClampLong"
+        ],
+        "routineOrder": [
+          "IncreaseAndClampByte",
+          "IncreaseAndClamp7Bits",
+          "DecreaseAndClampByte",
+          "IncreaseAndClampWord",
+          "DecreaseAndClampWord",
+          "IncreaseAndClampLong",
+          "DecreaseAndClampLong"
+        ],
+        "routineAddresses": {
+          "IncreaseAndClampByte": 37650,
+          "IncreaseAndClamp7Bits": 37684,
+          "DecreaseAndClampByte": 37740,
+          "IncreaseAndClampWord": 37782,
+          "DecreaseAndClampWord": 37812,
+          "IncreaseAndClampLong": 37850,
+          "DecreaseAndClampLong": 37880
+        },
+        "constants": {
+          "BYTE_MASK": 255,
+          "TWO_TURN_THRESHOLD": 128,
+          "TURN_AGILITY_MASK": 127
+        },
+        "routineOperations": {
+          "IncreaseAndClampByte": [
+            {
+              "labels": [
+                "IncreaseAndClampByte"
+              ],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "add.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@MakeMaxValue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@MakeMaxValue"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Continue"
+            },
+            {
+              "labels": [
+                "@MakeMaxValue"
+              ],
+              "opcode": "move.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "@Done"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Done"
+            },
+            {
+              "labels": [
+                "@Continue"
+              ],
+              "opcode": "cmp.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcc.s",
+              "operands": [
+                "@Done"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Done"
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@Done"
+              ],
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "IncreaseAndClamp7Bits": [
+            {
+              "labels": [
+                "IncreaseAndClamp7Bits"
+              ],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.w",
+              "operands": [
+                "d2-d3",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d2"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "d2",
+                "d3"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.b",
+              "operands": [
+                "#TWO_TURN_THRESHOLD",
+                "d3"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.b",
+              "operands": [
+                "#TURN_AGILITY_MASK",
+                "d2"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "add.b",
+              "operands": [
+                "d2",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@loc_1"
+              ],
+              "directTarget": null,
+              "branchTarget": "@loc_1"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@loc_2"
+              ],
+              "directTarget": null,
+              "branchTarget": "@loc_2"
+            },
+            {
+              "labels": [
+                "@loc_1"
+              ],
+              "opcode": "move.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "@loc_3"
+              ],
+              "directTarget": null,
+              "branchTarget": "@loc_3"
+            },
+            {
+              "labels": [
+                "@loc_2"
+              ],
+              "opcode": "cmp.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcc.s",
+              "operands": [
+                "@loc_3"
+              ],
+              "directTarget": null,
+              "branchTarget": "@loc_3"
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@loc_3"
+              ],
+              "opcode": "or.b",
+              "operands": [
+                "d3",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "movem.w",
+              "operands": [
+                "(sp)+",
+                "d2-d3"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "DecreaseAndClampByte": [
+            {
+              "labels": [
+                "DecreaseAndClampByte"
+              ],
+              "opcode": "move.w",
+              "operands": [
+                "d4",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "d4"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "sub.b",
+              "operands": [
+                "d4",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@MakeMinValue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@MakeMinValue"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcc.s",
+              "operands": [
+                "@CheckForMaxValue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@CheckForMaxValue"
+            },
+            {
+              "labels": [
+                "@MakeMinValue"
+              ],
+              "opcode": "move.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Continue"
+            },
+            {
+              "labels": [
+                "@CheckForMaxValue"
+              ],
+              "opcode": "cmp.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Continue"
+            },
+            {
+              "labels": [],
+              "opcode": "move.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@Continue"
+              ],
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "(sp)+",
+                "d4"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "andi.w",
+              "operands": [
+                "#BYTE_MASK",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "IncreaseAndClampWord": [
+            {
+              "labels": [
+                "IncreaseAndClampWord"
+              ],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "add.w",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bmi.s",
+              "operands": [
+                "@MakeMaxValue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@MakeMaxValue"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.w",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Continue"
+            },
+            {
+              "labels": [
+                "@MakeMaxValue"
+              ],
+              "opcode": "move.w",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "@Done"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Done"
+            },
+            {
+              "labels": [
+                "@Continue"
+              ],
+              "opcode": "cmp.w",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcc.s",
+              "operands": [
+                "@Done"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Done"
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@Done"
+              ],
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "DecreaseAndClampWord": [
+            {
+              "labels": [
+                "DecreaseAndClampWord"
+              ],
+              "opcode": "move.w",
+              "operands": [
+                "d4",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d4"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "sub.w",
+              "operands": [
+                "d4",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bmi.s",
+              "operands": [
+                "@MakeMinValue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@MakeMinValue"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.w",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bhi.s",
+              "operands": [
+                "@CheckForMaxValue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@CheckForMaxValue"
+            },
+            {
+              "labels": [
+                "@MakeMinValue"
+              ],
+              "opcode": "move.w",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": "@Continue"
+            },
+            {
+              "labels": [
+                "@CheckForMaxValue"
+              ],
+              "opcode": "cmp.w",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bls.s",
+              "operands": [
+                "@Continue"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "@Continue"
+              ],
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.w",
+              "operands": [
+                "(sp)+",
+                "d4"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "IncreaseAndClampLong": [
+            {
+              "labels": [
+                "IncreaseAndClampLong"
+              ],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "add.l",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bmi.s",
+              "operands": [
+                "loc_93E8"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_93E8"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.l",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcs.s",
+              "operands": [
+                "loc_93EC"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_93EC"
+            },
+            {
+              "labels": [
+                "loc_93E8"
+              ],
+              "opcode": "move.l",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "loc_93F2"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_93F2"
+            },
+            {
+              "labels": [
+                "loc_93EC"
+              ],
+              "opcode": "cmp.l",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bcc.s",
+              "operands": [
+                "loc_93F2"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_93F2"
+            },
+            {
+              "labels": [],
+              "opcode": "move.l",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "loc_93F2"
+              ],
+              "opcode": "move.l",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ],
+          "DecreaseAndClampLong": [
+            {
+              "labels": [
+                "DecreaseAndClampLong"
+              ],
+              "opcode": "move.l",
+              "operands": [
+                "d4",
+                "-(sp)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ],
+              "directTarget": "GetCombatantEntryAddress",
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.l",
+              "operands": [
+                "d1",
+                "d4"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.l",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "sub.l",
+              "operands": [
+                "d4",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bmi.s",
+              "operands": [
+                "loc_940C"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_940C"
+            },
+            {
+              "labels": [],
+              "opcode": "cmp.l",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bhi.s",
+              "operands": [
+                "loc_9410"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_9410"
+            },
+            {
+              "labels": [
+                "loc_940C"
+              ],
+              "opcode": "move.l",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bra.s",
+              "operands": [
+                "loc_9416"
+              ],
+              "directTarget": null,
+              "branchTarget": "loc_9416"
+            },
+            {
+              "labels": [
+                "loc_9410"
+              ],
+              "opcode": "cmp.l",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "bls.s",
+              "operands": [
+                "loc_9416"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.l",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [
+                "loc_9416"
+              ],
+              "opcode": "move.l",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "move.l",
+              "operands": [
+                "(sp)+",
+                "d4"
+              ],
+              "directTarget": null,
+              "branchTarget": null
+            },
+            {
+              "labels": [],
+              "opcode": "rts",
+              "operands": [],
+              "directTarget": null,
+              "branchTarget": null
+            }
+          ]
+        },
+        "algorithms": {
+          "IncreaseAndClampByte": {
+            "kind": "increase",
+            "routineAddress": 37650,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7"
+            },
+            "widths": {
+              "storageOperandWidthBits": 8,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 8
+            },
+            "entryAddressCall": {
+              "instructionIndex": 0,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": null,
+              "save": null,
+              "restore": null,
+              "terminal": {
+                "instructionIndex": 12,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 1,
+              "opcode": "add.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "deltaCopy": null,
+            "arithmetic": {
+              "instructionIndex": 1,
+              "opcode": "add.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 2,
+              "opcode": "bcs.s",
+              "sourceTarget": "@MakeMaxValue",
+              "parsedBranchTarget": "@MakeMaxValue",
+              "conditionCode": "cs"
+            },
+            "maximumComparison": {
+              "instructionIndex": 3,
+              "opcode": "cmp.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 4,
+                "opcode": "bcs.s",
+                "sourceTarget": "@Continue",
+                "parsedBranchTarget": "@Continue",
+                "conditionCode": "cs"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 7,
+              "opcode": "cmp.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 8,
+                "opcode": "bcc.s",
+                "sourceTarget": "@Done",
+                "parsedBranchTarget": "@Done",
+                "conditionCode": "cc"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 5,
+              "opcode": "move.b",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 9,
+              "opcode": "move.b",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 6,
+                "opcode": "bra.s",
+                "sourceTarget": "@Done",
+                "parsedBranchTarget": "@Done",
+                "conditionCode": "ra"
+              }
+            ],
+            "fieldWrite": {
+              "instructionIndex": 10,
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [
+              {
+                "instructionIndex": 11,
+                "opcode": "andi.w",
+                "operands": [
+                  "#BYTE_MASK",
+                  "d1"
+                ]
+              }
+            ],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12
+            ]
+          },
+          "IncreaseAndClampWord": {
+            "kind": "increase",
+            "routineAddress": 37782,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7"
+            },
+            "widths": {
+              "storageOperandWidthBits": 16,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 16
+            },
+            "entryAddressCall": {
+              "instructionIndex": 0,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": null,
+              "save": null,
+              "restore": null,
+              "terminal": {
+                "instructionIndex": 11,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 1,
+              "opcode": "add.w",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "deltaCopy": null,
+            "arithmetic": {
+              "instructionIndex": 1,
+              "opcode": "add.w",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 2,
+              "opcode": "bmi.s",
+              "sourceTarget": "@MakeMaxValue",
+              "parsedBranchTarget": "@MakeMaxValue",
+              "conditionCode": "mi"
+            },
+            "maximumComparison": {
+              "instructionIndex": 3,
+              "opcode": "cmp.w",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 4,
+                "opcode": "bcs.s",
+                "sourceTarget": "@Continue",
+                "parsedBranchTarget": "@Continue",
+                "conditionCode": "cs"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 7,
+              "opcode": "cmp.w",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 8,
+                "opcode": "bcc.s",
+                "sourceTarget": "@Done",
+                "parsedBranchTarget": "@Done",
+                "conditionCode": "cc"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 5,
+              "opcode": "move.w",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 9,
+              "opcode": "move.w",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 6,
+                "opcode": "bra.s",
+                "sourceTarget": "@Done",
+                "parsedBranchTarget": "@Done",
+                "conditionCode": "ra"
+              }
+            ],
+            "fieldWrite": {
+              "instructionIndex": 10,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ]
+          },
+          "IncreaseAndClampLong": {
+            "kind": "increase",
+            "routineAddress": 37850,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7"
+            },
+            "widths": {
+              "storageOperandWidthBits": 32,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 32
+            },
+            "entryAddressCall": {
+              "instructionIndex": 0,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": null,
+              "save": null,
+              "restore": null,
+              "terminal": {
+                "instructionIndex": 11,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 1,
+              "opcode": "add.l",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "deltaCopy": null,
+            "arithmetic": {
+              "instructionIndex": 1,
+              "opcode": "add.l",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 2,
+              "opcode": "bmi.s",
+              "sourceTarget": "loc_93E8",
+              "parsedBranchTarget": "loc_93E8",
+              "conditionCode": "mi"
+            },
+            "maximumComparison": {
+              "instructionIndex": 3,
+              "opcode": "cmp.l",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 4,
+                "opcode": "bcs.s",
+                "sourceTarget": "loc_93EC",
+                "parsedBranchTarget": "loc_93EC",
+                "conditionCode": "cs"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 7,
+              "opcode": "cmp.l",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 8,
+                "opcode": "bcc.s",
+                "sourceTarget": "loc_93F2",
+                "parsedBranchTarget": "loc_93F2",
+                "conditionCode": "cc"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 5,
+              "opcode": "move.l",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 9,
+              "opcode": "move.l",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 6,
+                "opcode": "bra.s",
+                "sourceTarget": "loc_93F2",
+                "parsedBranchTarget": "loc_93F2",
+                "conditionCode": "ra"
+              }
+            ],
+            "fieldWrite": {
+              "instructionIndex": 10,
+              "opcode": "move.l",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ]
+          },
+          "DecreaseAndClampByte": {
+            "kind": "decrease",
+            "routineAddress": 37740,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7"
+            },
+            "widths": {
+              "storageOperandWidthBits": 8,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 8
+            },
+            "entryAddressCall": {
+              "instructionIndex": 1,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": "d4",
+              "save": {
+                "instructionIndex": 0,
+                "opcode": "move.w",
+                "operands": [
+                  "d4",
+                  "-(sp)"
+                ]
+              },
+              "restore": {
+                "instructionIndex": 14,
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d4"
+                ]
+              },
+              "terminal": {
+                "instructionIndex": 16,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 3,
+              "opcode": "move.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "deltaCopy": {
+              "instructionIndex": 2,
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "d4"
+              ]
+            },
+            "arithmetic": {
+              "instructionIndex": 4,
+              "opcode": "sub.b",
+              "operands": [
+                "d4",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 5,
+              "opcode": "bcs.s",
+              "sourceTarget": "@MakeMinValue",
+              "parsedBranchTarget": "@MakeMinValue",
+              "conditionCode": "cs"
+            },
+            "maximumComparison": {
+              "instructionIndex": 10,
+              "opcode": "cmp.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 11,
+                "opcode": "bcs.s",
+                "sourceTarget": "@Continue",
+                "parsedBranchTarget": "@Continue",
+                "conditionCode": "cs"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 6,
+              "opcode": "cmp.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 7,
+                "opcode": "bcc.s",
+                "sourceTarget": "@CheckForMaxValue",
+                "parsedBranchTarget": "@CheckForMaxValue",
+                "conditionCode": "cc"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 12,
+              "opcode": "move.b",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 8,
+              "opcode": "move.b",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 9,
+                "opcode": "bra.s",
+                "sourceTarget": "@Continue",
+                "parsedBranchTarget": "@Continue",
+                "conditionCode": "ra"
+              }
+            ],
+            "fieldWrite": {
+              "instructionIndex": 13,
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [
+              {
+                "instructionIndex": 15,
+                "opcode": "andi.w",
+                "operands": [
+                  "#BYTE_MASK",
+                  "d1"
+                ]
+              }
+            ],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ]
+          },
+          "DecreaseAndClampWord": {
+            "kind": "decrease",
+            "routineAddress": 37812,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7"
+            },
+            "widths": {
+              "storageOperandWidthBits": 16,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 16
+            },
+            "entryAddressCall": {
+              "instructionIndex": 1,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": "d4",
+              "save": {
+                "instructionIndex": 0,
+                "opcode": "move.w",
+                "operands": [
+                  "d4",
+                  "-(sp)"
+                ]
+              },
+              "restore": {
+                "instructionIndex": 14,
+                "opcode": "move.w",
+                "operands": [
+                  "(sp)+",
+                  "d4"
+                ]
+              },
+              "terminal": {
+                "instructionIndex": 15,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 3,
+              "opcode": "move.w",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "deltaCopy": {
+              "instructionIndex": 2,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "d4"
+              ]
+            },
+            "arithmetic": {
+              "instructionIndex": 4,
+              "opcode": "sub.w",
+              "operands": [
+                "d4",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 5,
+              "opcode": "bmi.s",
+              "sourceTarget": "@MakeMinValue",
+              "parsedBranchTarget": "@MakeMinValue",
+              "conditionCode": "mi"
+            },
+            "maximumComparison": {
+              "instructionIndex": 10,
+              "opcode": "cmp.w",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 11,
+                "opcode": "bls.s",
+                "sourceTarget": "@Continue",
+                "parsedBranchTarget": null,
+                "conditionCode": "ls"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 6,
+              "opcode": "cmp.w",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 7,
+                "opcode": "bhi.s",
+                "sourceTarget": "@CheckForMaxValue",
+                "parsedBranchTarget": "@CheckForMaxValue",
+                "conditionCode": "hi"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 12,
+              "opcode": "move.w",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 8,
+              "opcode": "move.w",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 9,
+                "opcode": "bra.s",
+                "sourceTarget": "@Continue",
+                "parsedBranchTarget": "@Continue",
+                "conditionCode": "ra"
+              }
+            ],
+            "fieldWrite": {
+              "instructionIndex": 13,
+              "opcode": "move.w",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "DecreaseAndClampLong": {
+            "kind": "decrease",
+            "routineAddress": 37880,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7"
+            },
+            "widths": {
+              "storageOperandWidthBits": 32,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 32
+            },
+            "entryAddressCall": {
+              "instructionIndex": 1,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": "d4",
+              "save": {
+                "instructionIndex": 0,
+                "opcode": "move.l",
+                "operands": [
+                  "d4",
+                  "-(sp)"
+                ]
+              },
+              "restore": {
+                "instructionIndex": 14,
+                "opcode": "move.l",
+                "operands": [
+                  "(sp)+",
+                  "d4"
+                ]
+              },
+              "terminal": {
+                "instructionIndex": 15,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 3,
+              "opcode": "move.l",
+              "operands": [
+                "(a0,d7.w)",
+                "d1"
+              ]
+            },
+            "deltaCopy": {
+              "instructionIndex": 2,
+              "opcode": "move.l",
+              "operands": [
+                "d1",
+                "d4"
+              ]
+            },
+            "arithmetic": {
+              "instructionIndex": 4,
+              "opcode": "sub.l",
+              "operands": [
+                "d4",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 5,
+              "opcode": "bmi.s",
+              "sourceTarget": "loc_940C",
+              "parsedBranchTarget": "loc_940C",
+              "conditionCode": "mi"
+            },
+            "maximumComparison": {
+              "instructionIndex": 10,
+              "opcode": "cmp.l",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 11,
+                "opcode": "bls.s",
+                "sourceTarget": "loc_9416",
+                "parsedBranchTarget": null,
+                "conditionCode": "ls"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 6,
+              "opcode": "cmp.l",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 7,
+                "opcode": "bhi.s",
+                "sourceTarget": "loc_9410",
+                "parsedBranchTarget": "loc_9410",
+                "conditionCode": "hi"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 12,
+              "opcode": "move.l",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 8,
+              "opcode": "move.l",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 9,
+                "opcode": "bra.s",
+                "sourceTarget": "loc_9416",
+                "parsedBranchTarget": "loc_9416",
+                "conditionCode": "ra"
+              }
+            ],
+            "fieldWrite": {
+              "instructionIndex": 13,
+              "opcode": "move.l",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "IncreaseAndClamp7Bits": {
+            "kind": "increase7Bits",
+            "routineAddress": 37684,
+            "registers": {
+              "selector": "d0",
+              "deltaAndResult": "d1",
+              "minimum": "d5",
+              "maximum": "d6",
+              "offset": "d7",
+              "fieldByte": "d2",
+              "preservedBits": "d3"
+            },
+            "widths": {
+              "storageOperandWidthBits": 8,
+              "registerContainer": "d1",
+              "resultValueWidthBits": 8
+            },
+            "entryAddressCall": {
+              "instructionIndex": 0,
+              "opcode": "bsr.w",
+              "operands": [
+                "GetCombatantEntryAddress"
+              ]
+            },
+            "preserveRestore": {
+              "registers": "d2-d3",
+              "save": {
+                "instructionIndex": 1,
+                "opcode": "movem.w",
+                "operands": [
+                  "d2-d3",
+                  "-(sp)"
+                ]
+              },
+              "restore": {
+                "instructionIndex": 18,
+                "opcode": "movem.w",
+                "operands": [
+                  "(sp)+",
+                  "d2-d3"
+                ]
+              },
+              "terminal": {
+                "instructionIndex": 19,
+                "opcode": "rts",
+                "operands": []
+              }
+            },
+            "fieldRead": {
+              "instructionIndex": 2,
+              "opcode": "move.b",
+              "operands": [
+                "(a0,d7.w)",
+                "d2"
+              ]
+            },
+            "fieldByteCopy": {
+              "instructionIndex": 3,
+              "opcode": "move.b",
+              "operands": [
+                "d2",
+                "d3"
+              ]
+            },
+            "preservedBitsMask": {
+              "constant": "TWO_TURN_THRESHOLD",
+              "value": 128,
+              "instruction": {
+                "instructionIndex": 4,
+                "opcode": "andi.b",
+                "operands": [
+                  "#TWO_TURN_THRESHOLD",
+                  "d3"
+                ]
+              }
+            },
+            "fieldMask": {
+              "constant": "TURN_AGILITY_MASK",
+              "value": 127,
+              "instruction": {
+                "instructionIndex": 5,
+                "opcode": "andi.b",
+                "operands": [
+                  "#TURN_AGILITY_MASK",
+                  "d2"
+                ]
+              }
+            },
+            "arithmetic": {
+              "instructionIndex": 6,
+              "opcode": "add.b",
+              "operands": [
+                "d2",
+                "d1"
+              ]
+            },
+            "overflowOrUnderflowBranch": {
+              "instructionIndex": 7,
+              "opcode": "bcs.s",
+              "sourceTarget": "@loc_1",
+              "parsedBranchTarget": "@loc_1",
+              "conditionCode": "cs"
+            },
+            "maximumComparison": {
+              "instructionIndex": 8,
+              "opcode": "cmp.b",
+              "operands": [
+                "d6",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 9,
+                "opcode": "bcs.s",
+                "sourceTarget": "@loc_2",
+                "parsedBranchTarget": "@loc_2",
+                "conditionCode": "cs"
+              }
+            },
+            "minimumComparison": {
+              "instructionIndex": 12,
+              "opcode": "cmp.b",
+              "operands": [
+                "d5",
+                "d1"
+              ],
+              "followingBranch": {
+                "instructionIndex": 13,
+                "opcode": "bcc.s",
+                "sourceTarget": "@loc_3",
+                "parsedBranchTarget": "@loc_3",
+                "conditionCode": "cc"
+              }
+            },
+            "maximumAssignment": {
+              "instructionIndex": 10,
+              "opcode": "move.b",
+              "sourceRegister": "d6",
+              "destinationRegister": "d1"
+            },
+            "minimumAssignment": {
+              "instructionIndex": 14,
+              "opcode": "move.b",
+              "sourceRegister": "d5",
+              "destinationRegister": "d1"
+            },
+            "unconditionalConvergenceBranches": [
+              {
+                "instructionIndex": 11,
+                "opcode": "bra.s",
+                "sourceTarget": "@loc_3",
+                "parsedBranchTarget": "@loc_3",
+                "conditionCode": "ra"
+              }
+            ],
+            "preservedBitsOr": {
+              "instructionIndex": 15,
+              "opcode": "or.b",
+              "operands": [
+                "d3",
+                "d1"
+              ]
+            },
+            "fieldWrite": {
+              "instructionIndex": 16,
+              "opcode": "move.b",
+              "operands": [
+                "d1",
+                "(a0,d7.w)"
+              ]
+            },
+            "resultNormalizations": [
+              {
+                "instructionIndex": 17,
+                "opcode": "andi.w",
+                "operands": [
+                  "#BYTE_MASK",
+                  "d1"
+                ]
+              }
+            ],
+            "controlFlowInstructionOrder": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19
+            ]
+          }
+        },
+        "jumpInterfaceAliases": {},
+        "internalDirectCallerOccurrences": {
+          "code/common/stats/combatantstats_3.asm": []
+        },
+        "internalEffectiveDirectCallSiteCounts": {
+          "IncreaseAndClampByte": 0,
+          "IncreaseAndClamp7Bits": 0,
+          "DecreaseAndClampByte": 0,
+          "IncreaseAndClampWord": 0,
+          "DecreaseAndClampWord": 0,
+          "IncreaseAndClampLong": 0,
+          "DecreaseAndClampLong": 0
+        },
+        "externalDirectCallerOccurrences": {
+          "code/common/stats/combatantstats_2.asm": [
+            {
+              "instructionTarget": "DecreaseAndClampByte",
+              "effectiveTarget": "DecreaseAndClampByte",
+              "siteCount": 8
+            },
+            {
+              "instructionTarget": "DecreaseAndClampWord",
+              "effectiveTarget": "DecreaseAndClampWord",
+              "siteCount": 1
+            },
+            {
+              "instructionTarget": "IncreaseAndClamp7Bits",
+              "effectiveTarget": "IncreaseAndClamp7Bits",
+              "siteCount": 2
+            },
+            {
+              "instructionTarget": "IncreaseAndClampByte",
+              "effectiveTarget": "IncreaseAndClampByte",
+              "siteCount": 10
+            },
+            {
+              "instructionTarget": "IncreaseAndClampWord",
+              "effectiveTarget": "IncreaseAndClampWord",
+              "siteCount": 4
+            }
+          ]
+        },
+        "externalEffectiveDirectCallSiteCounts": {
+          "IncreaseAndClampByte": 10,
+          "IncreaseAndClamp7Bits": 2,
+          "DecreaseAndClampByte": 8,
+          "IncreaseAndClampWord": 4,
+          "DecreaseAndClampWord": 1,
+          "IncreaseAndClampLong": 0,
+          "DecreaseAndClampLong": 0
+        },
+        "callerBoundary": {
+          "wrapperSourcePath": "code/common/stats/combatantstats_2.asm",
+          "allExternalSitesFromWrapperSource": true,
+          "externalSiteCount": 25,
+          "wrapperCalledRoutines": [
+            "IncreaseAndClampByte",
+            "IncreaseAndClamp7Bits",
+            "DecreaseAndClampByte",
+            "IncreaseAndClampWord",
+            "DecreaseAndClampWord"
+          ],
+          "zeroDirectCallerRoutines": [
+            "IncreaseAndClampLong",
+            "DecreaseAndClampLong"
+          ]
+        },
+        "h3BoundaryCrossCheck": {
+          "fixtureId": "sf2-stat-clamp-boundaries-v1",
+          "fixtureCaseId": "slade-thif-level39-stat-clamps",
+          "helpersObserved": {
+            "increaseByte": true,
+            "increaseWord": true,
+            "increase7Bits": true,
+            "decreaseByte": true
+          },
+          "coveredHelpers": [
+            {
+              "name": "IncreaseAndClampByte",
+              "helpersObservedField": "increaseByte",
+              "fixtureFunctionField": "increaseAndClampByteAddress",
+              "fixtureFunctionAddress": 37650,
+              "operationIds": [
+                "base-attack-cap",
+                "base-defense-cap",
+                "current-move-cap",
+                "current-attack-byte-carry"
+              ],
+              "operationKinds": [
+                "increase-byte"
+              ],
+              "operationCount": 4
+            },
+            {
+              "name": "IncreaseAndClampWord",
+              "helpersObservedField": "increaseWord",
+              "fixtureFunctionField": "increaseAndClampWordAddress",
+              "fixtureFunctionAddress": 37782,
+              "operationIds": [
+                "max-hp-word-wrap"
+              ],
+              "operationKinds": [
+                "increase-word"
+              ],
+              "operationCount": 1
+            },
+            {
+              "name": "IncreaseAndClamp7Bits",
+              "helpersObservedField": "increase7Bits",
+              "fixtureFunctionField": "increaseAndClamp7BitsAddress",
+              "fixtureFunctionAddress": 37684,
+              "operationIds": [
+                "base-agility-cap-preserves-turn-flag"
+              ],
+              "operationKinds": [
+                "increase-7bits"
+              ],
+              "operationCount": 1
+            },
+            {
+              "name": "DecreaseAndClampByte",
+              "helpersObservedField": "decreaseByte",
+              "fixtureFunctionField": "decreaseAndClampByteAddress",
+              "fixtureFunctionAddress": 37740,
+              "operationIds": [
+                "current-defense-underflow",
+                "current-move-underflow",
+                "current-agility-underflow"
+              ],
+              "operationKinds": [
+                "decrease-byte"
+              ],
+              "operationCount": 3
+            }
+          ],
+          "uncoveredHelpers": [
+            "DecreaseAndClampWord",
+            "IncreaseAndClampLong",
+            "DecreaseAndClampLong"
+          ]
+        },
+        "staticBoundary": {
+          "runtimeBehaviorBeyondExistingFixture": "unknown",
+          "nextStaticFrontier": "GetDistanceBetweenCombatants"
+        }
       }
     },
     "alternateSources": [

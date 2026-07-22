@@ -2,10 +2,11 @@
 
 - Status: **Confirmed** for the pinned 20-file inventory, flags/party/caravan/deals routing,
   combatant-type encoding, spell-learning outcomes, new-game order, alternate-source ownership, and
-  the complete 31-entry getter and 53-entry mutation instruction/ABI/caller contracts
+  the complete 31-entry getter, 53-entry mutation, and seven-routine clamp-helper
+  instruction/ABI/caller contracts
 - Status: **Inferred** for UI-facing helper intent not reproduced through callers
-- Status: **Unknown** for caller-dependent inventory UI, caller-dependent getter edge behavior,
-  clamp-helper algorithms, and caller-dependent mutation outcomes
+- Status: **Unknown** for caller-dependent inventory UI, caller-dependent getter edge behavior, and
+  caller-dependent mutation outcomes beyond the existing H3 clamp fixture matrix
 - Evidence date: 2026-07-21
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -49,8 +50,8 @@ not semantic booleans. This does not model its setters or clamp helpers. `GetCom
 separate ally entry/name-length and enemy-index/name-table/`FindName` source paths. The composite
 move-type, AI commandset, move-order, and trigger-region getters retain named copy, shift, and mask
 operations rather than inferred gameplay behavior. The static invalid-selector error route is
-**Confirmed**; caller-visible meaning remains **Inferred**, while runtime outcome, clamp-helper
-algorithms, and caller-dependent mutation outcomes remain **Unknown**.
+**Confirmed**; caller-visible meaning remains **Inferred**, while runtime outcome and
+caller-dependent mutation outcomes remain **Unknown**.
 
 ## Combatant Mutation Wrapper Contract
 
@@ -60,15 +61,49 @@ The contract records every complete instruction/local-label corpus, H1 address, 
 delta width, field use-site, lower helper boundary, preservation/terminal order, and alias-aware
 caller map. Direct setters, increase/decrease wrappers, `LoadAllyName`, packed move-order/trigger
 merges, guarded kills/defeats, and current HP/MP maximum-read paths remain source-shaped forms.
-Only the called `combatantstats_3.asm` helper ABI records are included: entry-address call,
-read/write access mode and widths, `d0`/`d1`/`d7` roles, clamp `d5`/`d6` arguments, and terminal.
-Clamp algorithms themselves remain **Unknown** at this slice boundary.
+The wrapper contract retains its source-facing lower-helper ABI: entry-address call, read/write access
+mode and widths, `d0`/`d1`/`d7` roles, clamp `d5`/`d6` arguments, and terminal. The helper
+algorithms are separately modelled below; this wrapper surface alone does not establish caller meaning.
+
+## Combatant Clamp-Helper Contract
+
+**Confirmed — static algorithm and caller surface.** Pinned upstream `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/stats/combatantstats_3.asm:IncreaseAndClampByte` through the byte before
+`GetDistanceBetweenCombatants`, is the 268-byte physical interval `0x9312..0x941E`.
+`uv run sf2 h2 common-stats` parses the seven routine entries in source order, their H1 addresses,
+the complete instruction/local-label corpora, and `BYTE_MASK=255`, `TWO_TURN_THRESHOLD=128`, and
+`TURN_AGILITY_MASK=127` from `sf2enums.asm`. The observed canonical extraction digest on
+2026-07-21 is `580CE7333A1910A99E7A17D83CAEC169E5D41442B10FAF01872B502A7D8F3E5C`.
+
+The six byte/word/long helpers retain exact entry-call, field access, arithmetic, branch,
+comparison/assignment, preservation/restoration, write, normalization, and terminal records. The
+seven-bit increase helper separately preserves the `TWO_TURN_THRESHOLD` field bits in `d3`, masks the
+working field byte in `d2` with `TURN_AGILITY_MASK`, adds/clamps that low portion, ORs `d3` back,
+writes the byte, then masks the result with `BYTE_MASK`. These are source-shaped register and constant
+relationships, not a claim about the gameplay meaning of the field bits.
+
+The alias-aware instruction parser finds all 25 direct wrapper sites in
+`code/common/stats/combatantstats_2.asm`: `IncreaseAndClampByte` 10,
+`IncreaseAndClamp7Bits` 2, `DecreaseAndClampByte` 8, `IncreaseAndClampWord` 4, and
+`DecreaseAndClampWord` 1. `IncreaseAndClampLong` and `DecreaseAndClampLong` have zero direct sites
+in the complete `code/` caller inventory. This is a **Confirmed** static caller count, not proof that a
+zero-site helper cannot be reached indirectly or at runtime.
+
+The output contract is `statsFacts.combatantClampContract` in fixture
+`tests/fixtures/h2/common-stats-static-v1.json` under fixture ID `sf2-common-stats-static-v1`; its
+strict mirrored output/fixture schemas and focused tests retain every operation, H1 boundary, caller
+target identity/site count, and existing H3 boundary. Reproduce with `uv run sf2 h2 common-stats`.
 
 ### H3 Runtime-Question Queue
 
-The next static frontier is the full `combatantstats_3.asm` clamp-algorithm contract. One grouped
-later H3 launch can then cover invalid-selector, clamp, caller, UI, and persistence edge cases. This
-slice starts no emulator and makes no claim about runtime presentation or caller lifecycle.
+The existing BizHawk fixture `sf2-stat-clamp-boundaries-v1` emulator-confirms a nine-operation matrix:
+four increase-byte cases, one increase-word case, one increase-seven-bits case, and three decrease-byte
+cases. It does not cover `DecreaseAndClampWord`, `IncreaseAndClampLong`, `DecreaseAndClampLong`, or a
+decrease-current-ATT outcome. A future grouped launch must introduce a new fixture/case matrix for those
+questions rather than implying that this fixture ID covers them. This slice performs no emulator run and
+makes no runtime lifecycle or presentation claim. The next static frontier is
+`GetDistanceBetweenCombatants`.
 
 ## Alternate Source Boundary
 

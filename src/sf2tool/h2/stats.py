@@ -1594,10 +1594,622 @@ def _combatant_mutation_contract(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _combatant_clamp_contract(disasm: Path) -> dict[str, Any]:
+    """Extract the seven bounded, source-shaped combatant clamp helpers."""
+    root = disasm / SOURCE_ROOT
+    path = root / "combatantstats_3.asm"
+    source = path.read_text(encoding="utf-8")
+    enums = (disasm / "sf2enums.asm").read_text(encoding="utf-8")
+    listing = (disasm.parent / "build/sf2build-h1.lst").read_text(encoding="utf-8")
+    names = (
+        "IncreaseAndClampByte",
+        "IncreaseAndClamp7Bits",
+        "DecreaseAndClampByte",
+        "IncreaseAndClampWord",
+        "DecreaseAndClampWord",
+        "IncreaseAndClampLong",
+        "DecreaseAndClampLong",
+    )
+    first = source.find(f"{names[0]}:")
+    boundary = source.find("GetDistanceBetweenCombatants:", first)
+    if first < 0 or boundary < 0:
+        raise ValueError("combatant clamp bounded source surface drift")
+    bounded_names = tuple(
+        re.findall(r"^    ; End of function ([A-Za-z0-9_]+)$", source[first:boundary], re.MULTILINE)
+    )
+    if bounded_names != names:
+        raise ValueError("combatant clamp bounded function inventory drift")
+
+    def section(name: str) -> str:
+        section_start = source.find(f"{name}:")
+        section_end = source.find("\n    ; End of function", section_start)
+        if section_start < 0 or section_end < 0:
+            raise ValueError(f"combatant clamp section drift: {name}")
+        return source[section_start:section_end]
+
+    def address(name: str) -> int:
+        match = re.search(rf"^([0-9A-F]{{8}})\s+{name}:$", listing, re.MULTILINE)
+        if not match:
+            raise ValueError(f"combatant clamp H1 drift: {name}")
+        return int(match.group(1), 16)
+
+    routines = {name: _shop_instruction_records(section(name)) for name in names}
+    addresses = {name: address(name) for name in names}
+    end_address = address("GetDistanceBetweenCombatants")
+    constants: dict[str, int] = {}
+    for name in ("BYTE_MASK", "TWO_TURN_THRESHOLD", "TURN_AGILITY_MASK"):
+        match = re.search(rf"^{name}:\s+equ\s+(\$[0-9A-Fa-f]+|-?\d+)", enums, re.MULTILINE)
+        if not match:
+            raise ValueError(f"combatant clamp constant drift: {name}")
+        raw = match.group(1)
+        constants[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+
+    def record(
+        records: list[dict[str, Any]],
+        name: str,
+        description: str,
+        index: int,
+        opcode: str,
+        operands: list[str],
+    ) -> dict[str, Any]:
+        if (
+            index >= len(records)
+            or records[index]["opcode"] != opcode
+            or records[index]["operands"] != operands
+        ):
+            raise ValueError(f"combatant clamp {name} {description} drift")
+        return records[index]
+
+    def branch(
+        records: list[dict[str, Any]],
+        name: str,
+        description: str,
+        index: int,
+        opcode: str,
+        target: str,
+    ) -> dict[str, Any]:
+        item = record(records, name, description, index, opcode, [target])
+        return {
+            "instructionIndex": index,
+            "opcode": item["opcode"],
+            "sourceTarget": item["operands"][0],
+            "parsedBranchTarget": item["branchTarget"],
+            "conditionCode": item["opcode"][1:].split(".")[0],
+        }
+
+    def instruction(
+        records: list[dict[str, Any]],
+        name: str,
+        description: str,
+        index: int,
+        opcode: str,
+        operands: list[str],
+    ) -> dict[str, Any]:
+        item = record(records, name, description, index, opcode, operands)
+        return {"instructionIndex": index, "opcode": item["opcode"], "operands": item["operands"]}
+
+    def comparison(
+        records: list[dict[str, Any]],
+        name: str,
+        role: str,
+        index: int,
+        opcode: str,
+        operands: list[str],
+        branch_opcode: str,
+        branch_target: str,
+    ) -> dict[str, Any]:
+        return {
+            "instructionIndex": index,
+            "opcode": record(records, name, f"{role} comparison", index, opcode, operands)[
+                "opcode"
+            ],
+            "operands": operands,
+            "followingBranch": branch(
+                records, name, f"{role} comparison branch", index + 1, branch_opcode, branch_target
+            ),
+        }
+
+    def assignment(
+        records: list[dict[str, Any]],
+        name: str,
+        role: str,
+        index: int,
+        opcode: str,
+        source_register: str,
+    ) -> dict[str, Any]:
+        record(records, name, f"{role} assignment", index, opcode, [source_register, "d1"])
+        return {
+            "instructionIndex": index,
+            "opcode": opcode,
+            "sourceRegister": source_register,
+            "destinationRegister": "d1",
+        }
+
+    specs = {
+        "IncreaseAndClampByte": {
+            "kind": "increase",
+            "width": 8,
+            "entry": 0,
+            "arithmetic": (1, "add.b", ["(a0,d7.w)", "d1"]),
+            "overflow": (2, "bcs.s", "@MakeMaxValue"),
+            "maximum": (3, "cmp.b", ["d6", "d1"], "bcs.s", "@Continue", 5),
+            "minimum": (7, "cmp.b", ["d5", "d1"], "bcc.s", "@Done", 9),
+            "convergence": [(6, "bra.s", "@Done")],
+            "read": 1,
+            "write": 10,
+            "normalizations": [11],
+            "save": None,
+            "restore": None,
+            "terminal": 12,
+        },
+        "IncreaseAndClampWord": {
+            "kind": "increase",
+            "width": 16,
+            "entry": 0,
+            "arithmetic": (1, "add.w", ["(a0,d7.w)", "d1"]),
+            "overflow": (2, "bmi.s", "@MakeMaxValue"),
+            "maximum": (3, "cmp.w", ["d6", "d1"], "bcs.s", "@Continue", 5),
+            "minimum": (7, "cmp.w", ["d5", "d1"], "bcc.s", "@Done", 9),
+            "convergence": [(6, "bra.s", "@Done")],
+            "read": 1,
+            "write": 10,
+            "normalizations": [],
+            "save": None,
+            "restore": None,
+            "terminal": 11,
+        },
+        "IncreaseAndClampLong": {
+            "kind": "increase",
+            "width": 32,
+            "entry": 0,
+            "arithmetic": (1, "add.l", ["(a0,d7.w)", "d1"]),
+            "overflow": (2, "bmi.s", "loc_93E8"),
+            "maximum": (3, "cmp.l", ["d6", "d1"], "bcs.s", "loc_93EC", 5),
+            "minimum": (7, "cmp.l", ["d5", "d1"], "bcc.s", "loc_93F2", 9),
+            "convergence": [(6, "bra.s", "loc_93F2")],
+            "read": 1,
+            "write": 10,
+            "normalizations": [],
+            "save": None,
+            "restore": None,
+            "terminal": 11,
+        },
+        "DecreaseAndClampByte": {
+            "kind": "decrease",
+            "width": 8,
+            "entry": 1,
+            "arithmetic": (4, "sub.b", ["d4", "d1"]),
+            "overflow": (5, "bcs.s", "@MakeMinValue"),
+            "minimum": (6, "cmp.b", ["d5", "d1"], "bcc.s", "@CheckForMaxValue", 8),
+            "maximum": (10, "cmp.b", ["d6", "d1"], "bcs.s", "@Continue", 12),
+            "convergence": [(9, "bra.s", "@Continue")],
+            "read": 3,
+            "write": 13,
+            "normalizations": [15],
+            "save": (0, "move.w", ["d4", "-(sp)"]),
+            "restore": (14, "move.w", ["(sp)+", "d4"]),
+            "terminal": 16,
+        },
+        "DecreaseAndClampWord": {
+            "kind": "decrease",
+            "width": 16,
+            "entry": 1,
+            "arithmetic": (4, "sub.w", ["d4", "d1"]),
+            "overflow": (5, "bmi.s", "@MakeMinValue"),
+            "minimum": (6, "cmp.w", ["d5", "d1"], "bhi.s", "@CheckForMaxValue", 8),
+            "maximum": (10, "cmp.w", ["d6", "d1"], "bls.s", "@Continue", 12),
+            "convergence": [(9, "bra.s", "@Continue")],
+            "read": 3,
+            "write": 13,
+            "normalizations": [],
+            "save": (0, "move.w", ["d4", "-(sp)"]),
+            "restore": (14, "move.w", ["(sp)+", "d4"]),
+            "terminal": 15,
+        },
+        "DecreaseAndClampLong": {
+            "kind": "decrease",
+            "width": 32,
+            "entry": 1,
+            "arithmetic": (4, "sub.l", ["d4", "d1"]),
+            "overflow": (5, "bmi.s", "loc_940C"),
+            "minimum": (6, "cmp.l", ["d5", "d1"], "bhi.s", "loc_9410", 8),
+            "maximum": (10, "cmp.l", ["d6", "d1"], "bls.s", "loc_9416", 12),
+            "convergence": [(9, "bra.s", "loc_9416")],
+            "read": 3,
+            "write": 13,
+            "normalizations": [],
+            "save": (0, "move.l", ["d4", "-(sp)"]),
+            "restore": (14, "move.l", ["(sp)+", "d4"]),
+            "terminal": 15,
+        },
+    }
+    algorithms: dict[str, Any] = {}
+    for name, spec in specs.items():
+        records = routines[name]
+        width = spec["width"]
+        suffix = {8: "b", 16: "w", 32: "l"}[width]
+        entry = instruction(
+            records,
+            name,
+            "entry address call",
+            spec["entry"],
+            "bsr.w",
+            ["GetCombatantEntryAddress"],
+        )
+        arithmetic_index, arithmetic_opcode, arithmetic_operands = spec["arithmetic"]
+        arithmetic = instruction(
+            records, name, "arithmetic", arithmetic_index, arithmetic_opcode, arithmetic_operands
+        )
+        read_operands = ["(a0,d7.w)", "d1"] if spec["kind"] == "decrease" else arithmetic_operands
+        field_read = instruction(
+            records,
+            name,
+            "field read",
+            spec["read"],
+            "move." + suffix if spec["kind"] == "decrease" else arithmetic_opcode,
+            read_operands,
+        )
+        delta_copy = (
+            None
+            if spec["kind"] == "increase"
+            else instruction(records, name, "delta copy", 2, "move." + suffix, ["d1", "d4"])
+        )
+        write = instruction(
+            records, name, "field write", spec["write"], "move." + suffix, ["d1", "(a0,d7.w)"]
+        )
+        overflow = branch(records, name, "overflow or underflow branch", *spec["overflow"])
+        max_index, max_opcode, max_operands, max_branch_opcode, max_target, max_assignment = spec[
+            "maximum"
+        ]
+        min_index, min_opcode, min_operands, min_branch_opcode, min_target, min_assignment = spec[
+            "minimum"
+        ]
+        maximum = comparison(
+            records,
+            name,
+            "maximum",
+            max_index,
+            max_opcode,
+            max_operands,
+            max_branch_opcode,
+            max_target,
+        )
+        minimum = comparison(
+            records,
+            name,
+            "minimum",
+            min_index,
+            min_opcode,
+            min_operands,
+            min_branch_opcode,
+            min_target,
+        )
+        maximum_assignment = assignment(
+            records, name, "maximum", max_assignment, "move." + suffix, "d6"
+        )
+        minimum_assignment = assignment(
+            records, name, "minimum", min_assignment, "move." + suffix, "d5"
+        )
+        convergence = [
+            branch(records, name, "unconditional convergence", *value)
+            for value in spec["convergence"]
+        ]
+        expected_normalizations = spec["normalizations"]
+        actual_normalizations = [
+            i
+            for i, item in enumerate(records)
+            if item["opcode"] == "andi.w" and item["operands"] == ["#BYTE_MASK", "d1"]
+        ]
+        if actual_normalizations != expected_normalizations:
+            raise ValueError(f"combatant clamp {name} result normalization drift")
+        normalizations = [
+            instruction(records, name, "result normalization", i, "andi.w", ["#BYTE_MASK", "d1"])
+            for i in actual_normalizations
+        ]
+        save = None if spec["save"] is None else instruction(records, name, "save", *spec["save"])
+        restore = (
+            None
+            if spec["restore"] is None
+            else instruction(records, name, "restore", *spec["restore"])
+        )
+        terminal = instruction(records, name, "terminal", spec["terminal"], "rts", [])
+        order = [
+            entry["instructionIndex"],
+            arithmetic["instructionIndex"],
+            overflow["instructionIndex"],
+        ]
+        if spec["kind"] == "increase":
+            order += [
+                maximum["instructionIndex"],
+                maximum["followingBranch"]["instructionIndex"],
+                maximum_assignment["instructionIndex"],
+                convergence[0]["instructionIndex"],
+                minimum["instructionIndex"],
+                minimum["followingBranch"]["instructionIndex"],
+                minimum_assignment["instructionIndex"],
+            ]
+        else:
+            order = [
+                save["instructionIndex"],
+                entry["instructionIndex"],
+                delta_copy["instructionIndex"],
+                field_read["instructionIndex"],
+                arithmetic["instructionIndex"],
+                overflow["instructionIndex"],
+                minimum["instructionIndex"],
+                minimum["followingBranch"]["instructionIndex"],
+                minimum_assignment["instructionIndex"],
+                convergence[0]["instructionIndex"],
+                maximum["instructionIndex"],
+                maximum["followingBranch"]["instructionIndex"],
+                maximum_assignment["instructionIndex"],
+            ]
+        order.append(write["instructionIndex"])
+        if restore is not None:
+            order.append(restore["instructionIndex"])
+        order += [item["instructionIndex"] for item in normalizations]
+        order.append(terminal["instructionIndex"])
+        if order != sorted(order):
+            raise ValueError(f"combatant clamp {name} execution order drift")
+        algorithms[name] = {
+            "kind": spec["kind"],
+            "routineAddress": addresses[name],
+            "registers": {
+                "selector": "d0",
+                "deltaAndResult": "d1",
+                "minimum": "d5",
+                "maximum": "d6",
+                "offset": "d7",
+            },
+            "widths": {
+                "storageOperandWidthBits": width,
+                "registerContainer": "d1",
+                "resultValueWidthBits": width,
+            },
+            "entryAddressCall": entry,
+            "preserveRestore": {
+                "registers": None if save is None else "d4",
+                "save": save,
+                "restore": restore,
+                "terminal": terminal,
+            },
+            "fieldRead": field_read,
+            "deltaCopy": delta_copy,
+            "arithmetic": arithmetic,
+            "overflowOrUnderflowBranch": overflow,
+            "maximumComparison": maximum,
+            "minimumComparison": minimum,
+            "maximumAssignment": maximum_assignment,
+            "minimumAssignment": minimum_assignment,
+            "unconditionalConvergenceBranches": convergence,
+            "fieldWrite": write,
+            "resultNormalizations": normalizations,
+            "controlFlowInstructionOrder": order,
+        }
+
+    records = routines["IncreaseAndClamp7Bits"]
+    seven = "IncreaseAndClamp7Bits"
+    seven_entry = instruction(
+        records, seven, "entry address call", 0, "bsr.w", ["GetCombatantEntryAddress"]
+    )
+    seven_save = instruction(records, seven, "save", 1, "movem.w", ["d2-d3", "-(sp)"])
+    seven_read = instruction(records, seven, "field read", 2, "move.b", ["(a0,d7.w)", "d2"])
+    seven_copy = instruction(records, seven, "field byte copy", 3, "move.b", ["d2", "d3"])
+    seven_preserved = instruction(
+        records, seven, "preserved bits mask", 4, "andi.b", ["#TWO_TURN_THRESHOLD", "d3"]
+    )
+    seven_mask = instruction(
+        records, seven, "field mask", 5, "andi.b", ["#TURN_AGILITY_MASK", "d2"]
+    )
+    seven_arithmetic = instruction(records, seven, "arithmetic", 6, "add.b", ["d2", "d1"])
+    seven_overflow = branch(records, seven, "overflow branch", 7, "bcs.s", "@loc_1")
+    seven_maximum = comparison(
+        records, seven, "maximum", 8, "cmp.b", ["d6", "d1"], "bcs.s", "@loc_2"
+    )
+    seven_minimum = comparison(
+        records, seven, "minimum", 12, "cmp.b", ["d5", "d1"], "bcc.s", "@loc_3"
+    )
+    seven_max_assignment = assignment(records, seven, "maximum", 10, "move.b", "d6")
+    seven_min_assignment = assignment(records, seven, "minimum", 14, "move.b", "d5")
+    seven_convergence = [branch(records, seven, "unconditional convergence", 11, "bra.s", "@loc_3")]
+    seven_or = instruction(records, seven, "preserved bits OR", 15, "or.b", ["d3", "d1"])
+    seven_write = instruction(records, seven, "field write", 16, "move.b", ["d1", "(a0,d7.w)"])
+    seven_normalization = instruction(
+        records, seven, "result normalization", 17, "andi.w", ["#BYTE_MASK", "d1"]
+    )
+    seven_restore = instruction(records, seven, "restore", 18, "movem.w", ["(sp)+", "d2-d3"])
+    seven_terminal = instruction(records, seven, "terminal", 19, "rts", [])
+    seven_order = list(range(20))
+    if [
+        item["instructionIndex"]
+        for item in (
+            seven_entry,
+            seven_save,
+            seven_read,
+            seven_copy,
+            seven_preserved,
+            seven_mask,
+            seven_arithmetic,
+            seven_overflow,
+            seven_maximum,
+            seven_maximum["followingBranch"],
+            seven_max_assignment,
+            seven_convergence[0],
+            seven_minimum,
+            seven_minimum["followingBranch"],
+            seven_min_assignment,
+            seven_or,
+            seven_write,
+            seven_normalization,
+            seven_restore,
+            seven_terminal,
+        )
+    ] != seven_order:
+        raise ValueError("combatant clamp 7-bit execution order drift")
+    algorithms[seven] = {
+        "kind": "increase7Bits",
+        "routineAddress": addresses[seven],
+        "registers": {
+            "selector": "d0",
+            "deltaAndResult": "d1",
+            "minimum": "d5",
+            "maximum": "d6",
+            "offset": "d7",
+            "fieldByte": "d2",
+            "preservedBits": "d3",
+        },
+        "widths": {
+            "storageOperandWidthBits": 8,
+            "registerContainer": "d1",
+            "resultValueWidthBits": 8,
+        },
+        "entryAddressCall": seven_entry,
+        "preserveRestore": {
+            "registers": "d2-d3",
+            "save": seven_save,
+            "restore": seven_restore,
+            "terminal": seven_terminal,
+        },
+        "fieldRead": seven_read,
+        "fieldByteCopy": seven_copy,
+        "preservedBitsMask": {
+            "constant": "TWO_TURN_THRESHOLD",
+            "value": constants["TWO_TURN_THRESHOLD"],
+            "instruction": seven_preserved,
+        },
+        "fieldMask": {
+            "constant": "TURN_AGILITY_MASK",
+            "value": constants["TURN_AGILITY_MASK"],
+            "instruction": seven_mask,
+        },
+        "arithmetic": seven_arithmetic,
+        "overflowOrUnderflowBranch": seven_overflow,
+        "maximumComparison": seven_maximum,
+        "minimumComparison": seven_minimum,
+        "maximumAssignment": seven_max_assignment,
+        "minimumAssignment": seven_min_assignment,
+        "unconditionalConvergenceBranches": seven_convergence,
+        "preservedBitsOr": seven_or,
+        "fieldWrite": seven_write,
+        "resultNormalizations": [seven_normalization],
+        "controlFlowInstructionOrder": seven_order,
+    }
+    targets = set(names)
+    aliases = _shop_jump_aliases(disasm, targets)
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    internal = {
+        "code/common/stats/combatantstats_3.asm": _shop_direct_call_occurrences(
+            path, alias_targets, targets
+        )
+    }
+    external = {
+        candidate.relative_to(disasm).as_posix(): occurrences
+        for candidate in sorted(
+            (disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix()
+        )
+        if candidate != path
+        if (occurrences := _shop_direct_call_occurrences(candidate, alias_targets, targets))
+    }
+
+    def totals(catalog: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
+        return {
+            target: sum(
+                item["siteCount"]
+                for rows in catalog.values()
+                for item in rows
+                if item["effectiveTarget"] == target
+            )
+            for target in names
+        }
+
+    external_counts = totals(external)
+    wrapper_path = "code/common/stats/combatantstats_2.asm"
+    if set(external) != {wrapper_path} or sum(external_counts.values()) != 25:
+        raise ValueError("combatant clamp external caller boundary drift")
+    h3 = load_json(repo_path("tests/fixtures/h3/stat-clamp-boundaries-v1.json"))
+    observed = h3["case"]["helpersObserved"]
+    h3_specs = (
+        ("IncreaseAndClampByte", "increaseByte", "increaseAndClampByteAddress", "increase-byte"),
+        ("IncreaseAndClampWord", "increaseWord", "increaseAndClampWordAddress", "increase-word"),
+        (
+            "IncreaseAndClamp7Bits",
+            "increase7Bits",
+            "increaseAndClamp7BitsAddress",
+            "increase-7bits",
+        ),
+        ("DecreaseAndClampByte", "decreaseByte", "decreaseAndClampByteAddress", "decrease-byte"),
+    )
+    if set(observed) != {item[1] for item in h3_specs} or not all(
+        observed[item[1]] is True for item in h3_specs
+    ):
+        raise ValueError("combatant clamp H3 helper observation drift")
+    covered = []
+    for name, observed_key, function_field, operation_kind in h3_specs:
+        if h3["function"].get(function_field) != addresses[name]:
+            raise ValueError(f"combatant clamp H3 address cross-check drift: {name}")
+        operations = [item for item in h3["case"]["operations"] if item["kind"] == operation_kind]
+        if not operations:
+            raise ValueError(f"combatant clamp H3 operation mapping drift: {name}")
+        covered.append(
+            {
+                "name": name,
+                "helpersObservedField": observed_key,
+                "fixtureFunctionField": function_field,
+                "fixtureFunctionAddress": addresses[name],
+                "operationIds": [item["id"] for item in operations],
+                "operationKinds": [operation_kind],
+                "operationCount": len(operations),
+            }
+        )
+    mapped_kinds = {item[3] for item in h3_specs}
+    if {item["kind"] for item in h3["case"]["operations"]} != mapped_kinds:
+        raise ValueError("combatant clamp H3 operation kind set drift")
+    uncovered = ["DecreaseAndClampWord", "IncreaseAndClampLong", "DecreaseAndClampLong"]
+    return {
+        "sourcePath": "code/common/stats/combatantstats_3.asm",
+        "sourceRange": {
+            "path": "code/common/stats/combatantstats_3.asm",
+            "startAddress": addresses[names[0]],
+            "endAddressExclusive": end_address,
+            "physicalSpanBytes": end_address - addresses[names[0]],
+        },
+        "boundedFunctionOrder": list(bounded_names),
+        "routineOrder": list(names),
+        "routineAddresses": addresses,
+        "constants": constants,
+        "routineOperations": routines,
+        "algorithms": algorithms,
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerOccurrences": internal,
+        "internalEffectiveDirectCallSiteCounts": totals(internal),
+        "externalDirectCallerOccurrences": external,
+        "externalEffectiveDirectCallSiteCounts": external_counts,
+        "callerBoundary": {
+            "wrapperSourcePath": wrapper_path,
+            "allExternalSitesFromWrapperSource": True,
+            "externalSiteCount": 25,
+            "wrapperCalledRoutines": [name for name in names if external_counts[name] > 0],
+            "zeroDirectCallerRoutines": [name for name in names if external_counts[name] == 0],
+        },
+        "h3BoundaryCrossCheck": {
+            "fixtureId": h3["id"],
+            "fixtureCaseId": h3["case"]["id"],
+            "helpersObserved": observed,
+            "coveredHelpers": covered,
+            "uncoveredHelpers": uncovered,
+        },
+        "staticBoundary": {
+            "runtimeBehaviorBeyondExistingFixture": "unknown",
+            "nextStaticFrontier": "GetDistanceBetweenCombatants",
+        },
+    }
+
+
 def _stats_facts(disasm: Path) -> dict[str, Any]:
     root = disasm / SOURCE_ROOT
     combatant_getters = _combatant_getter_contract(disasm)
     combatant_mutations = _combatant_mutation_contract(disasm)
+    combatant_clamps = _combatant_clamp_contract(disasm)
     _require_ordered_fragments(
         root / "gameflags.asm",
         [
@@ -1752,6 +2364,7 @@ def _stats_facts(disasm: Path) -> dict[str, Any]:
         },
         "combatantGetterContract": combatant_getters,
         "combatantMutationContract": combatant_mutations,
+        "combatantClampContract": combatant_clamps,
     }
 
 

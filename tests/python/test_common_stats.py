@@ -6,6 +6,7 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2.stats import (
+    _combatant_clamp_contract,
     _combatant_getter_contract,
     _combatant_mutation_contract,
     build_stats_inventory,
@@ -71,6 +72,16 @@ MUTATION_ROUTINES = [
     "DecreaseCurrentAgi",
     "DecreaseBaseMov",
     "DecreaseCurrentMov",
+]
+
+CLAMP_ROUTINES = [
+    "IncreaseAndClampByte",
+    "IncreaseAndClamp7Bits",
+    "DecreaseAndClampByte",
+    "IncreaseAndClampWord",
+    "DecreaseAndClampWord",
+    "IncreaseAndClampLong",
+    "DecreaseAndClampLong",
 ]
 
 
@@ -214,6 +225,306 @@ def test_combatant_mutation_contract_matches_full_fixture_and_boundaries() -> No
     }
     assert set(actual["internalEffectiveDirectCallSiteCounts"]) == set(actual["routineOrder"])
     assert set(actual["externalEffectiveDirectCallSiteCounts"]) == set(actual["routineOrder"])
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_combatant_clamp_contract_matches_full_fixture_and_boundaries() -> None:
+    output = build_stats_inventory(UPSTREAM)
+    fixture = load_json(FIXTURE)
+    actual = output["statsFacts"]["combatantClampContract"]
+    expected = fixture["expected"]["statsFacts"]["combatantClampContract"]
+
+    assert actual == expected
+    assert actual["routineOrder"] == CLAMP_ROUTINES
+    assert actual["sourceRange"] == {
+        "path": "code/common/stats/combatantstats_3.asm",
+        "startAddress": 37650,
+        "endAddressExclusive": 37918,
+        "physicalSpanBytes": 268,
+    }
+    assert actual["routineAddresses"] == {
+        "IncreaseAndClampByte": 37650,
+        "IncreaseAndClamp7Bits": 37684,
+        "DecreaseAndClampByte": 37740,
+        "IncreaseAndClampWord": 37782,
+        "DecreaseAndClampWord": 37812,
+        "IncreaseAndClampLong": 37850,
+        "DecreaseAndClampLong": 37880,
+    }
+    assert actual["constants"] == {
+        "BYTE_MASK": 255,
+        "TWO_TURN_THRESHOLD": 128,
+        "TURN_AGILITY_MASK": 127,
+    }
+    assert actual["externalEffectiveDirectCallSiteCounts"] == {
+        "IncreaseAndClampByte": 10,
+        "IncreaseAndClamp7Bits": 2,
+        "DecreaseAndClampByte": 8,
+        "IncreaseAndClampWord": 4,
+        "DecreaseAndClampWord": 1,
+        "IncreaseAndClampLong": 0,
+        "DecreaseAndClampLong": 0,
+    }
+    assert actual["callerBoundary"] == {
+        "wrapperSourcePath": "code/common/stats/combatantstats_2.asm",
+        "allExternalSitesFromWrapperSource": True,
+        "externalSiteCount": 25,
+        "wrapperCalledRoutines": [
+            "IncreaseAndClampByte",
+            "IncreaseAndClamp7Bits",
+            "DecreaseAndClampByte",
+            "IncreaseAndClampWord",
+            "DecreaseAndClampWord",
+        ],
+        "zeroDirectCallerRoutines": ["IncreaseAndClampLong", "DecreaseAndClampLong"],
+    }
+    assert actual["h3BoundaryCrossCheck"] == {
+        "fixtureId": "sf2-stat-clamp-boundaries-v1",
+        "fixtureCaseId": "slade-thif-level39-stat-clamps",
+        "helpersObserved": {
+            "increaseByte": True,
+            "increaseWord": True,
+            "increase7Bits": True,
+            "decreaseByte": True,
+        },
+        "coveredHelpers": [
+            {
+                "name": "IncreaseAndClampByte",
+                "helpersObservedField": "increaseByte",
+                "fixtureFunctionField": "increaseAndClampByteAddress",
+                "fixtureFunctionAddress": 37650,
+                "operationIds": [
+                    "base-attack-cap",
+                    "base-defense-cap",
+                    "current-move-cap",
+                    "current-attack-byte-carry",
+                ],
+                "operationKinds": ["increase-byte"],
+                "operationCount": 4,
+            },
+            {
+                "name": "IncreaseAndClampWord",
+                "helpersObservedField": "increaseWord",
+                "fixtureFunctionField": "increaseAndClampWordAddress",
+                "fixtureFunctionAddress": 37782,
+                "operationIds": ["max-hp-word-wrap"],
+                "operationKinds": ["increase-word"],
+                "operationCount": 1,
+            },
+            {
+                "name": "IncreaseAndClamp7Bits",
+                "helpersObservedField": "increase7Bits",
+                "fixtureFunctionField": "increaseAndClamp7BitsAddress",
+                "fixtureFunctionAddress": 37684,
+                "operationIds": ["base-agility-cap-preserves-turn-flag"],
+                "operationKinds": ["increase-7bits"],
+                "operationCount": 1,
+            },
+            {
+                "name": "DecreaseAndClampByte",
+                "helpersObservedField": "decreaseByte",
+                "fixtureFunctionField": "decreaseAndClampByteAddress",
+                "fixtureFunctionAddress": 37740,
+                "operationIds": [
+                    "current-defense-underflow",
+                    "current-move-underflow",
+                    "current-agility-underflow",
+                ],
+                "operationKinds": ["decrease-byte"],
+                "operationCount": 3,
+            },
+        ],
+        "uncoveredHelpers": [
+            "DecreaseAndClampWord",
+            "IncreaseAndClampLong",
+            "DecreaseAndClampLong",
+        ],
+    }
+    assert actual["staticBoundary"] == {
+        "runtimeBehaviorBeyondExistingFixture": "unknown",
+        "nextStaticFrontier": "GetDistanceBetweenCombatants",
+    }
+    assert all(
+        actual["algorithms"][name]["routineAddress"] == actual["routineAddresses"][name]
+        for name in CLAMP_ROUTINES
+    )
+    assert all(
+        actual["algorithms"][name]["entryAddressCall"]["instructionIndex"]
+        < actual["algorithms"][name]["fieldWrite"]["instructionIndex"]
+        < actual["algorithms"][name]["preserveRestore"]["terminal"]["instructionIndex"]
+        for name in CLAMP_ROUTINES
+    )
+    assert actual["algorithms"]["IncreaseAndClamp7Bits"]["fieldMask"] == {
+        "constant": "TURN_AGILITY_MASK",
+        "value": 127,
+        "instruction": {
+            "instructionIndex": 5,
+            "opcode": "andi.b",
+            "operands": ["#TURN_AGILITY_MASK", "d2"],
+        },
+    }
+    assert actual["algorithms"]["IncreaseAndClamp7Bits"]["preservedBitsMask"] == {
+        "constant": "TWO_TURN_THRESHOLD",
+        "value": 128,
+        "instruction": {
+            "instructionIndex": 4,
+            "opcode": "andi.b",
+            "operands": ["#TWO_TURN_THRESHOLD", "d3"],
+        },
+    }
+    assert actual["boundedFunctionOrder"] == CLAMP_ROUTINES
+    assert actual["algorithms"]["IncreaseAndClampLong"]["maximumComparison"] == {
+        "instructionIndex": 3,
+        "opcode": "cmp.l",
+        "operands": ["d6", "d1"],
+        "followingBranch": {
+            "instructionIndex": 4,
+            "opcode": "bcs.s",
+            "sourceTarget": "loc_93EC",
+            "parsedBranchTarget": "loc_93EC",
+            "conditionCode": "cs",
+        },
+    }
+    assert actual["algorithms"]["DecreaseAndClampWord"]["maximumComparison"][
+        "followingBranch"
+    ] == {
+        "instructionIndex": 11,
+        "opcode": "bls.s",
+        "sourceTarget": "@Continue",
+        "parsedBranchTarget": None,
+        "conditionCode": "ls",
+    }
+    assert actual["algorithms"]["IncreaseAndClamp7Bits"]["controlFlowInstructionOrder"] == list(
+        range(20)
+    )
+
+
+def test_combatant_clamp_schema_rejects_complete_shape_drift() -> None:
+    fixture = load_json(FIXTURE)
+    schema = load_json(FIXTURE_SCHEMA)
+
+    def invalid(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["statsFacts"]["combatantClampContract"])
+        with pytest.raises(ValueError, match="statsFacts"):
+            validate_json(broken, FIXTURE_SCHEMA, owner="statsFacts clamp contract")
+
+    invalid(lambda value: value["routineOrder"].reverse())
+    invalid(lambda value: value["routineAddresses"].__setitem__("IncreaseAndClampLong", 37851))
+    invalid(lambda value: value["sourceRange"].pop("physicalSpanBytes"))
+    invalid(lambda value: value["constants"].__setitem__("BYTE_MASK", 127))
+    invalid(lambda value: value["algorithms"]["IncreaseAndClamp7Bits"].pop("fieldMask"))
+    invalid(
+        lambda value: value["algorithms"]["DecreaseAndClampWord"]["maximumComparison"][
+            "followingBranch"
+        ].__setitem__("sourceTarget", "@Other")
+    )
+    invalid(lambda value: value["algorithms"]["IncreaseAndClampByte"].pop("maximumAssignment"))
+    invalid(
+        lambda value: value["algorithms"]["IncreaseAndClampWord"].__setitem__(
+            "maximumComparisonRenamed",
+            value["algorithms"]["IncreaseAndClampWord"].pop("maximumComparison"),
+        )
+    )
+    invalid(
+        lambda value: value["algorithms"]["IncreaseAndClamp7Bits"]["preserveRestore"][
+            "save"
+        ].__setitem__("unexpected", True)
+    )
+    invalid(
+        lambda value: value["h3BoundaryCrossCheck"]["coveredHelpers"][0]["operationIds"].reverse()
+    )
+    invalid(
+        lambda value: value["callerBoundary"]["zeroDirectCallerRoutines"].__setitem__(
+            0, "IncreaseAndClampByte"
+        )
+    )
+    invalid(lambda value: value["routineOperations"]["IncreaseAndClampByte"][1].pop("opcode"))
+    invalid(
+        lambda value: value["externalDirectCallerOccurrences"][
+            "code/common/stats/combatantstats_2.asm"
+        ][0].__setitem__("effectiveTarget", "IncreaseAndClampLong")
+    )
+    invalid(lambda value: value["h3BoundaryCrossCheck"].pop("uncoveredHelpers"))
+    invalid(lambda value: value["boundedFunctionOrder"].reverse())
+    invalid(lambda value: value.__setitem__("unexpected", True))
+    output_schema = load_json(OUTPUT_SCHEMA)
+    assert (
+        output_schema["definitions"]["combatantClampFacts"]
+        == schema["definitions"]["combatantClampFacts"]
+    )
+    routine_operations = schema["definitions"]["combatantClampFacts"]["properties"][
+        "routineOperations"
+    ]
+    assert all(
+        item["allOf"][0]["items"] == {"$ref": "#/definitions/combatantGetterInstructionRecord"}
+        for item in routine_operations["properties"].values()
+    )
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("routine", "needle", "replacement"),
+    (
+        ("IncreaseAndClampByte", "bcs.s   @MakeMaxValue", "bcc.s   @MakeMaxValue"),
+        ("IncreaseAndClampByte", "bcs.s   @Continue", "bcs.s   @Done"),
+        ("IncreaseAndClampByte", "cmp.b   d6,d1", "cmp.b   d5,d1"),
+        ("IncreaseAndClampByte", "move.b  d6,d1", "move.b  d5,d1"),
+        ("IncreaseAndClampByte", "andi.w  #BYTE_MASK,d1", "andi.w  #TURN_AGILITY_MASK,d1"),
+        ("IncreaseAndClampWord", "move.w  d1,(a0,d7.w)", "move.w  d1,(a0,d6.w)"),
+        ("IncreaseAndClampWord", "move.w  d6,d1", "move.w  d6,d2"),
+        ("DecreaseAndClampByte", "move.b  d5,d1", "move.b  d6,d1"),
+        ("DecreaseAndClampByte", "move.w  d4,-(sp)", "move.w  d3,-(sp)"),
+        ("DecreaseAndClampWord", "bhi.s   @CheckForMaxValue", "bls.s   @CheckForMaxValue"),
+        ("DecreaseAndClampWord", "bhi.s   @CheckForMaxValue", "bhi.s   @MakeMinValue"),
+        ("DecreaseAndClampWord", "cmp.w   d6,d1", "cmp.w   d5,d1"),
+        ("IncreaseAndClampLong", "add.l   (a0,d7.w),d1", "sub.l   (a0,d7.w),d1"),
+        ("IncreaseAndClampLong", "bmi.s   loc_93E8", "bmi.s   loc_93EC"),
+        ("IncreaseAndClampLong", "rts", "nop"),
+        ("DecreaseAndClampLong", "move.l  (sp)+,d4", "move.l  (sp)+,d3"),
+        ("DecreaseAndClampLong", "move.l  d1,(a0,d7.w)", "move.l  d1,(a0,d6.w)"),
+        ("DecreaseAndClampLong", "move.l  d6,d1", "move.l  d6,d2"),
+        ("IncreaseAndClamp7Bits", "or.b    d3,d1", "or.b    d2,d1"),
+        ("IncreaseAndClamp7Bits", "movem.w d2-d3,-(sp)", "movem.w d2-d4,-(sp)"),
+        (
+            "IncreaseAndClamp7Bits",
+            "andi.b  #TURN_AGILITY_MASK,d2",
+            "andi.b  #BYTE_MASK,d2",
+        ),
+        (
+            "IncreaseAndClamp7Bits",
+            "movem.w (sp)+,d2-d3",
+            "movem.w (sp)+,d2-d4",
+        ),
+        ("IncreaseAndClamp7Bits", "move.b  d1,(a0,d7.w)", "move.b  d1,(a0,d6.w)"),
+        (
+            "IncreaseAndClamp7Bits",
+            "andi.w  #BYTE_MASK,d1",
+            "andi.w  #TURN_AGILITY_MASK,d1",
+        ),
+    ),
+)
+def test_combatant_clamp_scoped_contract_rejects_control_flow_and_data_mutations(
+    tmp_path, routine, needle, replacement
+) -> None:
+    disasm = _copy_getter_sources(tmp_path)
+    source = disasm / "code/common/stats/combatantstats_3.asm"
+    text = source.read_text(encoding="utf-8")
+    start = text.index(f"{routine}:")
+    end = text.index("    ; End of function", start)
+    section = text[start:end]
+    assert needle in section
+    source.write_text(
+        text[:start] + section.replace(needle, replacement, 1) + text[end:], encoding="utf-8"
+    )
+    expected = load_json(FIXTURE)["expected"]["statsFacts"]["combatantClampContract"]
+    try:
+        actual = _combatant_clamp_contract(disasm)
+    except ValueError as error:
+        assert "combatant clamp" in str(error)
+    else:
+        assert actual != expected
+    assert expected["routineOrder"] == CLAMP_ROUTINES
 
 
 def test_combatant_mutation_schema_rejects_deep_drift() -> None:
@@ -472,15 +783,18 @@ def test_combatant_getter_schemas_are_shared_closed_and_reject_drift() -> None:
     )
 
 
-def test_combatant_mutation_slice_preserves_stats_siblings_from_head() -> None:
+def test_combatant_clamp_slice_preserves_getter_and_mutation_siblings_from_head() -> None:
     fixture = load_json(FIXTURE)
     head_fixture = json.loads(
         subprocess.check_output(
             ["git", "show", "HEAD:tests/fixtures/h2/common-stats-static-v1.json"], text=True
         )
     )
-    for name, value in head_fixture["expected"]["statsFacts"].items():
-        assert fixture["expected"]["statsFacts"][name] == value
+    for name in ("combatantGetterContract", "combatantMutationContract"):
+        assert (
+            fixture["expected"]["statsFacts"][name]
+            == head_fixture["expected"]["statsFacts"][name]
+        )
     output_schema = load_json(OUTPUT_SCHEMA)
     fixture_schema = load_json(FIXTURE_SCHEMA)
     head_output_schema = json.loads(
@@ -494,19 +808,20 @@ def test_combatant_mutation_slice_preserves_stats_siblings_from_head() -> None:
         )
     )
     assert set(output_schema["definitions"]) - set(head_output_schema.get("definitions", {})) == {
-        "combatantMutationFacts"
+        "combatantClampFacts"
     }
     assert set(fixture_schema["definitions"]) - set(head_fixture_schema.get("definitions", {})) == {
-        "combatantMutationFacts"
+        "combatantClampFacts"
     }
-    assert (
-        output_schema["definitions"]["combatantGetterFacts"]
-        == (head_output_schema["definitions"]["combatantGetterFacts"])
-    )
-    assert (
-        fixture_schema["definitions"]["combatantGetterFacts"]
-        == head_fixture_schema["definitions"]["combatantGetterFacts"]
-    )
+    for definition in ("combatantGetterFacts", "combatantMutationFacts"):
+        assert (
+            output_schema["definitions"][definition]
+            == head_output_schema["definitions"][definition]
+        )
+        assert (
+            fixture_schema["definitions"][definition]
+            == head_fixture_schema["definitions"][definition]
+        )
     assert (
         output_schema["definitions"]["combatantGetterInstructionRecord"]
         == head_output_schema["definitions"]["combatantGetterInstructionRecord"]

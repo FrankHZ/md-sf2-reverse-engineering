@@ -113,8 +113,9 @@ The current evidence is deep but narrow:
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
   8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
   Common stats now inventories all 20 files and models flags, party/inventory services, spell
-  learning, new-game order, the complete 31-entry getter corpus, and the complete 53-entry mutation
-  wrapper corpus with helper ABI/caller boundaries. Seventeen have independent evidence; three
+  learning, new-game order, the complete 31-entry getter corpus, complete 53-entry mutation wrapper
+  corpus, and seven-routine byte/word/long clamp algorithm/caller contract. Seventeen have independent
+  evidence; three
   unassembled alternate item sources are tracked but excluded from strict reach rather than borrowing
   their canonical twins.
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
