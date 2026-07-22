@@ -138,7 +138,7 @@ strict output schema, mirrored fixture schema, and focused source-mutation tests
 `schemas/h2-common-menus-static-fixture.schema.json`, and
 `tests/python/test_common_menus.py`. Reproduce with `uv run sf2 h2 common-menus`.
 Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
-`DA65132B3C6844DF09DC95E248AD5920DF210F9C05E0248D8D028E174FB77F56`.
+`157936FE16684908F5B9EFE05F4D6982C6573193A737CEA50CC661DD84DB46BE`.
 
 `ShopMenu` enters `j_ExecuteDiamondMenu` with `MENU_SHOP`; its local chain compares selector values
 `0`, `1`, and `2` for Buy, Sell, and Repair, respectively, and falls through to the Deals section.
@@ -191,7 +191,7 @@ selection-screen 3; absence of another direct call remains not an unreachability
 `churchactions_2.asm` helper surface. It uses the same exact `sf2-common-menus-static-v1` fixture,
 both mirrored schemas, and `tests/python/test_common_menus.py`; reproduce with
 `uv run sf2 h2 common-menus`. Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
-`B22046E0762E4A72518CF4F0473185EF328BBFF57F5FB02F58B67CF493A1B73C`.
+`157936FE16684908F5B9EFE05F4D6982C6573193A737CEA50CC661DD84DB46BE`.
 
 `ChurchMenu` enters `j_ExecuteDiamondMenu` with `MENU_CHURCH`, compares selector values `0`, `1`,
 and `2` for Raise, Cure, and Promote, and falls through to Save. Its `-1` comparison branches to
@@ -226,12 +226,39 @@ retains five direct `WaitForMusicResumeAndPlayerInput` sites in main-menu action
 inventory does not establish admission reachability or a caller return contract; those remain
 **Inferred** in the grouped service H3 queue.
 
-`CaravanMenu` uses a four-entry relative jump table in this exact order: join, depot, item, purge;
-each action returns to the caravan loop, while cancel exits. Depot is a nested four-entry table
-(look, deposit, derive, drop), and the item submenu is a second nested table (use, give, equip,
-drop). The source proves party joins/leaves, depot deposit as add-to-caravan plus drop-from-member,
-derive as add-to-member plus remove-from-caravan, and rare depot drops as deals additions. It does
-not prove which map callers admit the service or retain a particular menu result.
+**Confirmed — Caravan static contract.** The Caravan parser is pinned to upstream `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`code/common/menus/caravan/caravanactions_1.asm:CaravanMenu` (`0x21FD2..0x228A2`) and its direct
+helper file `caravanactions_2.asm` (`0x228A8..0x229CA`). The physical spans are 2,256 and 290 bytes,
+respectively; they remain separate from the 64-item storage capacity, 4-slot member capacity, word
+relative-table entry width, item-definition offsets, and `dbf` loop counters. Reproduce with
+`uv run sf2 h2 common-menus`; observed result on 2026-07-21 is `Status: PASS`, canonical SHA-256
+`157936FE16684908F5B9EFE05F4D6982C6573193A737CEA50CC661DD84DB46BE`.
+
+The top word-relative table is, in source order, `caravanMenu_Join`, `caravanMenu_Depot`,
+`caravanMenu_Item`, and `caravanMenu_Purge`; its selector doubles `d0`, its `-1` branch targets
+`@ExitCaravan`, and non-exit actions branch to `@RestartCaravan`. Depot and Item repeat that
+word-relative selector shape with source orders Look/Deposit/Derive/Drop and Use/Give/Equip/Drop.
+These are **Confirmed** control-flow records, not a claim about visible menu timing.
+
+The source also confirms a 12-member battle-party comparison before the Join relief path, Join's
+direct mutation-call order (join; then leave/join in its relief path), and Purge's leave call.
+Depot deposit compares the parsed 64-item capacity, branches with `bcc.s` to its no-room route, then
+calls add-to-caravan before drop-by-slot. Derive compares the parsed four-slot member capacity;
+its normal path calls add-item then remove-from-caravan, while its exchange path calls remove-item-
+by-slot, remove-from-caravan, add-item, then add-to-caravan. Both depot and member-item drops test
+the parsed rare bit 3 after their removal and conditionally call add-to-deals; unsellable bit 4 is a
+separate guard. Depot Look's price display separately records the word load at offset 6, multiply by
+3, and logical right shift by 2. These static call orders do not establish helper-internal mutation
+semantics or runtime persistence.
+
+For Item, Use calls `UseItemOnField` before remove-item-by-slot. Give preserves separate self,
+non-full recipient, and exchange call sequences; Equip only confirms its source-selected
+`ITEM_SUBMENU_ACTION_EQUIP` handoff. The alias-aware, comment-stripped direct caller inventory
+resolves `j_CaravanMenu` in `code/common/tech/jumpinterfaces/s05_jumpinterface.asm` to `CaravanMenu`;
+it finds one effective site each in exploration VInt and battle-test, and zero-inclusive internal and
+external effective-target totals remain fixture-pinned. Direct callers do not prove service admission,
+return state, or reachability, which remain **Inferred** and **Unknown** in the grouped H3 queue.
 
 `BlacksmithMenu` has no diamond-menu dispatch. On each visit it zeros four stack-local counters,
 updates the force list, counts pending/ready orders, fulfills ready orders when flag 80 permits, and

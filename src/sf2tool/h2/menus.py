@@ -904,11 +904,639 @@ def _church_static_contract(root: Path) -> dict[str, Any]:
     }
 
 
+def _caravan_function_section(source: str, symbol: str) -> str:
+    """Return one named Caravan routine through its assembler function boundary."""
+    start = source.find(f"{symbol}:")
+    if start < 0:
+        raise ValueError(f"caravan function drift: {symbol}")
+    finish = source.find("; End of function", start)
+    if finish < 0:
+        raise ValueError(f"caravan function end drift: {symbol}")
+    return source[start:finish]
+
+
+def _caravan_relative_dispatch(source: str, label: str) -> dict[str, Any]:
+    """Parse a contiguous word-relative jump table without duplicating its order."""
+    table = _caravan_function_section(source, label)
+    rows = re.findall(
+        rf"^\s*dc\.([bwl])\s+([A-Za-z_][A-Za-z0-9_]*)-{re.escape(label)}\s*$",
+        table,
+        re.MULTILINE,
+    )
+    if not rows:
+        raise ValueError(f"caravan relative dispatch drift: {label}")
+    widths = {"b": 1, "w": 2, "l": 4}
+    suffixes = {suffix for suffix, _target in rows}
+    if len(suffixes) != 1:
+        raise ValueError(f"caravan relative dispatch width drift: {label}")
+    return {
+        "baseLabel": label,
+        "entryWidthBytes": widths[suffixes.pop()],
+        "targets": [target for _suffix, target in rows],
+    }
+
+
+def _caravan_local_section(source: str, symbol: str, start: str, end: str) -> str:
+    routine = _caravan_function_section(source, symbol)
+    return _shop_section(routine, start, end)
+
+
+def _caravan_range(source: str, path: str) -> dict[str, Any]:
+    match = re.search(r"; 0x([0-9A-F]+)\.\.0x([0-9A-F]+)\s*:", source)
+    if not match:
+        raise ValueError(f"caravan source range drift: {path}")
+    start, end = (int(value, 16) for value in match.groups())
+    return {
+        "path": path,
+        "startAddress": start,
+        "endAddressExclusive": end,
+        "physicalSpanBytes": end - start,
+    }
+
+
+def _caravan_opcode_width_bytes(opcode: str) -> int:
+    widths = {".b": 1, ".w": 2, ".l": 4}
+    try:
+        return widths[opcode[-2:]]
+    except KeyError as error:
+        raise ValueError(f"caravan opcode width drift: {opcode}") from error
+
+
+def _caravan_constant_operand(operand: str, constants: dict[str, int]) -> tuple[str, int]:
+    match = re.fullmatch(r"#([A-Z][A-Z0-9_]*)", operand)
+    if not match or match.group(1) not in constants:
+        raise ValueError(f"caravan constant operand drift: {operand}")
+    name = match.group(1)
+    return name, constants[name]
+
+
+def _caravan_offset_operand(operand: str, constants: dict[str, int]) -> tuple[str, int]:
+    match = re.fullmatch(r"([A-Z][A-Z0-9_]*)\(a0\)", operand)
+    if not match or match.group(1) not in constants:
+        raise ValueError(f"caravan offset operand drift: {operand}")
+    name = match.group(1)
+    return name, constants[name]
+
+
+def _require_ordered_caravan_function(source: str, symbol: str, fragments: tuple[str, ...]) -> None:
+    """Guard a named Caravan routine without treating whole-file text as control flow."""
+    section = _caravan_function_section(source, symbol)
+    position = 0
+    for fragment in fragments:
+        position = section.find(fragment, position)
+        if position < 0:
+            raise ValueError(f"caravan control-flow drift in {symbol}: {fragment}")
+        position += len(fragment)
+
+
+def _caravan_static_contract(root: Path) -> dict[str, Any]:
+    """Parse the Caravan-only static dispatch and routine inventory."""
+    actions = read_upstream_text(root / "caravan/caravanactions_1.asm")
+    helpers = read_upstream_text(root / "caravan/caravanactions_2.asm")
+    for symbol, fragments in {
+        "CaravanMenu": (
+            "cmpi.w  #-1,d0",
+            "beq.w   @ExitCaravan",
+            "add.w   d0,d0",
+            "move.w  rjt_CaravanMenuActions(pc,d0.w),d0",
+            "jsr     rjt_CaravanMenuActions(pc,d0.w)",
+            "bra.s   @RestartCaravan",
+            "dc.w caravanMenu_Join-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Depot-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Item-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Purge-rjt_CaravanMenuActions",
+        ),
+        "caravanMenu_Depot": (
+            "cmpi.w  #-1,d0",
+            "beq.w   @Return",
+            "add.w   d0,d0",
+            "move.w  rjt_CaravanDepotSubmenuActions(pc,d0.w),d0",
+            "jsr     rjt_CaravanDepotSubmenuActions(pc,d0.w)",
+            "bra.s   @Restart",
+        ),
+        "caravanMenu_Item": (
+            "cmpi.w  #-1,d0",
+            "beq.w   @Return",
+            "add.w   d0,d0",
+            "move.w  rjt_CaravanItemSubmenuActions(pc,d0.w),d0",
+            "jsr     rjt_CaravanItemSubmenuActions(pc,d0.w)",
+            "bra.s   @Restart",
+        ),
+        "caravanMenu_Join": (
+            "cmpi.w  #FORCE_MAX_SIZE,((GENERIC_LIST_LENGTH-$1000000)).w",
+            "bcc.s   @ChooseRelief",
+            "jsr     j_JoinBattleParty",
+            "jsr     j_LeaveBattleParty",
+            "jsr     j_JoinBattleParty",
+        ),
+        "caravanMenu_Purge": ("jsr     j_LeaveBattleParty",),
+        "caravanDepotSubmenu_Deposit": (
+            "cmpi.w  #CARAVAN_MAX_ITEMS_NUMBER,((GENERIC_LIST_LENGTH-$1000000)).w",
+            "bcc.s   @Exit",
+            "jsr     j_AddItemToCaravan",
+            "jsr     j_DropItemBySlot",
+        ),
+        "caravanDepotSubmenu_Look": (
+            "move.w  ITEMDEF_OFFSET_PRICE(a0),d1",
+            "mulu.w  #ITEMSELLPRICE_MULTIPLIER,d1",
+            "lsr.l   #ITEMSELLPRICE_BITSHIFTRIGHT,d1",
+        ),
+        "caravanDepotSubmenu_Derive": (
+            "cmpi.w  #COMBATANT_ITEMSLOTS,d2",
+            "beq.s   @Exchange",
+            "jsr     j_AddItem",
+            "jsr     j_RemoveItemFromCaravan",
+            "@Exchange:",
+            "jsr     j_RemoveItemBySlot",
+            "jsr     j_RemoveItemFromCaravan",
+            "jsr     j_AddItem",
+            "jsr     j_AddItemToCaravan",
+        ),
+        "caravanDepotSubmenu_Drop": (
+            "jsr     j_RemoveItemFromCaravan",
+            "jsr     j_GetItemDefinitionAddress",
+            "btst    #ITEMTYPE_BIT_RARE,ITEMDEF_OFFSET_TYPE(a0)",
+            "beq.s   @Continue",
+            "jsr     j_AddItemToDeals",
+        ),
+        "caravanItemSubmenu_Give": (
+            "cmpi.w  #COMBATANT_ITEMSLOTS,d2",
+            "beq.s   @ExchangeItems",
+            "jsr     j_AddItem",
+            "jsr     j_RemoveItemBySlot",
+        ),
+        "caravanItemSubmenu_Use": (
+            "bsr.w   UseItemOnField",
+            "jsr     j_RemoveItemBySlot",
+        ),
+        "caravanItemSubmenu_Equip": (
+            "move.b  #ITEM_SUBMENU_ACTION_EQUIP,((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w",
+            "jsr     j_ExecuteMembersListScreenOnItemSummaryPage",
+        ),
+        "caravanItemSubmenu_Drop": (
+            "jsr     j_DropItemBySlot",
+            "jsr     j_GetItemDefinitionAddress",
+            "btst    #ITEMTYPE_BIT_RARE,ITEMDEF_OFFSET_TYPE(a0)",
+            "beq.s   @Continue",
+            "jsr     j_AddItemToDeals",
+        ),
+    }.items():
+        _require_ordered_caravan_function(actions, symbol, fragments)
+    _require_ordered_caravan_function(
+        helpers,
+        "IsItemUnsellable",
+        (
+            "jsr     j_GetItemDefinitionAddress",
+            "btst    #ITEMTYPE_BIT_UNSELLABLE,ITEMDEF_OFFSET_TYPE(a0)",
+        ),
+    )
+    dispatch_tables = {
+        "top": _caravan_relative_dispatch(actions, "rjt_CaravanMenuActions"),
+        "depot": _caravan_relative_dispatch(actions, "rjt_CaravanDepotSubmenuActions"),
+        "item": _caravan_relative_dispatch(actions, "rjt_CaravanItemSubmenuActions"),
+    }
+    operations = {
+        "entry": _shop_instruction_records(_caravan_function_section(actions, "CaravanMenu")),
+        "join": _shop_instruction_records(_caravan_function_section(actions, "caravanMenu_Join")),
+        "purge": _shop_instruction_records(_caravan_function_section(actions, "caravanMenu_Purge")),
+        "depot": _shop_instruction_records(_caravan_function_section(actions, "caravanMenu_Depot")),
+        "depotLook": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanDepotSubmenu_Look")
+        ),
+        "depotDeposit": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanDepotSubmenu_Deposit")
+        ),
+        "depotDerive": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanDepotSubmenu_Derive")
+        ),
+        "depotDrop": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanDepotSubmenu_Drop")
+        ),
+        "item": _shop_instruction_records(_caravan_function_section(actions, "caravanMenu_Item")),
+        "itemUse": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanItemSubmenu_Use")
+        ),
+        "itemGive": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanItemSubmenu_Give")
+        ),
+        "itemEquip": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanItemSubmenu_Equip")
+        ),
+        "itemDrop": _shop_instruction_records(
+            _caravan_function_section(actions, "caravanItemSubmenu_Drop")
+        ),
+    }
+    helper_sources = {
+        "DisplaySpecialCaravanDescription": actions,
+        "DisplayCaravanMessageWithPortrait": helpers,
+        "PopulateGenericListWithMembersList": helpers,
+        "CopyCaravanItems": helpers,
+        "IsItemInSlotEquippedAndCursed": helpers,
+        "PlayPreviousMusicAfterCurrentOne": helpers,
+        "IsItemUnsellable": helpers,
+    }
+    helper_operations = {
+        name: _shop_instruction_records(_caravan_function_section(source, name))
+        for name, source in helper_sources.items()
+    }
+    enum_names = (
+        "CARAVAN_MAX_ITEMS_NUMBER",
+        "COMBATANT_ITEMSLOTS",
+        "FORCE_MAX_SIZE",
+        "ITEMDEF_OFFSET_PRICE",
+        "ITEMDEF_OFFSET_TYPE",
+        "ITEMENTRY_BIT_EQUIPPED",
+        "ITEMENTRY_MASK_INDEX",
+        "ITEMSELLPRICE_BITSHIFTRIGHT",
+        "ITEMSELLPRICE_MULTIPLIER",
+        "ITEMTYPE_BIT_RARE",
+        "ITEMTYPE_BIT_UNSELLABLE",
+    )
+    enums = read_upstream_text(root.parents[2] / "sf2enums.asm")
+    constants: dict[str, int] = {}
+    for name in enum_names:
+        match = re.search(rf"^{name}:\s+equ\s+(\$[0-9A-Fa-f]+|\d+)", enums, re.MULTILINE)
+        if not match:
+            raise ValueError(f"caravan constant drift: {name}")
+        raw = match.group(1)
+        constants[name] = int(raw[1:], 16) if raw.startswith("$") else int(raw)
+
+    def direct_calls(records: list[dict[str, Any]], targets: set[str]) -> list[str]:
+        return [
+            record["directTarget"]
+            for record in records
+            if record["directTarget"] in targets
+        ]
+
+    def submenu_dispatch(symbol: str, table_name: str) -> dict[str, Any]:
+        records = operations[symbol]
+        cancel_compare = next(
+            record
+            for record in records
+            if record["opcode"] == "cmpi.w" and record["operands"] == ["#-1", "d0"]
+        )
+        cancel_branch = records[records.index(cancel_compare) + 1]
+        selector_add = next(
+            record
+            for record in records
+            if record["opcode"] == "add.w" and record["operands"] == ["d0", "d0"]
+        )
+        selector_scale_bytes = _caravan_opcode_width_bytes(selector_add["opcode"])
+        if cancel_branch["opcode"] != "beq.w":
+            raise ValueError(f"caravan {symbol} selector or cancel polarity drift")
+        if selector_scale_bytes != dispatch_tables[table_name]["entryWidthBytes"]:
+            raise ValueError(f"caravan {symbol} selector/table width drift")
+        return {
+            "entrySymbol": {
+                "depot": "caravanMenu_Depot",
+                "item": "caravanMenu_Item",
+            }[symbol],
+            "menuLabel": next(
+                record["operands"][0][1:]
+                for record in records
+                if record["opcode"] == "moveq" and record["operands"][1] == "d2"
+            ),
+            "dispatchTable": table_name,
+            "selectorScaleBytes": selector_scale_bytes,
+            "cancelValue": int(cancel_compare["operands"][0][1:]),
+            "cancelBranchTarget": cancel_branch["branchTarget"],
+            "loopBranchTarget": next(
+                record["branchTarget"]
+                for record in records
+                if record["opcode"] == "bra.s" and record["branchTarget"] == "@Restart"
+            ),
+        }
+
+    entry_records = operations["entry"]
+    selector_add = next(
+        record
+        for record in entry_records
+        if record["opcode"] == "add.w" and record["operands"] == ["d0", "d0"]
+    )
+    cancel_compare = next(
+        record
+        for record in entry_records
+        if record["opcode"] == "cmpi.w" and record["operands"] == ["#-1", "d0"]
+    )
+    cancel_branch = entry_records[entry_records.index(cancel_compare) + 1]
+    if cancel_branch["opcode"] != "beq.w":
+        raise ValueError("caravan top cancel branch polarity drift")
+    selector_scale_bytes = _caravan_opcode_width_bytes(selector_add["opcode"])
+    if selector_scale_bytes != dispatch_tables["top"]["entryWidthBytes"]:
+        raise ValueError("caravan top selector/table width drift")
+    join_capacity_compare = next(
+        record
+        for record in operations["join"]
+        if record["opcode"] == "cmpi.w"
+        and record["operands"] == ["#FORCE_MAX_SIZE", "((GENERIC_LIST_LENGTH-$1000000)).w"]
+    )
+    join_capacity_branch = operations["join"][operations["join"].index(join_capacity_compare) + 1]
+    join_capacity_name, battle_party_capacity = _caravan_constant_operand(
+        join_capacity_compare["operands"][0], constants
+    )
+    deposit_capacity_compare = next(
+        record
+        for record in operations["depotDeposit"]
+        if record["opcode"] == "cmpi.w"
+        and record["operands"]
+        == ["#CARAVAN_MAX_ITEMS_NUMBER", "((GENERIC_LIST_LENGTH-$1000000)).w"]
+    )
+    deposit_capacity_branch = operations["depotDeposit"][
+        operations["depotDeposit"].index(deposit_capacity_compare) + 1
+    ]
+    deposit_capacity_name, stored_item_capacity = _caravan_constant_operand(
+        deposit_capacity_compare["operands"][0], constants
+    )
+    derive_capacity_compare = next(
+        record
+        for record in operations["depotDerive"]
+        if record["opcode"] == "cmpi.w" and record["operands"] == ["#COMBATANT_ITEMSLOTS", "d2"]
+    )
+    give_capacity_compare = next(
+        record
+        for record in operations["itemGive"]
+        if record["opcode"] == "cmpi.w" and record["operands"] == ["#COMBATANT_ITEMSLOTS", "d2"]
+    )
+    derive_capacity_branch = operations["depotDerive"][
+        operations["depotDerive"].index(derive_capacity_compare) + 1
+    ]
+    give_capacity_branch = operations["itemGive"][
+        operations["itemGive"].index(give_capacity_compare) + 1
+    ]
+    derive_capacity_name, recipient_item_capacity = _caravan_constant_operand(
+        derive_capacity_compare["operands"][0], constants
+    )
+    give_capacity_name, give_recipient_item_capacity = _caravan_constant_operand(
+        give_capacity_compare["operands"][0], constants
+    )
+    if (
+        join_capacity_name != "FORCE_MAX_SIZE"
+        or deposit_capacity_name != "CARAVAN_MAX_ITEMS_NUMBER"
+        or derive_capacity_name != "COMBATANT_ITEMSLOTS"
+        or give_capacity_name != "COMBATANT_ITEMSLOTS"
+        or recipient_item_capacity != give_recipient_item_capacity
+    ):
+        raise ValueError("caravan capacity operand identity drift")
+    look_price_load = next(
+        record
+        for record in operations["depotLook"]
+        if record["opcode"] == "move.w" and record["operands"] == ["ITEMDEF_OFFSET_PRICE(a0)", "d1"]
+    )
+    look_price_index = operations["depotLook"].index(look_price_load)
+    look_price_multiply = operations["depotLook"][look_price_index + 1]
+    look_price_shift = operations["depotLook"][look_price_index + 2]
+    if look_price_multiply["opcode"] != "mulu.w" or look_price_shift["opcode"] != "lsr.l":
+        raise ValueError("caravan depot look price arithmetic drift")
+    price_offset_name, price_offset_bytes = _caravan_offset_operand(
+        look_price_load["operands"][0], constants
+    )
+    multiply_name, multiply_constant = _caravan_constant_operand(
+        look_price_multiply["operands"][0], constants
+    )
+    shift_name, right_shift_bits = _caravan_constant_operand(
+        look_price_shift["operands"][0], constants
+    )
+    if (
+        price_offset_name != "ITEMDEF_OFFSET_PRICE"
+        or multiply_name != "ITEMSELLPRICE_MULTIPLIER"
+        or shift_name != "ITEMSELLPRICE_BITSHIFTRIGHT"
+    ):
+        raise ValueError("caravan depot look price operand identity drift")
+    rare_bit_records = {
+        "depot": next(
+            record
+            for record in operations["depotDrop"]
+            if record["opcode"] == "btst"
+            and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
+        ),
+        "item": next(
+            record
+            for record in operations["itemDrop"]
+            if record["opcode"] == "btst"
+            and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
+        ),
+        "unsellable": next(
+            record
+            for record in helper_operations["IsItemUnsellable"]
+            if record["opcode"] == "btst"
+            and record["operands"][1] == "ITEMDEF_OFFSET_TYPE(a0)"
+        ),
+    }
+    rare_bit_names_and_values = {
+        route: _caravan_constant_operand(record["operands"][0], constants)
+        for route, record in rare_bit_records.items()
+    }
+    if (
+        rare_bit_names_and_values["depot"][0] != "ITEMTYPE_BIT_RARE"
+        or rare_bit_names_and_values["item"][0] != "ITEMTYPE_BIT_RARE"
+        or rare_bit_names_and_values["unsellable"][0] != "ITEMTYPE_BIT_UNSELLABLE"
+    ):
+        raise ValueError("caravan item-type bit operand identity drift")
+    semantic_sections = {
+        "depotDeriveNormal": _shop_instruction_records(
+            _caravan_local_section(
+                actions, "caravanDepotSubmenu_Derive", "; Derive item", "@Exchange:"
+            )
+        ),
+        "depotDeriveExchange": _shop_instruction_records(
+            _caravan_local_section(
+                actions, "caravanDepotSubmenu_Derive", "@Exchange:", "@Goto_Restart:"
+            )
+        ),
+        "itemGiveSelf": _shop_instruction_records(
+            _caravan_local_section(
+                actions, "caravanItemSubmenu_Give", "; Is giving to self?", "@IsInventoryFull:"
+            )
+        ),
+        "itemGiveNormal": _shop_instruction_records(
+            _caravan_local_section(
+                actions, "caravanItemSubmenu_Give", "; Give item", "@ExchangeItems:"
+            )
+        ),
+        "itemGiveExchange": _shop_instruction_records(
+            _caravan_local_section(
+                actions, "caravanItemSubmenu_Give", "@ExchangeItems:", "@Goto_Restart:"
+            )
+        ),
+    }
+    if direct_calls(
+        semantic_sections["depotDeriveNormal"], {"j_AddItem", "j_RemoveItemFromCaravan"}
+    ) != ["j_AddItem", "j_RemoveItemFromCaravan"]:
+        raise ValueError("caravan depot derive normal mutation order drift")
+    if direct_calls(
+        semantic_sections["itemGiveNormal"], {"j_AddItem", "j_RemoveItemBySlot"}
+    ) != ["j_AddItem", "j_RemoveItemBySlot"]:
+        raise ValueError("caravan item give normal mutation order drift")
+    targets = {
+        "CaravanMenu",
+        "caravanMenu_Join",
+        "caravanMenu_Depot",
+        "caravanMenu_Item",
+        "caravanMenu_Purge",
+        "caravanDepotSubmenu_Look",
+        "caravanDepotSubmenu_Deposit",
+        "caravanDepotSubmenu_Derive",
+        "caravanDepotSubmenu_Drop",
+        "caravanItemSubmenu_Use",
+        "caravanItemSubmenu_Give",
+        "caravanItemSubmenu_Equip",
+        "caravanItemSubmenu_Drop",
+        *helper_operations,
+    }
+    disasm = root.parents[2]
+    aliases = _shop_jump_aliases(disasm, targets)
+    alias_targets = {alias: fact["effectiveTarget"] for alias, fact in aliases.items()}
+    source_paths = (root / "caravan/caravanactions_1.asm", root / "caravan/caravanactions_2.asm")
+    internal = {
+        path.relative_to(disasm).as_posix(): _shop_direct_call_occurrences(
+            path, alias_targets, targets
+        )
+        for path in source_paths
+    }
+    external = {
+        path.relative_to(disasm).as_posix(): occurrences
+        for path in sorted((disasm / "code").rglob("*.asm"), key=lambda value: value.as_posix())
+        if path not in source_paths
+        if (occurrences := _shop_direct_call_occurrences(path, alias_targets, targets))
+    }
+
+    def effective_counts(callers: dict[str, list[dict[str, Any]]]) -> dict[str, int]:
+        return {
+            target: sum(
+                occurrence["siteCount"]
+                for occurrences in callers.values()
+                for occurrence in occurrences
+                if occurrence["effectiveTarget"] == target
+            )
+            for target in sorted(targets)
+        }
+
+    return {
+        "entrySymbol": "CaravanMenu",
+        "sourcePaths": [
+            path.as_posix()
+            for path in (
+                Path("code/common/menus/caravan/caravanactions_1.asm"),
+                Path("code/common/menus/caravan/caravanactions_2.asm"),
+            )
+        ],
+        "dispatchTables": dispatch_tables,
+        "topDispatch": {
+            "menuLabel": next(
+                record["operands"][0][1:]
+                for record in entry_records
+                if record["opcode"] == "moveq" and record["operands"][1] == "d2"
+            ),
+            "selectorScaleBytes": selector_scale_bytes,
+            "cancelValue": int(cancel_compare["operands"][0][1:]),
+            "cancelBranchTarget": cancel_branch["branchTarget"],
+            "loopBranchTarget": next(
+                record["branchTarget"]
+                for record in entry_records
+                if record["opcode"] == "bra.s" and record["branchTarget"] == "@RestartCaravan"
+            ),
+        },
+        "submenus": {
+            "depot": submenu_dispatch("depot", "depot"),
+            "item": submenu_dispatch("item", "item"),
+        },
+        "constants": constants,
+        "sourceRanges": [
+            _caravan_range(actions, "code/common/menus/caravan/caravanactions_1.asm"),
+            _caravan_range(helpers, "code/common/menus/caravan/caravanactions_2.asm"),
+        ],
+        "routeDerived": {
+            "join": {
+                "battlePartyCapacity": battle_party_capacity,
+                "capacityBranchOpcode": join_capacity_branch["opcode"],
+                "capacityBranchTarget": join_capacity_branch["branchTarget"],
+                "partyMutationCalls": direct_calls(
+                    operations["join"], {"j_LeaveBattleParty", "j_JoinBattleParty"}
+                ),
+            },
+            "purge": {
+                "partyMutationCalls": direct_calls(operations["purge"], {"j_LeaveBattleParty"}),
+            },
+            "depot": {
+                "storedItemCapacity": stored_item_capacity,
+                "depositCapacityBranchOpcode": deposit_capacity_branch["opcode"],
+                "depositCapacityBranchTarget": deposit_capacity_branch["branchTarget"],
+                "depositMutationCalls": direct_calls(
+                    operations["depotDeposit"], {"j_AddItemToCaravan", "j_DropItemBySlot"}
+                ),
+                "recipientItemCapacity": recipient_item_capacity,
+                "deriveCapacityBranchTarget": derive_capacity_branch["branchTarget"],
+                "deriveNormalMutationCalls": direct_calls(
+                    semantic_sections["depotDeriveNormal"], {"j_AddItem", "j_RemoveItemFromCaravan"}
+                ),
+                "deriveExchangeMutationCalls": direct_calls(
+                    semantic_sections["depotDeriveExchange"],
+                    {
+                        "j_RemoveItemBySlot",
+                        "j_RemoveItemFromCaravan",
+                        "j_AddItem",
+                        "j_AddItemToCaravan",
+                    },
+                ),
+                "dropMutationCalls": direct_calls(
+                    operations["depotDrop"],
+                    {"j_RemoveItemFromCaravan", "j_GetItemDefinitionAddress", "j_AddItemToDeals"},
+                ),
+                "rareBit": rare_bit_names_and_values["depot"][1],
+                "unsellableBit": rare_bit_names_and_values["unsellable"][1],
+                "lookPrice": {
+                    "itemDefinitionOffsetBytes": price_offset_bytes,
+                    "loadWidthBits": _caravan_opcode_width_bytes(look_price_load["opcode"]) * 8,
+                    "multiplyConstant": multiply_constant,
+                    "rightShiftBits": right_shift_bits,
+                },
+            },
+            "item": {
+                "useMutationCalls": direct_calls(
+                    operations["itemUse"], {"UseItemOnField", "j_RemoveItemBySlot"}
+                ),
+                "recipientItemCapacity": give_recipient_item_capacity,
+                "giveCapacityBranchTarget": give_capacity_branch["branchTarget"],
+                "giveSelfMutationCalls": direct_calls(
+                    semantic_sections["itemGiveSelf"], {"j_RemoveItemBySlot", "j_AddItem"}
+                ),
+                "giveNormalMutationCalls": direct_calls(
+                    semantic_sections["itemGiveNormal"], {"j_AddItem", "j_RemoveItemBySlot"}
+                ),
+                "giveExchangeMutationCalls": direct_calls(
+                    semantic_sections["itemGiveExchange"], {"j_RemoveItemBySlot", "j_AddItem"}
+                ),
+                "equipSelectionAction": next(
+                    record["operands"][0][1:]
+                    for record in operations["itemEquip"]
+                    if record["opcode"] == "move.b"
+                    and record["operands"][1]
+                    == "((CURRENT_ITEM_SUBMENU_ACTION-$1000000)).w"
+                ),
+                "dropMutationCalls": direct_calls(
+                    operations["itemDrop"],
+                    {"j_DropItemBySlot", "j_GetItemDefinitionAddress", "j_AddItemToDeals"},
+                ),
+                "rareBit": rare_bit_names_and_values["item"][1],
+            },
+        },
+        "routeOperations": operations,
+        "helperOperations": helper_operations,
+        "jumpInterfaceAliases": aliases,
+        "internalDirectCallerOccurrences": internal,
+        "internalEffectiveDirectCallSiteCounts": effective_counts(internal),
+        "externalDirectCallerOccurrences": external,
+        "externalEffectiveDirectCallSiteCounts": effective_counts(external),
+        "indirectBehavior": {"directCallInventoryDoesNotEstablishReachability": True},
+    }
+
+
 def _service_state_machines(disasm: Path) -> dict[str, Any]:
     """Extract the built service-menu control-flow boundary without interpreting UI timing."""
     root = disasm / SOURCE_ROOT
     shop_contract = _shop_static_contract(root)
     church_contract = _church_static_contract(root)
+    caravan_contract = _caravan_static_contract(root)
     if not all((disasm / path).is_file() for path in SERVICE_SOURCE_PATHS):
         raise ValueError("service-menu source boundary is incomplete")
     service_files = [
@@ -1217,30 +1845,7 @@ def _service_state_machines(disasm: Path) -> dict[str, Any]:
         },
         "shop": shop_contract,
         "church": church_contract,
-        "caravan": {
-            "entrySymbol": "CaravanMenu",
-            "selectionMenu": "MENU_CARAVAN",
-            "choiceOrder": ["join", "depot", "item", "purge"],
-            "dispatch": "four-entry-relative-jump-table",
-            "actionLoop": "each action returns to the caravan choice loop",
-            "exit": "diamond-menu-cancel-exits-service",
-            "depot": {
-                "selectionMenu": "MENU_DEPOT",
-                "choiceOrder": ["look", "deposit", "derive", "drop"],
-                "dispatch": "four-entry-relative-jump-table",
-                "effects": {
-                    "deposit": ["add-item-to-caravan", "drop-item-by-slot"],
-                    "derive": ["add-item", "remove-item-from-caravan"],
-                    "drop": ["remove-item-from-caravan", "rare-item-adds-to-deals"],
-                },
-            },
-            "item": {
-                "selectionMenu": "MENU_ITEM",
-                "choiceOrder": ["use", "give", "equip", "drop"],
-                "dispatch": "four-entry-relative-jump-table",
-            },
-            "partyEffects": ["join-battle-party", "leave-battle-party"],
-        },
+        "caravan": caravan_contract,
         "blacksmith": {
             "entrySymbol": "BlacksmithMenu",
             "dispatch": "ordered-fulfill-ready-orders-then-place-pending-order",

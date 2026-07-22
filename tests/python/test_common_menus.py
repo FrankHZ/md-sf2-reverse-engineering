@@ -4,6 +4,7 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2.menus import (
+    _caravan_static_contract,
     _church_static_contract,
     _shop_direct_call_occurrences,
     _shop_static_contract,
@@ -178,6 +179,61 @@ def test_church_contract_starts_with_structured_route_inventory() -> None:
     assert church["externalEffectiveDirectCallSiteCounts"]["ChurchMenu"] == 4
 
 
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_caravan_contract_starts_with_relative_dispatch_inventory() -> None:
+    caravan = _caravan_static_contract(UPSTREAM / "disasm/code/common/menus")
+    assert caravan["dispatchTables"] == {
+        "top": {
+            "baseLabel": "rjt_CaravanMenuActions",
+            "entryWidthBytes": 2,
+            "targets": [
+                "caravanMenu_Join",
+                "caravanMenu_Depot",
+                "caravanMenu_Item",
+                "caravanMenu_Purge",
+            ],
+        },
+        "depot": {
+            "baseLabel": "rjt_CaravanDepotSubmenuActions",
+            "entryWidthBytes": 2,
+            "targets": [
+                "caravanDepotSubmenu_Look",
+                "caravanDepotSubmenu_Deposit",
+                "caravanDepotSubmenu_Derive",
+                "caravanDepotSubmenu_Drop",
+            ],
+        },
+        "item": {
+            "baseLabel": "rjt_CaravanItemSubmenuActions",
+            "entryWidthBytes": 2,
+            "targets": [
+                "caravanItemSubmenu_Use",
+                "caravanItemSubmenu_Give",
+                "caravanItemSubmenu_Equip",
+                "caravanItemSubmenu_Drop",
+            ],
+        },
+    }
+    assert caravan["topDispatch"] == {
+        "menuLabel": "MENU_CARAVAN",
+        "selectorScaleBytes": 2,
+        "cancelValue": -1,
+        "cancelBranchTarget": "@ExitCaravan",
+        "loopBranchTarget": "@RestartCaravan",
+    }
+    assert set(caravan["routeOperations"]) == {
+        "entry", "join", "purge", "depot", "depotLook", "depotDeposit", "depotDerive",
+        "depotDrop", "item", "itemUse", "itemGive", "itemEquip", "itemDrop",
+    }
+    assert caravan["routeOperations"]["entry"][0] == {
+        "labels": ["CaravanMenu"],
+        "opcode": "module",
+        "operands": [],
+        "directTarget": None,
+        "branchTarget": None,
+    }
+
+
 def _copy_church_source_root(tmp_path):
     disasm = tmp_path / "disasm"
     source_root = UPSTREAM / "disasm"
@@ -185,6 +241,20 @@ def _copy_church_source_root(tmp_path):
         "sf2enums.asm",
         "code/common/menus/church/churchactions_1.asm",
         "code/common/menus/church/churchactions_2.asm",
+    ):
+        destination = disasm / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_root / relative, destination)
+    return disasm / "code/common/menus"
+
+
+def _copy_caravan_source_root(tmp_path):
+    disasm = tmp_path / "disasm"
+    source_root = UPSTREAM / "disasm"
+    for relative in (
+        "sf2enums.asm",
+        "code/common/menus/caravan/caravanactions_1.asm",
+        "code/common/menus/caravan/caravanactions_2.asm",
     ):
         destination = disasm / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -217,6 +287,113 @@ def test_church_source_mutations_are_route_scoped(tmp_path, needle, replacement)
     )
     with pytest.raises(ValueError, match="church"):
         _church_static_contract(root)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+@pytest.mark.parametrize(
+    ("needle", "replacement"),
+    (
+        (
+            "dc.w caravanMenu_Join-rjt_CaravanMenuActions",
+            "dc.w caravanMenu_Purge-rjt_CaravanMenuActions",
+        ),
+        ("beq.w   @ExitCaravan", "bne.w   @ExitCaravan"),
+        (
+            "cmpi.w  #CARAVAN_MAX_ITEMS_NUMBER,((GENERIC_LIST_LENGTH-$1000000)).w",
+            "cmpi.w  #COMBATANT_ITEMSLOTS,((GENERIC_LIST_LENGTH-$1000000)).w",
+        ),
+        (
+            "jsr     j_AddItemToCaravan\n"
+            "                move.w  itemSlot(a6),d1\n"
+            "                jsr     j_DropItemBySlot",
+            "jsr     j_DropItemBySlot\n"
+            "                move.w  itemSlot(a6),d1\n"
+            "                jsr     j_AddItemToCaravan",
+        ),
+        (
+            "btst    #ITEMTYPE_BIT_RARE,ITEMDEF_OFFSET_TYPE(a0)",
+            "btst    #ITEMTYPE_BIT_UNSELLABLE,ITEMDEF_OFFSET_TYPE(a0)",
+        ),
+        ("move.w  ITEMDEF_OFFSET_PRICE(a0),d1", "move.w  ITEMDEF_OFFSET_TYPE(a0),d1"),
+        (
+            "mulu.w  #ITEMSELLPRICE_MULTIPLIER,d1",
+            "mulu.w  #ITEMSELLPRICE_BITSHIFTRIGHT,d1",
+        ),
+        (
+            "lsr.l   #ITEMSELLPRICE_BITSHIFTRIGHT,d1",
+            "lsr.l   #ITEMSELLPRICE_MULTIPLIER,d1",
+        ),
+        (
+            "; Give item\n"
+            "                move.w  targetMember(a6),d0\n"
+            "                move.w  itemIndex(a6),d1\n"
+            "                jsr     j_AddItem\n"
+            "                move.w  member(a6),d0\n"
+            "                move.w  itemSlot(a6),d1\n"
+            "                jsr     j_RemoveItemBySlot",
+            "; Give item\n"
+            "                move.w  targetMember(a6),d0\n"
+            "                move.w  itemIndex(a6),d1\n"
+            "                jsr     j_RemoveItemBySlot\n"
+            "                move.w  member(a6),d0\n"
+            "                move.w  itemSlot(a6),d1\n"
+            "                jsr     j_AddItem",
+        ),
+        ("ITEM_SUBMENU_ACTION_EQUIP", "ITEM_SUBMENU_ACTION_DROP"),
+    ),
+)
+def test_caravan_source_mutations_are_function_scoped(tmp_path, needle, replacement) -> None:
+    root = _copy_caravan_source_root(tmp_path)
+    actions = root / "caravan/caravanactions_1.asm"
+    actions.write_text(
+        actions.read_text(encoding="latin-1").replace(needle, replacement, 1),
+        encoding="latin-1",
+    )
+    with pytest.raises(ValueError, match="caravan"):
+        _caravan_static_contract(root)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_caravan_nested_selector_width_and_item_rare_guards_are_scoped(tmp_path) -> None:
+    root = _copy_caravan_source_root(tmp_path)
+    actions = root / "caravan/caravanactions_1.asm"
+    source = actions.read_text(encoding="latin-1")
+    depot_start = source.index("caravanMenu_Depot:")
+    changed = source[:depot_start] + source[depot_start:].replace(
+        "add.w   d0,d0", "add.l   d0,d0", 1
+    )
+    actions.write_text(changed, encoding="latin-1")
+    with pytest.raises(ValueError, match="caravan"):
+        _caravan_static_contract(root)
+
+    root = _copy_caravan_source_root(tmp_path)
+    actions = root / "caravan/caravanactions_1.asm"
+    source = actions.read_text(encoding="latin-1")
+    item_drop_start = source.index("caravanItemSubmenu_Drop:")
+    changed = source[:item_drop_start] + source[item_drop_start:].replace(
+        "btst    #ITEMTYPE_BIT_RARE,ITEMDEF_OFFSET_TYPE(a0)",
+        "btst    #ITEMTYPE_BIT_UNSELLABLE,ITEMDEF_OFFSET_TYPE(a0)",
+        1,
+    )
+    actions.write_text(changed, encoding="latin-1")
+    with pytest.raises(ValueError, match="caravan"):
+        _caravan_static_contract(root)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_caravan_unsellable_helper_bit_guard_is_scoped(tmp_path) -> None:
+    root = _copy_caravan_source_root(tmp_path)
+    helpers = root / "caravan/caravanactions_2.asm"
+    helpers.write_text(
+        helpers.read_text(encoding="latin-1").replace(
+            "btst    #ITEMTYPE_BIT_UNSELLABLE,ITEMDEF_OFFSET_TYPE(a0)",
+            "btst    #ITEMTYPE_BIT_RARE,ITEMDEF_OFFSET_TYPE(a0)",
+            1,
+        ),
+        encoding="latin-1",
+    )
+    with pytest.raises(ValueError, match="caravan"):
+        _caravan_static_contract(root)
 
 
 def _copy_shop_source_root(tmp_path):
@@ -369,11 +546,15 @@ def test_service_menu_state_machine_contract_covers_built_services() -> None:
         "cure",
         "promote",
     ]
-    assert machines["caravan"]["choiceOrder"] == ["join", "depot", "item", "purge"]
-    assert machines["caravan"]["depot"]["choiceOrder"] == ["look", "deposit", "derive", "drop"]
-    assert machines["caravan"]["depot"]["effects"]["derive"] == [
-        "add-item",
-        "remove-item-from-caravan",
+    assert machines["caravan"]["dispatchTables"]["top"]["targets"] == [
+        "caravanMenu_Join",
+        "caravanMenu_Depot",
+        "caravanMenu_Item",
+        "caravanMenu_Purge",
+    ]
+    assert machines["caravan"]["routeDerived"]["depot"]["deriveNormalMutationCalls"] == [
+        "j_AddItem",
+        "j_RemoveItemFromCaravan",
     ]
     assert machines["blacksmith"]["noDiamondMenu"] is True
     assert machines["blacksmith"]["placementEffects"][-1] == "clear-flag-80"
@@ -469,4 +650,145 @@ def test_church_contract_matches_fixture_and_uses_compact_instruction_schema() -
     )
     expect_invalid(
         lambda church: church["routeDerived"]["promote"].__setitem__("minimumLevel", 19)
+    )
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_caravan_contract_matches_fixture_and_uses_compact_instruction_schema() -> None:
+    fixture = load_json(FIXTURE)
+    caravan = build_menu_inventory(UPSTREAM)["menuFacts"]["serviceStateMachines"]["caravan"]
+    assert caravan == fixture["expected"]["menuFacts"]["serviceStateMachines"]["caravan"]
+    assert caravan["routeDerived"] == {
+        "join": {
+            "battlePartyCapacity": 12,
+            "capacityBranchOpcode": "bcc.s",
+            "capacityBranchTarget": "@ChooseRelief",
+            "partyMutationCalls": [
+                "j_JoinBattleParty",
+                "j_LeaveBattleParty",
+                "j_JoinBattleParty",
+            ],
+        },
+        "purge": {"partyMutationCalls": ["j_LeaveBattleParty"]},
+        "depot": {
+            "storedItemCapacity": 64,
+            "depositCapacityBranchOpcode": "bcc.s",
+            "depositCapacityBranchTarget": "@Exit",
+            "depositMutationCalls": ["j_AddItemToCaravan", "j_DropItemBySlot"],
+            "recipientItemCapacity": 4,
+            "deriveCapacityBranchTarget": "@Exchange",
+            "deriveNormalMutationCalls": ["j_AddItem", "j_RemoveItemFromCaravan"],
+            "deriveExchangeMutationCalls": [
+                "j_RemoveItemBySlot",
+                "j_RemoveItemFromCaravan",
+                "j_AddItem",
+                "j_AddItemToCaravan",
+            ],
+            "dropMutationCalls": [
+                "j_RemoveItemFromCaravan",
+                "j_GetItemDefinitionAddress",
+                "j_AddItemToDeals",
+            ],
+            "rareBit": 3,
+            "unsellableBit": 4,
+            "lookPrice": {
+                "itemDefinitionOffsetBytes": 6,
+                "loadWidthBits": 16,
+                "multiplyConstant": 3,
+                "rightShiftBits": 2,
+            },
+        },
+        "item": {
+            "useMutationCalls": ["UseItemOnField", "j_RemoveItemBySlot"],
+            "recipientItemCapacity": 4,
+            "giveCapacityBranchTarget": "@ExchangeItems",
+            "giveSelfMutationCalls": ["j_RemoveItemBySlot", "j_AddItem"],
+            "giveNormalMutationCalls": ["j_AddItem", "j_RemoveItemBySlot"],
+            "giveExchangeMutationCalls": [
+                "j_RemoveItemBySlot",
+                "j_RemoveItemBySlot",
+                "j_AddItem",
+                "j_AddItem",
+            ],
+            "equipSelectionAction": "ITEM_SUBMENU_ACTION_EQUIP",
+            "dropMutationCalls": [
+                "j_DropItemBySlot",
+                "j_GetItemDefinitionAddress",
+                "j_AddItemToDeals",
+            ],
+            "rareBit": 3,
+        },
+    }
+    assert caravan["sourceRanges"] == [
+        {
+            "path": "code/common/menus/caravan/caravanactions_1.asm",
+            "startAddress": 139218,
+            "endAddressExclusive": 141474,
+            "physicalSpanBytes": 2256,
+        },
+        {
+            "path": "code/common/menus/caravan/caravanactions_2.asm",
+            "startAddress": 141480,
+            "endAddressExclusive": 141770,
+            "physicalSpanBytes": 290,
+        },
+    ]
+    assert caravan["externalDirectCallerOccurrences"] == {
+        "code/gameflow/exploration/explorationvints.asm": [
+            {
+                "instructionTarget": "j_CaravanMenu",
+                "effectiveTarget": "CaravanMenu",
+                "siteCount": 1,
+            }
+        ],
+        "code/gameflow/special/battletest.asm": [
+            {
+                "instructionTarget": "j_CaravanMenu",
+                "effectiveTarget": "CaravanMenu",
+                "siteCount": 1,
+            }
+        ],
+    }
+    assert caravan["internalEffectiveDirectCallSiteCounts"]["CopyCaravanItems"] == 4
+    assert caravan["externalEffectiveDirectCallSiteCounts"]["CaravanMenu"] == 2
+    output_schema = load_json(OUTPUT_SCHEMA)
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    assert (
+        output_schema["definitions"]["caravanFacts"]
+        == fixture_schema["definitions"]["caravanFacts"]
+    )
+    assert (
+        output_schema["definitions"]["caravanInstructionRecord"]
+        == fixture_schema["definitions"]["caravanInstructionRecord"]
+    )
+    for collection in ("routeOperations", "helperOperations"):
+        schemas = output_schema["definitions"]["caravanFacts"]["properties"][collection][
+            "properties"
+        ]
+        assert all(
+            schema["allOf"][0]["items"] == {"$ref": "#/definitions/caravanInstructionRecord"}
+            and isinstance(schema["allOf"][1]["const"], list)
+            for schema in schemas.values()
+        )
+
+    def expect_invalid(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["caravan"])
+        with pytest.raises(ValueError, match="caravan"):
+            validate_json(broken, FIXTURE_SCHEMA, owner="caravan contract")
+
+    expect_invalid(lambda caravan: caravan.__setitem__("extra", True))
+    expect_invalid(lambda caravan: caravan.pop("constants"))
+    expect_invalid(lambda caravan: caravan["constants"].__setitem__("FORCE_MAX_SIZE", 13))
+    expect_invalid(lambda caravan: caravan["sourceRanges"][0].pop("physicalSpanBytes"))
+    expect_invalid(lambda caravan: caravan["routeDerived"]["depot"].pop("lookPrice"))
+    expect_invalid(
+        lambda caravan: caravan["dispatchTables"]["top"].__setitem__(
+            "targets", caravan["dispatchTables"]["top"]["targets"][::-1]
+        )
+    )
+    expect_invalid(
+        lambda caravan: caravan["routeOperations"].__setitem__(
+            "itemGive", caravan["routeOperations"]["itemGive"][::-1]
+        )
     )
