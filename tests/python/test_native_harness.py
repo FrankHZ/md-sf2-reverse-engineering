@@ -764,6 +764,14 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         "structure-shaped field names",
         "Parse authoritative constants once",
         "second implementation truth",
+        "close objects reached through properties",
+        "Preserve every pre-existing sibling contract",
+        "inject an extra nested field",
+        "legal instruction-size",
+        "Boolean arithmetic",
+        "container or string",
+        "file-wide or module-wide lint suppressions",
+        "Do not return a no-op",
     ):
         assert required_text in instructions
 

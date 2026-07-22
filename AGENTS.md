@@ -62,7 +62,13 @@ the weaknesses found and corrected during this self-review. New or materially re
 the actual current project date from the execution environment. Canonical names remain source-faithful or
 neutral until their semantics are proven. Extractors parse authoritative constants once and derive masks,
 strides, spans, widths, and counts from them instead of duplicating magic values in implementation guards;
-golden fixtures and strict schemas still pin the resulting exact values.
+golden fixtures and strict schemas still pin the resulting exact values. Boolean arithmetic, container or
+string cardinality, and arithmetic identities do not qualify as derivation. Both schemas close every nested
+object recursively and focused mutation tests reject missing, renamed, extra, reordered, and out-of-bound
+content. Changed parsers cover positive, negative, boundary, comment, and legal instruction-suffix cases.
+Workers do not use file-wide lint suppression or include unrelated formatting/generated churn. When chat
+context is compact, they recover from the repository, current diff, and explicit slice contract before
+asking the root a precise blocking question.
 
 The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
 and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated

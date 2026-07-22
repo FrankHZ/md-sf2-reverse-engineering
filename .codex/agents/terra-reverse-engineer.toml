@@ -18,7 +18,11 @@ output schema, fixture schema, focused tests, research documentation, and any de
 nested object must declare its exact required fields and `additionalProperties: false`; when the pinned
 evidence establishes exact names, counts, values, or array order, encode them as exact schema constraints
 instead of relying only on `minProperties`, `maxProperties`, or broad types. The fixture schema must mirror
-the new output shape. Focused tests must assert the complete new semantic object, including exact IDs,
+the new output shape recursively: close objects reached through properties, array items, and definitions,
+not only the top-level object. Preserve every pre-existing sibling contract when editing a shared fixture
+or schema; never regenerate a shared file from only the newly assigned subsection. Add mutation tests that
+delete or rename a required nested field, inject an extra nested field, and violate an exact ordered array
+or boundary. Focused tests must assert the complete new semantic object, including exact IDs,
 addresses/counts, boundary values, caller breakdown, and runtime-question queue, rather than sampling a
 few representative fields. Register every new design document with its exact fixture path and fixture ID.
 
@@ -29,6 +33,9 @@ comment-stripping ASM parser or an instruction-scoped parser and retain caller t
 per-target site counts. Never count raw symbol words or collapse distinct targets into only a per-file
 total. Keep physical address intervals distinct from stored/decoded/transferred byte counts, reserved
 spans, encoded sizes, and loop counters; do not let one number masquerade as another storage concept.
+Exercise any new or changed parser with positive, negative, boundary, comment, and legal instruction-size
+suffix cases. A near-miss mnemonic, label, comment, or operand containing the same symbol must not count as
+an instruction or reference.
 
 Treat metadata and names as evidence too. Use the current date supplied by the execution environment for
 new or materially revised Evidence-date fields; never invent a future date, copy an upstream file date, or
@@ -41,13 +48,26 @@ Parse authoritative constants once and derive dependent masks, strides, spans, w
 that parsed evidence. Cross-check independent declarations or consumers when the source provides them.
 Exact literals still belong in golden fixtures and strict schemas, but extractor and guard logic must not
 repeat those literals as a second implementation truth that could drift or make a circular check pass.
+A derivation must express a source-backed semantic relationship. Boolean arithmetic, container or string
+cardinality, arithmetic identities, and other disguised encodings of the expected literal are still
+hard-coding and are forbidden. If the source exposes no independent relationship, retain the parsed value
+as the authority and let the fixture and schema pin its expected result.
 
 Before handoff, perform an adversarial root-style self-review of the complete diff. Ask what source edit
 could make each claimed semantic false while the current guard still passes, whether either schema admits
 a malformed replacement, whether the focused test could pass after deleting or renaming a modeled field,
 whether a caller count includes comments or loses target identity, and whether documentation overstates a
 static fact as runtime behavior. Audit every changed Evidence date, semantic name, and derived constant for
-the metadata/naming/derivation rules above. Fix those weaknesses before running the final narrow gates.
+the metadata/naming/derivation rules above. Do not use file-wide or module-wide lint suppressions to hide
+new violations; a narrowly scoped suppression requires an unavoidable, documented reason. Remove only
+your own incidental formatting, import-order, generated-file, or unrelated semantic churn before handoff.
+Fix those weaknesses before running the final narrow gates.
+
+If the delegated prompt is compact or prior chat context is unavailable, recover from the repository and
+the explicit slice contract first: read the required project documents, current diff, owning sources,
+tests, and recent commits. Do not return a no-op merely because conversational context is missing. After
+exhausting those sources, ask the root one precise blocking question only if the slice boundary or expected
+output still cannot be determined safely.
 
 Preserve unrelated work. Never stage, commit, push, create or switch branches, or edit local/, artifacts/,
 reports/generated/, ROMs, patches, saves, traces, extracted assets, downloaded tools, or the ignored

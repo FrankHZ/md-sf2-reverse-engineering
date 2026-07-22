@@ -85,6 +85,20 @@ quality contract. Before handoff, the worker therefore checks all of the followi
     derived and, where possible, cross-checked against an independent declaration or consumer. Fixtures
     and schemas pin exact results, but extractor and guard logic do not duplicate the same magic literal as
     a circular second truth.
+11. A derivation states a source-backed semantic relationship. Boolean arithmetic, container/string
+    cardinality, arithmetic identities, and similar disguises are treated as repeated magic literals, not
+    independent evidence.
+12. Output and fixture schemas recursively close nested objects reached through properties, array items,
+    and definitions. Mutation tests reject missing or renamed required fields, extra nested fields, wrong
+    exact order, and boundary violations. Editing a shared contract preserves all pre-existing siblings.
+13. New or changed parsers have positive, negative, boundary, comment, near-miss, and legal instruction-
+    suffix tests. Text in labels, comments, operands, or similar symbol names cannot inflate an instruction
+    or reference inventory.
+14. The diff contains no file-wide/module-wide lint escape and no incidental formatting, import-order,
+    generated-file, or unrelated semantic churn. Any narrow suppression is unavoidable and documented.
+15. If conversational context is unavailable, the worker reconstructs the assignment from the explicit
+    slice contract, required project documents, current diff, owning sources/tests, and recent commits. It
+    asks one precise question only after those durable sources cannot resolve a genuine blocker.
 
 The root repeats these checks independently. A rejection returns to the same worker and becomes input to
 its next self-review; the root does not silently patch the research implementation.
