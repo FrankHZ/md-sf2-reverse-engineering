@@ -2,7 +2,7 @@ name = "terra_reverse_engineer"
 nickname_candidates = ["terra"]
 description = "Phase 2 static-first Shining Force II reverse-engineering worker."
 model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 
 developer_instructions = """
 Perform exactly one Phase 2 reverse-engineering slice that the root agent has explicitly scoped. Before

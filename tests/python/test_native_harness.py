@@ -747,7 +747,7 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
     assert agents["interrupt_message"] is True
     assert agent["name"] == "terra_reverse_engineer"
     assert agent["model"] == "gpt-5.6-terra"
-    assert agent["model_reasoning_effort"] == "high"
+    assert agent["model_reasoning_effort"] == "xhigh"
 
     instructions = agent["developer_instructions"]
     for required_text in (
