@@ -402,10 +402,15 @@ and 77 complete 64x64 layouts with every block reference in range. Those structu
 deterministic 79-map, 1,859-resource canonical import with 15,805 logical records/operations. Its 64 setup routes
 and 126 six-pointer definitions resolve entity/event/description/init ownership; complete generated
 content remains ignored and only aggregate evidence is tracked. The map-event rail additionally closes
-all 684 entity-event target-program boundaries: 1,015 labels, 2,624 non-comment source operations,
+all 684 entity-event target-program boundaries (1,015 labels, 2,624 non-comment source operations,
 8,928 physical program bytes, 512 parsed branch/call/jump sites, nine source/H1-resolved jump
-interfaces, and zero-inclusive 332-identity instruction/effective target maps. This remains static
-source/H1 identity and control flow, not effect, dialogue, persistence, or presentation evidence. All 32 animation tables also have
+interfaces, and zero-inclusive 332-identity instruction/effective target maps), all 150 zone-event
+boundaries (251 labels, 809 operations, 2,934 bytes, 183 sites, seven aliases, and 119-identity maps),
+and all 80 item-event boundaries (94 labels, 146 operations, 414 bytes, 19 sites, two aliases, and
+18-identity maps). The sole additional zone profile is an explicit raw-expression non-program
+exclusion; the zone source-stream `csc_end` boundary is H1-delimited before the adjacent body. This
+remains static source/H1 identity and control flow, not effect, dialogue, persistence, or presentation
+evidence. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
 1. keep the completed ten-case setup-selector, six-case init-dispatch, nine-case grouped

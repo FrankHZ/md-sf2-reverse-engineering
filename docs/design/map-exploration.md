@@ -189,6 +189,16 @@ static internal/external target classification is a physical-span relation only;
 reachability, operation effects, persistence, dialogue timing, and presentation remain outside this
 design contract.
 
+For zone and item targets, an importer or future execution adapter MUST retain the same
+source-shaped program record: entry identity, physical span, ordered non-comment operations and
+labels, terminal form, instruction-versus-effective target identity, aliases, and independent
+physical/pointer-weighted/route-weighted references. The zone contract has 150 program records plus
+one explicit raw-expression exclusion among 151 profiles; the item contract has 80 program records
+for 80 profiles. The Map 44 raw boundary remains an unlabeled exclusion, not a fabricated program.
+The source `csc_end` boundary for `Map21_DefaultZoneEvent` ends at the next H1 address before
+`csub_54714`; it is a source-structure rule only. These records MUST NOT be promoted into claims about
+effects, dialogue, timing, persistence, or lifecycle without runtime evidence.
+
 Direct-`rts` entity-event targets are explicit empty handlers, not record arrays. Map 55 and the
 flag-512 map 52 setup pair them with empty entity lists. The default map 52 setup instead initializes
 four non-ally entities, which receive clean-state event indices 128-131; the original interaction

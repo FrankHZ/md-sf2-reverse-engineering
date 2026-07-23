@@ -13,6 +13,7 @@ from sf2tool.h2.map_events import (
     _event_macro_use_sites,
     _h1_program_index,
     _join_source_rom_record,
+    _listing_statement,
     _macro_definition,
     _normalise_asm_statement,
     _parse_jump_interface_aliases,
@@ -20,6 +21,7 @@ from sf2tool.h2.map_events import (
     _reconcile_event_reference_counts,
     _record_target_ownership,
     _setup_category_joins,
+    _target_program_contract,
     _verify_complete_map_events_fixture,
     build_map_events_contract,
 )
@@ -504,6 +506,138 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
             )
             for scope in ("internal", "external")
         } == {"internal": 355, "external": 157}
+    assert output["zoneTargetProgramSummary"] == {
+        "programCount": 150,
+        "sourceFileCount": 76,
+        "labelCount": 251,
+        "operationCount": 809,
+        "ordinaryOperationCount": 477,
+        "conditionalBranchCount": 123,
+        "unconditionalBranchCount": 18,
+        "directCallCount": 41,
+        "directJumpCount": 1,
+        "returnCount": 149,
+        "encodedSpanBytes": 2934,
+        "physicalRecordCount": 201,
+        "setupRecordReferenceCount": 309,
+        "routeRecordReferenceCount": 322,
+        "internalControlFlowSiteCount": 141,
+        "externalControlFlowSiteCount": 42,
+        "instructionTargetCount": 119,
+        "effectiveTargetCount": 119,
+        "jumpInterfaceAliasCount": 7,
+        "profileCount": 151,
+        "explicitNonProgramExclusionCount": 1,
+        "functionEndBoundaryCount": 149,
+        "sourceStreamTerminatorCount": 1,
+        "excludedPhysicalRecordCount": 1,
+        "excludedSetupRecordReferenceCount": 4,
+        "excludedRouteRecordReferenceCount": 4,
+    }
+    assert output["itemTargetProgramSummary"] == {
+        "programCount": 80,
+        "sourceFileCount": 73,
+        "labelCount": 94,
+        "operationCount": 146,
+        "ordinaryOperationCount": 47,
+        "conditionalBranchCount": 9,
+        "unconditionalBranchCount": 4,
+        "directCallCount": 6,
+        "directJumpCount": 0,
+        "returnCount": 80,
+        "encodedSpanBytes": 414,
+        "physicalRecordCount": 82,
+        "setupRecordReferenceCount": 140,
+        "routeRecordReferenceCount": 144,
+        "internalControlFlowSiteCount": 13,
+        "externalControlFlowSiteCount": 6,
+        "instructionTargetCount": 18,
+        "effectiveTargetCount": 18,
+        "jumpInterfaceAliasCount": 2,
+        "profileCount": 80,
+        "explicitNonProgramExclusionCount": 0,
+        "functionEndBoundaryCount": 80,
+        "sourceStreamTerminatorCount": 0,
+        "excludedPhysicalRecordCount": 0,
+        "excludedSetupRecordReferenceCount": 0,
+        "excludedRouteRecordReferenceCount": 0,
+    }
+    zone_stream = next(
+        program
+        for program in output["zoneTargetPrograms"]
+        if program["canonicalSymbol"] == "Map21_DefaultZoneEvent"
+    )
+    assert {
+        field: zone_stream[field]
+        for field in (
+            "programOrder",
+            "canonicalSymbol",
+            "entryAddress",
+            "sourcePath",
+            "entrySourceLine",
+            "endFunctionSymbol",
+            "endSourceLine",
+            "endAddressExclusive",
+            "encodedSpanBytes",
+            "referenceCounts",
+        )
+    } == {
+        "programOrder": 43,
+        "canonicalSymbol": "Map21_DefaultZoneEvent",
+        "entryAddress": 345526,
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "entrySourceLine": 24,
+        "endFunctionSymbol": None,
+        "endSourceLine": 111,
+        "endAddressExclusive": 345876,
+        "encodedSpanBytes": 350,
+        "referenceCounts": {
+            "physicalRecordCount": 1,
+            "setupRecordReferenceCount": 4,
+            "routeRecordReferenceCount": 4,
+        },
+    }
+    assert zone_stream["termination"] == {
+        "sourceOrder": 86,
+        "sourceLine": 111,
+        "address": 345874,
+        "sourceMnemonic": "csc_end",
+        "mnemonic": "csc_end",
+        "sizeSuffix": None,
+        "operandTexts": [],
+        "controlFlowKind": "ordinary",
+        "target": None,
+    }
+    assert output["zoneTargetProgramExclusions"] == [
+        {
+            "exclusionOrder": 0,
+            "canonicalSymbol": "raw-map44-zone-default-expression-boundary",
+            "targetAddress": 346220,
+            "targetH1Address": None,
+            "targetBaseH1Address": 346216,
+            "targetAddressLabels": [],
+            "sourcePath": "data/maps/entries/map06/mapsetups/s1_entities.asm",
+            "sourceLine": 19,
+            "ownershipClass": "raw-expression-boundary",
+            "referenceCounts": {
+                "physicalRecordCount": 1,
+                "setupRecordReferenceCount": 4,
+                "routeRecordReferenceCount": 4,
+            },
+        }
+    ]
+    for control_flow, expected_sites in (
+        (output["zoneTargetProgramControlFlow"], {"internal": 141, "external": 42}),
+        (output["itemTargetProgramControlFlow"], {"internal": 13, "external": 6}),
+    ):
+        for identity in ("instructionTargets", "effectiveTargets"):
+            assert {
+                scope: sum(
+                    row["totalSiteCount"]
+                    for row in control_flow["targetTotals"][identity][scope]
+                )
+                for scope in ("internal", "external")
+            } == expected_sites
 
 
 def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutations() -> None:
@@ -602,6 +736,51 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
             owner="renamed fixture entity target reference field",
         )
 
+    zone_program_missing = copy.deepcopy(output)
+    del zone_program_missing["zoneTargetPrograms"][0]["termination"]["sourceMnemonic"]
+    with pytest.raises(ValueError):
+        validate_json(zone_program_missing, SCHEMA, owner="missing zone target termination field")
+
+    item_program_extra = copy.deepcopy(output)
+    item_target_operation = next(
+        operation
+        for program in item_program_extra["itemTargetPrograms"]
+        for operation in program["operations"]
+        if operation["target"] is not None
+    )
+    item_target_operation["target"]["unexpected"] = True
+    with pytest.raises(ValueError):
+        validate_json(item_program_extra, SCHEMA, owner="extra item target nested field")
+
+    zone_program_order = copy.deepcopy(output)
+    zone_program_order["zoneTargetProgramOperationOrders"].reverse()
+    with pytest.raises(ValueError):
+        validate_json(zone_program_order, SCHEMA, owner="reordered zone target operations")
+
+    item_program_boundary = copy.deepcopy(output)
+    item_program_boundary["itemTargetPrograms"][0]["encodedSpanBytes"] = -1
+    with pytest.raises(ValueError):
+        validate_json(item_program_boundary, SCHEMA, owner="negative item target encoded span")
+
+    zone_exclusion_missing = copy.deepcopy(output)
+    del zone_exclusion_missing["zoneTargetProgramExclusions"][0]["targetH1Address"]
+    with pytest.raises(ValueError):
+        validate_json(zone_exclusion_missing, SCHEMA, owner="missing zone non-program field")
+
+    fixture_zone_exclusion_renamed = copy.deepcopy(fixture)
+    exclusion_counts = fixture_zone_exclusion_renamed["expected"][
+        "zoneTargetProgramExclusions"
+    ][0]["referenceCounts"]
+    exclusion_counts["renamedPhysicalRecordCount"] = exclusion_counts.pop(
+        "physicalRecordCount"
+    )
+    with pytest.raises(ValueError):
+        validate_json(
+            fixture_zone_exclusion_renamed,
+            FIXTURE_SCHEMA,
+            owner="renamed fixture zone non-program reference field",
+        )
+
 
 def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites() -> None:
     branch = _parse_program_operation("bne.s   Next", source_line=7, source_order=0)
@@ -626,6 +805,10 @@ def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites(
     ] is None
     assert _normalise_asm_statement("; bne.s Target") == ""
     assert _normalise_asm_statement("rts ; Target") == "rts"
+    assert _listing_statement("00001000 51CF FFF4                  dbf     d7, loc_1000") == (
+        0x1000,
+        "dbf d7,loc_1000",
+    )
     with pytest.raises(ValueError, match="operation syntax drift"):
         _parse_program_operation("Target:", source_line=11, source_order=4)
     with pytest.raises(ValueError, match="operation syntax drift"):
@@ -784,6 +967,265 @@ def test_jump_interface_alias_parser_guards_source_and_h1_target_relationship(
         )
 
 
+def test_zone_and_item_target_program_parser_guards_category_paths(tmp_path: Path) -> None:
+    source_path = tmp_path / "data" / "maps" / "entries" / "map00" / "mapsetups" / "events.asm"
+    source_path.parent.mkdir(parents=True)
+    source_path.write_text(
+        "\n".join(
+            (
+                "ZoneEntry:",
+                "    bne.s ZoneTarget",
+                "    rts",
+                "; End of function ZoneEntry",
+                "ItemEntry:",
+                "    bsr ItemTarget",
+                "    rts",
+                "; End of function ItemEntry",
+                "ZoneTarget:",
+                "    rts",
+                "; End of function ZoneTarget",
+                "ItemTarget:",
+                "    rts",
+                "; End of function ItemTarget",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    source_name = "data/maps/entries/map00/mapsetups/events.asm"
+    addresses = {
+        "ZoneEntry": 0x1000,
+        "ItemEntry": 0x1100,
+        "ZoneTarget": 0x2000,
+        "ItemTarget": 0x2004,
+    }
+    owners = {
+        0x2000: [{"symbol": "ZoneTarget", "sourcePath": source_name, "sourceLine": 9}],
+        0x2004: [{"symbol": "ItemTarget", "sourcePath": source_name, "sourceLine": 12}],
+    }
+    listing_lines = [
+        "00001000                            ZoneEntry:",
+        "00001000 6600 0FFE                  bne.s ZoneTarget",
+        "00001002 4E75                        rts",
+        "00001004                                ; End of function ZoneEntry",
+        "00001100                            ItemEntry:",
+        "00001100 6100 0F00                  bsr ItemTarget",
+        "00001104 4E75                        rts",
+        "00001106                                ; End of function ItemEntry",
+        "00002000                            ZoneTarget:",
+        "00002000 4E75                        rts",
+        "00002002                                ; End of function ZoneTarget",
+        "00002004                            ItemTarget:",
+        "00002004 4E75                        rts",
+        "00002006                                ; End of function ItemTarget",
+    ]
+
+    def profile(category: str, symbol: str, address: int, line: int) -> dict[str, object]:
+        return {
+            "canonicalSymbol": symbol,
+            "targetAddress": address,
+            "targetH1Address": address,
+            "ownerSourcePath": source_name,
+            "ownerSourceLine": line,
+            "physicalRecordCount": 1,
+            "setupRecordReferenceCount": 2,
+            "routeRecordReferenceCount": 3,
+            "categories": [category],
+        }
+
+    profiles = [
+        profile("zoneEvents", "ZoneEntry", 0x1000, 1),
+        profile("itemEvents", "ItemEntry", 0x1100, 5),
+    ]
+    listing_index = _h1_program_index(listing_lines)
+    zone = _target_program_contract(
+        tmp_path,
+        addresses,
+        listing_lines,
+        listing_index,
+        profiles,
+        owners,
+        category="zoneEvents",
+    )
+    item = _target_program_contract(
+        tmp_path,
+        addresses,
+        listing_lines,
+        listing_index,
+        profiles,
+        owners,
+        category="itemEvents",
+    )
+    zone_programs, zone_summary, zone_control_flow, zone_orders, _, _, zone_exclusions = zone
+    item_programs, item_summary, item_control_flow, item_orders, _, _, item_exclusions = item
+    assert zone_summary == {
+        "programCount": 1,
+        "sourceFileCount": 1,
+        "labelCount": 1,
+        "operationCount": 2,
+        "ordinaryOperationCount": 0,
+        "conditionalBranchCount": 1,
+        "unconditionalBranchCount": 0,
+        "directCallCount": 0,
+        "directJumpCount": 0,
+        "returnCount": 1,
+        "encodedSpanBytes": 4,
+        "physicalRecordCount": 1,
+        "setupRecordReferenceCount": 2,
+        "routeRecordReferenceCount": 3,
+        "internalControlFlowSiteCount": 0,
+        "externalControlFlowSiteCount": 1,
+        "instructionTargetCount": 1,
+        "effectiveTargetCount": 1,
+        "jumpInterfaceAliasCount": 0,
+        "profileCount": 1,
+        "explicitNonProgramExclusionCount": 0,
+        "functionEndBoundaryCount": 1,
+        "sourceStreamTerminatorCount": 0,
+        "excludedPhysicalRecordCount": 0,
+        "excludedSetupRecordReferenceCount": 0,
+        "excludedRouteRecordReferenceCount": 0,
+    }
+    assert zone_programs[0]["operations"][0]["target"] == {
+        "instructionTargetSymbol": "ZoneTarget",
+        "instructionTargetAddress": 0x2000,
+        "instructionTargetAddressLabels": owners[0x2000],
+        "effectiveTargetSymbol": "ZoneTarget",
+        "effectiveTargetAddress": 0x2000,
+        "effectiveTargetAddressLabels": owners[0x2000],
+        "effectiveTargetScope": "external",
+    }
+    assert zone_control_flow["aliasDefinitions"] == []
+    assert zone_orders["instructionExternalTargetTotalOrder"] == [
+        "ZoneTarget:8192:1:0:0:0"
+    ]
+    assert zone_exclusions == []
+
+    assert item_summary == {
+        **zone_summary,
+        "conditionalBranchCount": 0,
+        "directCallCount": 1,
+        "encodedSpanBytes": 6,
+    }
+    assert item_programs[0]["operations"][0]["target"] == {
+        "instructionTargetSymbol": "ItemTarget",
+        "instructionTargetAddress": 0x2004,
+        "instructionTargetAddressLabels": owners[0x2004],
+        "effectiveTargetSymbol": "ItemTarget",
+        "effectiveTargetAddress": 0x2004,
+        "effectiveTargetAddressLabels": owners[0x2004],
+        "effectiveTargetScope": "external",
+    }
+    assert item_control_flow["aliasDefinitions"] == []
+    assert item_orders["effectiveExternalTargetTotalOrder"] == [
+        "ItemTarget:8196:0:0:1:0"
+    ]
+    assert item_exclusions == []
+
+    source_path.write_text(
+        source_path.read_text(encoding="utf-8").replace(
+            "bne.s ZoneTarget", "bne.s Other"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
+        _target_program_contract(
+            tmp_path,
+            addresses,
+            listing_lines,
+            listing_index,
+            profiles,
+            owners,
+            category="zoneEvents",
+        )
+    source_path.write_text(
+        source_path.read_text(encoding="utf-8").replace(
+            "bne.s Other", "bne.s ZoneTarget"
+        ).replace("bsr ItemTarget", "bsr Other"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
+        _target_program_contract(
+            tmp_path,
+            addresses,
+            listing_lines,
+            listing_index,
+            profiles,
+            owners,
+            category="itemEvents",
+        )
+    boundary_listing = [*listing_lines]
+    boundary_listing[3] = "00001000                                ; End of function ZoneEntry"
+    with pytest.raises(ValueError, match="H1 nonpositive program span"):
+        _target_program_contract(
+            tmp_path,
+            addresses,
+            boundary_listing,
+            _h1_program_index(boundary_listing),
+            profiles,
+            owners,
+            category="zoneEvents",
+        )
+
+
+def test_zone_target_program_source_stream_terminator_is_h1_guarded(tmp_path: Path) -> None:
+    source_path = tmp_path / "data" / "maps" / "entries" / "map44" / "mapsetups" / "scripts.asm"
+    source_path.parent.mkdir(parents=True)
+    source_path.write_text(
+        "StreamEntry:\n    csc_end\nNext:\n    rts\n; End of function Next\n",
+        encoding="utf-8",
+    )
+    source_name = "data/maps/entries/map44/mapsetups/scripts.asm"
+    addresses = {"StreamEntry": 0x3000, "Next": 0x3002}
+    profile = {
+        "canonicalSymbol": "StreamEntry",
+        "targetAddress": 0x3000,
+        "targetH1Address": 0x3000,
+        "ownerSourcePath": source_name,
+        "ownerSourceLine": 1,
+        "physicalRecordCount": 1,
+        "setupRecordReferenceCount": 1,
+        "routeRecordReferenceCount": 1,
+        "categories": ["zoneEvents"],
+    }
+    listing_lines = [
+        "00003000                            StreamEntry:",
+        "00003000                            csc_end",
+        "00003000 FFFF                     M  dc.w $ffff",
+        "00003002                            Next:",
+        "00003002 4E75                        rts",
+        "00003004                                ; End of function Next",
+    ]
+    programs, summary, _, _, _, _, exclusions = _target_program_contract(
+        tmp_path,
+        addresses,
+        listing_lines,
+        _h1_program_index(listing_lines),
+        [profile],
+        {},
+        category="zoneEvents",
+    )
+    assert programs[0]["endFunctionSymbol"] is None
+    assert programs[0]["endAddressExclusive"] == 0x3002
+    assert programs[0]["termination"]["sourceMnemonic"] == "csc_end"
+    assert summary["sourceStreamTerminatorCount"] == 1
+    assert summary["functionEndBoundaryCount"] == 0
+    assert exclusions == []
+
+    altered_listing = [*listing_lines]
+    altered_listing[1] = "00003000                            csc_stop"
+    with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
+        _target_program_contract(
+            tmp_path,
+            addresses,
+            altered_listing,
+            _h1_program_index(altered_listing),
+            [profile],
+            {},
+            category="zoneEvents",
+        )
+
+
 def test_reference_reconciliation_rejects_profile_and_category_counter_mutations() -> None:
     output = build_map_events_contract(
         Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
@@ -834,6 +1276,9 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "entityTargetProgramControlFlow",
         "entityTargetProgramControlFlowTargetOrders",
         "entityTargetProgramSummary",
+        "mapEventTargetProgram",
+        "mapEventTargetProgramSummary",
+        "mapEventTargetProgramExclusion",
     }
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
@@ -853,3 +1298,26 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
     assert schema["definitions"]["entityTargetProgramOperation"]["properties"]["target"][
         "anyOf"
     ][1] == {"$ref": "#/definitions/entityTargetProgramTarget"}
+    for category in ("zone", "item"):
+        assert schema["properties"][f"{category}TargetPrograms"]["items"] == {
+            "$ref": "#/definitions/mapEventTargetProgram"
+        }
+        assert schema["properties"][f"{category}TargetProgramOperationOrders"][
+            "const"
+        ]
+        assert schema["properties"][f"{category}TargetProgramBoundaryOrders"]["const"]
+    assert schema["definitions"]["mapEventTargetProgram"]["properties"]["operations"][
+        "items"
+    ] == {"$ref": "#/definitions/entityTargetProgramOperation"}
+    assert schema["definitions"]["mapEventTargetProgramExclusion"][
+        "additionalProperties"
+    ] is False
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    fixture_output = fixture_schema["definitions"]["outputContract"]
+    for category in ("zone", "item"):
+        assert fixture_output["properties"][f"{category}TargetPrograms"]["items"] == {
+            "$ref": "#/definitions/mapEventTargetProgram"
+        }
+        assert fixture_output["properties"][f"{category}TargetProgramExclusions"][
+            "items"
+        ] == {"$ref": "#/definitions/mapEventTargetProgramExclusion"}

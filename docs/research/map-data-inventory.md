@@ -5,7 +5,8 @@
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
   the nine-case entity/zone/item runtime dispatch matrix,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
-  1,134 physical records, all 684 entity-event target programs, all 75 area-description targets/227 physical entries, and all 84 init
+  1,134 physical records, all 684 entity-event and 150 zone-event/80 item-event target programs plus
+  one explicit raw-expression exclusion, all 75 area-description targets/227 physical entries, and all 84 init
   sources/90 setup-callable entry points with 597 physical operations, 126 pointer-table joins, and
   130 ordered selector-route joins, all 47 standalone setup-script files/8,058 statements,
   all 662 source-form content sections, and all 154 private blocks/layout payloads
@@ -251,6 +252,58 @@ The tracked fixture and its recursively closed output/fixture schemas record the
 program/label/operation/target-total order keys constrain exact sequence without expanding a schema
 tree per operation. Observed command: `uv run sf2 h2 map-events` (684 / 2,624 / 8,928 / 512 / zero
 unresolved program profiles). Evidence date: 2026-07-22.
+
+### Zone- and Item-Event Target Program Corpora
+
+**Confirmed — profile and non-program boundary:** the 151 zone-target profiles split into 150
+source/H1 program boundaries and one explicit non-program exclusion. The program records carry 201
+physical references, 309 pointer-table-weighted references, and 322 selector-route-weighted
+references; the exclusion separately carries 1, 4, and 4. The profiles therefore retain the complete
+zone weights of 202 physical, 313 pointer-table-weighted, and 326 selector-route-weighted records
+without pretending that the raw expression is a callable program. The 80 item-target profiles all
+join to programs and carry 82, 140, and 144 references respectively. These reference weights remain
+separate from stored program spans.
+
+**Confirmed — zone corpus:** the 150 zone programs occupy 76 exact source paths, 251 labels, 809
+non-comment operations, and 2,934 physical encoded bytes. There are 477 ordinary operations, 123
+conditional branches, 18 unconditional branches, 41 direct calls, one direct jump, and 149 returns.
+The 183 branch/call/jump sites split into 141 internal and 42 external effective targets; the
+zero-inclusive instruction and effective target maps each declare 119 symbol/address identities. The
+seven used jump-interface aliases are `j_GetMaxHp`, `j_SetCurrentHp`, `j_GetMaxMp`,
+`j_SetCurrentMp`, `j_YesNoPrompt`, `j_GetCurrentHp`, and `j_GetItemInventoryLocation`; every alias
+record retains its instruction identity, `jmp` definition, and resolved effective target rather than
+assigning it a behavior.
+
+**Confirmed — item corpus:** the 80 item programs occupy 73 exact source paths, 94 labels, 146
+non-comment operations, and 414 physical encoded bytes. Their static instruction counts are 47
+ordinary operations, 9 conditional branches, 4 unconditional branches, 6 direct calls, no direct
+jumps, and 80 returns. The 19 branch/call sites split into 13 internal and 6 external effective
+targets. Both zero-inclusive target maps declare 18 instruction/effective symbol-address identities;
+the two used jump-interface aliases are `j_GetItemInventoryLocation` and `j_RemoveItemBySlot`.
+Internal versus external here is only a physical-span classification, not a reachability claim.
+
+**Confirmed — exceptional source-stream boundary:** `Map21_DefaultZoneEvent` begins at H1 address
+`0x545B6` (345,526) in `data/maps/entries/map44/mapsetups/scripts.asm` and its literal source
+`csc_end` at line 111 is an explicit terminal operation at `0x54712` (345,874). Its program span ends
+exclusively at the next H1 address, `0x54714` (345,876), so it contains 87 operations and 350 bytes
+and does not absorb the adjacent `csub_54714` body. This source-stream terminator is a parsed
+boundary form, not evidence of an effect, dialogue, timing, or lifecycle. The one raw zone exclusion
+is the existing Map 44 expression boundary at target `0x5486C` with base `0x54868`, no H1 target, and
+no invented interior label; its source owner and separate 1/4/4 reference counts are exact.
+
+**Confirmed — provenance and construction guards:** the zone corpus is reproduced from all
+`data/maps/entries/*/mapsetups/s3_zoneevents*.asm` table sources and 76 resolved body-owner paths;
+the item corpus uses the corresponding `s5_itemevents*.asm` sources and 73 body-owner paths. Both use
+the USA ROM SHA-256 above, `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, used
+`code/common/tech/jumpinterfaces/*.asm` definitions, and `build/sf2build-h1.lst`. The H2 parser
+matches every source opcode, operands, and operation order to its H1 use-site before comparing the
+golden fixture. It guards ordinary `End of function` boundaries and, for source `csc_end`, the next
+H1 address; it also resolves each alias at its pinned `jmp` definition. Source/H1 operand, opcode,
+order, boundary, or alias-definition mutations therefore fail construction before fixture comparison.
+The same recursively closed output and fixture schemas use shared closed program/exclusion records and
+compact exact-order arrays. Observed command: `uv run sf2 h2 map-events` (zone 150 / 809 / 2,934 /
+183; item 80 / 146 / 414 / 19; one explicit zone exclusion). Evidence date: 2026-07-22.
 
 ### Grouped H3 Runtime Questions
 

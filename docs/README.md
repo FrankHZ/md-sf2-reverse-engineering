@@ -132,7 +132,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   727 个内部 H1 binding、662 个 include-site-only body、64+66 setup selection rows、126 张六指针
   setup table 的 ROM parity、125 个 entity-list source/980 个物理记录与 suffix fallthrough、完整
   263 个 entity/zone/item event source/1,134 个物理记录、915 个 source/H1 target profile、
-  684 个 entity-event target program/2,624 个非注释操作/332 个 instruction 与 effective target identity、
+  684 个 entity-event、150 个 zone-event 与 80 个 item-event target program（另有 1 个 raw-expression
+  exclusion）、3,579 个非注释操作/各 category 合计 469 个 instruction 与 effective target identity、
   378 个 pointer-table 与 390 个 selector-route category join、map44 raw-target boundary、9 个
   first-match 选择案例，以及 75 个 description target/227 个物理
   entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone
