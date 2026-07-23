@@ -8,10 +8,15 @@ from sf2tool.h2.map_events import (
     FIXTURE_SCHEMA,
     RAW_ZONE_DEFAULT_SYMBOL,
     SCHEMA,
+    _bind_operations_to_h1,
     _decode_event_record,
     _event_macro_use_sites,
+    _h1_program_index,
     _join_source_rom_record,
     _macro_definition,
+    _normalise_asm_statement,
+    _parse_jump_interface_aliases,
+    _parse_program_operation,
     _reconcile_event_reference_counts,
     _record_target_ownership,
     _setup_category_joins,
@@ -410,6 +415,95 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
         "event-script-side-effects-and-transition-persistence",
         "event-portrait-facing-and-presentation-timing",
     ]
+    assert output["entityTargetProgramSummary"] == {
+        "programCount": 684,
+        "sourceFileCount": 87,
+        "labelCount": 1015,
+        "operationCount": 2624,
+        "ordinaryOperationCount": 1486,
+        "conditionalBranchCount": 208,
+        "unconditionalBranchCount": 147,
+        "directCallCount": 96,
+        "directJumpCount": 61,
+        "returnCount": 626,
+        "encodedSpanBytes": 8928,
+        "physicalRecordCount": 850,
+        "setupRecordReferenceCount": 998,
+        "routeRecordReferenceCount": 1031,
+        "internalControlFlowSiteCount": 355,
+        "externalControlFlowSiteCount": 157,
+        "instructionTargetCount": 332,
+        "effectiveTargetCount": 332,
+        "jumpInterfaceAliasCount": 9,
+    }
+    assert output["entityTargetPrograms"][0] == {
+        "programOrder": 0,
+        "canonicalSymbol": "Map0_DefaultEntityEvent",
+        "entryAddress": 385954,
+        "sourcePath": "data/maps/entries/map00/mapsetups/s2_entityevents.asm",
+        "entrySourceLine": 10,
+        "endFunctionSymbol": "Map0_DefaultEntityEvent",
+        "endSourceLine": 14,
+        "endAddressExclusive": 385956,
+        "encodedSpanBytes": 2,
+        "referenceCounts": {
+            "physicalRecordCount": 1,
+            "setupRecordReferenceCount": 1,
+            "routeRecordReferenceCount": 1,
+        },
+        "labels": [
+            {
+                "sourceOrder": 0,
+                "sourceLine": 10,
+                "symbol": "Map0_DefaultEntityEvent",
+                "address": 385954,
+            }
+        ],
+        "operations": [
+            {
+                "sourceOrder": 0,
+                "sourceLine": 12,
+                "sourceMnemonic": "rts",
+                "mnemonic": "rts",
+                "sizeSuffix": None,
+                "operandTexts": [],
+                "controlFlowKind": "return",
+                "address": 385954,
+                "target": None,
+            }
+        ],
+        "termination": {
+            "sourceOrder": 0,
+            "sourceLine": 12,
+            "sourceMnemonic": "rts",
+            "mnemonic": "rts",
+            "sizeSuffix": None,
+            "operandTexts": [],
+            "controlFlowKind": "return",
+            "address": 385954,
+            "target": None,
+        },
+    }
+    control_flow = output["entityTargetProgramControlFlow"]
+    assert output["entityTargetProgramControlFlowTargetOrders"]["aliasOrder"] == [
+        "j_ShopMenu",
+        "j_ChurchMenu",
+        "j_YesNoPrompt",
+        "j_CaravanMenu",
+        "j_ClosePortraitWindow",
+        "j_ClosePortraitEyes",
+        "j_BlacksmithMenu",
+        "j_NameAlly",
+        "j_GetItemInventoryLocation",
+    ]
+    for identity in ("instructionTargets", "effectiveTargets"):
+        assert {
+            scope: sum(
+                row["totalSiteCount"]
+                for row in control_flow["targetTotals"][identity][scope]
+            )
+            for scope in ("internal", "external")
+        } == {"internal": 355, "external": 157}
 
 
 def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutations() -> None:
@@ -470,6 +564,225 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     with pytest.raises(ValueError):
         validate_json(fixture_boundary, FIXTURE_SCHEMA, owner="negative fixture coordinate")
 
+    program_missing = copy.deepcopy(output)
+    del program_missing["entityTargetPrograms"][0]["termination"]["sourceMnemonic"]
+    with pytest.raises(ValueError):
+        validate_json(program_missing, SCHEMA, owner="missing entity target termination field")
+
+    program_extra = copy.deepcopy(output)
+    target_operation = next(
+        operation
+        for program in program_extra["entityTargetPrograms"]
+        for operation in program["operations"]
+        if operation["target"] is not None
+    )
+    target_operation["target"]["unexpected"] = True
+    with pytest.raises(ValueError):
+        validate_json(program_extra, SCHEMA, owner="extra entity target nested field")
+
+    program_order = copy.deepcopy(output)
+    program_order["entityTargetProgramOperationOrders"].reverse()
+    with pytest.raises(ValueError):
+        validate_json(program_order, SCHEMA, owner="reordered entity target program operations")
+
+    program_boundary = copy.deepcopy(output)
+    program_boundary["entityTargetPrograms"][0]["encodedSpanBytes"] = -1
+    with pytest.raises(ValueError):
+        validate_json(program_boundary, SCHEMA, owner="negative entity target encoded span")
+
+    fixture_program_renamed = copy.deepcopy(fixture)
+    reference_counts = fixture_program_renamed["expected"]["entityTargetPrograms"][0][
+        "referenceCounts"
+    ]
+    reference_counts["renamedPhysicalRecordCount"] = reference_counts.pop("physicalRecordCount")
+    with pytest.raises(ValueError):
+        validate_json(
+            fixture_program_renamed,
+            FIXTURE_SCHEMA,
+            owner="renamed fixture entity target reference field",
+        )
+
+
+def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites() -> None:
+    branch = _parse_program_operation("bne.s   Next", source_line=7, source_order=0)
+    assert branch == {
+        "sourceOrder": 0,
+        "sourceLine": 7,
+        "sourceMnemonic": "bne.s",
+        "mnemonic": "bne",
+        "sizeSuffix": ".s",
+        "operandTexts": ["Next"],
+        "controlFlowKind": "conditional-branch",
+        "instructionTargetSymbol": "Next",
+    }
+    assert _parse_program_operation("jsr (Sleep).w", source_line=8, source_order=1)[
+        "instructionTargetSymbol"
+    ] == "Sleep"
+    assert _parse_program_operation("bneX Target", source_line=9, source_order=2)[
+        "controlFlowKind"
+    ] == "ordinary"
+    assert _parse_program_operation("move.w #Target,d0", source_line=10, source_order=3)[
+        "instructionTargetSymbol"
+    ] is None
+    assert _normalise_asm_statement("; bne.s Target") == ""
+    assert _normalise_asm_statement("rts ; Target") == "rts"
+    with pytest.raises(ValueError, match="operation syntax drift"):
+        _parse_program_operation("Target:", source_line=11, source_order=4)
+    with pytest.raises(ValueError, match="operation syntax drift"):
+        _parse_program_operation("bne.x Target", source_line=12, source_order=5)
+
+    listing_lines = [
+        "00001000                            Entry:",
+        "00001000 6602                        bne.s   Next",
+        "00001002 4E75                        rts",
+        "00001004                                ; End of function Entry",
+    ]
+
+    def block() -> dict[str, object]:
+        return {
+            "endFunctionSymbol": "Entry",
+            "operations": [
+                {"sourceLine": 2, "sourceStatement": "bne.s Next"},
+                {"sourceLine": 3, "sourceStatement": "rts"},
+            ],
+        }
+
+    assert _bind_operations_to_h1(
+        listing_lines,
+        _h1_program_index(listing_lines),
+        profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+        block=block(),
+    ) == 0x1004
+    altered_opcode = block()
+    altered_opcode["operations"][0]["sourceStatement"] = "beq.s Next"
+    with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
+        _bind_operations_to_h1(
+            listing_lines,
+            _h1_program_index(listing_lines),
+            profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+            block=altered_opcode,
+        )
+    altered_operand = block()
+    altered_operand["operations"][0]["sourceStatement"] = "bne.s Other"
+    with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
+        _bind_operations_to_h1(
+            listing_lines,
+            _h1_program_index(listing_lines),
+            profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+            block=altered_operand,
+        )
+    altered_order = block()
+    altered_order["operations"].reverse()
+    with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
+        _bind_operations_to_h1(
+            listing_lines,
+            _h1_program_index(listing_lines),
+            profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+            block=altered_order,
+        )
+    altered_end_symbol = block()
+    altered_end_symbol["endFunctionSymbol"] = "OtherEnd"
+    with pytest.raises(ValueError, match="H1 function end drift"):
+        _bind_operations_to_h1(
+            listing_lines,
+            _h1_program_index(listing_lines),
+            profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+            block=altered_end_symbol,
+        )
+    boundary_drift_listing = [*listing_lines]
+    boundary_drift_listing[-1] = "00001000                                ; End of function Entry"
+    with pytest.raises(ValueError, match="H1 nonpositive program span"):
+        _bind_operations_to_h1(
+            boundary_drift_listing,
+            _h1_program_index(boundary_drift_listing),
+            profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+            block=block(),
+        )
+
+
+def test_jump_interface_alias_parser_guards_source_and_h1_target_relationship(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "code" / "jumpinterface.asm"
+    source_path.parent.mkdir()
+    source_path.write_text("j_Alias:\n    jmp Target(pc)\n", encoding="utf-8")
+    addresses = {"j_Alias": 0x2000, "Target": 0x3000, "Other": 0x3004}
+    owners = {
+        0x2000: [
+            {
+                "symbol": "j_Alias",
+                "sourcePath": "code/jumpinterface.asm",
+                "sourceLine": 1,
+            }
+        ]
+    }
+
+    def listing(target: str = "Target") -> list[str]:
+        return [
+            "00002000                            j_Alias:",
+            f"00002000 4EF9                        jmp {target}(pc)",
+            "00003000                            Target:",
+            "00003004                            Other:",
+        ]
+
+    definitions = _parse_jump_interface_aliases(
+        tmp_path,
+        addresses,
+        listing("Target"),
+        _h1_program_index(listing("Target")),
+        owners,
+        ["j_Alias"],
+    )
+    assert definitions == {
+        "j_Alias": {
+            "aliasSymbol": "j_Alias",
+            "aliasAddress": 0x2000,
+            "sourcePath": "code/jumpinterface.asm",
+            "sourceLine": 1,
+            "definitionSourceLine": 2,
+            "sourceMnemonic": "jmp",
+            "mnemonic": "jmp",
+            "sizeSuffix": None,
+            "operandTexts": ["Target(pc)"],
+            "directTargetSymbol": "Target",
+            "directTargetAddress": 0x3000,
+            "listingAddress": 0x2000,
+        }
+    }
+
+    source_path.write_text("j_Alias:\n    jsr Target(pc)\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="jump-interface definition drift"):
+        _parse_jump_interface_aliases(
+            tmp_path,
+            addresses,
+            listing("Target"),
+            _h1_program_index(listing("Target")),
+            owners,
+            ["j_Alias"],
+        )
+
+    source_path.write_text("j_Alias:\n    jmp Other(pc)\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="jump-interface source/H1 drift"):
+        _parse_jump_interface_aliases(
+            tmp_path,
+            addresses,
+            listing("Target"),
+            _h1_program_index(listing("Target")),
+            owners,
+            ["j_Alias"],
+        )
+
+    source_path.write_text("j_Alias:\n    jmp Target(pc)\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="jump-interface source/H1 drift"):
+        _parse_jump_interface_aliases(
+            tmp_path,
+            addresses,
+            listing("Other"),
+            _h1_program_index(listing("Other")),
+            owners,
+            ["j_Alias"],
+        )
+
 
 def test_reference_reconciliation_rejects_profile_and_category_counter_mutations() -> None:
     output = build_map_events_contract(
@@ -506,6 +819,21 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "entityEventRecord",
         "zoneEventRecord",
         "itemEventRecord",
+        "entityTargetSourceOwnerLabel",
+        "entityTargetProgramLabel",
+        "entityTargetProgramTarget",
+        "entityTargetProgramOperation",
+        "entityTargetProgramReferenceCounts",
+        "entityTargetProgram",
+        "entityTargetProgramLabelOrder",
+        "entityTargetProgramOperationOrder",
+        "entityTargetJumpInterfaceAlias",
+        "entityTargetControlFlowTargetTotal",
+        "entityTargetControlFlowScopeTotals",
+        "entityTargetControlFlowTotals",
+        "entityTargetProgramControlFlow",
+        "entityTargetProgramControlFlowTargetOrders",
+        "entityTargetProgramSummary",
     }
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
@@ -516,3 +844,12 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
             "tables"
         ]["items"]["properties"]["records"]
         assert records["items"] == {"$ref": f"#/definitions/{definition}"}
+    assert schema["properties"]["entityTargetPrograms"]["items"] == {
+        "$ref": "#/definitions/entityTargetProgram"
+    }
+    assert schema["definitions"]["entityTargetProgram"]["properties"]["operations"][
+        "items"
+    ] == {"$ref": "#/definitions/entityTargetProgramOperation"}
+    assert schema["definitions"]["entityTargetProgramOperation"]["properties"]["target"][
+        "anyOf"
+    ][1] == {"$ref": "#/definitions/entityTargetProgramTarget"}

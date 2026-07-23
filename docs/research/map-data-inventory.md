@@ -5,7 +5,7 @@
   routing rows, last-set-flag selection, 126 six-pointer setup tables, event dispatcher record shapes,
   the nine-case entity/zone/item runtime dispatch matrix,
   all 125 entity-list sources/980 physical entity records, all 263 entity/zone/item event sources with
-  1,134 physical records, all 75 area-description targets/227 physical entries, and all 84 init
+  1,134 physical records, all 684 entity-event target programs, all 75 area-description targets/227 physical entries, and all 84 init
   sources/90 setup-callable entry points with 597 physical operations, 126 pointer-table joins, and
   130 ordered selector-route joins, all 47 standalone setup-script files/8,058 statements,
   all 662 source-form content sections, and all 154 private blocks/layout payloads
@@ -209,6 +209,48 @@ cover the `$7F` index mask, a facing mismatch that falls through to default, and
 case retains its selected setup/table, physical record address, record kind, flags where applicable,
 and resolved target address. These are **Confirmed** static first-match contracts and the input table
 for the grouped H3, not claims about the called script's side effects.
+
+### Entity-Event Target Program Corpus
+
+**Confirmed — source/H1 program boundary:** the 684 `recordTargetProfiles` whose sole category is
+`entityEvents` now join one-for-one to source program boundaries. Their 850 physical records, 998
+pointer-table-weighted records, and 1,031 selector-route-weighted records remain separate reference
+counts; one program is never copied for each reference. The 684 entry labels occupy 87 exact source
+paths, while the event-table inventory still retains all 105 entity-event table sources. For every
+program, the contract stores the entry symbol/H1 address/source path/line, the first following
+source `End of function` boundary, H1 end address, and individual physical encoded span. These program
+spans total 8,928 bytes and are distinct from table record byte widths or reference weights.
+
+**Confirmed — non-comment operation/control-flow corpus:** those boundaries contain 1,015 labels and
+2,624 source operations. The source-faithful operation records retain order, source line, H1 address,
+raw mnemonic, legal `.b`/`.w`/`.l`/`.s` suffix when present, and split operand text without comments.
+The static count is 1,486 ordinary operations, 208 conditional branches, 147 unconditional branches,
+96 direct calls, 61 direct jumps, and 626 return instructions. Every program has a source/H1-proven
+final return or direct jump boundary. This is a control-flow inventory only: it does not name a
+macro's gameplay behavior or reproduce dialogue content.
+
+**Confirmed — target and alias identities:** the 512 non-return control-flow sites retain both the
+instruction operand identity and the effective identity. The complete declared instruction and
+effective sets each contain 332 symbol/address identities. The nine used `j_` interfaces retain their
+exact jump-interface source owner, `jmp` definition, target operand, H1 address, and effective source
+labels; same-address aliases remain label arrays rather than a chosen canonical semantic name. Both
+internal and external target-total maps carry every declared identity with zero-valued branch/call/jump
+fields where absent; their observed site split is 355 internal and 157 external. Internal means only
+that the effective H1 address lies inside the parsed physical program span, not that the branch is
+runtime-reachable.
+
+**Confirmed — provenance and construction guards:** the corpus is reproduced from the USA ROM
+SHA-256 above; `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; the 105
+`data/maps/entries/*/mapsetups/s2_entityevents*.asm` table sources plus the 87 resolved body-owner
+paths; `code/common/tech/jumpinterfaces/*.asm` for used aliases; and `build/sf2build-h1.lst`.
+`uv run sf2 h2 map-events` builds a single H1 label/function-end index and validates every parsed
+source operation against its ordered H1 use-site before fixture comparison. A source opcode, operand,
+or order mutation therefore fails construction instead of merely changing a golden comparison.
+The tracked fixture and its recursively closed output/fixture schemas record the full corpus; compact
+program/label/operation/target-total order keys constrain exact sequence without expanding a schema
+tree per operation. Observed command: `uv run sf2 h2 map-events` (684 / 2,624 / 8,928 / 512 / zero
+unresolved program profiles). Evidence date: 2026-07-22.
 
 ### Grouped H3 Runtime Questions
 

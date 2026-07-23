@@ -401,7 +401,11 @@ private blocks/layout payloads. The 77 payload pairs also decode deterministical
 and 77 complete 64x64 layouts with every block reference in range. Those structures now join into a
 deterministic 79-map, 1,859-resource canonical import with 15,805 logical records/operations. Its 64 setup routes
 and 126 six-pointer definitions resolve entity/event/description/init ownership; complete generated
-content remains ignored and only aggregate evidence is tracked. All 32 animation tables also have
+content remains ignored and only aggregate evidence is tracked. The map-event rail additionally closes
+all 684 entity-event target-program boundaries: 1,015 labels, 2,624 non-comment source operations,
+8,928 physical program bytes, 512 parsed branch/call/jump sites, nine source/H1-resolved jump
+interfaces, and zero-inclusive 332-identity instruction/effective target maps. This remains static
+source/H1 identity and control flow, not effect, dialogue, persistence, or presentation evidence. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
 1. keep the completed ten-case setup-selector, six-case init-dispatch, nine-case grouped

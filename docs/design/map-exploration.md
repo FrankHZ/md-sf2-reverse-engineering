@@ -179,6 +179,16 @@ remain separate from a labeled target. This contract establishes selection and t
 it MUST NOT be used to infer selected script lifecycle, transition persistence, facing, or visible
 presentation.
 
+For the 684 profiles categorized exactly as entity events, the same fixture additionally defines one
+source/H1 program boundary per resolved target. An importer or future execution adapter MUST retain the
+entry identity, source/H1 span, ordered non-comment operations and labels, final return/direct-jump
+form, instruction-versus-effective control-flow target identities, and the independent physical,
+pointer-weighted, and route-weighted reference counts. It MUST preserve same-address alias labels and
+the nine resolved jump-interface identities without treating an alias as a semantic behavior. The
+static internal/external target classification is a physical-span relation only; runtime branch
+reachability, operation effects, persistence, dialogue timing, and presentation remain outside this
+design contract.
+
 Direct-`rts` entity-event targets are explicit empty handlers, not record arrays. Map 55 and the
 flag-512 map 52 setup pair them with empty entity lists. The default map 52 setup instead initializes
 four non-ally entities, which receive clean-state event indices 128-131; the original interaction

@@ -88,6 +88,355 @@ SELECTION_INPUTS = (
     ),
 )
 
+_PROGRAM_LABEL = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$")
+_PROGRAM_OPERATION = re.compile(
+    r"^(?P<mnemonic>[A-Za-z][A-Za-z0-9_]*)(?P<suffix>\.[bBwWlLsS])?"
+    r"(?:\s+(?P<operands>.+))?$"
+)
+_PROGRAM_END = re.compile(r"^\s*;\s*End of function ([A-Za-z_][A-Za-z0-9_]*)\s*$")
+_LISTING_LINE = re.compile(r"^([0-9A-Fa-f]{8})(.*)$")
+_PARENTHESIZED_TARGET = re.compile(r"^\(([A-Za-z_][A-Za-z0-9_]*)\)\.[bBwWlL]$")
+_PLAIN_TARGET = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_PC_RELATIVE_TARGET = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\([pP][cC]\)$")
+
+_CONTROL_FLOW_KINDS = {
+    "beq": "conditional-branch",
+    "bne": "conditional-branch",
+    "bra": "unconditional-branch",
+    "bsr": "direct-call",
+    "jsr": "direct-call",
+    "jmp": "direct-jump",
+    "rts": "return",
+}
+_CONTROL_FLOW_COUNT_FIELDS = (
+    "conditionalBranchSiteCount",
+    "unconditionalBranchSiteCount",
+    "directCallSiteCount",
+    "directJumpSiteCount",
+)
+
+
+def _normalise_asm_statement(value: str) -> str:
+    """Compare source and H1 statements without treating comments as code."""
+    return re.sub(r"\s+", " ", value.split(";", 1)[0].strip())
+
+
+def _listing_statement(raw_line: str) -> tuple[int, str] | None:
+    """Return one H1 address/source statement, excluding macro-expansion rows."""
+    line_match = _LISTING_LINE.match(raw_line)
+    if line_match is None:
+        return None
+    address = int(line_match.group(1), 16)
+    remainder = line_match.group(2)
+    byte_match = re.match(
+        r"^\s*(?:[0-9A-Fa-f]{2,4})(?:\s+[0-9A-Fa-f]{2,4})*\s{2,}(.*)$",
+        remainder,
+    )
+    text = byte_match.group(1) if byte_match is not None else remainder
+    statement = _normalise_asm_statement(text)
+    if statement.startswith("M "):
+        return None
+    return address, statement
+
+
+def _operation_target_symbol(operand_texts: list[str], source_line: int) -> str:
+    if len(operand_texts) != 1:
+        raise ValueError(
+            f"map entity-event control-flow operand drift at source line {source_line}"
+        )
+    operand = operand_texts[0]
+    plain_match = _PLAIN_TARGET.fullmatch(operand)
+    if plain_match is not None:
+        return operand
+    parenthesized_match = _PARENTHESIZED_TARGET.fullmatch(operand)
+    if parenthesized_match is not None:
+        return parenthesized_match.group(1)
+    pc_relative_match = _PC_RELATIVE_TARGET.fullmatch(operand)
+    if pc_relative_match is not None:
+        return pc_relative_match.group(1)
+    raise ValueError(
+        f"map entity-event control-flow target form drift at source line {source_line}"
+    )
+
+
+def _parse_program_operation(
+    statement: str, *, source_line: int, source_order: int
+) -> dict[str, Any]:
+    """Parse one source operation while retaining its raw mnemonic and operands."""
+    match = _PROGRAM_OPERATION.fullmatch(statement)
+    if match is None:
+        raise ValueError(f"map entity-event operation syntax drift at source line {source_line}")
+    raw_mnemonic = match.group("mnemonic") + (match.group("suffix") or "")
+    operand_text = match.group("operands")
+    operand_texts = _split_macro_operands(operand_text) if operand_text else []
+    mnemonic = match.group("mnemonic").lower()
+    control_flow_kind = _CONTROL_FLOW_KINDS.get(mnemonic, "ordinary")
+    target_symbol = (
+        _operation_target_symbol(operand_texts, source_line)
+        if control_flow_kind
+        in {"conditional-branch", "unconditional-branch", "direct-call", "direct-jump"}
+        else None
+    )
+    return {
+        "sourceOrder": source_order,
+        "sourceLine": source_line,
+        "sourceMnemonic": raw_mnemonic,
+        "mnemonic": mnemonic,
+        "sizeSuffix": match.group("suffix").lower() if match.group("suffix") else None,
+        "operandTexts": operand_texts,
+        "controlFlowKind": control_flow_kind,
+        "instructionTargetSymbol": target_symbol,
+    }
+
+
+def _source_program_block(
+    disasm: Path, profile: dict[str, Any], addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Parse one entity-event source block through its annotated function boundary."""
+    source_path = profile["ownerSourcePath"]
+    lines = read_upstream_text(disasm / source_path).splitlines()
+    entry_line = profile["ownerSourceLine"]
+    if not 1 <= entry_line <= len(lines):
+        raise ValueError(f"map entity-event entry line is out of range: {source_path}")
+    entry_match = _PROGRAM_LABEL.fullmatch(lines[entry_line - 1])
+    if entry_match is None or entry_match.group(1) != profile["canonicalSymbol"]:
+        raise ValueError(f"map entity-event entry label drift: {profile['canonicalSymbol']}")
+    if profile["targetH1Address"] != addresses[profile["canonicalSymbol"]]:
+        raise ValueError(f"map entity-event entry H1 address drift: {profile['canonicalSymbol']}")
+
+    end_index: int | None = None
+    end_symbol: str | None = None
+    for index in range(entry_line, len(lines)):
+        end_match = _PROGRAM_END.fullmatch(lines[index])
+        if end_match is not None:
+            end_index = index
+            end_symbol = end_match.group(1)
+            break
+    if end_index is None or end_symbol is None:
+        raise ValueError(f"map entity-event source function boundary is missing: {source_path}")
+
+    labels: list[dict[str, Any]] = []
+    operations: list[dict[str, Any]] = []
+    for index in range(entry_line - 1, end_index):
+        raw_line = lines[index]
+        statement = _normalise_asm_statement(raw_line)
+        if not statement:
+            continue
+        label_match = _PROGRAM_LABEL.fullmatch(statement)
+        trailing_operation: str | None = None
+        if label_match is None:
+            inline_label = _PROGRAM_LABEL.match(statement)
+            if inline_label is not None:
+                label_match = inline_label
+                trailing_operation = inline_label.group(2).strip()
+        if label_match is not None:
+            symbol = label_match.group(1)
+            if symbol not in addresses:
+                raise ValueError(f"map entity-event label lacks H1 address: {symbol}")
+            labels.append(
+                {
+                    "sourceOrder": len(labels),
+                    "sourceLine": index + 1,
+                    "symbol": symbol,
+                    "address": addresses[symbol],
+                }
+            )
+            statement = (
+                trailing_operation
+                if trailing_operation is not None
+                else label_match.group(2).strip()
+            )
+        if statement:
+            operation = _parse_program_operation(
+                statement, source_line=index + 1, source_order=len(operations)
+            )
+            operation["sourceStatement"] = statement
+            operations.append(operation)
+    if not labels or labels[0]["symbol"] != profile["canonicalSymbol"]:
+        raise ValueError(
+            f"map entity-event entry label coverage drift: {profile['canonicalSymbol']}"
+        )
+    if not operations:
+        raise ValueError(f"map entity-event has no operations: {profile['canonicalSymbol']}")
+    return {
+        "labels": labels,
+        "operations": operations,
+        "endFunctionSymbol": end_symbol,
+        "endSourceLine": end_index + 1,
+    }
+
+
+def _listing_entry_index(
+    listing_index: dict[str, dict[Any, Any]], *, symbol: str, address: int
+) -> int:
+    entry_index = listing_index["entries"].get((symbol, address))
+    if entry_index is None:
+        raise ValueError(f"map entity-event H1 entry listing drift: {symbol}")
+    return entry_index
+
+
+def _listing_program_end(
+    listing_index: dict[str, dict[Any, Any]], *, entry_index: int, end_function_symbol: str
+) -> tuple[int, int]:
+    boundary = listing_index["ends"].get(end_function_symbol)
+    if boundary is None or boundary[0] <= entry_index:
+        raise ValueError(f"map entity-event H1 function end drift: {end_function_symbol}")
+    return boundary
+
+
+def _h1_program_index(listing_lines: list[str]) -> dict[str, dict[Any, Any]]:
+    """Index H1 labels and source function-end markers once for the full program corpus."""
+    entries: dict[tuple[str, int], int] = {}
+    ends: dict[str, tuple[int, int]] = {}
+    for index, raw_line in enumerate(listing_lines):
+        row = _listing_statement(raw_line)
+        if row is not None and row[1].endswith(":"):
+            symbol = row[1][:-1]
+            if _PLAIN_TARGET.fullmatch(symbol) is not None:
+                identity = (symbol, row[0])
+                if identity in entries:
+                    raise ValueError(f"map entity-event duplicate H1 label entry: {symbol}")
+                entries[identity] = index
+        line_match = _LISTING_LINE.match(raw_line)
+        if line_match is None:
+            continue
+        end_match = _PROGRAM_END.fullmatch(line_match.group(2))
+        if end_match is None:
+            continue
+        symbol = end_match.group(1)
+        if symbol in ends:
+            raise ValueError(f"map entity-event duplicate H1 function end: {symbol}")
+        ends[symbol] = (index, int(line_match.group(1), 16))
+    return {"entries": entries, "ends": ends}
+
+
+def _bind_operations_to_h1(
+    listing_lines: list[str],
+    listing_index: dict[str, dict[Any, Any]],
+    *,
+    profile: dict[str, Any],
+    block: dict[str, Any],
+) -> int:
+    """Guard source opcode/operand/order against the pinned H1 listing before fixtures."""
+    entry_address = profile["targetH1Address"]
+    entry_index = _listing_entry_index(
+        listing_index, symbol=profile["canonicalSymbol"], address=entry_address
+    )
+    end_index, end_address = _listing_program_end(
+        listing_index,
+        entry_index=entry_index,
+        end_function_symbol=block["endFunctionSymbol"],
+    )
+    if end_address <= entry_address:
+        raise ValueError(
+            f"map entity-event H1 nonpositive program span: {profile['canonicalSymbol']}"
+        )
+    cursor = entry_index + 1
+    for operation in block["operations"]:
+        expected_statement = operation["sourceStatement"]
+        matched: tuple[int, int] | None = None
+        for index in range(cursor, end_index):
+            row = _listing_statement(listing_lines[index])
+            if row is not None and row[1] == expected_statement:
+                matched = (index, row[0])
+                break
+        if matched is None:
+            raise ValueError(
+                "map entity-event source/H1 operation relationship drift: "
+                f"{profile['canonicalSymbol']}:{operation['sourceLine']}"
+            )
+        cursor, operation["address"] = matched[0] + 1, matched[1]
+        if not entry_address <= operation["address"] < end_address:
+            raise ValueError(
+                f"map entity-event operation address falls outside program span: "
+                f"{profile['canonicalSymbol']}:{operation['sourceLine']}"
+            )
+        del operation["sourceStatement"]
+    return end_address
+
+
+def _alias_target_symbol(operand_texts: list[str], source_line: int) -> str:
+    if len(operand_texts) != 1:
+        raise ValueError(
+            f"map entity-event jump-interface operand drift at source line {source_line}"
+        )
+    operand = operand_texts[0]
+    target_match = _PC_RELATIVE_TARGET.fullmatch(operand)
+    if target_match is not None:
+        return target_match.group(1)
+    return _operation_target_symbol(operand_texts, source_line)
+
+
+def _parse_jump_interface_aliases(
+    disasm: Path,
+    addresses: dict[str, int],
+    listing_lines: list[str],
+    listing_index: dict[str, dict[Any, Any]],
+    label_owners: dict[int, list[dict[str, Any]]],
+    aliases: list[str],
+) -> dict[str, dict[str, Any]]:
+    """Resolve each called `j_` interface through its source/H1 jump definition."""
+    definitions: dict[str, dict[str, Any]] = {}
+    for alias in aliases:
+        if alias not in addresses:
+            raise ValueError(f"map entity-event jump-interface lacks H1 address: {alias}")
+        owner_matches = [
+            owner for owner in label_owners.get(addresses[alias], []) if owner["symbol"] == alias
+        ]
+        if len(owner_matches) != 1:
+            raise ValueError(f"map entity-event jump-interface owner drift: {alias}")
+        owner = owner_matches[0]
+        source_lines = read_upstream_text(disasm / owner["sourcePath"]).splitlines()
+        source_index = owner["sourceLine"] - 1
+        label_match = _PROGRAM_LABEL.fullmatch(source_lines[source_index])
+        if label_match is None or label_match.group(1) != alias:
+            raise ValueError(f"map entity-event jump-interface label drift: {alias}")
+        operation: dict[str, Any] | None = None
+        for index in range(source_index + 1, len(source_lines)):
+            statement = _normalise_asm_statement(source_lines[index])
+            if not statement:
+                continue
+            if _PROGRAM_LABEL.fullmatch(statement) is not None:
+                break
+            operation = _parse_program_operation(statement, source_line=index + 1, source_order=0)
+            break
+        if operation is None or operation["controlFlowKind"] != "direct-jump":
+            raise ValueError(f"map entity-event jump-interface definition drift: {alias}")
+        target_symbol = _alias_target_symbol(operation["operandTexts"], operation["sourceLine"])
+        if target_symbol not in addresses:
+            raise ValueError(f"map entity-event jump-interface target lacks H1 address: {alias}")
+        entry_index = _listing_entry_index(
+            listing_index, symbol=alias, address=addresses[alias]
+        )
+        expected_statement = _normalise_asm_statement(
+            source_lines[operation["sourceLine"] - 1]
+        )
+        h1_row: tuple[int, str] | None = None
+        for raw_line in listing_lines[entry_index + 1 :]:
+            row = _listing_statement(raw_line)
+            if row is not None and row[1].endswith(":"):
+                break
+            if row is not None and row[1] == expected_statement:
+                h1_row = row
+                break
+        if h1_row is None:
+            raise ValueError(f"map entity-event jump-interface source/H1 drift: {alias}")
+        definitions[alias] = {
+            "aliasSymbol": alias,
+            "aliasAddress": addresses[alias],
+            "sourcePath": owner["sourcePath"],
+            "sourceLine": owner["sourceLine"],
+            "definitionSourceLine": operation["sourceLine"],
+            "sourceMnemonic": operation["sourceMnemonic"],
+            "mnemonic": operation["mnemonic"],
+            "sizeSuffix": operation["sizeSuffix"],
+            "operandTexts": operation["operandTexts"],
+            "directTargetSymbol": target_symbol,
+            "directTargetAddress": addresses[target_symbol],
+            "listingAddress": h1_row[0],
+        }
+    return definitions
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -640,11 +989,11 @@ def _category_contract(
     }
 
 
-def _label_owners(
-    disasm: Path, addresses: dict[str, int], wanted_addresses: set[int]
+def _source_label_owners(
+    disasm: Path, addresses: dict[str, int]
 ) -> dict[int, list[dict[str, Any]]]:
-    """Return every source/H1 label at a target address, retaining same-address labels."""
-    owners: dict[int, list[dict[str, Any]]] = {address: [] for address in wanted_addresses}
+    """Index every source/H1 label once, retaining same-address aliases."""
+    owners: dict[int, list[dict[str, Any]]] = {}
     for path in sorted(disasm.rglob("*.asm")):
         relative_path = path.relative_to(disasm).as_posix()
         for line_number, line in enumerate(read_upstream_text(path).splitlines(), start=1):
@@ -653,9 +1002,9 @@ def _label_owners(
                 continue
             symbol = match.group(1)
             address = addresses.get(symbol)
-            if address not in owners:
+            if address is None:
                 continue
-            owners[address].append(
+            owners.setdefault(address, []).append(
                 {
                     "symbol": symbol,
                     "sourcePath": relative_path,
@@ -667,6 +1016,498 @@ def _label_owners(
             key=lambda owner: (owner["sourcePath"], owner["sourceLine"], owner["symbol"])
         )
     return owners
+
+
+def _label_owners(
+    disasm: Path,
+    addresses: dict[str, int],
+    wanted_addresses: set[int],
+    source_label_owners: dict[int, list[dict[str, Any]]] | None = None,
+) -> dict[int, list[dict[str, Any]]]:
+    """Select target labels from the reusable complete source/H1 label index."""
+    all_owners = source_label_owners or _source_label_owners(disasm, addresses)
+    return {address: list(all_owners.get(address, [])) for address in wanted_addresses}
+
+
+def _program_key(symbol: str, address: int) -> str:
+    return f"{symbol}:{address}"
+
+
+def _control_flow_count_field(kind: str) -> str:
+    fields = {
+        "conditional-branch": "conditionalBranchSiteCount",
+        "unconditional-branch": "unconditionalBranchSiteCount",
+        "direct-call": "directCallSiteCount",
+        "direct-jump": "directJumpSiteCount",
+    }
+    if kind not in fields:
+        raise ValueError(f"map entity-event non-target control-flow kind: {kind}")
+    return fields[kind]
+
+
+def _target_identity(
+    symbol: str, addresses: dict[str, int], owners: dict[int, list[dict[str, Any]]]
+) -> dict[str, Any]:
+    if symbol not in addresses:
+        raise ValueError(f"map entity-event control-flow target lacks H1 address: {symbol}")
+    address = addresses[symbol]
+    labels = owners.get(address, [])
+    if not labels:
+        raise ValueError(f"map entity-event control-flow target lacks source owner: {symbol}")
+    return {"symbol": symbol, "address": address, "addressLabels": labels}
+
+
+def _entity_target_program_control_flow(
+    programs: list[dict[str, Any]],
+    alias_definitions: list[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build zero-inclusive instruction/effective target totals from parsed operations."""
+    instruction_targets: dict[tuple[str, int], dict[str, Any]] = {}
+    effective_targets: dict[tuple[str, int], dict[str, Any]] = {}
+    counts: Counter[tuple[str, str, tuple[str, int], str]] = Counter()
+    for program in programs:
+        for operation in program["operations"]:
+            target = operation["target"]
+            if target is None:
+                continue
+            field = _control_flow_count_field(operation["controlFlowKind"])
+            scope = target["effectiveTargetScope"]
+            instruction_identity = (
+                target["instructionTargetSymbol"],
+                target["instructionTargetAddress"],
+            )
+            effective_identity = (
+                target["effectiveTargetSymbol"],
+                target["effectiveTargetAddress"],
+            )
+            instruction_targets.setdefault(
+                instruction_identity,
+                {
+                    "symbol": instruction_identity[0],
+                    "address": instruction_identity[1],
+                    "addressLabels": target["instructionTargetAddressLabels"],
+                },
+            )
+            effective_targets.setdefault(
+                effective_identity,
+                {
+                    "symbol": effective_identity[0],
+                    "address": effective_identity[1],
+                    "addressLabels": target["effectiveTargetAddressLabels"],
+                },
+            )
+            counts[("instruction", scope, instruction_identity, field)] += 1
+            counts[("effective", scope, effective_identity, field)] += 1
+
+    def target_rows(
+        identity_kind: str,
+        scope: str,
+        declared_targets: dict[tuple[str, int], dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for identity, target in declared_targets.items():
+            row = dict(target)
+            for field in _CONTROL_FLOW_COUNT_FIELDS:
+                row[field] = counts[(identity_kind, scope, identity, field)]
+            row["totalSiteCount"] = sum(row[field] for field in _CONTROL_FLOW_COUNT_FIELDS)
+            rows.append(row)
+        return rows
+
+    totals = {
+        "aliasDefinitions": alias_definitions,
+        "targetTotals": {
+            "instructionTargets": {
+                "internal": target_rows("instruction", "internal", instruction_targets),
+                "external": target_rows("instruction", "external", instruction_targets),
+            },
+            "effectiveTargets": {
+                "internal": target_rows("effective", "internal", effective_targets),
+                "external": target_rows("effective", "external", effective_targets),
+            },
+        },
+    }
+    def total_order(rows: list[dict[str, Any]]) -> list[str]:
+        return [
+            f"{row['symbol']}:{row['address']}:"
+            f"{row['conditionalBranchSiteCount']}:"
+            f"{row['unconditionalBranchSiteCount']}:"
+            f"{row['directCallSiteCount']}:"
+            f"{row['directJumpSiteCount']}"
+            for row in rows
+        ]
+
+    orders = {
+        "aliasOrder": [definition["aliasSymbol"] for definition in alias_definitions],
+        "instructionTargetOrder": [
+            _program_key(symbol, address) for symbol, address in instruction_targets
+        ],
+        "effectiveTargetOrder": [
+            _program_key(symbol, address) for symbol, address in effective_targets
+        ],
+        "instructionInternalTargetTotalOrder": total_order(
+            totals["targetTotals"]["instructionTargets"]["internal"]
+        ),
+        "instructionExternalTargetTotalOrder": total_order(
+            totals["targetTotals"]["instructionTargets"]["external"]
+        ),
+        "effectiveInternalTargetTotalOrder": total_order(
+            totals["targetTotals"]["effectiveTargets"]["internal"]
+        ),
+        "effectiveExternalTargetTotalOrder": total_order(
+            totals["targetTotals"]["effectiveTargets"]["external"]
+        ),
+    }
+    return totals, orders
+
+
+def _reconcile_entity_target_programs(
+    profiles: list[dict[str, Any]],
+    programs: list[dict[str, Any]],
+    summary: dict[str, Any],
+    control_flow: dict[str, Any],
+    target_orders: dict[str, Any],
+) -> None:
+    """Reconcile profile weights, source operations, and zero-inclusive target totals."""
+    profile_by_identity = {
+        (profile["canonicalSymbol"], profile["targetAddress"]): profile for profile in profiles
+    }
+    program_by_identity = {
+        (program["canonicalSymbol"], program["entryAddress"]): program for program in programs
+    }
+    if set(program_by_identity) != set(profile_by_identity):
+        raise ValueError("map entity-event program/profile identity coverage drift")
+    if len(program_by_identity) != len(programs):
+        raise ValueError("map entity-event duplicate program identity")
+
+    totals: Counter[str] = Counter()
+    observed_control: Counter[tuple[str, str, tuple[str, int], str]] = Counter()
+    kind_summary_fields = {
+        "conditional-branch": "conditionalBranchCount",
+        "unconditional-branch": "unconditionalBranchCount",
+        "direct-call": "directCallCount",
+        "direct-jump": "directJumpCount",
+        "return": "returnCount",
+        "ordinary": "ordinaryOperationCount",
+    }
+    for identity, program in program_by_identity.items():
+        profile = profile_by_identity[identity]
+        expected_weights = {
+            "physicalRecordCount": profile["physicalRecordCount"],
+            "setupRecordReferenceCount": profile["setupRecordReferenceCount"],
+            "routeRecordReferenceCount": profile["routeRecordReferenceCount"],
+        }
+        if program["referenceCounts"] != expected_weights:
+            raise ValueError(f"map entity-event program reference-count drift: {identity}")
+        if program["encodedSpanBytes"] != program["endAddressExclusive"] - program["entryAddress"]:
+            raise ValueError(f"map entity-event program span relationship drift: {identity}")
+        if program["termination"]["sourceOrder"] != program["operations"][-1]["sourceOrder"]:
+            raise ValueError(f"map entity-event termination order drift: {identity}")
+        if program["termination"]["controlFlowKind"] not in {"return", "direct-jump"}:
+            raise ValueError(f"map entity-event termination kind drift: {identity}")
+        totals["programCount"] += 1
+        totals["labelCount"] += len(program["labels"])
+        totals["operationCount"] += len(program["operations"])
+        totals["encodedSpanBytes"] += program["encodedSpanBytes"]
+        for field, value in expected_weights.items():
+            totals[field] += value
+        for operation in program["operations"]:
+            kind = operation["controlFlowKind"]
+            totals[kind_summary_fields[kind]] += 1
+            target = operation["target"]
+            if target is None:
+                continue
+            field = _control_flow_count_field(kind)
+            scope = target["effectiveTargetScope"]
+            instruction_identity = (
+                target["instructionTargetSymbol"],
+                target["instructionTargetAddress"],
+            )
+            effective_identity = (
+                target["effectiveTargetSymbol"],
+                target["effectiveTargetAddress"],
+            )
+            observed_control[("instruction", scope, instruction_identity, field)] += 1
+            observed_control[("effective", scope, effective_identity, field)] += 1
+            totals[f"{scope}ControlFlowSiteCount"] += 1
+    totals["sourceFileCount"] = len({program["sourcePath"] for program in programs})
+    totals["instructionTargetCount"] = len(target_orders["instructionTargetOrder"])
+    totals["effectiveTargetCount"] = len(target_orders["effectiveTargetOrder"])
+    totals["jumpInterfaceAliasCount"] = len(control_flow["aliasDefinitions"])
+    if {field: totals[field] for field in summary} != summary:
+        raise ValueError("map entity-event program summary reconciliation drift")
+
+    target_totals = control_flow["targetTotals"]
+    expected_orders = {
+        "instructionTargets": target_orders["instructionTargetOrder"],
+        "effectiveTargets": target_orders["effectiveTargetOrder"],
+    }
+    for identity_kind, identity_key in (
+        ("instruction", "instructionTargets"),
+        ("effective", "effectiveTargets"),
+    ):
+        for scope in ("internal", "external"):
+            rows = target_totals[identity_key][scope]
+            observed_order = [_program_key(row["symbol"], row["address"]) for row in rows]
+            if observed_order != expected_orders[identity_key]:
+                raise ValueError(
+                    f"map entity-event {identity_kind} target zero-inclusive order drift: {scope}"
+                )
+            for row in rows:
+                identity = (row["symbol"], row["address"])
+                for field in _CONTROL_FLOW_COUNT_FIELDS:
+                    if row[field] != observed_control[(identity_kind, scope, identity, field)]:
+                        raise ValueError(
+                            "map entity-event "
+                            f"{identity_kind} target total drift: {scope}:{identity}"
+                        )
+                if row["totalSiteCount"] != sum(row[field] for field in _CONTROL_FLOW_COUNT_FIELDS):
+                    raise ValueError(
+                        "map entity-event "
+                        f"{identity_kind} target aggregate drift: {scope}:{identity}"
+                    )
+            order_key = (
+                f"{identity_kind}{scope.title()}TargetTotalOrder"
+            )
+            observed_total_order = [
+                f"{row['symbol']}:{row['address']}:"
+                f"{row['conditionalBranchSiteCount']}:"
+                f"{row['unconditionalBranchSiteCount']}:"
+                f"{row['directCallSiteCount']}:"
+                f"{row['directJumpSiteCount']}"
+                for row in rows
+            ]
+            if target_orders[order_key] != observed_total_order:
+                raise ValueError(
+                    f"map entity-event {identity_kind} target count-order drift: {scope}"
+                )
+
+
+def _entity_target_program_contract(
+    disasm: Path,
+    addresses: dict[str, int],
+    listing_lines: list[str],
+    listing_index: dict[str, dict[Any, Any]],
+    record_target_profiles: list[dict[str, Any]],
+    source_label_owners: dict[int, list[dict[str, Any]]],
+) -> tuple[
+    list[dict[str, Any]],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    """Inventory entity target bodies, leaving zone/item target bodies unopened."""
+    profiles = [
+        profile for profile in record_target_profiles if profile["categories"] == ["entityEvents"]
+    ]
+    raw_blocks: list[tuple[dict[str, Any], dict[str, Any], int]] = []
+    instruction_symbols: list[str] = []
+    for profile in profiles:
+        block = _source_program_block(disasm, profile, addresses)
+        end_address = _bind_operations_to_h1(
+            listing_lines,
+            listing_index,
+            profile=profile,
+            block=block,
+        )
+        raw_blocks.append((profile, block, end_address))
+        instruction_symbols.extend(
+            operation["instructionTargetSymbol"]
+            for operation in block["operations"]
+            if operation["instructionTargetSymbol"] is not None
+        )
+
+    alias_symbols = list(
+        dict.fromkeys(symbol for symbol in instruction_symbols if symbol.startswith("j_"))
+    )
+    initial_owner_addresses = {addresses[symbol] for symbol in instruction_symbols}
+    initial_owners = _label_owners(
+        disasm, addresses, initial_owner_addresses, source_label_owners
+    )
+    aliases_by_symbol = _parse_jump_interface_aliases(
+        disasm,
+        addresses,
+        listing_lines,
+        listing_index,
+        initial_owners,
+        alias_symbols,
+    )
+    if any(
+        definition["directTargetSymbol"].startswith("j_")
+        for definition in aliases_by_symbol.values()
+    ):
+        raise ValueError("map entity-event jump-interface alias chain drift")
+    target_owner_addresses = initial_owner_addresses | {
+        definition["directTargetAddress"] for definition in aliases_by_symbol.values()
+    }
+    target_owners = _label_owners(
+        disasm, addresses, target_owner_addresses, source_label_owners
+    )
+    alias_definitions = []
+    for alias in alias_symbols:
+        definition = aliases_by_symbol[alias]
+        direct_target = _target_identity(
+            definition["directTargetSymbol"], addresses, target_owners
+        )
+        alias_definitions.append(
+            {**definition, "directTargetAddressLabels": direct_target["addressLabels"]}
+        )
+
+    programs: list[dict[str, Any]] = []
+    label_orders: list[dict[str, Any]] = []
+    operation_orders: list[dict[str, Any]] = []
+    for profile, block, end_address in raw_blocks:
+        entry_address = profile["targetH1Address"]
+        operations: list[dict[str, Any]] = []
+        for raw_operation in block["operations"]:
+            operation = dict(raw_operation)
+            instruction_symbol = operation.pop("instructionTargetSymbol")
+            if instruction_symbol is None:
+                operation["target"] = None
+            else:
+                instruction_target = _target_identity(instruction_symbol, addresses, target_owners)
+                alias = aliases_by_symbol.get(instruction_symbol)
+                effective_symbol = (
+                    alias["directTargetSymbol"] if alias is not None else instruction_symbol
+                )
+                effective_target = _target_identity(effective_symbol, addresses, target_owners)
+                operation["target"] = {
+                    "instructionTargetSymbol": instruction_target["symbol"],
+                    "instructionTargetAddress": instruction_target["address"],
+                    "instructionTargetAddressLabels": instruction_target["addressLabels"],
+                    "effectiveTargetSymbol": effective_target["symbol"],
+                    "effectiveTargetAddress": effective_target["address"],
+                    "effectiveTargetAddressLabels": effective_target["addressLabels"],
+                    "effectiveTargetScope": (
+                        "internal"
+                        if entry_address <= effective_target["address"] < end_address
+                        else "external"
+                    ),
+                }
+            operations.append(operation)
+        if operations[-1]["controlFlowKind"] not in {"return", "direct-jump"}:
+            raise ValueError(
+                "map entity-event program lacks stable termination: "
+                f"{profile['canonicalSymbol']}"
+            )
+        termination_operation = operations[-1]
+        termination = {
+            field: termination_operation[field]
+            for field in (
+                "sourceOrder",
+                "sourceLine",
+                "address",
+                "sourceMnemonic",
+                "mnemonic",
+                "sizeSuffix",
+                "operandTexts",
+                "controlFlowKind",
+                "target",
+            )
+        }
+        program = {
+            "programOrder": len(programs),
+            "canonicalSymbol": profile["canonicalSymbol"],
+            "entryAddress": entry_address,
+            "sourcePath": profile["ownerSourcePath"],
+            "entrySourceLine": profile["ownerSourceLine"],
+            "endFunctionSymbol": block["endFunctionSymbol"],
+            "endSourceLine": block["endSourceLine"],
+            "endAddressExclusive": end_address,
+            "encodedSpanBytes": end_address - entry_address,
+            "referenceCounts": {
+                "physicalRecordCount": profile["physicalRecordCount"],
+                "setupRecordReferenceCount": profile["setupRecordReferenceCount"],
+                "routeRecordReferenceCount": profile["routeRecordReferenceCount"],
+            },
+            "labels": block["labels"],
+            "operations": operations,
+            "termination": termination,
+        }
+        programs.append(program)
+        key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+        label_orders.append(
+            {
+                "programKey": key,
+                "labelOrder": [
+                    f"{label['sourceOrder']}:{label['sourceLine']}:{label['symbol']}:{label['address']}"
+                    for label in program["labels"]
+                ],
+            }
+        )
+        operation_orders.append(
+            {
+                "programKey": key,
+                "operationOrder": [
+                    f"{operation['sourceOrder']}:{operation['sourceLine']}:"
+                    f"{operation['address']}"
+                    for operation in program["operations"]
+                ],
+            }
+        )
+    control_flow, target_orders = _entity_target_program_control_flow(programs, alias_definitions)
+    summary = {
+        "programCount": len(programs),
+        "sourceFileCount": len({program["sourcePath"] for program in programs}),
+        "labelCount": sum(len(program["labels"]) for program in programs),
+        "operationCount": sum(len(program["operations"]) for program in programs),
+        "ordinaryOperationCount": sum(
+            operation["controlFlowKind"] == "ordinary"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "conditionalBranchCount": sum(
+            operation["controlFlowKind"] == "conditional-branch"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "unconditionalBranchCount": sum(
+            operation["controlFlowKind"] == "unconditional-branch"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "directCallCount": sum(
+            operation["controlFlowKind"] == "direct-call"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "directJumpCount": sum(
+            operation["controlFlowKind"] == "direct-jump"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "returnCount": sum(
+            operation["controlFlowKind"] == "return"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "encodedSpanBytes": sum(program["encodedSpanBytes"] for program in programs),
+        "physicalRecordCount": sum(profile["physicalRecordCount"] for profile in profiles),
+        "setupRecordReferenceCount": sum(
+            profile["setupRecordReferenceCount"] for profile in profiles
+        ),
+        "routeRecordReferenceCount": sum(
+            profile["routeRecordReferenceCount"] for profile in profiles
+        ),
+        "internalControlFlowSiteCount": sum(
+            operation["target"] is not None
+            and operation["target"]["effectiveTargetScope"] == "internal"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "externalControlFlowSiteCount": sum(
+            operation["target"] is not None
+            and operation["target"]["effectiveTargetScope"] == "external"
+            for program in programs
+            for operation in program["operations"]
+        ),
+        "instructionTargetCount": len(target_orders["instructionTargetOrder"]),
+        "effectiveTargetCount": len(target_orders["effectiveTargetOrder"]),
+        "jumpInterfaceAliasCount": len(alias_definitions),
+    }
+    _reconcile_entity_target_programs(profiles, programs, summary, control_flow, target_orders)
+    return programs, summary, control_flow, target_orders, label_orders, operation_orders
 
 
 def _ownership_class(record: dict[str, Any], owner_path: str) -> str:
@@ -718,7 +1559,10 @@ def _record_target_ownership(
 
 
 def _join_target_ownership(
-    disasm: Path, addresses: dict[str, int], categories: dict[str, dict[str, Any]]
+    disasm: Path,
+    addresses: dict[str, int],
+    categories: dict[str, dict[str, Any]],
+    source_label_owners: dict[int, list[dict[str, Any]]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Join each source/ROM event record to an exact source/H1 target owner."""
     records = [
@@ -729,7 +1573,7 @@ def _join_target_ownership(
     ]
     target_addresses = {record["resolvedTargetAddress"] for record in records}
     target_addresses.update(addresses[record["targetBaseSymbol"]] for record in records)
-    owners = _label_owners(disasm, addresses, target_addresses)
+    owners = _label_owners(disasm, addresses, target_addresses, source_label_owners)
     unresolved: list[dict[str, Any]] = []
     ambiguous: list[dict[str, Any]] = []
     for record in records:
@@ -1161,7 +2005,10 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     listing_path = upstream_path / "build/sf2build-h1.lst"
     if not listing_path.is_file():
         raise ValueError(f"map events H1 listing is missing: {listing_path}")
-    addresses = listing_symbol_addresses(listing_path.read_text(encoding="utf-8"))
+    listing_text = listing_path.read_text(encoding="utf-8")
+    listing_lines = listing_text.splitlines()
+    listing_index = _h1_program_index(listing_lines)
+    addresses = listing_symbol_addresses(listing_text)
     rom = rom_path.read_bytes()
     setup = build_map_setup_contract(rom_path, upstream_path)
     entities = build_map_entities_contract(rom_path, upstream_path)
@@ -1175,8 +2022,9 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         )
         for category in CATEGORY_CONFIG
     }
+    source_label_owners = _source_label_owners(disasm, addresses)
     record_target_profiles, unresolved_record_targets, ambiguous_record_targets = (
-        _join_target_ownership(disasm, addresses, categories)
+        _join_target_ownership(disasm, addresses, categories, source_label_owners)
     )
     setup_category_joins, route_category_joins = _setup_category_joins(setup, categories)
     _apply_reference_counts(
@@ -1185,6 +2033,21 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         setup_category_joins,
         route_category_joins,
         record_target_profiles,
+    )
+    (
+        entity_target_programs,
+        entity_target_program_summary,
+        entity_target_program_control_flow,
+        entity_target_program_control_flow_target_orders,
+        entity_target_program_label_orders,
+        entity_target_program_operation_orders,
+    ) = _entity_target_program_contract(
+        disasm,
+        addresses,
+        listing_lines,
+        listing_index,
+        record_target_profiles,
+        source_label_owners,
     )
     entity_target_refs = [
         table["targets"]["entityEvents"]["symbol"] for table in setup["pointerTables"]
@@ -1322,6 +2185,18 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         },
         "consumerFacts": _consumer_facts(setup),
         "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
+        "entityTargetProgramSummary": entity_target_program_summary,
+        "entityTargetPrograms": entity_target_programs,
+        "entityTargetProgramOrder": [
+            _program_key(program["canonicalSymbol"], program["entryAddress"])
+            for program in entity_target_programs
+        ],
+        "entityTargetProgramLabelOrders": entity_target_program_label_orders,
+        "entityTargetProgramOperationOrders": entity_target_program_operation_orders,
+        "entityTargetProgramControlFlow": entity_target_program_control_flow,
+        "entityTargetProgramControlFlowTargetOrders": (
+            entity_target_program_control_flow_target_orders
+        ),
         "directReturnStubs": direct_return_stubs,
         "rawZoneDefaultException": raw_zone_default,
         "unresolvedRecordTargets": unresolved_record_targets,
