@@ -13,7 +13,7 @@
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
 - Status: **Unknown** for direct-`rts` entity-event reachability through normal story routes, sequenced-orientation consumption,
   nonstandard description callers, presentation timing, rendered layout parity, and VDP timing
-- Evidence date: 2026-07-22
+- Evidence date: 2026-07-23
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -251,7 +251,7 @@ or order mutation therefore fails construction instead of merely changing a gold
 The tracked fixture and its recursively closed output/fixture schemas record the full corpus; compact
 program/label/operation/target-total order keys constrain exact sequence without expanding a schema
 tree per operation. Observed command: `uv run sf2 h2 map-events` (684 / 2,624 / 8,928 / 512 / zero
-unresolved program profiles). Evidence date: 2026-07-22.
+unresolved program profiles). Evidence date: 2026-07-23.
 
 ### Zone- and Item-Event Target Program Corpora
 
@@ -303,7 +303,86 @@ H1 address; it also resolves each alias at its pinned `jmp` definition. Source/H
 order, boundary, or alias-definition mutations therefore fail construction before fixture comparison.
 The same recursively closed output and fixture schemas use shared closed program/exclusion records and
 compact exact-order arrays. Observed command: `uv run sf2 h2 map-events` (zone 150 / 809 / 2,934 /
-183; item 80 / 146 / 414 / 19; one explicit zone exclusion). Evidence date: 2026-07-22.
+183; item 80 / 146 / 414 / 19; one explicit zone exclusion). Evidence date: 2026-07-23.
+
+### Complete Operation Vocabulary and Definition Join
+
+**Confirmed — complete source-faithful vocabulary:** the 684 entity, 150 zone, and 80 item target
+programs contain exactly 2,624, 809, and 146 physical source operations respectively: 3,579 in the
+three-category union and 54 normalized mnemonics. Every operation retains its pre-existing source/H1
+identity and now carries one of nine neutral families plus either a source definition identity or
+`null` for raw 68000/data forms. There are zero unclassified or family/definition-ambiguous operations.
+The exact category and independently weighted counts are:
+
+| Family | Entity / zone / item physical operations | Physical-record weighted | Setup-record weighted | Route-record weighted |
+| --- | ---: | ---: | ---: | ---: |
+| raw 68000 control flow | 1,138 / 332 / 99 | 2,260 | 2,963 | 3,161 |
+| raw 68000 instruction | 183 / 70 / 19 | 433 | 496 | 500 |
+| event service macro | 1,303 / 318 / 28 | 2,333 | 3,102 | 3,366 |
+| map-script macro | 0 / 64 / 0 | 64 | 256 | 256 |
+| entity-action wrapper | 0 / 3 / 0 | 3 | 12 | 12 |
+| entity-action payload command | 0 / 16 / 0 | 16 | 64 | 64 |
+| entity-action command | 0 / 3 / 0 | 3 | 12 | 12 |
+| stream terminator | 0 / 1 / 0 | 1 | 4 | 4 |
+| data directive | 0 / 2 / 0 | 2 | 2 | 2 |
+| **Total** | **2,624 / 809 / 146** | **5,115** | **6,911** | **7,377** |
+
+The weighted columns are sums of each program's separately parsed physical/setup/route reference
+counts, not storage spans, macro byte sizes, or a multiplication inferred from a total. Each program
+also retains its own four-operation weight tuple, so a changed profile/use relationship fails before
+the golden fixture comparison.
+
+**Confirmed — non-CPU definition/use join:** the 34 used definitions are parsed once from pinned
+`sf2macros.asm` and `sf2cutscenemacros.asm`. The seven event-service definitions are exactly
+`sndCom` (line 27), `chkFlg` (32), `setFlg` (37), `clrFlg` (42), `txt` (52), `clsTxt` (57), and
+`script` (62); the contract records only each use's ordered operands, formal ordinal positions, emitted
+source statements, and `trap`/`lea` service target. It does not reproduce dialogue or infer a flag,
+text, script, sound, or persistence effect. The 16 map-script macros join the maintained
+`sf2-map-script-engine-static-v1` macro/handler catalog, and the three `ac_*` commands join the
+maintained `sf2-entity-action-scripts-static-v1` handler-binding catalog. The two used wrappers,
+five movement/`endActions` payload forms, and `csc_end` retain source definition identity without a
+guessed runtime meaning.
+
+For every macro use, the map-event parser substitutes the parsed operand positions into the parsed
+definition and compares the complete emitted statement sequence, statement order, H1 macro-expansion
+addresses, and emitted span to `build/sf2build-h1.lst`. Thus a smallest source-definition opcode,
+operand-position, or emission-order mutation fails construction before fixture comparison. Raw 68000
+instructions/control flow and `dc` directives stay separate rather than being assigned an invented
+service definition. Provenance is USA ROM SHA-256 above; `ShiningForceCentral/SF2DISASM` `master`
+commit `c834c652b6862bc5679fd7f69a38a7093206efc6`; the two named macro files; each operation's
+source path/line and H1 address; and `uv run sf2 h2 map-events` (observed: 54 / 3,579 / 34 / zero
+unclassified / zero ambiguous). Evidence date: 2026-07-23.
+
+**Confirmed — Map 21 payload boundaries:** `Map21_DefaultZoneEvent` inherits an
+`entityActionsWait` payload opened at
+`data/maps/entries/map44/mapsetups/scripts.asm:22` and closed by `endActions` at line 29. Its later
+same-source segments are `entityActions` lines 65–68, `customActscriptWait` lines 80–83 ending in
+`ac_end`, and `entityActions` lines 84–92. The operation contract records the complete ordered stack
+of source context identities; `ac_setSpeed`, `ac_jump`, and `ac_end` are therefore command-payload
+forms, not false same-level 68000 calls. This is only stream structure: action timing, movement,
+wait behavior, and visible results remain unclaimed. Evidence is the pinned source/H1 rows and the
+same command above. Evidence date: 2026-07-23.
+
+**Confirmed — payload wrapper/terminator derivation:** the four retained wrapper-to-context pairs
+are parsed, not maintained as a second literal map. The maintained
+`sf2-map-script-engine-static-v1` catalog identifies `customActscript`/`customActscriptWait` as
+`csc14` aliases with the `inline-action-program` handler cursor flow, and
+`entityActions`/`entityActionsWait` as `csc2D` aliases with the sequential handler flow. The
+maintained `sf2-entity-action-scripts-static-v1` contract supplies the inline terminator macro and
+word. The extractor requires that parsed `ac_end` emits that parsed word, and that the named `csc14`
+handler compares it at `(a6)+`, branches on not-equal, then returns on equality. Independently, its
+`csc2D` guard requires the ordered `move.b (a6)+,d1`, negative `bmi` branch, later
+`move.b (a6)+,d2`, and branch-target `addq.l #1,a6`; it therefore records the two-byte
+`endActions` sentinel only when the parsed macro definition lies after `csc2D` and before the parsed
+stream terminator and emits a high-bit word. Alias identity, cursor-flow, terminator definition, or
+either handler use-site mutation fails construction before fixture comparison. This confirms only
+stream parsing and cursor movement, not movement, timing, entity lifecycle, or visible behavior.
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`sf2cutscenemacros.asm:141-146,304-309,588-596,635-637`,
+`code/common/scripting/map/mapscriptengine_1.asm:502-525,751-768,774-793`, and
+`uv run sf2 h2 map-events` (observed four context records; 54 / 3,579 / 34 / zero unclassified / zero
+ambiguous). Evidence date: 2026-07-23.
 
 ### Grouped H3 Runtime Questions
 

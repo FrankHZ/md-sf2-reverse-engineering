@@ -1,7 +1,9 @@
 import copy
 from pathlib import Path
+from typing import Any
 
 import pytest
+from jsonschema import Draft7Validator, FormatChecker
 
 from sf2tool.h2.map_events import (
     FIXTURE,
@@ -10,7 +12,9 @@ from sf2tool.h2.map_events import (
     SCHEMA,
     _bind_operations_to_h1,
     _decode_event_record,
+    _derived_action_payload_context_specs,
     _event_macro_use_sites,
+    _guard_macro_emission,
     _h1_program_index,
     _join_source_rom_record,
     _listing_statement,
@@ -18,14 +22,25 @@ from sf2tool.h2.map_events import (
     _normalise_asm_statement,
     _parse_jump_interface_aliases,
     _parse_program_operation,
+    _payload_context_contract,
     _reconcile_event_reference_counts,
+    _reconcile_operation_weight_contract,
     _record_target_ownership,
     _setup_category_joins,
+    _source_macro_catalog,
     _target_program_contract,
     _verify_complete_map_events_fixture,
     build_map_events_contract,
 )
 from sf2tool.jsonio import load_json, validate_json
+
+
+@pytest.fixture(scope="module")
+def complete_output() -> dict[str, Any]:
+    """Build the complete static contract once; mutation tests receive deep copies."""
+    return build_map_events_contract(
+        Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
+    )
 
 
 def test_event_macro_definition_derives_target_position_marker_and_width() -> None:
@@ -369,10 +384,339 @@ def test_route_category_joins_preserve_target_identity_and_selector_order() -> N
         _setup_category_joins(broken, categories)
 
 
-def test_complete_map_event_contract_matches_full_fixture() -> None:
-    output = build_map_events_contract(
-        Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
+def test_source_macro_emission_guard_rejects_definition_opcode_and_operand_order(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "sf2macros.asm").write_text(
+        "\n".join(
+            (
+                "; ignored: macro",
+                "service: macro",
+                "    trap #SERVICE ; source comment",
+                "    dc.w \\1",
+                "endm",
+                "pair: macro",
+                "    dc.b \\1",
+                "    dc.b \\2",
+                "endm",
+                "",
+            )
+        ),
+        encoding="utf-8",
     )
+    catalog = _source_macro_catalog(tmp_path, (Path("sf2macros.asm"),))
+    assert set(catalog) == {"service", "pair"}
+
+    service_listing = [
+        "00001000                            service 7",
+        "00001000 4E4F                     M  trap #SERVICE",
+        "00001002 0007                     M  dc.w 7",
+        "00001004                            rts",
+    ]
+    service_operation = {
+        "sourceMnemonic": "service",
+        "operandTexts": ["7"],
+        "sourceLine": 2,
+        "_h1ListingSourceIndex": 0,
+        "address": 0x1000,
+    }
+    _guard_macro_emission(
+        service_listing,
+        catalog,
+        operation=service_operation,
+        next_address=0x1004,
+    )
+    changed_opcode = copy.deepcopy(catalog)
+    changed_opcode["service"]["body"][1] = (4, "dc.b \\1")
+    with pytest.raises(ValueError, match="emission statement/order drift"):
+        _guard_macro_emission(
+            service_listing,
+            changed_opcode,
+            operation=service_operation,
+            next_address=0x1004,
+        )
+
+    pair_listing = [
+        "00002000                            pair 1,2",
+        "00002000 01                       M  dc.b 1",
+        "00002001 02                       M  dc.b 2",
+        "00002002                            rts",
+    ]
+    pair_operation = {
+        "sourceMnemonic": "pair",
+        "operandTexts": ["1", "2"],
+        "sourceLine": 6,
+        "_h1ListingSourceIndex": 0,
+        "address": 0x2000,
+    }
+    _guard_macro_emission(
+        pair_listing,
+        catalog,
+        operation=pair_operation,
+        next_address=0x2002,
+    )
+    changed_order = copy.deepcopy(catalog)
+    changed_order["pair"]["body"] = [(7, "dc.b \\2"), (8, "dc.b \\1")]
+    with pytest.raises(ValueError, match="emission statement/order drift"):
+        _guard_macro_emission(
+            pair_listing,
+            changed_order,
+            operation=pair_operation,
+            next_address=0x2002,
+        )
+
+
+def test_payload_context_parser_preserves_inherited_and_nested_action_payloads(
+    tmp_path: Path,
+) -> None:
+    source_path = Path("data/maps/entries/map44/mapsetups/scripts.asm")
+    source_file = tmp_path / source_path
+    source_file.parent.mkdir(parents=True)
+    source_file.write_text(
+        "\n".join(
+            (
+                "; entityActions ignored",
+                "entityActions ACTOR",
+                "moveRight 1",
+                "customActscriptWait ACTOR",
+                "ac_setSpeed 20,20",
+                "ac_end",
+                "endActions",
+                "",
+            )
+        ),
+        encoding="utf-8",
+    )
+    operations = [{"sourceLine": line} for line in range(3, 8)]
+    program = {
+        "sourcePath": source_path.as_posix(),
+        "entrySourceLine": 3,
+        "operations": operations,
+    }
+    contexts, payload_macro_families = _payload_context_contract(
+        tmp_path,
+        {"zoneEvents": [program], "entityEvents": [], "itemEvents": []},
+        payload_context_specs={
+            "entityActions": {
+                "contextFamily": "entity-action-payload",
+                "terminatorMnemonic": "endActions",
+            },
+            "customActscriptWait": {
+                "contextFamily": "entity-action-command-payload",
+                "terminatorMnemonic": "ac_end",
+            },
+        },
+        action_command_macros={"ac_setSpeed", "ac_end"},
+    )
+    first_context, second_context = contexts
+    assert first_context == {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:2:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 2,
+        "openerSourceMnemonic": "entityActions",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": None,
+        "terminatorMnemonic": "endActions",
+        "terminatorSourceLine": 7,
+    }
+    assert second_context == {
+        "contextId": (
+            "data/maps/entries/map44/mapsetups/scripts.asm:4:entity-action-command-payload"
+        ),
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 4,
+        "openerSourceMnemonic": "customActscriptWait",
+        "contextFamily": "entity-action-command-payload",
+        "parentContextId": first_context["contextId"],
+        "terminatorMnemonic": "ac_end",
+        "terminatorSourceLine": 6,
+    }
+    assert program["inheritedPayloadContextIds"] == [first_context["contextId"]]
+    assert operations[0]["payloadContextIds"] == [first_context["contextId"]]
+    assert operations[2]["payloadContextIds"] == [
+        first_context["contextId"],
+        second_context["contextId"],
+    ]
+    assert operations[3]["payloadContextIds"] == [
+        first_context["contextId"],
+        second_context["contextId"],
+    ]
+    assert operations[4]["payloadContextIds"] == [first_context["contextId"]]
+    assert payload_macro_families == {
+        "moveRight": "entity-action-payload-command",
+        "endActions": "entity-action-payload-command",
+    }
+
+
+def test_payload_context_specs_guard_alias_handler_cursor_and_terminator_evidence(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "macros.asm").write_text(
+        """
+csc14: macro
+    dc.w $14
+    dc.b \\1
+    dc.b \\2
+endm
+customActscript: macro
+    csc14 \\1,0
+endm
+customActscriptWait: macro
+    csc14 \\1,$FF
+endm
+csc2D: macro
+    dc.w $2D
+    dc.b \\1
+    dc.b \\2
+endm
+entityActions: macro
+    csc2D \\1,0
+endm
+entityActionsWait: macro
+    csc2D \\1,$FF
+endm
+endActions: macro
+    dc.w $8080
+endm
+cscNop: macro
+endm
+csc_end: macro
+    dc.w $FFFF
+endm
+ac_end: macro
+    dc.w $8080
+endm
+""".lstrip(),
+        encoding="utf-8",
+    )
+    engine_source = """
+csc2D_handler:
+    move.b (a6)+,d1
+    bmi.w csc2D_end
+    move.b (a6)+,d2
+    rts
+; START OF FUNCTION CHUNK FOR csc2D_handler
+csc2D_end:
+    addq.l #1,a6
+    rts
+; END OF FUNCTION CHUNK FOR csc2D_handler
+csc14_handler:
+    cmpi.w #$8080,(a6)+
+    bne.s csc14_continue
+    rts
+csc14_continue:
+    rts
+""".lstrip()
+    (tmp_path / "engine.asm").write_text(engine_source, encoding="utf-8")
+    catalog = _source_macro_catalog(tmp_path, (Path("macros.asm"),))
+    map_engine = {
+        "macroContracts": {
+            "csc14": {"kind": "command", "aliasOf": None},
+            "customActscript": {"kind": "command", "aliasOf": "csc14"},
+            "customActscriptWait": {"kind": "command", "aliasOf": "csc14"},
+            "csc2D": {"kind": "command", "aliasOf": None},
+            "entityActions": {"kind": "command", "aliasOf": "csc2D"},
+            "entityActionsWait": {"kind": "command", "aliasOf": "csc2D"},
+            "csc_end": {"kind": "terminator", "aliasOf": None},
+        },
+        "handlers": [
+            {
+                "name": "csc2D_handler",
+                "macroNames": ["csc2D", "entityActions", "entityActionsWait"],
+                "cursorFlow": "sequential",
+                "sourcePath": "engine.asm",
+                "startLine": 1,
+                "endLine": 5,
+            },
+            {
+                "name": "csc14_handler",
+                "macroNames": ["csc14", "customActscript", "customActscriptWait"],
+                "cursorFlow": "inline-action-program",
+                "sourcePath": "engine.asm",
+                "startLine": 11,
+                "endLine": 16,
+            },
+        ],
+    }
+    entity_actions = {
+        "handlerFacts": {"inlineTerminatorMacro": "ac_end", "inlineTerminatorWord": 0x8080},
+        "handlerMacroBindings": [
+            {"macro": "ac_end", "isInlineTerminator": True, "opcode": 0x8080}
+        ],
+    }
+    assert _derived_action_payload_context_specs(
+        tmp_path, catalog, map_engine, entity_actions
+    ) == {
+        "customActscript": {
+            "contextFamily": "entity-action-command-payload",
+            "terminatorMnemonic": "ac_end",
+        },
+        "customActscriptWait": {
+            "contextFamily": "entity-action-command-payload",
+            "terminatorMnemonic": "ac_end",
+        },
+        "entityActions": {
+            "contextFamily": "entity-action-payload",
+            "terminatorMnemonic": "endActions",
+        },
+        "entityActionsWait": {
+            "contextFamily": "entity-action-payload",
+            "terminatorMnemonic": "endActions",
+        },
+    }
+
+    broken_alias = copy.deepcopy(map_engine)
+    broken_alias["macroContracts"]["entityActions"]["aliasOf"] = "csc14"
+    with pytest.raises(ValueError, match="alias identity"):
+        _derived_action_payload_context_specs(tmp_path, catalog, broken_alias, entity_actions)
+
+    broken_handler = copy.deepcopy(map_engine)
+    broken_handler["handlers"][0]["macroNames"].remove("entityActions")
+    with pytest.raises(ValueError, match="alias identity"):
+        _derived_action_payload_context_specs(tmp_path, catalog, broken_handler, entity_actions)
+
+    broken_cursor_flow = copy.deepcopy(map_engine)
+    broken_cursor_flow["handlers"][1]["cursorFlow"] = "sequential"
+    with pytest.raises(ValueError, match="cursor-flow"):
+        _derived_action_payload_context_specs(tmp_path, catalog, broken_cursor_flow, entity_actions)
+
+    broken_terminator = copy.deepcopy(catalog)
+    broken_terminator["endActions"]["body"] = [(20, "dc.w $0000")]
+    with pytest.raises(ValueError, match="terminator definition"):
+        _derived_action_payload_context_specs(
+            tmp_path, broken_terminator, map_engine, entity_actions
+        )
+
+    (tmp_path / "engine.asm").write_text(
+        engine_source.replace(
+            "bne.s csc14_continue\n    rts\ncsc14_continue:\n    rts",
+            "bne.s csc14_continue\n    bra.s csc14_continue\ncsc14_continue:\n    rts",
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="terminator-use"):
+        _derived_action_payload_context_specs(tmp_path, catalog, map_engine, entity_actions)
+
+    (tmp_path / "engine.asm").write_text(
+        engine_source.replace(
+            "csc2D_end:\n    addq.l #1,a6\n    rts",
+            "csc2D_end:\n    rts\ncsc2D_after:\n    addq.l #1,a6",
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="terminator-use"):
+        _derived_action_payload_context_specs(tmp_path, catalog, map_engine, entity_actions)
+
+    (tmp_path / "engine.asm").write_text(
+        engine_source.replace("bmi.w", "bpl.w"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="terminator-use"):
+        _derived_action_payload_context_specs(tmp_path, catalog, map_engine, entity_actions)
+
+
+def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[str, Any]) -> None:
+    output = complete_output
     fixture = load_json(FIXTURE)
     validate_json(output, SCHEMA, owner="map events complete output")
     validate_json(fixture, FIXTURE_SCHEMA, owner="map events complete fixture")
@@ -417,6 +761,147 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
         "event-script-side-effects-and-transition-persistence",
         "event-portrait-facing-and-presentation-timing",
     ]
+    for field in (
+        "operationVocabularySummary",
+        "operationDefinitions",
+        "operationDefinitionOrder",
+        "operationPayloadContexts",
+        "operationPayloadContextOrder",
+        "operationVocabulary",
+        "operationVocabularyOrder",
+        "operationFamilyOrder",
+        "operationFamilyCounts",
+        "operationFamilyCountOrder",
+        "entityTargetProgramOperationWeightOrders",
+        "entityTargetProgramPayloadContextOrders",
+        "zoneTargetProgramOperationWeightOrders",
+        "zoneTargetProgramPayloadContextOrders",
+        "itemTargetProgramOperationWeightOrders",
+        "itemTargetProgramPayloadContextOrders",
+    ):
+        assert output[field] == fixture["expected"][field]
+    assert len(output["operationVocabulary"]) == 54
+    assert len(output["operationDefinitions"]) == 34
+    assert output["operationVocabularySummary"] == {
+        "uniqueMnemonicCount": 54,
+        "definitionJoinCount": 34,
+        "unclassifiedOperationCount": 0,
+        "ambiguousMnemonicFamilyDefinitionCount": 0,
+        "categoryPhysicalOperationCounts": {
+            "entityEvents": 2624,
+            "zoneEvents": 809,
+            "itemEvents": 146,
+        },
+        "definitionJoinCounts": {
+            "data-directive": 0,
+            "entity-action-command": 3,
+            "entity-action-payload-command": 5,
+            "entity-action-wrapper": 2,
+            "event-service-macro": 7,
+            "map-script-macro": 16,
+            "raw-68000-control-flow": 0,
+            "raw-68000-instruction": 0,
+            "stream-terminator": 1,
+        },
+        "weightCounts": {
+            "uniquePhysicalOperationCount": 3579,
+            "physicalRecordWeightedOperationCount": 5115,
+            "setupRecordReferenceWeightedOperationCount": 6911,
+            "routeRecordReferenceWeightedOperationCount": 7377,
+        },
+    }
+    assert output["operationFamilyCounts"] == [
+        {
+            "family": "data-directive",
+            "categoryOperationCounts": {"entityEvents": 0, "zoneEvents": 2, "itemEvents": 0},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 2,
+                "physicalRecordWeightedOperationCount": 2,
+                "setupRecordReferenceWeightedOperationCount": 2,
+                "routeRecordReferenceWeightedOperationCount": 2,
+            },
+        },
+        {
+            "family": "entity-action-command",
+            "categoryOperationCounts": {"entityEvents": 0, "zoneEvents": 3, "itemEvents": 0},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 3,
+                "physicalRecordWeightedOperationCount": 3,
+                "setupRecordReferenceWeightedOperationCount": 12,
+                "routeRecordReferenceWeightedOperationCount": 12,
+            },
+        },
+        {
+            "family": "entity-action-payload-command",
+            "categoryOperationCounts": {"entityEvents": 0, "zoneEvents": 16, "itemEvents": 0},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 16,
+                "physicalRecordWeightedOperationCount": 16,
+                "setupRecordReferenceWeightedOperationCount": 64,
+                "routeRecordReferenceWeightedOperationCount": 64,
+            },
+        },
+        {
+            "family": "entity-action-wrapper",
+            "categoryOperationCounts": {"entityEvents": 0, "zoneEvents": 3, "itemEvents": 0},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 3,
+                "physicalRecordWeightedOperationCount": 3,
+                "setupRecordReferenceWeightedOperationCount": 12,
+                "routeRecordReferenceWeightedOperationCount": 12,
+            },
+        },
+        {
+            "family": "event-service-macro",
+            "categoryOperationCounts": {"entityEvents": 1303, "zoneEvents": 318, "itemEvents": 28},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 1649,
+                "physicalRecordWeightedOperationCount": 2333,
+                "setupRecordReferenceWeightedOperationCount": 3102,
+                "routeRecordReferenceWeightedOperationCount": 3366,
+            },
+        },
+        {
+            "family": "map-script-macro",
+            "categoryOperationCounts": {"entityEvents": 0, "zoneEvents": 64, "itemEvents": 0},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 64,
+                "physicalRecordWeightedOperationCount": 64,
+                "setupRecordReferenceWeightedOperationCount": 256,
+                "routeRecordReferenceWeightedOperationCount": 256,
+            },
+        },
+        {
+            "family": "raw-68000-control-flow",
+            "categoryOperationCounts": {"entityEvents": 1138, "zoneEvents": 332, "itemEvents": 99},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 1569,
+                "physicalRecordWeightedOperationCount": 2260,
+                "setupRecordReferenceWeightedOperationCount": 2963,
+                "routeRecordReferenceWeightedOperationCount": 3161,
+            },
+        },
+        {
+            "family": "raw-68000-instruction",
+            "categoryOperationCounts": {"entityEvents": 183, "zoneEvents": 70, "itemEvents": 19},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 272,
+                "physicalRecordWeightedOperationCount": 433,
+                "setupRecordReferenceWeightedOperationCount": 496,
+                "routeRecordReferenceWeightedOperationCount": 500,
+            },
+        },
+        {
+            "family": "stream-terminator",
+            "categoryOperationCounts": {"entityEvents": 0, "zoneEvents": 1, "itemEvents": 0},
+            "weightCounts": {
+                "uniquePhysicalOperationCount": 1,
+                "physicalRecordWeightedOperationCount": 1,
+                "setupRecordReferenceWeightedOperationCount": 4,
+                "routeRecordReferenceWeightedOperationCount": 4,
+            },
+        },
+    ]
     assert output["entityTargetProgramSummary"] == {
         "programCount": 684,
         "sourceFileCount": 87,
@@ -453,6 +938,14 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
             "setupRecordReferenceCount": 1,
             "routeRecordReferenceCount": 1,
         },
+        "operationWeightCounts": {
+            "uniquePhysicalOperationCount": 1,
+            "physicalRecordWeightedOperationCount": 1,
+            "setupRecordReferenceWeightedOperationCount": 1,
+            "routeRecordReferenceWeightedOperationCount": 1,
+        },
+        "payloadContextIds": [],
+        "inheritedPayloadContextIds": [],
         "labels": [
             {
                 "sourceOrder": 0,
@@ -472,6 +965,9 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
                 "controlFlowKind": "return",
                 "address": 385954,
                 "target": None,
+                "family": "raw-68000-control-flow",
+                "definitionId": None,
+                "payloadContextIds": [],
             }
         ],
         "termination": {
@@ -484,6 +980,9 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
             "controlFlowKind": "return",
             "address": 385954,
             "target": None,
+            "family": "raw-68000-control-flow",
+            "definitionId": None,
+            "payloadContextIds": [],
         },
     }
     control_flow = output["entityTargetProgramControlFlow"]
@@ -501,8 +1000,7 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
     for identity in ("instructionTargets", "effectiveTargets"):
         assert {
             scope: sum(
-                row["totalSiteCount"]
-                for row in control_flow["targetTotals"][identity][scope]
+                row["totalSiteCount"] for row in control_flow["targetTotals"][identity][scope]
             )
             for scope in ("internal", "external")
         } == {"internal": 355, "external": 157}
@@ -597,6 +1095,129 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
             "routeRecordReferenceCount": 4,
         },
     }
+    assert zone_stream["operationWeightCounts"] == {
+        "uniquePhysicalOperationCount": 87,
+        "physicalRecordWeightedOperationCount": 87,
+        "setupRecordReferenceWeightedOperationCount": 348,
+        "routeRecordReferenceWeightedOperationCount": 348,
+    }
+    assert zone_stream["payloadContextIds"] == [
+        "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload",
+        "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload",
+        "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload",
+        "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload",
+    ]
+    assert zone_stream["inheritedPayloadContextIds"] == [
+        "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+    ]
+    assert [
+        {
+            field: operation[field]
+            for field in (
+                "sourceLine",
+                "sourceMnemonic",
+                "family",
+                "definitionId",
+                "payloadContextIds",
+            )
+        }
+        for operation in zone_stream["operations"]
+        if operation["sourceLine"] in {25, 29, 65, 66, 68, 80, 81, 82, 83, 84, 92}
+    ] == [
+        {
+            "sourceLine": 25,
+            "sourceMnemonic": "moveDown",
+            "family": "entity-action-payload-command",
+            "definitionId": "entity-action-payload-command:moveDown",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+            ],
+        },
+        {
+            "sourceLine": 29,
+            "sourceMnemonic": "endActions",
+            "family": "entity-action-payload-command",
+            "definitionId": "entity-action-payload-command:endActions",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+            ],
+        },
+        {
+            "sourceLine": 65,
+            "sourceMnemonic": "entityActions",
+            "family": "entity-action-wrapper",
+            "definitionId": "entity-action-wrapper:entityActions",
+            "payloadContextIds": [],
+        },
+        {
+            "sourceLine": 66,
+            "sourceMnemonic": "moveUp",
+            "family": "entity-action-payload-command",
+            "definitionId": "entity-action-payload-command:moveUp",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload"
+            ],
+        },
+        {
+            "sourceLine": 68,
+            "sourceMnemonic": "endActions",
+            "family": "entity-action-payload-command",
+            "definitionId": "entity-action-payload-command:endActions",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload"
+            ],
+        },
+        {
+            "sourceLine": 80,
+            "sourceMnemonic": "customActscriptWait",
+            "family": "entity-action-wrapper",
+            "definitionId": "entity-action-wrapper:customActscriptWait",
+            "payloadContextIds": [],
+        },
+        {
+            "sourceLine": 81,
+            "sourceMnemonic": "ac_setSpeed",
+            "family": "entity-action-command",
+            "definitionId": "entity-action-command:ac_setSpeed",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload"
+            ],
+        },
+        {
+            "sourceLine": 82,
+            "sourceMnemonic": "ac_jump",
+            "family": "entity-action-command",
+            "definitionId": "entity-action-command:ac_jump",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload"
+            ],
+        },
+        {
+            "sourceLine": 83,
+            "sourceMnemonic": "ac_end",
+            "family": "entity-action-command",
+            "definitionId": "entity-action-command:ac_end",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload"
+            ],
+        },
+        {
+            "sourceLine": 84,
+            "sourceMnemonic": "entityActions",
+            "family": "entity-action-wrapper",
+            "definitionId": "entity-action-wrapper:entityActions",
+            "payloadContextIds": [],
+        },
+        {
+            "sourceLine": 92,
+            "sourceMnemonic": "endActions",
+            "family": "entity-action-payload-command",
+            "definitionId": "entity-action-payload-command:endActions",
+            "payloadContextIds": [
+                "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+            ],
+        },
+    ]
     assert zone_stream["termination"] == {
         "sourceOrder": 86,
         "sourceLine": 111,
@@ -607,6 +1228,9 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
         "operandTexts": [],
         "controlFlowKind": "ordinary",
         "target": None,
+        "family": "stream-terminator",
+        "definitionId": "stream-terminator:csc_end",
+        "payloadContextIds": [],
     }
     assert output["zoneTargetProgramExclusions"] == [
         {
@@ -633,36 +1257,62 @@ def test_complete_map_event_contract_matches_full_fixture() -> None:
         for identity in ("instructionTargets", "effectiveTargets"):
             assert {
                 scope: sum(
-                    row["totalSiteCount"]
-                    for row in control_flow["targetTotals"][identity][scope]
+                    row["totalSiteCount"] for row in control_flow["targetTotals"][identity][scope]
                 )
                 for scope in ("internal", "external")
             } == expected_sites
 
 
-def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutations() -> None:
-    output = build_map_events_contract(
-        Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
-    )
+def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutations(
+    complete_output: dict[str, Any],
+) -> None:
+    output = complete_output
+    output_validator = Draft7Validator(load_json(SCHEMA), format_checker=FormatChecker())
+    fixture_validator = Draft7Validator(load_json(FIXTURE_SCHEMA), format_checker=FormatChecker())
+
+    def output_rejects(instance: dict[str, Any]) -> None:
+        assert next(output_validator.iter_errors(instance), None) is not None
+
+    def fixture_rejects(instance: dict[str, Any]) -> None:
+        assert next(fixture_validator.iter_errors(instance), None) is not None
+
     missing = copy.deepcopy(output)
     del missing["categories"]["entityEvents"]["tables"][0]["records"][0]["targetCanonicalSymbol"]
-    with pytest.raises(ValueError):
-        validate_json(missing, SCHEMA, owner="missing event target canonical symbol")
+    output_rejects(missing)
 
     extra = copy.deepcopy(output)
     extra["categories"]["zoneEvents"]["tables"][0]["records"][0]["unexpected"] = True
-    with pytest.raises(ValueError):
-        validate_json(extra, SCHEMA, owner="extra event record property")
+    output_rejects(extra)
 
     reordered = copy.deepcopy(output)
     reordered["physicalRecordOrder"].reverse()
-    with pytest.raises(ValueError):
-        validate_json(reordered, SCHEMA, owner="reordered physical record order")
+    output_rejects(reordered)
 
     boundary = copy.deepcopy(output)
     boundary["routeCategoryJoins"][0]["pointerTableAddress"] = -1
-    with pytest.raises(ValueError):
-        validate_json(boundary, SCHEMA, owner="negative route pointer address")
+    output_rejects(boundary)
+
+    operation_definition_missing = copy.deepcopy(output)
+    del operation_definition_missing["operationDefinitions"][0]["emissionStatementTemplates"]
+    output_rejects(operation_definition_missing)
+
+    operation_definition_extra = copy.deepcopy(output)
+    operation_definition_extra["operationDefinitions"][0]["engineCatalog"]["unexpected"] = True
+    output_rejects(operation_definition_extra)
+
+    operation_vocabulary_reordered = copy.deepcopy(output)
+    operation_vocabulary_reordered["operationVocabulary"].reverse()
+    output_rejects(operation_vocabulary_reordered)
+
+    operation_definition_boundary = copy.deepcopy(output)
+    operation_definition_boundary["operationDefinitions"][0]["definitionSourceLine"] = 0
+    output_rejects(operation_definition_boundary)
+
+    operation_family_mutation = copy.deepcopy(output)
+    operation_family_mutation["entityTargetPrograms"][0]["operations"][0]["family"] = (
+        "raw-68000-instruction"
+    )
+    output_rejects(operation_family_mutation)
 
     fixture = load_json(FIXTURE)
     semantic = copy.deepcopy(output)
@@ -674,13 +1324,11 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     renamed = copy.deepcopy(fixture)
     record = renamed["expected"]["categories"]["itemEvents"]["tables"][0]["records"][0]
     record["renamedTargetCanonicalSymbol"] = record.pop("targetCanonicalSymbol")
-    with pytest.raises(ValueError):
-        validate_json(renamed, FIXTURE_SCHEMA, owner="renamed fixture target field")
+    fixture_rejects(renamed)
 
     fixture_extra = copy.deepcopy(fixture)
     fixture_extra["expected"]["recordTargetProfiles"][0]["unexpected"] = 1
-    with pytest.raises(ValueError):
-        validate_json(fixture_extra, FIXTURE_SCHEMA, owner="extra fixture target profile field")
+    fixture_rejects(fixture_extra)
 
     fixture_semantic = copy.deepcopy(fixture)
     fixture_semantic["expected"]["recordTargetProfiles"][0]["canonicalSymbol"] = "wrong-owner"
@@ -690,18 +1338,24 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
 
     fixture_order = copy.deepcopy(fixture)
     fixture_order["expected"]["routeCategoryJoinOrder"].reverse()
-    with pytest.raises(ValueError):
-        validate_json(fixture_order, FIXTURE_SCHEMA, owner="reordered fixture route joins")
+    fixture_rejects(fixture_order)
 
     fixture_boundary = copy.deepcopy(fixture)
     fixture_boundary["expected"]["categories"]["zoneEvents"]["tables"][0]["records"][0]["x"] = -1
-    with pytest.raises(ValueError):
-        validate_json(fixture_boundary, FIXTURE_SCHEMA, owner="negative fixture coordinate")
+    fixture_rejects(fixture_boundary)
+
+    fixture_operation_definition_renamed = copy.deepcopy(fixture)
+    definition = fixture_operation_definition_renamed["expected"]["operationDefinitions"][0]
+    definition["renamedDefinitionSourceLine"] = definition.pop("definitionSourceLine")
+    fixture_rejects(fixture_operation_definition_renamed)
+
+    fixture_payload_context_extra = copy.deepcopy(fixture)
+    fixture_payload_context_extra["expected"]["operationPayloadContexts"][0]["unexpected"] = 1
+    fixture_rejects(fixture_payload_context_extra)
 
     program_missing = copy.deepcopy(output)
     del program_missing["entityTargetPrograms"][0]["termination"]["sourceMnemonic"]
-    with pytest.raises(ValueError):
-        validate_json(program_missing, SCHEMA, owner="missing entity target termination field")
+    output_rejects(program_missing)
 
     program_extra = copy.deepcopy(output)
     target_operation = next(
@@ -711,35 +1365,26 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
         if operation["target"] is not None
     )
     target_operation["target"]["unexpected"] = True
-    with pytest.raises(ValueError):
-        validate_json(program_extra, SCHEMA, owner="extra entity target nested field")
+    output_rejects(program_extra)
 
     program_order = copy.deepcopy(output)
     program_order["entityTargetProgramOperationOrders"].reverse()
-    with pytest.raises(ValueError):
-        validate_json(program_order, SCHEMA, owner="reordered entity target program operations")
+    output_rejects(program_order)
 
     program_boundary = copy.deepcopy(output)
     program_boundary["entityTargetPrograms"][0]["encodedSpanBytes"] = -1
-    with pytest.raises(ValueError):
-        validate_json(program_boundary, SCHEMA, owner="negative entity target encoded span")
+    output_rejects(program_boundary)
 
     fixture_program_renamed = copy.deepcopy(fixture)
     reference_counts = fixture_program_renamed["expected"]["entityTargetPrograms"][0][
         "referenceCounts"
     ]
     reference_counts["renamedPhysicalRecordCount"] = reference_counts.pop("physicalRecordCount")
-    with pytest.raises(ValueError):
-        validate_json(
-            fixture_program_renamed,
-            FIXTURE_SCHEMA,
-            owner="renamed fixture entity target reference field",
-        )
+    fixture_rejects(fixture_program_renamed)
 
     zone_program_missing = copy.deepcopy(output)
     del zone_program_missing["zoneTargetPrograms"][0]["termination"]["sourceMnemonic"]
-    with pytest.raises(ValueError):
-        validate_json(zone_program_missing, SCHEMA, owner="missing zone target termination field")
+    output_rejects(zone_program_missing)
 
     item_program_extra = copy.deepcopy(output)
     item_target_operation = next(
@@ -749,37 +1394,26 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
         if operation["target"] is not None
     )
     item_target_operation["target"]["unexpected"] = True
-    with pytest.raises(ValueError):
-        validate_json(item_program_extra, SCHEMA, owner="extra item target nested field")
+    output_rejects(item_program_extra)
 
     zone_program_order = copy.deepcopy(output)
     zone_program_order["zoneTargetProgramOperationOrders"].reverse()
-    with pytest.raises(ValueError):
-        validate_json(zone_program_order, SCHEMA, owner="reordered zone target operations")
+    output_rejects(zone_program_order)
 
     item_program_boundary = copy.deepcopy(output)
     item_program_boundary["itemTargetPrograms"][0]["encodedSpanBytes"] = -1
-    with pytest.raises(ValueError):
-        validate_json(item_program_boundary, SCHEMA, owner="negative item target encoded span")
+    output_rejects(item_program_boundary)
 
     zone_exclusion_missing = copy.deepcopy(output)
     del zone_exclusion_missing["zoneTargetProgramExclusions"][0]["targetH1Address"]
-    with pytest.raises(ValueError):
-        validate_json(zone_exclusion_missing, SCHEMA, owner="missing zone non-program field")
+    output_rejects(zone_exclusion_missing)
 
     fixture_zone_exclusion_renamed = copy.deepcopy(fixture)
-    exclusion_counts = fixture_zone_exclusion_renamed["expected"][
-        "zoneTargetProgramExclusions"
-    ][0]["referenceCounts"]
-    exclusion_counts["renamedPhysicalRecordCount"] = exclusion_counts.pop(
-        "physicalRecordCount"
-    )
-    with pytest.raises(ValueError):
-        validate_json(
-            fixture_zone_exclusion_renamed,
-            FIXTURE_SCHEMA,
-            owner="renamed fixture zone non-program reference field",
-        )
+    exclusion_counts = fixture_zone_exclusion_renamed["expected"]["zoneTargetProgramExclusions"][0][
+        "referenceCounts"
+    ]
+    exclusion_counts["renamedPhysicalRecordCount"] = exclusion_counts.pop("physicalRecordCount")
+    fixture_rejects(fixture_zone_exclusion_renamed)
 
 
 def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites() -> None:
@@ -794,15 +1428,22 @@ def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites(
         "controlFlowKind": "conditional-branch",
         "instructionTargetSymbol": "Next",
     }
-    assert _parse_program_operation("jsr (Sleep).w", source_line=8, source_order=1)[
-        "instructionTargetSymbol"
-    ] == "Sleep"
-    assert _parse_program_operation("bneX Target", source_line=9, source_order=2)[
-        "controlFlowKind"
-    ] == "ordinary"
-    assert _parse_program_operation("move.w #Target,d0", source_line=10, source_order=3)[
-        "instructionTargetSymbol"
-    ] is None
+    assert (
+        _parse_program_operation("jsr (Sleep).w", source_line=8, source_order=1)[
+            "instructionTargetSymbol"
+        ]
+        == "Sleep"
+    )
+    assert (
+        _parse_program_operation("bneX Target", source_line=9, source_order=2)["controlFlowKind"]
+        == "ordinary"
+    )
+    assert (
+        _parse_program_operation("move.w #Target,d0", source_line=10, source_order=3)[
+            "instructionTargetSymbol"
+        ]
+        is None
+    )
     assert _normalise_asm_statement("; bne.s Target") == ""
     assert _normalise_asm_statement("rts ; Target") == "rts"
     assert _listing_statement("00001000 51CF FFF4                  dbf     d7, loc_1000") == (
@@ -830,12 +1471,15 @@ def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites(
             ],
         }
 
-    assert _bind_operations_to_h1(
-        listing_lines,
-        _h1_program_index(listing_lines),
-        profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
-        block=block(),
-    ) == 0x1004
+    assert (
+        _bind_operations_to_h1(
+            listing_lines,
+            _h1_program_index(listing_lines),
+            profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
+            block=block(),
+        )
+        == 0x1004
+    )
     altered_opcode = block()
     altered_opcode["operations"][0]["sourceStatement"] = "beq.s Next"
     with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
@@ -1096,9 +1740,7 @@ def test_zone_and_item_target_program_parser_guards_category_paths(tmp_path: Pat
         "effectiveTargetScope": "external",
     }
     assert zone_control_flow["aliasDefinitions"] == []
-    assert zone_orders["instructionExternalTargetTotalOrder"] == [
-        "ZoneTarget:8192:1:0:0:0"
-    ]
+    assert zone_orders["instructionExternalTargetTotalOrder"] == ["ZoneTarget:8192:1:0:0:0"]
     assert zone_exclusions == []
 
     assert item_summary == {
@@ -1117,15 +1759,11 @@ def test_zone_and_item_target_program_parser_guards_category_paths(tmp_path: Pat
         "effectiveTargetScope": "external",
     }
     assert item_control_flow["aliasDefinitions"] == []
-    assert item_orders["effectiveExternalTargetTotalOrder"] == [
-        "ItemTarget:8196:0:0:1:0"
-    ]
+    assert item_orders["effectiveExternalTargetTotalOrder"] == ["ItemTarget:8196:0:0:1:0"]
     assert item_exclusions == []
 
     source_path.write_text(
-        source_path.read_text(encoding="utf-8").replace(
-            "bne.s ZoneTarget", "bne.s Other"
-        ),
+        source_path.read_text(encoding="utf-8").replace("bne.s ZoneTarget", "bne.s Other"),
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
@@ -1139,9 +1777,9 @@ def test_zone_and_item_target_program_parser_guards_category_paths(tmp_path: Pat
             category="zoneEvents",
         )
     source_path.write_text(
-        source_path.read_text(encoding="utf-8").replace(
-            "bne.s Other", "bne.s ZoneTarget"
-        ).replace("bsr ItemTarget", "bsr Other"),
+        source_path.read_text(encoding="utf-8")
+        .replace("bne.s Other", "bne.s ZoneTarget")
+        .replace("bsr ItemTarget", "bsr Other"),
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="source/H1 operation relationship drift"):
@@ -1226,10 +1864,10 @@ def test_zone_target_program_source_stream_terminator_is_h1_guarded(tmp_path: Pa
         )
 
 
-def test_reference_reconciliation_rejects_profile_and_category_counter_mutations() -> None:
-    output = build_map_events_contract(
-        Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
-    )
+def test_reference_reconciliation_rejects_profile_and_category_counter_mutations(
+    complete_output: dict[str, Any],
+) -> None:
+    output = complete_output
     broken_profile = copy.deepcopy(output)
     broken_profile["recordTargetProfiles"][0]["routeRecordReferenceCount"] += 1
     with pytest.raises(ValueError, match="target profile weighted-count drift"):
@@ -1252,12 +1890,33 @@ def test_reference_reconciliation_rejects_profile_and_category_counter_mutations
             broken_category["summary"],
         )
 
+    broken_operation_weight = copy.deepcopy(output)
+    broken_operation_weight["entityTargetPrograms"][0]["referenceCounts"][
+        "routeRecordReferenceCount"
+    ] += 1
+    with pytest.raises(ValueError, match="operation program weight reconciliation drift"):
+        _reconcile_operation_weight_contract(
+            {
+                "entityEvents": broken_operation_weight["entityTargetPrograms"],
+                "zoneEvents": broken_operation_weight["zoneTargetPrograms"],
+                "itemEvents": broken_operation_weight["itemTargetPrograms"],
+            },
+            {
+                key: broken_operation_weight[key]
+                for key in (
+                    "operationVocabulary",
+                    "operationFamilyCounts",
+                    "operationVocabularySummary",
+                )
+            },
+        )
+
 
 def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None:
-    assert SCHEMA.stat().st_size < 1_000_000
-    assert FIXTURE_SCHEMA.stat().st_size < 1_000_000
+    assert SCHEMA.stat().st_size < 850_000
+    assert FIXTURE_SCHEMA.stat().st_size < 850_000
     schema = load_json(SCHEMA)
-    assert set(schema["definitions"]) == {
+    assert {
         "entityEventRecord",
         "zoneEventRecord",
         "itemEventRecord",
@@ -1279,7 +1938,17 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "mapEventTargetProgram",
         "mapEventTargetProgramSummary",
         "mapEventTargetProgramExclusion",
-    }
+    } <= set(schema["definitions"])
+    assert {
+        "mapEventOperationWeightCounts",
+        "mapEventOperationEngineCatalog",
+        "mapEventOperationDefinition",
+        "mapEventPayloadContext",
+        "mapEventOperationVocabularyCounts",
+        "mapEventOperationVocabulary",
+        "mapEventOperationFamilyCount",
+        "mapEventOperationVocabularySummary",
+    } <= set(schema["definitions"])
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
         ("zoneEvents", "zoneEventRecord"),
@@ -1292,32 +1961,48 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
     assert schema["properties"]["entityTargetPrograms"]["items"] == {
         "$ref": "#/definitions/entityTargetProgram"
     }
-    assert schema["definitions"]["entityTargetProgram"]["properties"]["operations"][
-        "items"
-    ] == {"$ref": "#/definitions/entityTargetProgramOperation"}
-    assert schema["definitions"]["entityTargetProgramOperation"]["properties"]["target"][
-        "anyOf"
-    ][1] == {"$ref": "#/definitions/entityTargetProgramTarget"}
+    assert schema["definitions"]["entityTargetProgram"]["properties"]["operations"]["items"] == {
+        "$ref": "#/definitions/entityTargetProgramOperation"
+    }
+    assert schema["definitions"]["entityTargetProgramOperation"]["properties"]["target"]["anyOf"][
+        1
+    ] == {"$ref": "#/definitions/entityTargetProgramTarget"}
     for category in ("zone", "item"):
         assert schema["properties"][f"{category}TargetPrograms"]["items"] == {
             "$ref": "#/definitions/mapEventTargetProgram"
         }
-        assert schema["properties"][f"{category}TargetProgramOperationOrders"][
-            "const"
-        ]
+        assert schema["properties"][f"{category}TargetProgramOperationOrders"]["const"]
         assert schema["properties"][f"{category}TargetProgramBoundaryOrders"]["const"]
-    assert schema["definitions"]["mapEventTargetProgram"]["properties"]["operations"][
-        "items"
-    ] == {"$ref": "#/definitions/entityTargetProgramOperation"}
-    assert schema["definitions"]["mapEventTargetProgramExclusion"][
-        "additionalProperties"
-    ] is False
+    assert schema["definitions"]["mapEventTargetProgram"]["properties"]["operations"]["items"] == {
+        "$ref": "#/definitions/entityTargetProgramOperation"
+    }
+    assert schema["definitions"]["mapEventTargetProgramExclusion"]["additionalProperties"] is False
+    for definition in (
+        "mapEventOperationWeightCounts",
+        "mapEventOperationDefinition",
+        "mapEventPayloadContext",
+        "mapEventOperationVocabularyCounts",
+        "mapEventOperationVocabulary",
+        "mapEventOperationFamilyCount",
+    ):
+        assert schema["definitions"][definition]["additionalProperties"] is False
+    operation = schema["definitions"]["entityTargetProgramOperation"]
+    assert operation["additionalProperties"] is False
+    assert {"family", "definitionId", "payloadContextIds"} <= set(operation["required"])
+    assert len(operation["allOf"]) == 54
+    for category in ("entity", "zone", "item"):
+        for suffix in ("OperationWeightOrders", "PayloadContextOrders"):
+            assert schema["properties"][f"{category}TargetProgram{suffix}"]["const"]
     fixture_schema = load_json(FIXTURE_SCHEMA)
     fixture_output = fixture_schema["definitions"]["outputContract"]
     for category in ("zone", "item"):
         assert fixture_output["properties"][f"{category}TargetPrograms"]["items"] == {
             "$ref": "#/definitions/mapEventTargetProgram"
         }
-        assert fixture_output["properties"][f"{category}TargetProgramExclusions"][
-            "items"
-        ] == {"$ref": "#/definitions/mapEventTargetProgramExclusion"}
+        assert fixture_output["properties"][f"{category}TargetProgramExclusions"]["items"] == {
+            "$ref": "#/definitions/mapEventTargetProgramExclusion"
+        }
+    assert (
+        fixture_schema["definitions"]["mapEventOperationDefinition"]["additionalProperties"]
+        is False
+    )

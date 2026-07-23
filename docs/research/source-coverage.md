@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-22
+- Evidence date: 2026-07-23
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -409,8 +409,16 @@ boundaries (251 labels, 809 operations, 2,934 bytes, 183 sites, seven aliases, a
 and all 80 item-event boundaries (94 labels, 146 operations, 414 bytes, 19 sites, two aliases, and
 18-identity maps). The sole additional zone profile is an explicit raw-expression non-program
 exclusion; the zone source-stream `csc_end` boundary is H1-delimited before the adjacent body. This
-remains static source/H1 identity and control flow, not effect, dialogue, persistence, or presentation
-evidence. All 32 animation tables also have
+now also has a complete 54-mnemonic/3,579-operation vocabulary: nine source-faithful families, 34
+parsed non-CPU definition joins, zero unclassified or ambiguous operations, per-program
+physical/setup/route-weighted operation totals, and four retained Map 21 action-payload segments.
+Macro-use guards compare parsed definition emission/order and H1 macro-expansion rows before fixture
+comparison. The four wrapper/payload context pairs are derived from the maintained map-script
+macro/handler cursor-flow contract, the entity-action inline-terminator contract, parsed macro
+aliases/emissions, and the smallest csc14/csc2D handler use sites: csc14's parsed-word compare,
+not-equal branch, and return, plus csc2D's first-byte negative branch, second-byte read, and
+branch-target byte skip. This remains static source/H1 identity and control flow, not effect,
+dialogue, persistence, or presentation evidence. Evidence date: 2026-07-23. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
 1. keep the completed ten-case setup-selector, six-case init-dispatch, nine-case grouped

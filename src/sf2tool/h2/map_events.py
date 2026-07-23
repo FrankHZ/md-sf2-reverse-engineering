@@ -8,7 +8,9 @@ from pathlib import Path
 from typing import Any
 
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
+from sf2tool.h2.entity_action_scripts import build_entity_action_script_contract
 from sf2tool.h2.map_entities import build_map_entities_contract
+from sf2tool.h2.map_script_engine import build_map_script_engine_contract
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
@@ -18,6 +20,8 @@ from sf2tool.source_text import read_upstream_text
 ID = "sf2-map-events-static-v1"
 SOURCE_ROOT = Path("data/maps/entries")
 MAP_SETUP_MACROS_PATH = Path("sf2mapsetupmacros.asm")
+SERVICE_MACROS_PATH = Path("sf2macros.asm")
+CUTSCENE_MACROS_PATH = Path("sf2cutscenemacros.asm")
 MANIFEST = repo_path("manifests/extractions/map-events-static.json")
 SCHEMA = repo_path("schemas/map-events-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/map-events-static-v1.json")
@@ -114,12 +118,61 @@ _CONTROL_FLOW_COUNT_FIELDS = (
     "directCallSiteCount",
     "directJumpSiteCount",
 )
-
-
+_BASIC_BLOCK_TRANSFER_MNEMONICS = frozenset(
+    {
+        "bra",
+        "bsr",
+        "bhi",
+        "bls",
+        "bcc",
+        "bhs",
+        "bcs",
+        "blo",
+        "bne",
+        "beq",
+        "bvc",
+        "bvs",
+        "bpl",
+        "bmi",
+        "bge",
+        "blt",
+        "bgt",
+        "ble",
+        "dbf",
+        "dbeq",
+        "dbne",
+        "dbcc",
+        "dbcs",
+        "dbhi",
+        "dbls",
+        "dbpl",
+        "dbmi",
+        "dbvc",
+        "dbvs",
+        "dbge",
+        "dblt",
+        "dbgt",
+        "dble",
+        "jmp",
+        "jsr",
+        "rte",
+        "rtr",
+        "rts",
+        "trap",
+    }
+)
 def _normalise_asm_statement(value: str) -> str:
     """Compare source and H1 statements without treating comments as code."""
     statement = re.sub(r"\s+", " ", value.split(";", 1)[0].strip())
     return re.sub(r"\s*,\s*", ",", statement)
+
+
+def _basic_block_boundary(statement: str) -> bool:
+    """Recognize a label or control transfer without treating operand text as code."""
+    if _PROGRAM_LABEL.fullmatch(statement) is not None:
+        return True
+    token = statement.split(" ", 1)[0].lower().split(".", 1)[0]
+    return token in _BASIC_BLOCK_TRANSFER_MNEMONICS
 
 
 def _listing_statement(raw_line: str) -> tuple[int, str] | None:
@@ -272,9 +325,7 @@ def _source_program_block(
     if not operations:
         raise ValueError(f"map entity-event has no operations: {profile['canonicalSymbol']}")
     end_source_line = (
-        source_stream_end_index + 1
-        if source_stream_end_index is not None
-        else end_index + 1
+        source_stream_end_index + 1 if source_stream_end_index is not None else end_index + 1
     )
     block = {
         "labels": labels,
@@ -392,6 +443,9 @@ def _bind_operations_to_h1(
                 f"{profile['canonicalSymbol']}:{operation['sourceLine']}"
             )
         cursor, operation["address"] = matched[0] + 1, matched[1]
+        # Retained only until the source macro expansion is checked below.  It is
+        # deliberately removed before the canonical contract is returned.
+        operation["_h1ListingSourceIndex"] = matched[0]
         operation_addresses.append(operation["address"])
         terminal_listing_index = matched[0]
         if end_address is not None and not entry_address <= operation["address"] < end_address:
@@ -473,12 +527,8 @@ def _parse_jump_interface_aliases(
         target_symbol = _alias_target_symbol(operation["operandTexts"], operation["sourceLine"])
         if target_symbol not in addresses:
             raise ValueError(f"map entity-event jump-interface target lacks H1 address: {alias}")
-        entry_index = _listing_entry_index(
-            listing_index, symbol=alias, address=addresses[alias]
-        )
-        expected_statement = _normalise_asm_statement(
-            source_lines[operation["sourceLine"] - 1]
-        )
+        entry_index = _listing_entry_index(listing_index, symbol=alias, address=addresses[alias])
+        expected_statement = _normalise_asm_statement(source_lines[operation["sourceLine"] - 1])
         h1_row: tuple[int, str] | None = None
         for raw_line in listing_lines[entry_index + 1 :]:
             row = _listing_statement(raw_line)
@@ -615,6 +665,1050 @@ def _split_macro_operands(text: str) -> list[str]:
     if not all(operands):
         raise ValueError(f"map event macro has empty operand: {text!r}")
     return operands
+
+
+def _source_macro_catalog(disasm: Path, paths: tuple[Path, ...]) -> dict[str, dict[str, Any]]:
+    """Parse source macro bodies once, retaining their exact owner locations."""
+    catalog: dict[str, dict[str, Any]] = {}
+    header = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*):\s*macro\b.*$")
+    for path in paths:
+        source_path = path.as_posix()
+        lines = read_upstream_text(disasm / path).splitlines()
+        line_index = 0
+        while line_index < len(lines):
+            match = header.fullmatch(lines[line_index])
+            if match is None:
+                line_index += 1
+                continue
+            name = match.group(1)
+            end_index = line_index + 1
+            while end_index < len(lines) and lines[end_index].strip().lower() != "endm":
+                end_index += 1
+            if end_index == len(lines):
+                raise ValueError(f"map event macro has no endm: {source_path}:{name}")
+            if name in catalog:
+                raise ValueError(f"map event duplicate macro definition: {name}")
+            body = [
+                (body_index + 1, _normalise_asm_statement(lines[body_index]))
+                for body_index in range(line_index + 1, end_index)
+                if _normalise_asm_statement(lines[body_index])
+            ]
+            catalog[name] = {
+                "sourcePath": source_path,
+                "definitionSourceLine": line_index + 1,
+                "body": body,
+            }
+            line_index = end_index + 1
+    return catalog
+
+
+def _substitute_macro_arguments(statement: str, arguments: list[str], *, macro: str) -> str:
+    """Bind source argument positions without assigning them a runtime meaning."""
+
+    def substitute(match: re.Match[str]) -> str:
+        ordinal = int(match.group(1))
+        if not 1 <= ordinal <= len(arguments):
+            raise ValueError(f"map event macro argument position drift: {macro}:{ordinal}")
+        return arguments[ordinal - 1]
+
+    return re.sub(r"\\(\d+)", substitute, statement)
+
+
+def _macro_emission_statements(
+    macro_catalog: dict[str, dict[str, Any]],
+    *,
+    macro: str,
+    arguments: list[str],
+    expansion_stack: tuple[str, ...] = (),
+) -> list[str]:
+    """Expand one source macro to its source-faithful emitted leaf statements."""
+    if macro in expansion_stack:
+        raise ValueError(f"map event recursive macro definition: {macro}")
+    definition = macro_catalog.get(macro)
+    if definition is None:
+        raise ValueError(f"map event macro definition is missing: {macro}")
+    emitted: list[str] = []
+    for _, raw_statement in definition["body"]:
+        statement = _substitute_macro_arguments(raw_statement, arguments, macro=macro)
+        invocation = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z])?)(?:\s+(.*))?", statement)
+        if invocation is None:
+            raise ValueError(f"map event macro statement syntax drift: {macro}:{statement!r}")
+        token, argument_text = invocation.groups()
+        if token in macro_catalog:
+            child_arguments = _split_macro_operands(argument_text) if argument_text else []
+            emitted.extend(
+                _macro_emission_statements(
+                    macro_catalog,
+                    macro=token,
+                    arguments=child_arguments,
+                    expansion_stack=(*expansion_stack, macro),
+                )
+            )
+            continue
+        if token in {"dc.b", "dc.w", "dc.l", "trap", "lea"}:
+            emitted.append(statement)
+            continue
+        raise ValueError(f"map event unsupported macro emission: {macro}:{statement!r}")
+    if not emitted:
+        raise ValueError(f"map event macro emits no source statements: {macro}")
+    return emitted
+
+
+def _canonical_macro_emission_statement(statement: str) -> str:
+    """Compare source/H1 macro leaf statements while retaining operand order."""
+    compact = _normalise_asm_statement(statement).lower()
+
+    def canonical_hex(match: re.Match[str]) -> str:
+        return f"${int(match.group(1), 16):x}"
+
+    return re.sub(r"\$([0-9a-f]+)", canonical_hex, compact)
+
+
+def _listing_macro_emission_rows(
+    listing_lines: list[str], *, source_listing_index: int
+) -> list[dict[str, Any]]:
+    """Read only byte-emitting H1 macro-expansion rows after one source use site."""
+    rows: list[dict[str, Any]] = []
+    for raw_line in listing_lines[source_listing_index + 1 :]:
+        line_match = _LISTING_LINE.match(raw_line)
+        if line_match is None:
+            continue
+        remainder = line_match.group(2)
+        marker = re.match(r"^(?P<before>.*?)\sM\s+(?P<statement>.*)$", remainder)
+        if marker is None:
+            break
+        byte_tokens = re.findall(
+            r"(?<![0-9A-Fa-f])[0-9A-Fa-f]{2,4}(?![0-9A-Fa-f])", marker.group("before")
+        )
+        if not byte_tokens:
+            continue
+        statement = _normalise_asm_statement(marker.group("statement"))
+        if not statement:
+            raise ValueError("map event H1 macro emission statement is empty")
+        rows.append(
+            {
+                "address": int(line_match.group(1), 16),
+                "byteCount": sum(len(token) // 2 for token in byte_tokens),
+                "statement": statement,
+            }
+        )
+    return rows
+
+
+def _macro_parameter_ordinals(definition: dict[str, Any]) -> list[int]:
+    """Derive declared source positions from the parsed macro body once."""
+    ordinals = sorted(
+        {
+            int(match.group(1))
+            for _, statement in definition["body"]
+            for match in re.finditer(r"\\(\d+)", statement)
+        }
+    )
+    if ordinals and ordinals != list(range(1, ordinals[-1] + 1)):
+        raise ValueError("map event macro parameter ordinal gap")
+    return ordinals
+
+
+def _map_engine_handler_by_macro(contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Reuse the maintained map-script parser's handler-to-macro association."""
+    by_macro: dict[str, dict[str, Any]] = {}
+    for handler in contract["handlers"]:
+        for macro in handler["macroNames"]:
+            if macro in by_macro:
+                raise ValueError(f"map event macro has multiple engine handlers: {macro}")
+            by_macro[macro] = handler
+    return by_macro
+
+
+def _macro_emitted_word(macro_catalog: dict[str, dict[str, Any]], *, macro: str) -> int | None:
+    """Read a no-argument macro's sole emitted word when it has one."""
+    if not macro_catalog[macro]["body"]:
+        return None
+    emitted = _macro_emission_statements(macro_catalog, macro=macro, arguments=[])
+    if len(emitted) != 1:
+        return None
+    match = re.fullmatch(r"dc\.w\s+\$([0-9A-Fa-f]{1,4})", emitted[0])
+    if match is None:
+        return None
+    return int(match.group(1), 16)
+
+
+def _has_csc2d_payload_terminator_use(disasm: Path, handler: dict[str, Any]) -> bool:
+    """Guard csc2D's negative first-byte branch and second-byte skip order."""
+    lines = read_upstream_text(disasm / handler["sourcePath"]).splitlines()
+    start_line = handler["startLine"]
+    end_line = handler["endLine"]
+    if not 1 <= start_line <= end_line <= len(lines):
+        raise ValueError(f"map event handler source range drift: {handler['name']}")
+    statements = [
+        _normalise_asm_statement(line) for line in lines[start_line - 1 : end_line]
+    ]
+    first_byte_index = next(
+        (
+            index
+            for index, statement in enumerate(statements)
+            if re.fullmatch(r"move\.b \(a6\)\+,d1", statement, re.IGNORECASE)
+        ),
+        None,
+    )
+    if first_byte_index is None:
+        return False
+    negative_branch_index = next(
+        (
+            index
+            for index in range(first_byte_index + 1, len(statements))
+            if re.fullmatch(r"bmi(?:\.[bwlst])?\s+.+", statements[index], re.IGNORECASE)
+        ),
+        None,
+    )
+    if negative_branch_index is None:
+        return False
+    second_byte_index = next(
+        (
+            index
+            for index in range(negative_branch_index + 1, len(statements))
+            if re.fullmatch(r"move\.b \(a6\)\+,d2", statements[index], re.IGNORECASE)
+        ),
+        None,
+    )
+    if second_byte_index is None:
+        return False
+    branch_target = re.fullmatch(
+        r"bmi(?:\.[bwlst])?\s+([A-Za-z_][A-Za-z0-9_]*)",
+        statements[negative_branch_index],
+        re.IGNORECASE,
+    )
+    if branch_target is None:
+        return False
+    target_label = branch_target.group(1)
+    target_index = next(
+        (
+            index
+            for index, raw_line in enumerate(lines, start=1)
+            if index > end_line
+            if (statement := _normalise_asm_statement(raw_line))
+            if re.fullmatch(rf"{re.escape(target_label)}:\s*", statement, re.IGNORECASE)
+        ),
+        None,
+    )
+    if target_index is None:
+        return False
+    chunk_start = next(
+        (
+            index
+            for index, raw_line in enumerate(lines, start=1)
+            if end_line < index < target_index
+            if re.fullmatch(
+                rf"\s*;\s*START OF FUNCTION CHUNK FOR {re.escape(handler['name'])}",
+                raw_line,
+                re.IGNORECASE,
+            )
+        ),
+        None,
+    )
+    if chunk_start is None:
+        return False
+    chunk_end = next(
+        (
+            index
+            for index in range(target_index, len(lines))
+            if re.fullmatch(
+                r"\s*;\s*END OF FUNCTION CHUNK FOR .+", lines[index], re.IGNORECASE
+            )
+        ),
+        len(lines),
+    )
+    target_block: list[str] = []
+    for raw_line in lines[target_index:chunk_end]:
+        statement = _normalise_asm_statement(raw_line)
+        if not statement:
+            continue
+        if _basic_block_boundary(statement):
+            break
+        target_block.append(statement)
+    return any(
+        re.fullmatch(r"addq\.l #1,a6", statement, re.IGNORECASE)
+        for statement in target_block
+    )
+
+
+def _has_inline_action_terminator_use(
+    disasm: Path, handler: dict[str, Any], *, terminator_word: int
+) -> bool:
+    """Guard the csc14 compare/not-equal/return ordering for the parsed terminator word."""
+    lines = read_upstream_text(disasm / handler["sourcePath"]).splitlines()
+    start_line = handler["startLine"]
+    end_line = handler["endLine"]
+    if not 1 <= start_line <= end_line <= len(lines):
+        raise ValueError(f"map event handler source range drift: {handler['name']}")
+    statements = [
+        _normalise_asm_statement(line) for line in lines[start_line - 1 : end_line]
+    ]
+    compare_index = next(
+        (
+            index
+            for index, statement in enumerate(statements)
+            if (
+                match := re.fullmatch(
+                    r"cmpi\.w #\$([0-9A-Fa-f]{1,4}),\(a6\)\+", statement, re.IGNORECASE
+                )
+            )
+            and int(match.group(1), 16) == terminator_word
+        ),
+        None,
+    )
+    if compare_index is None:
+        return False
+    non_equal_branch_index = next(
+        (
+            index
+            for index in range(compare_index + 1, len(statements))
+            if re.fullmatch(r"bne(?:\.[bwlst])?\s+.+", statements[index], re.IGNORECASE)
+        ),
+        None,
+    )
+    if non_equal_branch_index is None:
+        return False
+    target_match = re.fullmatch(
+        r"bne(?:\.[bwlst])?\s+([A-Za-z_][A-Za-z0-9_]*)",
+        statements[non_equal_branch_index],
+        re.IGNORECASE,
+    )
+    if target_match is None:
+        return False
+    target_label = target_match.group(1)
+    if not any(
+        re.fullmatch(rf"{re.escape(target_label)}:\s*", statement, re.IGNORECASE)
+        for statement in statements
+    ):
+        return False
+    for statement in statements[non_equal_branch_index + 1 :]:
+        if re.fullmatch(r"rts", statement, re.IGNORECASE):
+            return True
+        if _basic_block_boundary(statement):
+            return False
+    return False
+
+
+def _derived_action_payload_context_specs(
+    disasm: Path,
+    macro_catalog: dict[str, dict[str, Any]],
+    map_engine_contract: dict[str, Any],
+    entity_action_contract: dict[str, Any],
+) -> dict[str, dict[str, str]]:
+    """Derive the four payload wrapper/terminator pairs from maintained contracts."""
+    map_macros = map_engine_contract["macroContracts"]
+    handlers_by_macro = _map_engine_handler_by_macro(map_engine_contract)
+    inline_terminator = entity_action_contract["handlerFacts"]["inlineTerminatorMacro"]
+    inline_word = entity_action_contract["handlerFacts"]["inlineTerminatorWord"]
+    inline_binding = next(
+        (
+            binding
+            for binding in entity_action_contract["handlerMacroBindings"]
+            if binding["macro"] == inline_terminator
+        ),
+        None,
+    )
+    if (
+        inline_binding is None
+        or not inline_binding["isInlineTerminator"]
+        or inline_binding["opcode"] != inline_word
+        or inline_terminator not in macro_catalog
+        or _macro_emitted_word(macro_catalog, macro=inline_terminator) != inline_word
+    ):
+        raise ValueError("map event inline payload terminator contract drift")
+
+    stream_terminators = [
+        macro
+        for macro, contract in map_macros.items()
+        if contract["kind"] == "terminator"
+    ]
+    if len(stream_terminators) != 1 or stream_terminators[0] not in macro_catalog:
+        raise ValueError("map event stream terminator catalog drift")
+    stream_terminator = stream_terminators[0]
+    stream_terminator_definition = macro_catalog[stream_terminator]
+
+    def aliases_for_handler(handler: dict[str, Any]) -> tuple[str, list[str]]:
+        primary_macros = [
+            macro
+            for macro in handler["macroNames"]
+            if map_macros[macro]["aliasOf"] is None
+        ]
+        if len(primary_macros) != 1:
+            raise ValueError(f"map event action handler primary macro drift: {handler['name']}")
+        primary = primary_macros[0]
+        aliases = [
+            macro
+            for macro, contract in map_macros.items()
+            if contract["aliasOf"] == primary
+        ]
+        if not aliases or any(
+            macro not in handler["macroNames"] or handlers_by_macro.get(macro) is not handler
+            for macro in aliases
+        ):
+            raise ValueError(f"map event action handler alias identity drift: {handler['name']}")
+        return primary, sorted(aliases)
+
+    inline_flow_groups = [
+        handler
+        for handler in map_engine_contract["handlers"]
+        if handler["cursorFlow"] == "inline-action-program"
+    ]
+    if len(inline_flow_groups) != 1:
+        raise ValueError("map event inline action handler cursor-flow drift")
+    inline_groups = [
+        handler
+        for handler in inline_flow_groups
+        if _has_inline_action_terminator_use(disasm, handler, terminator_word=inline_word)
+    ]
+    if len(inline_groups) != 1:
+        raise ValueError("map event inline action handler terminator-use drift")
+    _, inline_aliases = aliases_for_handler(inline_groups[0])
+
+    sequence_groups = [
+        handler
+        for handler in map_engine_contract["handlers"]
+        if handler["cursorFlow"] == "sequential"
+        and _has_csc2d_payload_terminator_use(disasm, handler)
+    ]
+    if len(sequence_groups) != 1:
+        raise ValueError("map event sequential action handler terminator-use drift")
+    sequence_primary, sequence_aliases = aliases_for_handler(sequence_groups[0])
+    primary_definition = macro_catalog.get(sequence_primary)
+    if primary_definition is None:
+        raise ValueError("map event sequential action primary macro source drift")
+    sequence_terminators = [
+        macro
+        for macro, definition in macro_catalog.items()
+        if definition["sourcePath"] == primary_definition["sourcePath"]
+        and primary_definition["definitionSourceLine"] < definition["definitionSourceLine"]
+        < stream_terminator_definition["definitionSourceLine"]
+        and not _macro_parameter_ordinals(definition)
+        and macro != stream_terminator
+        and macro != inline_terminator
+        and (word := _macro_emitted_word(macro_catalog, macro=macro)) is not None
+        and word & 0x8000
+    ]
+    if len(sequence_terminators) != 1:
+        raise ValueError("map event sequential action terminator definition drift")
+
+    specs = {
+        macro: {
+            "contextFamily": "entity-action-command-payload",
+            "terminatorMnemonic": inline_terminator,
+        }
+        for macro in inline_aliases
+    }
+    specs.update(
+        {
+            macro: {
+                "contextFamily": "entity-action-payload",
+                "terminatorMnemonic": sequence_terminators[0],
+            }
+            for macro in sequence_aliases
+        }
+    )
+    if len(specs) != len(inline_aliases) + len(sequence_aliases):
+        raise ValueError("map event action payload wrapper overlap")
+    return specs
+
+
+def _operation_definition_contract(
+    macro_catalog: dict[str, dict[str, Any]],
+    map_engine_contract: dict[str, Any],
+    entity_action_contract: dict[str, Any],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    payload_context_specs: dict[str, dict[str, str]],
+    payload_macro_families: dict[str, str],
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, str]]]:
+    """Classify the complete source vocabulary and join non-CPU uses once."""
+    map_macros = map_engine_contract["macroContracts"]
+    map_handlers = _map_engine_handler_by_macro(map_engine_contract)
+    action_bindings = {
+        binding["macro"]: binding for binding in entity_action_contract["handlerMacroBindings"]
+    }
+    definitions: dict[str, dict[str, Any]] = {}
+    vocabulary: dict[str, dict[str, str]] = {}
+    used_source_names = {
+        operation["sourceMnemonic"]
+        for programs in programs_by_category.values()
+        for program in programs
+        for operation in program["operations"]
+        if operation["sourceMnemonic"] in macro_catalog
+    }
+    for source_macro in sorted(
+        used_source_names,
+        key=lambda value: (
+            macro_catalog[value]["sourcePath"],
+            macro_catalog[value]["definitionSourceLine"],
+            value,
+        ),
+    ):
+        source_definition = macro_catalog[source_macro]
+        source_path = source_definition["sourcePath"]
+        if source_path == SERVICE_MACROS_PATH.as_posix():
+            family = "event-service-macro"
+            engine_catalog: dict[str, Any] | None = None
+            service_targets = [
+                statement
+                for statement in _macro_emission_statements(
+                    macro_catalog,
+                    macro=source_macro,
+                    arguments=[
+                        f"\\{ordinal}" for ordinal in _macro_parameter_ordinals(source_definition)
+                    ],
+                )
+                if statement.startswith("trap ")
+            ]
+            if len(service_targets) != 1:
+                raise ValueError(f"map event service macro emission target drift: {source_macro}")
+            service_target = service_targets[0].split(" ", 1)[1]
+        elif source_macro in payload_context_specs:
+            family = "entity-action-wrapper"
+            engine_catalog = {
+                "catalog": "map-script-engine",
+                "kind": map_macros[source_macro]["kind"],
+                "opcode": map_macros[source_macro]["opcode"],
+                "encodedBytes": map_macros[source_macro]["encodedBytes"],
+                "aliasOf": map_macros[source_macro]["aliasOf"],
+                "handler": (
+                    map_handlers[source_macro]["name"] if source_macro in map_handlers else None
+                ),
+            }
+            service_target = None
+        elif map_macros.get(source_macro, {}).get("kind") == "terminator":
+            family = "stream-terminator"
+            engine_catalog = {
+                "catalog": "map-script-engine",
+                "kind": map_macros[source_macro]["kind"],
+                "opcode": map_macros[source_macro]["opcode"],
+                "encodedBytes": map_macros[source_macro]["encodedBytes"],
+                "aliasOf": map_macros[source_macro]["aliasOf"],
+                "handler": (
+                    map_handlers[source_macro]["name"] if source_macro in map_handlers else None
+                ),
+            }
+            service_target = None
+        elif source_macro in action_bindings:
+            binding = action_bindings[source_macro]
+            family = "entity-action-command"
+            engine_catalog = {
+                "catalog": "entity-action-scripts",
+                "handler": binding["handler"],
+                "opcode": binding["opcode"],
+                "encodedBytes": binding["encodedBytes"],
+                "isInlineTerminator": binding["isInlineTerminator"],
+            }
+            service_target = None
+        elif source_macro in map_macros:
+            engine_macro = map_macros[source_macro]
+            family = "map-script-macro"
+            engine_catalog = {
+                "catalog": "map-script-engine",
+                "kind": engine_macro["kind"],
+                "opcode": engine_macro["opcode"],
+                "encodedBytes": engine_macro["encodedBytes"],
+                "aliasOf": engine_macro["aliasOf"],
+                "handler": (
+                    map_handlers[source_macro]["name"] if source_macro in map_handlers else None
+                ),
+            }
+            service_target = None
+        elif source_macro in payload_macro_families:
+            family = payload_macro_families[source_macro]
+            engine_catalog = None
+            service_target = None
+        else:
+            raise ValueError(f"map event macro vocabulary family is unclassified: {source_macro}")
+        definition_id = f"{family}:{source_macro}"
+        definitions[definition_id] = {
+            "definitionId": definition_id,
+            "family": family,
+            "sourceMacro": source_macro,
+            "sourcePath": source_path,
+            "definitionSourceLine": source_definition["definitionSourceLine"],
+            "formalParameterOrdinals": _macro_parameter_ordinals(source_definition),
+            "emissionStatementTemplates": [
+                _canonical_macro_emission_statement(statement)
+                for statement in _macro_emission_statements(
+                    macro_catalog,
+                    macro=source_macro,
+                    arguments=[
+                        f"\\{ordinal}" for ordinal in _macro_parameter_ordinals(source_definition)
+                    ],
+                )
+            ],
+            "engineCatalog": engine_catalog,
+            "serviceTarget": service_target,
+        }
+        vocabulary[source_macro.lower()] = {"family": family, "definitionId": definition_id}
+    return definitions, vocabulary
+
+
+def _raw_operation_family(operation: dict[str, Any]) -> tuple[str, str | None]:
+    """Classify an assembly operation without extending macro vocabulary by guesswork."""
+    if operation["mnemonic"] == "dc":
+        return "data-directive", None
+    if operation["controlFlowKind"] != "ordinary":
+        return "raw-68000-control-flow", None
+    return "raw-68000-instruction", None
+
+
+def _source_line_operation_name(statement: str) -> str | None:
+    """Parse a source operation line without mistaking a label or comment for one."""
+    label_match = _PROGRAM_LABEL.fullmatch(statement)
+    if label_match is not None:
+        statement = label_match.group(2).strip()
+    elif (inline_label := _PROGRAM_LABEL.match(statement)) is not None:
+        statement = inline_label.group(2).strip()
+    if not statement:
+        return None
+    match = _PROGRAM_OPERATION.fullmatch(statement)
+    if match is None:
+        return None
+    return match.group("mnemonic") + (match.group("suffix") or "")
+
+
+def _payload_context_contract(
+    disasm: Path,
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    *,
+    payload_context_specs: dict[str, dict[str, str]],
+    action_command_macros: set[str],
+) -> tuple[list[dict[str, Any]], dict[str, str]]:
+    """Retain nested entity-action payload boundaries from the source stream."""
+    terminator_family_sets: dict[str, set[str]] = {}
+    for spec in payload_context_specs.values():
+        terminator_family_sets.setdefault(spec["terminatorMnemonic"], set()).add(
+            spec["contextFamily"]
+        )
+    if any(len(families) != 1 for families in terminator_family_sets.values()):
+        raise ValueError("map event payload terminator family ambiguity")
+    terminator_families = {
+        macro: next(iter(families)) for macro, families in terminator_family_sets.items()
+    }
+    operations_by_path_line: dict[tuple[str, int], list[tuple[str, dict[str, Any]]]] = {}
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            for operation in program["operations"]:
+                key = (program["sourcePath"], operation["sourceLine"])
+                operations_by_path_line.setdefault(key, []).append((category, operation))
+
+    all_contexts: dict[str, dict[str, Any]] = {}
+    payload_macro_families: dict[str, str] = {}
+
+    def retain_payload_macro_family(macro: str, context_family: str, source_location: str) -> None:
+        """Keep only non-dispatch payload macros in the source-shaped vocabulary family."""
+        if macro in action_command_macros:
+            return
+        if context_family != "entity-action-payload":
+            raise ValueError(
+                f"map event inline action payload command identity drift: {source_location}"
+            )
+        operation_family = "entity-action-payload-command"
+        previous_family = payload_macro_families.setdefault(macro, operation_family)
+        if previous_family != operation_family:
+            raise ValueError(f"map event action payload family drift: {source_location}")
+
+    for source_path in sorted({path for path, _ in operations_by_path_line}):
+        stack: list[str] = []
+        lines = read_upstream_text(disasm / source_path).splitlines()
+        for source_line, raw_line in enumerate(lines, start=1):
+            macro = _source_line_operation_name(_normalise_asm_statement(raw_line))
+            if macro is None:
+                continue
+            active_contexts = list(stack)
+            key = (source_path, source_line)
+            source_location = f"{source_path}:{source_line}"
+            for _, operation in operations_by_path_line.get(key, []):
+                operation["payloadContextIds"] = active_contexts
+                if macro in action_command_macros and (
+                    not stack
+                    or all_contexts[stack[-1]]["contextFamily"]
+                    != "entity-action-command-payload"
+                ):
+                    raise ValueError(
+                        f"map event entity-action command context drift: {source_location}"
+                    )
+            if macro in payload_context_specs:
+                spec = payload_context_specs[macro]
+                context_family = spec["contextFamily"]
+                terminator = spec["terminatorMnemonic"]
+                context_id = f"{source_path}:{source_line}:{context_family}"
+                if context_id in all_contexts:
+                    raise ValueError(f"map event duplicate action payload context: {context_id}")
+                all_contexts[context_id] = {
+                    "contextId": context_id,
+                    "sourcePath": source_path,
+                    "openerSourceLine": source_line,
+                    "openerSourceMnemonic": macro,
+                    "contextFamily": context_family,
+                    "parentContextId": stack[-1] if stack else None,
+                    "terminatorMnemonic": terminator,
+                    "terminatorSourceLine": None,
+                }
+                stack.append(context_id)
+            elif macro in terminator_families:
+                if not stack:
+                    raise ValueError(
+                        f"map event action payload terminator lacks opener: {source_location}"
+                    )
+                context = all_contexts[stack[-1]]
+                if macro != context["terminatorMnemonic"]:
+                    raise ValueError(
+                        f"map event action payload terminator kind drift: {source_location}"
+                    )
+                retain_payload_macro_family(
+                    macro, terminator_families[macro], source_location
+                )
+                context["terminatorSourceLine"] = source_line
+                stack.pop()
+            elif stack:
+                context_family = all_contexts[stack[-1]]["contextFamily"]
+                if macro in action_command_macros:
+                    if context_family != "entity-action-command-payload":
+                        raise ValueError(
+                            f"map event entity-action command context drift: {source_location}"
+                        )
+                else:
+                    retain_payload_macro_family(macro, context_family, source_location)
+        if stack:
+            raise ValueError(f"map event action payload context lacks terminator: {source_path}")
+
+    referenced_ids = {
+        context_id
+        for operations in operations_by_path_line.values()
+        for _, operation in operations
+        for context_id in operation.get("payloadContextIds", [])
+    }
+    for category, programs in programs_by_category.items():
+        del category
+        for program in programs:
+            context_ids = [
+                context_id
+                for operation in program["operations"]
+                for context_id in operation.get("payloadContextIds", [])
+            ]
+            program["payloadContextIds"] = list(dict.fromkeys(context_ids))
+            program["inheritedPayloadContextIds"] = [
+                context_id
+                for context_id in program["payloadContextIds"]
+                if all_contexts[context_id]["openerSourceLine"] < program["entrySourceLine"]
+            ]
+    return (
+        [context for context_id, context in all_contexts.items() if context_id in referenced_ids],
+        payload_macro_families,
+    )
+
+
+def _guard_macro_emission(
+    listing_lines: list[str],
+    macro_catalog: dict[str, dict[str, Any]],
+    *,
+    operation: dict[str, Any],
+    next_address: int,
+) -> None:
+    """Require each macro use's emitted leaf order to match H1 before fixtures."""
+    source_macro = operation["sourceMnemonic"]
+    expected = [
+        _canonical_macro_emission_statement(statement)
+        for statement in _macro_emission_statements(
+            macro_catalog,
+            macro=source_macro,
+            arguments=operation["operandTexts"],
+        )
+    ]
+    actual_rows = _listing_macro_emission_rows(
+        listing_lines, source_listing_index=operation["_h1ListingSourceIndex"]
+    )
+    actual = [_canonical_macro_emission_statement(row["statement"]) for row in actual_rows]
+    if actual != expected:
+        raise ValueError(
+            "map event source macro emission statement/order drift: "
+            f"{operation['sourceLine']}:{source_macro}"
+        )
+    if not actual_rows or actual_rows[0]["address"] != operation["address"]:
+        raise ValueError(f"map event source macro emission address drift: {source_macro}")
+    emitted_end = actual_rows[-1]["address"] + actual_rows[-1]["byteCount"]
+    if emitted_end != next_address:
+        raise ValueError(f"map event source macro emission span drift: {source_macro}")
+
+
+def _join_operation_vocabulary(
+    listing_lines: list[str],
+    macro_catalog: dict[str, dict[str, Any]],
+    definitions: dict[str, dict[str, Any]],
+    vocabulary: dict[str, dict[str, str]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    """Join every physical operation to a source-faithful family and definition."""
+    categories = tuple(programs_by_category)
+    mnemonic_rows: dict[str, dict[str, Any]] = {}
+    family_counts: Counter[str] = Counter()
+    weighted_family_counts: dict[str, Counter[str]] = {
+        "physicalRecordCount": Counter(),
+        "setupRecordReferenceCount": Counter(),
+        "routeRecordReferenceCount": Counter(),
+    }
+    category_counts = {category: Counter() for category in categories}
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            reference_counts = program["referenceCounts"]
+            per_program_weights = Counter()
+            for index, operation in enumerate(program["operations"]):
+                source_macro = operation["sourceMnemonic"]
+                if source_macro in macro_catalog:
+                    vocabulary_row = vocabulary.get(operation["mnemonic"])
+                    if vocabulary_row is None:
+                        raise ValueError(f"map event macro vocabulary join drift: {source_macro}")
+                    family = vocabulary_row["family"]
+                    definition_id = vocabulary_row["definitionId"]
+                    definition = definitions[definition_id]
+                    if operation["operandTexts"] and max(
+                        definition["formalParameterOrdinals"], default=0
+                    ) != len(operation["operandTexts"]):
+                        raise ValueError(
+                            "map event macro operand count/order drift: "
+                            f"{source_macro}:{operation['sourceLine']}"
+                        )
+                    if not operation["operandTexts"] and definition["formalParameterOrdinals"]:
+                        raise ValueError(
+                            "map event macro operand omission drift: "
+                            f"{source_macro}:{operation['sourceLine']}"
+                        )
+                    next_address = (
+                        program["operations"][index + 1]["address"]
+                        if index + 1 < len(program["operations"])
+                        else program["endAddressExclusive"]
+                    )
+                    _guard_macro_emission(
+                        listing_lines,
+                        macro_catalog,
+                        operation=operation,
+                        next_address=next_address,
+                    )
+                else:
+                    family, definition_id = _raw_operation_family(operation)
+                operation["family"] = family
+                operation["definitionId"] = definition_id
+                if "payloadContextIds" not in operation:
+                    operation["payloadContextIds"] = []
+                del operation["_h1ListingSourceIndex"]
+                key = operation["mnemonic"]
+                row = mnemonic_rows.setdefault(
+                    key,
+                    {
+                        "mnemonic": key,
+                        "family": family,
+                        "definitionId": definition_id,
+                        "categoryOperationCounts": {name: 0 for name in categories},
+                        "weightCounts": {
+                            "uniquePhysicalOperationCount": 0,
+                            "physicalRecordWeightedOperationCount": 0,
+                            "setupRecordReferenceWeightedOperationCount": 0,
+                            "routeRecordReferenceWeightedOperationCount": 0,
+                        },
+                    },
+                )
+                if row["family"] != family or row["definitionId"] != definition_id:
+                    raise ValueError(f"map event mnemonic family/definition ambiguity: {key}")
+                row["categoryOperationCounts"][category] += 1
+                row["weightCounts"]["uniquePhysicalOperationCount"] += 1
+                row["weightCounts"]["physicalRecordWeightedOperationCount"] += reference_counts[
+                    "physicalRecordCount"
+                ]
+                row["weightCounts"]["setupRecordReferenceWeightedOperationCount"] += (
+                    reference_counts["setupRecordReferenceCount"]
+                )
+                row["weightCounts"]["routeRecordReferenceWeightedOperationCount"] += (
+                    reference_counts["routeRecordReferenceCount"]
+                )
+                family_counts[family] += 1
+                category_counts[category][family] += 1
+                per_program_weights["uniquePhysicalOperationCount"] += 1
+                per_program_weights["physicalRecordWeightedOperationCount"] += reference_counts[
+                    "physicalRecordCount"
+                ]
+                per_program_weights["setupRecordReferenceWeightedOperationCount"] += (
+                    reference_counts["setupRecordReferenceCount"]
+                )
+                per_program_weights["routeRecordReferenceWeightedOperationCount"] += (
+                    reference_counts["routeRecordReferenceCount"]
+                )
+                for weight_name, source_name in (
+                    ("physicalRecordCount", "physicalRecordCount"),
+                    ("setupRecordReferenceCount", "setupRecordReferenceCount"),
+                    ("routeRecordReferenceCount", "routeRecordReferenceCount"),
+                ):
+                    weighted_family_counts[weight_name][family] += reference_counts[source_name]
+            program["operationWeightCounts"] = dict(per_program_weights)
+    family_order = sorted(family_counts)
+    for row in mnemonic_rows.values():
+        if set(row["categoryOperationCounts"]) != set(categories):
+            raise ValueError("map event mnemonic category coverage drift")
+    vocabulary_rows = sorted(mnemonic_rows.values(), key=lambda row: row["mnemonic"])
+    family_rows = [
+        {
+            "family": family,
+            "categoryOperationCounts": {
+                category: category_counts[category][family] for category in categories
+            },
+            "weightCounts": {
+                "uniquePhysicalOperationCount": family_counts[family],
+                "physicalRecordWeightedOperationCount": weighted_family_counts[
+                    "physicalRecordCount"
+                ][family],
+                "setupRecordReferenceWeightedOperationCount": weighted_family_counts[
+                    "setupRecordReferenceCount"
+                ][family],
+                "routeRecordReferenceWeightedOperationCount": weighted_family_counts[
+                    "routeRecordReferenceCount"
+                ][family],
+            },
+        }
+        for family in family_order
+    ]
+    category_operation_counts = {
+        category: sum(row["categoryOperationCounts"][category] for row in vocabulary_rows)
+        for category in categories
+    }
+    weight_totals = {
+        name: sum(row["weightCounts"][name] for row in family_rows)
+        for name in (
+            "uniquePhysicalOperationCount",
+            "physicalRecordWeightedOperationCount",
+            "setupRecordReferenceWeightedOperationCount",
+            "routeRecordReferenceWeightedOperationCount",
+        )
+    }
+    if category_operation_counts != {
+        category: sum(len(program["operations"]) for program in programs)
+        for category, programs in programs_by_category.items()
+    }:
+        raise ValueError("map event operation category-total reconciliation drift")
+    if weight_totals["uniquePhysicalOperationCount"] != sum(category_operation_counts.values()):
+        raise ValueError("map event operation unique-weight reconciliation drift")
+    for weight_name in weight_totals:
+        if weight_totals[weight_name] != sum(
+            row["weightCounts"][weight_name] for row in vocabulary_rows
+        ):
+            raise ValueError("map event operation vocabulary-weight reconciliation drift")
+    definition_join_counts = {
+        family: sum(definition["family"] == family for definition in definitions.values())
+        for family in family_order
+    }
+    return {
+        "operationVocabularySummary": {
+            "uniqueMnemonicCount": len(vocabulary_rows),
+            "definitionJoinCount": len(definitions),
+            "unclassifiedOperationCount": 0,
+            "ambiguousMnemonicFamilyDefinitionCount": 0,
+            "categoryPhysicalOperationCounts": category_operation_counts,
+            "definitionJoinCounts": definition_join_counts,
+            "weightCounts": weight_totals,
+        },
+        "operationVocabulary": vocabulary_rows,
+        "operationVocabularyOrder": [
+            f"{row['mnemonic']}:{row['family']}:{row['definitionId'] or '-'}:"
+            f"{row['categoryOperationCounts']['entityEvents']}:"
+            f"{row['categoryOperationCounts']['zoneEvents']}:"
+            f"{row['categoryOperationCounts']['itemEvents']}:"
+            f"{row['weightCounts']['uniquePhysicalOperationCount']}:"
+            f"{row['weightCounts']['physicalRecordWeightedOperationCount']}:"
+            f"{row['weightCounts']['setupRecordReferenceWeightedOperationCount']}:"
+            f"{row['weightCounts']['routeRecordReferenceWeightedOperationCount']}"
+            for row in vocabulary_rows
+        ],
+        "operationFamilyOrder": family_order,
+        "operationFamilyCounts": family_rows,
+        "operationFamilyCountOrder": [
+            json.dumps(row, ensure_ascii=False, separators=(",", ":")) for row in family_rows
+        ],
+    }
+
+
+def _reconcile_operation_weight_contract(
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    operation_contract: dict[str, Any],
+) -> None:
+    """Recompute all semantic operation weights from source-bound program references."""
+    categories = tuple(programs_by_category)
+    weight_sources = {
+        "uniquePhysicalOperationCount": None,
+        "physicalRecordWeightedOperationCount": "physicalRecordCount",
+        "setupRecordReferenceWeightedOperationCount": "setupRecordReferenceCount",
+        "routeRecordReferenceWeightedOperationCount": "routeRecordReferenceCount",
+    }
+    category_counts = {category: 0 for category in categories}
+    total_weights = {name: 0 for name in weight_sources}
+    family_counts: dict[str, dict[str, Any]] = {}
+    vocabulary_counts: dict[str, dict[str, Any]] = {}
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            expected_weights = {name: 0 for name in weight_sources}
+            for operation in program["operations"]:
+                family = operation["family"]
+                mnemonic = operation["mnemonic"]
+                definition_id = operation["definitionId"]
+                category_counts[category] += 1
+                vocabulary = vocabulary_counts.setdefault(
+                    mnemonic,
+                    {
+                        "family": family,
+                        "definitionId": definition_id,
+                        "categoryOperationCounts": {name: 0 for name in categories},
+                        "weightCounts": {name: 0 for name in weight_sources},
+                    },
+                )
+                if (
+                    vocabulary["family"] != family
+                    or vocabulary["definitionId"] != definition_id
+                ):
+                    raise ValueError("map event operation mnemonic join reconciliation drift")
+                family_row = family_counts.setdefault(
+                    family,
+                    {
+                        "categoryOperationCounts": {name: 0 for name in categories},
+                        "weightCounts": {name: 0 for name in weight_sources},
+                    },
+                )
+                for weight_name, reference_field in weight_sources.items():
+                    amount = (
+                        1
+                        if reference_field is None
+                        else program["referenceCounts"][reference_field]
+                    )
+                    expected_weights[weight_name] += amount
+                    total_weights[weight_name] += amount
+                    vocabulary["weightCounts"][weight_name] += amount
+                    family_row["weightCounts"][weight_name] += amount
+                vocabulary["categoryOperationCounts"][category] += 1
+                family_row["categoryOperationCounts"][category] += 1
+            if program["operationWeightCounts"] != expected_weights:
+                raise ValueError("map event operation program weight reconciliation drift")
+    expected_vocabulary = [
+        {
+            "mnemonic": mnemonic,
+            **row,
+        }
+        for mnemonic, row in sorted(vocabulary_counts.items())
+    ]
+    if operation_contract["operationVocabulary"] != expected_vocabulary:
+        raise ValueError("map event operation vocabulary reconciliation drift")
+    expected_families = [
+        {
+            "family": family,
+            **row,
+        }
+        for family, row in sorted(family_counts.items())
+    ]
+    if operation_contract["operationFamilyCounts"] != expected_families:
+        raise ValueError("map event operation family reconciliation drift")
+    summary = operation_contract["operationVocabularySummary"]
+    if summary["categoryPhysicalOperationCounts"] != category_counts:
+        raise ValueError("map event operation category summary reconciliation drift")
+    if summary["weightCounts"] != total_weights:
+        raise ValueError("map event operation weight summary reconciliation drift")
 
 
 def _relative_target_expression(expression: str, table_symbol: str) -> dict[str, Any]:
@@ -1123,10 +2217,7 @@ def _target_program_boundary_order(program: dict[str, Any]) -> str:
 def _target_program_operation_order(operation: dict[str, Any], *, category: str) -> str:
     """Serialize one source/H1 operation's exact category-owned static facts compactly."""
     if category == "entityEvents":
-        return (
-            f"{operation['sourceOrder']}:{operation['sourceLine']}:"
-            f"{operation['address']}"
-        )
+        return f"{operation['sourceOrder']}:{operation['sourceLine']}:{operation['address']}"
     target = operation["target"]
     target_order = (
         None
@@ -1142,14 +2233,9 @@ def _target_program_operation_order(operation: dict[str, Any], *, category: str)
     operand_texts = operation["operandTexts"]
     if any("|" in operand for operand in operand_texts):
         raise ValueError(
-            "map event target operation signature delimiter drift: "
-            f"{operation['sourceLine']}"
+            f"map event target operation signature delimiter drift: {operation['sourceLine']}"
         )
-    target_text = (
-        "-"
-        if target_order is None
-        else ":".join(str(value) for value in target_order)
-    )
+    target_text = "-" if target_order is None else ":".join(str(value) for value in target_order)
     return "|".join(
         (
             str(operation["sourceOrder"]),
@@ -1161,6 +2247,31 @@ def _target_program_operation_order(operation: dict[str, Any], *, category: str)
             ",".join(operand_texts),
             operation["controlFlowKind"],
             target_text,
+        )
+    )
+
+
+def _target_program_operation_join_order(
+    operation: dict[str, Any],
+    *,
+    family_indices: dict[str, int],
+    definition_indices: dict[str, int],
+) -> str:
+    """Pin the phase-2 source-family join beside the pre-existing operation signature."""
+    payload_context_ids = operation["payloadContextIds"]
+    if any("|" in context_id for context_id in payload_context_ids):
+        raise ValueError(
+            f"map event target operation join delimiter drift: {operation['sourceLine']}"
+        )
+    return "|".join(
+        (
+            str(family_indices[operation["family"]]),
+            (
+                str(definition_indices[operation["definitionId"]])
+                if operation["definitionId"] is not None
+                else "-"
+            ),
+            ",".join(payload_context_ids),
         )
     )
 
@@ -1258,6 +2369,7 @@ def _target_program_control_flow(
             },
         },
     }
+
     def total_order(rows: list[dict[str, Any]]) -> list[str]:
         return [
             f"{row['symbol']}:{row['address']}:"
@@ -1339,8 +2451,7 @@ def _reconcile_target_programs(
             raise ValueError(f"map {category} target termination order drift: {identity}")
         termination = program["termination"]
         if termination["controlFlowKind"] not in {"return", "direct-jump"} and not (
-            program["endFunctionSymbol"] is None
-            and termination["sourceMnemonic"] == "csc_end"
+            program["endFunctionSymbol"] is None and termination["sourceMnemonic"] == "csc_end"
         ):
             raise ValueError(f"map {category} target termination kind drift: {identity}")
         totals["programCount"] += 1
@@ -1406,19 +2517,13 @@ def _reconcile_target_programs(
                 program["endFunctionSymbol"] is None for program in programs
             ),
             "excludedPhysicalRecordCount": excluded_weights["physicalRecordCount"],
-            "excludedSetupRecordReferenceCount": excluded_weights[
-                "setupRecordReferenceCount"
-            ],
-            "excludedRouteRecordReferenceCount": excluded_weights[
-                "routeRecordReferenceCount"
-            ],
+            "excludedSetupRecordReferenceCount": excluded_weights["setupRecordReferenceCount"],
+            "excludedRouteRecordReferenceCount": excluded_weights["routeRecordReferenceCount"],
         }
         if {field: summary[field] for field in extended_totals} != extended_totals:
             raise ValueError(f"map {category} target exclusion reconciliation drift")
         for field, excluded_value in excluded_weights.items():
-            if summary[field] + excluded_value != sum(
-                profile[field] for profile in profiles
-            ) + sum(
+            if summary[field] + excluded_value != sum(profile[field] for profile in profiles) + sum(
                 exclusion["referenceCounts"][field] for exclusion in exclusions
             ):
                 raise ValueError(f"map {category} target profile weight reconciliation drift")
@@ -1444,17 +2549,13 @@ def _reconcile_target_programs(
                 for field in _CONTROL_FLOW_COUNT_FIELDS:
                     if row[field] != observed_control[(identity_kind, scope, identity, field)]:
                         raise ValueError(
-                            f"map {category} "
-                            f"{identity_kind} target total drift: {scope}:{identity}"
+                            f"map {category} {identity_kind} target total drift: {scope}:{identity}"
                         )
                 if row["totalSiteCount"] != sum(row[field] for field in _CONTROL_FLOW_COUNT_FIELDS):
                     raise ValueError(
-                        f"map {category} "
-                        f"{identity_kind} target aggregate drift: {scope}:{identity}"
+                        f"map {category} {identity_kind} target aggregate drift: {scope}:{identity}"
                     )
-            order_key = (
-                f"{identity_kind}{scope.title()}TargetTotalOrder"
-            )
+            order_key = f"{identity_kind}{scope.title()}TargetTotalOrder"
             observed_total_order = [
                 f"{row['symbol']}:{row['address']}:"
                 f"{row['conditionalBranchSiteCount']}:"
@@ -1561,9 +2662,7 @@ def _target_program_contract(
         dict.fromkeys(symbol for symbol in instruction_symbols if symbol.startswith("j_"))
     )
     initial_owner_addresses = {addresses[symbol] for symbol in instruction_symbols}
-    initial_owners = _label_owners(
-        disasm, addresses, initial_owner_addresses, source_label_owners
-    )
+    initial_owners = _label_owners(disasm, addresses, initial_owner_addresses, source_label_owners)
     aliases_by_symbol = _parse_jump_interface_aliases(
         disasm,
         addresses,
@@ -1580,15 +2679,11 @@ def _target_program_contract(
     target_owner_addresses = initial_owner_addresses | {
         definition["directTargetAddress"] for definition in aliases_by_symbol.values()
     }
-    target_owners = _label_owners(
-        disasm, addresses, target_owner_addresses, source_label_owners
-    )
+    target_owners = _label_owners(disasm, addresses, target_owner_addresses, source_label_owners)
     alias_definitions = []
     for alias in alias_symbols:
         definition = aliases_by_symbol[alias]
-        direct_target = _target_identity(
-            definition["directTargetSymbol"], addresses, target_owners
-        )
+        direct_target = _target_identity(definition["directTargetSymbol"], addresses, target_owners)
         alias_definitions.append(
             {**definition, "directTargetAddressLabels": direct_target["addressLabels"]}
         )
@@ -1759,8 +2854,7 @@ def _target_program_contract(
                     program["endFunctionSymbol"] is None for program in programs
                 ),
                 "excludedPhysicalRecordCount": sum(
-                    exclusion["referenceCounts"]["physicalRecordCount"]
-                    for exclusion in exclusions
+                    exclusion["referenceCounts"]["physicalRecordCount"] for exclusion in exclusions
                 ),
                 "excludedSetupRecordReferenceCount": sum(
                     exclusion["referenceCounts"]["setupRecordReferenceCount"]
@@ -2294,6 +3388,11 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     rom = rom_path.read_bytes()
     setup = build_map_setup_contract(rom_path, upstream_path)
     entities = build_map_entities_contract(rom_path, upstream_path)
+    map_script_engine = build_map_script_engine_contract(rom_path, upstream_path)
+    entity_action_scripts = build_entity_action_script_contract(rom_path, upstream_path)
+    source_macro_catalog = _source_macro_catalog(
+        disasm, (SERVICE_MACROS_PATH, CUTSCENE_MACROS_PATH)
+    )
     if setup["upstream"]["commit"] != commit:
         raise ValueError("map events/setup provenance drift")
 
@@ -2369,6 +3468,114 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         source_label_owners,
         category="itemEvents",
     )
+    programs_by_category = {
+        "entityEvents": entity_target_programs,
+        "zoneEvents": zone_target_programs,
+        "itemEvents": item_target_programs,
+    }
+    payload_context_specs = _derived_action_payload_context_specs(
+        disasm,
+        source_macro_catalog,
+        map_script_engine,
+        entity_action_scripts,
+    )
+    payload_contexts, payload_macro_families = _payload_context_contract(
+        disasm,
+        programs_by_category,
+        payload_context_specs=payload_context_specs,
+        action_command_macros={
+            binding["macro"] for binding in entity_action_scripts["handlerMacroBindings"]
+        },
+    )
+    operation_definitions, macro_vocabulary = _operation_definition_contract(
+        source_macro_catalog,
+        map_script_engine,
+        entity_action_scripts,
+        programs_by_category,
+        payload_context_specs,
+        payload_macro_families,
+    )
+    operation_vocabulary_contract = _join_operation_vocabulary(
+        listing_lines,
+        source_macro_catalog,
+        operation_definitions,
+        macro_vocabulary,
+        programs_by_category,
+    )
+    _reconcile_operation_weight_contract(programs_by_category, operation_vocabulary_contract)
+    operation_orders_by_category = {
+        "entityEvents": entity_target_program_operation_orders,
+        "zoneEvents": zone_target_program_operation_orders,
+        "itemEvents": item_target_program_operation_orders,
+    }
+    family_indices = {
+        family: index
+        for index, family in enumerate(operation_vocabulary_contract["operationFamilyOrder"])
+    }
+    definition_indices = {
+        definition["definitionId"]: index
+        for index, definition in enumerate(operation_definitions.values())
+    }
+    operation_weight_orders_by_category: dict[str, list[str]] = {}
+    payload_context_orders_by_category: dict[str, list[str]] = {}
+    for category, programs in programs_by_category.items():
+        order_rows = operation_orders_by_category[category]
+        if len(order_rows) != len(programs):
+            raise ValueError(f"map {category} target operation-order coverage drift")
+        for program, order_row in zip(programs, order_rows, strict=True):
+            if order_row["programKey"] != _program_key(
+                program["canonicalSymbol"], program["entryAddress"]
+            ):
+                raise ValueError(f"map {category} target operation-order identity drift")
+            order_row["operationOrder"] = [
+                _target_program_operation_order(operation, category=category)
+                for operation in program["operations"]
+            ]
+            order_row["operationJoinOrder"] = [
+                _target_program_operation_join_order(
+                    operation,
+                    family_indices=family_indices,
+                    definition_indices=definition_indices,
+                )
+                for operation in program["operations"]
+            ]
+            program["termination"].update(
+                {
+                    "family": program["operations"][-1]["family"],
+                    "definitionId": program["operations"][-1]["definitionId"],
+                    "payloadContextIds": program["operations"][-1]["payloadContextIds"],
+                }
+            )
+        operation_weight_orders_by_category[category] = [
+            "|".join(
+                (
+                    _program_key(program["canonicalSymbol"], program["entryAddress"]),
+                    str(program["operationWeightCounts"]["uniquePhysicalOperationCount"]),
+                    str(program["operationWeightCounts"]["physicalRecordWeightedOperationCount"]),
+                    str(
+                        program["operationWeightCounts"][
+                            "setupRecordReferenceWeightedOperationCount"
+                        ]
+                    ),
+                    str(
+                        program["operationWeightCounts"][
+                            "routeRecordReferenceWeightedOperationCount"
+                        ]
+                    ),
+                )
+            )
+            for program in programs
+        ]
+        payload_context_orders_by_category[category] = [
+            "|".join(
+                (
+                    _program_key(program["canonicalSymbol"], program["entryAddress"]),
+                    ",".join(program["payloadContextIds"]),
+                    ",".join(program["inheritedPayloadContextIds"]),
+                )
+            )
+            for program in programs
+        ]
     entity_target_refs = [
         table["targets"]["entityEvents"]["symbol"] for table in setup["pointerTables"]
     ]
@@ -2503,6 +3710,17 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             "sourcePath": MAP_SETUP_MACROS_PATH.as_posix(),
             "categories": macro_definitions,
         },
+        "operationDefinitions": list(operation_definitions.values()),
+        "operationDefinitionOrder": [
+            json.dumps(definition, ensure_ascii=False, separators=(",", ":"))
+            for definition in operation_definitions.values()
+        ],
+        "operationPayloadContexts": payload_contexts,
+        "operationPayloadContextOrder": [
+            json.dumps(context, ensure_ascii=False, separators=(",", ":"))
+            for context in payload_contexts
+        ],
+        **operation_vocabulary_contract,
         "consumerFacts": _consumer_facts(setup),
         "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
         "entityTargetProgramSummary": entity_target_program_summary,
@@ -2513,6 +3731,12 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         ],
         "entityTargetProgramLabelOrders": entity_target_program_label_orders,
         "entityTargetProgramOperationOrders": entity_target_program_operation_orders,
+        "entityTargetProgramOperationWeightOrders": operation_weight_orders_by_category[
+            "entityEvents"
+        ],
+        "entityTargetProgramPayloadContextOrders": payload_context_orders_by_category[
+            "entityEvents"
+        ],
         "entityTargetProgramControlFlow": entity_target_program_control_flow,
         "entityTargetProgramControlFlowTargetOrders": (
             entity_target_program_control_flow_target_orders
@@ -2528,6 +3752,8 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         ],
         "zoneTargetProgramLabelOrders": zone_target_program_label_orders,
         "zoneTargetProgramOperationOrders": zone_target_program_operation_orders,
+        "zoneTargetProgramOperationWeightOrders": operation_weight_orders_by_category["zoneEvents"],
+        "zoneTargetProgramPayloadContextOrders": payload_context_orders_by_category["zoneEvents"],
         "zoneTargetProgramControlFlow": zone_target_program_control_flow,
         "zoneTargetProgramControlFlowTargetOrders": zone_target_program_control_flow_target_orders,
         "zoneTargetProgramExclusions": zone_target_program_exclusions,
@@ -2546,6 +3772,8 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         ],
         "itemTargetProgramLabelOrders": item_target_program_label_orders,
         "itemTargetProgramOperationOrders": item_target_program_operation_orders,
+        "itemTargetProgramOperationWeightOrders": operation_weight_orders_by_category["itemEvents"],
+        "itemTargetProgramPayloadContextOrders": payload_context_orders_by_category["itemEvents"],
         "itemTargetProgramControlFlow": item_target_program_control_flow,
         "itemTargetProgramControlFlowTargetOrders": item_target_program_control_flow_target_orders,
         "itemTargetProgramExclusions": item_target_program_exclusions,

@@ -189,6 +189,18 @@ static internal/external target classification is a physical-span relation only;
 reachability, operation effects, persistence, dialogue timing, and presentation remain outside this
 design contract.
 
+For all entity, zone, and item target programs, an adapter MUST also preserve each operation's raw
+source mnemonic, neutral source family, nullable definition identity, and ordered payload-context
+identity stack. The fixture's 54-mnemonic vocabulary joins raw 68000/data forms separately from
+event-service, map-script, entity-action wrapper/command/payload, and stream-terminator source forms;
+this is a provenance/import rule, not permission to assign behavior from a name. It MUST retain the
+separate physical/setup/route-weighted operation totals. In particular, Map 21's inherited
+`entityActionsWait` payload and its later `entityActions`/`customActscriptWait` segments MUST remain
+source nesting, so `ac_*` payload entries are not flattened into same-level calls. A remake MUST NOT
+infer macro side effects, persistence, dialogue text, timing, or presentation from this static join.
+The context relation itself is imported from source aliases, cursor parsing, and terminator records;
+it is not a claim that a wrapper name describes lifecycle or user-visible behavior.
+
 For zone and item targets, an importer or future execution adapter MUST retain the same
 source-shaped program record: entry identity, physical span, ordered non-comment operations and
 labels, terminal form, instruction-versus-effective target identity, aliases, and independent
