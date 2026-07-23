@@ -61,10 +61,12 @@ executing a map script.
 
 ## Concentrated Runtime Queue
 
-No emulator is started for this batch. A later technical runtime matrix should share one launch and
-observe: skipped/enabled VInt ordering, the 24/6 input-repeat boundary, contextual slot activation,
-queued versus immediate DMA completion, fade completion frames, and queue-capacity behavior. Exact
-VDP/Z80 timing should be checked under the pinned core and, only where useful, a second emulator.
+No emulator is started for this batch. Under ADR 0005's 2026-07-23 priority decision, exact VDP/DMA/
+Z80 cycle timing, DMA queue-capacity behavior, and raw controller latency are frozen once the visible
+contract is adequate. A future shared matrix is active only for a concrete user-visible acceptance gap:
+skipped/enabled VInt ordering, the 24/6 input-repeat boundary, contextual slot activation, or fade
+completion behavior. It must reuse this VInt/DMA seam; do not start a hardware-fidelity matrix merely
+to refine cycle counts or a second-emulator comparison.
 
 ## Reproduction
 

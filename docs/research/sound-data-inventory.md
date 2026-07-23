@@ -69,8 +69,8 @@ the second byte into `MUSIC_DOESNT_USE_SAMPLES`, skips the reserved byte, writes
 Nineteen headers leave DAC enabled and 20 disable it. The reserved byte is zero in every entry.
 Timer B uses 19 distinct source values from `0xBD` through `0xD4`; exact value counts and all entry
 rows are part of the canonical fixture. This confirms the stored control fields and driver reads,
-but not the wall-clock tempo produced by YM2612 Timer B, which remains in the concentrated timing
-matrix.
+but not the wall-clock tempo produced by YM2612 Timer B, which remains **Unknown** and is
+priority-frozen by ADR 0005 rather than an active timing-matrix target.
 
 ## Static Note and Frequency Domains
 
@@ -96,7 +96,8 @@ inventory records only metadata and payload hashes, never PCM bytes.
 The 1,559 `sample`/`sampleL` calls in music use only indices 0–5, with counts 88, 33, 360, 572, 402,
 and 104. The remaining eleven rows are outside the music corpus and may serve SFX or alternate rates.
 Index bounds and ROM ranges are confirmed statically; translating the frame-period byte into audible
-sample rate remains part of the shared timing observation.
+sample rate remains **Unknown** and priority-frozen by ADR 0005 rather than part of an active timing
+observation.
 
 ## Instrument and Level Domains
 
@@ -232,12 +233,20 @@ domain-aware index is now 1,017/1,690: 980 files use H1 and 37 song files use th
 The remaining gap includes 662 map bodies labeled only at include sites, one unlabeled map storage
 file, the four symbol-less music support/entry sources, and explicit alternates/containers.
 
-## Remaining Runtime Queue
+## Remaining Runtime Queue and Priority Freeze
 
-The command/channel-state seam is now proven and reusable. A later sound matrix may attach YM2612
-register/audio observations to it for PCM frame-period/sample-rate calibration, wall-clock Timer-B
-tempo, and audible instrument/envelope behavior. Those questions should remain grouped; this fixture
-does not justify one emulator launch per opcode or song.
+The command/header/channel/SFX seam is proven and reusable. ADR 0005's 2026-07-23 priority decision
+freezes further sound-driver exactness by default: do not add YM2612/PSG register-level observation,
+PCM frame-period/sample-rate calibration, per-song opcode replay, or audible waveform/instrument/
+envelope parity merely to deepen the original driver model. Existing static/H3 evidence, fixtures,
+parsers, and verification remain intact.
+
+Music loop/transition/fade/resume semantics and SFX selection/priority/interruption remain active when
+a remake acceptance contract exposes a gap. Reopen this area only for one bounded acceptance failure,
+required import-format or asset/provenance decision, explicit original-hardware-fidelity target, or
+conflicting evidence; reuse this command/channel seam rather than starting one matrix per opcode or
+song. Publicly available MIDI is only an input candidate: record its provenance and license/permission
+before adoption, and do not assume it can be redistributed.
 
 ## Reproduction
 

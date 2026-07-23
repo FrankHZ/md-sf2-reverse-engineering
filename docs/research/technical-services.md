@@ -88,7 +88,9 @@ across nine callers: one `UpdatePlayerInputs` site and ten `WaitForPlayerInput` 
 four entry points have zero static direct-call sites, which does not establish runtime reachability.
 **Unknown:** hardware latency, controller-model
 and three-/six-button behavior, and player-visible repeat timing. The implementation-neutral contract
-is [`input-system.md`](../design/input-system.md).
+is [`input-system.md`](../design/input-system.md). ADR 0005's 2026-07-23 priority decision freezes
+raw controller electrical/model/latency exactness after that visible input contract is adequate; it
+does not freeze a concrete UI/menu acceptance gap in repeat or wait behavior.
 
 ## SRAM Save-System Contract
 
@@ -123,11 +125,14 @@ save UI/lifecycle operations; their full caller-state outcomes are not promoted 
 direct-call inventory. **Unknown:** physical-media persistence, power loss between data/checksum/flag
 writes, corruption beyond this checksum, emulator storage behavior, and the resulting player-visible
 timing. The remake-facing extraction is
-[`save-system.md`](../design/save-system.md).
+[`save-system.md`](../design/save-system.md). Physical-media/failure exactness is priority-frozen by
+ADR 0005 once save/load/copy/delete behavior is adequate; a user-visible save-flow acceptance failure
+remains a reason to reopen one bounded question.
 
 `PlayMusicAfterCurrentOne` sends the wait-for-current-music command and parameter command, then polls
 the mailbox with three-frame sleeps. The Z80 source statically exposes YM2612, PSG, DAC, bank, music,
-and SFX machinery, but audible timing and channel output remain outside this static contract.
+and SFX machinery, but audible timing and channel output remain outside this static contract and are
+priority-frozen by ADR 0005 unless the established sound seam exposes an acceptance gap.
 
 ## RNG Service Contract
 
@@ -166,20 +171,22 @@ boundary is [`randomness.md`](../design/randomness.md).
 
 ## Concentrated Runtime Queue
 
-No emulator was launched for this batch. Five questions are retained for later grouped runs:
+No emulator was launched for this batch. ADR 0005 (priority decision 2026-07-23) freezes raw
+controller electrical/latency behavior, SRAM hardware-failure behavior, audio timing/register output,
+and VDP/DMA micro-timing after their import and visible contracts are adequate. The active grouped
+questions are:
 
-1. one controller/input matrix: raw state A/B to last/current, new press and release/repress, held
-   24/6 repeat boundaries, 60/180 early exit/timeout, and controller-model/latency edges;
-2. SRAM signature initialization/full clear, valid/invalid checksum and occupied flags, save/copy/
-   delete/reload persistence ordering, and partial-write/power-loss boundaries in one corruption
-   matrix;
-3. 68000-to-Z80 mailbox, channel routing, and audio timing;
+1. controller/input behavior that leaves a concrete UI/menu wait or repeat acceptance ambiguity;
+2. SRAM signature/checksum/occupied-flag and save/copy/delete/reload behavior that leaves a concrete
+   user-visible save-flow ambiguity;
+3. music loop/transition/fade/resume or SFX selection/priority/interruption behavior when the existing
+   command/channel seam is insufficient for a remake acceptance contract;
 4. RNG low-byte range/retry boundaries and seed-copy isolation across text, menu, and AI callers;
-5. raw/computed reach plus frame/palette/VDP behavior for the nominally unused graphics resources.
+5. asset routing or a user-visible presentation contract for the nominally unused graphics resources.
 
-The controller/input cases should share VInt and controller setup, SRAM cases should share one
-initialized save-state matrix, and audio cases should share one sound-driver instrumentation launch.
-Isolated one-case fixtures are not warranted by the current evidence.
+Reuse the existing VInt/controller, save-state, sound-driver, or graphics seam for one bounded reopen
+question. Isolated one-case fixtures and hardware-fidelity expansion are not warranted without ADR
+0005's acceptance, provenance/import, explicit-fidelity, or conflicting-evidence trigger.
 
 ## Reproduction
 

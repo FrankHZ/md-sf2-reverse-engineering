@@ -306,15 +306,21 @@ denominator, not proof that dynamic indirect calls or self-modifying targets can
 
 ## Concentrated Verification Queue
 
-This batch starts no emulator. All current direct named decoder consumers now have corpus owners;
-later compression work must come from indirect/embedded tables or new source evidence. Rendered
-behavior joins the shared presentation matrix: display
-initialization, palette interpolation frames, parallax/autoscroll axes, regular/special-sprite
-updates, special-screen transfer tails, and flash duration can share VDP/RAM observation points.
-Static reachability is now complete for reserved IDs 237-250: symbolic references, all 980 initial
-map-entity records, 81 later script assignments, ally/enemy derivation, five actual writers, and all
-20 property-update callers exclude them from the original built domains. Only deliberately malformed
-script/RAM injection and its visible failure mode remain optional runtime research.
+This batch starts no emulator. All current direct named decoder consumers now have corpus owners.
+ADR 0005's 2026-07-23 priority decision freezes decompressor/copy-loop micro-implementation and
+VDP/DMA cycle-accuracy work once those import contracts are adequate; an indirect table alone is not a
+reason to pursue decoder internals. Reopen one bounded question only for an import-format or
+asset/provenance gap, conflicting evidence, an explicit hardware-fidelity target, or a concrete
+user-visible acceptance failure.
+
+Rendered behavior remains eligible when a map, UI, menu, or other visible acceptance contract needs
+it. Display initialization, palette interpolation, parallax/autoscroll, regular/special-sprite
+updates, special-screen transfer tails, and flash duration can share existing VDP/RAM observation
+points, but do not expand that work into cycle counting by default. Static reachability is complete for
+reserved IDs 237-250: symbolic references, all 980 initial map-entity records, 81 later script
+assignments, ally/enemy derivation, five actual writers, and all 20 property-update callers exclude
+them from the original built domains. Only deliberately malformed script/RAM injection and a concrete
+visible acceptance gap remain optional runtime research.
 
 ## Reproduction
 

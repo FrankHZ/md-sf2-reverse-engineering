@@ -111,7 +111,8 @@ The current evidence is deep but narrow:
   unlabeled 288-byte data blob is H2-verified but
   excluded from symbol reach.
   Common maps now has a complete seven-file inventory covering switch/trigger/egress routing,
-  8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains open.
+  8 KiB layout output shape, load ordering, and VInt gates; camera/VDP timing remains Unknown and is
+  priority-frozen unless an acceptance gap reopens it under ADR 0005.
   Common stats now inventories all 20 files and models flags, party/inventory services, spell
   learning, new-game order, the complete 31-entry getter corpus, complete 53-entry mutation wrapper
   corpus, seven-routine byte/word/long clamp algorithm/caller contract, and final combatant-distance
@@ -123,15 +124,15 @@ The current evidence is deep but narrow:
   surface are static contracts; one overlapping member-list alternate remains excluded, while UI,
   persistence, caller-return, and presentation timing remain queued for one concentrated simulation.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
-  layout, interleaved copying, checksum/flag transitions, and its caller inventory, with durable
-  media behavior retained for one grouped H3 matrix; its six-entry input surface now binds two-port
+  layout, interleaved copying, checksum/flag transitions, and its caller inventory, with durable-media
+  hardware behavior retained as Unknown but priority-frozen; its six-entry input surface now binds two-port
   raw sampling, state storage, wait helpers, 11 direct call sites, and one controller/input H3 matrix.
   The paired six-entry RNG surface now records both seed states, base/debug control flow, exact
   low-byte bounded domains, 163 direct named call sites, and the six-site jump-alias boundary; retry
   behavior and seed-copy isolation remain one grouped H3 question.
   Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
   order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
-  remains queued for one technical runtime matrix.
+  remains Unknown but is priority-frozen rather than queued by default.
   Technical graphics now binds all 11 layout-owned decompression/display/palette/special-sprite files.
   Calling conventions and state routing are static contracts. The project-owned Stack decoder now
   covers all 43 battle-terrain payloads/45 pointer slots, 27 battle-background payloads/30 pointer
@@ -224,7 +225,8 @@ The current evidence is deep but narrow:
   main-layout files are H1-bound; the standalone Z80 source is separately assembled and H2-hashed
   without pretending it owns a 68000 listing symbol. Resource routing, overlap-copy direction,
   controller sampling/wait shape, SRAM checksum/slot shape, and the sound build chain are static
-  contracts; hardware and timing questions remain in five grouped runtime queues.
+  contracts; only acceptance-relevant visible semantics remain active, while driver/hardware timing is
+  priority-frozen under ADR 0005.
   Startup/main-loop/exploration now binds all thirteen layout-owned files and models cold/system
   initialization, region admission, battle/exploration routing, six map-event types, entity/area
   interaction, item handoff, and event-before-action polling. Reset hardware, VInt-edge event/input
@@ -337,7 +339,11 @@ deterministic H2 inventory; its 1,017/1,690 domain-aware reach includes 37 Z80 s
 remaining gap reflects include-site-only map bodies, alternates, and unlabeled storage rather than
 unknown files.
 
-The next work is semantic depth, not another sweep for filenames or artificial index percentage.
+The next work is semantic depth, not another sweep for filenames or artificial index percentage. Under
+ADR 0005's 2026-07-23 priority decision, the active frontier is event semantics/state flow, map
+interactions, UI/menu/save behavior, and implementation-neutral content contracts. Existing H1/H2/H3
+driver and hardware evidence remains in its normal verification rails, but sound-driver exactness and
+other low-remake-value hardware work are no longer default runtime-matrix targets.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
 slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
 and makes eleven unused definitions explicit. All 133 primary operand fields and their 234 bytes are
@@ -427,8 +433,8 @@ complete cache/source/target/counter/cycle bounds, with all 108 source ranges in
 3. preserve normal-story direct-`rts` event reachability, nonstandard description callers, and
    script side effects as `Inferred` or `Unknown` until stronger evidence exists;
 4. extend runtime work into individual init/script side effects only after event integration leaves a
-   concrete ambiguity; keep UI/presentation, SRAM hardware, and VDP/Z80/audio timing in
-   their own later shared matrices.
+   concrete ambiguity; freeze SRAM hardware-failure, VDP/DMA/Z80 cycle, raw controller-latency, and
+   audio-register/waveform exactness unless ADR 0005's bounded reopen criteria are met.
 
 Historical subsystem closure details live in the owning research documents and Git history. This
 section intentionally states only the active frontier so it cannot masquerade as a stale roadmap.

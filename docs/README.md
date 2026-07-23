@@ -228,6 +228,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   Phase 2 先整批静态审计，再把不可静态判定的问题集中到单次 BizHawk 矩阵。
 - [`0004-single-terra-worker-with-root-acceptance.md`](./decisions/0004-single-terra-worker-with-root-acceptance.md)：
   单一 Terra worker 完成 Phase 2 证据切片，root 线程独立复核、验证、扫描并提交的工作流边界。
+- [`0005-remake-value-driven-driver-freeze.md`](./decisions/0005-remake-value-driven-driver-freeze.md)：
+  保留既有证据与验证，同时冻结低重制价值的 driver/hardware 精确度，把 Phase 2 主线转向事件、地图、
+  UI/存档与实现无关内容合同。
 
 ## Evidence Vocabulary
 

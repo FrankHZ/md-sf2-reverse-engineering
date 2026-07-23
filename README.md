@@ -351,8 +351,9 @@ H1 地址；唯一 member-list alternate source 仅做 range/hash 对照。diamo
 71.58%。窗口/portrait/动画时序合并进入 UI/presentation 模拟矩阵，本批未启动模拟器。
 technical interrupts rail 接着覆盖全部 21 个 layout-owned 文件、2,320 行，将 VInt 顺序、8 个
 contextual slot、wait/sleep handshake、DMA queue、四种 fade、24/6 input repeat 与 trap 路由固化为
-静态合同，使严格 reach 升到 77.00%。VDP/Z80 总线时序和 queue capacity 留给集中技术矩阵，本批
-仍未启动模拟器。研究索引现在直接输出 code/data 唯一文件计数，防止手工覆盖率再次漂移。
+静态合同，使严格 reach 升到 77.00%。VDP/Z80 总线时序和 queue capacity 仍保留为 Unknown；ADR 0005
+现将其 priority-freeze，除非具体的 remake acceptance gap 触发同一 seam 的有界重开。本批仍未启动模拟器。
+研究索引现在直接输出 code/data 唯一文件计数，防止手工覆盖率再次漂移。
 technical graphics rail 再覆盖全部 11 个 layout-owned 文件、2,137 行，固定两种 decompressor
 调用合同、display init、sprite links、32-frame palette transition、九槽 special-sprite routing、
 parallax/autoscroll gate 和 flash script，使严格 reach 升到 79.84%。随后 Python-owned Stack decoder
@@ -535,6 +536,16 @@ gold 边界矩阵确认普通加算、恰好/超过 9,999,999 上限及 32-bit c
 成偶然实现。
 
 ## 下一步
+
+2026-07-23 的优先级决定见 [ADR 0005](./docs/decisions/0005-remake-value-driven-driver-freeze.md)：Phase 2 的
+主 frontier 是 event semantics/state flow、maps/interactions、UI/menu/save behavior，以及可由现代引擎
+消费的 content contracts。既有 H1/H2/H3 证据、fixture、parser、schema 和日常 `uv run sf2 verify` 不会
+删除或弱化。音频保持在已经证明的 command/header/channel/SFX seam；除非出现具体 remake acceptance
+缺口、import/provenance 决策、显式 original-hardware-fidelity 目标或冲突证据，否则不默认深入
+YM/PSG register、PCM sample-rate、per-song opcode 或 audible waveform parity。相同的价值测试也冻结
+已足够 import/可见合同之后的 decompressor/copy-loop micro-implementation、VDP/DMA cycle、raw controller
+electrical/latency 与 SRAM hardware-failure 精确度；music loop/transition/fade/resume、SFX
+selection/priority/interruption、asset ID/call-site mapping 和用户可见 UI/save/load 仍是活跃合同。
 
 源码“找文件”阶段已经收口：code 是 381/387 strict reach，剩余 6 个都有明确 H2 所有权；data
 是 1,690/1,690 H2 inventory，domain-aware reach 已为 1,017/1,690；其中 980 个 H1 文件与 37 个
