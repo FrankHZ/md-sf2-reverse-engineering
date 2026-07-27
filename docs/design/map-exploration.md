@@ -201,6 +201,15 @@ infer macro side effects, persistence, dialogue text, timing, or presentation fr
 The context relation itself is imported from source aliases, cursor parsing, and terminator records;
 it is not a claim that a wrapper name describes lifecycle or user-visible behavior.
 
+For the same complete target-program corpus, an importer MUST retain each direct numeric
+`chkFlg`/`setFlg`/`clrFlg` source use as a source-shaped record: parsed macro/service-definition
+identity, raw operand text and numeric value, category/program/source/H1 operation identity, and
+separate physical-record/setup-reference/route-reference weights. A `chkFlg` record with its
+immediate static conditional consumer MUST also retain source order, raw branch mnemonic/suffix,
+source polarity, and instruction/effective target identity. The `read`, `set`, and `clear` labels
+remain source classifications only. A remake MUST NOT infer save persistence, story state, flag
+lifecycle, operation effect, or presentation from this static contract.
+
 For zone and item targets, an importer or future execution adapter MUST retain the same
 source-shaped program record: entry identity, physical span, ordered non-comment operations and
 labels, terminal form, instruction-versus-effective target identity, aliases, and independent

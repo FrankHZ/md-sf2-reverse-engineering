@@ -424,7 +424,14 @@ macro/handler cursor-flow contract, the entity-action inline-terminator contract
 aliases/emissions, and the smallest csc14/csc2D handler use sites: csc14's parsed-word compare,
 not-equal branch, and return, plus csc2D's first-byte negative branch, second-byte read, and
 branch-target byte skip. This remains static source/H1 identity and control flow, not effect,
-dialogue, persistence, or presentation evidence. Evidence date: 2026-07-23. All 32 animation tables also have
+dialogue, persistence, or presentation evidence. The same rail now derives the complete direct
+numeric flag-state source surface: 493 sites across every entity/zone/item target program (316
+source-label reads, 169 sets, 8 clears), 151 observed operands, zero-inclusive totals for all 914
+programs, four independently named physical/reference weights, and every immediate `chkFlg` branch
+consumer (264 `bne.s`, 49 `beq.s`, 3 `bne.w`). Parsed macro definitions, numeric operands, consumer
+order/polarity/target identities, and source/H1 operation records are guarded before fixture
+comparison; this does not claim a flag's persistence, story meaning, or presentation effect.
+Evidence date: 2026-07-27. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
 1. keep the completed ten-case setup-selector, six-case init-dispatch, nine-case grouped

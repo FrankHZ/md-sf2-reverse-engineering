@@ -118,6 +118,16 @@ _CONTROL_FLOW_COUNT_FIELDS = (
     "directCallSiteCount",
     "directJumpSiteCount",
 )
+_DIRECT_FLAG_ACCESS_KINDS = ("read", "set", "clear")
+_DIRECT_FLAG_CONSUMER_TARGET_FIELDS = (
+    "instructionTargetSymbol",
+    "instructionTargetAddress",
+    "instructionTargetAddressLabels",
+    "effectiveTargetSymbol",
+    "effectiveTargetAddress",
+    "effectiveTargetAddressLabels",
+    "effectiveTargetScope",
+)
 _BASIC_BLOCK_TRANSFER_MNEMONICS = frozenset(
     {
         "bra",
@@ -242,6 +252,467 @@ def _parse_program_operation(
         "controlFlowKind": control_flow_kind,
         "instructionTargetSymbol": target_symbol,
     }
+
+
+def _parse_direct_flag_operand(operand_texts: list[str], *, source_line: int) -> int:
+    """Parse the one numeric operand emitted by a direct flag-service macro."""
+    if len(operand_texts) != 1:
+        raise ValueError(f"map event direct flag operand count drift at source line {source_line}")
+    operand = operand_texts[0]
+    if re.fullmatch(r"(?:0|[1-9][0-9]*|\$[0-9A-Fa-f]+)", operand) is None:
+        raise ValueError(f"map event direct flag operand syntax drift at source line {source_line}")
+    return int(operand[1:], 16) if operand.startswith("$") else int(operand)
+
+
+def _direct_flag_access_sites_for_program(
+    category: str,
+    program: dict[str, Any],
+    service_accesses: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Derive direct flag sites and immediate ``chkFlg`` branch consumers for one program."""
+    reference_counts = program["referenceCounts"]
+    if set(reference_counts) != {
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+    } or any(not isinstance(value, int) or value < 0 for value in reference_counts.values()):
+        raise ValueError("map event direct flag program reference-count shape drift")
+
+    sites: list[dict[str, Any]] = []
+    operations = program["operations"]
+    for operation_index, operation in enumerate(operations):
+        definition_id = operation["definitionId"]
+        service = service_accesses.get(definition_id)
+        if service is None:
+            continue
+        if operation["sourceOrder"] != operation_index:
+            raise ValueError(
+                "map event direct flag operation order drift: "
+                f"{program['canonicalSymbol']}:{operation['sourceLine']}"
+            )
+        if (
+            operation["sourceMnemonic"] != service["sourceMacro"]
+            or operation["family"] != "event-service-macro"
+            or service["accessKind"] not in _DIRECT_FLAG_ACCESS_KINDS
+        ):
+            raise ValueError(
+                "map event direct flag service-definition join drift: "
+                f"{program['canonicalSymbol']}:{operation['sourceLine']}"
+            )
+        flag_number = _parse_direct_flag_operand(
+            operation["operandTexts"], source_line=operation["sourceLine"]
+        )
+        condition_consumer: dict[str, Any] | None = None
+        if service["accessKind"] == "read":
+            if operation_index + 1 >= len(operations):
+                raise ValueError(
+                    "map event direct flag read lacks an immediate condition consumer: "
+                    f"{program['canonicalSymbol']}:{operation['sourceLine']}"
+                )
+            consumer = operations[operation_index + 1]
+            if (
+                consumer["sourceOrder"] != operation["sourceOrder"] + 1
+                or consumer["controlFlowKind"] != "conditional-branch"
+                or consumer["mnemonic"] not in {"beq", "bne"}
+            ):
+                raise ValueError(
+                    "map event direct flag read consumer relationship drift: "
+                    f"{program['canonicalSymbol']}:{operation['sourceLine']}"
+                )
+            target = consumer["target"]
+            if not isinstance(target, dict) or tuple(target) != _DIRECT_FLAG_CONSUMER_TARGET_FIELDS:
+                raise ValueError(
+                    "map event direct flag read consumer target identity drift: "
+                    f"{program['canonicalSymbol']}:{consumer['sourceLine']}"
+                )
+            condition_consumer = {
+                "relation": "immediate-next-operation",
+                "operationSourceOrder": consumer["sourceOrder"],
+                "sourceLine": consumer["sourceLine"],
+                "address": consumer["address"],
+                "sourceMnemonic": consumer["sourceMnemonic"],
+                "mnemonic": consumer["mnemonic"],
+                "sizeSuffix": consumer["sizeSuffix"],
+                "operandTexts": consumer["operandTexts"],
+                "branchPolarity": "equal" if consumer["mnemonic"] == "beq" else "not-equal",
+                "target": target,
+            }
+        sites.append(
+            {
+                "category": category,
+                "accessKind": service["accessKind"],
+                "sourceMacro": operation["sourceMnemonic"],
+                "definitionId": definition_id,
+                "flagNumber": flag_number,
+                "flagOperandText": operation["operandTexts"][0],
+                "programCanonicalSymbol": program["canonicalSymbol"],
+                "programEntryAddress": program["entryAddress"],
+                "programOrder": program["programOrder"],
+                "sourcePath": program["sourcePath"],
+                "operationSourceOrder": operation["sourceOrder"],
+                "sourceLine": operation["sourceLine"],
+                "address": operation["address"],
+                "referenceWeights": {
+                    "physicalRecordCount": reference_counts["physicalRecordCount"],
+                    "setupRecordReferenceCount": reference_counts[
+                        "setupRecordReferenceCount"
+                    ],
+                    "routeRecordReferenceCount": reference_counts[
+                        "routeRecordReferenceCount"
+                    ],
+                },
+                "conditionConsumer": condition_consumer,
+            }
+        )
+    return sites
+
+
+def _direct_flag_service_definitions(
+    operation_definitions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Derive direct flag service identities from the parsed macro definitions once."""
+    access_kinds = {"CHECK": "read", "SET": "set", "CLEAR": "clear"}
+    definitions: list[dict[str, Any]] = []
+    for definition in operation_definitions:
+        if definition["family"] != "event-service-macro":
+            continue
+        service_target = definition["serviceTarget"]
+        if not isinstance(service_target, str):
+            raise ValueError(
+                "map event direct flag service target type drift: "
+                f"{definition['sourceMacro']}"
+            )
+        target_match = re.fullmatch(r"#(?P<action>[A-Z]+)_FLAG", service_target)
+        if target_match is None:
+            continue
+        action = target_match.group("action")
+        access_kind = access_kinds.get(action)
+        if access_kind is None:
+            raise ValueError(
+                "map event direct flag service action identity drift: "
+                f"{definition['sourceMacro']}"
+            )
+        templates = definition["emissionStatementTemplates"]
+        if (
+            definition["formalParameterOrdinals"] != [1]
+            or templates != [f"trap {service_target.lower()}", "dc.w \\1"]
+        ):
+            raise ValueError(
+                "map event direct flag service emission/order drift: "
+                f"{definition['sourceMacro']}"
+            )
+        definitions.append(
+            {
+                "accessKind": access_kind,
+                "sourceMacro": definition["sourceMacro"],
+                "definitionId": definition["definitionId"],
+                "sourcePath": definition["sourcePath"],
+                "definitionSourceLine": definition["definitionSourceLine"],
+                "trapOperand": service_target,
+                "flagOperandOrdinal": definition["formalParameterOrdinals"][0],
+                "emissionStatementTemplates": templates,
+            }
+        )
+    if tuple(definition["accessKind"] for definition in definitions) != _DIRECT_FLAG_ACCESS_KINDS:
+        raise ValueError("map event direct flag service coverage/order drift")
+    return definitions
+
+
+def _direct_flag_weight_counts(reference_weights: dict[str, int]) -> dict[str, int]:
+    """Keep program occurrence and the three independently joined reference weights separate."""
+    required = {
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+    }
+    if set(reference_weights) != required or any(
+        not isinstance(value, int) or value < 0 for value in reference_weights.values()
+    ):
+        raise ValueError("map event direct flag reference-weight shape drift")
+    return {
+        "physicalProgramOccurrenceCount": 1,
+        "physicalRecordWeightedSiteCount": reference_weights["physicalRecordCount"],
+        "setupRecordReferenceWeightedSiteCount": reference_weights[
+            "setupRecordReferenceCount"
+        ],
+        "routeRecordReferenceWeightedSiteCount": reference_weights[
+            "routeRecordReferenceCount"
+        ],
+    }
+
+
+def _empty_direct_flag_weight_counts() -> dict[str, int]:
+    return {
+        "physicalProgramOccurrenceCount": 0,
+        "physicalRecordWeightedSiteCount": 0,
+        "setupRecordReferenceWeightedSiteCount": 0,
+        "routeRecordReferenceWeightedSiteCount": 0,
+    }
+
+
+def _add_direct_flag_weight_counts(
+    destination: dict[str, int], source: dict[str, int]
+) -> None:
+    if set(destination) != set(source) or any(
+        not isinstance(value, int) or value < 0 for value in source.values()
+    ):
+        raise ValueError("map event direct flag weight aggregation drift")
+    for field, value in source.items():
+        destination[field] += value
+
+
+def _empty_direct_flag_access_kind_counts(
+    access_kinds: tuple[str, ...],
+) -> dict[str, dict[str, int]]:
+    return {access_kind: _empty_direct_flag_weight_counts() for access_kind in access_kinds}
+
+
+def _empty_direct_flag_category_access_kind_counts(
+    categories: tuple[str, ...], access_kinds: tuple[str, ...]
+) -> dict[str, dict[str, dict[str, int]]]:
+    return {
+        category: _empty_direct_flag_access_kind_counts(access_kinds)
+        for category in categories
+    }
+
+
+def _direct_flag_access_sites(
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    service_definitions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Attach complete program identity and global order to the per-program flag sites."""
+    service_accesses = {
+        definition["definitionId"]: definition for definition in service_definitions
+    }
+    if len(service_accesses) != len(service_definitions):
+        raise ValueError("map event direct flag service-definition identity ambiguity")
+    sites: list[dict[str, Any]] = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            program_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            for site in _direct_flag_access_sites_for_program(
+                category, program, service_accesses
+            ):
+                site["siteOrder"] = len(sites)
+                site["programKey"] = program_key
+                sites.append(site)
+    return sites
+
+
+def _direct_flag_state_aggregates(
+    sites: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    access_kinds: tuple[str, ...],
+) -> dict[str, Any]:
+    """Rebuild every direct-flag total from ordered source-bound sites."""
+    categories = tuple(programs_by_category)
+    if not access_kinds or len(set(access_kinds)) != len(access_kinds):
+        raise ValueError("map event direct flag access-kind coverage drift")
+    category_counts = _empty_direct_flag_category_access_kind_counts(
+        categories, access_kinds
+    )
+    program_sites: dict[tuple[str, str], list[dict[str, Any]]] = {
+        (
+            category,
+            _program_key(program["canonicalSymbol"], program["entryAddress"]),
+        ): []
+        for category, programs in programs_by_category.items()
+        for program in programs
+    }
+    flag_sites: dict[int, list[dict[str, Any]]] = {}
+    consumer_source_mnemonics: Counter[str] = Counter()
+    for site_order, site in enumerate(sites):
+        if site["siteOrder"] != site_order:
+            raise ValueError("map event direct flag site-order drift")
+        category = site["category"]
+        access_kind = site["accessKind"]
+        if category not in category_counts or access_kind not in access_kinds:
+            raise ValueError("map event direct flag category/access-kind drift")
+        program_key = site["programKey"]
+        program_sites_key = (category, program_key)
+        if program_sites_key not in program_sites:
+            raise ValueError("map event direct flag site program identity drift")
+        weights = _direct_flag_weight_counts(site["referenceWeights"])
+        _add_direct_flag_weight_counts(category_counts[category][access_kind], weights)
+        program_sites[program_sites_key].append(site)
+        flag_sites.setdefault(site["flagNumber"], []).append(site)
+        consumer = site["conditionConsumer"]
+        if access_kind == "read":
+            if consumer is None:
+                raise ValueError("map event direct flag read consumer absence drift")
+            consumer_source_mnemonics[consumer["sourceMnemonic"]] += 1
+        elif consumer is not None:
+            raise ValueError("map event direct flag write consumer presence drift")
+
+    total_access_kind_counts = _empty_direct_flag_access_kind_counts(access_kinds)
+    for category in categories:
+        for access_kind in access_kinds:
+            _add_direct_flag_weight_counts(
+                total_access_kind_counts[access_kind],
+                category_counts[category][access_kind],
+            )
+
+    program_totals: list[dict[str, Any]] = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            program_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            contained_sites = program_sites[(category, program_key)]
+            access_counts = _empty_direct_flag_access_kind_counts(access_kinds)
+            for site in contained_sites:
+                _add_direct_flag_weight_counts(
+                    access_counts[site["accessKind"]],
+                    _direct_flag_weight_counts(site["referenceWeights"]),
+                )
+            program_totals.append(
+                {
+                    "category": category,
+                    "programKey": program_key,
+                    "programOrder": program["programOrder"],
+                    "siteOrders": [site["siteOrder"] for site in contained_sites],
+                    "accessKindCounts": access_counts,
+                }
+            )
+
+    flag_totals: list[dict[str, Any]] = []
+    for flag_number in sorted(flag_sites):
+        contained_sites = flag_sites[flag_number]
+        access_counts = _empty_direct_flag_access_kind_counts(access_kinds)
+        category_access_counts = _empty_direct_flag_category_access_kind_counts(
+            categories, access_kinds
+        )
+        for site in contained_sites:
+            weights = _direct_flag_weight_counts(site["referenceWeights"])
+            _add_direct_flag_weight_counts(access_counts[site["accessKind"]], weights)
+            _add_direct_flag_weight_counts(
+                category_access_counts[site["category"]][site["accessKind"]], weights
+            )
+        flag_totals.append(
+            {
+                "flagNumber": flag_number,
+                "siteOrders": [site["siteOrder"] for site in contained_sites],
+                "accessKindCounts": access_counts,
+                "categoryAccessKindCounts": category_access_counts,
+            }
+        )
+
+    read_flag_domain = sorted(
+        {site["flagNumber"] for site in sites if site["accessKind"] == "read"}
+    )
+    write_flag_domain = sorted(
+        {site["flagNumber"] for site in sites if site["accessKind"] != "read"}
+    )
+    return {
+        "directFlagProgramTotals": program_totals,
+        "directFlagTotals": flag_totals,
+        "directFlagStateSummary": {
+            "serviceDefinitionCount": len(access_kinds),
+            "directFlagAccessSiteCount": len(sites),
+            "observedFlagCount": len(flag_totals),
+            "readFlagDomain": read_flag_domain,
+            "writeFlagDomain": write_flag_domain,
+            "readWriteOverlap": sorted(set(read_flag_domain) & set(write_flag_domain)),
+            "accessKindCounts": total_access_kind_counts,
+            "categoryAccessKindCounts": category_counts,
+            "readConditionConsumerCounts": {
+                "immediateConditionConsumerCount": total_access_kind_counts["read"][
+                    "physicalProgramOccurrenceCount"
+                ],
+                "sourceMnemonicCounts": dict(sorted(consumer_source_mnemonics.items())),
+                "missingImmediateOperationCount": 0,
+                "nonConditionalImmediateOperationCount": 0,
+                "nonAdjacentImmediateOperationCount": 0,
+                "unrecognizedConditionalMnemonicCount": 0,
+                "missingTargetIdentityCount": 0,
+            },
+        },
+    }
+
+
+def _reconcile_direct_flag_state_contract(
+    direct_flag_contract: dict[str, Any],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+) -> None:
+    """Cross-check flag sites against their parsed program and reference-count use sites."""
+    service_definitions = direct_flag_contract["directFlagServiceDefinitions"]
+    access_kinds = tuple(definition["accessKind"] for definition in service_definitions)
+    expected_sites = _direct_flag_access_sites(programs_by_category, service_definitions)
+    if direct_flag_contract["directFlagAccessSites"] != expected_sites:
+        raise ValueError("map event direct flag source/use-site reconciliation drift")
+    expected_aggregates = _direct_flag_state_aggregates(
+        expected_sites, programs_by_category, access_kinds
+    )
+    for field, expected in expected_aggregates.items():
+        if direct_flag_contract[field] != expected:
+            raise ValueError(f"map event direct flag {field} reconciliation drift")
+    expected_orders = {
+        "directFlagServiceDefinitionOrder": [
+            "|".join(
+                (
+                    definition["accessKind"],
+                    definition["sourceMacro"],
+                    definition["definitionId"],
+                    definition["trapOperand"],
+                )
+            )
+            for definition in service_definitions
+        ],
+        "directFlagAccessSiteOrder": [
+            str(site["siteOrder"]) for site in expected_sites
+        ],
+        "directFlagProgramTotalOrder": [
+            f"{tuple(programs_by_category).index(row['category'])}:{row['programOrder']}"
+            for row in expected_aggregates["directFlagProgramTotals"]
+        ],
+        "directFlagTotalOrder": [
+            str(row["flagNumber"]) for row in expected_aggregates["directFlagTotals"]
+        ],
+    }
+    for field, expected in expected_orders.items():
+        if direct_flag_contract[field] != expected:
+            raise ValueError(f"map event direct flag {field} reconciliation drift")
+
+
+def _direct_flag_state_contract(
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    """Build the complete direct numeric flag access surface from parsed source use sites."""
+    service_definitions = _direct_flag_service_definitions(operation_definitions)
+    access_kinds = tuple(definition["accessKind"] for definition in service_definitions)
+    sites = _direct_flag_access_sites(programs_by_category, service_definitions)
+    aggregates = _direct_flag_state_aggregates(sites, programs_by_category, access_kinds)
+    contract = {
+        "directFlagServiceDefinitions": service_definitions,
+        "directFlagServiceDefinitionOrder": [],
+        "directFlagAccessSites": sites,
+        "directFlagAccessSiteOrder": [],
+        **aggregates,
+        "directFlagProgramTotalOrder": [],
+        "directFlagTotalOrder": [],
+    }
+    contract["directFlagServiceDefinitionOrder"] = [
+        "|".join(
+            (
+                definition["accessKind"],
+                definition["sourceMacro"],
+                definition["definitionId"],
+                definition["trapOperand"],
+            )
+        )
+        for definition in service_definitions
+    ]
+    contract["directFlagAccessSiteOrder"] = [
+        str(site["siteOrder"]) for site in sites
+    ]
+    contract["directFlagProgramTotalOrder"] = [
+        f"{tuple(programs_by_category).index(row['category'])}:{row['programOrder']}"
+        for row in contract["directFlagProgramTotals"]
+    ]
+    contract["directFlagTotalOrder"] = [
+        str(row["flagNumber"]) for row in contract["directFlagTotals"]
+    ]
+    _reconcile_direct_flag_state_contract(contract, programs_by_category)
+    return contract
 
 
 def _source_program_block(
@@ -3503,6 +3974,9 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         programs_by_category,
     )
     _reconcile_operation_weight_contract(programs_by_category, operation_vocabulary_contract)
+    direct_flag_state_contract = _direct_flag_state_contract(
+        list(operation_definitions.values()), programs_by_category
+    )
     operation_orders_by_category = {
         "entityEvents": entity_target_program_operation_orders,
         "zoneEvents": zone_target_program_operation_orders,
@@ -3721,6 +4195,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             for context in payload_contexts
         ],
         **operation_vocabulary_contract,
+        **direct_flag_state_contract,
         "consumerFacts": _consumer_facts(setup),
         "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
         "entityTargetProgramSummary": entity_target_program_summary,

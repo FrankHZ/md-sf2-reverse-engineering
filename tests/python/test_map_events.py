@@ -13,6 +13,8 @@ from sf2tool.h2.map_events import (
     _bind_operations_to_h1,
     _decode_event_record,
     _derived_action_payload_context_specs,
+    _direct_flag_access_sites_for_program,
+    _direct_flag_state_contract,
     _event_macro_use_sites,
     _guard_macro_emission,
     _h1_program_index,
@@ -23,6 +25,7 @@ from sf2tool.h2.map_events import (
     _parse_jump_interface_aliases,
     _parse_program_operation,
     _payload_context_contract,
+    _reconcile_direct_flag_state_contract,
     _reconcile_event_reference_counts,
     _reconcile_operation_weight_contract,
     _record_target_ownership,
@@ -772,6 +775,15 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
         "operationFamilyOrder",
         "operationFamilyCounts",
         "operationFamilyCountOrder",
+        "directFlagServiceDefinitions",
+        "directFlagServiceDefinitionOrder",
+        "directFlagAccessSites",
+        "directFlagAccessSiteOrder",
+        "directFlagProgramTotals",
+        "directFlagProgramTotalOrder",
+        "directFlagTotals",
+        "directFlagTotalOrder",
+        "directFlagStateSummary",
         "entityTargetProgramOperationWeightOrders",
         "entityTargetProgramPayloadContextOrders",
         "zoneTargetProgramOperationWeightOrders",
@@ -780,6 +792,112 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
         "itemTargetProgramPayloadContextOrders",
     ):
         assert output[field] == fixture["expected"][field]
+    assert {
+        field: output["directFlagStateSummary"][field]
+        for field in (
+            "serviceDefinitionCount",
+            "directFlagAccessSiteCount",
+            "observedFlagCount",
+            "accessKindCounts",
+            "categoryAccessKindCounts",
+            "readConditionConsumerCounts",
+        )
+    } == {
+        "serviceDefinitionCount": 3,
+        "directFlagAccessSiteCount": 493,
+        "observedFlagCount": 151,
+        "accessKindCounts": {
+            "read": {
+                "physicalProgramOccurrenceCount": 316,
+                "physicalRecordWeightedSiteCount": 513,
+                "setupRecordReferenceWeightedSiteCount": 754,
+                "routeRecordReferenceWeightedSiteCount": 839,
+            },
+            "set": {
+                "physicalProgramOccurrenceCount": 169,
+                "physicalRecordWeightedSiteCount": 230,
+                "setupRecordReferenceWeightedSiteCount": 373,
+                "routeRecordReferenceWeightedSiteCount": 404,
+            },
+            "clear": {
+                "physicalProgramOccurrenceCount": 8,
+                "physicalRecordWeightedSiteCount": 14,
+                "setupRecordReferenceWeightedSiteCount": 21,
+                "routeRecordReferenceWeightedSiteCount": 23,
+            },
+        },
+        "categoryAccessKindCounts": {
+            "entityEvents": {
+                "read": {
+                    "physicalProgramOccurrenceCount": 190,
+                    "physicalRecordWeightedSiteCount": 314,
+                    "setupRecordReferenceWeightedSiteCount": 401,
+                    "routeRecordReferenceWeightedSiteCount": 458,
+                },
+                "set": {
+                    "physicalProgramOccurrenceCount": 80,
+                    "physicalRecordWeightedSiteCount": 88,
+                    "setupRecordReferenceWeightedSiteCount": 120,
+                    "routeRecordReferenceWeightedSiteCount": 125,
+                },
+                "clear": {
+                    "physicalProgramOccurrenceCount": 0,
+                    "physicalRecordWeightedSiteCount": 0,
+                    "setupRecordReferenceWeightedSiteCount": 0,
+                    "routeRecordReferenceWeightedSiteCount": 0,
+                },
+            },
+            "zoneEvents": {
+                "read": {
+                    "physicalProgramOccurrenceCount": 118,
+                    "physicalRecordWeightedSiteCount": 190,
+                    "setupRecordReferenceWeightedSiteCount": 338,
+                    "routeRecordReferenceWeightedSiteCount": 366,
+                },
+                "set": {
+                    "physicalProgramOccurrenceCount": 84,
+                    "physicalRecordWeightedSiteCount": 136,
+                    "setupRecordReferenceWeightedSiteCount": 244,
+                    "routeRecordReferenceWeightedSiteCount": 270,
+                },
+                "clear": {
+                    "physicalProgramOccurrenceCount": 8,
+                    "physicalRecordWeightedSiteCount": 14,
+                    "setupRecordReferenceWeightedSiteCount": 21,
+                    "routeRecordReferenceWeightedSiteCount": 23,
+                },
+            },
+            "itemEvents": {
+                "read": {
+                    "physicalProgramOccurrenceCount": 8,
+                    "physicalRecordWeightedSiteCount": 9,
+                    "setupRecordReferenceWeightedSiteCount": 15,
+                    "routeRecordReferenceWeightedSiteCount": 15,
+                },
+                "set": {
+                    "physicalProgramOccurrenceCount": 5,
+                    "physicalRecordWeightedSiteCount": 6,
+                    "setupRecordReferenceWeightedSiteCount": 9,
+                    "routeRecordReferenceWeightedSiteCount": 9,
+                },
+                "clear": {
+                    "physicalProgramOccurrenceCount": 0,
+                    "physicalRecordWeightedSiteCount": 0,
+                    "setupRecordReferenceWeightedSiteCount": 0,
+                    "routeRecordReferenceWeightedSiteCount": 0,
+                },
+            },
+        },
+        "readConditionConsumerCounts": {
+            "immediateConditionConsumerCount": 316,
+            "sourceMnemonicCounts": {"beq.s": 49, "bne.s": 264, "bne.w": 3},
+            "missingImmediateOperationCount": 0,
+            "nonConditionalImmediateOperationCount": 0,
+            "nonAdjacentImmediateOperationCount": 0,
+            "unrecognizedConditionalMnemonicCount": 0,
+            "missingTargetIdentityCount": 0,
+        },
+    }
     assert len(output["operationVocabulary"]) == 54
     assert len(output["operationDefinitions"]) == 34
     assert output["operationVocabularySummary"] == {
@@ -1267,14 +1385,56 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     complete_output: dict[str, Any],
 ) -> None:
     output = complete_output
-    output_validator = Draft7Validator(load_json(SCHEMA), format_checker=FormatChecker())
-    fixture_validator = Draft7Validator(load_json(FIXTURE_SCHEMA), format_checker=FormatChecker())
+    output_schema = load_json(SCHEMA)
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    output_validator = Draft7Validator(output_schema, format_checker=FormatChecker())
+    fixture_validator = Draft7Validator(fixture_schema, format_checker=FormatChecker())
+
+    direct_output_site_validator = Draft7Validator(
+        {
+            "$schema": output_schema["$schema"],
+            "definitions": output_schema["definitions"],
+            "$ref": "#/definitions/directFlagAccessSite",
+        },
+        format_checker=FormatChecker(),
+    )
+    direct_output_site_order_validator = Draft7Validator(
+        output_schema["properties"]["directFlagAccessSiteOrder"],
+        format_checker=FormatChecker(),
+    )
+    direct_fixture_site_validator = Draft7Validator(
+        {
+            "$schema": fixture_schema["$schema"],
+            "definitions": fixture_schema["definitions"],
+            "$ref": "#/definitions/outputContract/definitions/directFlagAccessSite",
+        },
+        format_checker=FormatChecker(),
+    )
+    direct_fixture_total_validator = Draft7Validator(
+        {
+            "$schema": fixture_schema["$schema"],
+            "definitions": fixture_schema["definitions"],
+            "$ref": "#/definitions/outputContract/definitions/directFlagTotal",
+        },
+        format_checker=FormatChecker(),
+    )
+    direct_fixture_output = fixture_schema["definitions"]["outputContract"]
+    direct_fixture_total_order_validator = Draft7Validator(
+        direct_fixture_output["properties"]["directFlagTotalOrder"],
+        format_checker=FormatChecker(),
+    )
 
     def output_rejects(instance: dict[str, Any]) -> None:
         assert next(output_validator.iter_errors(instance), None) is not None
 
     def fixture_rejects(instance: dict[str, Any]) -> None:
         assert next(fixture_validator.iter_errors(instance), None) is not None
+
+    def direct_rejects(validator: Draft7Validator, instance: Any) -> None:
+        assert next(validator.iter_errors(instance), None) is not None
+
+    def direct_accepts(validator: Draft7Validator, instance: Any) -> None:
+        assert next(validator.iter_errors(instance), None) is None
 
     missing = copy.deepcopy(output)
     del missing["categories"]["entityEvents"]["tables"][0]["records"][0]["targetCanonicalSymbol"]
@@ -1307,6 +1467,24 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     operation_definition_boundary = copy.deepcopy(output)
     operation_definition_boundary["operationDefinitions"][0]["definitionSourceLine"] = 0
     output_rejects(operation_definition_boundary)
+
+    direct_output_site = output["directFlagAccessSites"][0]
+    direct_accepts(direct_output_site_validator, direct_output_site)
+    direct_flag_missing = copy.deepcopy(direct_output_site)
+    del direct_flag_missing["conditionConsumer"]["branchPolarity"]
+    direct_rejects(direct_output_site_validator, direct_flag_missing)
+
+    direct_flag_extra = copy.deepcopy(direct_output_site)
+    direct_flag_extra["conditionConsumer"]["target"]["unexpected"] = True
+    direct_rejects(direct_output_site_validator, direct_flag_extra)
+
+    direct_output_site_order = output["directFlagAccessSiteOrder"]
+    direct_accepts(direct_output_site_order_validator, direct_output_site_order)
+    direct_rejects(direct_output_site_order_validator, list(reversed(direct_output_site_order)))
+
+    direct_flag_boundary = copy.deepcopy(direct_output_site)
+    direct_flag_boundary["flagNumber"] = -1
+    direct_rejects(direct_output_site_validator, direct_flag_boundary)
 
     operation_family_mutation = copy.deepcopy(output)
     operation_family_mutation["entityTargetPrograms"][0]["operations"][0]["family"] = (
@@ -1352,6 +1530,31 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     fixture_payload_context_extra = copy.deepcopy(fixture)
     fixture_payload_context_extra["expected"]["operationPayloadContexts"][0]["unexpected"] = 1
     fixture_rejects(fixture_payload_context_extra)
+
+    direct_fixture_site = fixture["expected"]["directFlagAccessSites"][0]
+    direct_accepts(direct_fixture_site_validator, direct_fixture_site)
+    fixture_direct_flag_renamed = copy.deepcopy(direct_fixture_site)
+    direct_reference_weights = fixture_direct_flag_renamed["referenceWeights"]
+    direct_reference_weights["renamedPhysicalRecordCount"] = direct_reference_weights.pop(
+        "physicalRecordCount"
+    )
+    direct_rejects(direct_fixture_site_validator, fixture_direct_flag_renamed)
+
+    fixture_direct_flag_extra = copy.deepcopy(direct_fixture_site)
+    fixture_direct_flag_extra["conditionConsumer"]["unexpected"] = True
+    direct_rejects(direct_fixture_site_validator, fixture_direct_flag_extra)
+
+    direct_fixture_total_order = fixture["expected"]["directFlagTotalOrder"]
+    direct_accepts(direct_fixture_total_order_validator, direct_fixture_total_order)
+    direct_rejects(
+        direct_fixture_total_order_validator, list(reversed(direct_fixture_total_order))
+    )
+
+    direct_fixture_total = fixture["expected"]["directFlagTotals"][0]
+    direct_accepts(direct_fixture_total_validator, direct_fixture_total)
+    fixture_direct_flag_boundary = copy.deepcopy(direct_fixture_total)
+    fixture_direct_flag_boundary["flagNumber"] = -1
+    direct_rejects(direct_fixture_total_validator, fixture_direct_flag_boundary)
 
     program_missing = copy.deepcopy(output)
     del program_missing["entityTargetPrograms"][0]["termination"]["sourceMnemonic"]
@@ -1525,6 +1728,305 @@ def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites(
             profile={"canonicalSymbol": "Entry", "targetH1Address": 0x1000},
             block=block(),
         )
+
+
+def test_direct_flag_program_parser_derives_reads_writes_and_immediate_consumers() -> None:
+    service_accesses = {
+        "event-service-macro:chkFlg": {"sourceMacro": "chkFlg", "accessKind": "read"},
+        "event-service-macro:setFlg": {"sourceMacro": "setFlg", "accessKind": "set"},
+        "event-service-macro:clrFlg": {"sourceMacro": "clrFlg", "accessKind": "clear"},
+    }
+
+    def target(symbol: str, address: int) -> dict[str, Any]:
+        labels = [
+            {
+                "symbol": symbol,
+                "sourcePath": "data/maps/entries/map00/mapsetups/s2_entityevents.asm",
+                "sourceLine": 90,
+            }
+        ]
+        return {
+            "instructionTargetSymbol": symbol,
+            "instructionTargetAddress": address,
+            "instructionTargetAddressLabels": labels,
+            "effectiveTargetSymbol": symbol,
+            "effectiveTargetAddress": address,
+            "effectiveTargetAddressLabels": labels,
+            "effectiveTargetScope": "internal",
+        }
+
+    def flag_operation(
+        source_order: int, macro: str, operand: str, address: int
+    ) -> dict[str, Any]:
+        return {
+            "sourceOrder": source_order,
+            "sourceLine": source_order + 10,
+            "sourceMnemonic": macro,
+            "mnemonic": macro.lower(),
+            "sizeSuffix": None,
+            "operandTexts": [operand],
+            "controlFlowKind": "ordinary",
+            "address": address,
+            "target": None,
+            "family": "event-service-macro",
+            "definitionId": f"event-service-macro:{macro}",
+        }
+
+    def branch_operation(
+        source_order: int, mnemonic: str, address: int, branch_target: dict[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "sourceOrder": source_order,
+            "sourceLine": source_order + 10,
+            "sourceMnemonic": mnemonic,
+            "mnemonic": mnemonic.split(".", 1)[0],
+            "sizeSuffix": f".{mnemonic.split('.', 1)[1]}" if "." in mnemonic else None,
+            "operandTexts": [branch_target["instructionTargetSymbol"]],
+            "controlFlowKind": "conditional-branch",
+            "address": address,
+            "target": branch_target,
+            "family": "raw-68000-control-flow",
+            "definitionId": None,
+        }
+
+    def program(operations: list[dict[str, Any]]) -> dict[str, Any]:
+        return {
+            "canonicalSymbol": "Map0_EntityEvent0",
+            "entryAddress": 0x1000,
+            "programOrder": 0,
+            "sourcePath": "data/maps/entries/map00/mapsetups/s2_entityevents.asm",
+            "referenceCounts": {
+                "physicalRecordCount": 2,
+                "setupRecordReferenceCount": 3,
+                "routeRecordReferenceCount": 4,
+            },
+            "operations": operations,
+        }
+
+    first_target = target("first", 0x1010)
+    second_target = target("second", 0x1020)
+    third_target = target("third", 0x1030)
+    sites = _direct_flag_access_sites_for_program(
+        "entityEvents",
+        program(
+            [
+                flag_operation(0, "chkFlg", "10", 0x1000),
+                branch_operation(1, "bne.s", 0x1004, first_target),
+                flag_operation(2, "chkFlg", "$000B", 0x1006),
+                branch_operation(3, "beq.s", 0x100A, second_target),
+                flag_operation(4, "chkFlg", "12", 0x100C),
+                branch_operation(5, "bne.w", 0x1010, third_target),
+                flag_operation(6, "setFlg", "13", 0x1014),
+                flag_operation(7, "clrFlg", "14", 0x1018),
+            ]
+        ),
+        service_accesses,
+    )
+    assert [(site["accessKind"], site["flagNumber"]) for site in sites] == [
+        ("read", 10),
+        ("read", 11),
+        ("read", 12),
+        ("set", 13),
+        ("clear", 14),
+    ]
+    assert [site["conditionConsumer"] for site in sites[:3]] == [
+        {
+            "relation": "immediate-next-operation",
+            "operationSourceOrder": 1,
+            "sourceLine": 11,
+            "address": 0x1004,
+            "sourceMnemonic": "bne.s",
+            "mnemonic": "bne",
+            "sizeSuffix": ".s",
+            "operandTexts": ["first"],
+            "branchPolarity": "not-equal",
+            "target": first_target,
+        },
+        {
+            "relation": "immediate-next-operation",
+            "operationSourceOrder": 3,
+            "sourceLine": 13,
+            "address": 0x100A,
+            "sourceMnemonic": "beq.s",
+            "mnemonic": "beq",
+            "sizeSuffix": ".s",
+            "operandTexts": ["second"],
+            "branchPolarity": "equal",
+            "target": second_target,
+        },
+        {
+            "relation": "immediate-next-operation",
+            "operationSourceOrder": 5,
+            "sourceLine": 15,
+            "address": 0x1010,
+            "sourceMnemonic": "bne.w",
+            "mnemonic": "bne",
+            "sizeSuffix": ".w",
+            "operandTexts": ["third"],
+            "branchPolarity": "not-equal",
+            "target": third_target,
+        },
+    ]
+    assert [site["conditionConsumer"] for site in sites[3:]] == [None, None]
+    assert sites[0]["referenceWeights"] == {
+        "physicalRecordCount": 2,
+        "setupRecordReferenceCount": 3,
+        "routeRecordReferenceCount": 4,
+    }
+
+    bad_operand = program([
+        flag_operation(0, "chkFlg", "FlagName", 0x1000),
+        branch_operation(1, "bne.s", 0x1004, first_target),
+    ])
+    with pytest.raises(ValueError, match="operand syntax drift"):
+        _direct_flag_access_sites_for_program("entityEvents", bad_operand, service_accesses)
+
+    missing_consumer = program([flag_operation(0, "chkFlg", "10", 0x1000)])
+    with pytest.raises(ValueError, match="lacks an immediate condition consumer"):
+        _direct_flag_access_sites_for_program("entityEvents", missing_consumer, service_accesses)
+
+    non_conditional_consumer = program([
+        flag_operation(0, "chkFlg", "10", 0x1000),
+        {**flag_operation(1, "setFlg", "11", 0x1004)},
+    ])
+    with pytest.raises(ValueError, match="consumer relationship drift"):
+        _direct_flag_access_sites_for_program(
+            "entityEvents", non_conditional_consumer, service_accesses
+        )
+
+    reordered_consumer = program([
+        flag_operation(0, "chkFlg", "10", 0x1000),
+        branch_operation(2, "bne.s", 0x1004, first_target),
+    ])
+    with pytest.raises(ValueError, match="consumer relationship drift"):
+        _direct_flag_access_sites_for_program("entityEvents", reordered_consumer, service_accesses)
+
+    bad_target = copy.deepcopy(first_target)
+    del bad_target["effectiveTargetAddress"]
+    with pytest.raises(ValueError, match="target identity drift"):
+        _direct_flag_access_sites_for_program(
+            "entityEvents",
+            program(
+                [
+                    flag_operation(0, "chkFlg", "10", 0x1000),
+                    branch_operation(1, "bne.s", 0x1004, bad_target),
+                ]
+            ),
+            service_accesses,
+        )
+
+
+def test_direct_flag_contract_reconciles_service_use_consumer_and_weight_mutations(
+    complete_output: dict[str, Any],
+) -> None:
+    programs_by_category = {
+        "entityEvents": complete_output["entityTargetPrograms"],
+        "zoneEvents": complete_output["zoneTargetPrograms"],
+        "itemEvents": complete_output["itemTargetPrograms"],
+    }
+    direct_contract = {
+        field: copy.deepcopy(complete_output[field])
+        for field in (
+            "directFlagServiceDefinitions",
+            "directFlagServiceDefinitionOrder",
+            "directFlagAccessSites",
+            "directFlagAccessSiteOrder",
+            "directFlagProgramTotals",
+            "directFlagProgramTotalOrder",
+            "directFlagTotals",
+            "directFlagTotalOrder",
+            "directFlagStateSummary",
+        )
+    }
+    _reconcile_direct_flag_state_contract(direct_contract, programs_by_category)
+
+    changed_definition = copy.deepcopy(complete_output["operationDefinitions"])
+    chk_definition = next(
+        definition for definition in changed_definition if definition["sourceMacro"] == "chkFlg"
+    )
+    chk_definition["emissionStatementTemplates"].reverse()
+    with pytest.raises(ValueError, match="service emission/order drift"):
+        _direct_flag_state_contract(changed_definition, programs_by_category)
+
+    changed_service_coverage = copy.deepcopy(complete_output["operationDefinitions"])
+    clear_definition = next(
+        definition
+        for definition in changed_service_coverage
+        if definition["sourceMacro"] == "clrFlg"
+    )
+    clear_definition["serviceTarget"] = "#CLEAR_STATE"
+    with pytest.raises(ValueError, match="service coverage/order drift"):
+        _direct_flag_state_contract(changed_service_coverage, programs_by_category)
+
+    changed_operand_programs = copy.deepcopy(programs_by_category)
+    first_read = next(
+        operation
+        for program in changed_operand_programs["entityEvents"]
+        for operation in program["operations"]
+        if operation["sourceMnemonic"] == "chkFlg"
+    )
+    first_read["operandTexts"] = ["FlagName"]
+    with pytest.raises(ValueError, match="operand syntax drift"):
+        _direct_flag_state_contract(
+            complete_output["operationDefinitions"], changed_operand_programs
+        )
+
+    changed_branch_programs = copy.deepcopy(programs_by_category)
+    for program in changed_branch_programs["entityEvents"]:
+        for index, operation in enumerate(program["operations"][:-1]):
+            if operation["sourceMnemonic"] == "chkFlg":
+                consumer = program["operations"][index + 1]
+                consumer["sourceMnemonic"] = "bra.s"
+                consumer["mnemonic"] = "bra"
+                consumer["controlFlowKind"] = "unconditional-branch"
+                break
+        else:
+            continue
+        break
+    with pytest.raises(ValueError, match="consumer relationship drift"):
+        _direct_flag_state_contract(
+            complete_output["operationDefinitions"], changed_branch_programs
+        )
+
+    changed_order_programs = copy.deepcopy(programs_by_category)
+    for program in changed_order_programs["entityEvents"]:
+        for index, operation in enumerate(program["operations"][:-1]):
+            if operation["sourceMnemonic"] == "chkFlg":
+                program["operations"][index + 1]["sourceOrder"] += 1
+                break
+        else:
+            continue
+        break
+    with pytest.raises(ValueError, match="consumer relationship drift"):
+        _direct_flag_state_contract(
+            complete_output["operationDefinitions"], changed_order_programs
+        )
+
+    changed_polarity = copy.deepcopy(direct_contract)
+    first_consumer = changed_polarity["directFlagAccessSites"][0]["conditionConsumer"]
+    assert first_consumer is not None
+    first_consumer["mnemonic"] = "beq" if first_consumer["mnemonic"] == "bne" else "bne"
+    first_consumer["sourceMnemonic"] = (
+        f"{first_consumer['mnemonic']}{first_consumer['sizeSuffix']}"
+    )
+    first_consumer["branchPolarity"] = (
+        "equal" if first_consumer["mnemonic"] == "beq" else "not-equal"
+    )
+    with pytest.raises(ValueError, match="source/use-site reconciliation drift"):
+        _reconcile_direct_flag_state_contract(changed_polarity, programs_by_category)
+
+    changed_target = copy.deepcopy(direct_contract)
+    target = changed_target["directFlagAccessSites"][0]["conditionConsumer"]["target"]
+    target["instructionTargetSymbol"] = "wrong-target"
+    with pytest.raises(ValueError, match="source/use-site reconciliation drift"):
+        _reconcile_direct_flag_state_contract(changed_target, programs_by_category)
+
+    changed_weights = copy.deepcopy(direct_contract)
+    changed_weights["directFlagAccessSites"][0]["referenceWeights"][
+        "routeRecordReferenceCount"
+    ] += 1
+    with pytest.raises(ValueError, match="source/use-site reconciliation drift"):
+        _reconcile_direct_flag_state_contract(changed_weights, programs_by_category)
 
 
 def test_jump_interface_alias_parser_guards_source_and_h1_target_relationship(
@@ -1949,6 +2451,20 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "mapEventOperationFamilyCount",
         "mapEventOperationVocabularySummary",
     } <= set(schema["definitions"])
+    assert {
+        "directFlagReferenceWeights",
+        "directFlagWeightCounts",
+        "directFlagAccessKindCounts",
+        "directFlagCategoryAccessKindCounts",
+        "directFlagConditionTarget",
+        "directFlagConditionConsumer",
+        "directFlagAccessSite",
+        "directFlagServiceDefinition",
+        "directFlagProgramTotal",
+        "directFlagTotal",
+        "directFlagReadConditionConsumerCounts",
+        "directFlagStateSummary",
+    } <= set(schema["definitions"])
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
         ("zoneEvents", "zoneEventRecord"),
@@ -1977,6 +2493,30 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "$ref": "#/definitions/entityTargetProgramOperation"
     }
     assert schema["definitions"]["mapEventTargetProgramExclusion"]["additionalProperties"] is False
+    assert schema["properties"]["directFlagAccessSites"]["items"] == {
+        "$ref": "#/definitions/directFlagAccessSite"
+    }
+    assert schema["properties"]["directFlagProgramTotals"]["items"] == {
+        "$ref": "#/definitions/directFlagProgramTotal"
+    }
+    assert schema["properties"]["directFlagTotals"]["items"] == {
+        "$ref": "#/definitions/directFlagTotal"
+    }
+    for definition in (
+        "directFlagReferenceWeights",
+        "directFlagWeightCounts",
+        "directFlagAccessKindCounts",
+        "directFlagCategoryAccessKindCounts",
+        "directFlagConditionTarget",
+        "directFlagConditionConsumer",
+        "directFlagAccessSite",
+        "directFlagServiceDefinition",
+        "directFlagProgramTotal",
+        "directFlagTotal",
+        "directFlagReadConditionConsumerCounts",
+        "directFlagStateSummary",
+    ):
+        assert schema["definitions"][definition]["additionalProperties"] is False
     for definition in (
         "mapEventOperationWeightCounts",
         "mapEventOperationDefinition",
@@ -1995,6 +2535,15 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
             assert schema["properties"][f"{category}TargetProgram{suffix}"]["const"]
     fixture_schema = load_json(FIXTURE_SCHEMA)
     fixture_output = fixture_schema["definitions"]["outputContract"]
+    assert fixture_output["properties"]["directFlagAccessSites"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/directFlagAccessSite"
+    }
+    assert fixture_output["properties"]["directFlagProgramTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/directFlagProgramTotal"
+    }
+    assert fixture_output["properties"]["directFlagTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/directFlagTotal"
+    }
     for category in ("zone", "item"):
         assert fixture_output["properties"][f"{category}TargetPrograms"]["items"] == {
             "$ref": "#/definitions/mapEventTargetProgram"

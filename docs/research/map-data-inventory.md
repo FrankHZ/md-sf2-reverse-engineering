@@ -384,6 +384,51 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
 `uv run sf2 h2 map-events` (observed four context records; 54 / 3,579 / 34 / zero unclassified / zero
 ambiguous). Evidence date: 2026-07-23.
 
+### Direct Flag-State Source Surface
+
+**Confirmed — source-label-defined access inventory:** the complete 684 entity, 150 zone, and
+80 item target-program corpus contains 493 direct numeric uses of the three parsed event-service
+macros: 316 `chkFlg` sites classified as source-label `read`, 169 `setFlg` sites classified as
+source-label `set`, and 8 `clrFlg` sites classified as source-label `clear`. The category split is
+190 / 80 / 0 entity, 118 / 84 / 8 zone, and 8 / 5 / 0 item (read / set / clear). These classifications
+preserve the upstream macro labels and parsed service definitions; they do not establish an in-game
+meaning, persistence class, or lifecycle for any numeric operand.
+
+**Confirmed — parsed definition, operand, and consumer relationship:**
+`sf2macros.asm:32-45` supplies the three source definitions in order: `chkFlg`, `setFlg`, and
+`clrFlg`, each with one formal operand and a two-statement `trap`/`dc.w` emission template. The
+fixture records the parsed definition ID, source macro, trap operand, formal ordinal, and exact
+emission statements for every direct site, along with its program identity, source/H1 operation
+identity, and raw decimal or `$`-hex numeric operand. Every one of the 316 `chkFlg` sites has the
+next ordered operation as a conditional branch consumer: 264 `bne.s`, 49 `beq.s`, and 3 `bne.w`.
+Each record retains the next-operation source order, mnemonic/suffix, equal/not-equal source
+polarity, and complete instruction/effective branch target identity. The static exception counters
+are all zero: missing immediate operation, non-conditional operation, non-adjacent operation,
+unrecognized conditional mnemonic, and missing target identity.
+
+**Confirmed — domains, weights, and construction guard:** the observed numeric union has 151
+operands: 128 occur in `read`, 112 in `set`, 5 in `clear`, 114 in the source-label write union, and
+91 in both the read and write unions. The independently retained weighted counts are:
+
+| Source-label access | Physical program occurrences | Physical-record weighted | Setup-reference weighted | Route-reference weighted |
+| --- | ---: | ---: | ---: | ---: |
+| read | 316 | 513 | 754 | 839 |
+| set | 169 | 230 | 373 | 404 |
+| clear | 8 | 14 | 21 | 23 |
+
+The parser builds zero-inclusive per-program totals for all 914 target programs and ordered
+per-operand totals for the observed union, then re-derives all sites, domains, branch-consumer
+records, and four distinct weight kinds from the parsed macro definitions and program use sites
+before fixture comparison. A smallest source mutation to a direct macro emission/order, numeric
+operand, branch opcode/polarity/target, operation order, or program reference weight fails this
+construction guard. Provenance: USA ROM SHA-256 recorded above;
+`ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2macros.asm:32-45`; all parsed
+`data/maps/entries/*/mapsetups/s2_entityevents*.asm`, `s3_zoneevents*.asm`, and
+`s5_itemevents*.asm` sources plus resolved target-program body owners;
+`build/sf2build-h1.lst`; and `uv run sf2 h2 map-events` (observed 493 / 151 / 316 immediate branch
+consumers). Evidence date: 2026-07-27.
+
 ### Grouped H3 Runtime Questions
 
 - **Unknown — normal-story direct-`rts` reachability:** observe map 52's non-empty setup across normal
