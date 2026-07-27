@@ -83,6 +83,13 @@ opcode or target names alone.
 Standalone script resources likewise retain ordered commands, operand text, and resolved references
 between all 178 labels. These are importable command graphs, not proof that a modern engine may skip
 the original interpreter's state, wait, camera, dialogue, or presentation sequencing.
+Direct map-event `txt` and operand-free `clsTxt` forms are likewise source identities, not a display
+contract. An importer MUST retain each ordered site as either a numeric text-line identifier or the
+literal `$FFFF` sentinel source form, plus its caller and independently named physical/setup/route
+reference weights. It MUST preserve the complete 0–4,266 declared ID domain, including
+zero-reference IDs, without copying or decoding original text into the map contract. This does not
+specify shown content, speakers, windows, waits, input, story progression, or presentation behavior;
+those remain outside this static import rule.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

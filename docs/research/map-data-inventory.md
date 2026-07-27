@@ -13,7 +13,7 @@
 - Status: **Inferred** for event-script side effects, follower/entity collision state, and transition persistence
 - Status: **Unknown** for direct-`rts` entity-event reachability through normal story routes, sequenced-orientation consumption,
   nonstandard description callers, presentation timing, rendered layout parity, and VDP timing
-- Evidence date: 2026-07-23
+- Evidence date: 2026-07-27
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -464,6 +464,42 @@ Provenance: USA ROM SHA-256 above; `ShiningForceCentral/SF2DISASM` `master` comm
 owners; `build/sf2build-h1.lst`; and the maintained
 `sf2-map-script-engine-static-v1` `programCorpus.labelOwners`/`programs` records. Observed command:
 `uv run sf2 h2 map-events` (147 / 138 / 135 / 348 / 304). Evidence date: 2026-07-27.
+
+### Direct `TEXTBOX` Source-Reference Surface
+
+**Confirmed — source form, operand domain, and source/H1 inventory:**
+`sf2macros.asm:52-55` defines `txt` as the ordered source emission `trap #TEXTBOX` then `dc.w \1`;
+`sf2macros.asm:57-60` defines operand-free `clsTxt` as `trap #TEXTBOX` then `dc.w $FFFF`.
+The map-event parser retains these as the neutral source kinds `line-reference` and
+`close-sentinel`, respectively. Across all 684 entity, 150 zone, and 80 item target programs, it
+records 1,006 source/H1 sites: 981 line-reference and 25 literal-sentinel sites. Their physical
+program-occurrence / physical-record / setup-record / route-record weights are 1,006 / 1,369 /
+1,599 / 1,710; the category/kind physical-site split is entity 958/23, zone 18/0, and item 5/2
+(line-reference/close-sentinel). The full 914-program caller table is zero-inclusive.
+
+**Confirmed — maintained line-ID-domain parser join:** the parser reads only the declared contiguous
+identifier domain from the maintained `text_banks` source/ROM parser's `gamescriptFacts`, not from
+either golden fixture and not from decoded text: 4,267 IDs from 0 through 4,266. The parser
+cross-checks the `gamescript.txt` identifiers against every source-owned, length-prefixed text-bank
+record and its ROM byte range. Every parsed `txt` operand is numeric and inside that domain. It
+observes 942 distinct IDs, with minimum 11 and maximum 4,178; its zero-inclusive line-total table
+has all 4,267 IDs. This is an identifier/reference contract, not evidence about decoded content,
+speakers, windows, waits, input, story, or presentation.
+
+**Confirmed — source-use guard and exact artifact shape:** parsed macro form, macro identity,
+operand syntax/domain, operation order/address, caller identity, each reference weight, and the
+complete line/caller ordering are reconstructed from the source/H1 use sites before fixture
+comparison. A changed macro emission/order, operand, source operation order, weight, or line-total
+order fails construction. The fixture and recursively closed output/fixture schemas use one shared
+closed site/total record shape with exact corpus bounds; the 4,267-row table remains compact rather
+than expanding a schema tree per ID. Provenance: USA ROM SHA-256 above;
+`ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2macros.asm:52-60`; all parsed
+`data/maps/entries/*/mapsetups/s2_entityevents*.asm`, `s3_zoneevents*.asm`, and
+`s5_itemevents*.asm` target-program owners; `build/sf2build-h1.lst`; maintained
+`text_banks` source/ROM domain parser over `data/scripting/text/gamescript.txt` and the 17 bank
+sources; and `uv run sf2 h2 map-events`
+(observed 1,006 / 981 / 25 / 942 / 4,267). Evidence date: 2026-07-27.
 
 ### Grouped H3 Runtime Questions
 

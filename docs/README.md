@@ -138,6 +138,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   （316 read / 169 set / 8 clear，151 个 operand、316 个 immediate conditional consumer）/各 category
   合计 469 个 instruction 与 effective target identity、147 个 direct `script` source reference
   （138 个 instruction label、135 个 effective map-script owner；348/304 个零计数完整 target domain）、
+  以及 1,006 个 direct `TEXTBOX` source/H1 reference（981 个 numeric line-reference、25 个 `$FFFF`
+  sentinel；914 个 caller 与 4,267 个 declared text-line ID 的零计数完整表，未解码 text）、
   378 个 pointer-table 与 390 个 selector-route category join、map44 raw-target boundary、9 个
   first-match 选择案例，以及 75 个 description target/227 个物理
   entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone

@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 from jsonschema import Draft7Validator, FormatChecker
 
+from sf2tool.h2 import text_banks
 from sf2tool.h2.map_events import (
     FIXTURE,
     FIXTURE_SCHEMA,
@@ -24,19 +25,25 @@ from sf2tool.h2.map_events import (
     _normalise_asm_statement,
     _parse_jump_interface_aliases,
     _parse_program_operation,
+    _parse_textbox_line_operand,
     _payload_context_contract,
     _reconcile_direct_flag_state_contract,
     _reconcile_event_reference_counts,
     _reconcile_operation_weight_contract,
     _reconcile_script_invocation_graph_contract,
+    _reconcile_textbox_reference_contract,
     _record_target_ownership,
     _script_invocation_graph_contract,
     _setup_category_joins,
     _source_macro_catalog,
     _target_program_contract,
+    _textbox_reference_contract,
+    _textbox_reference_sites,
+    _textbox_service_definitions,
     _verify_complete_map_events_fixture,
     build_map_events_contract,
 )
+from sf2tool.h2.text_banks import build_text_line_domain_contract
 from sf2tool.jsonio import load_json, validate_json
 
 
@@ -796,6 +803,16 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
         "scriptInvocationEffectiveTargetTotals",
         "scriptInvocationEffectiveTargetTotalOrder",
         "scriptInvocationSummary",
+        "textboxLineDomain",
+        "textboxServiceDefinitions",
+        "textboxServiceDefinitionOrder",
+        "textboxReferenceSites",
+        "textboxReferenceSiteOrder",
+        "textboxCallerTotals",
+        "textboxCallerTotalOrder",
+        "textboxLineTotals",
+        "textboxLineTotalOrder",
+        "textboxSummary",
         "entityTargetProgramOperationWeightOrders",
         "entityTargetProgramPayloadContextOrders",
         "zoneTargetProgramOperationWeightOrders",
@@ -944,6 +961,118 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
             },
         },
     }
+    assert output["textboxLineDomain"] == {
+        "contractId": "sf2-text-banks-static-v1",
+        "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+        "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+        "sourcePath": "data/scripting/text/gamescript.txt",
+        "lineIdCount": 4267,
+        "firstLineId": 0,
+        "lastLineId": 4266,
+        "idsAreContiguous": True,
+    }
+    assert output["textboxServiceDefinitions"] == [
+        {
+            "sourceKind": "line-reference",
+            "definitionId": "event-service-macro:txt",
+            "sourceMacro": "txt",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 52,
+            "serviceTarget": "#TEXTBOX",
+            "formalParameterOrdinals": [1],
+            "emissionStatementTemplates": ["trap #textbox", "dc.w \\1"],
+            "sentinelEncoding": None,
+        },
+        {
+            "sourceKind": "close-sentinel",
+            "definitionId": "event-service-macro:clsTxt",
+            "sourceMacro": "clsTxt",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 57,
+            "serviceTarget": "#TEXTBOX",
+            "formalParameterOrdinals": [],
+            "emissionStatementTemplates": ["trap #textbox", "dc.w $ffff"],
+            "sentinelEncoding": "$FFFF",
+        },
+    ]
+    assert output["textboxSummary"] == {
+        "serviceDefinitionCount": 2,
+        "siteCount": 1006,
+        "lineReferenceSiteCount": 981,
+        "closeSentinelSiteCount": 25,
+        "declaredLineIdCount": 4267,
+        "observedLineIdCount": 942,
+        "minimumObservedLineId": 11,
+        "maximumObservedLineId": 4178,
+        "weightCounts": {
+            "physicalProgramOccurrenceCount": 1006,
+            "physicalRecordWeightedSiteCount": 1369,
+            "setupRecordReferenceWeightedSiteCount": 1599,
+            "routeRecordReferenceWeightedSiteCount": 1710,
+        },
+        "kindWeightCounts": {
+            "line-reference": {
+                "physicalProgramOccurrenceCount": 981,
+                "physicalRecordWeightedSiteCount": 1328,
+                "setupRecordReferenceWeightedSiteCount": 1551,
+                "routeRecordReferenceWeightedSiteCount": 1660,
+            },
+            "close-sentinel": {
+                "physicalProgramOccurrenceCount": 25,
+                "physicalRecordWeightedSiteCount": 41,
+                "setupRecordReferenceWeightedSiteCount": 48,
+                "routeRecordReferenceWeightedSiteCount": 50,
+            },
+        },
+        "categoryKindWeightCounts": {
+            "entityEvents": {
+                "line-reference": {
+                    "physicalProgramOccurrenceCount": 958,
+                    "physicalRecordWeightedSiteCount": 1302,
+                    "setupRecordReferenceWeightedSiteCount": 1522,
+                    "routeRecordReferenceWeightedSiteCount": 1631,
+                },
+                "close-sentinel": {
+                    "physicalProgramOccurrenceCount": 23,
+                    "physicalRecordWeightedSiteCount": 39,
+                    "setupRecordReferenceWeightedSiteCount": 44,
+                    "routeRecordReferenceWeightedSiteCount": 46,
+                },
+            },
+            "zoneEvents": {
+                "line-reference": {
+                    "physicalProgramOccurrenceCount": 18,
+                    "physicalRecordWeightedSiteCount": 21,
+                    "setupRecordReferenceWeightedSiteCount": 21,
+                    "routeRecordReferenceWeightedSiteCount": 21,
+                },
+                "close-sentinel": {
+                    "physicalProgramOccurrenceCount": 0,
+                    "physicalRecordWeightedSiteCount": 0,
+                    "setupRecordReferenceWeightedSiteCount": 0,
+                    "routeRecordReferenceWeightedSiteCount": 0,
+                },
+            },
+            "itemEvents": {
+                "line-reference": {
+                    "physicalProgramOccurrenceCount": 5,
+                    "physicalRecordWeightedSiteCount": 5,
+                    "setupRecordReferenceWeightedSiteCount": 8,
+                    "routeRecordReferenceWeightedSiteCount": 8,
+                },
+                "close-sentinel": {
+                    "physicalProgramOccurrenceCount": 2,
+                    "physicalRecordWeightedSiteCount": 2,
+                    "setupRecordReferenceWeightedSiteCount": 4,
+                    "routeRecordReferenceWeightedSiteCount": 4,
+                },
+            },
+        },
+    }
+    assert len(output["textboxCallerTotals"]) == 914
+    assert len(output["textboxLineTotals"]) == 4267
+    assert output["textboxLineTotals"][0]["lineId"] == 0
+    assert output["textboxLineTotals"][-1]["lineId"] == 4266
     assert len(output["operationVocabulary"]) == 54
     assert len(output["operationDefinitions"]) == 34
     assert output["operationVocabularySummary"] == {
@@ -1506,6 +1635,66 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
         direct_fixture_output["properties"]["scriptInvocationEffectiveTargetTotalOrder"],
         format_checker=FormatChecker(),
     )
+    textbox_output_site_validator = Draft7Validator(
+        {
+            "$schema": output_schema["$schema"],
+            "definitions": {
+                name: output_schema["definitions"][name]
+                for name in ("textboxWeightCounts", "textboxReferenceSite")
+            },
+            "$ref": "#/definitions/textboxReferenceSite",
+        },
+        format_checker=FormatChecker(),
+    )
+    textbox_output_line_total_validator = Draft7Validator(
+        {
+            "$schema": output_schema["$schema"],
+            "definitions": {
+                name: output_schema["definitions"][name]
+                for name in (
+                    "textboxWeightCounts",
+                    "textboxCategoryWeightCounts",
+                    "textboxLineTotal",
+                )
+            },
+            "$ref": "#/definitions/textboxLineTotal",
+        },
+        format_checker=FormatChecker(),
+    )
+    textbox_fixture_site_validator = Draft7Validator(
+        {
+            "$schema": fixture_schema["$schema"],
+            "definitions": {
+                "outputContract": {
+                    "definitions": {
+                        name: direct_fixture_output["definitions"][name]
+                        for name in ("textboxWeightCounts", "textboxReferenceSite")
+                    }
+                }
+            },
+            "$ref": "#/definitions/outputContract/definitions/textboxReferenceSite",
+        },
+        format_checker=FormatChecker(),
+    )
+    textbox_fixture_line_total_validator = Draft7Validator(
+        {
+            "$schema": fixture_schema["$schema"],
+            "definitions": {
+                "outputContract": {
+                    "definitions": {
+                        name: direct_fixture_output["definitions"][name]
+                        for name in (
+                            "textboxWeightCounts",
+                            "textboxCategoryWeightCounts",
+                            "textboxLineTotal",
+                        )
+                    }
+                }
+            },
+            "$ref": "#/definitions/outputContract/definitions/textboxLineTotal",
+        },
+        format_checker=FormatChecker(),
+    )
 
     def output_rejects(instance: dict[str, Any]) -> None:
         assert next(output_validator.iter_errors(instance), None) is not None
@@ -1682,6 +1871,65 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     script_fixture_boundary = copy.deepcopy(script_fixture_site)
     script_fixture_boundary["instructionTargetAddress"] = -1
     direct_rejects(script_fixture_site_validator, script_fixture_boundary)
+
+    textbox_output_site = next(
+        site
+        for site in output["textboxReferenceSites"]
+        if site["sourceKind"] == "line-reference"
+    )
+    direct_accepts(textbox_output_site_validator, textbox_output_site)
+    textbox_output_missing = copy.deepcopy(textbox_output_site)
+    del textbox_output_missing["weightCounts"]["routeRecordReferenceWeightedSiteCount"]
+    direct_rejects(textbox_output_site_validator, textbox_output_missing)
+
+    textbox_output_extra = copy.deepcopy(textbox_output_site)
+    textbox_output_extra["weightCounts"]["unexpected"] = True
+    direct_rejects(textbox_output_site_validator, textbox_output_extra)
+
+    textbox_output_boundary = copy.deepcopy(textbox_output_site)
+    textbox_output_boundary["lineId"] = -1
+    direct_rejects(textbox_output_site_validator, textbox_output_boundary)
+
+    textbox_output_line_total = output["textboxLineTotals"][0]
+    direct_accepts(textbox_output_line_total_validator, textbox_output_line_total)
+    textbox_output_line_boundary = copy.deepcopy(textbox_output_line_total)
+    textbox_output_line_boundary["lineId"] = -1
+    direct_rejects(textbox_output_line_total_validator, textbox_output_line_boundary)
+
+    textbox_fixture_site = next(
+        site
+        for site in fixture["expected"]["textboxReferenceSites"]
+        if site["sourceKind"] == "line-reference"
+    )
+    direct_accepts(textbox_fixture_site_validator, textbox_fixture_site)
+    textbox_fixture_renamed = copy.deepcopy(textbox_fixture_site)
+    textbox_fixture_weights = textbox_fixture_renamed["weightCounts"]
+    textbox_fixture_weights["renamedPhysicalProgramOccurrenceCount"] = (
+        textbox_fixture_weights.pop("physicalProgramOccurrenceCount")
+    )
+    direct_rejects(textbox_fixture_site_validator, textbox_fixture_renamed)
+
+    textbox_fixture_extra = copy.deepcopy(textbox_fixture_site)
+    textbox_fixture_extra["weightCounts"]["unexpected"] = True
+    direct_rejects(textbox_fixture_site_validator, textbox_fixture_extra)
+
+    textbox_fixture_line_total = fixture["expected"]["textboxLineTotals"][0]
+    direct_accepts(textbox_fixture_line_total_validator, textbox_fixture_line_total)
+    textbox_fixture_boundary = copy.deepcopy(textbox_fixture_line_total)
+    textbox_fixture_boundary["lineId"] = -1
+    direct_rejects(textbox_fixture_line_total_validator, textbox_fixture_boundary)
+
+    textbox_fixture_order = {
+        **fixture,
+        "expected": {
+            **fixture["expected"],
+            "textboxLineTotalOrder": list(
+                reversed(fixture["expected"]["textboxLineTotalOrder"])
+            ),
+        },
+    }
+    with pytest.raises(ValueError, match="complete semantic fixture drift"):
+        _verify_complete_map_events_fixture(textbox_fixture_order, output)
 
     program_missing = copy.deepcopy(output)
     del program_missing["entityTargetPrograms"][0]["termination"]["sourceMnemonic"]
@@ -2422,6 +2670,380 @@ def test_script_invocation_graph_preserves_aliases_and_zero_inclusive_totals() -
             )
 
 
+def test_textbox_source_forms_parse_line_references_and_close_sentinels() -> None:
+    operation_definitions = [
+        {
+            "definitionId": "event-service-macro:txt",
+            "family": "event-service-macro",
+            "sourceMacro": "txt",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 52,
+            "formalParameterOrdinals": [1],
+            "emissionStatementTemplates": ["trap #textbox", "dc.w \\1"],
+            "serviceTarget": "#TEXTBOX",
+        },
+        {
+            "definitionId": "event-service-macro:clsTxt",
+            "family": "event-service-macro",
+            "sourceMacro": "clsTxt",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 57,
+            "formalParameterOrdinals": [],
+            "emissionStatementTemplates": ["trap #textbox", "dc.w $ffff"],
+            "serviceTarget": "#TEXTBOX",
+        },
+    ]
+    definitions = _textbox_service_definitions(operation_definitions)
+    assert definitions == [
+        {
+            "sourceKind": "line-reference",
+            "definitionId": "event-service-macro:txt",
+            "sourceMacro": "txt",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 52,
+            "serviceTarget": "#TEXTBOX",
+            "formalParameterOrdinals": [1],
+            "emissionStatementTemplates": ["trap #textbox", "dc.w \\1"],
+            "sentinelEncoding": None,
+        },
+        {
+            "sourceKind": "close-sentinel",
+            "definitionId": "event-service-macro:clsTxt",
+            "sourceMacro": "clsTxt",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 57,
+            "serviceTarget": "#TEXTBOX",
+            "formalParameterOrdinals": [],
+            "emissionStatementTemplates": ["trap #textbox", "dc.w $ffff"],
+            "sentinelEncoding": "$FFFF",
+        },
+    ]
+    assert _parse_textbox_line_operand(["0"], source_line=1) == 0
+    assert _parse_textbox_line_operand(["$10"], source_line=1) == 16
+    with pytest.raises(ValueError, match="line operand syntax drift"):
+        _parse_textbox_line_operand(["00"], source_line=1)
+    commented_txt = _parse_program_operation(
+        _normalise_asm_statement("txt $000B ; clsTxt $FFFF"),
+        source_line=10,
+        source_order=0,
+    )
+    assert commented_txt["sourceMnemonic"] == "txt"
+    assert commented_txt["operandTexts"] == ["$000B"]
+    suffixed_branch = _parse_program_operation(
+        _normalise_asm_statement("bne.s Next ; txt $FFFF"),
+        source_line=11,
+        source_order=1,
+    )
+    assert suffixed_branch["sizeSuffix"] == ".s"
+    assert suffixed_branch["instructionTargetSymbol"] == "Next"
+
+    def caller(
+        canonical_symbol: str,
+        entry_address: int,
+        operations: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        return {
+            "canonicalSymbol": canonical_symbol,
+            "entryAddress": entry_address,
+            "programOrder": 0,
+            "sourcePath": f"data/maps/{canonical_symbol}.asm",
+            "referenceCounts": {
+                "physicalRecordCount": 2,
+                "setupRecordReferenceCount": 3,
+                "routeRecordReferenceCount": 4,
+            },
+            "operations": operations,
+        }
+
+    programs_by_category = {
+        "entityEvents": [
+            caller(
+                "EntityCaller",
+                0x1000,
+                [
+                    {
+                        "sourceOrder": 0,
+                        "sourceLine": 20,
+                        "sourceMnemonic": "txt",
+                        "operandTexts": ["$000B"],
+                        "address": 0x1004,
+                        "family": "event-service-macro",
+                        "definitionId": "event-service-macro:txt",
+                    },
+                    {
+                        "sourceOrder": 1,
+                        "sourceLine": 21,
+                        "sourceMnemonic": "clsTxt",
+                        "operandTexts": [],
+                        "address": 0x1008,
+                        "family": "event-service-macro",
+                        "definitionId": "event-service-macro:clsTxt",
+                    },
+                ],
+            )
+        ],
+        "zoneEvents": [],
+        "itemEvents": [],
+    }
+    sites = _textbox_reference_sites(programs_by_category, definitions, {11})
+    assert sites == [
+        {
+            "siteOrder": 0,
+            "sourceKind": "line-reference",
+            "sourceMacro": "txt",
+            "definitionId": "event-service-macro:txt",
+            "category": "entityEvents",
+            "callerProgramKey": "EntityCaller:4096",
+            "callerProgramCanonicalSymbol": "EntityCaller",
+            "callerProgramEntryAddress": 0x1000,
+            "callerProgramOrder": 0,
+            "callerSourcePath": "data/maps/EntityCaller.asm",
+            "operationSourceOrder": 0,
+            "sourceLine": 20,
+            "operationAddress": 0x1004,
+            "rawOperand": "$000B",
+            "lineId": 11,
+            "sentinelEncoding": None,
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 2,
+                "setupRecordReferenceWeightedSiteCount": 3,
+                "routeRecordReferenceWeightedSiteCount": 4,
+            },
+        },
+        {
+            "siteOrder": 1,
+            "sourceKind": "close-sentinel",
+            "sourceMacro": "clsTxt",
+            "definitionId": "event-service-macro:clsTxt",
+            "category": "entityEvents",
+            "callerProgramKey": "EntityCaller:4096",
+            "callerProgramCanonicalSymbol": "EntityCaller",
+            "callerProgramEntryAddress": 0x1000,
+            "callerProgramOrder": 0,
+            "callerSourcePath": "data/maps/EntityCaller.asm",
+            "operationSourceOrder": 1,
+            "sourceLine": 21,
+            "operationAddress": 0x1008,
+            "rawOperand": None,
+            "lineId": None,
+            "sentinelEncoding": "$FFFF",
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 2,
+                "setupRecordReferenceWeightedSiteCount": 3,
+                "routeRecordReferenceWeightedSiteCount": 4,
+            },
+        },
+    ]
+
+    changed_definitions = copy.deepcopy(operation_definitions)
+    changed_definitions[0]["emissionStatementTemplates"].reverse()
+    with pytest.raises(ValueError, match="service emission/order drift"):
+        _textbox_service_definitions(changed_definitions)
+
+    changed_operand = copy.deepcopy(programs_by_category)
+    changed_operand["entityEvents"][0]["operations"][0]["operandTexts"] = ["line_11"]
+    with pytest.raises(ValueError, match="line operand syntax drift"):
+        _textbox_reference_sites(changed_operand, definitions, {11})
+
+    changed_domain = copy.deepcopy(programs_by_category)
+    changed_domain["entityEvents"][0]["operations"][0]["operandTexts"] = ["12"]
+    with pytest.raises(ValueError, match="line-domain coverage drift"):
+        _textbox_reference_sites(changed_domain, definitions, {11})
+
+    changed_close = copy.deepcopy(programs_by_category)
+    changed_close["entityEvents"][0]["operations"][1]["operandTexts"] = ["11"]
+    with pytest.raises(ValueError, match="close-sentinel operand drift"):
+        _textbox_reference_sites(changed_close, definitions, {11})
+
+    changed_order = copy.deepcopy(programs_by_category)
+    changed_order["entityEvents"][0]["operations"][1]["sourceOrder"] = 2
+    with pytest.raises(ValueError, match="source/use-site drift"):
+        _textbox_reference_sites(changed_order, definitions, {11})
+
+
+def test_text_line_domain_parser_is_source_rom_backed_not_golden_fixture(
+    complete_output: dict[str, Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    changed_fixture = tmp_path / "text-banks-static-v1.json"
+    changed_fixture.write_text('{"id":"wrong-golden"}', encoding="utf-8")
+    monkeypatch.setattr(text_banks, "FIXTURE", changed_fixture)
+    domain = build_text_line_domain_contract(
+        Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
+    )
+    assert domain == {
+        "schemaVersion": 1,
+        "id": "sf2-text-banks-static-v1",
+        "upstream": {
+            "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+            "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+        },
+        "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+        "summary": {"stringCount": 4267},
+        "gamescriptFacts": {
+            "sourcePath": "data/scripting/text/gamescript.txt",
+            "byteCount": 203862,
+            "lineIdCount": 4267,
+            "firstLineId": 0,
+            "lastLineId": 4266,
+            "idsAreContiguous": True,
+            "sha256": "14EB069436F9F77081AAFF6125312A9C277CB24255BE5F0D1EF108AF53AEA205",
+        },
+    }
+    reconstructed = _textbox_reference_contract(
+        complete_output["operationDefinitions"],
+        {
+            "entityEvents": complete_output["entityTargetPrograms"],
+            "zoneEvents": complete_output["zoneTargetPrograms"],
+            "itemEvents": complete_output["itemTargetPrograms"],
+        },
+        text_line_domain_contract=domain,
+        upstream_commit=complete_output["upstream"]["commit"],
+        rom_sha256=complete_output["romSha256"],
+    )
+    assert reconstructed["textboxLineDomain"] == complete_output["textboxLineDomain"]
+
+
+def test_textbox_contract_reconciles_source_uses_weights_and_complete_order(
+    complete_output: dict[str, Any],
+) -> None:
+    programs_by_category = {
+        "entityEvents": complete_output["entityTargetPrograms"],
+        "zoneEvents": complete_output["zoneTargetPrograms"],
+        "itemEvents": complete_output["itemTargetPrograms"],
+    }
+    text_line_domain_contract = build_text_line_domain_contract(
+        Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
+    )
+    provenance = {
+        "text_line_domain_contract": text_line_domain_contract,
+        "upstream_commit": complete_output["upstream"]["commit"],
+        "rom_sha256": complete_output["romSha256"],
+    }
+    textbox_fields = (
+        "textboxLineDomain",
+        "textboxServiceDefinitions",
+        "textboxReferenceSites",
+        "textboxCallerTotals",
+        "textboxLineTotals",
+        "textboxSummary",
+        "textboxServiceDefinitionOrder",
+        "textboxReferenceSiteOrder",
+        "textboxCallerTotalOrder",
+        "textboxLineTotalOrder",
+    )
+    textbox_contract = {
+        field: copy.deepcopy(complete_output[field]) for field in textbox_fields
+    }
+    _reconcile_textbox_reference_contract(
+        textbox_contract,
+        complete_output["operationDefinitions"],
+        programs_by_category,
+        **provenance,
+    )
+
+    for field, value in (
+        ("lineIdCount", text_line_domain_contract["gamescriptFacts"]["lineIdCount"] + 1),
+        ("firstLineId", 1),
+        ("lastLineId", text_line_domain_contract["gamescriptFacts"]["lastLineId"] - 1),
+        ("idsAreContiguous", False),
+        ("sourcePath", "data/scripting/text/other.txt"),
+    ):
+        changed_domain = copy.deepcopy(text_line_domain_contract)
+        changed_domain["gamescriptFacts"][field] = value
+        with pytest.raises(ValueError, match="text-line domain drift"):
+            _textbox_reference_contract(
+                complete_output["operationDefinitions"],
+                programs_by_category,
+                text_line_domain_contract=changed_domain,
+                upstream_commit=complete_output["upstream"]["commit"],
+                rom_sha256=complete_output["romSha256"],
+            )
+
+    changed_definition = copy.deepcopy(complete_output["operationDefinitions"])
+    txt_definition = next(
+        definition for definition in changed_definition if definition["sourceMacro"] == "txt"
+    )
+    txt_definition["emissionStatementTemplates"].reverse()
+    with pytest.raises(ValueError, match="service emission/order drift"):
+        _textbox_reference_contract(changed_definition, programs_by_category, **provenance)
+
+    def changed_programs(
+        mutate: Any,
+    ) -> dict[str, list[dict[str, Any]]]:
+        result = {category: list(programs) for category, programs in programs_by_category.items()}
+        for category, programs in programs_by_category.items():
+            for program_index, program in enumerate(programs):
+                for operation_index, operation in enumerate(program["operations"]):
+                    if operation["sourceMnemonic"] != "txt":
+                        continue
+                    operations = list(program["operations"])
+                    changed_operation = dict(operation)
+                    mutate(changed_operation, operation_index)
+                    operations[operation_index] = changed_operation
+                    result[category][program_index] = {**program, "operations": operations}
+                    return result
+        raise AssertionError("expected an in-scope txt use")
+
+    with pytest.raises(ValueError, match="line operand syntax drift"):
+        _textbox_reference_contract(
+            complete_output["operationDefinitions"],
+            changed_programs(
+                lambda operation, _: operation.__setitem__("operandTexts", ["Line_11"])
+            ),
+            **provenance,
+        )
+    with pytest.raises(ValueError, match="line-domain coverage drift"):
+        _textbox_reference_contract(
+            complete_output["operationDefinitions"],
+            changed_programs(
+                lambda operation, _: operation.__setitem__("operandTexts", ["$FFFF"])
+            ),
+            **provenance,
+        )
+    with pytest.raises(ValueError, match="source/use-site drift"):
+        _textbox_reference_contract(
+            complete_output["operationDefinitions"],
+            changed_programs(
+                lambda operation, _: operation.__setitem__("sourceMnemonic", "clsTxt")
+            ),
+            **provenance,
+        )
+    with pytest.raises(ValueError, match="source/use-site drift"):
+        _textbox_reference_contract(
+            complete_output["operationDefinitions"],
+            changed_programs(
+                lambda operation, operation_index: operation.__setitem__(
+                    "sourceOrder", operation_index + 1
+                )
+            ),
+            **provenance,
+        )
+
+    changed_weight = copy.deepcopy(textbox_contract)
+    changed_weight["textboxReferenceSites"][0]["weightCounts"][
+        "routeRecordReferenceWeightedSiteCount"
+    ] += 1
+    with pytest.raises(ValueError, match="textboxReferenceSites reconciliation drift"):
+        _reconcile_textbox_reference_contract(
+            changed_weight,
+            complete_output["operationDefinitions"],
+            programs_by_category,
+            **provenance,
+        )
+
+    changed_order = copy.deepcopy(textbox_contract)
+    changed_order["textboxLineTotalOrder"].reverse()
+    with pytest.raises(ValueError, match="textboxLineTotalOrder reconciliation drift"):
+        _reconcile_textbox_reference_contract(
+            changed_order,
+            complete_output["operationDefinitions"],
+            programs_by_category,
+            **provenance,
+        )
+
+
 def test_jump_interface_alias_parser_guards_source_and_h1_target_relationship(
     tmp_path: Path,
 ) -> None:
@@ -2865,6 +3487,16 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "scriptInvocationInstructionTargetTotal",
         "scriptInvocationEffectiveTargetTotal",
         "scriptInvocationSummary",
+        "textboxWeightCounts",
+        "textboxKindWeightCounts",
+        "textboxCategoryWeightCounts",
+        "textboxCategoryKindWeightCounts",
+        "textboxLineDomain",
+        "textboxServiceDefinition",
+        "textboxReferenceSite",
+        "textboxCallerTotal",
+        "textboxLineTotal",
+        "textboxSummary",
     } <= set(schema["definitions"])
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
@@ -2915,6 +3547,15 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
     assert schema["properties"]["scriptInvocationEffectiveTargetTotals"]["items"] == {
         "$ref": "#/definitions/scriptInvocationEffectiveTargetTotal"
     }
+    assert schema["properties"]["textboxReferenceSites"]["items"] == {
+        "$ref": "#/definitions/textboxReferenceSite"
+    }
+    assert schema["properties"]["textboxCallerTotals"]["items"] == {
+        "$ref": "#/definitions/textboxCallerTotal"
+    }
+    assert schema["properties"]["textboxLineTotals"]["items"] == {
+        "$ref": "#/definitions/textboxLineTotal"
+    }
     for definition in (
         "directFlagReferenceWeights",
         "directFlagWeightCounts",
@@ -2936,6 +3577,16 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "scriptInvocationInstructionTargetTotal",
         "scriptInvocationEffectiveTargetTotal",
         "scriptInvocationSummary",
+        "textboxWeightCounts",
+        "textboxKindWeightCounts",
+        "textboxCategoryWeightCounts",
+        "textboxCategoryKindWeightCounts",
+        "textboxLineDomain",
+        "textboxServiceDefinition",
+        "textboxReferenceSite",
+        "textboxCallerTotal",
+        "textboxLineTotal",
+        "textboxSummary",
     ):
         assert schema["definitions"][definition]["additionalProperties"] is False
     for definition in (
@@ -2976,6 +3627,15 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
     }
     assert fixture_output["properties"]["scriptInvocationEffectiveTargetTotals"]["items"] == {
         "$ref": "#/definitions/outputContract/definitions/scriptInvocationEffectiveTargetTotal"
+    }
+    assert fixture_output["properties"]["textboxReferenceSites"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/textboxReferenceSite"
+    }
+    assert fixture_output["properties"]["textboxCallerTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/textboxCallerTotal"
+    }
+    assert fixture_output["properties"]["textboxLineTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/textboxLineTotal"
     }
     for category in ("zone", "item"):
         assert fixture_output["properties"][f"{category}TargetPrograms"]["items"] == {

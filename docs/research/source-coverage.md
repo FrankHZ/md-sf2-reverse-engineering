@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-23
+- Evidence date: 2026-07-27
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -436,7 +436,13 @@ same rail now also closes the direct `script` source-reference graph: its one pa
 to 138 instruction labels and 135 effective map-script program owners, while retaining all 348
 declared labels and 304 declared programs as zero-inclusive target domains. This is source/H1
 identity and ownership only, not evidence of execution, side effects, persistence, story reachability,
-or presentation.
+or presentation. The same complete 914-program source surface now additionally retains 1,006 direct
+`TEXTBOX` source/H1 references: 981 numeric line-reference operands and 25 operand-free `$FFFF`
+sentinel emissions. It joins the maintained `sf2-text-banks-static-v1` declared contiguous ID domain
+through its source/ROM parser, not its golden fixture and without decoding text, making all 4,267 IDs
+from 0 through 4,266 zero-inclusive line totals; 942 IDs are observed (11 through 4,178). This
+records macro/operand/sentinel and caller/reference identity only, not displayed content, speaker,
+window, wait, input, story, or presentation behavior.
 Evidence date: 2026-07-27. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 

@@ -115,6 +115,83 @@ def _assert_source_shape(disasm: Path) -> None:
             raise ValueError(f"text-bank selection drift: missing {fragment!r}")
 
 
+def _count_length_prefixed_records(data: bytes, *, symbol: str) -> int:
+    """Count source-owned text records without decoding their compressed payloads."""
+    cursor = 0
+    count = 0
+    while cursor < len(data):
+        compressed_byte_count = data[cursor]
+        cursor += 1
+        end = cursor + compressed_byte_count
+        if end > len(data):
+            raise ValueError(f"text-bank record exceeds {symbol}")
+        cursor = end
+        count += 1
+    return count
+
+
+def _text_line_domain_facts(
+    disasm: Path, bank_addresses: dict[str, int], rom: bytes
+) -> dict[str, Any]:
+    """Derive the global text-line ID domain from source records and source/ROM parity."""
+    record_count = 0
+    for symbol, path in zip(BANK_SYMBOLS, BANK_PATHS, strict=True):
+        data = (disasm / path).read_bytes()
+        address = bank_addresses.get(symbol)
+        if address is None:
+            raise ValueError(f"text-bank H1 address is missing: {symbol}")
+        if rom[address : address + len(data)] != data:
+            raise ValueError(f"text-bank source/ROM parity drift: {symbol}")
+        record_count += _count_length_prefixed_records(data, symbol=symbol)
+
+    gamescript = (disasm / GAMESCRIPT_PATH).read_bytes()
+    script_ids = [
+        int(match, 16)
+        for match in re.findall(rb"^([0-9A-F]{4})=", gamescript, re.MULTILINE)
+    ]
+    if not script_ids or script_ids != list(range(record_count)):
+        raise ValueError("gamescript text IDs do not exactly cover source record indices")
+    return {
+        "summary": {"stringCount": record_count},
+        "gamescriptFacts": {
+            "sourcePath": GAMESCRIPT_PATH.as_posix(),
+            "byteCount": len(gamescript),
+            "lineIdCount": len(script_ids),
+            "firstLineId": script_ids[0],
+            "lastLineId": script_ids[-1],
+            "idsAreContiguous": True,
+            "sha256": hashlib.sha256(gamescript).hexdigest().upper(),
+        },
+    }
+
+
+def build_text_line_domain_contract(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
+    """Build source/ROM-backed text-line domain facts without decoding text payloads."""
+    rom_path = rom_path.resolve(strict=True)
+    upstream_path = upstream_path.resolve(strict=True)
+    disasm, commit, toolchain = _resolve_upstream(upstream_path)
+    listing_path = upstream_path / "build/sf2build-h1.lst"
+    if not listing_path.is_file():
+        raise ValueError(f"text-bank H1 listing is missing: {listing_path}")
+    addresses = listing_symbol_addresses(listing_path.read_text(encoding="utf-8"))
+    bank_addresses = {symbol: addresses[symbol] for symbol in BANK_SYMBOLS}
+    rom = rom_path.read_bytes()
+    rom_hash = hashlib.sha256(rom).hexdigest().upper()
+    if rom_hash != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
+        raise ValueError("text-bank input ROM identity drift")
+    _assert_source_shape(disasm)
+    return {
+        "schemaVersion": 1,
+        "id": ID,
+        "upstream": {
+            "repository": toolchain["sf2disasm"]["repository"],
+            "commit": commit,
+        },
+        "romSha256": rom_hash,
+        **_text_line_domain_facts(disasm, bank_addresses, rom),
+    }
+
+
 def build_text_banks_contract(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -134,6 +211,7 @@ def build_text_banks_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     if rom_hash != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
         raise ValueError("text-bank input ROM identity drift")
     _assert_source_shape(disasm)
+    line_domain = _text_line_domain_facts(disasm, table, rom)
     code_maps = _code_maps(disasm)
 
     banks = []
@@ -213,7 +291,7 @@ def build_text_banks_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             }
         )
 
-    if global_index != 4267:
+    if global_index != line_domain["summary"]["stringCount"]:
         raise ValueError(f"text-bank total string-count drift: {global_index}")
     if set(total_symbols) != set(code_maps):
         raise ValueError("decoded text does not exercise every defined Huffman context")
@@ -237,14 +315,6 @@ def build_text_banks_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     alignment_byte_count = pointer_address - bank_end
     if alignment_byte_count != 1:
         raise ValueError(f"text-bank pointer alignment drift: {alignment_byte_count}")
-
-    gamescript = (disasm / GAMESCRIPT_PATH).read_bytes()
-    script_ids = [
-        int(match, 16)
-        for match in re.findall(rb"^([0-9A-F]{4})=", gamescript, re.MULTILINE)
-    ]
-    if script_ids != list(range(global_index)):
-        raise ValueError("gamescript text IDs do not exactly cover decoded string indices")
 
     control_histogram = {
         str(symbol): total_symbols[symbol] for symbol in range(238, 255)
@@ -306,15 +376,7 @@ def build_text_banks_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
             "bankSelectionFormula": "bank=(stringIndex>>8); withinBank=stringIndex&255",
             "recordSelectionFormula": "advance 1+lengthByte for each preceding record",
         },
-        "gamescriptFacts": {
-            "sourcePath": GAMESCRIPT_PATH.as_posix(),
-            "byteCount": len(gamescript),
-            "lineIdCount": len(script_ids),
-            "firstLineId": script_ids[0],
-            "lastLineId": script_ids[-1],
-            "idsAreContiguous": True,
-            "sha256": hashlib.sha256(gamescript).hexdigest().upper(),
-        },
+        "gamescriptFacts": line_domain["gamescriptFacts"],
         "lengthPrefixHistogram": {
             str(length): count for length, count in sorted(total_length_prefixes.items())
         },

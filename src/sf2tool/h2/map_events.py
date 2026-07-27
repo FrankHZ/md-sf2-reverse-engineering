@@ -12,6 +12,13 @@ from sf2tool.h2.entity_action_scripts import build_entity_action_script_contract
 from sf2tool.h2.map_entities import build_map_entities_contract
 from sf2tool.h2.map_script_engine import build_map_script_engine_contract
 from sf2tool.h2.map_setup import build_map_setup_contract
+from sf2tool.h2.text_banks import (
+    GAMESCRIPT_PATH,
+    build_text_line_domain_contract,
+)
+from sf2tool.h2.text_banks import (
+    ID as TEXT_BANKS_ID,
+)
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
 from sf2tool.research_index import listing_symbol_addresses
@@ -1005,6 +1012,356 @@ def _reconcile_script_invocation_graph_contract(
     for field, value in expected.items():
         if contract[field] != value:
             raise ValueError(f"map event script-invocation {field} reconciliation drift")
+
+
+def _textbox_service_definitions(
+    operation_definitions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Derive the two direct TEXTBOX source forms from parsed service definitions."""
+    definitions = []
+    for definition in operation_definitions:
+        if (
+            definition["family"] != "event-service-macro"
+            or definition["serviceTarget"] != "#TEXTBOX"
+        ):
+            continue
+        formal_ordinals = definition["formalParameterOrdinals"]
+        templates = definition["emissionStatementTemplates"]
+        if formal_ordinals == [1] and templates == ["trap #textbox", "dc.w \\1"]:
+            source_kind = "line-reference"
+            sentinel_encoding = None
+        elif formal_ordinals == [] and templates == ["trap #textbox", "dc.w $ffff"]:
+            source_kind = "close-sentinel"
+            sentinel_encoding = "$FFFF"
+        else:
+            raise ValueError("map event textbox service emission/order drift")
+        definitions.append(
+            {
+                "sourceKind": source_kind,
+                "definitionId": definition["definitionId"],
+                "sourceMacro": definition["sourceMacro"],
+                "sourcePath": definition["sourcePath"],
+                "definitionSourceLine": definition["definitionSourceLine"],
+                "serviceTarget": definition["serviceTarget"],
+                "formalParameterOrdinals": formal_ordinals,
+                "emissionStatementTemplates": templates,
+                "sentinelEncoding": sentinel_encoding,
+            }
+        )
+    expected_kinds = ("line-reference", "close-sentinel")
+    if tuple(definition["sourceKind"] for definition in definitions) != expected_kinds:
+        raise ValueError("map event textbox service-definition coverage/order drift")
+    return definitions
+
+
+def _parse_textbox_line_operand(operand_texts: list[str], *, source_line: int) -> int:
+    """Parse one direct TEXTBOX line-ID operand without assigning displayed meaning."""
+    if len(operand_texts) != 1:
+        raise ValueError(f"map event textbox line operand count drift at source line {source_line}")
+    operand = operand_texts[0]
+    if re.fullmatch(r"(?:0|[1-9][0-9]*|\$[0-9A-Fa-f]+)", operand) is None:
+        raise ValueError(
+            f"map event textbox line operand syntax drift at source line {source_line}"
+        )
+    return int(operand[1:], 16) if operand.startswith("$") else int(operand)
+
+
+def _textbox_weight_counts(reference_counts: dict[str, int]) -> dict[str, int]:
+    """Keep the event-record multiplicities owned by each direct TEXTBOX site."""
+    required = {
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+    }
+    if set(reference_counts) != required or any(
+        not isinstance(value, int) or value < 0 for value in reference_counts.values()
+    ):
+        raise ValueError("map event textbox caller reference-weight shape drift")
+    return {
+        "physicalProgramOccurrenceCount": 1,
+        "physicalRecordWeightedSiteCount": reference_counts["physicalRecordCount"],
+        "setupRecordReferenceWeightedSiteCount": reference_counts[
+            "setupRecordReferenceCount"
+        ],
+        "routeRecordReferenceWeightedSiteCount": reference_counts[
+            "routeRecordReferenceCount"
+        ],
+    }
+
+
+def _textbox_reference_sites(
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    service_definitions: list[dict[str, Any]],
+    declared_line_ids: set[int],
+) -> list[dict[str, Any]]:
+    """Build ordered source/H1 TEXTBOX sites against the declared text-line domain."""
+    definitions_by_id = {
+        definition["definitionId"]: definition for definition in service_definitions
+    }
+    if len(definitions_by_id) != len(service_definitions):
+        raise ValueError("map event textbox service-definition identity ambiguity")
+    sites: list[dict[str, Any]] = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            reference_counts = program["referenceCounts"]
+            weights = _textbox_weight_counts(reference_counts)
+            caller_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            for operation_index, operation in enumerate(program["operations"]):
+                definition = definitions_by_id.get(operation["definitionId"])
+                if definition is None:
+                    continue
+                if (
+                    operation["sourceMnemonic"] != definition["sourceMacro"]
+                    or operation["family"] != "event-service-macro"
+                    or operation["sourceOrder"] != operation_index
+                ):
+                    raise ValueError("map event textbox source/use-site drift")
+                line_id: int | None
+                raw_operand: str | None
+                if definition["sourceKind"] == "line-reference":
+                    line_id = _parse_textbox_line_operand(
+                        operation["operandTexts"], source_line=operation["sourceLine"]
+                    )
+                    if line_id not in declared_line_ids:
+                        raise ValueError("map event textbox line-domain coverage drift")
+                    raw_operand = operation["operandTexts"][0]
+                else:
+                    if operation["operandTexts"]:
+                        raise ValueError("map event textbox close-sentinel operand drift")
+                    line_id = None
+                    raw_operand = None
+                sites.append(
+                    {
+                        "siteOrder": len(sites),
+                        "sourceKind": definition["sourceKind"],
+                        "sourceMacro": operation["sourceMnemonic"],
+                        "definitionId": operation["definitionId"],
+                        "category": category,
+                        "callerProgramKey": caller_key,
+                        "callerProgramCanonicalSymbol": program["canonicalSymbol"],
+                        "callerProgramEntryAddress": program["entryAddress"],
+                        "callerProgramOrder": program["programOrder"],
+                        "callerSourcePath": program["sourcePath"],
+                        "operationSourceOrder": operation["sourceOrder"],
+                        "sourceLine": operation["sourceLine"],
+                        "operationAddress": operation["address"],
+                        "rawOperand": raw_operand,
+                        "lineId": line_id,
+                        "sentinelEncoding": definition["sentinelEncoding"],
+                        "weightCounts": dict(weights),
+                    }
+                )
+    return sites
+
+
+def _textbox_line_domain(
+    text_banks: dict[str, Any], *, upstream_commit: str, rom_sha256: str
+) -> tuple[dict[str, Any], set[int]]:
+    """Join a source/ROM-derived text-bank parser result to the event-source domain."""
+    upstream = text_banks.get("upstream")
+    summary = text_banks.get("summary")
+    gamescript = text_banks.get("gamescriptFacts")
+    if (
+        text_banks.get("id") != TEXT_BANKS_ID
+        or not isinstance(upstream, dict)
+        or upstream.get("commit") != upstream_commit
+        or text_banks.get("romSha256") != rom_sha256
+        or not isinstance(summary, dict)
+        or not isinstance(gamescript, dict)
+    ):
+        raise ValueError("map event textbox text-bank provenance drift")
+    line_id_count = gamescript.get("lineIdCount")
+    first_line_id = gamescript.get("firstLineId")
+    last_line_id = gamescript.get("lastLineId")
+    if (
+        not isinstance(line_id_count, int)
+        or not isinstance(first_line_id, int)
+        or not isinstance(last_line_id, int)
+        or line_id_count <= 0
+        or first_line_id < 0
+        or gamescript.get("sourcePath") != GAMESCRIPT_PATH.as_posix()
+        or summary.get("stringCount") != line_id_count
+        or gamescript.get("idsAreContiguous") is not True
+        or last_line_id - first_line_id + 1 != line_id_count
+    ):
+        raise ValueError("map event textbox text-line domain drift")
+    return (
+        {
+            "contractId": text_banks["id"],
+            "upstreamCommit": upstream_commit,
+            "romSha256": rom_sha256,
+            "sourcePath": gamescript.get("sourcePath"),
+            "lineIdCount": line_id_count,
+            "firstLineId": first_line_id,
+            "lastLineId": last_line_id,
+            "idsAreContiguous": True,
+        },
+        set(range(first_line_id, last_line_id + 1)),
+    )
+
+
+def _empty_textbox_weight_counts() -> dict[str, int]:
+    return {
+        "physicalProgramOccurrenceCount": 0,
+        "physicalRecordWeightedSiteCount": 0,
+        "setupRecordReferenceWeightedSiteCount": 0,
+        "routeRecordReferenceWeightedSiteCount": 0,
+    }
+
+
+def _add_textbox_weight_counts(
+    destination: dict[str, int], source: dict[str, int]
+) -> None:
+    if set(destination) != set(source) or any(
+        not isinstance(value, int) or value < 0 for value in source.values()
+    ):
+        raise ValueError("map event textbox weight aggregation drift")
+    for field, value in source.items():
+        destination[field] += value
+
+
+def _textbox_reference_contract(
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    *,
+    text_line_domain_contract: dict[str, Any],
+    upstream_commit: str,
+    rom_sha256: str,
+) -> dict[str, Any]:
+    """Aggregate direct TEXTBOX source sites with zero-inclusive caller and line totals."""
+    line_domain, declared_line_ids = _textbox_line_domain(
+        text_line_domain_contract,
+        upstream_commit=upstream_commit,
+        rom_sha256=rom_sha256,
+    )
+    service_definitions = _textbox_service_definitions(operation_definitions)
+    sites = _textbox_reference_sites(
+        programs_by_category, service_definitions, declared_line_ids
+    )
+    categories = tuple(programs_by_category)
+    kinds = ("line-reference", "close-sentinel")
+    caller_sites = {
+        (category, _program_key(program["canonicalSymbol"], program["entryAddress"])): []
+        for category, programs in programs_by_category.items()
+        for program in programs
+    }
+    line_sites = {line_id: [] for line_id in sorted(declared_line_ids)}
+    for site in sites:
+        caller_sites[(site["category"], site["callerProgramKey"])].append(site)
+        if site["lineId"] is not None:
+            line_sites[site["lineId"]].append(site)
+
+    def total_weights(contained_sites: list[dict[str, Any]]) -> dict[str, int]:
+        result = _empty_textbox_weight_counts()
+        for site in contained_sites:
+            _add_textbox_weight_counts(result, site["weightCounts"])
+        return result
+
+    def kind_weights(contained_sites: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
+        result = {kind: _empty_textbox_weight_counts() for kind in kinds}
+        for site in contained_sites:
+            _add_textbox_weight_counts(result[site["sourceKind"]], site["weightCounts"])
+        return result
+
+    def category_weights(contained_sites: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
+        result = {category: _empty_textbox_weight_counts() for category in categories}
+        for site in contained_sites:
+            _add_textbox_weight_counts(result[site["category"]], site["weightCounts"])
+        return result
+
+    def category_kind_weights(
+        contained_sites: list[dict[str, Any]],
+    ) -> dict[str, dict[str, dict[str, int]]]:
+        result = {
+            category: {kind: _empty_textbox_weight_counts() for kind in kinds}
+            for category in categories
+        }
+        for site in contained_sites:
+            _add_textbox_weight_counts(
+                result[site["category"]][site["sourceKind"]], site["weightCounts"]
+            )
+        return result
+
+    caller_totals = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            caller_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            contained_sites = caller_sites[(category, caller_key)]
+            caller_totals.append(
+                {
+                    "category": category,
+                    "callerProgramKey": caller_key,
+                    "callerProgramCanonicalSymbol": program["canonicalSymbol"],
+                    "callerProgramEntryAddress": program["entryAddress"],
+                    "callerProgramOrder": program["programOrder"],
+                    "siteOrders": [site["siteOrder"] for site in contained_sites],
+                    "kindWeightCounts": kind_weights(contained_sites),
+                }
+            )
+    line_totals = [
+        {
+            "lineId": line_id,
+            "siteOrders": [site["siteOrder"] for site in line_sites[line_id]],
+            "weightCounts": total_weights(line_sites[line_id]),
+            "categoryWeightCounts": category_weights(line_sites[line_id]),
+        }
+        for line_id in sorted(line_sites)
+    ]
+    line_reference_sites = [site for site in sites if site["sourceKind"] == "line-reference"]
+    if not line_reference_sites:
+        raise ValueError("map event textbox line-reference coverage drift")
+    contract = {
+        "textboxLineDomain": line_domain,
+        "textboxServiceDefinitions": service_definitions,
+        "textboxReferenceSites": sites,
+        "textboxCallerTotals": caller_totals,
+        "textboxLineTotals": line_totals,
+        "textboxSummary": {
+            "serviceDefinitionCount": len(service_definitions),
+            "siteCount": len(sites),
+            "lineReferenceSiteCount": len(line_reference_sites),
+            "closeSentinelSiteCount": len(sites) - len(line_reference_sites),
+            "declaredLineIdCount": len(line_totals),
+            "observedLineIdCount": sum(bool(row["siteOrders"]) for row in line_totals),
+            "minimumObservedLineId": min(site["lineId"] for site in line_reference_sites),
+            "maximumObservedLineId": max(site["lineId"] for site in line_reference_sites),
+            "weightCounts": total_weights(sites),
+            "kindWeightCounts": kind_weights(sites),
+            "categoryKindWeightCounts": category_kind_weights(sites),
+        },
+        "textboxServiceDefinitionOrder": [
+            definition["sourceKind"] for definition in service_definitions
+        ],
+        "textboxReferenceSiteOrder": [str(site["siteOrder"]) for site in sites],
+        "textboxCallerTotalOrder": [
+            f"{categories.index(row['category'])}:{row['callerProgramOrder']}"
+            for row in caller_totals
+        ],
+        "textboxLineTotalOrder": [str(row["lineId"]) for row in line_totals],
+    }
+    return contract
+
+
+def _reconcile_textbox_reference_contract(
+    contract: dict[str, Any],
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    *,
+    text_line_domain_contract: dict[str, Any],
+    upstream_commit: str,
+    rom_sha256: str,
+) -> None:
+    """Reject a changed TEXTBOX macro, source use, or declared line range before fixtures."""
+    expected = _textbox_reference_contract(
+        operation_definitions,
+        programs_by_category,
+        text_line_domain_contract=text_line_domain_contract,
+        upstream_commit=upstream_commit,
+        rom_sha256=rom_sha256,
+    )
+    for field, value in expected.items():
+        if contract[field] != value:
+            raise ValueError(f"map event textbox {field} reconciliation drift")
 
 
 def _source_program_block(
@@ -4153,6 +4510,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     entities = build_map_entities_contract(rom_path, upstream_path)
     map_script_engine = build_map_script_engine_contract(rom_path, upstream_path)
     entity_action_scripts = build_entity_action_script_contract(rom_path, upstream_path)
+    text_line_domain_contract = build_text_line_domain_contract(rom_path, upstream_path)
     source_macro_catalog = _source_macro_catalog(
         disasm, (SERVICE_MACROS_PATH, CUTSCENE_MACROS_PATH)
     )
@@ -4281,6 +4639,21 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         programs_by_category,
         map_script_engine["programCorpus"],
         addresses,
+    )
+    textbox_reference_contract = _textbox_reference_contract(
+        list(operation_definitions.values()),
+        programs_by_category,
+        text_line_domain_contract=text_line_domain_contract,
+        upstream_commit=commit,
+        rom_sha256=setup["romSha256"],
+    )
+    _reconcile_textbox_reference_contract(
+        textbox_reference_contract,
+        list(operation_definitions.values()),
+        programs_by_category,
+        text_line_domain_contract=text_line_domain_contract,
+        upstream_commit=commit,
+        rom_sha256=setup["romSha256"],
     )
     operation_orders_by_category = {
         "entityEvents": entity_target_program_operation_orders,
@@ -4502,6 +4875,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         **operation_vocabulary_contract,
         **direct_flag_state_contract,
         **script_invocation_contract,
+        **textbox_reference_contract,
         "consumerFacts": _consumer_facts(setup),
         "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
         "entityTargetProgramSummary": entity_target_program_summary,
