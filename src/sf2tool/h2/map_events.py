@@ -715,6 +715,298 @@ def _direct_flag_state_contract(
     return contract
 
 
+def _script_invocation_service_definition(
+    operation_definitions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Derive the one direct map-script service definition from parsed macro evidence."""
+    definitions = [
+        definition
+        for definition in operation_definitions
+        if definition["family"] == "event-service-macro"
+        and definition["serviceTarget"] == "#MAPSCRIPT"
+    ]
+    if len(definitions) != 1:
+        raise ValueError("map event script-invocation service-definition coverage drift")
+    definition = definitions[0]
+    service_target = definition["serviceTarget"]
+    if (
+        definition["formalParameterOrdinals"] != [1]
+        or definition["emissionStatementTemplates"]
+        != ["lea \\1(pc),a0", f"trap {service_target.lower()}"]
+    ):
+        raise ValueError("map event script-invocation service emission/order drift")
+    return {
+        "definitionId": definition["definitionId"],
+        "sourceMacro": definition["sourceMacro"],
+        "sourcePath": definition["sourcePath"],
+        "definitionSourceLine": definition["definitionSourceLine"],
+        "serviceTarget": service_target,
+        "targetOperandOrdinal": definition["formalParameterOrdinals"][0],
+        "emissionStatementTemplates": definition["emissionStatementTemplates"],
+    }
+
+
+def _script_invocation_weight_counts(reference_counts: dict[str, int]) -> dict[str, int]:
+    """Keep source-program and joined record/reference multiplicities distinct."""
+    required = {
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+    }
+    if set(reference_counts) != required or any(
+        not isinstance(value, int) or value < 0 for value in reference_counts.values()
+    ):
+        raise ValueError("map event script-invocation caller reference-weight shape drift")
+    return {
+        "physicalProgramOccurrenceCount": 1,
+        "physicalRecordWeightedSiteCount": reference_counts["physicalRecordCount"],
+        "setupRecordReferenceWeightedSiteCount": reference_counts[
+            "setupRecordReferenceCount"
+        ],
+        "routeRecordReferenceWeightedSiteCount": reference_counts[
+            "routeRecordReferenceCount"
+        ],
+    }
+
+
+def _empty_script_invocation_weight_counts() -> dict[str, int]:
+    return {
+        "physicalProgramOccurrenceCount": 0,
+        "physicalRecordWeightedSiteCount": 0,
+        "setupRecordReferenceWeightedSiteCount": 0,
+        "routeRecordReferenceWeightedSiteCount": 0,
+    }
+
+
+def _add_script_invocation_weight_counts(
+    destination: dict[str, int], source: dict[str, int]
+) -> None:
+    if set(destination) != set(source) or any(
+        not isinstance(value, int) or value < 0 for value in source.values()
+    ):
+        raise ValueError("map event script-invocation weight aggregation drift")
+    for field, value in source.items():
+        destination[field] += value
+
+
+def _script_invocation_target_rows(
+    program_corpus: dict[str, Any], addresses: dict[str, int]
+) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
+    """Join every declared map-script label to its source-owned program identity."""
+    programs = program_corpus["programs"]
+    label_owners = program_corpus["labelOwners"]
+    programs_by_id = {program["id"]: program for program in programs}
+    if len(programs_by_id) != len(programs):
+        raise ValueError("map event script-invocation effective-owner identity ambiguity")
+    expected_label_owners = {
+        label: program["id"] for program in programs for label in program["labels"]
+    }
+    if label_owners != expected_label_owners:
+        raise ValueError("map event script-invocation label-owner mapping drift")
+    for program in programs:
+        entry_label = program["entryLabel"]
+        if entry_label is not None and program["address"] != addresses.get(entry_label):
+            raise ValueError("map event script-invocation effective-owner H1 address drift")
+
+    effective_rows = []
+    for program_order, program in enumerate(programs):
+        effective_rows.append(
+            {
+                "effectiveOwnerProgramId": program["id"],
+                "effectiveOwnerProgramOrder": program_order,
+                "effectiveOwnerEntryLabel": program["entryLabel"],
+                "effectiveOwnerEntryAddress": program["address"],
+                "effectiveOwnerSourcePath": program["sourcePath"],
+                "effectiveOwnerTermination": program["termination"],
+            }
+        )
+    effective_by_id = {
+        row["effectiveOwnerProgramId"]: row for row in effective_rows
+    }
+    instruction_by_label = {
+        label: {
+            "instructionTargetLabel": label,
+            "instructionTargetAddress": addresses.get(label),
+            **effective_by_id[owner_id],
+        }
+        for label, owner_id in sorted(label_owners.items())
+    }
+    return instruction_by_label, effective_rows
+
+
+def _script_invocation_graph_contract(
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+) -> dict[str, Any]:
+    """Build source/H1 script invocation joins and zero-inclusive caller/target totals."""
+    service_definition = _script_invocation_service_definition(operation_definitions)
+    instruction_by_label, effective_rows = _script_invocation_target_rows(
+        program_corpus, addresses
+    )
+    categories = tuple(programs_by_category)
+    caller_sites: dict[tuple[str, str], list[dict[str, Any]]] = {
+        (category, _program_key(program["canonicalSymbol"], program["entryAddress"])): []
+        for category, programs in programs_by_category.items()
+        for program in programs
+    }
+    instruction_sites = {label: [] for label in instruction_by_label}
+    effective_sites = {
+        row["effectiveOwnerProgramId"]: [] for row in effective_rows
+    }
+    sites: list[dict[str, Any]] = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            caller_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            site_weights = _script_invocation_weight_counts(program["referenceCounts"])
+            for operation_index, operation in enumerate(program["operations"]):
+                if operation["definitionId"] != service_definition["definitionId"]:
+                    continue
+                if (
+                    operation["sourceMnemonic"] != service_definition["sourceMacro"]
+                    or operation["family"] != "event-service-macro"
+                    or operation["sourceOrder"] != operation_index
+                    or len(operation["operandTexts"]) != 1
+                ):
+                    raise ValueError("map event script-invocation source/use-site drift")
+                raw_operand = operation["operandTexts"][0]
+                if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", raw_operand) is None:
+                    raise ValueError("map event script-invocation operand syntax drift")
+                target = instruction_by_label.get(raw_operand)
+                if target is None:
+                    raise ValueError("map event script-invocation label-owner coverage drift")
+                if target["instructionTargetAddress"] is None:
+                    raise ValueError("map event script-invocation target H1 address drift")
+                site = {
+                    "siteOrder": len(sites),
+                    "category": category,
+                    "sourceMacro": operation["sourceMnemonic"],
+                    "definitionId": operation["definitionId"],
+                    "callerProgramKey": caller_key,
+                    "callerProgramCanonicalSymbol": program["canonicalSymbol"],
+                    "callerProgramEntryAddress": program["entryAddress"],
+                    "callerProgramOrder": program["programOrder"],
+                    "callerSourcePath": program["sourcePath"],
+                    "operationSourceOrder": operation["sourceOrder"],
+                    "sourceLine": operation["sourceLine"],
+                    "operationAddress": operation["address"],
+                    "rawOperand": raw_operand,
+                    **target,
+                    "weightCounts": dict(site_weights),
+                }
+                sites.append(site)
+                caller_sites[(category, caller_key)].append(site)
+                instruction_sites[raw_operand].append(site)
+                effective_sites[target["effectiveOwnerProgramId"]].append(site)
+
+    def total_weights(contained_sites: list[dict[str, Any]]) -> dict[str, int]:
+        weights = _empty_script_invocation_weight_counts()
+        for site in contained_sites:
+            _add_script_invocation_weight_counts(weights, site["weightCounts"])
+        return weights
+
+    def category_weights(contained_sites: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
+        totals = {
+            category: _empty_script_invocation_weight_counts() for category in categories
+        }
+        for site in contained_sites:
+            _add_script_invocation_weight_counts(totals[site["category"]], site["weightCounts"])
+        return totals
+
+    caller_totals = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            caller_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            contained_sites = caller_sites[(category, caller_key)]
+            caller_totals.append(
+                {
+                    "category": category,
+                    "callerProgramKey": caller_key,
+                    "callerProgramOrder": program["programOrder"],
+                    "siteOrders": [site["siteOrder"] for site in contained_sites],
+                    "weightCounts": total_weights(contained_sites),
+                }
+            )
+    instruction_totals = [
+        {
+            **target,
+            "siteOrders": [site["siteOrder"] for site in instruction_sites[label]],
+            "weightCounts": total_weights(instruction_sites[label]),
+            "categoryWeightCounts": category_weights(instruction_sites[label]),
+        }
+        for label, target in instruction_by_label.items()
+    ]
+    effective_totals = [
+        {
+            **target,
+            "siteOrders": [
+                site["siteOrder"] for site in effective_sites[target["effectiveOwnerProgramId"]]
+            ],
+            "weightCounts": total_weights(effective_sites[target["effectiveOwnerProgramId"]]),
+            "categoryWeightCounts": category_weights(
+                effective_sites[target["effectiveOwnerProgramId"]]
+            ),
+        }
+        for target in effective_rows
+    ]
+    all_weights = total_weights(sites)
+    contract = {
+        "scriptInvocationServiceDefinition": service_definition,
+        "scriptInvocationSites": sites,
+        "scriptInvocationCallerTotals": caller_totals,
+        "scriptInvocationInstructionTargetTotals": instruction_totals,
+        "scriptInvocationEffectiveTargetTotals": effective_totals,
+        "scriptInvocationSummary": {
+            "serviceDefinitionCount": 1,
+            "siteCount": len(sites),
+            "declaredInstructionTargetCount": len(instruction_totals),
+            "observedInstructionTargetCount": sum(
+                bool(row["siteOrders"]) for row in instruction_totals
+            ),
+            "declaredEffectiveTargetCount": len(effective_totals),
+            "observedEffectiveTargetCount": sum(
+                bool(row["siteOrders"]) for row in effective_totals
+            ),
+            "weightCounts": all_weights,
+            "categoryWeightCounts": category_weights(sites),
+        },
+    }
+    contract.update(
+        {
+            "scriptInvocationSiteOrder": [str(site["siteOrder"]) for site in sites],
+            "scriptInvocationCallerTotalOrder": [
+                f"{categories.index(row['category'])}:{row['callerProgramOrder']}"
+                for row in caller_totals
+            ],
+            "scriptInvocationInstructionTargetTotalOrder": [
+                row["instructionTargetLabel"] for row in instruction_totals
+            ],
+            "scriptInvocationEffectiveTargetTotalOrder": [
+                f"{row['effectiveOwnerProgramOrder']}:{row['effectiveOwnerProgramId']}"
+                for row in effective_totals
+            ],
+        }
+    )
+    return contract
+
+
+def _reconcile_script_invocation_graph_contract(
+    contract: dict[str, Any],
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+) -> None:
+    """Reject a source/H1 or owner-map graph replacement before fixture comparison."""
+    expected = _script_invocation_graph_contract(
+        operation_definitions, programs_by_category, program_corpus, addresses
+    )
+    for field, value in expected.items():
+        if contract[field] != value:
+            raise ValueError(f"map event script-invocation {field} reconciliation drift")
+
+
 def _source_program_block(
     disasm: Path,
     profile: dict[str, Any],
@@ -3977,6 +4269,19 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     direct_flag_state_contract = _direct_flag_state_contract(
         list(operation_definitions.values()), programs_by_category
     )
+    script_invocation_contract = _script_invocation_graph_contract(
+        list(operation_definitions.values()),
+        programs_by_category,
+        map_script_engine["programCorpus"],
+        addresses,
+    )
+    _reconcile_script_invocation_graph_contract(
+        script_invocation_contract,
+        list(operation_definitions.values()),
+        programs_by_category,
+        map_script_engine["programCorpus"],
+        addresses,
+    )
     operation_orders_by_category = {
         "entityEvents": entity_target_program_operation_orders,
         "zoneEvents": zone_target_program_operation_orders,
@@ -4196,6 +4501,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         ],
         **operation_vocabulary_contract,
         **direct_flag_state_contract,
+        **script_invocation_contract,
         "consumerFacts": _consumer_facts(setup),
         "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
         "entityTargetProgramSummary": entity_target_program_summary,

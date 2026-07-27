@@ -28,7 +28,9 @@ from sf2tool.h2.map_events import (
     _reconcile_direct_flag_state_contract,
     _reconcile_event_reference_counts,
     _reconcile_operation_weight_contract,
+    _reconcile_script_invocation_graph_contract,
     _record_target_ownership,
+    _script_invocation_graph_contract,
     _setup_category_joins,
     _source_macro_catalog,
     _target_program_contract,
@@ -784,6 +786,16 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
         "directFlagTotals",
         "directFlagTotalOrder",
         "directFlagStateSummary",
+        "scriptInvocationServiceDefinition",
+        "scriptInvocationSites",
+        "scriptInvocationSiteOrder",
+        "scriptInvocationCallerTotals",
+        "scriptInvocationCallerTotalOrder",
+        "scriptInvocationInstructionTargetTotals",
+        "scriptInvocationInstructionTargetTotalOrder",
+        "scriptInvocationEffectiveTargetTotals",
+        "scriptInvocationEffectiveTargetTotalOrder",
+        "scriptInvocationSummary",
         "entityTargetProgramOperationWeightOrders",
         "entityTargetProgramPayloadContextOrders",
         "zoneTargetProgramOperationWeightOrders",
@@ -896,6 +908,40 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
             "nonAdjacentImmediateOperationCount": 0,
             "unrecognizedConditionalMnemonicCount": 0,
             "missingTargetIdentityCount": 0,
+        },
+    }
+    assert output["scriptInvocationSummary"] == {
+        "serviceDefinitionCount": 1,
+        "siteCount": 147,
+        "declaredInstructionTargetCount": 348,
+        "observedInstructionTargetCount": 138,
+        "declaredEffectiveTargetCount": 304,
+        "observedEffectiveTargetCount": 135,
+        "weightCounts": {
+            "physicalProgramOccurrenceCount": 147,
+            "physicalRecordWeightedSiteCount": 204,
+            "setupRecordReferenceWeightedSiteCount": 352,
+            "routeRecordReferenceWeightedSiteCount": 387,
+        },
+        "categoryWeightCounts": {
+            "entityEvents": {
+                "physicalProgramOccurrenceCount": 52,
+                "physicalRecordWeightedSiteCount": 57,
+                "setupRecordReferenceWeightedSiteCount": 104,
+                "routeRecordReferenceWeightedSiteCount": 123,
+            },
+            "zoneEvents": {
+                "physicalProgramOccurrenceCount": 87,
+                "physicalRecordWeightedSiteCount": 138,
+                "setupRecordReferenceWeightedSiteCount": 233,
+                "routeRecordReferenceWeightedSiteCount": 249,
+            },
+            "itemEvents": {
+                "physicalProgramOccurrenceCount": 8,
+                "physicalRecordWeightedSiteCount": 9,
+                "setupRecordReferenceWeightedSiteCount": 15,
+                "routeRecordReferenceWeightedSiteCount": 15,
+            },
         },
     }
     assert len(output["operationVocabulary"]) == 54
@@ -1423,6 +1469,43 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
         direct_fixture_output["properties"]["directFlagTotalOrder"],
         format_checker=FormatChecker(),
     )
+    script_output_site_validator = Draft7Validator(
+        {
+            "$schema": output_schema["$schema"],
+            "definitions": {
+                name: output_schema["definitions"][name]
+                for name in ("scriptInvocationWeightCounts", "scriptInvocationSite")
+            },
+            "$ref": "#/definitions/scriptInvocationSite",
+        },
+        format_checker=FormatChecker(),
+    )
+    script_output_site_order_validator = Draft7Validator(
+        output_schema["properties"]["scriptInvocationSiteOrder"],
+        format_checker=FormatChecker(),
+    )
+    script_fixture_site_validator = Draft7Validator(
+        {
+            "$schema": fixture_schema["$schema"],
+            "definitions": {
+                "outputContract": {
+                    "definitions": {
+                        name: direct_fixture_output["definitions"][name]
+                        for name in (
+                            "scriptInvocationWeightCounts",
+                            "scriptInvocationSite",
+                        )
+                    }
+                }
+            },
+            "$ref": "#/definitions/outputContract/definitions/scriptInvocationSite",
+        },
+        format_checker=FormatChecker(),
+    )
+    script_fixture_effective_order_validator = Draft7Validator(
+        direct_fixture_output["properties"]["scriptInvocationEffectiveTargetTotalOrder"],
+        format_checker=FormatChecker(),
+    )
 
     def output_rejects(instance: dict[str, Any]) -> None:
         assert next(output_validator.iter_errors(instance), None) is not None
@@ -1555,6 +1638,50 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
     fixture_direct_flag_boundary = copy.deepcopy(direct_fixture_total)
     fixture_direct_flag_boundary["flagNumber"] = -1
     direct_rejects(direct_fixture_total_validator, fixture_direct_flag_boundary)
+
+    script_output_site = output["scriptInvocationSites"][0]
+    direct_accepts(script_output_site_validator, script_output_site)
+    script_output_missing = copy.deepcopy(script_output_site)
+    del script_output_missing["weightCounts"]["routeRecordReferenceWeightedSiteCount"]
+    direct_rejects(script_output_site_validator, script_output_missing)
+
+    script_output_extra = copy.deepcopy(script_output_site)
+    script_output_extra["weightCounts"]["unexpected"] = True
+    direct_rejects(script_output_site_validator, script_output_extra)
+
+    script_output_site_order = output["scriptInvocationSiteOrder"]
+    direct_accepts(script_output_site_order_validator, script_output_site_order)
+    direct_rejects(script_output_site_order_validator, list(reversed(script_output_site_order)))
+
+    script_output_boundary = copy.deepcopy(script_output_site)
+    script_output_boundary["operationAddress"] = -1
+    direct_rejects(script_output_site_validator, script_output_boundary)
+
+    script_fixture_site = fixture["expected"]["scriptInvocationSites"][0]
+    direct_accepts(script_fixture_site_validator, script_fixture_site)
+    script_fixture_renamed = copy.deepcopy(script_fixture_site)
+    script_fixture_weights = script_fixture_renamed["weightCounts"]
+    script_fixture_weights["renamedPhysicalRecordWeightedSiteCount"] = script_fixture_weights.pop(
+        "physicalRecordWeightedSiteCount"
+    )
+    direct_rejects(script_fixture_site_validator, script_fixture_renamed)
+
+    script_fixture_extra = copy.deepcopy(script_fixture_site)
+    script_fixture_extra["weightCounts"]["unexpected"] = True
+    direct_rejects(script_fixture_site_validator, script_fixture_extra)
+
+    script_fixture_effective_order = fixture["expected"][
+        "scriptInvocationEffectiveTargetTotalOrder"
+    ]
+    direct_accepts(script_fixture_effective_order_validator, script_fixture_effective_order)
+    direct_rejects(
+        script_fixture_effective_order_validator,
+        list(reversed(script_fixture_effective_order)),
+    )
+
+    script_fixture_boundary = copy.deepcopy(script_fixture_site)
+    script_fixture_boundary["instructionTargetAddress"] = -1
+    direct_rejects(script_fixture_site_validator, script_fixture_boundary)
 
     program_missing = copy.deepcopy(output)
     del program_missing["entityTargetPrograms"][0]["termination"]["sourceMnemonic"]
@@ -2029,6 +2156,272 @@ def test_direct_flag_contract_reconciles_service_use_consumer_and_weight_mutatio
         _reconcile_direct_flag_state_contract(changed_weights, programs_by_category)
 
 
+def test_script_invocation_graph_preserves_aliases_and_zero_inclusive_totals() -> None:
+    definitions = [
+        {
+            "definitionId": "event-service-macro:script",
+            "family": "event-service-macro",
+            "sourceMacro": "script",
+            "sourcePath": "sf2macros.asm",
+            "definitionSourceLine": 62,
+            "formalParameterOrdinals": [1],
+            "emissionStatementTemplates": ["lea \\1(pc),a0", "trap #mapscript"],
+            "serviceTarget": "#MAPSCRIPT",
+        }
+    ]
+
+    def caller(
+        symbol: str,
+        entry_address: int,
+        order: int,
+        weights: tuple[int, int, int],
+        operand: str | None,
+    ) -> dict[str, Any]:
+        operations = []
+        if operand is not None:
+            operations.append(
+                {
+                    "sourceOrder": 0,
+                    "sourceLine": 20 + order,
+                    "sourceMnemonic": "script",
+                    "operandTexts": [operand],
+                    "address": entry_address + 4,
+                    "family": "event-service-macro",
+                    "definitionId": "event-service-macro:script",
+                }
+            )
+        return {
+            "canonicalSymbol": symbol,
+            "entryAddress": entry_address,
+            "programOrder": order,
+            "sourcePath": f"data/maps/{symbol}.asm",
+            "referenceCounts": {
+                "physicalRecordCount": weights[0],
+                "setupRecordReferenceCount": weights[1],
+                "routeRecordReferenceCount": weights[2],
+            },
+            "operations": operations,
+        }
+
+    callers = {
+        "entityEvents": [caller("EntityCaller", 0x1000, 0, (2, 3, 4), "TargetAlias")],
+        "zoneEvents": [caller("ZoneCaller", 0x1100, 0, (9, 10, 11), None)],
+        "itemEvents": [caller("ItemCaller", 0x1200, 0, (5, 6, 7), "TargetEntry")],
+    }
+    program_corpus = {
+        "labelOwners": {
+            "TargetAlias": "TargetEntry",
+            "TargetEntry": "TargetEntry",
+            "UnusedEntry": "UnusedEntry",
+        },
+        "programs": [
+            {
+                "id": "TargetEntry",
+                "entryLabel": "TargetEntry",
+                "address": 0x4000,
+                "sourcePath": "code/maps/target.asm",
+                "termination": "csc-end",
+                "labels": ["TargetEntry", "TargetAlias"],
+            },
+            {
+                "id": "UnusedEntry",
+                "entryLabel": "UnusedEntry",
+                "address": 0x5000,
+                "sourcePath": "code/maps/unused.asm",
+                "termination": "absolute-jump",
+                "labels": ["UnusedEntry"],
+            },
+        ],
+    }
+    addresses = {"TargetEntry": 0x4000, "TargetAlias": 0x4010, "UnusedEntry": 0x5000}
+    contract = _script_invocation_graph_contract(
+        definitions, callers, program_corpus, addresses
+    )
+    assert contract["scriptInvocationSites"] == [
+        {
+            "siteOrder": 0,
+            "category": "entityEvents",
+            "sourceMacro": "script",
+            "definitionId": "event-service-macro:script",
+            "callerProgramKey": "EntityCaller:4096",
+            "callerProgramCanonicalSymbol": "EntityCaller",
+            "callerProgramEntryAddress": 0x1000,
+            "callerProgramOrder": 0,
+            "callerSourcePath": "data/maps/EntityCaller.asm",
+            "operationSourceOrder": 0,
+            "sourceLine": 20,
+            "operationAddress": 0x1004,
+            "rawOperand": "TargetAlias",
+            "instructionTargetLabel": "TargetAlias",
+            "instructionTargetAddress": 0x4010,
+            "effectiveOwnerProgramId": "TargetEntry",
+            "effectiveOwnerProgramOrder": 0,
+            "effectiveOwnerEntryLabel": "TargetEntry",
+            "effectiveOwnerEntryAddress": 0x4000,
+            "effectiveOwnerSourcePath": "code/maps/target.asm",
+            "effectiveOwnerTermination": "csc-end",
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 2,
+                "setupRecordReferenceWeightedSiteCount": 3,
+                "routeRecordReferenceWeightedSiteCount": 4,
+            },
+        },
+        {
+            "siteOrder": 1,
+            "category": "itemEvents",
+            "sourceMacro": "script",
+            "definitionId": "event-service-macro:script",
+            "callerProgramKey": "ItemCaller:4608",
+            "callerProgramCanonicalSymbol": "ItemCaller",
+            "callerProgramEntryAddress": 0x1200,
+            "callerProgramOrder": 0,
+            "callerSourcePath": "data/maps/ItemCaller.asm",
+            "operationSourceOrder": 0,
+            "sourceLine": 20,
+            "operationAddress": 0x1204,
+            "rawOperand": "TargetEntry",
+            "instructionTargetLabel": "TargetEntry",
+            "instructionTargetAddress": 0x4000,
+            "effectiveOwnerProgramId": "TargetEntry",
+            "effectiveOwnerProgramOrder": 0,
+            "effectiveOwnerEntryLabel": "TargetEntry",
+            "effectiveOwnerEntryAddress": 0x4000,
+            "effectiveOwnerSourcePath": "code/maps/target.asm",
+            "effectiveOwnerTermination": "csc-end",
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 5,
+                "setupRecordReferenceWeightedSiteCount": 6,
+                "routeRecordReferenceWeightedSiteCount": 7,
+            },
+        },
+    ]
+    assert [row["siteOrders"] for row in contract["scriptInvocationCallerTotals"]] == [
+        [0],
+        [],
+        [1],
+    ]
+    assert [
+        (row["instructionTargetLabel"], row["effectiveOwnerProgramId"], row["siteOrders"])
+        for row in contract["scriptInvocationInstructionTargetTotals"]
+    ] == [
+        ("TargetAlias", "TargetEntry", [0]),
+        ("TargetEntry", "TargetEntry", [1]),
+        ("UnusedEntry", "UnusedEntry", []),
+    ]
+    assert [
+        (row["effectiveOwnerProgramId"], row["siteOrders"])
+        for row in contract["scriptInvocationEffectiveTargetTotals"]
+    ] == [("TargetEntry", [0, 1]), ("UnusedEntry", [])]
+    assert contract["scriptInvocationSummary"] == {
+        "serviceDefinitionCount": 1,
+        "siteCount": 2,
+        "declaredInstructionTargetCount": 3,
+        "observedInstructionTargetCount": 2,
+        "declaredEffectiveTargetCount": 2,
+        "observedEffectiveTargetCount": 1,
+        "weightCounts": {
+            "physicalProgramOccurrenceCount": 2,
+            "physicalRecordWeightedSiteCount": 7,
+            "setupRecordReferenceWeightedSiteCount": 9,
+            "routeRecordReferenceWeightedSiteCount": 11,
+        },
+        "categoryWeightCounts": {
+            "entityEvents": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 2,
+                "setupRecordReferenceWeightedSiteCount": 3,
+                "routeRecordReferenceWeightedSiteCount": 4,
+            },
+            "zoneEvents": {
+                "physicalProgramOccurrenceCount": 0,
+                "physicalRecordWeightedSiteCount": 0,
+                "setupRecordReferenceWeightedSiteCount": 0,
+                "routeRecordReferenceWeightedSiteCount": 0,
+            },
+            "itemEvents": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 5,
+                "setupRecordReferenceWeightedSiteCount": 6,
+                "routeRecordReferenceWeightedSiteCount": 7,
+            },
+        },
+    }
+    _reconcile_script_invocation_graph_contract(
+        contract, definitions, callers, program_corpus, addresses
+    )
+
+    changed_aliases = copy.deepcopy(program_corpus)
+    changed_aliases["labelOwners"]["TargetAlias"] = "UnusedEntry"
+    with pytest.raises(ValueError, match="label-owner mapping drift"):
+        _script_invocation_graph_contract(definitions, callers, changed_aliases, addresses)
+
+    changed_addresses = {**addresses, "TargetAlias": 0x4012}
+    with pytest.raises(ValueError, match="scriptInvocationSites reconciliation drift"):
+        _reconcile_script_invocation_graph_contract(
+            contract, definitions, callers, program_corpus, changed_addresses
+        )
+
+    changed_definition = copy.deepcopy(definitions)
+    changed_definition[0]["emissionStatementTemplates"].reverse()
+    with pytest.raises(ValueError, match="service emission/order drift"):
+        _script_invocation_graph_contract(
+            changed_definition, callers, program_corpus, addresses
+        )
+
+    changed_operand_callers = copy.deepcopy(callers)
+    changed_operand_callers["entityEvents"][0]["operations"][0]["operandTexts"] = ["Missing"]
+    with pytest.raises(ValueError, match="label-owner coverage drift"):
+        _script_invocation_graph_contract(
+            definitions, changed_operand_callers, program_corpus, addresses
+        )
+
+    changed_order_callers = copy.deepcopy(callers)
+    changed_order_callers["entityEvents"][0]["operations"][0]["sourceOrder"] = 1
+    with pytest.raises(ValueError, match="source/use-site drift"):
+        _script_invocation_graph_contract(
+            definitions, changed_order_callers, program_corpus, addresses
+        )
+
+    changed_operation_address_callers = copy.deepcopy(callers)
+    changed_operation_address_callers["entityEvents"][0]["operations"][0]["address"] += 2
+    with pytest.raises(ValueError, match="scriptInvocationSites reconciliation drift"):
+        _reconcile_script_invocation_graph_contract(
+            contract,
+            definitions,
+            changed_operation_address_callers,
+            program_corpus,
+            addresses,
+        )
+
+    changed_owner_corpus = copy.deepcopy(program_corpus)
+    changed_owner_corpus["programs"][0]["termination"] = "absolute-jump"
+    with pytest.raises(ValueError, match="scriptInvocationSites reconciliation drift"):
+        _reconcile_script_invocation_graph_contract(
+            contract, definitions, callers, changed_owner_corpus, addresses
+        )
+
+    changed_site_identity = copy.deepcopy(contract)
+    changed_site_identity["scriptInvocationSites"][0]["siteOrder"] = 7
+    with pytest.raises(ValueError, match="scriptInvocationSites reconciliation drift"):
+        _reconcile_script_invocation_graph_contract(
+            changed_site_identity, definitions, callers, program_corpus, addresses
+        )
+
+    for reference_field in (
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+    ):
+        changed_weights = copy.deepcopy(callers)
+        changed_weights["entityEvents"][0]["referenceCounts"][reference_field] += 1
+        with pytest.raises(ValueError, match="scriptInvocationSites reconciliation drift"):
+            _reconcile_script_invocation_graph_contract(
+                contract, definitions, changed_weights, program_corpus, addresses
+            )
+
+
 def test_jump_interface_alias_parser_guards_source_and_h1_target_relationship(
     tmp_path: Path,
 ) -> None:
@@ -2464,6 +2857,14 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "directFlagTotal",
         "directFlagReadConditionConsumerCounts",
         "directFlagStateSummary",
+        "scriptInvocationWeightCounts",
+        "scriptInvocationCategoryWeightCounts",
+        "scriptInvocationServiceDefinition",
+        "scriptInvocationSite",
+        "scriptInvocationCallerTotal",
+        "scriptInvocationInstructionTargetTotal",
+        "scriptInvocationEffectiveTargetTotal",
+        "scriptInvocationSummary",
     } <= set(schema["definitions"])
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
@@ -2502,6 +2903,18 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
     assert schema["properties"]["directFlagTotals"]["items"] == {
         "$ref": "#/definitions/directFlagTotal"
     }
+    assert schema["properties"]["scriptInvocationSites"]["items"] == {
+        "$ref": "#/definitions/scriptInvocationSite"
+    }
+    assert schema["properties"]["scriptInvocationCallerTotals"]["items"] == {
+        "$ref": "#/definitions/scriptInvocationCallerTotal"
+    }
+    assert schema["properties"]["scriptInvocationInstructionTargetTotals"]["items"] == {
+        "$ref": "#/definitions/scriptInvocationInstructionTargetTotal"
+    }
+    assert schema["properties"]["scriptInvocationEffectiveTargetTotals"]["items"] == {
+        "$ref": "#/definitions/scriptInvocationEffectiveTargetTotal"
+    }
     for definition in (
         "directFlagReferenceWeights",
         "directFlagWeightCounts",
@@ -2515,6 +2928,14 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         "directFlagTotal",
         "directFlagReadConditionConsumerCounts",
         "directFlagStateSummary",
+        "scriptInvocationWeightCounts",
+        "scriptInvocationCategoryWeightCounts",
+        "scriptInvocationServiceDefinition",
+        "scriptInvocationSite",
+        "scriptInvocationCallerTotal",
+        "scriptInvocationInstructionTargetTotal",
+        "scriptInvocationEffectiveTargetTotal",
+        "scriptInvocationSummary",
     ):
         assert schema["definitions"][definition]["additionalProperties"] is False
     for definition in (
@@ -2543,6 +2964,18 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
     }
     assert fixture_output["properties"]["directFlagTotals"]["items"] == {
         "$ref": "#/definitions/outputContract/definitions/directFlagTotal"
+    }
+    assert fixture_output["properties"]["scriptInvocationSites"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/scriptInvocationSite"
+    }
+    assert fixture_output["properties"]["scriptInvocationCallerTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/scriptInvocationCallerTotal"
+    }
+    assert fixture_output["properties"]["scriptInvocationInstructionTargetTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/scriptInvocationInstructionTargetTotal"
+    }
+    assert fixture_output["properties"]["scriptInvocationEffectiveTargetTotals"]["items"] == {
+        "$ref": "#/definitions/outputContract/definitions/scriptInvocationEffectiveTargetTotal"
     }
     for category in ("zone", "item"):
         assert fixture_output["properties"][f"{category}TargetPrograms"]["items"] == {

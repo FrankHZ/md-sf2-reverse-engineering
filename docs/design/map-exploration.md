@@ -210,6 +210,15 @@ source polarity, and instruction/effective target identity. The `read`, `set`, a
 remain source classifications only. A remake MUST NOT infer save persistence, story state, flag
 lifecycle, operation effect, or presentation from this static contract.
 
+An importer MUST preserve every direct `script` source reference as a distinct source-shaped edge:
+the parsed service-definition identity, raw operand label, caller program/source/H1 operation
+identity, instruction-label H1 address, effective map-script owner program identity, termination,
+and four independent caller/reference weights. Instruction labels and effective owner programs MUST
+remain separate identities so aliases are not collapsed. The complete declared label and program
+domains, including zero-reference rows, are import data. This static graph MUST NOT be treated as
+evidence that a reference executes, nor as an inference about timing, effects, persistence, story,
+or presentation.
+
 For zone and item targets, an importer or future execution adapter MUST retain the same
 source-shaped program record: entry identity, physical span, ordered non-comment operations and
 labels, terminal form, instruction-versus-effective target identity, aliases, and independent

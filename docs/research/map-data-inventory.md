@@ -429,6 +429,42 @@ construction guard. Provenance: USA ROM SHA-256 recorded above;
 `build/sf2build-h1.lst`; and `uv run sf2 h2 map-events` (observed 493 / 151 / 316 immediate branch
 consumers). Evidence date: 2026-07-27.
 
+### Direct `script` Source-Reference Graph
+
+**Confirmed — parsed service and target-owner join:** `sf2macros.asm:62-65` defines the one
+source macro `script` with formal operand 1 and the exact ordered emission `lea \1(pc),a0` then
+`trap #MAPSCRIPT`. Across all 914 target programs, its 147 parsed source/H1 use sites split 52
+entity, 87 zone, and 8 item sites. Each record retains the raw operand label, caller program/source
+and H1 operation identity, instruction-label H1 address, and the distinct effective map-script
+program owner (ID, entry label/address, source path, and termination). This is a source-reference
+join; it does not establish that a reference executes, its timing, any script effect, story
+reachability, save persistence, or presentation.
+
+**Confirmed — aliases, complete target domains, and weights:** the 147 sites use 138 distinct
+operand labels which resolve to 135 distinct effective owners. The zero-inclusive instruction-target
+table covers all 348 labels in the maintained map-script `labelOwners` map; the zero-inclusive
+effective-target table covers all 304 declared map-script programs. Thus interior labels remain
+distinct instruction identities even when they share an owner program; the fixture never collapses
+an operand label into its owner entry label. The four retained counts are:
+
+| Caller category | Physical program occurrences | Physical-record weighted | Setup-reference weighted | Route-reference weighted |
+| --- | ---: | ---: | ---: | ---: |
+| entity | 52 | 57 | 104 | 123 |
+| zone | 87 | 138 | 233 | 249 |
+| item | 8 | 9 | 15 | 15 |
+| **Total** | **147** | **204** | **352** | **387** |
+
+**Confirmed — construction and reconciliation guard:** the rail parses the service definition once,
+then re-derives ordered sites, all 914 caller totals, all 348 instruction-label totals, all 304
+effective-owner totals, category weights, and source/H1 owner identities before fixture comparison.
+A direct macro emission/order, caller operand/order/H1 address, label-owner mapping, target H1
+address, effective owner, site identity/order, or any reference weight mutation fails that guard.
+Provenance: USA ROM SHA-256 above; `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2macros.asm:62-65`; all event target-program
+owners; `build/sf2build-h1.lst`; and the maintained
+`sf2-map-script-engine-static-v1` `programCorpus.labelOwners`/`programs` records. Observed command:
+`uv run sf2 h2 map-events` (147 / 138 / 135 / 348 / 304). Evidence date: 2026-07-27.
+
 ### Grouped H3 Runtime Questions
 
 - **Unknown — normal-story direct-`rts` reachability:** observe map 52's non-empty setup across normal

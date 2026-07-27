@@ -136,7 +136,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   exclusion）、3,579 个非注释操作（54 个 mnemonic、9 个 source-faithful family、34 个 macro/engine
   definition join 与 4 个 Map 21 action-payload context）、493 个 direct numeric flag source use
   （316 read / 169 set / 8 clear，151 个 operand、316 个 immediate conditional consumer）/各 category
-  合计 469 个 instruction 与 effective target identity、
+  合计 469 个 instruction 与 effective target identity、147 个 direct `script` source reference
+  （138 个 instruction label、135 个 effective map-script owner；348/304 个零计数完整 target domain）、
   378 个 pointer-table 与 390 个 selector-route category join、map44 raw-target boundary、9 个
   first-match 选择案例，以及 75 个 description target/227 个物理
   entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone

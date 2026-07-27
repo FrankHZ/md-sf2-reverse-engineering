@@ -430,7 +430,13 @@ source-label reads, 169 sets, 8 clears), 151 observed operands, zero-inclusive t
 programs, four independently named physical/reference weights, and every immediate `chkFlg` branch
 consumer (264 `bne.s`, 49 `beq.s`, 3 `bne.w`). Parsed macro definitions, numeric operands, consumer
 order/polarity/target identities, and source/H1 operation records are guarded before fixture
-comparison; this does not claim a flag's persistence, story meaning, or presentation effect.
+comparison; this does not claim a flag's persistence, story meaning, or presentation effect. The
+same rail now also closes the direct `script` source-reference graph: its one parsed
+`lea \1(pc),a0`/`trap #MAPSCRIPT` definition joins 147 source/H1 sites (52 entity, 87 zone, 8 item)
+to 138 instruction labels and 135 effective map-script program owners, while retaining all 348
+declared labels and 304 declared programs as zero-inclusive target domains. This is source/H1
+identity and ownership only, not evidence of execution, side effects, persistence, story reachability,
+or presentation.
 Evidence date: 2026-07-27. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
