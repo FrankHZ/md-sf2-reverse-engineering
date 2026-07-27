@@ -235,6 +235,12 @@ The current evidence is deep but narrow:
   groups. Eighteen resource routes, all nine compressed tile resources, and the
   save/reset/cheat/effect control structure are static contracts; rendered parity and five
   oversized DMA tails are queued as three presentation matrices.
+  The witch slice now additionally closes the four-row New/Load/Delete/Copy dispatcher, all four menu
+  page identities, save-flag selector masks, New/Load/Copy/Delete branch and call order, initial-loop
+  constants, and five SRAM service callers with zero-inclusive internal/external target totals. Its 118
+  source-line/operand provenance records are all referenced by exact ordered semantic summaries. Input,
+  prompt, rendering, audio, and persistence outcomes remain one grouped witch presentation/runtime
+  question rather than being inferred from the static routes.
   The ROM header, window engine, battle test, configuration mode, and debug battle actions close the
   final five primary layout sources. The window contract now records all 16 stable entries, 32
   instruction-scoped external direct-caller files, six separate VInt pointer references, the 16-byte

@@ -1,14 +1,14 @@
 # Special Screens
 
 - Status: **Confirmed** for all 19 layout-owned files, representative H1 addresses, seven screen
-  groups, eighteen resource routes, title/logo input structure, witch save actions, suspend/reset
-  flow, ending-effect ownership, the complete nine-resource Stack-compressed tile corpus, and the
-  complete witch choice-palette/bubble-animation data path, plus all twelve uncompressed palette/
-  layout presentation resources
+  groups, eighteen resource routes, title/logo input structure, the four-row witch save-menu
+  dispatcher, page selectors, action call/branch order, suspend/reset flow, ending-effect ownership,
+  the complete nine-resource Stack-compressed tile corpus, and the complete witch choice-palette/
+  bubble-animation data path, plus all twelve uncompressed palette/layout presentation resources
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
 - Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
   transfer tails
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-27
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -68,10 +68,66 @@ frames are not.
 ## Witch, Save, and Suspend
 
 The witch entry builds its screen, checks both SRAM slots, and dispatches exactly four save actions:
-new, load, copy, and delete. Those routes call the SRAM functions inventoried in the technical
+new, load, delete, and copy. Those routes call the SRAM functions inventoried in the technical
 services batch and re-enter either `MainLoop` or `alt_MainLoopEntry` as appropriate. The US
 `j_SoundTest` entry is only an `rts`, matching the source note that the function is absent from this
 release.
+
+### Save-menu action state (Confirmed, static)
+
+The `rjt_WitchMenuActions` word-dispatch table in
+`code/specialscreens/witch/witchstart.asm` starts at H1 address `0x73FE` and has four ordered rows:
+index 0 `witchMenuAction_New` (`0x7406`), 1 `witchMenuAction_Load` (`0x74E2`), 2
+`witchMenuAction_Del` (`0x7574`), and 3 `witchMenuAction_Copy` (`0x754C`). The entry doubles the
+returned action index before reading that word table and jumping through it. This is a source/H1
+dispatch fact, not a statement about a player-visible input sequence.
+
+`StartWitchScreen` calls `CheckSram` at source line 45/H1 `0x72E2`; it tests `d0` and then `d1` with
+ordered `bpl.s` branches before reaching the action page. That page masks `SAVE_FLAGS` with `3` and
+supplies availability masks `1`, `6`, or `15` to `j_ExecuteWitchMainMenu` before a negative returned
+`d0` branches back to the witch text/menu loop. The associated source/H1 service sites are exactly
+`CheckSram` (`0x6EA6`, line 45), `SaveGame` (`0x6F6A`, line 220), `LoadGame` (`0x6FAC`, line 259),
+`CopySave` (`0x6FDA`, line 294), and `ClearSaveSlotFlag` (`0x6FEC`, line 331). The parser retains
+both instruction and effective identities; all five are external to the three-file witch source
+surface, so its zero-inclusive internal effective-target totals are zero and its external totals are
+one each.
+
+`ExecuteWitchMainMenu` at H1 `0x16658` masks its starting selector with `15`, returns `-1` on its
+documented B-button path, wraps navigation with mask `3`, and draws four source-labelled page kinds:
+page 0 actions, page 1 new-slot names, page 2 loaded-slot names, and page 3 difficulties. The source
+checks available bit positions 0 through 3. This establishes only the static selector/result contract;
+it does not establish controller timing, rendered labels, or perceived navigation behavior.
+
+The New action inverts the masked save flags with the same mask, shifts left once, chooses a starting
+selector from bit 1, invokes page 1, subtracts one from its returned selector, and writes
+`CURRENT_SAVE_SLOT` before `j_NewGame`. Its guarded call order includes naming/configuration and page 3
+with availability mask 15. It writes `GAMESTART_MAP` (3) to `CURRENT_MAP`/`EGRESS_MAP`, then calls
+`SaveGame`; only afterward does it set map/X/Y/facing/`d4` for the `MainLoop` handoff: map (3),
+savepoint X (56), savepoint Y (3), facing (3), and `d4` value 1. The Load and
+Delete actions use the non-inverted, once-shifted occupied-slot selector with page 2 and the same
+returned-selector/current-slot sequence. Load calls `LoadGame`; its `chkFlg 88` zero branch reaches
+`GetSavepointForMap`, while the nonzero path reaches `j_BattleLoop`, and both branch to
+`alt_MainLoopEntry`. Copy asks through `j_alt_YesNoPrompt`, branches back on a nonzero result, then
+masks the flags with 3, subtracts one, and calls `CopySave`. Delete similarly branches back on a
+nonzero prompt result before calling `ClearSaveSlotFlag`. These are branch/call/order facts only; the
+meaning of a prompt result beyond that source polarity is not promoted here.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; the three bounded sources
+`witchstart.asm`, `witchmainmenu.asm`, and `witchfunctions.asm`; and
+`build/sf2build-h1.lst`. Reproduce with `uv run sf2 h2 special-screens` and
+`uv run pytest tests/python/test_screens.py -q`. The resulting contract is
+`sf2-special-screens-static-v1` at
+`tests/fixtures/h2/special-screens-static-v1.json`. Its 118 compact use-site records each preserve a
+pinned source path, source line, normalized instruction, opcode, and operand; every record is
+referenced by an ordered semantic-summary list. The focused parser and mutation rail reject an
+altered source operand, opcode, branch polarity, table order, or call order before fixture comparison.
+
+### Grouped H3 runtime-question queue
+
+- `witch-save-menu-and-suspend-presentation`: observe durable SRAM outcomes, button timing, prompt
+  presentation, rendered file/name contents, and audio/window/VDP behavior in one shared launch. None
+  of those outcomes is established by this static source contract.
 
 The witch rendering helpers own screen construction, layout-zone DMA, head updates, blink VInt, and
 speech-bubble/menu presentation. The suspend path sleeps 60 frames before presenting its resources.
@@ -104,7 +160,8 @@ No emulator was launched for this inventory. Presentation questions are retained
 matrices:
 
 1. Sega logo, title, cheat sequences, and Start timing;
-2. witch save menu, blink/bubble presentation, and suspend/reset timing;
+2. `witch-save-menu-and-suspend-presentation`: witch save menu, blink/bubble presentation, and
+   suspend/reset timing;
 3. ending kiss pixel fill, falling jewels, and ending-witch presentation.
 
 The same launches should sample the five fixed-transfer tails before DMA so their contents and
