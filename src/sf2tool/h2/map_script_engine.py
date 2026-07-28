@@ -215,6 +215,28 @@ MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS = [
     "map-interaction-trigger/runtime-effects-matrix"
 ]
 
+# These source macro labels delimit the camera-control slice.  They retain the
+# original names and operand comments without assigning presentation, timing,
+# reachability, or player-visible camera behavior.
+MAP_CAMERA_CONTROL_MACRO_NAMES = (
+    "setCameraEntity",
+    "setCamDest",
+    "cameraSpeed",
+)
+MAP_CAMERA_CONTROL_HANDLER_BY_MACRO = {
+    "setCameraEntity": "csc24_setCameraTargetEntity",
+    "setCamDest": "csc32_setCameraDestInTiles",
+    "cameraSpeed": "csc45_cameraSpeed",
+}
+MAP_CAMERA_CONTROL_HANDLER_NAMES = tuple(MAP_CAMERA_CONTROL_HANDLER_BY_MACRO.values())
+MAP_CAMERA_CONTROL_DIRECT_TARGETS = (
+    "j_SetCameraDestination",
+    "WaitForViewScrollEnd",
+)
+MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS = [
+    "map-script-camera-control/runtime-effects-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -4680,6 +4702,659 @@ def _entity_population_command_facts(
     }
 
 
+def _map_camera_control_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse camera-control operand comments with their physical stream shape."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in MAP_CAMERA_CONTROL_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"map-camera-control macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"map-camera-control operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"map-camera-control operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"map-camera-control operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"map-camera-control operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"map-camera-control operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _map_camera_control_cursor_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one bounded advancing A6-to-data-register transfer."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \(a6\)\+,(?P<target>d[0-7])", instruction
+    )
+    if match is None:
+        raise ValueError("map-camera-control cursor-read use-site drift")
+    transferred_bytes = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": "a6",
+        "destinationRegister": match.group("target"),
+        "transferredByteCount": transferred_bytes,
+        "cursorAdvanceByteCount": transferred_bytes,
+        "instruction": instruction,
+    }
+
+
+def _map_camera_control_cursor_write_use_site(instruction: str) -> dict[str, Any]:
+    """Parse the bounded A6-to-source-named-state transfer without semantic naming."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \(a6\)\+,"
+        r"(?P<target>\(\([A-Za-z_][A-Za-z0-9_]*-\$1000000\)\)\.[bw])",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("map-camera-control cursor-write use-site drift")
+    transferred_bytes = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": "a6",
+        "destinationOperand": match.group("target"),
+        "transferredByteCount": transferred_bytes,
+        "cursorAdvanceByteCount": transferred_bytes,
+        "instruction": instruction,
+    }
+
+
+def _map_camera_control_constant_use(
+    symbol: str, instruction: str, pattern: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Keep a constant only when its exact handler use site still names it."""
+    if symbol not in equates or re.fullmatch(pattern, instruction) is None:
+        raise ValueError(f"map-camera-control source constant use drift: {symbol}")
+    return {"symbol": symbol, "value": equates[symbol], "instruction": instruction}
+
+
+def _map_camera_control_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard exact camera-control handler sections before golden comparison."""
+    if macro == "setCameraEntity":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"lea \(\(ENTITY_INDEX_LIST-\$1000000\)\)\.w,a5",
+                r"move\.w \(a6\)\+,d0",
+                r"bmi\.w loc_46C52",
+                r"tst\.b d0",
+                r"bpl\.s @Ally",
+                r"subi\.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+                r"andi\.w #BYTE_MASK,d0",
+                r"move\.b \(a5,d0\.w\),d0",
+                r"move\.b d0,\(\(VIEW_TARGET_ENTITY-\$1000000\)\)\.w",
+                r"nop",
+                r"rts",
+            ],
+            owner="csc24_setCameraTargetEntity",
+        )
+        cursor_reads = [_map_camera_control_cursor_read_use_site(ordered[1])]
+        cursor_writes: list[dict[str, Any]] = []
+        branch_records = [
+            {
+                "testInstruction": ordered[1],
+                "branchInstruction": ordered[2],
+                "branchTargetLabel": "loc_46C52",
+            },
+            {
+                "testInstruction": ordered[3],
+                "branchInstruction": ordered[4],
+                "branchTargetLabel": "@Ally",
+            },
+        ]
+        constant_uses = [
+            _map_camera_control_constant_use(
+                "ENTITY_ENEMY_INDEX_DIFFERENCE",
+                ordered[5],
+                r"subi\.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+                equates,
+            ),
+            _map_camera_control_constant_use(
+                "BYTE_MASK", ordered[6], r"andi\.w #BYTE_MASK,d0", equates
+            ),
+        ]
+        state_writes = [
+            {
+                "sourceSymbol": "VIEW_TARGET_ENTITY",
+                "valueKind": "register",
+                "valueReference": "d0",
+                "instruction": ordered[8],
+            }
+        ]
+        direct_call_order: list[str] = []
+    elif macro == "setCamDest":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b #-1,\(\(VIEW_TARGET_ENTITY-\$1000000\)\)\.w",
+                r"nop",
+                r"move\.w \(a6\)\+,d2",
+                r"move\.w \(a6\)\+,d3",
+                r"jsr j_SetCameraDestination",
+                r"jsr \(WaitForViewScrollEnd\)\.w",
+                r"rts",
+            ],
+            owner="csc32_setCameraDestInTiles",
+        )
+        cursor_reads = [
+            _map_camera_control_cursor_read_use_site(ordered[index]) for index in (2, 3)
+        ]
+        cursor_writes = []
+        branch_records = []
+        constant_uses = []
+        state_writes = [
+            {
+                "sourceSymbol": "VIEW_TARGET_ENTITY",
+                "valueKind": "literal",
+                "valueReference": -1,
+                "instruction": ordered[0],
+            }
+        ]
+        direct_call_order = [ordered[4], ordered[5]]
+    elif macro == "cameraSpeed":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,\(\(VIEW_SCROLLING_SPEED-\$1000000\)\)\.w",
+                r"nop",
+                r"rts",
+            ],
+            owner="csc45_cameraSpeed",
+        )
+        cursor_reads = []
+        cursor_writes = [_map_camera_control_cursor_write_use_site(ordered[0])]
+        branch_records = []
+        constant_uses = []
+        state_writes = [
+            {
+                "sourceSymbol": "VIEW_SCROLLING_SPEED",
+                "valueKind": "script-cursor",
+                "valueReference": "(a6)+",
+                "instruction": ordered[0],
+            }
+        ]
+        direct_call_order = []
+    else:
+        raise ValueError(f"map-camera-control guard has no macro profile: {macro}")
+    if len(statements) != len(ordered):
+        raise ValueError(f"map-camera-control handler statement coverage drift: {macro}")
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": cursor_reads,
+        "scriptCursorWriteUseSites": cursor_writes,
+        "branchRecords": branch_records,
+        "sourceConstantUses": constant_uses,
+        "sourceStateWrites": state_writes,
+        "directCallOrder": direct_call_order,
+        "returnInstruction": ordered[-1] if ordered[-1] == "rts" else None,
+    }
+
+
+def _map_camera_control_resolve_operand(
+    value: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Retain raw source text while resolving only a parsed numeric equate or literal."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        return {"rawValue": value, "resolvedValue": _literal(token), "resolution": "literal"}
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+
+
+def _map_camera_control_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach physical camera-control operands to every source use and all 304 programs."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=MAP_CAMERA_CONTROL_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "map-camera-control source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_map_camera_control_resolve_operand(argument, equates),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _map_camera_control_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind the complete ordered source corpus and zero-inclusive program domain compactly."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("map-camera-control source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("map-camera-control program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _map_camera_control_named_section_source(
+    disasm: Path, source_path: str, name: str
+) -> str:
+    """Read one named source section with labels retained for local branch resolution."""
+    source = read_upstream_text(disasm / source_path)
+    match = re.search(
+        rf"^{re.escape(name)}:\s*\n(?P<body>.*?)"
+        rf"^\s*; End of function {re.escape(name)}\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if match is None:
+        raise ValueError(f"map-camera-control named section is missing: {name}")
+    return match.group("body")
+
+
+def _map_camera_control_named_section_statements(
+    disasm: Path, source_path: str, name: str
+) -> list[str]:
+    """Read one named source section using the shared statement normalizer."""
+    return _statements(_map_camera_control_named_section_source(disasm, source_path, name))
+
+
+def _map_camera_control_branch_target_record(
+    section_source: str, branch_instruction: str, ordered_instructions: list[str]
+) -> dict[str, Any]:
+    """Resolve csc24's local branch label to the exact guarded target instruction."""
+    branch = re.fullmatch(
+        r"b(?:mi|pl)\.[bwls] (?P<label>@?[A-Za-z_][A-Za-z0-9_]*)", branch_instruction
+    )
+    if branch is None:
+        raise ValueError("map-camera-control branch instruction drift")
+    label = branch.group("label")
+    expected_targets = {
+        "loc_46C52": "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+        "@Ally": "andi.w #BYTE_MASK,d0",
+    }
+    if label not in expected_targets:
+        raise ValueError("map-camera-control branch target label drift")
+    label_match = re.search(rf"^{re.escape(label)}:\s*$", section_source, re.MULTILINE)
+    if label_match is None:
+        raise ValueError("map-camera-control branch target label is missing")
+    target_statements = _statements(section_source[label_match.end() :])
+    if not target_statements:
+        raise ValueError("map-camera-control branch target has no instruction")
+    target_instruction = target_statements[0]
+    target_statement_index = len(_statements(section_source[: label_match.start()]))
+    if (
+        target_instruction != expected_targets[label]
+        or target_statement_index >= len(ordered_instructions)
+        or ordered_instructions[target_statement_index] != target_instruction
+    ):
+        raise ValueError("map-camera-control branch target instruction drift")
+    return {
+        "targetLabel": label,
+        "targetInstruction": target_instruction,
+        "targetStatementIndex": target_statement_index,
+    }
+
+
+def _map_camera_control_camera_destination_service_facts(
+    disasm: Path, addresses: dict[str, int], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Bind csc32's resolved destination service to its exact scale and call use sites."""
+    source_path = "code/gameflow/battle/battlefunctions/battlefunctions_0.asm"
+    statements = _map_camera_control_named_section_statements(
+        disasm, source_path, "SetCameraDestination"
+    )
+    ordered = _force_state_ordered_statements(
+        statements,
+        [
+            r"mulu\.w #MAP_TILE_SIZE,d2",
+            r"mulu\.w #MAP_TILE_SIZE,d3",
+            r"movem\.w d2-d3,-\(sp\)",
+            r"movem\.w \(sp\)\+,d0-d1",
+            r"jsr \(SetViewDestination\)\.w",
+            r"rts",
+        ],
+        owner="SetCameraDestination",
+    )
+    if len(statements) != len(ordered):
+        raise ValueError("map-camera-control destination service statement coverage drift")
+    scale_use_sites = [
+        _map_camera_control_constant_use(
+            "MAP_TILE_SIZE", instruction, r"mulu\.w #MAP_TILE_SIZE,d[23]", equates
+        )
+        for instruction in ordered[:2]
+    ]
+    if [row["instruction"] for row in scale_use_sites] != ordered[:2]:
+        raise ValueError("map-camera-control destination service scale-order drift")
+    direct_calls = _force_state_direct_calls(statements)
+    expected_calls = [{"opcode": "jsr", "instructionTarget": "SetViewDestination"}]
+    if direct_calls != expected_calls:
+        raise ValueError("map-camera-control destination service call drift")
+    if "SetCameraDestination" not in addresses:
+        raise ValueError("map-camera-control destination service address is missing")
+    return {
+        "sourcePath": source_path,
+        "handler": "SetCameraDestination",
+        "address": addresses["SetCameraDestination"],
+        "statementCount": len(statements),
+        "sectionGuard": {
+            "orderedInstructions": ordered,
+            "tileSizeUseSites": scale_use_sites,
+            "directCallOrder": [ordered[4]],
+            "returnInstruction": ordered[5],
+        },
+        "directCalls": direct_calls,
+    }
+
+
+def _map_camera_control_caller_breakdown(
+    disasm: Path,
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Retain direct alias identity and effective target totals across all three handlers."""
+    instruction_targets = list(MAP_CAMERA_CONTROL_DIRECT_TARGETS)
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    target_resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": aliases.get(target, {}).get("effectiveTarget", target),
+            "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+            "effectiveTargetScope": "external",
+        }
+        for target in instruction_targets
+    ]
+    effective_targets = [row["effectiveTarget"] for row in target_resolutions]
+    if len(effective_targets) != len(set(effective_targets)):
+        raise ValueError("map-camera-control effective target identity drift")
+    resolution_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_rows = []
+    for handler_name in MAP_CAMERA_CONTROL_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler_name]:
+            target = call["instructionTarget"]
+            if target not in instruction_counts:
+                raise ValueError(f"map-camera-control unexpected direct target: {target}")
+            instruction_counts[target] += 1
+            effective_counts[resolution_by_instruction[target]] += 1
+        caller_rows.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_rows)
+        for target in effective_targets
+    }
+    return {
+        "callerHandlers": caller_rows,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalInstructionTargetTotals": {
+            target: 0 for target in instruction_targets
+        },
+        "externalInstructionTargetTotals": instruction_totals,
+        "internalEffectiveTargetTotals": {target: 0 for target in effective_targets},
+        "externalEffectiveTargetTotals": effective_totals,
+    }
+
+
+def _map_camera_control_source_identity_joins(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Join handler, alias, effective-target, and adjacent-service owners by source identity."""
+    owner_specs = (
+        (
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            MAP_CAMERA_CONTROL_HANDLER_NAMES,
+        ),
+        (
+            "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+            ("j_SetCameraDestination",),
+        ),
+        (
+            "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+            ("SetCameraDestination",),
+        ),
+        ("code/common/maps/camerafunctions.asm", ("WaitForViewScrollEnd",)),
+        ("code/common/tech/graphics/display.asm", ("SetViewDestination",)),
+    )
+    owners = []
+    for source_path, symbols in owner_specs:
+        source = read_upstream_text(disasm / source_path)
+        for symbol in symbols:
+            if symbol not in addresses or re.search(
+                rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE
+            ) is None:
+                raise ValueError(f"map-camera-control source owner symbol drift: {symbol}")
+        owners.append(
+            {
+                "sourcePath": source_path,
+                "sourceSha256": hashlib.sha256(source.encode()).hexdigest().upper(),
+                "symbols": list(symbols),
+            }
+        )
+    return {"sourceOwners": owners}
+
+
+def _map_camera_control_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the three-command static camera-control contract without runtime interpretation."""
+    required_equates = (
+        "ENTITY_ENEMY_INDEX_DIFFERENCE",
+        "BYTE_MASK",
+        "MAP_TILE_SIZE",
+    )
+    missing = [name for name in required_equates if name not in equates]
+    if missing:
+        raise ValueError(f"map-camera-control source constants are missing: {missing}")
+    annotations_by_macro = _map_camera_control_macro_annotations(disasm)
+    source_sites, program_totals = _map_camera_control_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in MAP_CAMERA_CONTROL_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"map-camera-control program total drift: {macro}")
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"] != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"]
+            != max(row["streamOffset"] + row["widthBytes"] for row in annotations)
+            or contract["operandLayout"]
+            != [
+                {
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "expression": f"\\{row['parameterOrdinal']}",
+                    "parameterOrdinals": [row["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for row in annotations
+            ]
+        ):
+            raise ValueError(f"map-camera-control macro ABI drift: {macro}")
+
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for macro in MAP_CAMERA_CONTROL_MACRO_NAMES:
+        handler_name = MAP_CAMERA_CONTROL_HANDLER_BY_MACRO[macro]
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"map-camera-control dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"map-camera-control handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _map_camera_control_section_guard(macro, statements, equates)
+        if macro == "setCameraEntity":
+            section_source = _map_camera_control_named_section_source(
+                disasm, handler_path, handler_name
+            )
+            for branch_record in section_guard["branchRecords"]:
+                branch_record["branchTarget"] = _map_camera_control_branch_target_record(
+                    section_source,
+                    branch_record["branchInstruction"],
+                    section_guard["orderedInstructions"],
+                )
+        cursor_bytes = sum(
+            row["cursorAdvanceByteCount"]
+            for row in (
+                section_guard["scriptCursorReadUseSites"]
+                + section_guard["scriptCursorWriteUseSites"]
+            )
+        )
+        if cursor_bytes != contract["operandBytes"]:
+            raise ValueError(f"map-camera-control script cursor width drift: {macro}")
+        direct_calls = _force_state_direct_calls(statements)
+        expected_calls = _force_state_direct_calls(section_guard["directCallOrder"])
+        if direct_calls != expected_calls:
+            raise ValueError(f"map-camera-control direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations_by_macro[macro],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    caller_breakdown = _map_camera_control_caller_breakdown(
+        disasm, direct_call_rows, addresses, rom
+    )
+    if caller_breakdown["instructionTargetTotals"] != {
+        target: sum(
+            row["instructionTargetSiteCounts"][target]
+            for row in caller_breakdown["callerHandlers"]
+        )
+        for target in MAP_CAMERA_CONTROL_DIRECT_TARGETS
+    }:
+        raise ValueError("map-camera-control instruction total drift")
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": MAP_CAMERA_CONTROL_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in MAP_CAMERA_CONTROL_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_map_camera_control_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "cameraDestinationServiceFacts": _map_camera_control_camera_destination_service_facts(
+            disasm, addresses, equates
+        ),
+        "callerBreakdown": caller_breakdown,
+        "sourceIdentityJoins": _map_camera_control_source_identity_joins(disasm, addresses),
+        "runtimeQuestions": MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS,
+    }
+
+
 def _map_lifecycle_macro_annotations(disasm: Path) -> dict[str, list[dict[str, Any]]]:
     """Parse the bounded macro operand comments with their emitted byte shape."""
     blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
@@ -6098,6 +6773,16 @@ def build_map_script_engine_contract(
         rom_path,
         upstream_path,
     )
+    map_camera_control_command_facts = _map_camera_control_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
     expected_words = b"".join(
@@ -6248,6 +6933,7 @@ def build_map_script_engine_contract(
         "entityPopulationCommandFacts": entity_population_command_facts,
         "mapLifecycleCommandFacts": map_lifecycle_command_facts,
         "mapInteractionTriggerCommandFacts": map_interaction_trigger_command_facts,
+        "mapCameraControlCommandFacts": map_camera_control_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -6259,6 +6945,7 @@ def build_map_script_engine_contract(
             *ENTITY_POPULATION_RUNTIME_QUESTIONS,
             *MAP_LIFECYCLE_RUNTIME_QUESTIONS,
             *MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS,
+            *MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -6311,6 +6998,7 @@ def verify_map_script_engine_contract(
         "mapInteractionTriggerCommandFacts": output[
             "mapInteractionTriggerCommandFacts"
         ],
+        "mapCameraControlCommandFacts": output["mapCameraControlCommandFacts"],
     }
     for field in (
         "summary",
@@ -6338,6 +7026,7 @@ def verify_map_script_engine_contract(
         "entityPopulationCommandFacts",
         "mapLifecycleCommandFacts",
         "mapInteractionTriggerCommandFacts",
+        "mapCameraControlCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

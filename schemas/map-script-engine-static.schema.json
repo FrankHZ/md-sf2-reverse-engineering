@@ -27,7 +27,8 @@
     "mapBlockMutationCommandFacts",
     "entityPopulationCommandFacts",
     "mapLifecycleCommandFacts",
-    "mapInteractionTriggerCommandFacts"
+    "mapInteractionTriggerCommandFacts",
+    "mapCameraControlCommandFacts"
   ],
   "properties": {
     "schemaVersion": {
@@ -315,8 +316,8 @@
     },
     "runtimeQuestions": {
       "type": "array",
-      "minItems": 10,
-      "maxItems": 10,
+      "minItems": 11,
+      "maxItems": 11,
       "items": {
         "type": "string"
       },
@@ -330,7 +331,8 @@
         "map-block-mutation/runtime-effects-matrix",
         "entity-population-reload/runtime-effects-matrix",
         "map-lifecycle/runtime-effects-matrix",
-        "map-interaction-trigger/runtime-effects-matrix"
+        "map-interaction-trigger/runtime-effects-matrix",
+        "map-script-camera-control/runtime-effects-matrix"
       ]
     },
     "dialogueCommandFacts": {
@@ -30558,6 +30560,1276 @@
           }
         }
       ]
+    },
+    "mapCameraControlCommandFacts": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/mapCameraControlCommandFacts"
+        },
+        {
+          "type": "object",
+          "required": [
+            "macros",
+            "sourceSiteOrderKeys",
+            "sourceSitesSha256",
+            "programTotalOrderKeys",
+            "programTotalsSha256",
+            "handlers",
+            "cameraDestinationServiceFacts",
+            "callerBreakdown",
+            "sourceIdentityJoins",
+            "runtimeQuestions"
+          ],
+          "properties": {
+            "macros": {
+              "const": [
+                {
+                  "name": "setCameraEntity",
+                  "opcode": 36,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc24_setCameraTargetEntity",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "target entity",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 125
+                },
+                {
+                  "name": "setCamDest",
+                  "opcode": 50,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc32_setCameraDestInTiles",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "X (left border)",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "Y (top border)",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 247
+                },
+                {
+                  "name": "cameraSpeed",
+                  "opcode": 69,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc45_cameraSpeed",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "($8-, $10-, $20-, $28-, $30-, $38-, $40-)",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 43
+                }
+              ]
+            },
+            "sourceSiteOrderKeys": {
+              "const": [
+                "abcs_battle01:45:setCamDest",
+                "abcs_battle01:55:setCamDest",
+                "abcs_battle01:61:setCamDest",
+                "bbcs_01:8:setCamDest",
+                "bbcs_01:13:setCameraEntity",
+                "bbcs_01:39:setCamDest",
+                "bbcs_01:47:setCamDest",
+                "rbcs_battle01:0:setCamDest",
+                "bbcs_04:8:setCamDest",
+                "edcs_battle5:5:setCamDest",
+                "bbcs_06:13:setCamDest",
+                "bbcs_06:34:setCameraEntity",
+                "bbcs_06:37:setCameraEntity",
+                "abcs_battle07:16:cameraSpeed",
+                "abcs_battle07:22:setCamDest",
+                "abcs_battle07:38:setCamDest",
+                "abcs_battle07:44:setCamDest",
+                "abcs_battle07:90:setCamDest",
+                "abcs_battle07:97:setCamDest",
+                "abcs_battle07:117:setCamDest",
+                "abcs_battle07:126:setCamDest",
+                "abcs_battle07:136:setCamDest",
+                "abcs_battle07:148:setCamDest",
+                "abcs_battle07:154:setCamDest",
+                "abcs_battle07:165:setCamDest",
+                "abcs_battle07:179:setCameraEntity",
+                "abcs_battle07:202:cameraSpeed",
+                "abcs_battle07:226:setCameraEntity",
+                "abcs_battle07:228:setCameraEntity",
+                "abcs_battle07:229:setCameraEntity",
+                "abcs_battle07:231:setCameraEntity",
+                "abcs_battle07:234:setCameraEntity",
+                "abcs_battle07:236:setCameraEntity",
+                "abcs_battle07:237:setCameraEntity",
+                "abcs_battle07:239:setCameraEntity",
+                "abcs_battle07:242:setCameraEntity",
+                "abcs_battle07:244:setCameraEntity",
+                "abcs_battle07:245:setCameraEntity",
+                "abcs_battle07:247:setCameraEntity",
+                "abcs_battle07:248:setCameraEntity",
+                "abcs_battle07:250:setCameraEntity",
+                "abcs_battle07:253:setCameraEntity",
+                "abcs_battle07:255:setCameraEntity",
+                "abcs_battle07:256:setCameraEntity",
+                "abcs_battle07:258:setCameraEntity",
+                "abcs_battle07:264:setCameraEntity",
+                "abcs_battle07:266:setCameraEntity",
+                "abcs_battle07:267:setCameraEntity",
+                "abcs_battle07:269:setCameraEntity",
+                "abcs_battle07:270:cameraSpeed",
+                "abcs_battle07:280:cameraSpeed",
+                "abcs_battle07:302:setCameraEntity",
+                "abcs_battle07:303:cameraSpeed",
+                "abcs_battle07:306:setCamDest",
+                "abcs_battle07:323:setCamDest",
+                "abcs_battle07:379:setCameraEntity",
+                "abcs_battle07:380:cameraSpeed",
+                "bbcs_07:7:cameraSpeed",
+                "bbcs_07:9:setCamDest",
+                "bbcs_07:13:setCamDest",
+                "bbcs_07:28:setCamDest",
+                "bbcs_07:77:setCamDest",
+                "bbcs_07:89:setCamDest",
+                "abcs_battle08:49:setCamDest",
+                "abcs_battle08:51:setCamDest",
+                "bbcs_08:14:setCameraEntity",
+                "bbcs_08:17:setCamDest",
+                "bbcs_11:1:setCameraEntity",
+                "bbcs_11:5:setCameraEntity",
+                "bbcs_11:27:cameraSpeed",
+                "bbcs_11:28:setCameraEntity",
+                "edcs_battle12:1:cameraSpeed",
+                "edcs_battle12:2:setCameraEntity",
+                "edcs_battle12:4:setCameraEntity",
+                "abcs_battle15:9:cameraSpeed",
+                "abcs_battle15:20:setCamDest",
+                "bbcs_15:11:cameraSpeed",
+                "bbcs_15:14:setCamDest",
+                "bbcs_15:22:setCamDest",
+                "bbcs_16:49:setCamDest",
+                "abcs_battle18:18:setCameraEntity",
+                "abcs_battle18:26:setCameraEntity",
+                "abcs_battle18:27:setCamDest",
+                "abcs_battle18:82:setCamDest",
+                "bbcs_18:13:cameraSpeed",
+                "bbcs_18:36:setCameraEntity",
+                "bbcs_18:39:setCamDest",
+                "bbcs_21:10:cameraSpeed",
+                "bbcs_21:17:setCamDest",
+                "bbcs_21:22:setCamDest",
+                "abcs_battle26:19:setCamDest",
+                "abcs_battle26:29:setCamDest",
+                "bbcs_26:10:cameraSpeed",
+                "bbcs_26:12:setCamDest",
+                "bbcs_26:48:setCamDest",
+                "bbcs_26:89:setCamDest",
+                "bbcs_26:106:setCamDest",
+                "bbcs_26:113:setCamDest",
+                "bbcs_26:115:setCamDest",
+                "bscs_battle27:1:cameraSpeed",
+                "bscs_battle27:2:setCameraEntity",
+                "bscs_battle27:4:setCameraEntity",
+                "bscs_battle27:6:setCameraEntity",
+                "abcs_battle28:40:setCamDest",
+                "abcs_battle28:54:setCamDest",
+                "abcs_battle28:111:cameraSpeed",
+                "abcs_battle28:113:setCameraEntity",
+                "abcs_battle28:117:setCameraEntity",
+                "abcs_battle28:118:setCamDest",
+                "abcs_battle28:124:setCamDest",
+                "abcs_battle28:130:setCamDest",
+                "bbcs_28:11:cameraSpeed",
+                "bbcs_28:21:setCamDest",
+                "bbcs_28:28:setCamDest",
+                "bbcs_28:59:setCamDest",
+                "bbcs_28:63:setCamDest",
+                "bbcs_29:10:cameraSpeed",
+                "bbcs_29:30:setCamDest",
+                "bbcs_29:47:setCamDest",
+                "bbcs_29:52:setCamDest",
+                "bbcs_29:57:setCamDest",
+                "abcs_battle30:46:setCamDest",
+                "abcs_battle30:50:setCameraEntity",
+                "abcs_battle30:58:cameraSpeed",
+                "abcs_battle30:59:setCameraEntity",
+                "abcs_battle30:62:setCamDest",
+                "bbcs_30:18:setCamDest",
+                "bbcs_30:20:setCameraEntity",
+                "bbcs_31:15:cameraSpeed",
+                "bbcs_31:17:setCamDest",
+                "bbcs_31:21:setCamDest",
+                "bbcs_31:33:setCamDest",
+                "bbcs_31:44:setCamDest",
+                "bbcs_31:78:setCamDest",
+                "bbcs_31:89:setCamDest",
+                "bbcs_32:13:cameraSpeed",
+                "bbcs_32:20:setCamDest",
+                "rbcs_battle32:2:cameraSpeed",
+                "rbcs_battle32:3:setCameraEntity",
+                "rbcs_battle32:6:setCameraEntity",
+                "rbcs_battle32:9:setCameraEntity",
+                "abcs_battle33:62:setCamDest",
+                "bbcs_33:28:setCameraEntity",
+                "bbcs_33:36:cameraSpeed",
+                "bbcs_33:37:setCamDest",
+                "bbcs_33:43:setCamDest",
+                "bbcs_34:14:cameraSpeed",
+                "bbcs_34:23:setCamDest",
+                "bbcs_34:26:setCamDest",
+                "bbcs_34:52:setCamDest",
+                "bbcs_34:58:setCamDest",
+                "bbcs_35:14:cameraSpeed",
+                "bbcs_35:20:setCamDest",
+                "bbcs_35:30:setCamDest",
+                "bbcs_35:60:setCamDest",
+                "bbcs_36:13:cameraSpeed",
+                "bbcs_36:19:setCamDest",
+                "bbcs_36:28:setCamDest",
+                "bbcs_37:19:cameraSpeed",
+                "bbcs_37:21:setCamDest",
+                "bbcs_37:31:setCamDest",
+                "bbcs_37:39:setCamDest",
+                "bbcs_37:44:setCamDest",
+                "abcs_battle38:75:setCameraEntity",
+                "abcs_battle38:80:cameraSpeed",
+                "abcs_battle38:183:setCameraEntity",
+                "abcs_battle38:188:cameraSpeed",
+                "abcs_battle38:189:setCamDest",
+                "bbcs_38:15:cameraSpeed",
+                "bbcs_38:21:setCamDest",
+                "bbcs_39:12:cameraSpeed",
+                "bbcs_39:13:setCamDest",
+                "bbcs_39:28:setCamDest",
+                "bbcs_39:30:setCamDest",
+                "bbcs_40:19:cameraSpeed",
+                "bbcs_40:34:setCamDest",
+                "bbcs_40:160:setCamDest",
+                "rbcs_battle40_1:0:cameraSpeed",
+                "rbcs_battle40_1:1:setCamDest",
+                "rbcs_battle40_2:0:cameraSpeed",
+                "rbcs_battle40_2:1:setCamDest",
+                "bbcs_41:13:setCamDest",
+                "abcs_battle42:22:cameraSpeed",
+                "abcs_battle42:125:setCamDest",
+                "abcs_battle42:154:setCameraEntity",
+                "abcs_battle42:163:setCameraEntity",
+                "abcs_battle42:178:setCamDest",
+                "bbcs_42:17:cameraSpeed",
+                "bbcs_42:40:setCamDest",
+                "abcs_battle43:0:setCamDest",
+                "cs_5E3C2:19:setCamDest",
+                "cs_5E3C2:53:setCamDest",
+                "cs_5E3C2:77:setCamDest",
+                "cs_5149A:41:setCamDest",
+                "cs_5149A:48:setCamDest",
+                "cs_60708:4:setCamDest",
+                "cs_60708:12:setCamDest",
+                "cs_607DE:21:setCamDest",
+                "cs_607DE:41:setCamDest",
+                "cs_6093A:3:setCamDest",
+                "cs_60C42:10:setCameraEntity",
+                "cs_54E86:1:setCameraEntity",
+                "cs_54E86:26:setCameraEntity",
+                "cs_54E86:31:setCameraEntity",
+                "cs_54F26:6:setCameraEntity",
+                "cs_54F26:17:setCameraEntity",
+                "cs_54F26:27:setCameraEntity",
+                "cs_54F26:35:setCameraEntity",
+                "cs_54F26:93:setCameraEntity",
+                "cs_54F26:106:setCamDest",
+                "cs_54F26:131:setCameraEntity",
+                "cs_54F26:137:setCameraEntity",
+                "cs_55288:9:setCamDest",
+                "cs_55288:17:setCamDest",
+                "cs_55A36:1:setCamDest",
+                "cs_55A36:84:setCameraEntity",
+                "cs_55BEE:5:setCamDest",
+                "cs_570B0:81:setCamDest",
+                "cs_573EC:1:setCamDest",
+                "cs_574A6:1:setCamDest",
+                "cs_574A6:8:setCamDest",
+                "cs_5766C:1:setCameraEntity",
+                "cs_5766C:26:cameraSpeed",
+                "cs_5766C:39:cameraSpeed",
+                "cs_5779C:3:setCamDest",
+                "cs_5779C:25:setCameraEntity",
+                "cs_5779C:26:cameraSpeed",
+                "cs_5779C:57:setCameraEntity",
+                "cs_57AAA:4:setCameraEntity",
+                "cs_57AAA:12:setCamDest",
+                "cs_57AAA:24:setCamDest",
+                "cs_57AAA:37:setCamDest",
+                "cs_57AAA:48:setCamDest",
+                "cs_57AAA:54:setCamDest",
+                "cs_57AAA:62:setCamDest",
+                "cs_57AAA:69:setCamDest",
+                "cs_57D22:1:cameraSpeed",
+                "cs_57D22:32:setCamDest",
+                "cs_57D22:36:setCamDest",
+                "cs_58330:42:setCamDest",
+                "cs_58330:45:setCameraEntity",
+                "cs_58330:71:setCameraEntity",
+                "cs_58512:1:setCameraEntity",
+                "cs_585FE:10:setCamDest",
+                "cs_585FE:50:setCamDest",
+                "cs_585FE:52:setCameraEntity",
+                "cs_585FE:60:setCamDest",
+                "cs_585FE:76:setCameraEntity",
+                "cs_585FE:80:setCameraEntity",
+                "cs_58856:72:setCamDest",
+                "cs_58856:95:setCamDest",
+                "cs_58AE2:1:setCamDest",
+                "cs_58AE2:5:setCamDest",
+                "cs_58AE2:20:setCamDest",
+                "cs_58AE2:32:setCamDest",
+                "cs_58B7A:23:setCamDest",
+                "cs_58B7A:31:setCamDest",
+                "cs_58FA4:91:setCamDest",
+                "cs_58FA4:118:setCameraEntity",
+                "cs_5D04E:6:setCamDest",
+                "cs_5D04E:16:setCamDest",
+                "cs_5D04E:18:setCamDest",
+                "cs_5D04E:20:setCamDest",
+                "cs_5D04E:22:setCamDest",
+                "cs_5D04E:24:setCamDest",
+                "cs_5D04E:26:setCamDest",
+                "cs_5D04E:28:setCamDest",
+                "cs_5D04E:30:setCamDest",
+                "cs_5D04E:32:setCamDest",
+                "cs_51F88:4:setCamDest",
+                "cs_51F88:50:setCamDest",
+                "cs_51F88:94:setCamDest",
+                "cs_521BA:4:setCamDest",
+                "cs_521BA:12:setCamDest",
+                "cs_521BA:15:setCamDest",
+                "cs_521BA:25:setCamDest",
+                "cs_52530:1:setCamDest",
+                "cs_52530:7:setCamDest",
+                "cs_52530:46:setCamDest",
+                "cs_52530:77:setCamDest",
+                "cs_52530:84:setCameraEntity",
+                "cs_528D4:2:setCamDest",
+                "cs_62D0E:1:setCameraEntity",
+                "cs_62D0E:22:setCamDest",
+                "cs_62D0E:98:setCamDest",
+                "cs_62D0E:185:setCamDest",
+                "cs_62D0E:215:setCamDest",
+                "cs_53176:0:setCameraEntity",
+                "cs_53176:19:setCamDest",
+                "cs_53176:52:setCamDest",
+                "cs_53176:69:setCamDest",
+                "cs_53176:101:setCamDest",
+                "cs_534D2:2:setCamDest",
+                "cs_53996:11:setCamDest",
+                "cs_53996:28:setCamDest",
+                "cs_53996:37:setCamDest",
+                "cs_53B66:6:setCamDest",
+                "cs_53B66:24:setCameraEntity",
+                "cs_53B66:33:setCamDest",
+                "cs_EndingKiss:1:setCameraEntity",
+                "cs_5994E:2:setCamDest",
+                "cs_5996E:1:setCameraEntity",
+                "cs_5996E:8:setCamDest",
+                "cs_59E04:1:setCameraEntity",
+                "cs_59F20:1:setCamDest",
+                "cs_59FB8:3:cameraSpeed",
+                "cs_59FB8:4:setCamDest",
+                "cs_59FB8:14:setCamDest",
+                "cs_5A33A:1:setCamDest",
+                "cs_5A33A:10:setCamDest",
+                "cs_5A33A:19:setCameraEntity",
+                "cs_5A33A:21:setCamDest",
+                "cs_5A33A:76:setCameraEntity",
+                "cs_5A33A:79:setCameraEntity",
+                "cs_5A33A:86:setCamDest",
+                "cs_5A4FE:5:setCamDest",
+                "cs_5AC58:3:setCamDest",
+                "cs_5AC58:12:setCameraEntity",
+                "cs_5AC58:21:setCamDest",
+                "cs_5AC58:75:setCameraEntity",
+                "cs_5AF36:5:setCameraEntity",
+                "cs_5B016:13:setCamDest",
+                "cs_5B466:1:setCamDest",
+                "cs_5B466:12:setCamDest",
+                "cs_5B466:24:setCameraEntity",
+                "cs_5B466:26:setCamDest",
+                "cs_5B6C0:1:setCamDest",
+                "cs_5B6C0:19:setCamDest",
+                "cs_5B6C0:52:setCamDest",
+                "cs_5B6C0:92:setCamDest",
+                "cs_5B6C0:132:setCamDest",
+                "cs_5DA7A:0:setCameraEntity",
+                "cs_5FB6A:6:setCamDest",
+                "cs_5FB6A:20:setCamDest",
+                "cs_5FB6A:36:setCamDest",
+                "cs_5FB6A:40:setCameraEntity",
+                "cs_5DD9C:9:setCameraEntity",
+                "cs_5DE2E:3:setCamDest",
+                "cs_5DE76:3:setCameraEntity",
+                "cs_5E0F8:1:setCameraEntity",
+                "cs_5F594:7:setCamDest",
+                "cs_540C0:35:setCamDest",
+                "cs_54578:14:setCamDest",
+                "cs_54578:31:setCamDest",
+                "cs_54578:45:setCamDest",
+                "cs_54578:48:setCamDest",
+                "cs_600CE:5:setCamDest",
+                "cs_600CE:11:setCamDest",
+                "cs_600CE:43:setCamDest",
+                "cs_600CE:92:setCameraEntity",
+                "cs_600CE:114:setCamDest",
+                "cs_5C312:15:setCamDest",
+                "cs_5C3D8:15:setCamDest",
+                "cs_5C3D8:20:setCameraEntity",
+                "cs_5C4EE:1:cameraSpeed",
+                "cs_5C4EE:8:setCamDest",
+                "cs_5C4EE:40:setCamDest",
+                "cs_5C4EE:44:setCamDest",
+                "cs_5EB44:1:setCameraEntity",
+                "cs_5EBFC:28:setCamDest",
+                "cs_5EBFC:35:setCameraEntity",
+                "cs_5EF60:85:setCameraEntity",
+                "cs_5EF60:87:cameraSpeed",
+                "cs_615E6:1:setCameraEntity",
+                "cs_615E6:71:setCamDest",
+                "cs_615E6:133:setCamDest",
+                "cs_615E6:291:setCameraEntity",
+                "cs_615E6:306:setCameraEntity",
+                "cs_615E6:336:setCamDest",
+                "cs_615E6:349:setCamDest",
+                "cs_615E6:375:setCamDest",
+                "cs_615E6:408:setCamDest",
+                "cs_615E6:419:setCamDest",
+                "cs_615E6:498:setCameraEntity",
+                "cs_615E6:509:setCameraEntity",
+                "cs_615E6:525:setCameraEntity",
+                "cs_615E6:546:setCamDest",
+                "cs_615E6:611:setCamDest",
+                "cs_615E6:635:setCamDest",
+                "cs_615E6:777:setCameraEntity",
+                "cs_5C6CA:8:setCamDest",
+                "cs_5C876:6:setCamDest",
+                "cs_5C876:13:setCamDest",
+                "cs_4FB64:10:setCamDest",
+                "cs_4FFDA:11:setCamDest",
+                "cs_4FFDA:43:setCamDest",
+                "cs_5023E:4:setCamDest",
+                "cs_503A6:3:setCameraEntity",
+                "cs_503A6:164:setCamDest",
+                "cs_50806:9:setCameraEntity",
+                "cs_50806:20:setCamDest",
+                "cs_50806:37:setCameraEntity",
+                "IntroCutscene1:54:setCameraEntity",
+                "IntroCutscene1:103:setCameraEntity",
+                "IntroCutscene1:110:setCameraEntity",
+                "IntroCutscene1:129:setCamDest",
+                "IntroCutscene1:149:setCameraEntity",
+                "IntroCutscene1:164:setCamDest",
+                "IntroCutscene2:33:setCamDest",
+                "IntroCutscene2:41:setCameraEntity",
+                "IntroCutscene2:44:setCameraEntity",
+                "IntroCutscene2:46:setCamDest",
+                "IntroCutscene3:11:setCameraEntity",
+                "IntroCutscene3:198:setCameraEntity",
+                "IntroCutscene4:63:setCamDest",
+                "IntroCutscene4:65:setCameraEntity",
+                "IntroCutscene4:75:setCamDest",
+                "IntroCutscene4:111:setCameraEntity",
+                "IntroCutscene4:116:setCameraEntity",
+                "IntroCutscene4:118:setCamDest",
+                "IntroCutscene4:119:setCameraEntity",
+                "IntroCutscene4:187:setCamDest",
+                "IntroCutscene4:203:setCameraEntity",
+                "data/scripting/map/debugscripts.asm#L11:0:setCameraEntity",
+                "data/scripting/map/debugscripts.asm#L86:0:setCameraEntity"
+              ]
+            },
+            "sourceSitesSha256": {
+              "const": "C285A849AEB914FCCBF0E52D33D84936260120F4AC50DC4D27C2A070031C211A"
+            },
+            "programTotalOrderKeys": {
+              "const": [
+                "cs_45284",
+                "cs_45348",
+                "cs_453F2",
+                "cs_45470",
+                "ms_BowieShrinkIn",
+                "ms_BowieGrowOut",
+                "abcs_battle00",
+                "abcs_battle01",
+                "bbcs_01",
+                "rbcs_battle01",
+                "bbcs_03",
+                "abcs_battle04",
+                "bbcs_04",
+                "abcs_battle05",
+                "edcs_battle5",
+                "bbcs_06",
+                "abcs_battle07",
+                "bbcs_07",
+                "abcs_battle08",
+                "bbcs_08",
+                "bbcs_11",
+                "abcs_battle12",
+                "edcs_battle12",
+                "abcs_battle13",
+                "abcs_battle15",
+                "bbcs_15",
+                "abcs_battle16",
+                "bbcs_16",
+                "abcs_battle18",
+                "bbcs_18",
+                "abcs_battle20",
+                "abcs_battle21",
+                "bbcs_21",
+                "abcs_battle26",
+                "bbcs_26",
+                "bscs_battle27",
+                "abcs_battle28",
+                "bbcs_28",
+                "bbcs_29",
+                "abcs_battle30",
+                "bbcs_30",
+                "bbcs_31",
+                "abcs_battle32",
+                "bbcs_32",
+                "rbcs_battle32",
+                "abcs_battle33",
+                "bbcs_33",
+                "abcs_battle34",
+                "bbcs_34",
+                "bbcs_35",
+                "abcs_battle36",
+                "bbcs_36",
+                "abcs_battle37",
+                "bbcs_37",
+                "abcs_battle38",
+                "bbcs_38",
+                "bbcs_39",
+                "abcs_battle40",
+                "bbcs_40",
+                "rbcs_battle40_1",
+                "rbcs_battle40_2",
+                "bbcs_41",
+                "abcs_battle42",
+                "bbcs_42",
+                "abcs_battle43",
+                "edcs_battle43",
+                "cs_5E3C2",
+                "cs_5E772",
+                "cs_512BA",
+                "cs_6283E",
+                "cs_513A0",
+                "cs_513BA",
+                "cs_51374",
+                "cs_5137A",
+                "cs_513CE",
+                "cs_513D6",
+                "cs_513E2",
+                "cs_51444",
+                "cs_5144C",
+                "cs_51454",
+                "cs_5145C",
+                "cs_5148C",
+                "cs_5149A",
+                "cs_51652",
+                "cs_516A8",
+                "cs_628C8",
+                "cs_6290C",
+                "cs_51742",
+                "cs_51750",
+                "cs_51B14",
+                "cs_60656",
+                "cs_606AC",
+                "cs_606E0",
+                "cs_606EA",
+                "cs_60708",
+                "cs_607DE",
+                "cs_6093A",
+                "cs_60B10",
+                "cs_60BA6",
+                "cs_60C42",
+                "cs_60CA4",
+                "cs_60EB2",
+                "cs_60F18",
+                "cs_60F64",
+                "cs_60FA4",
+                "cs_6060E",
+                "cs_54CC6",
+                "cs_54E70",
+                "cs_54E78",
+                "cs_54E86",
+                "cs_54F26",
+                "cs_55242",
+                "cs_55288",
+                "cs_55832",
+                "cs_55A36",
+                "cs_55BEE",
+                "cs_56146",
+                "cs_56172",
+                "cs_56314",
+                "cs_563B2",
+                "cs_56422",
+                "cs_568F6",
+                "cs_569BC",
+                "cs_56AE6",
+                "cs_570B0",
+                "cs_573EC",
+                "cs_574A6",
+                "cs_5766C",
+                "cs_5779C",
+                "cs_5797A",
+                "cs_57AAA",
+                "cs_57D22",
+                "cs_58116",
+                "cs_58310",
+                "cs_58330",
+                "cs_58512",
+                "cs_585FE",
+                "cs_58856",
+                "cs_58AE2",
+                "cs_58B7A",
+                "cs_58E5C",
+                "cs_58F5C",
+                "cs_58F7E",
+                "cs_58FA4",
+                "cs_5D04E",
+                "cs_51F88",
+                "cs_521BA",
+                "cs_5247C",
+                "cs_5249E",
+                "cs_52530",
+                "cs_528CA",
+                "cs_528D4",
+                "cs_52938",
+                "cs_52A3C",
+                "cs_612BE",
+                "cs_6143C",
+                "cs_52F0C",
+                "cs_52F24",
+                "cs_52F40",
+                "cs_53104",
+                "cs_62D06",
+                "cs_62D0E",
+                "cs_53176",
+                "cs_534D2",
+                "cs_535FA",
+                "cs_53620",
+                "cs_5362A",
+                "cs_53816",
+                "cs_632EA",
+                "cs_6335E",
+                "cs_53996",
+                "cs_633B2",
+                "cs_53B66",
+                "cs_EndingKiss",
+                "cs_53EF4",
+                "cs_53F2A",
+                "cs_59656",
+                "cs_5994E",
+                "cs_5996E",
+                "cs_599A4",
+                "cs_599B2",
+                "cs_StartSpecialBattle",
+                "cs_LeaveSpecialBattle",
+                "cs_5D3AA",
+                "cs_5D3B8",
+                "cs_59E04",
+                "cs_59F20",
+                "cs_59FB8",
+                "cs_5F3A2",
+                "cs_5F3C4",
+                "cs_5A256",
+                "cs_5A30C",
+                "cs_5A31E",
+                "cs_5A33A",
+                "cs_5A4FE",
+                "cs_5D63C",
+                "cs_5D644",
+                "cs_5D652",
+                "cs_5D712",
+                "cs_5D724",
+                "cs_5D732",
+                "cs_5A828",
+                "cs_5A8CA",
+                "cs_5A8E6",
+                "cs_5A90E",
+                "cs_5A92A",
+                "cs_5A93A",
+                "cs_5A956",
+                "cs_5A97E",
+                "cs_5A99A",
+                "cs_5A9AA",
+                "cs_5A9C6",
+                "cs_5A9EE",
+                "cs_5AA0A",
+                "cs_5AA1A",
+                "cs_5AA36",
+                "cs_5AA5E",
+                "cs_5AA7A",
+                "cs_5ABA8",
+                "cs_5ABCC",
+                "cs_5ABE6",
+                "cs_5AC04",
+                "cs_5AC1C",
+                "cs_5AC34",
+                "cs_5AC4C",
+                "cs_5AC58",
+                "cs_5AF36",
+                "cs_5B016",
+                "cs_5B466",
+                "cs_5B6C0",
+                "cs_5DA28",
+                "cs_5DA7A",
+                "cs_5FA9C",
+                "cs_5FABC",
+                "cs_5FB30",
+                "cs_5FB6A",
+                "cs_5DD8E",
+                "cs_5DD9C",
+                "cs_5DE22",
+                "cs_5DE2E",
+                "cs_5DE76",
+                "cs_5E0EE",
+                "cs_5E0F8",
+                "cs_5E20A",
+                "cs_53FD8",
+                "cs_53FE0",
+                "cs_5F4AE",
+                "cs_5F4B8",
+                "cs_5F594",
+                "cs_5FE9A",
+                "cs_5FF06",
+                "cs_540C0",
+                "cs_54570",
+                "cs_54578",
+                "cs_600B2",
+                "cs_600CE",
+                "cs_5C312",
+                "cs_5C3AA",
+                "cs_5C3D8",
+                "cs_5C4EE",
+                "cs_5C622",
+                "cs_5E27C",
+                "cs_5E320",
+                "cs_5E346",
+                "cs_6150A",
+                "cs_5EB26",
+                "cs_5EB44",
+                "cs_5EBFC",
+                "cs_5ED06",
+                "cs_5EDB8",
+                "cs_5EF60",
+                "cs_615E6",
+                "cs_5C6CA",
+                "cs_5C876",
+                "cs_5C8D4",
+                "cs_5C8FE",
+                "cs_5C914",
+                "cs_5CA5E",
+                "cs_5CA6E",
+                "cs_5CB34",
+                "cs_5CBB4",
+                "cs_5CC26",
+                "cs_5CCF6",
+                "cs_4FB64",
+                "cs_4FC32",
+                "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                "cs_4FF5A",
+                "cs_4FFDA",
+                "cs_5023E",
+                "cs_503A6",
+                "cs_50806",
+                "cs_50ABE",
+                "EndCutscene",
+                "IntroCutscene1",
+                "IntroCutscene2",
+                "IntroCutscene3",
+                "IntroCutscene4",
+                "dms_01",
+                "data/scripting/map/debugscripts.asm#L11",
+                "data/scripting/map/debugscripts.asm#L16",
+                "data/scripting/map/debugscripts.asm#L24",
+                "data/scripting/map/debugscripts.asm#L26",
+                "data/scripting/map/debugscripts.asm#L76",
+                "data/scripting/map/debugscripts.asm#L86"
+              ]
+            },
+            "programTotalsSha256": {
+              "const": "E3F10FDFC69E617255D52DF4ED4FF12B42E8DA496C59DE1D948227D9EBB50EA9"
+            },
+            "handlers": {
+              "const": [
+                {
+                  "macro": "setCameraEntity",
+                  "handler": "csc24_setCameraTargetEntity",
+                  "address": 289848,
+                  "opcode": 36,
+                  "sourceCommandCount": 125,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "target entity",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 11,
+                  "guardedStatements": [
+                    "lea ((ENTITY_INDEX_LIST-$1000000)).w,a5",
+                    "move.w (a6)+,d0",
+                    "bmi.w loc_46C52",
+                    "tst.b d0",
+                    "bpl.s @Ally",
+                    "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+                    "andi.w #BYTE_MASK,d0",
+                    "move.b (a5,d0.w),d0",
+                    "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+                    "nop",
+                    "rts"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "lea ((ENTITY_INDEX_LIST-$1000000)).w,a5",
+                      "move.w (a6)+,d0",
+                      "bmi.w loc_46C52",
+                      "tst.b d0",
+                      "bpl.s @Ally",
+                      "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+                      "andi.w #BYTE_MASK,d0",
+                      "move.b (a5,d0.w),d0",
+                      "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+                      "nop",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "scriptCursorWriteUseSites": [],
+                    "branchRecords": [
+                      {
+                        "testInstruction": "move.w (a6)+,d0",
+                        "branchInstruction": "bmi.w loc_46C52",
+                        "branchTargetLabel": "loc_46C52",
+                        "branchTarget": {
+                          "targetLabel": "loc_46C52",
+                          "targetInstruction": "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+                          "targetStatementIndex": 8
+                        }
+                      },
+                      {
+                        "testInstruction": "tst.b d0",
+                        "branchInstruction": "bpl.s @Ally",
+                        "branchTargetLabel": "@Ally",
+                        "branchTarget": {
+                          "targetLabel": "@Ally",
+                          "targetInstruction": "andi.w #BYTE_MASK,d0",
+                          "targetStatementIndex": 6
+                        }
+                      }
+                    ],
+                    "sourceConstantUses": [
+                      {
+                        "symbol": "ENTITY_ENEMY_INDEX_DIFFERENCE",
+                        "value": 96,
+                        "instruction": "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0"
+                      },
+                      {
+                        "symbol": "BYTE_MASK",
+                        "value": 255,
+                        "instruction": "andi.w #BYTE_MASK,d0"
+                      }
+                    ],
+                    "sourceStateWrites": [
+                      {
+                        "sourceSymbol": "VIEW_TARGET_ENTITY",
+                        "valueKind": "register",
+                        "valueReference": "d0",
+                        "instruction": "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w"
+                      }
+                    ],
+                    "directCallOrder": [],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": []
+                },
+                {
+                  "macro": "setCamDest",
+                  "handler": "csc32_setCameraDestInTiles",
+                  "address": 288006,
+                  "opcode": 50,
+                  "sourceCommandCount": 247,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "X (left border)",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "Y (top border)",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 7,
+                  "guardedStatements": [
+                    "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                    "nop",
+                    "move.w (a6)+,d2",
+                    "move.w (a6)+,d3",
+                    "jsr j_SetCameraDestination",
+                    "jsr (WaitForViewScrollEnd).w",
+                    "rts"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                      "nop",
+                      "move.w (a6)+,d2",
+                      "move.w (a6)+,d3",
+                      "jsr j_SetCameraDestination",
+                      "jsr (WaitForViewScrollEnd).w",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d2",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d2"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d3",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d3"
+                      }
+                    ],
+                    "scriptCursorWriteUseSites": [],
+                    "branchRecords": [],
+                    "sourceConstantUses": [],
+                    "sourceStateWrites": [
+                      {
+                        "sourceSymbol": "VIEW_TARGET_ENTITY",
+                        "valueKind": "literal",
+                        "valueReference": -1,
+                        "instruction": "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w"
+                      }
+                    ],
+                    "directCallOrder": [
+                      "jsr j_SetCameraDestination",
+                      "jsr (WaitForViewScrollEnd).w"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "j_SetCameraDestination"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForViewScrollEnd"
+                    }
+                  ]
+                },
+                {
+                  "macro": "cameraSpeed",
+                  "handler": "csc45_cameraSpeed",
+                  "address": 288512,
+                  "opcode": 69,
+                  "sourceCommandCount": 43,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "($8-, $10-, $20-, $28-, $30-, $38-, $40-)",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 3,
+                  "guardedStatements": [
+                    "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w",
+                    "nop",
+                    "rts"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w",
+                      "nop",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [],
+                    "scriptCursorWriteUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "((VIEW_SCROLLING_SPEED-$1000000)).w",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w"
+                      }
+                    ],
+                    "branchRecords": [],
+                    "sourceConstantUses": [],
+                    "sourceStateWrites": [
+                      {
+                        "sourceSymbol": "VIEW_SCROLLING_SPEED",
+                        "valueKind": "script-cursor",
+                        "valueReference": "(a6)+",
+                        "instruction": "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w"
+                      }
+                    ],
+                    "directCallOrder": [],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": []
+                }
+              ]
+            },
+            "cameraDestinationServiceFacts": {
+              "const": {
+                "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+                "handler": "SetCameraDestination",
+                "address": 144526,
+                "statementCount": 6,
+                "sectionGuard": {
+                  "orderedInstructions": [
+                    "mulu.w #MAP_TILE_SIZE,d2",
+                    "mulu.w #MAP_TILE_SIZE,d3",
+                    "movem.w d2-d3,-(sp)",
+                    "movem.w (sp)+,d0-d1",
+                    "jsr (SetViewDestination).w",
+                    "rts"
+                  ],
+                  "tileSizeUseSites": [
+                    {
+                      "symbol": "MAP_TILE_SIZE",
+                      "value": 384,
+                      "instruction": "mulu.w #MAP_TILE_SIZE,d2"
+                    },
+                    {
+                      "symbol": "MAP_TILE_SIZE",
+                      "value": 384,
+                      "instruction": "mulu.w #MAP_TILE_SIZE,d3"
+                    }
+                  ],
+                  "directCallOrder": [
+                    "jsr (SetViewDestination).w"
+                  ],
+                  "returnInstruction": "rts"
+                },
+                "directCalls": [
+                  {
+                    "opcode": "jsr",
+                    "instructionTarget": "SetViewDestination"
+                  }
+                ]
+              }
+            },
+            "callerBreakdown": {
+              "const": {
+                "callerHandlers": [
+                  {
+                    "handler": "csc24_setCameraTargetEntity",
+                    "instructionTargetSiteCounts": {
+                      "j_SetCameraDestination": 0,
+                      "WaitForViewScrollEnd": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "SetCameraDestination": 0,
+                      "WaitForViewScrollEnd": 0
+                    }
+                  },
+                  {
+                    "handler": "csc32_setCameraDestInTiles",
+                    "instructionTargetSiteCounts": {
+                      "j_SetCameraDestination": 1,
+                      "WaitForViewScrollEnd": 1
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "SetCameraDestination": 1,
+                      "WaitForViewScrollEnd": 1
+                    }
+                  },
+                  {
+                    "handler": "csc45_cameraSpeed",
+                    "instructionTargetSiteCounts": {
+                      "j_SetCameraDestination": 0,
+                      "WaitForViewScrollEnd": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "SetCameraDestination": 0,
+                      "WaitForViewScrollEnd": 0
+                    }
+                  }
+                ],
+                "targetResolutions": [
+                  {
+                    "instructionTarget": "j_SetCameraDestination",
+                    "effectiveTarget": "SetCameraDestination",
+                    "aliasSourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "WaitForViewScrollEnd",
+                    "effectiveTarget": "WaitForViewScrollEnd",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  }
+                ],
+                "instructionTargetTotals": {
+                  "j_SetCameraDestination": 1,
+                  "WaitForViewScrollEnd": 1
+                },
+                "effectiveTargetTotals": {
+                  "SetCameraDestination": 1,
+                  "WaitForViewScrollEnd": 1
+                },
+                "internalInstructionTargetTotals": {
+                  "j_SetCameraDestination": 0,
+                  "WaitForViewScrollEnd": 0
+                },
+                "externalInstructionTargetTotals": {
+                  "j_SetCameraDestination": 1,
+                  "WaitForViewScrollEnd": 1
+                },
+                "internalEffectiveTargetTotals": {
+                  "SetCameraDestination": 0,
+                  "WaitForViewScrollEnd": 0
+                },
+                "externalEffectiveTargetTotals": {
+                  "SetCameraDestination": 1,
+                  "WaitForViewScrollEnd": 1
+                }
+              }
+            },
+            "sourceIdentityJoins": {
+              "const": {
+                "sourceOwners": [
+                  {
+                    "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                    "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+                    "symbols": [
+                      "csc24_setCameraTargetEntity",
+                      "csc32_setCameraDestInTiles",
+                      "csc45_cameraSpeed"
+                    ]
+                  },
+                  {
+                    "sourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+                    "sourceSha256": "175361E5E65A358B02705C0A4C61D55500209429F88D2C1FAEF4F4113E6975CE",
+                    "symbols": [
+                      "j_SetCameraDestination"
+                    ]
+                  },
+                  {
+                    "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+                    "sourceSha256": "706732153061EE4846FE15B544F72C2BEEB29E0FC12F42BC959664FA470E3B76",
+                    "symbols": [
+                      "SetCameraDestination"
+                    ]
+                  },
+                  {
+                    "sourcePath": "code/common/maps/camerafunctions.asm",
+                    "sourceSha256": "4DB0C8388B2736D3CFDBB8765C2215AD52DC608FAA6981A8EBD37E494829CEC0",
+                    "symbols": [
+                      "WaitForViewScrollEnd"
+                    ]
+                  },
+                  {
+                    "sourcePath": "code/common/tech/graphics/display.asm",
+                    "sourceSha256": "8567D93AFEBB8AE628907271EDD3FFD3598B32E4BCB20C0100CAC9F170DF9C21",
+                    "symbols": [
+                      "SetViewDestination"
+                    ]
+                  }
+                ]
+              }
+            },
+            "runtimeQuestions": {
+              "const": [
+                "map-script-camera-control/runtime-effects-matrix"
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   "definitions": {
@@ -40563,6 +41835,986 @@
         },
         "sourceIdentityJoins": {
           "$ref": "#/definitions/mapInteractionTriggerSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "mapCameraControlOperandAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        }
+      }
+    },
+    "mapCameraControlEmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "mapCameraControlMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlEmission"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "handler": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlOperandAnnotation"
+          }
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "rawValue",
+        "resolvedValue",
+        "resolution"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": null
+            }
+          ]
+        },
+        "resolution": {
+          "enum": [
+            "equate",
+            "literal",
+            "symbol"
+          ]
+        }
+      }
+    },
+    "mapCameraControlSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlOperandValue"
+          }
+        }
+      }
+    },
+    "mapCameraControlSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlSourceCommand"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapCameraControlMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setCameraEntity",
+        "setCamDest",
+        "cameraSpeed"
+      ],
+      "properties": {
+        "setCameraEntity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setCamDest": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cameraSpeed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/mapCameraControlMacroCounts"
+        }
+      }
+    },
+    "mapCameraControlCursorRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationRegister",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "const": "a6"
+        },
+        "destinationRegister": {
+          "type": "string",
+          "pattern": "^d[0-7]$"
+        },
+        "transferredByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "cursorAdvanceByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlCursorWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationOperand",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "const": "a6"
+        },
+        "destinationOperand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transferredByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "cursorAdvanceByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlBranchTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetLabel",
+        "targetInstruction",
+        "targetStatementIndex"
+      ],
+      "properties": {
+        "targetLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetStatementIndex": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlBranchRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "branchTargetLabel",
+        "branchTarget"
+      ],
+      "properties": {
+        "testInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchTargetLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchTarget": {
+          "$ref": "#/definitions/mapCameraControlBranchTarget"
+        }
+      }
+    },
+    "mapCameraControlConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlStateWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceSymbol",
+        "valueKind",
+        "valueReference",
+        "instruction"
+      ],
+      "properties": {
+        "sourceSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "valueKind": {
+          "enum": [
+            "register",
+            "literal",
+            "script-cursor"
+          ]
+        },
+        "valueReference": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "scriptCursorReadUseSites",
+        "scriptCursorWriteUseSites",
+        "branchRecords",
+        "sourceConstantUses",
+        "sourceStateWrites",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "scriptCursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlCursorRead"
+          }
+        },
+        "scriptCursorWriteUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlCursorWrite"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlConstantUse"
+          }
+        },
+        "sourceStateWrites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlStateWrite"
+          }
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "returnInstruction": {
+          "oneOf": [
+            {
+              "const": "rts"
+            },
+            {
+              "const": null
+            }
+          ]
+        }
+      }
+    },
+    "mapCameraControlDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "enum": [
+            "bsr",
+            "jsr"
+          ]
+        },
+        "instructionTarget": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "operandAnnotations",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handler": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlOperandAnnotation"
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapCameraControlSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlDirectCall"
+          }
+        }
+      }
+    },
+    "mapCameraControlDestinationServiceGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "tileSizeUseSites",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "tileSizeUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlConstantUse"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "returnInstruction": {
+          "const": "rts"
+        }
+      }
+    },
+    "mapCameraControlDestinationServiceFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "handler",
+        "address",
+        "statementCount",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handler": {
+          "const": "SetCameraDestination"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapCameraControlDestinationServiceGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlDirectCall"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "mapCameraControlInstructionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_SetCameraDestination",
+        "WaitForViewScrollEnd"
+      ],
+      "properties": {
+        "j_SetCameraDestination": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlEffectiveCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "SetCameraDestination",
+        "WaitForViewScrollEnd"
+      ],
+      "properties": {
+        "SetCameraDestination": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlCallerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        }
+      }
+    },
+    "mapCameraControlTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveTarget": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aliasSourcePath": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "const": null
+            }
+          ]
+        },
+        "effectiveTargetScope": {
+          "const": "external"
+        }
+      }
+    },
+    "mapCameraControlCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalInstructionTargetTotals",
+        "externalInstructionTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlCallerHandler"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlTargetResolution"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        },
+        "internalInstructionTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "externalInstructionTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        }
+      }
+    },
+    "mapCameraControlSourceOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapCameraControlSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOwners"
+      ],
+      "properties": {
+        "sourceOwners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlSourceOwner"
+          },
+          "minItems": 5,
+          "maxItems": 5
+        }
+      }
+    },
+    "mapCameraControlCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "cameraDestinationServiceFacts",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlMacro"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlSourceSite"
+          },
+          "minItems": 123,
+          "maxItems": 123
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 415,
+          "maxItems": 415
+        },
+        "sourceSitesSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 304,
+          "maxItems": 304
+        },
+        "programTotalsSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlProgramTotal"
+          },
+          "minItems": 304,
+          "maxItems": 304
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlHandler"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "cameraDestinationServiceFacts": {
+          "$ref": "#/definitions/mapCameraControlDestinationServiceFacts"
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/mapCameraControlCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/mapCameraControlSourceIdentityJoins"
         },
         "runtimeQuestions": {
           "type": "array",

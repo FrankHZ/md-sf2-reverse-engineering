@@ -383,6 +383,16 @@ the exact `MAP_CURRENT` source sentinel, named handler cursor/call/fall-through 
 parsed packed-coordinate multiplier, and zero-inclusive direct/effective caller maps for four service
 targets. The sole grouped H3 follow-up is `map-script-transition-presentation-matrix`; map/camera,
 event-consumer, fade, and display outcomes remain runtime questions rather than static claims.
+The adjacent camera-control family is exact as three source-named forms: 125 `setCameraEntity` `$24`,
+247 `setCamDest` `$32`, and 43 `cameraSpeed` `$45` commands (415 total) in 123 non-empty source
+groups, with the same complete 304-row zero-inclusive program domain. Its contract keeps the physical
+macro widths/comments, named csc24 branch-target and constant use sites, csc32/csc45 cursor/state/call
+order, and the `j_SetCameraDestination` direct identity separately from its
+`SetCameraDestination` effective target. The parsed helper's two `MAP_TILE_SIZE` multiplication use
+sites resolve to 384, while per-handler internal/external direct/effective caller maps stay
+zero-inclusive. `map-script-camera-control/runtime-effects-matrix` is its sole H3 follow-up;
+target/destination meaning, units, speed, timing, reachability, and presentation remain outside this
+static credit.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

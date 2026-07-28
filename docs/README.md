@@ -78,7 +78,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   program-site/handler/caller 合同、六个 map-script roster/death command 的 43 条 ordered
   program-site/handler/caller 合同、两个 map-script block-copy command 的 208 条 ordered
   program-site/handler/cursor/helper/caller 合同、四个 map-script entity population/reload command 的
-  96 条 ordered program-site/handler/caller 合同、四个 map-script map lifecycle command 的 108 条
+  96 条 ordered program-site/handler/caller 合同、三个 map-script camera-control command 的 415 条
+  ordered program-site/handler/caller/service 合同、四个 map-script map lifecycle command 的 108 条
   ordered program-site/handler/caller 合同、两个 source-named map-script trigger command 的 8 条
   ordered program-site/handler/caller/table-boundary 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
   movement H3。
@@ -226,7 +227,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`map-exploration.md`](./design/map-exploration.md)：79-map import boundary、共享 block/layout
   ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
-  entity population/reload form、四个 source-faithful map lifecycle form、两个 source-named
+  entity population/reload form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
   trigger form 与现代 renderer 的
   原版事实/未知/可现代化边界。
 - [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、

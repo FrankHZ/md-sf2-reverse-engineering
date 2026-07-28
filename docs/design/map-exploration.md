@@ -3,7 +3,7 @@
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
   dispatch rules, static transition-consumer priority, load-path-specific layout persistence,
-  source-shaped map-script entity population/reload command records, and batched frame-level entity
+  source-shaped map-script entity population/reload and camera-control command records, and batched frame-level entity
   movement/action timing
 - **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
@@ -101,6 +101,19 @@ reads, direct service call identity/order, and the `csc37_loadMapAndFadeIn` fall
 multiplier as source facts. A remake MAY map these forms to an engine-specific transition IR only after
 it defines its own behavior; the original source contract does not establish event consumption,
 camera state, fade timing, display timing, or player-visible transition results.
+Map-script imports MUST separately retain the source-faithful `setCameraEntity`, `setCamDest`, and
+`cameraSpeed` records in `sf2-map-script-engine-static-v1` at
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.mapCameraControlCommandFacts`. Each record MUST preserve its source opcode, physical
+operand width, raw macro comment, program/command ordering, and zero-inclusive program-total domain.
+The import boundary MUST also preserve the exact static handler records: csc24's advancing word read,
+two branch polarities and parsed target statements, parsed constants and source-named write; csc32's
+literal state write, two advancing words, alias call followed by wait call and return; and csc45's
+advancing source word write and return. Direct instruction targets and resolved effective targets MUST
+remain distinct identities, including zero-count per-handler rows, and the two parsed
+`MAP_TILE_SIZE` use sites in `SetCameraDestination` MUST remain independent source records. A remake
+MAY define an engine-specific camera interface independently; this static contract establishes neither
+target/destination meaning, coordinate units, speed effect, timing, reachability, nor presentation.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

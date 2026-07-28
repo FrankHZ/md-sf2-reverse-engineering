@@ -8,7 +8,8 @@
   family/program-reference/handler/consumer contract, the complete five-command map-script transition
   family/program-site/handler/caller contract, the complete six-command map-script roster/death
   family/program-site/handler/caller contract, the complete four-command map-script active-party/AI/
-  follower/battle-stat family/program-site/handler/caller contract, the complete two-command map-script
+  follower/battle-stat family/program-site/handler/caller contract, the complete three-command map-script
+  camera-control family/program-site/handler/caller/service contract, the complete two-command map-script
   block-copy family/program-site/handler/caller contract, the complete four-command map-script entity
   population/reload family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
@@ -17,7 +18,7 @@
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, text rendering timing,
   and individual script content
-- Evidence date: 2026-07-27
+- Evidence date: 2026-07-28
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -173,6 +174,62 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` commit
 `mapscriptengine_2.asm` (`csc07` and dispatcher), `sf2enums.asm`, the H1 listing addresses, and the
 US ROM SHA-256 in the fixture. Reproduce with `uv run sf2 h2 map-script-engine`; the observed output
 is fixture ID `sf2-map-script-engine-static-v1`, transition field `transitionCommandFacts`.
+
+## Confirmed Map-Script Camera-Control Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.mapCameraControlCommandFacts` retains the three source-named macro forms in source order:
+`setCameraEntity` opcode `$24` (125 commands, 4 encoded bytes, 2 operand bytes), `setCamDest`
+`$32` (247, 6, 4), and `cameraSpeed` `$45` (43, 4, 2). Their raw macro comments remain part
+of the physical ABI: `target entity`; `X (left border)` then `Y (top border)`; and
+`($8-, $10-, $20-, $28-, $30-, $38-, $40-)`, respectively. The complete ordered source corpus
+contains 415 commands in 123 non-empty program source groups, with all 304 declared programs retained
+as zero-inclusive total rows. Its compact source-order SHA-256 is
+`C285A849AEB914FCCBF0E52D33D84936260120F4AC50DC4D27C2A070031C211A`; its complete program-total
+SHA-256 is `E3F10FDFC69E617255D52DF4ED4FF12B42E8DA496C59DE1D948227D9EBB50EA9`.
+
+**Confirmed:** smallest named-section guards retain source instruction order rather than only symbol
+presence. At H1 `$46C38`, `csc24_setCameraTargetEntity` advances A6 by one word into D0, has a
+`bmi.w loc_46C52` whose parsed target is the later `move.b d0,VIEW_TARGET_ENTITY` write (statement
+index 8), then has `tst.b d0` and `bpl.s @Ally` whose parsed target is the `andi.w #BYTE_MASK,d0`
+statement (index 6). The guarded path also retains the parsed
+`ENTITY_ENEMY_INDEX_DIFFERENCE` value 96, `BYTE_MASK` value 255, `ENTITY_INDEX_LIST` byte lookup,
+and the final source-named state write. At `$46506`, `csc32_setCameraDestInTiles` first writes literal
+`-1` to `VIEW_TARGET_ENTITY`, then advances A6 by two word reads into D2 and D3, calls
+`j_SetCameraDestination`, calls `WaitForViewScrollEnd`, and returns in that order. At `$46700`,
+`csc45_cameraSpeed` advances A6 by one word directly into `VIEW_SCROLLING_SPEED`, then has its
+source `nop` and return. These are source instruction facts, not evidence for target selection,
+coordinate units, motion, or presentation.
+
+**Confirmed:** `j_SetCameraDestination` remains the direct instruction identity while its pinned
+jump-interface definition resolves to effective target `SetCameraDestination`; the other direct and
+effective identity is `WaitForViewScrollEnd`. Per-handler instruction/effective maps are zero/zero for
+`csc24` and `csc45` and one/one for `csc32`; both direct-target totals are one and both effective-target
+totals are one. The complete internal maps are zero-inclusive zeros, while the corresponding external
+maps hold the one calls. The effective `SetCameraDestination` named section has two parsed
+`mulu.w #MAP_TILE_SIZE` use sites, one for each of D2 and D3; both resolve through the authoritative
+constants map to 384 before its `SetViewDestination` call. The parsed multiplication records a
+source relationship only; it does not establish a coordinate unit or display result.
+
+**Unknown:** `map-script-camera-control/runtime-effects-matrix` is the sole grouped H3 queue. One
+shared launch must determine target-selection meaning, destination interpretation and units, speed
+effect, scroll/wait timing, normal-story reachability, and VDP-visible presentation. This static slice
+does not promote macro or state-symbol names into any of those runtime outcomes.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` macro definitions;
+`code/common/scripting/map/mapscriptengine_1.asm` named sections `csc24_setCameraTargetEntity`,
+`csc32_setCameraDestInTiles`, and `csc45_cameraSpeed`; jump-interface
+`code/common/tech/jumpinterfaces/s05_jumpinterface.asm::j_SetCameraDestination`; effective helper
+`code/gameflow/battle/battlefunctions/battlefunctions_0.asm::SetCameraDestination`; and named
+`WaitForViewScrollEnd`/`SetViewDestination` owner files recorded in the fixture source-identity joins.
+The input identity is the local US ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, fixture ID
+`sf2-map-script-engine-static-v1`, field `expected.mapCameraControlCommandFacts`.
 
 ## Confirmed Map-Script Roster/Death Command Family
 

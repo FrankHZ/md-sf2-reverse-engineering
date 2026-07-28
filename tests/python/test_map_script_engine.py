@@ -29,6 +29,11 @@ from sf2tool.h2.map_script_engine import (
     _logical_source_lines,
     _map_block_macro_operand_fields,
     _map_block_mutation_section_guard,
+    _map_camera_control_branch_target_record,
+    _map_camera_control_cursor_read_use_site,
+    _map_camera_control_cursor_write_use_site,
+    _map_camera_control_macro_annotations,
+    _map_camera_control_section_guard,
     _map_lifecycle_macro_annotations,
     _map_lifecycle_read_use_site,
     _map_lifecycle_section_guard,
@@ -113,6 +118,248 @@ def test_force_state_call_parser_ignores_near_misses_and_accepts_size_suffixes()
         {"opcode": "bsr", "instructionTarget": "GetCurrentHp"},
         {"opcode": "jsr", "instructionTarget": "j_JoinForce"},
     ]
+
+
+def test_map_camera_control_parsers_preserve_operand_comments_and_cursor_widths(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "sf2cutscenemacros.asm").write_text(
+        """
+setCameraEntity: macro
+    dc.w $24
+    dc.w \\1 ; target entity
+    endm
+setCamDest: macro
+    dc.w $32
+    dc.w \\1 ; X (left border)
+    dc.w \\2 ; Y (top border)
+    endm
+cameraSpeed: macro
+    dc.w $45
+    dc.w \\1 ; ($8-, $10-, $20-, $28-, $30-, $38-, $40-)
+    endm
+""",
+        encoding="utf-8",
+    )
+
+    assert _map_camera_control_macro_annotations(tmp_path) == {
+        "setCameraEntity": [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "target entity",
+                "streamOffset": 2,
+                "widthBytes": 2,
+            }
+        ],
+        "setCamDest": [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "X (left border)",
+                "streamOffset": 2,
+                "widthBytes": 2,
+            },
+            {
+                "parameterOrdinal": 2,
+                "sourceComment": "Y (top border)",
+                "streamOffset": 4,
+                "widthBytes": 2,
+            },
+        ],
+        "cameraSpeed": [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "($8-, $10-, $20-, $28-, $30-, $38-, $40-)",
+                "streamOffset": 2,
+                "widthBytes": 2,
+            }
+        ],
+    }
+    assert _map_camera_control_cursor_read_use_site("move.b (a6)+,d7") == {
+        "sourceRegister": "a6",
+        "destinationRegister": "d7",
+        "transferredByteCount": 1,
+        "cursorAdvanceByteCount": 1,
+        "instruction": "move.b (a6)+,d7",
+    }
+    assert _map_camera_control_cursor_read_use_site("move.l (a6)+,d0")[
+        "transferredByteCount"
+    ] == 4
+    assert _map_camera_control_cursor_write_use_site(
+        "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w"
+    ) == {
+        "sourceRegister": "a6",
+        "destinationOperand": "((VIEW_SCROLLING_SPEED-$1000000)).w",
+        "transferredByteCount": 2,
+        "cursorAdvanceByteCount": 2,
+        "instruction": "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w",
+    }
+
+    (tmp_path / "sf2cutscenemacros.asm").write_text(
+        (tmp_path / "sf2cutscenemacros.asm")
+        .read_text(encoding="utf-8")
+        .replace("dc.w \\2 ; Y (top border)", "dc.w \\1 ; Y (top border)"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="operand ordinal"):
+        _map_camera_control_macro_annotations(tmp_path)
+    for near_miss in (
+        "move.w (a6),d0",
+        "move.w (a5)+,d0",
+        "move.w (a6)+,a0",
+        "move.w (a6)+,VIEW_SCROLLING_SPEED",
+    ):
+        with pytest.raises(ValueError, match="cursor-read"):
+            _map_camera_control_cursor_read_use_site(near_miss)
+
+
+def test_map_camera_control_section_guard_rejects_operand_branch_and_call_order() -> None:
+    equates = {"ENTITY_ENEMY_INDEX_DIFFERENCE": 128, "BYTE_MASK": 255}
+    entity_statements = [
+        "lea ((ENTITY_INDEX_LIST-$1000000)).w,a5",
+        "move.w (a6)+,d0",
+        "bmi.w loc_46C52",
+        "tst.b d0",
+        "bpl.s @Ally",
+        "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+        "andi.w #BYTE_MASK,d0",
+        "move.b (a5,d0.w),d0",
+        "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+        "nop",
+        "rts",
+    ]
+    assert _map_camera_control_section_guard(
+        "setCameraEntity", entity_statements, equates
+    )["branchRecords"] == [
+        {
+            "testInstruction": "move.w (a6)+,d0",
+            "branchInstruction": "bmi.w loc_46C52",
+            "branchTargetLabel": "loc_46C52",
+        },
+        {
+            "testInstruction": "tst.b d0",
+            "branchInstruction": "bpl.s @Ally",
+            "branchTargetLabel": "@Ally",
+        },
+    ]
+    destination_statements = [
+        "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+        "nop",
+        "move.w (a6)+,d2",
+        "move.w (a6)+,d3",
+        "jsr j_SetCameraDestination",
+        "jsr (WaitForViewScrollEnd).w",
+        "rts",
+    ]
+    assert _map_camera_control_section_guard(
+        "setCamDest", destination_statements, equates
+    )["directCallOrder"] == [
+        "jsr j_SetCameraDestination",
+        "jsr (WaitForViewScrollEnd).w",
+    ]
+    assert _map_camera_control_section_guard(
+        "cameraSpeed",
+        [
+            "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w",
+            "nop",
+            "rts",
+        ],
+        equates,
+    )["scriptCursorWriteUseSites"][0]["cursorAdvanceByteCount"] == 2
+
+    with pytest.raises(ValueError, match="csc24_setCameraTargetEntity statement is missing"):
+        _map_camera_control_section_guard(
+            "setCameraEntity",
+            [
+                statement.replace(
+                    "#ENTITY_ENEMY_INDEX_DIFFERENCE", "#ENTITY_ENEMY_INDEX_DIFFERENCE+1"
+                )
+                for statement in entity_statements
+            ],
+            equates,
+        )
+    with pytest.raises(ValueError, match="csc24_setCameraTargetEntity statement is missing"):
+        _map_camera_control_section_guard(
+            "setCameraEntity",
+            [statement.replace("bpl.s @Ally", "bmi.s @Ally") for statement in entity_statements],
+            equates,
+        )
+    swapped_calls = list(destination_statements)
+    swapped_calls[4], swapped_calls[5] = swapped_calls[5], swapped_calls[4]
+    with pytest.raises(ValueError, match="csc32_setCameraDestInTiles statement is missing"):
+        _map_camera_control_section_guard("setCamDest", swapped_calls, equates)
+
+
+def test_map_camera_control_branch_targets_require_local_labels_and_target_instructions() -> None:
+    ordered = [
+        "lea ((ENTITY_INDEX_LIST-$1000000)).w,a5",
+        "move.w (a6)+,d0",
+        "bmi.w loc_46C52",
+        "tst.b d0",
+        "bpl.s @Ally",
+        "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+        "andi.w #BYTE_MASK,d0",
+        "move.b (a5,d0.w),d0",
+        "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+        "nop",
+        "rts",
+    ]
+    source = """
+    lea ((ENTITY_INDEX_LIST-$1000000)).w,a5
+    move.w (a6)+,d0
+    bmi.w loc_46C52
+    tst.b d0
+    bpl.s @Ally
+    subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0
+@Ally:
+    andi.w #BYTE_MASK,d0
+    move.b (a5,d0.w),d0
+loc_46C52:
+    move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w
+    nop
+    rts
+"""
+    assert _map_camera_control_branch_target_record(
+        source, "bmi.w loc_46C52", ordered
+    ) == {
+        "targetLabel": "loc_46C52",
+        "targetInstruction": "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+        "targetStatementIndex": 8,
+    }
+    assert _map_camera_control_branch_target_record(source, "bpl.s @Ally", ordered) == {
+        "targetLabel": "@Ally",
+        "targetInstruction": "andi.w #BYTE_MASK,d0",
+        "targetStatementIndex": 6,
+    }
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _map_camera_control_branch_target_record(
+            source.replace("loc_46C52:", "loc_46C53:"), "bmi.w loc_46C52", ordered
+        )
+    with pytest.raises(ValueError, match="branch target instruction drift"):
+        _map_camera_control_branch_target_record(
+            source.replace("andi.w #BYTE_MASK,d0", "andi.w #BYTE_MASK,d1"),
+            "bpl.s @Ally",
+            ordered,
+        )
+
+
+def test_map_camera_control_branch_label_owner_fails_during_contract_construction(
+    monkeypatch,
+) -> None:
+    original_source = map_script_engine._map_camera_control_named_section_source
+
+    def changed_branch_owner(disasm, source_path, name):
+        source = original_source(disasm, source_path, name)
+        if name == "csc24_setCameraTargetEntity":
+            return source.replace("loc_46C52:", "loc_46C53:")
+        return source
+
+    monkeypatch.setattr(
+        map_script_engine, "_map_camera_control_named_section_source", changed_branch_owner
+    )
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
 
 
 def test_force_state_program_totals_keep_zero_rows_and_exact_site_order() -> None:
@@ -1362,6 +1609,303 @@ def map_script_engine_output() -> dict:
     return build_map_script_engine_contract(
         repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
     )
+
+
+def test_map_camera_control_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["mapCameraControlCommandFacts"]
+    assert actual == fixture["expected"]["mapCameraControlCommandFacts"]
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("setCameraEntity", 36, 4, 2, 125),
+        ("setCamDest", 50, 6, 4, 247),
+        ("cameraSpeed", 69, 4, 2, 43),
+    ]
+    assert len(actual["sourceSites"]) == 123
+    assert len(actual["sourceSiteOrderKeys"]) == 415
+    assert actual["sourceSitesSha256"] == (
+        "C285A849AEB914FCCBF0E52D33D84936260120F4AC50DC4D27C2A070031C211A"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "E3F10FDFC69E617255D52DF4ED4FF12B42E8DA496C59DE1D948227D9EBB50EA9"
+    )
+    assert [
+        (
+            row["macro"],
+            row["handler"],
+            row["address"],
+            row["opcode"],
+            row["sourceCommandCount"],
+            row["statementCount"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        ("setCameraEntity", "csc24_setCameraTargetEntity", 289848, 36, 125, 11),
+        ("setCamDest", "csc32_setCameraDestInTiles", 288006, 50, 247, 7),
+        ("cameraSpeed", "csc45_cameraSpeed", 288512, 69, 43, 3),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["branchRecords"] == [
+        {
+            "testInstruction": "move.w (a6)+,d0",
+            "branchInstruction": "bmi.w loc_46C52",
+            "branchTargetLabel": "loc_46C52",
+            "branchTarget": {
+                "targetLabel": "loc_46C52",
+                "targetInstruction": "move.b d0,((VIEW_TARGET_ENTITY-$1000000)).w",
+                "targetStatementIndex": 8,
+            },
+        },
+        {
+            "testInstruction": "tst.b d0",
+            "branchInstruction": "bpl.s @Ally",
+            "branchTargetLabel": "@Ally",
+            "branchTarget": {
+                "targetLabel": "@Ally",
+                "targetInstruction": "andi.w #BYTE_MASK,d0",
+                "targetStatementIndex": 6,
+            },
+        },
+    ]
+    assert actual["handlers"][2]["sectionGuard"]["scriptCursorWriteUseSites"] == [
+        {
+            "sourceRegister": "a6",
+            "destinationOperand": "((VIEW_SCROLLING_SPEED-$1000000)).w",
+            "transferredByteCount": 2,
+            "cursorAdvanceByteCount": 2,
+            "instruction": "move.w (a6)+,((VIEW_SCROLLING_SPEED-$1000000)).w",
+        }
+    ]
+    assert actual["cameraDestinationServiceFacts"]["sectionGuard"][
+        "tileSizeUseSites"
+    ] == [
+        {
+            "symbol": "MAP_TILE_SIZE",
+            "value": 384,
+            "instruction": "mulu.w #MAP_TILE_SIZE,d2",
+        },
+        {
+            "symbol": "MAP_TILE_SIZE",
+            "value": 384,
+            "instruction": "mulu.w #MAP_TILE_SIZE,d3",
+        },
+    ]
+    assert actual["callerBreakdown"] == {
+        "callerHandlers": [
+            {
+                "handler": "csc24_setCameraTargetEntity",
+                "instructionTargetSiteCounts": {
+                    "j_SetCameraDestination": 0,
+                    "WaitForViewScrollEnd": 0,
+                },
+                "effectiveTargetSiteCounts": {
+                    "SetCameraDestination": 0,
+                    "WaitForViewScrollEnd": 0,
+                },
+            },
+            {
+                "handler": "csc32_setCameraDestInTiles",
+                "instructionTargetSiteCounts": {
+                    "j_SetCameraDestination": 1,
+                    "WaitForViewScrollEnd": 1,
+                },
+                "effectiveTargetSiteCounts": {
+                    "SetCameraDestination": 1,
+                    "WaitForViewScrollEnd": 1,
+                },
+            },
+            {
+                "handler": "csc45_cameraSpeed",
+                "instructionTargetSiteCounts": {
+                    "j_SetCameraDestination": 0,
+                    "WaitForViewScrollEnd": 0,
+                },
+                "effectiveTargetSiteCounts": {
+                    "SetCameraDestination": 0,
+                    "WaitForViewScrollEnd": 0,
+                },
+            },
+        ],
+        "targetResolutions": [
+            {
+                "instructionTarget": "j_SetCameraDestination",
+                "effectiveTarget": "SetCameraDestination",
+                "aliasSourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+                "effectiveTargetScope": "external",
+            },
+            {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "aliasSourcePath": None,
+                "effectiveTargetScope": "external",
+            },
+        ],
+        "instructionTargetTotals": {
+            "j_SetCameraDestination": 1,
+            "WaitForViewScrollEnd": 1,
+        },
+        "effectiveTargetTotals": {
+            "SetCameraDestination": 1,
+            "WaitForViewScrollEnd": 1,
+        },
+        "internalInstructionTargetTotals": {
+            "j_SetCameraDestination": 0,
+            "WaitForViewScrollEnd": 0,
+        },
+        "externalInstructionTargetTotals": {
+            "j_SetCameraDestination": 1,
+            "WaitForViewScrollEnd": 1,
+        },
+        "internalEffectiveTargetTotals": {
+            "SetCameraDestination": 0,
+            "WaitForViewScrollEnd": 0,
+        },
+        "externalEffectiveTargetTotals": {
+            "SetCameraDestination": 1,
+            "WaitForViewScrollEnd": 1,
+        },
+    }
+    assert actual["sourceIdentityJoins"]["sourceOwners"][-1] == {
+        "sourcePath": "code/common/tech/graphics/display.asm",
+        "sourceSha256": "8567D93AFEBB8AE628907271EDD3FFD3598B32E4BCB20C0100CAC9F170DF9C21",
+        "symbols": ["SetViewDestination"],
+    }
+    assert actual["runtimeQuestions"] == [
+        "map-script-camera-control/runtime-effects-matrix"
+    ]
+
+
+def test_map_camera_control_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="map-camera-control output")
+    validate_json(fixture, fixture_schema, owner="map-camera-control fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["mapCameraControlCommandFacts"]["handlers"][0]["sectionGuard"][
+        "branchRecords"
+    ][0]["branchTarget"]["targetStatementIndex"]
+    with pytest.raises(ValueError, match="targetStatementIndex"):
+        validate_json(missing, output_schema, owner="map-camera-control output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    operand = renamed["mapCameraControlCommandFacts"]["sourceSites"][0]["commands"][0][
+        "operandValues"
+    ][0]
+    operand["label"] = operand.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(renamed, output_schema, owner="map-camera-control output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["mapCameraControlCommandFacts"]["sourceIdentityJoins"]["sourceOwners"][0][
+        "extra"
+    ] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="map-camera-control output extra field")
+
+    reordered_source = deepcopy(map_script_engine_output)
+    source_order = reordered_source["mapCameraControlCommandFacts"]["sourceSiteOrderKeys"]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(reordered_source, output_schema, owner="map-camera-control source order")
+
+    reordered_programs = deepcopy(map_script_engine_output)
+    program_order = reordered_programs["mapCameraControlCommandFacts"]["programTotalOrderKeys"]
+    program_order[0], program_order[1] = program_order[1], program_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(reordered_programs, output_schema, owner="map-camera-control program order")
+
+    boundary = deepcopy(map_script_engine_output)
+    boundary["mapCameraControlCommandFacts"]["cameraDestinationServiceFacts"][
+        "sectionGuard"
+    ]["tileSizeUseSites"][0]["value"] = 385
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(boundary, output_schema, owner="map-camera-control output boundary")
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["mapCameraControlCommandFacts"]["handlers"][0][
+        "sectionGuard"
+    ]["branchRecords"][0]["branchTarget"]["targetStatementIndex"]
+    with pytest.raises(ValueError, match="targetStatementIndex"):
+        validate_json(fixture_missing, fixture_schema, owner="map-camera-control fixture missing")
+
+    fixture_renamed = deepcopy(fixture)
+    operand = fixture_renamed["expected"]["mapCameraControlCommandFacts"]["sourceSites"][0][
+        "commands"
+    ][0]["operandValues"][0]
+    operand["label"] = operand.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(fixture_renamed, fixture_schema, owner="map-camera-control fixture renamed")
+
+    fixture_extra = deepcopy(fixture)
+    fixture_extra["expected"]["mapCameraControlCommandFacts"]["sourceIdentityJoins"][
+        "sourceOwners"
+    ][0]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(fixture_extra, fixture_schema, owner="map-camera-control fixture extra")
+
+    fixture_reordered = deepcopy(fixture)
+    source_order = fixture_reordered["expected"]["mapCameraControlCommandFacts"][
+        "sourceSiteOrderKeys"
+    ]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(fixture_reordered, fixture_schema, owner="map-camera-control fixture order")
+
+    fixture_boundary = deepcopy(fixture)
+    fixture_boundary["expected"]["mapCameraControlCommandFacts"][
+        "cameraDestinationServiceFacts"
+    ]["sectionGuard"]["tileSizeUseSites"][0]["value"] = 385
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(fixture_boundary, fixture_schema, owner="map-camera-control fixture boundary")
+
+
+def test_map_camera_control_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("mapCameraControlCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "mapCameraControlCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        assert "sourceSites" not in exact["properties"]
+        assert "programTotals" not in exact["properties"]
+        definitions = {
+            name: value
+            for name, value in schema["definitions"].items()
+            if name.startswith("mapCameraControl")
+        }
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        for value in definitions.values():
+            assert_closed_objects(value)
 
 
 def test_dialogue_contract_matches_complete_golden_fixture(map_script_engine_output: dict) -> None:
