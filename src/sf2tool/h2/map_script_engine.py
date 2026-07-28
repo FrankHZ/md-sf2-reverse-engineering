@@ -9,6 +9,7 @@ from typing import Any
 
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import _access_rows, _global_access_rows
+from sf2tool.h2.map_content import build_map_content_contract
 from sf2tool.h2.sprite_dialogue import build_sprite_dialogue_contract
 from sf2tool.h2.text_banks import build_text_line_domain_contract
 from sf2tool.jsonio import load_json, validate_json
@@ -59,6 +60,22 @@ DIALOGUE_CALLER_HANDLER_NAMES = tuple(
 DIALOGUE_CALLEE_TARGETS = (PORTRAIT_HANDLER, ENTITY_DIALOGUE_CONSUMER)
 DIALOGUE_CONSTANT_NAMES = ("COMBATANT_MASK_ALL", "ENTITY_NONE")
 DIALOGUE_RUNTIME_QUESTIONS = ["dialogue-presentation/runtime-matrix"]
+
+TRANSITION_MACROS = ("warp", "resetMap", "loadMapFadeIn", "reloadMap", "mapLoad")
+TRANSITION_HANDLER_BY_MACRO = {
+    "warp": "csc07_warp",
+    "resetMap": "csc36_resetMap",
+    "loadMapFadeIn": "csc37_loadMapAndFadeIn",
+    "reloadMap": "csc46_reloadMap",
+    "mapLoad": "csc48_loadMap",
+}
+TRANSITION_SERVICE_TARGETS = (
+    "ResetCurrentMap",
+    "LoadMapTilesets",
+    "LoadMap",
+    "EnableDisplayAndInterrupts",
+)
+TRANSITION_RUNTIME_QUESTIONS = ["map-script-transition-presentation-matrix"]
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -920,8 +937,8 @@ def _program_corpus(
     }
 
 
-def _dialogue_equates(disasm: Path) -> dict[str, int]:
-    """Parse the named source constants used by the dialogue command boundary once."""
+def _source_equates(disasm: Path) -> dict[str, int]:
+    """Parse direct numeric source equates once for bounded command operands."""
     source = read_upstream_text(disasm / "sf2enums.asm")
     values: dict[str, int] = {}
     for match in re.finditer(
@@ -930,10 +947,15 @@ def _dialogue_equates(disasm: Path) -> dict[str, int]:
         re.MULTILINE,
     ):
         values[match.group("name")] = _literal(match.group("value"))
-    missing = [name for name in DIALOGUE_CONSTANT_NAMES if name not in values]
+    return values
+
+
+def _dialogue_equates(equates: dict[str, int]) -> dict[str, int]:
+    """Select the named source constants used by the dialogue command boundary."""
+    missing = [name for name in DIALOGUE_CONSTANT_NAMES if name not in equates]
     if missing:
         raise ValueError(f"dialogue source constants are missing: {missing}")
-    return values
+    return equates
 
 
 def _resolved_dialogue_operand(argument: str, constants: dict[str, int]) -> int:
@@ -1434,6 +1456,7 @@ def _modifier_source_labels(
 
 def _dialogue_command_facts(
     disasm: Path,
+    source_equates: dict[str, int],
     macros: dict[str, dict[str, Any]],
     dispatch_targets: list[str],
     handlers: list[dict[str, Any]],
@@ -1443,7 +1466,7 @@ def _dialogue_command_facts(
     upstream_path: Path,
 ) -> dict[str, Any]:
     """Build the dialogue command contract from program references and source use sites."""
-    constants = _dialogue_equates(disasm)
+    constants = _dialogue_equates(source_equates)
     programs = program_corpus["programs"]
     source_references = []
     program_totals = []
@@ -1609,6 +1632,388 @@ def _dialogue_command_facts(
     }
 
 
+def _transition_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    rom_path: Path,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build the bounded map transition command contract from source operands and handlers."""
+    required_constants = ("MAP_EVENT_WARP", "MAP_CURRENT", "RIGHT", "UP", "LEFT", "DOWN")
+    missing = [name for name in required_constants if name not in equates]
+    if missing:
+        raise ValueError(f"transition source constants are missing: {missing}")
+    map_content = build_map_content_contract(rom_path, upstream_path)
+    canonical_map_ids = {row["map"] for row in map_content["mapEntries"]}
+    if len(canonical_map_ids) != map_content["summary"]["mapCount"]:
+        raise ValueError("transition canonical map identity drift")
+    facing_values = {equates[name] for name in ("RIGHT", "UP", "LEFT", "DOWN")}
+    source_counts: Counter[str] = Counter()
+    sites = []
+    program_totals = []
+    for program in program_corpus["programs"]:
+        command_rows = []
+        counts: Counter[str] = Counter()
+        for command in program["commands"]:
+            macro = command["macro"]
+            if macro not in TRANSITION_MACROS:
+                continue
+            arguments = command["arguments"]
+            map_argument = None
+            map_value = None
+            map_domain = None
+            coordinate_x = None
+            coordinate_y = None
+            facing_value = None
+            if macro == "warp":
+                if len(arguments) != 4:
+                    raise ValueError("transition warp operand count drift")
+                map_argument = arguments[0]
+                map_value = _resolved_dialogue_operand(map_argument, equates)
+                coordinate_x = _resolved_dialogue_operand(arguments[1], equates)
+                coordinate_y = _resolved_dialogue_operand(arguments[2], equates)
+                facing_value = _resolved_dialogue_operand(arguments[3], equates)
+                if not all(0 <= value <= 0xFF for value in (map_value, coordinate_x, coordinate_y)):
+                    raise ValueError("transition warp byte operand domain drift")
+                if facing_value not in facing_values:
+                    raise ValueError("transition warp facing source domain drift")
+            elif macro in {"loadMapFadeIn", "mapLoad"}:
+                if len(arguments) != 3:
+                    raise ValueError(f"transition map-load operand count drift: {macro}")
+                map_argument = arguments[0]
+                map_value = _resolved_dialogue_operand(map_argument, equates)
+                coordinate_x = _resolved_dialogue_operand(arguments[1], equates)
+                coordinate_y = _resolved_dialogue_operand(arguments[2], equates)
+            elif macro == "reloadMap":
+                if len(arguments) != 2:
+                    raise ValueError("transition reload operand count drift")
+                coordinate_x = _resolved_dialogue_operand(arguments[0], equates)
+                coordinate_y = _resolved_dialogue_operand(arguments[1], equates)
+            elif arguments:
+                raise ValueError("transition reset command unexpectedly has operands")
+            if map_value is not None:
+                if map_value in canonical_map_ids:
+                    map_domain = "canonical-map"
+                elif map_value == equates["MAP_CURRENT"] and map_argument == "MAP_CURRENT":
+                    map_domain = "source-map-current"
+                else:
+                    raise ValueError(
+                        "transition destination map is outside the canonical map domain"
+                    )
+            if any(
+                value is not None and not 0 <= value <= 0xFFFF
+                for value in (coordinate_x, coordinate_y)
+            ):
+                raise ValueError("transition coordinate word domain drift")
+            counts[macro] += 1
+            source_counts[macro] += 1
+            command_rows.append(
+                {
+                    "commandIndex": command["index"],
+                    "macro": macro,
+                    "destinationMapOperand": map_argument,
+                    "destinationMapValue": map_value,
+                    "destinationMapDomain": map_domain,
+                    "coordinateXValue": coordinate_x,
+                    "coordinateYValue": coordinate_y,
+                    "facingValue": facing_value,
+                }
+            )
+        program_totals.append(
+            {
+                "programId": program["id"],
+                "commandCount": sum(counts.values()),
+                "macroCounts": {name: counts[name] for name in TRANSITION_MACROS},
+            }
+        )
+        if command_rows:
+            sites.append({"programId": program["id"], "commands": command_rows})
+    if len(program_totals) != program_corpus["summary"]["programCount"]:
+        raise ValueError("transition zero-inclusive program domain drift")
+    if sum(len(row["commands"]) for row in sites) != sum(source_counts.values()):
+        raise ValueError("transition source-site coverage drift")
+    for macro in TRANSITION_MACROS:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"transition program total drift: {macro}")
+
+    handler_rows = []
+    handler_by_macro = {}
+    for macro in TRANSITION_MACROS:
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        handler_name = TRANSITION_HANDLER_BY_MACRO[macro]
+        if contract["kind"] != "command" or contract["aliasOf"] is not None:
+            raise ValueError(f"transition macro is not primary: {macro}")
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"transition dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"transition handler ABI drift: {handler_name}")
+        handler_by_macro[macro] = handler
+
+    warp = _stable_handler_statements(disasm, handler_by_macro["warp"])
+    event_write = (
+        re.fullmatch(r"move\.w\s+#(?P<value>\$?[0-9A-Fa-f]+),\(a0\)\+", warp[1])
+        if len(warp) > 1
+        else None
+    )
+    clear_write = (
+        re.fullmatch(r"move\.b\s+#(?P<value>\$?[0-9A-Fa-f]+),\(a0\)\+", warp[2])
+        if len(warp) > 2
+        else None
+    )
+    warp_byte_reads = len(macros["warp"]["operandLayout"])
+    if (
+        len(warp) != warp_byte_reads + 4
+        or warp[0] != "lea ((MAP_EVENT_TYPE-$1000000)).w,a0"
+        or event_write is None
+        or _literal(event_write.group("value")) != equates["MAP_EVENT_WARP"]
+        or clear_write is None
+        or warp[3:-1] != ["move.b (a6)+,(a0)+"] * warp_byte_reads
+        or warp[-1] != "rts"
+    ):
+        raise ValueError("transition warp state/cursor sequence drift")
+    map_event_clear_byte_value = _literal(clear_write.group("value"))
+    handler_rows.append(
+        {
+            "macro": "warp",
+            "handler": handler_by_macro["warp"]["name"],
+            "address": handler_by_macro["warp"]["address"],
+            "opcode": macros["warp"]["opcode"],
+            "cursorReadWidths": [
+                field["widthBytes"] for field in macros["warp"]["operandLayout"]
+            ],
+            "mapEventTypeValue": equates["MAP_EVENT_WARP"],
+            "mapEventClearByteValue": map_event_clear_byte_value,
+            "d1Immediate": None,
+            "packedCoordinateMultiplier": None,
+            "directServiceCalls": [],
+            "fallsThroughTo": None,
+        }
+    )
+    reset = _stable_handler_statements(disasm, handler_by_macro["resetMap"])
+    reset_expected = ["move.l a6,-(sp)", "jsr (ResetCurrentMap).l", "movea.l (sp)+,a6", "rts"]
+    if reset != reset_expected:
+        raise ValueError("transition reset service/cursor preservation drift")
+    load_fade = _stable_handler_statements(disasm, handler_by_macro["loadMapFadeIn"])
+    fade_source = read_upstream_text(disasm / handler_by_macro["loadMapFadeIn"]["sourcePath"])
+    fade_match = re.search(r"^csc37_loadMapAndFadeIn:\s*$", fade_source, re.MULTILINE)
+    load_match = re.search(r"^csc48_loadMap:\s*$", fade_source, re.MULTILINE)
+    if fade_match is None or load_match is None or fade_match.start() >= load_match.start():
+        raise ValueError("transition fade-load section boundary drift")
+    between_fade_and_load = fade_source[fade_match.end() : load_match.start()]
+    if any(statement == "rts" for statement in load_fade) or re.search(
+        r"^[A-Za-z_][A-Za-z0-9_]*:\s*$", between_fade_and_load, re.MULTILINE
+    ):
+        raise ValueError("transition fade-load fallthrough drift")
+    load = _stable_handler_statements(disasm, handler_by_macro["mapLoad"])
+    load_map_probe, _ = _next_statement(load, 0, r"move\.w\s+\(a6\),d1", owner="csc48_loadMap")
+    tileset_call, _ = _next_statement(
+        load, load_map_probe + 1, r"jsr\s+\(LoadMapTilesets\)\.w", owner="csc48_loadMap"
+    )
+    map_read, _ = _next_statement(
+        load, tileset_call + 1, r"move\.w\s+\(a6\)\+,d1", owner="csc48_loadMap"
+    )
+    x_read, _ = _next_statement(load, map_read + 1, r"move\.w\s+\(a6\)\+,d0", owner="csc48_loadMap")
+    y_read, _ = _next_statement(load, x_read + 1, r"move\.w\s+\(a6\)\+,d2", owner="csc48_loadMap")
+    scale, load_scale_match = _next_statement(
+        load,
+        y_read + 1,
+        r"mulu\.w\s+#(?P<scale>\$?[0-9A-Fa-f]+),d0",
+        owner="csc48_loadMap",
+    )
+    load_scale_value = _literal(load_scale_match.group("scale"))
+    map_call, _ = _next_statement(load, scale + 1, r"jsr\s+\(LoadMap\)\.w", owner="csc48_loadMap")
+    enable_call, _ = _next_statement(
+        load, map_call + 1, r"jsr\s+\(EnableDisplayAndInterrupts\)\.w", owner="csc48_loadMap"
+    )
+    if (
+        not load_map_probe
+        < tileset_call
+        < map_read
+        < x_read
+        < y_read
+        < scale
+        < map_call
+        < enable_call
+    ):
+        raise ValueError("transition map-load cursor/service order drift")
+    reload = _stable_handler_statements(disasm, handler_by_macro["reloadMap"])
+    selector, selector_match = _next_statement(
+        reload,
+        0,
+        r"moveq\s+#(?P<selector>-?\$?[0-9A-Fa-f]+),d1",
+        owner="csc46_reloadMap",
+    )
+    reload_selector_value = _literal(selector_match.group("selector"))
+    reload_x, _ = _next_statement(
+        reload, selector + 1, r"move\.w\s+\(a6\)\+,d0", owner="csc46_reloadMap"
+    )
+    reload_y, _ = _next_statement(
+        reload, reload_x + 1, r"move\.w\s+\(a6\)\+,d2", owner="csc46_reloadMap"
+    )
+    reload_scale, reload_scale_match = _next_statement(
+        reload,
+        reload_y + 1,
+        r"mulu\.w\s+#(?P<scale>\$?[0-9A-Fa-f]+),d0",
+        owner="csc46_reloadMap",
+    )
+    reload_scale_value = _literal(reload_scale_match.group("scale"))
+    reload_call, _ = _next_statement(
+        reload, reload_scale + 1, r"jsr\s+\(LoadMap\)\.w", owner="csc46_reloadMap"
+    )
+    reload_enable, _ = _next_statement(
+        reload,
+        reload_call + 1,
+        r"jsr\s+\(EnableDisplayAndInterrupts\)\.w",
+        owner="csc46_reloadMap",
+    )
+    if not selector < reload_x < reload_y < reload_scale < reload_call < reload_enable:
+        raise ValueError("transition reload cursor/service order drift")
+    if load_scale_value != reload_scale_value:
+        raise ValueError("transition coordinate selector scale disagreement")
+    handler_rows.extend(
+        [
+            {
+                "macro": "resetMap",
+                "handler": handler_by_macro["resetMap"]["name"],
+                "address": handler_by_macro["resetMap"]["address"],
+                "opcode": macros["resetMap"]["opcode"],
+                "cursorReadWidths": [
+                    field["widthBytes"] for field in macros["resetMap"]["operandLayout"]
+                ],
+                "mapEventTypeValue": None,
+                "mapEventClearByteValue": None,
+                "d1Immediate": None,
+                "packedCoordinateMultiplier": None,
+                "directServiceCalls": [],
+                "fallsThroughTo": None,
+            },
+            {
+                "macro": "loadMapFadeIn",
+                "handler": handler_by_macro["loadMapFadeIn"]["name"],
+                "address": handler_by_macro["loadMapFadeIn"]["address"],
+                "opcode": macros["loadMapFadeIn"]["opcode"],
+                "cursorReadWidths": [],
+                "mapEventTypeValue": None,
+                "mapEventClearByteValue": None,
+                "d1Immediate": None,
+                "packedCoordinateMultiplier": None,
+                "directServiceCalls": [],
+                "fallsThroughTo": "csc48_loadMap",
+            },
+            {
+                "macro": "reloadMap",
+                "handler": handler_by_macro["reloadMap"]["name"],
+                "address": handler_by_macro["reloadMap"]["address"],
+                "opcode": macros["reloadMap"]["opcode"],
+                "cursorReadWidths": [
+                    field["widthBytes"] for field in macros["reloadMap"]["operandLayout"]
+                ],
+                "mapEventTypeValue": None,
+                "mapEventClearByteValue": None,
+                "d1Immediate": reload_selector_value,
+                "packedCoordinateMultiplier": reload_scale_value,
+                "directServiceCalls": [],
+                "fallsThroughTo": None,
+            },
+            {
+                "macro": "mapLoad",
+                "handler": handler_by_macro["mapLoad"]["name"],
+                "address": handler_by_macro["mapLoad"]["address"],
+                "opcode": macros["mapLoad"]["opcode"],
+                "cursorReadWidths": [
+                    field["widthBytes"] for field in macros["mapLoad"]["operandLayout"]
+                ],
+                "mapEventTypeValue": None,
+                "mapEventClearByteValue": None,
+                "d1Immediate": None,
+                "packedCoordinateMultiplier": load_scale_value,
+                "directServiceCalls": [],
+                "fallsThroughTo": None,
+            },
+        ]
+    )
+    caller_rows = []
+    for row in handler_rows:
+        statements = _stable_handler_statements(disasm, _handler_by_name(handlers, row["handler"]))
+        counts = {
+            target: len(_direct_call_sites(statements, target))
+            for target in TRANSITION_SERVICE_TARGETS
+        }
+        if any(count not in {0, 1} for count in counts.values()):
+            raise ValueError(f"transition caller site count drift: {row['handler']}")
+        caller_rows.append(
+            {
+                "handler": row["handler"],
+                "instructionTargetSiteCounts": counts,
+                "effectiveTargetSiteCounts": dict(counts),
+            }
+        )
+        row["directServiceCalls"] = [
+            target for target in TRANSITION_SERVICE_TARGETS if counts[target]
+        ]
+    totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in TRANSITION_SERVICE_TARGETS
+    }
+    internal_handler_names = {handler["name"] for handler in handlers}
+    resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": target,
+            "effectiveTargetScope": "internal" if target in internal_handler_names else "external",
+        }
+        for target in TRANSITION_SERVICE_TARGETS
+    ]
+    return {
+        "macros": [
+            {
+                "name": name,
+                "opcode": macros[name]["opcode"],
+                "encodedBytes": macros[name]["encodedBytes"],
+                "operandBytes": macros[name]["operandBytes"],
+                "operandLayout": macros[name]["operandLayout"],
+                "parameterOrdinals": macros[name]["parameterOrdinals"],
+                "handler": TRANSITION_HANDLER_BY_MACRO[name],
+                "sourceCommandCount": source_counts[name],
+            }
+            for name in TRANSITION_MACROS
+        ],
+        "sourceSites": sites,
+        "programTotals": program_totals,
+        "canonicalMapDomain": {
+            "contractId": map_content["id"],
+            "mapCount": map_content["summary"]["mapCount"],
+            "mapIds": sorted(canonical_map_ids),
+            "sourceMapCurrentValue": equates["MAP_CURRENT"],
+        },
+        "handlers": handler_rows,
+        "callerBreakdown": {
+            "callerHandlers": caller_rows,
+            "targetResolutions": resolutions,
+            "instructionTargetTotals": totals,
+            "effectiveTargetTotals": dict(totals),
+            "internalEffectiveTargetTotals": {
+                target: totals[target] if target in internal_handler_names else 0
+                for target in TRANSITION_SERVICE_TARGETS
+            },
+            "externalEffectiveTargetTotals": {
+                target: totals[target] if target not in internal_handler_names else 0
+                for target in TRANSITION_SERVICE_TARGETS
+            },
+        },
+        "runtimeQuestions": TRANSITION_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -1623,6 +2028,7 @@ def build_map_script_engine_contract(
     macros = _map_macro_contracts(disasm)
     source_counts, opcode_counts, source_paths = _source_usage(disasm, macros)
     program_corpus = _program_corpus(disasm, source_paths, macros, addresses)
+    source_equates = _source_equates(disasm)
     if program_corpus["summary"]["commandCount"] != sum(source_counts.values()):
         raise ValueError("map-script program ownership does not cover every source command")
     dispatch_source = read_upstream_text(disasm / DISPATCH_SOURCE)
@@ -1630,11 +2036,22 @@ def build_map_script_engine_contract(
     handlers = _handler_rows(disasm, addresses, targets, source_counts, macros)
     dialogue_command_facts = _dialogue_command_facts(
         disasm,
+        source_equates,
         macros,
         targets,
         handlers,
         program_corpus,
         addresses,
+        rom_path,
+        upstream_path,
+    )
+    transition_command_facts = _transition_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
         rom_path,
         upstream_path,
     )
@@ -1781,6 +2198,7 @@ def build_map_script_engine_contract(
         "handlers": handlers,
         "programCorpus": program_corpus,
         "dialogueCommandFacts": dialogue_command_facts,
+        "transitionCommandFacts": transition_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -1828,6 +2246,7 @@ def verify_map_script_engine_contract(
             "battleUnlockFlags"
         ],
         "dialogueCommandFacts": output["dialogueCommandFacts"],
+        "transitionCommandFacts": output["transitionCommandFacts"],
     }
     for field in (
         "summary",
@@ -1848,6 +2267,7 @@ def verify_map_script_engine_contract(
         "storyDirectClearFlags",
         "storyBattleUnlockFlags",
         "dialogueCommandFacts",
+        "transitionCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

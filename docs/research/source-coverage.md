@@ -372,6 +372,13 @@ skip/sentinel/call/index/close sections; and joins the independent 4,267-line te
 119-row sprite-dialogue table by source/ROM provenance. Its only new H3 work is the grouped
 `dialogue-presentation/runtime-matrix`; timing, rendering, and story-specific meaning remain outside
 this static credit.
+Its directly coupled transition family is also exact: five primary source forms account for 146 ordered
+sites across all 304 zero-inclusive program totals (38 `warp`, seven `resetMap`, 60 `loadMapFadeIn`,
+24 `reloadMap`, and 17 `mapLoad`). The contract separately keeps the 79-ID canonical map domain and
+the exact `MAP_CURRENT` source sentinel, named handler cursor/call/fall-through structure, the shared
+parsed packed-coordinate multiplier, and zero-inclusive direct/effective caller maps for four service
+targets. The sole grouped H3 follow-up is `map-script-transition-presentation-matrix`; map/camera,
+event-consumer, fade, and display outcomes remain runtime questions rather than static claims.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

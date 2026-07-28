@@ -694,3 +694,295 @@ def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
     bounds["maximum"] += 1
     with pytest.raises(ValueError, match="const"):
         validate_json(boundary, fixture_schema, owner="dialogue fixture boundary")
+
+
+def test_transition_contract_and_closed_schema_mutations(map_script_engine_output: dict) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["transitionCommandFacts"]
+    assert actual == fixture["expected"]["transitionCommandFacts"]
+    assert actual["handlers"] == [
+        {
+            "macro": "warp",
+            "handler": "csc07_warp",
+            "address": 291714,
+            "opcode": 7,
+            "cursorReadWidths": [1, 1, 1, 1],
+            "mapEventTypeValue": 1,
+            "mapEventClearByteValue": 0,
+            "d1Immediate": None,
+            "packedCoordinateMultiplier": None,
+            "directServiceCalls": [],
+            "fallsThroughTo": None,
+        },
+        {
+            "macro": "resetMap",
+            "handler": "csc36_resetMap",
+            "address": 288142,
+            "opcode": 54,
+            "cursorReadWidths": [],
+            "mapEventTypeValue": None,
+            "mapEventClearByteValue": None,
+            "d1Immediate": None,
+            "packedCoordinateMultiplier": None,
+            "directServiceCalls": ["ResetCurrentMap"],
+            "fallsThroughTo": None,
+        },
+        {
+            "macro": "loadMapFadeIn",
+            "handler": "csc37_loadMapAndFadeIn",
+            "address": 288154,
+            "opcode": 55,
+            "cursorReadWidths": [],
+            "mapEventTypeValue": None,
+            "mapEventClearByteValue": None,
+            "d1Immediate": None,
+            "packedCoordinateMultiplier": None,
+            "directServiceCalls": [],
+            "fallsThroughTo": "csc48_loadMap",
+        },
+        {
+            "macro": "reloadMap",
+            "handler": "csc46_reloadMap",
+            "address": 288520,
+            "opcode": 70,
+            "cursorReadWidths": [2, 2],
+            "mapEventTypeValue": None,
+            "mapEventClearByteValue": None,
+            "d1Immediate": -1,
+            "packedCoordinateMultiplier": 3,
+            "directServiceCalls": ["LoadMap", "EnableDisplayAndInterrupts"],
+            "fallsThroughTo": None,
+        },
+        {
+            "macro": "mapLoad",
+            "handler": "csc48_loadMap",
+            "address": 288182,
+            "opcode": 72,
+            "cursorReadWidths": [2, 2, 2],
+            "mapEventTypeValue": None,
+            "mapEventClearByteValue": None,
+            "d1Immediate": None,
+            "packedCoordinateMultiplier": 3,
+            "directServiceCalls": [
+                "LoadMapTilesets",
+                "LoadMap",
+                "EnableDisplayAndInterrupts",
+            ],
+            "fallsThroughTo": None,
+        },
+    ]
+    assert actual["callerBreakdown"] == {
+        "callerHandlers": [
+            {
+                "handler": "csc07_warp",
+                "instructionTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 0,
+                    "EnableDisplayAndInterrupts": 0,
+                },
+                "effectiveTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 0,
+                    "EnableDisplayAndInterrupts": 0,
+                },
+            },
+            {
+                "handler": "csc36_resetMap",
+                "instructionTargetSiteCounts": {
+                    "ResetCurrentMap": 1,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 0,
+                    "EnableDisplayAndInterrupts": 0,
+                },
+                "effectiveTargetSiteCounts": {
+                    "ResetCurrentMap": 1,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 0,
+                    "EnableDisplayAndInterrupts": 0,
+                },
+            },
+            {
+                "handler": "csc37_loadMapAndFadeIn",
+                "instructionTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 0,
+                    "EnableDisplayAndInterrupts": 0,
+                },
+                "effectiveTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 0,
+                    "EnableDisplayAndInterrupts": 0,
+                },
+            },
+            {
+                "handler": "csc46_reloadMap",
+                "instructionTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 1,
+                    "EnableDisplayAndInterrupts": 1,
+                },
+                "effectiveTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 0,
+                    "LoadMap": 1,
+                    "EnableDisplayAndInterrupts": 1,
+                },
+            },
+            {
+                "handler": "csc48_loadMap",
+                "instructionTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 1,
+                    "LoadMap": 1,
+                    "EnableDisplayAndInterrupts": 1,
+                },
+                "effectiveTargetSiteCounts": {
+                    "ResetCurrentMap": 0,
+                    "LoadMapTilesets": 1,
+                    "LoadMap": 1,
+                    "EnableDisplayAndInterrupts": 1,
+                },
+            },
+        ],
+        "targetResolutions": [
+            {
+                "instructionTarget": "ResetCurrentMap",
+                "effectiveTarget": "ResetCurrentMap",
+                "effectiveTargetScope": "external",
+            },
+            {
+                "instructionTarget": "LoadMapTilesets",
+                "effectiveTarget": "LoadMapTilesets",
+                "effectiveTargetScope": "external",
+            },
+            {
+                "instructionTarget": "LoadMap",
+                "effectiveTarget": "LoadMap",
+                "effectiveTargetScope": "external",
+            },
+            {
+                "instructionTarget": "EnableDisplayAndInterrupts",
+                "effectiveTarget": "EnableDisplayAndInterrupts",
+                "effectiveTargetScope": "external",
+            },
+        ],
+        "instructionTargetTotals": {
+            "ResetCurrentMap": 1,
+            "LoadMapTilesets": 1,
+            "LoadMap": 2,
+            "EnableDisplayAndInterrupts": 2,
+        },
+        "effectiveTargetTotals": {
+            "ResetCurrentMap": 1,
+            "LoadMapTilesets": 1,
+            "LoadMap": 2,
+            "EnableDisplayAndInterrupts": 2,
+        },
+        "internalEffectiveTargetTotals": {
+            "ResetCurrentMap": 0,
+            "LoadMapTilesets": 0,
+            "LoadMap": 0,
+            "EnableDisplayAndInterrupts": 0,
+        },
+        "externalEffectiveTargetTotals": {
+            "ResetCurrentMap": 1,
+            "LoadMapTilesets": 1,
+            "LoadMap": 2,
+            "EnableDisplayAndInterrupts": 2,
+        },
+    }
+    assert actual["runtimeQuestions"] == [
+        "map-script-transition-presentation-matrix"
+    ]
+    assert actual["canonicalMapDomain"] == {
+        "contractId": "sf2-map-content-static-v1",
+        "mapCount": 79,
+        "mapIds": list(range(79)),
+        "sourceMapCurrentValue": 255,
+    }
+    assert [row["sourceCommandCount"] for row in actual["macros"]] == [38, 7, 60, 24, 17]
+    assert len(actual["programTotals"]) == 304
+    assert actual["canonicalMapDomain"]["mapCount"] == 79
+    validate_json(fixture, fixture_schema, owner="transition fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["transitionCommandFacts"]["sourceSites"][0]["commands"][0][
+        "coordinateXValue"
+    ]
+    with pytest.raises(ValueError, match="coordinateXValue"):
+        validate_json(missing, output_schema, owner="transition output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    command = renamed["transitionCommandFacts"]["sourceSites"][0]["commands"][0]
+    command["coordinateX"] = command.pop("coordinateXValue")
+    with pytest.raises(ValueError, match="coordinateXValue"):
+        validate_json(renamed, output_schema, owner="transition output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["transitionCommandFacts"]["callerBreakdown"]["callerHandlers"][0][
+        "instructionTargetSiteCounts"
+    ]["OtherTarget"] = 0
+    with pytest.raises(ValueError, match="OtherTarget"):
+        validate_json(extra, output_schema, owner="transition output extra target")
+
+    reordered = deepcopy(map_script_engine_output)
+    totals = reordered["transitionCommandFacts"]["programTotals"]
+    totals[0], totals[1] = totals[1], totals[0]
+    with pytest.raises(ValueError):
+        validate_json(reordered, output_schema, owner="transition output reordered totals")
+
+    out_of_bounds = deepcopy(map_script_engine_output)
+    out_of_bounds["transitionCommandFacts"]["sourceSites"][0]["commands"][0][
+        "destinationMapValue"
+    ] = 79
+    with pytest.raises(ValueError):
+        validate_json(out_of_bounds, output_schema, owner="transition output map boundary")
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["transitionCommandFacts"]["handlers"][0][
+        "mapEventTypeValue"
+    ]
+    with pytest.raises(ValueError):
+        validate_json(fixture_missing, fixture_schema, owner="transition fixture missing field")
+
+
+def test_transition_guards_reject_mutated_source_operand_and_use_site(monkeypatch) -> None:
+    original_program_corpus = map_script_engine._program_corpus
+
+    def invalid_map_operand(*args, **kwargs):
+        corpus = original_program_corpus(*args, **kwargs)
+        for program in corpus["programs"]:
+            for command in program["commands"]:
+                if command["macro"] == "warp":
+                    command["arguments"][0] = "79"
+                    return corpus
+        raise AssertionError("expected a warp source use site")
+
+    monkeypatch.setattr(map_script_engine, "_program_corpus", invalid_map_operand)
+    with pytest.raises(ValueError, match="outside the canonical map domain"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_transition_guards_reject_mutated_service_use_site(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_scale(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc48_loadMap":
+            return [statement.replace("mulu.w #3,d0", "mulu.w #2,d0") for statement in statements]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_scale)
+    with pytest.raises(ValueError, match="coordinate selector scale disagreement"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )

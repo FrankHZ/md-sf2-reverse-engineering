@@ -90,6 +90,16 @@ reference weights. It MUST preserve the complete 0–4,266 declared ID domain, i
 zero-reference IDs, without copying or decoding original text into the map contract. This does not
 specify shown content, speakers, windows, waits, input, story progression, or presentation behavior;
 those remain outside this static import rule.
+The importer MUST also retain the five source-named map-script transition forms `warp`, `resetMap`,
+`loadMapFadeIn`, `reloadMap`, and `mapLoad` as ordered command records rather than replacing them with
+guessed scene operations. Each record MUST keep its physical operand widths, raw destination-map
+operand text when present, resolved declared map ID or the distinct `MAP_CURRENT` sentinel, and the
+source command/program identity. The named handler boundary MUST retain the source-confirmed A6 cursor
+reads, direct service call identity/order, and the `csc37_loadMapAndFadeIn` fall-through to
+`csc48_loadMap`; it MUST preserve the parsed map-event value, D1 immediate, and packed-coordinate
+multiplier as source facts. A remake MAY map these forms to an engine-specific transition IR only after
+it defines its own behavior; the original source contract does not establish event consumption,
+camera state, fade timing, display timing, or player-visible transition results.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

@@ -5,7 +5,8 @@
   admission/termination rules, text-bank selection, complete context-
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, the complete six-command map-script dialogue
-  family/program-reference/handler/consumer contract, the complete 119-row sprite-dialogue
+  family/program-reference/handler/consumer contract, the complete five-command map-script transition
+  family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -119,6 +120,55 @@ pinned commit, ROM hash, source path, and addresses; no decoded text or sibling 
 The grouped H3 queue has one dialogue item: `dialogue-presentation/runtime-matrix`, covering skip,
 packed modifier/entity handling, portrait/speech presentation, input/wait cadence, and close/clear/sleep
 observation under shared setup. Story meaning and visible timing remain **Unknown**.
+
+## Confirmed Map-Script Transition Command Family
+
+The same `sf2-map-script-engine-static-v1` fixture now separately retains the source-named primary
+forms `warp`, `resetMap`, `loadMapFadeIn`, `reloadMap`, and `mapLoad`. **Confirmed:** their dispatcher
+opcodes are `$07/$36/$37/$46/$48`, their macro byte lengths are 6/2/8/6/8, and their complete ordered
+source-site counts are 38/7/60/24/17 (146 total). Every site stays in its original program and command
+order, while the zero-inclusive per-program totals retain all 304 programs. `warp` retains four byte
+operands; `loadMapFadeIn` and `mapLoad` retain three words; `reloadMap` retains two words; and
+`resetMap` has no operand. This is a physical encoded-stream fact, not a statement about frame timing.
+
+**Confirmed:** each site keeps the original destination-map operand text and resolved value separately.
+The accepted declared-map domain is the sibling 79-map `sf2-map-content-static-v1` identity set
+0..78; the only non-member source form accepted here is the exact `MAP_CURRENT` token, resolved from
+`sf2enums.asm` to 255 and recorded as `source-map-current`. The contract does not assign a runtime
+lifecycle meaning to that sentinel. `warp` additionally retains its source facing value, but no facing
+or camera behavior is inferred from the byte/word layout.
+
+**Confirmed** named-section guards preserve the instruction order rather than merely finding symbols
+elsewhere in a file. `csc07_warp` writes the parsed `MAP_EVENT_WARP` value 1 to source-named
+`MAP_EVENT_TYPE`, clears the following byte, copies its four bytes from A6 in order, then returns.
+`csc36_resetMap` saves A6, directly calls `ResetCurrentMap`, restores A6, then returns.
+`csc37_loadMapAndFadeIn` has no return in its own named section and its next named section is
+`csc48_loadMap`; that fall-through is recorded without claiming a visible fade duration or result.
+`csc48_loadMap` reads the first map word before `LoadMapTilesets`, then reads three words, uses parsed
+packed-coordinate multiplier 3, calls `LoadMap`, then `EnableDisplayAndInterrupts`. `csc46_reloadMap`
+uses parsed D1 immediate -1, reads two words, uses the same independently parsed multiplier 3, calls
+`LoadMap`, then `EnableDisplayAndInterrupts`. The shared multiplier is guarded as an equality between
+the two named source use sites; changing one operand fails parser construction before a fixture check.
+
+The bounded caller inventory is **Confirmed** and instruction-scoped: it preserves five caller rows,
+four target identities, and zero rows. Direct and effective targets are equal because no used call is a
+jump-interface alias. The complete effective totals are `ResetCurrentMap` 1, `LoadMapTilesets` 1,
+`LoadMap` 2, and `EnableDisplayAndInterrupts` 2; all four are external to the bounded handler surface,
+so internal effective totals are explicitly zero. Comment text, operands, labels, and near-miss
+mnemonics are not call sites.
+
+The sole grouped H3 question is **Unknown**:
+`map-script-transition-presentation-matrix`. One shared launch should observe event consumption,
+map/camera state, fade/display timing, and caller-dependent presentation for representative forms;
+the static source contract does not establish any of those runtime outcomes.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `master`,
+`sf2cutscenemacros.asm`,
+`code/common/scripting/map/mapscriptengine_1.asm` (`csc36`, `csc37`, `csc46`, `csc48`),
+`mapscriptengine_2.asm` (`csc07` and dispatcher), `sf2enums.asm`, the H1 listing addresses, and the
+US ROM SHA-256 in the fixture. Reproduce with `uv run sf2 h2 map-script-engine`; the observed output
+is fixture ID `sf2-map-script-engine-static-v1`, transition field `transitionCommandFacts`.
 
 Two hundred ninety-six programs have H1 entry addresses. Eight remain source-only: the labeled but
 unassembled `rbcs_battle01`, one unlabeled unused suspend scene in map 72, and six unlabeled debug
