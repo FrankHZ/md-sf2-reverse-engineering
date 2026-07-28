@@ -305,6 +305,59 @@ Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, nested
 field `expected.forceStateCommandFacts.activePartyCommandFacts`.
 
+## Confirmed Map-Script Story-State Branch/Prompt Command Family
+
+Evidence date: 2026-07-27.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `storyStateCommandFacts` retains exactly seven
+source forms in this order: `jumpIfFlagSet` `$0C` (24 sites, 8 bytes), `jumpIfFlagClear` `$0D` (27,
+8), primary `csc10` `$10` (zero, 6), `setF` alias `$10` (37, 6), `clearF` alias `$10` (16, 6),
+`yesNo` `$11` (22, 2), and `setStoryFlag` `$13` (20, 4). The zero source count is only an observed
+primary-carrier count: `csc10` remains a physical two-word command layout, while `setF` fixes its
+second word to `$FFFF` and `clearF` fixes it to `0`. `$0B jump` and `$12 menu` are outside this
+bounded family. All 146 source sites retain their program/command order and their references to the
+existing 51 conditional-read, 53 direct-write, 22 prompt-write, and 20 battle-unlock `programCorpus`
+records; all 304 program-total rows remain zero-inclusive.
+
+**Confirmed:** five named handler sections preserve the source control-flow shape. `csc0C_jumpIfFlagSet`
+at H1 `$47418` reads the flag word, calls `j_CheckFlag`, uses `beq.w` to skip the `movea.l (a6),a6`
+target replacement, and otherwise skips the four-byte target via `addq.w #4,a6`.
+`csc0D_jumpIfFlagClear` at `$4742C` has the same order with `bne.w` polarity. `csc10_toggleFlag` at
+`$4747A` reads two words, branches on the second with `bne.s`, and retains the fall-through
+`j_ClearFlag` before the branch-target `j_SetFlag` call. `csc11_promptYesNoForStoryFlow` at `$47490`
+saves/restores A6 around `j_YesNoPrompt`, loads parsed `FLAG_INDEX_YES_NO_PROMPT` 89, tests D0, calls
+`j_SetFlag` on zero and `j_ClearFlag` on nonzero, then performs source `moveq #10,d0; jsr (Sleep).w`.
+`csc13_setStoryFlag` at `$474E0` reads a word, adds parsed `BATTLE_UNLOCKED_FLAGS_START` 400, then
+calls `j_SetFlag`. These are guarded instruction/polarity/order facts, not a lifecycle or player-visible
+meaning inferred from labels.
+
+**Confirmed:** the comment-stripped instruction parser retains five direct identities and resolves the
+three jump-interface aliases without collapsing them. Direct totals are `Sleep` 1, `j_CheckFlag` 2,
+`j_ClearFlag` 2, `j_SetFlag` 3, and `j_YesNoPrompt` 1; effective totals are `CheckFlag` 2,
+`ClearFlag` 2, `SetFlag` 3, `Sleep` 1, and `YesNoPrompt` 1. Every handler row has zero-inclusive
+counts for that complete domain. The bounded handler surface contains none of those effective
+implementations, so all internal effective totals are zero and external totals equal the effective
+totals. The source-identity joins are only `code/common/stats/gameflags.asm` (`CheckFlag`, `SetFlag`,
+`ClearFlag`, SHA-256 `1D9BA2EAD0CEA13718D20B0E96D86FD0AC01730E1C6C07A15F9E3EF875A45DD9`) from
+`sf2-common-stats-static-v1`, and `code/common/menus/yesnoprompt.asm` (`YesNoPrompt`, SHA-256
+`CF54DD1628DB83CA94F4AACA9E854A8356BB2658A5396A32950F5F31219518CA`); no sibling fixture payload is
+copied.
+
+**Unknown:** `story-state/branch-prompt-persistence-matrix` is the one grouped H3 queue. A shared
+runtime launch must observe the branch target/cursor result, prompt return/value handling, and resulting
+flag persistence across representative caller states. This static slice does not claim normal-story
+reachability, save persistence, flag lifecycle, UI presentation, or a hardware effect.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` forms
+`jumpIfFlagSet` through `setStoryFlag`; `code/common/scripting/map/mapscriptengine_2.asm`
+(`csc0C`, `csc0D`, `csc10`, `csc11`, `csc13`); `sf2enums.asm` constants;
+`code/common/tech/jumpinterfaces/s02_jumpinterface.asm` and `s03_jumpinterface_1.asm`; the H1
+listing addresses above; and the US-ROM-backed extractor. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.storyStateCommandFacts`.
+
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm`,
 `code/common/scripting/map/mapscriptengine_1.asm` (`csc1F`, `csc20`, `csc21`),

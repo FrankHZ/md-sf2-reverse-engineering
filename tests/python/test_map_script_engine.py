@@ -26,7 +26,9 @@ from sf2tool.h2.map_script_engine import (
     _modifier_source_labels,
     _program_corpus,
     _statements,
+    _story_state_corpus_order_facts,
     _story_state_facts,
+    _story_state_section_guard,
     _substitute_alias_layout,
     build_map_script_engine_contract,
 )
@@ -222,6 +224,132 @@ def test_active_party_program_totals_keep_zero_rows_and_exact_site_order() -> No
             },
         },
     ]
+
+
+def test_story_state_program_totals_keep_aliases_and_zero_primary_carrier() -> None:
+    corpus = {
+        "summary": {"programCount": 2},
+        "programs": [
+            {
+                "id": "first",
+                "commands": [
+                    {
+                        "index": 0,
+                        "sourceLine": 10,
+                        "macro": "jumpIfFlagSet",
+                        "arguments": ["6", "target"],
+                    },
+                    {
+                        "index": 1,
+                        "sourceLine": 11,
+                        "macro": "setF",
+                        "arguments": ["71"],
+                    },
+                    {
+                        "index": 2,
+                        "sourceLine": 12,
+                        "macro": "clearF",
+                        "arguments": ["76"],
+                    },
+                    {"index": 3, "sourceLine": 13, "macro": "menu", "arguments": []},
+                ],
+            },
+            {"id": "second", "commands": []},
+        ],
+    }
+
+    sites, totals = _force_state_program_facts(
+        corpus, macro_names=map_script_engine.STORY_STATE_MACRO_NAMES
+    )
+
+    assert sites == [
+        {
+            "programId": "first",
+            "commands": [
+                {
+                    "commandIndex": 0,
+                    "sourceLine": 10,
+                    "macro": "jumpIfFlagSet",
+                    "arguments": ["6", "target"],
+                },
+                {
+                    "commandIndex": 1,
+                    "sourceLine": 11,
+                    "macro": "setF",
+                    "arguments": ["71"],
+                },
+                {
+                    "commandIndex": 2,
+                    "sourceLine": 12,
+                    "macro": "clearF",
+                    "arguments": ["76"],
+                },
+            ],
+        }
+    ]
+    assert totals == [
+        {
+            "programId": "first",
+            "commandCount": 3,
+            "macroCounts": {
+                "jumpIfFlagSet": 1,
+                "jumpIfFlagClear": 0,
+                "csc10": 0,
+                "setF": 1,
+                "clearF": 1,
+                "yesNo": 0,
+                "setStoryFlag": 0,
+            },
+        },
+        {
+            "programId": "second",
+            "commandCount": 0,
+            "macroCounts": {
+                "jumpIfFlagSet": 0,
+                "jumpIfFlagClear": 0,
+                "csc10": 0,
+                "setF": 0,
+                "clearF": 0,
+                "yesNo": 0,
+                "setStoryFlag": 0,
+            },
+        },
+    ]
+
+
+def test_story_state_corpus_order_facts_bind_order_and_canonical_content() -> None:
+    source_sites = [
+        {
+            "programId": "first",
+            "commands": [
+                {
+                    "commandIndex": 3,
+                    "macro": "setF",
+                    "storyStateReference": {"field": "directWrites", "entryIndex": 2},
+                }
+            ],
+        }
+    ]
+    program_totals = [
+        {"programId": "first", "commandCount": 1, "macroCounts": {}},
+        {"programId": "second", "commandCount": 0, "macroCounts": {}},
+    ]
+
+    actual = _story_state_corpus_order_facts(source_sites, program_totals)
+
+    assert actual["sourceSiteOrderKeys"] == ["first:3:setF:directWrites:2"]
+    assert actual["programTotalOrderKeys"] == ["first", "second"]
+    assert len(actual["sourceSitesSha256"]) == 64
+    assert len(actual["programTotalsSha256"]) == 64
+    changed = deepcopy(source_sites)
+    changed[0]["commands"][0]["commandIndex"] = 4
+    assert _story_state_corpus_order_facts(changed, program_totals)[
+        "sourceSitesSha256"
+    ] != actual["sourceSitesSha256"]
+    reordered = list(reversed(program_totals))
+    assert _story_state_corpus_order_facts(source_sites, reordered)[
+        "programTotalOrderKeys"
+    ] == ["second", "first"]
 
 
 def test_force_state_alias_parser_requires_named_jump_and_accepts_size_suffix(
@@ -1485,3 +1613,422 @@ def test_active_party_section_guard_rejects_follower_sentinel_and_call_order() -
     statements[10] = "jsr AddFollowerLater"
     with pytest.raises(ValueError, match="csc56_addFollower statement is missing"):
         _active_party_section_guard("addNewFollower", statements, {})
+
+
+def test_story_state_contract_matches_complete_golden_and_caller_identities(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["storyStateCommandFacts"]
+
+    assert actual == fixture["expected"]["storyStateCommandFacts"]
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["aliasOf"],
+            row["handler"],
+            row["sourceCommandCount"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("jumpIfFlagSet", 12, 8, None, "csc0C_jumpIfFlagSet", 24),
+        ("jumpIfFlagClear", 13, 8, None, "csc0D_jumpIfFlagClear", 27),
+        ("csc10", 16, 6, None, "csc10_toggleFlag", 0),
+        ("setF", 16, 6, "csc10", "csc10_toggleFlag", 37),
+        ("clearF", 16, 6, "csc10", "csc10_toggleFlag", 16),
+        ("yesNo", 17, 2, None, "csc11_promptYesNoForStoryFlow", 22),
+        ("setStoryFlag", 19, 4, None, "csc13_setStoryFlag", 20),
+    ]
+    assert actual["macros"][3]["operandLayout"][1] == {
+        "streamOffset": 4,
+        "widthBytes": 2,
+        "expression": "$FFFF",
+        "parameterOrdinals": [],
+        "encoding": "direct",
+    }
+    assert actual["macros"][4]["operandLayout"][1] == {
+        "streamOffset": 4,
+        "widthBytes": 2,
+        "expression": "0",
+        "parameterOrdinals": [],
+        "encoding": "direct",
+    }
+    assert sum(row["sourceCommandCount"] for row in actual["macros"]) == 146
+    assert len(actual["programTotals"]) == 304
+    assert actual["programCorpusReferences"] == [
+        {"field": "conditionalReads", "entryCount": 51},
+        {"field": "directWrites", "entryCount": 53},
+        {"field": "yesNoPromptWrites", "entryCount": 22},
+        {"field": "battleUnlockWrites", "entryCount": 20},
+    ]
+    assert [
+        (
+            row["handler"],
+            row["address"],
+            row["opcode"],
+            row["sourceCommandCount"],
+            row["cursorReadWidths"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        ("csc0C_jumpIfFlagSet", 291864, 12, 24, [2, 4]),
+        ("csc0D_jumpIfFlagClear", 291884, 13, 27, [2, 4]),
+        ("csc10_toggleFlag", 291962, 16, 53, [2, 2]),
+        ("csc11_promptYesNoForStoryFlow", 291984, 17, 22, []),
+        ("csc13_setStoryFlag", 292064, 19, 20, [2]),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["branchRecords"] == [
+        {
+            "testInstruction": "jsr j_CheckFlag",
+            "branchInstruction": "beq.w loc_47428",
+            "fallthroughInstruction": "movea.l (a6),a6",
+            "branchTargetInstruction": "addq.w #4,a6",
+        }
+    ]
+    assert actual["handlers"][1]["sectionGuard"]["branchRecords"][0][
+        "branchInstruction"
+    ] == "bne.w loc_4743C"
+    assert actual["handlers"][2]["sectionGuard"]["mutationCallOrder"] == [
+        "jsr j_ClearFlag",
+        "jsr j_SetFlag",
+    ]
+    assert actual["handlers"][3]["sectionGuard"] == {
+        "orderedInstructions": [
+            "move.l a6,-(sp)",
+            "jsr j_YesNoPrompt",
+            "movea.l (sp)+,a6",
+            "moveq #FLAG_INDEX_YES_NO_PROMPT,d1",
+            "tst.w d0",
+            "bne.s loc_474A8",
+            "jsr j_SetFlag",
+            "bra.s loc_474AE",
+            "jsr j_ClearFlag",
+            "moveq #10,d0",
+            "jsr (Sleep).w",
+            "rts",
+        ],
+        "branchRecords": [
+            {
+                "testInstruction": "tst.w d0",
+                "branchInstruction": "bne.s loc_474A8",
+                "fallthroughInstruction": "jsr j_SetFlag",
+                "branchTargetInstruction": "jsr j_ClearFlag",
+            }
+        ],
+        "sourceConstantUses": [
+            {
+                "constant": "FLAG_INDEX_YES_NO_PROMPT",
+                "value": 89,
+                "instruction": "moveq #FLAG_INDEX_YES_NO_PROMPT,d1",
+            }
+        ],
+        "sourceLiteralUses": [{"value": 10, "instruction": "moveq #10,d0"}],
+        "mutationCallOrder": [
+            "move.l a6,-(sp)",
+            "jsr j_YesNoPrompt",
+            "movea.l (sp)+,a6",
+            "jsr j_SetFlag",
+            "jsr j_ClearFlag",
+            "moveq #10,d0",
+            "jsr (Sleep).w",
+        ],
+    }
+    assert actual["handlers"][4]["sectionGuard"]["sourceConstantUses"] == [
+        {
+            "constant": "BATTLE_UNLOCKED_FLAGS_START",
+            "value": 400,
+            "instruction": "addi.w #BATTLE_UNLOCKED_FLAGS_START,d1",
+        }
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "Sleep": 1,
+        "j_CheckFlag": 2,
+        "j_ClearFlag": 2,
+        "j_SetFlag": 3,
+        "j_YesNoPrompt": 1,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == {
+        "CheckFlag": 2,
+        "ClearFlag": 2,
+        "SetFlag": 3,
+        "Sleep": 1,
+        "YesNoPrompt": 1,
+    }
+    assert actual["callerBreakdown"]["internalEffectiveTargetTotals"] == {
+        "CheckFlag": 0,
+        "ClearFlag": 0,
+        "SetFlag": 0,
+        "Sleep": 0,
+        "YesNoPrompt": 0,
+    }
+    assert actual["callerBreakdown"]["externalEffectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["effectiveTargetTotals"]
+    assert actual["callerBreakdown"]["targetResolutions"] == [
+        {
+            "instructionTarget": "Sleep",
+            "effectiveTarget": "Sleep",
+            "aliasSourcePath": None,
+            "effectiveTargetScope": "external",
+        },
+        {
+            "instructionTarget": "j_CheckFlag",
+            "effectiveTarget": "CheckFlag",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+            "effectiveTargetScope": "external",
+        },
+        {
+            "instructionTarget": "j_ClearFlag",
+            "effectiveTarget": "ClearFlag",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+            "effectiveTargetScope": "external",
+        },
+        {
+            "instructionTarget": "j_SetFlag",
+            "effectiveTarget": "SetFlag",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+            "effectiveTargetScope": "external",
+        },
+        {
+            "instructionTarget": "j_YesNoPrompt",
+            "effectiveTarget": "YesNoPrompt",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+            "effectiveTargetScope": "external",
+        },
+    ]
+    assert actual["sourceIdentityJoins"] == {
+        "commonStatsFlags": {
+            "contractId": "sf2-common-stats-static-v1",
+            "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+            "sourcePath": "code/common/stats/gameflags.asm",
+            "sourceSha256": "1D9BA2EAD0CEA13718D20B0E96D86FD0AC01730E1C6C07A15F9E3EF875A45DD9",
+            "symbols": ["CheckFlag", "SetFlag", "ClearFlag"],
+        },
+        "yesNoOwner": {
+            "sourcePath": "code/common/menus/yesnoprompt.asm",
+            "sourceSha256": "CF54DD1628DB83CA94F4AACA9E854A8356BB2658A5396A32950F5F31219518CA",
+            "symbols": ["YesNoPrompt"],
+        },
+    }
+    assert actual["runtimeQuestions"] == [
+        "story-state/branch-prompt-persistence-matrix"
+    ]
+
+
+def test_story_state_section_guard_rejects_branch_polarity() -> None:
+    statements = [
+        "move.w (a6)+,d1",
+        "jsr j_CheckFlag",
+        "beq.w skip",
+        "movea.l (a6),a6",
+        "bra.s return",
+        "addq.w #4,a6",
+        "rts",
+    ]
+    assert _story_state_section_guard("csc0C_jumpIfFlagSet", statements, {})[
+        "branchRecords"
+    ] == [
+        {
+            "testInstruction": "jsr j_CheckFlag",
+            "branchInstruction": "beq.w skip",
+            "fallthroughInstruction": "movea.l (a6),a6",
+            "branchTargetInstruction": "addq.w #4,a6",
+        }
+    ]
+    statements[2] = "bne.w skip"
+    with pytest.raises(ValueError, match="csc0C_jumpIfFlagSet statement is missing"):
+        _story_state_section_guard("csc0C_jumpIfFlagSet", statements, {})
+
+
+def test_story_state_conditional_skip_width_is_derived_from_macro_layout(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_skip_width(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc0C_jumpIfFlagSet":
+            return [statement.replace("addq.w #4,a6", "addq.w #2,a6") for statement in statements]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_skip_width)
+    with pytest.raises(ValueError, match="conditional target skip width drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_story_state_source_use_site_mutation_fails_before_fixture(monkeypatch) -> None:
+    original_program_corpus = map_script_engine._program_corpus
+
+    def changed_branch_polarity(*args, **kwargs):
+        corpus = original_program_corpus(*args, **kwargs)
+        for program in corpus["programs"]:
+            for command in program["commands"]:
+                if command["macro"] == "jumpIfFlagSet":
+                    command["macro"] = "jumpIfFlagClear"
+                    return corpus
+        raise AssertionError("expected a jumpIfFlagSet source use site")
+
+    monkeypatch.setattr(map_script_engine, "_program_corpus", changed_branch_polarity)
+    with pytest.raises(ValueError, match="conditional read use-site drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_story_state_corpus_order_keys_reject_source_reordering_before_fixture(
+    monkeypatch,
+) -> None:
+    original_program_corpus = map_script_engine._program_corpus
+
+    def reordered_story_programs(*args, **kwargs):
+        corpus = original_program_corpus(*args, **kwargs)
+        story_programs = [
+            index
+            for index, program in enumerate(corpus["programs"])
+            if any(
+                command["macro"] in map_script_engine.STORY_STATE_MACRO_NAMES
+                for command in program["commands"]
+            )
+        ]
+        first, second = story_programs[:2]
+        corpus["programs"][first], corpus["programs"][second] = (
+            corpus["programs"][second],
+            corpus["programs"][first],
+        )
+        return corpus
+
+    monkeypatch.setattr(map_script_engine, "_program_corpus", reordered_story_programs)
+    output = build_map_script_engine_contract(
+        repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+    )
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            output,
+            repo_path("schemas/map-script-engine-static.schema.json"),
+            owner="story-state source-order output",
+        )
+
+
+def test_story_state_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="story-state output")
+    validate_json(fixture, fixture_schema, owner="story-state fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["storyStateCommandFacts"]["sourceSites"][0]["commands"][0][
+        "storyStateReference"
+    ]["entryIndex"]
+    with pytest.raises(ValueError, match="entryIndex"):
+        validate_json(missing, output_schema, owner="story-state output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    reference = renamed["storyStateCommandFacts"]["sourceSites"][0]["commands"][0][
+        "storyStateReference"
+    ]
+    reference["index"] = reference.pop("entryIndex")
+    with pytest.raises(ValueError, match="entryIndex"):
+        validate_json(renamed, output_schema, owner="story-state output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["storyStateCommandFacts"]["sourceIdentityJoins"]["yesNoOwner"]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="story-state output extra field")
+
+    reordered = deepcopy(map_script_engine_output)
+    macros = reordered["storyStateCommandFacts"]["macros"]
+    macros[0], macros[1] = macros[1], macros[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(reordered, output_schema, owner="story-state output reordered macros")
+
+    reordered_source_order = deepcopy(map_script_engine_output)
+    keys = reordered_source_order["storyStateCommandFacts"]["sourceSiteOrderKeys"]
+    keys[0], keys[1] = keys[1], keys[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_source_order,
+            output_schema,
+            owner="story-state output reordered source-site keys",
+        )
+
+    reordered_program_order = deepcopy(map_script_engine_output)
+    keys = reordered_program_order["storyStateCommandFacts"]["programTotalOrderKeys"]
+    keys[0], keys[1] = keys[1], keys[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_program_order,
+            output_schema,
+            owner="story-state output reordered program-total keys",
+        )
+
+    out_of_bounds = deepcopy(map_script_engine_output)
+    out_of_bounds["storyStateCommandFacts"]["handlers"][3]["sectionGuard"][
+        "sourceConstantUses"
+    ][0]["value"] = 90
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(out_of_bounds, output_schema, owner="story-state output boundary")
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["storyStateCommandFacts"]["handlers"][4][
+        "sectionGuard"
+    ]["sourceConstantUses"]
+    with pytest.raises(ValueError, match="sourceConstantUses"):
+        validate_json(fixture_missing, fixture_schema, owner="story-state fixture missing field")
+
+
+@pytest.mark.parametrize(
+    ("handler_name", "original", "replacement", "error"),
+    [
+        (
+            "csc0C_jumpIfFlagSet",
+            "beq.w loc_47428",
+            "bne.w loc_47428",
+            "csc0C_jumpIfFlagSet statement is missing",
+        ),
+        (
+            "csc0D_jumpIfFlagClear",
+            "bne.w loc_4743C",
+            "beq.w loc_4743C",
+            "csc0D_jumpIfFlagClear statement is missing",
+        ),
+        (
+            "csc10_toggleFlag",
+            "jsr j_ClearFlag",
+            "jsr j_ClearFlagLater",
+            "csc10_toggleFlag statement is missing",
+        ),
+        (
+            "csc11_promptYesNoForStoryFlow",
+            "moveq #FLAG_INDEX_YES_NO_PROMPT,d1",
+            "moveq #FLAG_INDEX_YES_NO_PROMPT_ALT,d1",
+            "csc11_promptYesNoForStoryFlow statement is missing",
+        ),
+        (
+            "csc13_setStoryFlag",
+            "addi.w #BATTLE_UNLOCKED_FLAGS_START,d1",
+            "addi.w #BATTLE_UNLOCKED_FLAGS_START_ALT,d1",
+            "csc13_setStoryFlag statement is missing",
+        ),
+    ],
+)
+def test_story_state_section_guards_reject_use_site_mutations_before_fixture(
+    monkeypatch, handler_name: str, original: str, replacement: str, error: str
+) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_use_site(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == handler_name:
+            return [statement.replace(original, replacement) for statement in statements]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_use_site)
+    with pytest.raises(ValueError, match=error):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )

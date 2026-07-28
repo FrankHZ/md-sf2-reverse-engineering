@@ -395,6 +395,14 @@ per-handler and derived scope maps, and source-identity joins to battle-party, a
 follower-owner and battle-stats-owner sources. Its grouped H3 follow-up is
 `force-state/active-party-ai-follower-runtime-matrix`; lifecycle, capacity, persistence, and visible
 effects are not credited as static coverage.
+The adjacent story-state branch/prompt slice is exact for seven source forms: 24 `jumpIfFlagSet`, 27
+`jumpIfFlagClear`, zero primary `csc10`, 37 `setF` aliases, 16 `clearF` aliases, 22 `yesNo`, and 20
+`setStoryFlag` sites (146 total) across another complete 304-row zero-inclusive corpus. It preserves
+the primary carrier's physical two-word layout apart from its aliases, five named handler branch/cursor/
+mutation guards, five direct/effective caller identities with alias resolution and zero-inclusive
+per-handler/scope maps, and source-only joins to the game-flag and yes/no owners. Its only H3 follow-up
+is `story-state/branch-prompt-persistence-matrix`; reachability, persistence, lifecycle, prompt
+presentation, and hardware effects are not credited as static coverage.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

@@ -119,6 +119,36 @@ ACTIVE_PARTY_HANDLER_NAMES = (
 )
 ACTIVE_PARTY_RUNTIME_QUESTIONS = ["force-state/active-party-ai-follower-runtime-matrix"]
 
+# Source macro labels distinguish the primary $10 carrier from its two fixed-
+# operand aliases.  This slice preserves those identities without inferring a
+# persistence model from their names.
+STORY_STATE_MACRO_NAMES = (
+    "jumpIfFlagSet",
+    "jumpIfFlagClear",
+    "csc10",
+    "setF",
+    "clearF",
+    "yesNo",
+    "setStoryFlag",
+)
+STORY_STATE_HANDLER_BY_MACRO = {
+    "jumpIfFlagSet": "csc0C_jumpIfFlagSet",
+    "jumpIfFlagClear": "csc0D_jumpIfFlagClear",
+    "csc10": "csc10_toggleFlag",
+    "setF": "csc10_toggleFlag",
+    "clearF": "csc10_toggleFlag",
+    "yesNo": "csc11_promptYesNoForStoryFlow",
+    "setStoryFlag": "csc13_setStoryFlag",
+}
+STORY_STATE_HANDLER_NAMES = (
+    "csc0C_jumpIfFlagSet",
+    "csc0D_jumpIfFlagClear",
+    "csc10_toggleFlag",
+    "csc11_promptYesNoForStoryFlow",
+    "csc13_setStoryFlag",
+)
+STORY_STATE_RUNTIME_QUESTIONS = ["story-state/branch-prompt-persistence-matrix"]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -2983,6 +3013,472 @@ def _active_party_command_facts(
     }
 
 
+def _story_state_program_facts(
+    program_corpus: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Reference the authoritative story-state rows from the bounded source sites."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=STORY_STATE_MACRO_NAMES
+    )
+    story_state = program_corpus["storyState"]
+    field_by_macro = {
+        "jumpIfFlagSet": "conditionalReads",
+        "jumpIfFlagClear": "conditionalReads",
+        "setF": "directWrites",
+        "clearF": "directWrites",
+        "yesNo": "yesNoPromptWrites",
+        "setStoryFlag": "battleUnlockWrites",
+    }
+    references: dict[tuple[str, int], tuple[str, int, dict[str, Any]]] = {}
+    for field in (
+        "conditionalReads",
+        "directWrites",
+        "yesNoPromptWrites",
+        "battleUnlockWrites",
+    ):
+        for entry_index, row in enumerate(story_state[field]):
+            key = (row["program"], row["commandIndex"])
+            if key in references:
+                raise ValueError(f"story-state source reference is ambiguous: {key}")
+            references[key] = (field, entry_index, row)
+
+    source_commands = {
+        (program["id"], command["index"]): command
+        for program in program_corpus["programs"]
+        for command in program["commands"]
+    }
+
+    source_keys: set[tuple[str, int]] = set()
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands: list[dict[str, Any]] = []
+        for command in site["commands"]:
+            macro = command["macro"]
+            if macro == "csc10":
+                raise ValueError("story-state primary csc10 carrier unexpectedly has a source site")
+            expected_field = field_by_macro.get(macro)
+            if expected_field is None:
+                raise ValueError(
+                    "story-state source macro lacks an authoritative reference: "
+                    f"{macro}"
+                )
+            key = (site["programId"], command["commandIndex"])
+            source_keys.add(key)
+            reference = references.get(key)
+            if reference is None:
+                raise ValueError(f"story-state source reference is missing: {key}")
+            field, entry_index, row = reference
+            if field != expected_field:
+                raise ValueError(f"story-state source reference field drift: {key}")
+            if field == "conditionalReads":
+                expected_condition = "set" if macro == "jumpIfFlagSet" else "clear"
+                if (
+                    row["condition"] != expected_condition
+                    or row["flag"] != _literal(command["arguments"][0])
+                    or row["targetSymbol"] != source_commands[key]["targetSymbol"]
+                ):
+                    raise ValueError(f"story-state conditional read use-site drift: {key}")
+            elif field == "directWrites":
+                if row["macro"] != macro or row["flag"] != _literal(command["arguments"][0]):
+                    raise ValueError(f"story-state direct write use-site drift: {key}")
+            elif field == "battleUnlockWrites":
+                if row["battle"] != _literal(command["arguments"][0]):
+                    raise ValueError(f"story-state battle-unlock use-site drift: {key}")
+            commands.append(
+                {
+                    **command,
+                    "storyStateReference": {"field": field, "entryIndex": entry_index},
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    if source_keys != set(references):
+        raise ValueError("story-state bounded source/reference coverage drift")
+    cross_checks = [
+        {"field": field, "entryCount": len(story_state[field])}
+        for field in (
+            "conditionalReads",
+            "directWrites",
+            "yesNoPromptWrites",
+            "battleUnlockWrites",
+        )
+    ]
+    return annotated_sites, program_totals, cross_checks
+
+
+def _story_state_section_guard(
+    handler_name: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard branching and mutation order in one story-state handler section."""
+    if handler_name == "csc0C_jumpIfFlagSet":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d1",
+                r"jsr j_CheckFlag",
+                r"beq\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"movea\.l \(a6\),a6",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"addq\.w #(?P<value>\d+),a6",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[1],
+                    "branchInstruction": ordered[2],
+                    "fallthroughInstruction": ordered[3],
+                    "branchTargetInstruction": ordered[5],
+                }
+            ],
+            "sourceConstantUses": [],
+            "sourceLiteralUses": [
+                {
+                    "value": _literal(
+                        re.fullmatch(r"addq\.w #(?P<value>\d+),a6", ordered[5]).group("value")
+                    ),
+                    "instruction": ordered[5],
+                }
+            ],
+            "mutationCallOrder": [ordered[3], ordered[5]],
+        }
+    if handler_name == "csc0D_jumpIfFlagClear":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d1",
+                r"jsr j_CheckFlag",
+                r"bne\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"movea\.l \(a6\),a6",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"addq\.w #(?P<value>\d+),a6",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[1],
+                    "branchInstruction": ordered[2],
+                    "fallthroughInstruction": ordered[3],
+                    "branchTargetInstruction": ordered[5],
+                }
+            ],
+            "sourceConstantUses": [],
+            "sourceLiteralUses": [
+                {
+                    "value": _literal(
+                        re.fullmatch(r"addq\.w #(?P<value>\d+),a6", ordered[5]).group("value")
+                    ),
+                    "instruction": ordered[5],
+                }
+            ],
+            "mutationCallOrder": [ordered[3], ordered[5]],
+        }
+    if handler_name == "csc10_toggleFlag":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d1",
+                r"move\.w \(a6\)\+,d0",
+                r"bne\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"jsr j_ClearFlag",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"jsr j_SetFlag",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[1],
+                    "branchInstruction": ordered[2],
+                    "fallthroughInstruction": ordered[3],
+                    "branchTargetInstruction": ordered[5],
+                }
+            ],
+            "sourceConstantUses": [],
+            "sourceLiteralUses": [],
+            "mutationCallOrder": [ordered[3], ordered[5]],
+        }
+    if handler_name == "csc11_promptYesNoForStoryFlow":
+        constant = "FLAG_INDEX_YES_NO_PROMPT"
+        if constant not in equates:
+            raise ValueError("story-state yes/no source constant is missing")
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.l a6,-\(sp\)",
+                r"jsr j_YesNoPrompt",
+                r"movea\.l \(sp\)\+,a6",
+                rf"moveq #{constant},d1",
+                r"tst\.w d0",
+                r"bne\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"jsr j_SetFlag",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"jsr j_ClearFlag",
+                r"moveq #(?P<value>\d+),d0",
+                r"jsr \(Sleep\)\.w",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        sleep_match = re.fullmatch(r"moveq #(?P<value>\d+),d0", ordered[9])
+        if sleep_match is None:
+            raise ValueError("story-state yes/no sleep use shape drift")
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[4],
+                    "branchInstruction": ordered[5],
+                    "fallthroughInstruction": ordered[6],
+                    "branchTargetInstruction": ordered[8],
+                }
+            ],
+            "sourceConstantUses": [
+                {"constant": constant, "value": equates[constant], "instruction": ordered[3]}
+            ],
+            "sourceLiteralUses": [
+                {"value": _literal(sleep_match.group("value")), "instruction": ordered[9]}
+            ],
+            "mutationCallOrder": [
+                ordered[0],
+                ordered[1],
+                ordered[2],
+                ordered[6],
+                ordered[8],
+                ordered[9],
+                ordered[10],
+            ],
+        }
+    if handler_name == "csc13_setStoryFlag":
+        constant = "BATTLE_UNLOCKED_FLAGS_START"
+        if constant not in equates:
+            raise ValueError("story-state battle-unlock source constant is missing")
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d1",
+                rf"addi\.w #{constant},d1",
+                r"jsr j_SetFlag",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [],
+            "sourceConstantUses": [
+                {"constant": constant, "value": equates[constant], "instruction": ordered[1]}
+            ],
+            "sourceLiteralUses": [],
+            "mutationCallOrder": [ordered[1], ordered[2]],
+        }
+    raise ValueError(f"story-state handler guard has no profile: {handler_name}")
+
+
+def _story_state_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Derive compact, schema-pinned order and content evidence for both corpora."""
+    source_site_order_keys: list[str] = []
+    for site in source_sites:
+        for command in site["commands"]:
+            reference = command["storyStateReference"]
+            source_site_order_keys.append(
+                ":".join(
+                    (
+                        site["programId"],
+                        str(command["commandIndex"]),
+                        command["macro"],
+                        reference["field"],
+                        str(reference["entryIndex"]),
+                    )
+                )
+            )
+    if len(source_site_order_keys) != len(set(source_site_order_keys)):
+        raise ValueError("story-state source-site order keys are not unique")
+    program_total_order_keys = [row["programId"] for row in program_totals]
+    if len(program_total_order_keys) != len(set(program_total_order_keys)):
+        raise ValueError("story-state program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_site_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_total_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _story_state_source_identity_joins(disasm: Path, upstream_path: Path) -> dict[str, Any]:
+    """Record only the flag and yes/no service owners used by this handler group."""
+    stats = build_stats_inventory(upstream_path)
+    flags_path = "code/common/stats/gameflags.asm"
+    flags = next((row for row in stats["files"] if row["path"] == flags_path), None)
+    if flags is None:
+        raise ValueError("story-state common-stats flags owner is missing")
+    symbols = ["CheckFlag", "SetFlag", "ClearFlag"]
+    if not set(symbols) <= set(flags["globalLabels"]):
+        raise ValueError("story-state common-stats flags owner symbols drift")
+
+    yes_no_path = "code/common/menus/yesnoprompt.asm"
+    yes_no_source = read_upstream_text(disasm / yes_no_path)
+    if re.search(r"^YesNoPrompt:\s*$", yes_no_source, re.MULTILINE) is None:
+        raise ValueError("story-state yes/no owner symbol drift")
+    return {
+        "commonStatsFlags": {
+            "contractId": stats["id"],
+            "upstreamCommit": stats["upstream"]["commit"],
+            "sourcePath": flags["path"],
+            "sourceSha256": flags["sha256"],
+            "symbols": symbols,
+        },
+        "yesNoOwner": {
+            "sourcePath": yes_no_path,
+            "sourceSha256": hashlib.sha256(yes_no_source.encode()).hexdigest().upper(),
+            "symbols": ["YesNoPrompt"],
+        },
+    }
+
+
+def _story_state_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build the seven-form story-state branch/mutation static contract."""
+    required_constants = ("FLAG_INDEX_YES_NO_PROMPT", "BATTLE_UNLOCKED_FLAGS_START")
+    missing = [name for name in required_constants if name not in equates]
+    if missing:
+        raise ValueError(f"story-state source constants are missing: {missing}")
+    source_sites, program_totals, story_state_cross_checks = _story_state_program_facts(
+        program_corpus
+    )
+    corpus_order_facts = _story_state_corpus_order_facts(source_sites, program_totals)
+    source_counts: Counter[str] = Counter()
+    for site in source_sites:
+        source_counts.update(command["macro"] for command in site["commands"])
+    for macro in STORY_STATE_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"story-state program total drift: {macro}")
+
+    primary = macros["csc10"]
+    for alias in ("setF", "clearF"):
+        contract = macros[alias]
+        if (
+            contract["aliasOf"] != "csc10"
+            or contract["encodedBytes"] != primary["encodedBytes"]
+            or contract["operandBytes"] != primary["operandBytes"]
+            or len(primary["operandLayout"]) != 2
+            or len(contract["operandLayout"]) != len(primary["operandLayout"])
+            or contract["operandLayout"][0] != primary["operandLayout"][0]
+            or contract["operandLayout"][1]["streamOffset"]
+            != primary["operandLayout"][1]["streamOffset"]
+            or contract["operandLayout"][1]["widthBytes"]
+            != primary["operandLayout"][1]["widthBytes"]
+            or contract["operandLayout"][1]["parameterOrdinals"]
+        ):
+            raise ValueError(f"story-state csc10 alias layout drift: {alias}")
+        fixed_value = _literal(contract["operandLayout"][1]["expression"])
+        if (alias == "setF" and fixed_value == 0) or (
+            alias == "clearF" and fixed_value != 0
+        ):
+            raise ValueError(f"story-state csc10 alias selector drift: {alias}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for handler_name in STORY_STATE_HANDLER_NAMES:
+        handler_macros = [
+            name
+            for name in STORY_STATE_MACRO_NAMES
+            if STORY_STATE_HANDLER_BY_MACRO[name] == handler_name
+        ]
+        handler = _handler_by_name(handlers, handler_name)
+        opcode = macros[handler_macros[0]]["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"story-state dispatcher target drift: {handler_name}")
+        if handler["opcodes"] != [opcode]:
+            raise ValueError(f"story-state handler opcode drift: {handler_name}")
+        for macro in handler_macros:
+            contract = macros[macro]
+            if contract["kind"] != "command" or contract["opcode"] != opcode:
+                raise ValueError(f"story-state macro ABI drift: {macro}")
+            if handler["encodedCommandBytes"] != contract["encodedBytes"]:
+                raise ValueError(f"story-state handler encoded width drift: {macro}")
+        statements = _stable_handler_statements(disasm, handler)
+        direct_calls = _force_state_direct_calls(statements)
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "handler": handler_name,
+                "macros": handler_macros,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": sum(source_counts[name] for name in handler_macros),
+                "cursorReadWidths": [
+                    field["widthBytes"] for field in macros[handler_macros[0]]["operandLayout"]
+                ],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": _story_state_section_guard(handler_name, statements, equates),
+                "directCalls": direct_calls,
+            }
+        )
+    for handler in handler_rows[:2]:
+        pointer_width = macros[handler["macros"][0]]["operandLayout"][1]["widthBytes"]
+        if handler["sectionGuard"]["sourceLiteralUses"][0]["value"] != pointer_width:
+            raise ValueError(
+                f"story-state conditional target skip width drift: {handler['handler']}"
+            )
+    return {
+        "macros": [
+            {
+                "name": name,
+                "opcode": macros[name]["opcode"],
+                "encodedBytes": macros[name]["encodedBytes"],
+                "operandBytes": macros[name]["operandBytes"],
+                "operandLayout": macros[name]["operandLayout"],
+                "parameterOrdinals": macros[name]["parameterOrdinals"],
+                "aliasOf": macros[name]["aliasOf"],
+                "handler": STORY_STATE_HANDLER_BY_MACRO[name],
+                "sourceCommandCount": source_counts[name],
+            }
+            for name in STORY_STATE_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **corpus_order_facts,
+        "programTotals": program_totals,
+        "programCorpusReferences": story_state_cross_checks,
+        "handlers": handler_rows,
+        "callerBreakdown": _force_state_caller_breakdown(
+            disasm,
+            handlers,
+            STORY_STATE_HANDLER_NAMES,
+            direct_call_rows,
+            addresses,
+            rom,
+        ),
+        "sourceIdentityJoins": _story_state_source_identity_joins(disasm, upstream_path),
+        "runtimeQuestions": STORY_STATE_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -3036,6 +3532,17 @@ def build_map_script_engine_contract(
         upstream_path,
     )
     force_state_command_facts["activePartyCommandFacts"] = _active_party_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+        upstream_path,
+    )
+    story_state_command_facts = _story_state_command_facts(
         disasm,
         source_equates,
         macros,
@@ -3191,12 +3698,14 @@ def build_map_script_engine_contract(
         "dialogueCommandFacts": dialogue_command_facts,
         "transitionCommandFacts": transition_command_facts,
         "forceStateCommandFacts": force_state_command_facts,
+        "storyStateCommandFacts": story_state_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
             "palette-fade-and-vdp-visible-presentation",
             *FORCE_STATE_RUNTIME_QUESTIONS,
             *ACTIVE_PARTY_RUNTIME_QUESTIONS,
+            *STORY_STATE_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -3242,6 +3751,7 @@ def verify_map_script_engine_contract(
         "dialogueCommandFacts": output["dialogueCommandFacts"],
         "transitionCommandFacts": output["transitionCommandFacts"],
         "forceStateCommandFacts": output["forceStateCommandFacts"],
+        "storyStateCommandFacts": output["storyStateCommandFacts"],
     }
     for field in (
         "summary",
@@ -3264,6 +3774,7 @@ def verify_map_script_engine_contract(
         "dialogueCommandFacts",
         "transitionCommandFacts",
         "forceStateCommandFacts",
+        "storyStateCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

@@ -66,7 +66,8 @@
         "runtimeQuestions",
         "dialogueCommandFacts",
         "transitionCommandFacts",
-        "forceStateCommandFacts"
+        "forceStateCommandFacts",
+        "storyStateCommandFacts"
       ],
       "properties": {
         "summary": {
@@ -133,8 +134,11 @@
             "entity-camera-text-wait-and-transition-frame-timing",
             "palette-fade-and-vdp-visible-presentation",
             "force-state/roster-death-persistence-visible-outcomes",
-            "force-state/active-party-ai-follower-runtime-matrix"
-          ]
+            "force-state/active-party-ai-follower-runtime-matrix",
+            "story-state/branch-prompt-persistence-matrix"
+          ],
+          "minItems": 6,
+          "maxItems": 6
         },
         "dialogueCommandFacts": {
           "allOf": [
@@ -24252,6 +24256,1194 @@
               }
             }
           ]
+        },
+        "storyStateCommandFacts": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/storyStateCommandFacts"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "macros": {
+                  "const": [
+                    {
+                      "name": "jumpIfFlagSet",
+                      "opcode": 12,
+                      "encodedBytes": 8,
+                      "operandBytes": 6,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 4,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2
+                      ],
+                      "aliasOf": null,
+                      "handler": "csc0C_jumpIfFlagSet",
+                      "sourceCommandCount": 24
+                    },
+                    {
+                      "name": "jumpIfFlagClear",
+                      "opcode": 13,
+                      "encodedBytes": 8,
+                      "operandBytes": 6,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 4,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2
+                      ],
+                      "aliasOf": null,
+                      "handler": "csc0D_jumpIfFlagClear",
+                      "sourceCommandCount": 27
+                    },
+                    {
+                      "name": "csc10",
+                      "opcode": 16,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 2,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2
+                      ],
+                      "aliasOf": null,
+                      "handler": "csc10_toggleFlag",
+                      "sourceCommandCount": 0
+                    },
+                    {
+                      "name": "setF",
+                      "opcode": 16,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 2,
+                          "expression": "$FFFF",
+                          "parameterOrdinals": [],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "aliasOf": "csc10",
+                      "handler": "csc10_toggleFlag",
+                      "sourceCommandCount": 37
+                    },
+                    {
+                      "name": "clearF",
+                      "opcode": 16,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 2,
+                          "expression": "0",
+                          "parameterOrdinals": [],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "aliasOf": "csc10",
+                      "handler": "csc10_toggleFlag",
+                      "sourceCommandCount": 16
+                    },
+                    {
+                      "name": "yesNo",
+                      "opcode": 17,
+                      "encodedBytes": 2,
+                      "operandBytes": 0,
+                      "operandLayout": [],
+                      "parameterOrdinals": [],
+                      "aliasOf": null,
+                      "handler": "csc11_promptYesNoForStoryFlow",
+                      "sourceCommandCount": 22
+                    },
+                    {
+                      "name": "setStoryFlag",
+                      "opcode": 19,
+                      "encodedBytes": 4,
+                      "operandBytes": 2,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "aliasOf": null,
+                      "handler": "csc13_setStoryFlag",
+                      "sourceCommandCount": 20
+                    }
+                  ]
+                },
+                "sourceSiteOrderKeys": {
+                  "const": [
+                    "rbcs_battle01:2:setF:directWrites:0",
+                    "abcs_battle05:11:setF:directWrites:1",
+                    "abcs_battle05:21:clearF:directWrites:2",
+                    "abcs_battle05:22:setStoryFlag:battleUnlockWrites:0",
+                    "bbcs_06:45:setStoryFlag:battleUnlockWrites:1",
+                    "abcs_battle07:305:setF:directWrites:3",
+                    "abcs_battle07:394:setF:directWrites:4",
+                    "abcs_battle07:395:setF:directWrites:5",
+                    "bbcs_07:1:clearF:directWrites:6",
+                    "abcs_battle08:6:jumpIfFlagSet:conditionalReads:0",
+                    "bbcs_08:6:jumpIfFlagSet:conditionalReads:1",
+                    "edcs_battle12:7:setF:directWrites:7",
+                    "abcs_battle13:28:setF:directWrites:8",
+                    "abcs_battle15:52:clearF:directWrites:9",
+                    "abcs_battle15:53:setF:directWrites:10",
+                    "abcs_battle18:209:setF:directWrites:11",
+                    "abcs_battle18:210:clearF:directWrites:12",
+                    "rbcs_battle32:16:setF:directWrites:13",
+                    "abcs_battle33:107:setF:directWrites:14",
+                    "bbcs_33:55:setF:directWrites:15",
+                    "bbcs_33:56:clearF:directWrites:16",
+                    "abcs_battle34:8:jumpIfFlagClear:conditionalReads:2",
+                    "abcs_battle34:34:jumpIfFlagClear:conditionalReads:3",
+                    "abcs_battle34:53:jumpIfFlagClear:conditionalReads:4",
+                    "abcs_battle34:70:jumpIfFlagClear:conditionalReads:5",
+                    "abcs_battle34:80:jumpIfFlagClear:conditionalReads:6",
+                    "bbcs_34:8:jumpIfFlagClear:conditionalReads:7",
+                    "bbcs_34:18:jumpIfFlagClear:conditionalReads:8",
+                    "bbcs_35:10:jumpIfFlagClear:conditionalReads:9",
+                    "abcs_battle36:8:jumpIfFlagClear:conditionalReads:10",
+                    "bbcs_36:8:jumpIfFlagClear:conditionalReads:11",
+                    "abcs_battle37:10:jumpIfFlagClear:conditionalReads:12",
+                    "bbcs_37:9:jumpIfFlagClear:conditionalReads:13",
+                    "abcs_battle38:12:jumpIfFlagClear:conditionalReads:14",
+                    "bbcs_38:10:jumpIfFlagClear:conditionalReads:15",
+                    "bbcs_39:7:jumpIfFlagClear:conditionalReads:16",
+                    "bbcs_39:9:jumpIfFlagClear:conditionalReads:17",
+                    "abcs_battle40:10:jumpIfFlagClear:conditionalReads:18",
+                    "bbcs_40:12:jumpIfFlagClear:conditionalReads:19",
+                    "rbcs_battle40_1:51:setF:directWrites:17",
+                    "rbcs_battle40_2:43:setF:directWrites:18",
+                    "bbcs_41:7:jumpIfFlagClear:conditionalReads:20",
+                    "abcs_battle42:10:jumpIfFlagClear:conditionalReads:21",
+                    "abcs_battle42:212:setStoryFlag:battleUnlockWrites:2",
+                    "bbcs_42:10:jumpIfFlagClear:conditionalReads:22",
+                    "abcs_battle43:62:clearF:directWrites:19",
+                    "abcs_battle43:63:clearF:directWrites:20",
+                    "abcs_battle43:64:clearF:directWrites:21",
+                    "abcs_battle43:65:clearF:directWrites:22",
+                    "cs_5E3C2:96:setF:directWrites:23",
+                    "cs_513E2:2:yesNo:yesNoPromptWrites:0",
+                    "cs_513E2:3:jumpIfFlagSet:conditionalReads:23",
+                    "cs_513E2:12:setF:directWrites:24",
+                    "cs_513E2:13:setF:directWrites:25",
+                    "cs_5149A:63:yesNo:yesNoPromptWrites:1",
+                    "cs_5149A:64:jumpIfFlagSet:conditionalReads:24",
+                    "cs_5149A:74:setF:directWrites:26",
+                    "cs_5149A:75:setF:directWrites:27",
+                    "cs_60F64:2:yesNo:yesNoPromptWrites:2",
+                    "cs_60F64:3:jumpIfFlagClear:conditionalReads:25",
+                    "cs_60F64:14:setF:directWrites:28",
+                    "cs_55BEE:132:setF:directWrites:29",
+                    "cs_56422:82:setF:directWrites:30",
+                    "cs_569BC:24:yesNo:yesNoPromptWrites:3",
+                    "cs_569BC:25:jumpIfFlagSet:conditionalReads:26",
+                    "cs_569BC:43:setF:directWrites:31",
+                    "cs_569BC:44:setF:directWrites:32",
+                    "cs_569BC:45:setStoryFlag:battleUnlockWrites:3",
+                    "cs_56AE6:3:yesNo:yesNoPromptWrites:4",
+                    "cs_56AE6:4:jumpIfFlagSet:conditionalReads:27",
+                    "cs_585FE:97:setStoryFlag:battleUnlockWrites:4",
+                    "cs_58AE2:24:yesNo:yesNoPromptWrites:5",
+                    "cs_58AE2:25:jumpIfFlagSet:conditionalReads:28",
+                    "cs_58B7A:35:yesNo:yesNoPromptWrites:6",
+                    "cs_58B7A:36:jumpIfFlagSet:conditionalReads:29",
+                    "cs_58B7A:121:setF:directWrites:33",
+                    "cs_58B7A:122:clearF:directWrites:34",
+                    "cs_58B7A:123:setF:directWrites:35",
+                    "cs_58E5C:2:yesNo:yesNoPromptWrites:7",
+                    "cs_58E5C:3:jumpIfFlagClear:conditionalReads:30",
+                    "cs_58F5C:3:yesNo:yesNoPromptWrites:8",
+                    "cs_58F5C:4:jumpIfFlagSet:conditionalReads:31",
+                    "cs_58FA4:71:yesNo:yesNoPromptWrites:9",
+                    "cs_58FA4:72:jumpIfFlagSet:conditionalReads:32",
+                    "cs_58FA4:127:setStoryFlag:battleUnlockWrites:5",
+                    "cs_521BA:36:setStoryFlag:battleUnlockWrites:6",
+                    "cs_52F0C:2:yesNo:yesNoPromptWrites:10",
+                    "cs_52F0C:3:jumpIfFlagSet:conditionalReads:33",
+                    "cs_52F24:2:yesNo:yesNoPromptWrites:11",
+                    "cs_52F24:3:jumpIfFlagSet:conditionalReads:34",
+                    "cs_52F40:4:setF:directWrites:36",
+                    "cs_62D0E:138:jumpIfFlagClear:conditionalReads:35",
+                    "cs_53176:143:yesNo:yesNoPromptWrites:12",
+                    "cs_53176:144:jumpIfFlagSet:conditionalReads:36",
+                    "cs_53B66:114:setF:directWrites:37",
+                    "cs_53EF4:2:setStoryFlag:battleUnlockWrites:7",
+                    "cs_5994E:5:setStoryFlag:battleUnlockWrites:8",
+                    "cs_StartSpecialBattle:0:setStoryFlag:battleUnlockWrites:9",
+                    "cs_59FB8:38:setStoryFlag:battleUnlockWrites:10",
+                    "cs_5D652:4:yesNo:yesNoPromptWrites:13",
+                    "cs_5D652:5:jumpIfFlagClear:conditionalReads:37",
+                    "cs_5A8CA:3:yesNo:yesNoPromptWrites:14",
+                    "cs_5A8CA:4:jumpIfFlagSet:conditionalReads:38",
+                    "cs_5A8E6:1:setF:directWrites:38",
+                    "cs_5A90E:3:yesNo:yesNoPromptWrites:15",
+                    "cs_5A90E:4:jumpIfFlagSet:conditionalReads:39",
+                    "cs_5A92A:1:setF:directWrites:39",
+                    "cs_5A93A:3:yesNo:yesNoPromptWrites:16",
+                    "cs_5A93A:4:jumpIfFlagSet:conditionalReads:40",
+                    "cs_5A956:1:setF:directWrites:40",
+                    "cs_5A97E:3:yesNo:yesNoPromptWrites:17",
+                    "cs_5A97E:4:jumpIfFlagSet:conditionalReads:41",
+                    "cs_5A99A:1:setF:directWrites:41",
+                    "cs_5A9AA:3:yesNo:yesNoPromptWrites:18",
+                    "cs_5A9AA:4:jumpIfFlagSet:conditionalReads:42",
+                    "cs_5A9C6:1:setF:directWrites:42",
+                    "cs_5A9EE:3:yesNo:yesNoPromptWrites:19",
+                    "cs_5A9EE:4:jumpIfFlagSet:conditionalReads:43",
+                    "cs_5AA0A:1:setF:directWrites:43",
+                    "cs_5AA1A:3:yesNo:yesNoPromptWrites:20",
+                    "cs_5AA1A:4:jumpIfFlagSet:conditionalReads:44",
+                    "cs_5AA36:1:setF:directWrites:44",
+                    "cs_5AA5E:3:yesNo:yesNoPromptWrites:21",
+                    "cs_5AA5E:4:jumpIfFlagSet:conditionalReads:45",
+                    "cs_5AA7A:1:setF:directWrites:45",
+                    "cs_5DA28:15:setStoryFlag:battleUnlockWrites:11",
+                    "cs_5DA28:16:setStoryFlag:battleUnlockWrites:12",
+                    "cs_5DA28:17:setStoryFlag:battleUnlockWrites:13",
+                    "cs_5DD9C:6:jumpIfFlagSet:conditionalReads:46",
+                    "cs_5DE76:37:clearF:directWrites:46",
+                    "cs_540C0:112:clearF:directWrites:47",
+                    "cs_540C0:113:setStoryFlag:battleUnlockWrites:14",
+                    "cs_54578:47:clearF:directWrites:48",
+                    "cs_54578:75:clearF:directWrites:49",
+                    "cs_5C312:26:setStoryFlag:battleUnlockWrites:15",
+                    "cs_5C4EE:54:setStoryFlag:battleUnlockWrites:16",
+                    "cs_5E27C:5:jumpIfFlagClear:conditionalReads:47",
+                    "cs_615E6:792:clearF:directWrites:50",
+                    "cs_615E6:793:clearF:directWrites:51",
+                    "cs_5C6CA:24:setStoryFlag:battleUnlockWrites:17",
+                    "cs_5C914:12:setF:directWrites:52",
+                    "cs_5CCF6:42:jumpIfFlagSet:conditionalReads:48",
+                    "cs_4FF5A:27:setStoryFlag:battleUnlockWrites:18",
+                    "cs_4FFDA:112:setStoryFlag:battleUnlockWrites:19",
+                    "cs_503A6:20:jumpIfFlagClear:conditionalReads:49",
+                    "cs_503A6:129:jumpIfFlagSet:conditionalReads:50"
+                  ]
+                },
+                "sourceSitesSha256": {
+                  "const": "9E6C48290DD46064D06F4FBF46F1967741DC7924A8149D4B7F973CA25F5C490A"
+                },
+                "programTotalOrderKeys": {
+                  "const": [
+                    "cs_45284",
+                    "cs_45348",
+                    "cs_453F2",
+                    "cs_45470",
+                    "ms_BowieShrinkIn",
+                    "ms_BowieGrowOut",
+                    "abcs_battle00",
+                    "abcs_battle01",
+                    "bbcs_01",
+                    "rbcs_battle01",
+                    "bbcs_03",
+                    "abcs_battle04",
+                    "bbcs_04",
+                    "abcs_battle05",
+                    "edcs_battle5",
+                    "bbcs_06",
+                    "abcs_battle07",
+                    "bbcs_07",
+                    "abcs_battle08",
+                    "bbcs_08",
+                    "bbcs_11",
+                    "abcs_battle12",
+                    "edcs_battle12",
+                    "abcs_battle13",
+                    "abcs_battle15",
+                    "bbcs_15",
+                    "abcs_battle16",
+                    "bbcs_16",
+                    "abcs_battle18",
+                    "bbcs_18",
+                    "abcs_battle20",
+                    "abcs_battle21",
+                    "bbcs_21",
+                    "abcs_battle26",
+                    "bbcs_26",
+                    "bscs_battle27",
+                    "abcs_battle28",
+                    "bbcs_28",
+                    "bbcs_29",
+                    "abcs_battle30",
+                    "bbcs_30",
+                    "bbcs_31",
+                    "abcs_battle32",
+                    "bbcs_32",
+                    "rbcs_battle32",
+                    "abcs_battle33",
+                    "bbcs_33",
+                    "abcs_battle34",
+                    "bbcs_34",
+                    "bbcs_35",
+                    "abcs_battle36",
+                    "bbcs_36",
+                    "abcs_battle37",
+                    "bbcs_37",
+                    "abcs_battle38",
+                    "bbcs_38",
+                    "bbcs_39",
+                    "abcs_battle40",
+                    "bbcs_40",
+                    "rbcs_battle40_1",
+                    "rbcs_battle40_2",
+                    "bbcs_41",
+                    "abcs_battle42",
+                    "bbcs_42",
+                    "abcs_battle43",
+                    "edcs_battle43",
+                    "cs_5E3C2",
+                    "cs_5E772",
+                    "cs_512BA",
+                    "cs_6283E",
+                    "cs_513A0",
+                    "cs_513BA",
+                    "cs_51374",
+                    "cs_5137A",
+                    "cs_513CE",
+                    "cs_513D6",
+                    "cs_513E2",
+                    "cs_51444",
+                    "cs_5144C",
+                    "cs_51454",
+                    "cs_5145C",
+                    "cs_5148C",
+                    "cs_5149A",
+                    "cs_51652",
+                    "cs_516A8",
+                    "cs_628C8",
+                    "cs_6290C",
+                    "cs_51742",
+                    "cs_51750",
+                    "cs_51B14",
+                    "cs_60656",
+                    "cs_606AC",
+                    "cs_606E0",
+                    "cs_606EA",
+                    "cs_60708",
+                    "cs_607DE",
+                    "cs_6093A",
+                    "cs_60B10",
+                    "cs_60BA6",
+                    "cs_60C42",
+                    "cs_60CA4",
+                    "cs_60EB2",
+                    "cs_60F18",
+                    "cs_60F64",
+                    "cs_60FA4",
+                    "cs_6060E",
+                    "cs_54CC6",
+                    "cs_54E70",
+                    "cs_54E78",
+                    "cs_54E86",
+                    "cs_54F26",
+                    "cs_55242",
+                    "cs_55288",
+                    "cs_55832",
+                    "cs_55A36",
+                    "cs_55BEE",
+                    "cs_56146",
+                    "cs_56172",
+                    "cs_56314",
+                    "cs_563B2",
+                    "cs_56422",
+                    "cs_568F6",
+                    "cs_569BC",
+                    "cs_56AE6",
+                    "cs_570B0",
+                    "cs_573EC",
+                    "cs_574A6",
+                    "cs_5766C",
+                    "cs_5779C",
+                    "cs_5797A",
+                    "cs_57AAA",
+                    "cs_57D22",
+                    "cs_58116",
+                    "cs_58310",
+                    "cs_58330",
+                    "cs_58512",
+                    "cs_585FE",
+                    "cs_58856",
+                    "cs_58AE2",
+                    "cs_58B7A",
+                    "cs_58E5C",
+                    "cs_58F5C",
+                    "cs_58F7E",
+                    "cs_58FA4",
+                    "cs_5D04E",
+                    "cs_51F88",
+                    "cs_521BA",
+                    "cs_5247C",
+                    "cs_5249E",
+                    "cs_52530",
+                    "cs_528CA",
+                    "cs_528D4",
+                    "cs_52938",
+                    "cs_52A3C",
+                    "cs_612BE",
+                    "cs_6143C",
+                    "cs_52F0C",
+                    "cs_52F24",
+                    "cs_52F40",
+                    "cs_53104",
+                    "cs_62D06",
+                    "cs_62D0E",
+                    "cs_53176",
+                    "cs_534D2",
+                    "cs_535FA",
+                    "cs_53620",
+                    "cs_5362A",
+                    "cs_53816",
+                    "cs_632EA",
+                    "cs_6335E",
+                    "cs_53996",
+                    "cs_633B2",
+                    "cs_53B66",
+                    "cs_EndingKiss",
+                    "cs_53EF4",
+                    "cs_53F2A",
+                    "cs_59656",
+                    "cs_5994E",
+                    "cs_5996E",
+                    "cs_599A4",
+                    "cs_599B2",
+                    "cs_StartSpecialBattle",
+                    "cs_LeaveSpecialBattle",
+                    "cs_5D3AA",
+                    "cs_5D3B8",
+                    "cs_59E04",
+                    "cs_59F20",
+                    "cs_59FB8",
+                    "cs_5F3A2",
+                    "cs_5F3C4",
+                    "cs_5A256",
+                    "cs_5A30C",
+                    "cs_5A31E",
+                    "cs_5A33A",
+                    "cs_5A4FE",
+                    "cs_5D63C",
+                    "cs_5D644",
+                    "cs_5D652",
+                    "cs_5D712",
+                    "cs_5D724",
+                    "cs_5D732",
+                    "cs_5A828",
+                    "cs_5A8CA",
+                    "cs_5A8E6",
+                    "cs_5A90E",
+                    "cs_5A92A",
+                    "cs_5A93A",
+                    "cs_5A956",
+                    "cs_5A97E",
+                    "cs_5A99A",
+                    "cs_5A9AA",
+                    "cs_5A9C6",
+                    "cs_5A9EE",
+                    "cs_5AA0A",
+                    "cs_5AA1A",
+                    "cs_5AA36",
+                    "cs_5AA5E",
+                    "cs_5AA7A",
+                    "cs_5ABA8",
+                    "cs_5ABCC",
+                    "cs_5ABE6",
+                    "cs_5AC04",
+                    "cs_5AC1C",
+                    "cs_5AC34",
+                    "cs_5AC4C",
+                    "cs_5AC58",
+                    "cs_5AF36",
+                    "cs_5B016",
+                    "cs_5B466",
+                    "cs_5B6C0",
+                    "cs_5DA28",
+                    "cs_5DA7A",
+                    "cs_5FA9C",
+                    "cs_5FABC",
+                    "cs_5FB30",
+                    "cs_5FB6A",
+                    "cs_5DD8E",
+                    "cs_5DD9C",
+                    "cs_5DE22",
+                    "cs_5DE2E",
+                    "cs_5DE76",
+                    "cs_5E0EE",
+                    "cs_5E0F8",
+                    "cs_5E20A",
+                    "cs_53FD8",
+                    "cs_53FE0",
+                    "cs_5F4AE",
+                    "cs_5F4B8",
+                    "cs_5F594",
+                    "cs_5FE9A",
+                    "cs_5FF06",
+                    "cs_540C0",
+                    "cs_54570",
+                    "cs_54578",
+                    "cs_600B2",
+                    "cs_600CE",
+                    "cs_5C312",
+                    "cs_5C3AA",
+                    "cs_5C3D8",
+                    "cs_5C4EE",
+                    "cs_5C622",
+                    "cs_5E27C",
+                    "cs_5E320",
+                    "cs_5E346",
+                    "cs_6150A",
+                    "cs_5EB26",
+                    "cs_5EB44",
+                    "cs_5EBFC",
+                    "cs_5ED06",
+                    "cs_5EDB8",
+                    "cs_5EF60",
+                    "cs_615E6",
+                    "cs_5C6CA",
+                    "cs_5C876",
+                    "cs_5C8D4",
+                    "cs_5C8FE",
+                    "cs_5C914",
+                    "cs_5CA5E",
+                    "cs_5CA6E",
+                    "cs_5CB34",
+                    "cs_5CBB4",
+                    "cs_5CC26",
+                    "cs_5CCF6",
+                    "cs_4FB64",
+                    "cs_4FC32",
+                    "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                    "cs_4FF5A",
+                    "cs_4FFDA",
+                    "cs_5023E",
+                    "cs_503A6",
+                    "cs_50806",
+                    "cs_50ABE",
+                    "EndCutscene",
+                    "IntroCutscene1",
+                    "IntroCutscene2",
+                    "IntroCutscene3",
+                    "IntroCutscene4",
+                    "dms_01",
+                    "data/scripting/map/debugscripts.asm#L11",
+                    "data/scripting/map/debugscripts.asm#L16",
+                    "data/scripting/map/debugscripts.asm#L24",
+                    "data/scripting/map/debugscripts.asm#L26",
+                    "data/scripting/map/debugscripts.asm#L76",
+                    "data/scripting/map/debugscripts.asm#L86"
+                  ]
+                },
+                "programTotalsSha256": {
+                  "const": "08F5D39CAC9D5F75039A31D3D55D6E0FA75C1F44F753D789D5319A47CF470B4B"
+                },
+                "programCorpusReferences": {
+                  "const": [
+                    {
+                      "field": "conditionalReads",
+                      "entryCount": 51
+                    },
+                    {
+                      "field": "directWrites",
+                      "entryCount": 53
+                    },
+                    {
+                      "field": "yesNoPromptWrites",
+                      "entryCount": 22
+                    },
+                    {
+                      "field": "battleUnlockWrites",
+                      "entryCount": 20
+                    }
+                  ]
+                },
+                "handlers": {
+                  "const": [
+                    {
+                      "handler": "csc0C_jumpIfFlagSet",
+                      "macros": [
+                        "jumpIfFlagSet"
+                      ],
+                      "address": 291864,
+                      "opcode": 12,
+                      "sourceCommandCount": 24,
+                      "cursorReadWidths": [
+                        2,
+                        4
+                      ],
+                      "statementCount": 7,
+                      "guardedStatements": [
+                        "move.w (a6)+,d1",
+                        "jsr j_CheckFlag",
+                        "beq.w loc_47428",
+                        "movea.l (a6),a6",
+                        "bra.s return_4742A",
+                        "addq.w #4,a6",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d1",
+                          "jsr j_CheckFlag",
+                          "beq.w loc_47428",
+                          "movea.l (a6),a6",
+                          "bra.s return_4742A",
+                          "addq.w #4,a6",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "jsr j_CheckFlag",
+                            "branchInstruction": "beq.w loc_47428",
+                            "fallthroughInstruction": "movea.l (a6),a6",
+                            "branchTargetInstruction": "addq.w #4,a6"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "sourceLiteralUses": [
+                          {
+                            "value": 4,
+                            "instruction": "addq.w #4,a6"
+                          }
+                        ],
+                        "mutationCallOrder": [
+                          "movea.l (a6),a6",
+                          "addq.w #4,a6"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_CheckFlag"
+                        }
+                      ]
+                    },
+                    {
+                      "handler": "csc0D_jumpIfFlagClear",
+                      "macros": [
+                        "jumpIfFlagClear"
+                      ],
+                      "address": 291884,
+                      "opcode": 13,
+                      "sourceCommandCount": 27,
+                      "cursorReadWidths": [
+                        2,
+                        4
+                      ],
+                      "statementCount": 7,
+                      "guardedStatements": [
+                        "move.w (a6)+,d1",
+                        "jsr j_CheckFlag",
+                        "bne.w loc_4743C",
+                        "movea.l (a6),a6",
+                        "bra.s return_4743E",
+                        "addq.w #4,a6",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d1",
+                          "jsr j_CheckFlag",
+                          "bne.w loc_4743C",
+                          "movea.l (a6),a6",
+                          "bra.s return_4743E",
+                          "addq.w #4,a6",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "jsr j_CheckFlag",
+                            "branchInstruction": "bne.w loc_4743C",
+                            "fallthroughInstruction": "movea.l (a6),a6",
+                            "branchTargetInstruction": "addq.w #4,a6"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "sourceLiteralUses": [
+                          {
+                            "value": 4,
+                            "instruction": "addq.w #4,a6"
+                          }
+                        ],
+                        "mutationCallOrder": [
+                          "movea.l (a6),a6",
+                          "addq.w #4,a6"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_CheckFlag"
+                        }
+                      ]
+                    },
+                    {
+                      "handler": "csc10_toggleFlag",
+                      "macros": [
+                        "csc10",
+                        "setF",
+                        "clearF"
+                      ],
+                      "address": 291962,
+                      "opcode": 16,
+                      "sourceCommandCount": 53,
+                      "cursorReadWidths": [
+                        2,
+                        2
+                      ],
+                      "statementCount": 7,
+                      "guardedStatements": [
+                        "move.w (a6)+,d1",
+                        "move.w (a6)+,d0",
+                        "bne.s loc_47488",
+                        "jsr j_ClearFlag",
+                        "bra.s return_4748E",
+                        "jsr j_SetFlag",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d1",
+                          "move.w (a6)+,d0",
+                          "bne.s loc_47488",
+                          "jsr j_ClearFlag",
+                          "bra.s return_4748E",
+                          "jsr j_SetFlag",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "move.w (a6)+,d0",
+                            "branchInstruction": "bne.s loc_47488",
+                            "fallthroughInstruction": "jsr j_ClearFlag",
+                            "branchTargetInstruction": "jsr j_SetFlag"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "sourceLiteralUses": [],
+                        "mutationCallOrder": [
+                          "jsr j_ClearFlag",
+                          "jsr j_SetFlag"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_ClearFlag"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_SetFlag"
+                        }
+                      ]
+                    },
+                    {
+                      "handler": "csc11_promptYesNoForStoryFlow",
+                      "macros": [
+                        "yesNo"
+                      ],
+                      "address": 291984,
+                      "opcode": 17,
+                      "sourceCommandCount": 22,
+                      "cursorReadWidths": [],
+                      "statementCount": 12,
+                      "guardedStatements": [
+                        "move.l a6,-(sp)",
+                        "jsr j_YesNoPrompt",
+                        "movea.l (sp)+,a6",
+                        "moveq #FLAG_INDEX_YES_NO_PROMPT,d1",
+                        "tst.w d0",
+                        "bne.s loc_474A8",
+                        "jsr j_SetFlag",
+                        "bra.s loc_474AE",
+                        "jsr j_ClearFlag",
+                        "moveq #10,d0",
+                        "jsr (Sleep).w",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.l a6,-(sp)",
+                          "jsr j_YesNoPrompt",
+                          "movea.l (sp)+,a6",
+                          "moveq #FLAG_INDEX_YES_NO_PROMPT,d1",
+                          "tst.w d0",
+                          "bne.s loc_474A8",
+                          "jsr j_SetFlag",
+                          "bra.s loc_474AE",
+                          "jsr j_ClearFlag",
+                          "moveq #10,d0",
+                          "jsr (Sleep).w",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "tst.w d0",
+                            "branchInstruction": "bne.s loc_474A8",
+                            "fallthroughInstruction": "jsr j_SetFlag",
+                            "branchTargetInstruction": "jsr j_ClearFlag"
+                          }
+                        ],
+                        "sourceConstantUses": [
+                          {
+                            "constant": "FLAG_INDEX_YES_NO_PROMPT",
+                            "value": 89,
+                            "instruction": "moveq #FLAG_INDEX_YES_NO_PROMPT,d1"
+                          }
+                        ],
+                        "sourceLiteralUses": [
+                          {
+                            "value": 10,
+                            "instruction": "moveq #10,d0"
+                          }
+                        ],
+                        "mutationCallOrder": [
+                          "move.l a6,-(sp)",
+                          "jsr j_YesNoPrompt",
+                          "movea.l (sp)+,a6",
+                          "jsr j_SetFlag",
+                          "jsr j_ClearFlag",
+                          "moveq #10,d0",
+                          "jsr (Sleep).w"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_YesNoPrompt"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_SetFlag"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_ClearFlag"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "Sleep"
+                        }
+                      ]
+                    },
+                    {
+                      "handler": "csc13_setStoryFlag",
+                      "macros": [
+                        "setStoryFlag"
+                      ],
+                      "address": 292064,
+                      "opcode": 19,
+                      "sourceCommandCount": 20,
+                      "cursorReadWidths": [
+                        2
+                      ],
+                      "statementCount": 4,
+                      "guardedStatements": [
+                        "move.w (a6)+,d1",
+                        "addi.w #BATTLE_UNLOCKED_FLAGS_START,d1",
+                        "jsr j_SetFlag",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d1",
+                          "addi.w #BATTLE_UNLOCKED_FLAGS_START,d1",
+                          "jsr j_SetFlag",
+                          "rts"
+                        ],
+                        "branchRecords": [],
+                        "sourceConstantUses": [
+                          {
+                            "constant": "BATTLE_UNLOCKED_FLAGS_START",
+                            "value": 400,
+                            "instruction": "addi.w #BATTLE_UNLOCKED_FLAGS_START,d1"
+                          }
+                        ],
+                        "sourceLiteralUses": [],
+                        "mutationCallOrder": [
+                          "addi.w #BATTLE_UNLOCKED_FLAGS_START,d1",
+                          "jsr j_SetFlag"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_SetFlag"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "callerBreakdown": {
+                  "const": {
+                    "callerHandlers": [
+                      {
+                        "handler": "csc0C_jumpIfFlagSet",
+                        "instructionTargetSiteCounts": {
+                          "Sleep": 0,
+                          "j_CheckFlag": 1,
+                          "j_ClearFlag": 0,
+                          "j_SetFlag": 0,
+                          "j_YesNoPrompt": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "CheckFlag": 1,
+                          "ClearFlag": 0,
+                          "SetFlag": 0,
+                          "Sleep": 0,
+                          "YesNoPrompt": 0
+                        }
+                      },
+                      {
+                        "handler": "csc0D_jumpIfFlagClear",
+                        "instructionTargetSiteCounts": {
+                          "Sleep": 0,
+                          "j_CheckFlag": 1,
+                          "j_ClearFlag": 0,
+                          "j_SetFlag": 0,
+                          "j_YesNoPrompt": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "CheckFlag": 1,
+                          "ClearFlag": 0,
+                          "SetFlag": 0,
+                          "Sleep": 0,
+                          "YesNoPrompt": 0
+                        }
+                      },
+                      {
+                        "handler": "csc10_toggleFlag",
+                        "instructionTargetSiteCounts": {
+                          "Sleep": 0,
+                          "j_CheckFlag": 0,
+                          "j_ClearFlag": 1,
+                          "j_SetFlag": 1,
+                          "j_YesNoPrompt": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "CheckFlag": 0,
+                          "ClearFlag": 1,
+                          "SetFlag": 1,
+                          "Sleep": 0,
+                          "YesNoPrompt": 0
+                        }
+                      },
+                      {
+                        "handler": "csc11_promptYesNoForStoryFlow",
+                        "instructionTargetSiteCounts": {
+                          "Sleep": 1,
+                          "j_CheckFlag": 0,
+                          "j_ClearFlag": 1,
+                          "j_SetFlag": 1,
+                          "j_YesNoPrompt": 1
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "CheckFlag": 0,
+                          "ClearFlag": 1,
+                          "SetFlag": 1,
+                          "Sleep": 1,
+                          "YesNoPrompt": 1
+                        }
+                      },
+                      {
+                        "handler": "csc13_setStoryFlag",
+                        "instructionTargetSiteCounts": {
+                          "Sleep": 0,
+                          "j_CheckFlag": 0,
+                          "j_ClearFlag": 0,
+                          "j_SetFlag": 1,
+                          "j_YesNoPrompt": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "CheckFlag": 0,
+                          "ClearFlag": 0,
+                          "SetFlag": 1,
+                          "Sleep": 0,
+                          "YesNoPrompt": 0
+                        }
+                      }
+                    ],
+                    "targetResolutions": [
+                      {
+                        "instructionTarget": "Sleep",
+                        "effectiveTarget": "Sleep",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_CheckFlag",
+                        "effectiveTarget": "CheckFlag",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_ClearFlag",
+                        "effectiveTarget": "ClearFlag",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_SetFlag",
+                        "effectiveTarget": "SetFlag",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_YesNoPrompt",
+                        "effectiveTarget": "YesNoPrompt",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+                        "effectiveTargetScope": "external"
+                      }
+                    ],
+                    "instructionTargetTotals": {
+                      "Sleep": 1,
+                      "j_CheckFlag": 2,
+                      "j_ClearFlag": 2,
+                      "j_SetFlag": 3,
+                      "j_YesNoPrompt": 1
+                    },
+                    "effectiveTargetTotals": {
+                      "CheckFlag": 2,
+                      "ClearFlag": 2,
+                      "SetFlag": 3,
+                      "Sleep": 1,
+                      "YesNoPrompt": 1
+                    },
+                    "internalEffectiveTargetTotals": {
+                      "CheckFlag": 0,
+                      "ClearFlag": 0,
+                      "SetFlag": 0,
+                      "Sleep": 0,
+                      "YesNoPrompt": 0
+                    },
+                    "externalEffectiveTargetTotals": {
+                      "CheckFlag": 2,
+                      "ClearFlag": 2,
+                      "SetFlag": 3,
+                      "Sleep": 1,
+                      "YesNoPrompt": 1
+                    }
+                  }
+                },
+                "sourceIdentityJoins": {
+                  "const": {
+                    "commonStatsFlags": {
+                      "contractId": "sf2-common-stats-static-v1",
+                      "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+                      "sourcePath": "code/common/stats/gameflags.asm",
+                      "sourceSha256": "1D9BA2EAD0CEA13718D20B0E96D86FD0AC01730E1C6C07A15F9E3EF875A45DD9",
+                      "symbols": [
+                        "CheckFlag",
+                        "SetFlag",
+                        "ClearFlag"
+                      ]
+                    },
+                    "yesNoOwner": {
+                      "sourcePath": "code/common/menus/yesnoprompt.asm",
+                      "sourceSha256": "CF54DD1628DB83CA94F4AACA9E854A8356BB2658A5396A32950F5F31219518CA",
+                      "symbols": [
+                        "YesNoPrompt"
+                      ]
+                    }
+                  }
+                },
+                "runtimeQuestions": {
+                  "const": [
+                    "story-state/branch-prompt-persistence-matrix"
+                  ]
+                }
+              }
+            }
+          ]
         }
       }
     }
@@ -26693,6 +27885,800 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "storyStateMacroCounts": {
+      "type": "object",
+      "required": [
+        "jumpIfFlagSet",
+        "jumpIfFlagClear",
+        "csc10",
+        "setF",
+        "clearF",
+        "yesNo",
+        "setStoryFlag"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "jumpIfFlagSet": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jumpIfFlagClear": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "csc10": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setF": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clearF": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "yesNo": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setStoryFlag": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateMacro": {
+      "type": "object",
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "aliasOf",
+        "handler",
+        "sourceCommandCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "enum": [
+            "jumpIfFlagSet",
+            "jumpIfFlagClear",
+            "csc10",
+            "setF",
+            "clearF",
+            "yesNo",
+            "setStoryFlag"
+          ]
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 89
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateEmissionRow"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "aliasOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateReference": {
+      "type": "object",
+      "required": [
+        "field",
+        "entryIndex"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "conditionalReads",
+            "directWrites",
+            "yesNoPromptWrites",
+            "battleUnlockWrites"
+          ]
+        },
+        "entryIndex": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateSourceCommand": {
+      "type": "object",
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "storyStateReference"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "macro": {
+          "enum": [
+            "jumpIfFlagSet",
+            "jumpIfFlagClear",
+            "setF",
+            "clearF",
+            "yesNo",
+            "setStoryFlag"
+          ]
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "storyStateReference": {
+          "$ref": "#/definitions/storyStateReference"
+        }
+      }
+    },
+    "storyStateSourceSite": {
+      "type": "object",
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/storyStateSourceCommand"
+          }
+        }
+      }
+    },
+    "storyStateProgramTotal": {
+      "type": "object",
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/storyStateMacroCounts"
+        }
+      }
+    },
+    "storyStateReferenceCount": {
+      "type": "object",
+      "required": [
+        "field",
+        "entryCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "conditionalReads",
+            "directWrites",
+            "yesNoPromptWrites",
+            "battleUnlockWrites"
+          ]
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateSourceLiteralUse": {
+      "type": "object",
+      "required": [
+        "value",
+        "instruction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateSectionGuard": {
+      "type": "object",
+      "required": [
+        "orderedInstructions",
+        "branchRecords",
+        "sourceConstantUses",
+        "sourceLiteralUses",
+        "mutationCallOrder"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateConstantUse"
+          }
+        },
+        "sourceLiteralUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateSourceLiteralUse"
+          }
+        },
+        "mutationCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storyStateHandler": {
+      "type": "object",
+      "required": [
+        "handler",
+        "macros",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "cursorReadWidths",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 89
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "enum": [
+              2,
+              4
+            ]
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/storyStateSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateDirectCall"
+          }
+        }
+      }
+    },
+    "storyStateInstructionCounts": {
+      "type": "object",
+      "required": [
+        "Sleep",
+        "j_CheckFlag",
+        "j_ClearFlag",
+        "j_SetFlag",
+        "j_YesNoPrompt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_CheckFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_ClearFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_SetFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_YesNoPrompt": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateEffectiveCounts": {
+      "type": "object",
+      "required": [
+        "CheckFlag",
+        "ClearFlag",
+        "SetFlag",
+        "Sleep",
+        "YesNoPrompt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "CheckFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ClearFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SetFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "YesNoPrompt": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateCaller": {
+      "type": "object",
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/storyStateInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        }
+      }
+    },
+    "storyStateResolution": {
+      "type": "object",
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "instructionTarget": {
+          "enum": [
+            "Sleep",
+            "j_CheckFlag",
+            "j_ClearFlag",
+            "j_SetFlag",
+            "j_YesNoPrompt"
+          ]
+        },
+        "effectiveTarget": {
+          "enum": [
+            "CheckFlag",
+            "ClearFlag",
+            "SetFlag",
+            "Sleep",
+            "YesNoPrompt"
+          ]
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "storyStateCallerBreakdown": {
+      "type": "object",
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateCaller"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/storyStateInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        }
+      }
+    },
+    "storyStateSourceOwner": {
+      "type": "object",
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storyStateCommonStatsFlags": {
+      "type": "object",
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "contractId": {
+          "const": "sf2-common-stats-static-v1"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storyStateSourceIdentityJoins": {
+      "type": "object",
+      "required": [
+        "commonStatsFlags",
+        "yesNoOwner"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "commonStatsFlags": {
+          "$ref": "#/definitions/storyStateCommonStatsFlags"
+        },
+        "yesNoOwner": {
+          "$ref": "#/definitions/storyStateSourceOwner"
+        }
+      }
+    },
+    "storyStateCommandFacts": {
+      "type": "object",
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "programCorpusReferences",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "macros": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "$ref": "#/definitions/storyStateMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateSourceSite"
+          }
+        },
+        "programTotals": {
+          "type": "array",
+          "minItems": 304,
+          "maxItems": 304,
+          "items": {
+            "$ref": "#/definitions/storyStateProgramTotal"
+          }
+        },
+        "programCorpusReferences": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/definitions/storyStateReferenceCount"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/definitions/storyStateHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/storyStateCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/storyStateSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "const": "story-state/branch-prompt-persistence-matrix"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        }
+      }
+    },
+    "storyStateEmissionRow": {
+      "type": "object",
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "enum": [
+            2,
+            4
+          ]
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateDirectCall": {
+      "type": "object",
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "opcode": {
+          "enum": [
+            "bsr",
+            "jsr"
+          ]
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateBranchRecord": {
+      "type": "object",
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "fallthroughInstruction",
+        "branchTargetInstruction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "testInstruction": {
+          "type": "string"
+        },
+        "branchInstruction": {
+          "type": "string"
+        },
+        "fallthroughInstruction": {
+          "type": "string"
+        },
+        "branchTargetInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateConstantUse": {
+      "type": "object",
+      "required": [
+        "constant",
+        "value",
+        "instruction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "constant": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
         }
       }
     }
