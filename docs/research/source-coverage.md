@@ -387,6 +387,14 @@ named-section branch/mutation/call guards, seven direct/effective caller identit
 resolution), and a provenance-only join to the common-stats roster source. The sole grouped H3
 follow-up is `force-state/roster-death-persistence-visible-outcomes`; story reachability, list/roster
 capacity, persistence, and visible effects are not credited as static coverage.
+The adjacent active-party/AI/follower/battle-stat slice is exact for four primary source forms: one
+`joinBatParty`, four `joinForceAI`, five `resetForceBattleStats`, and 19 `addNewFollower` sites (29
+total) across a second complete 304-row zero-inclusive program corpus. It retains four named-section
+cursor/branch/mutation/call guards, 11 direct/effective caller identities with zero-inclusive
+per-handler and derived scope maps, and source-identity joins to battle-party, activation-bit, and
+follower-owner and battle-stats-owner sources. Its grouped H3 follow-up is
+`force-state/active-party-ai-follower-runtime-matrix`; lifecycle, capacity, persistence, and visible
+effects are not credited as static coverage.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

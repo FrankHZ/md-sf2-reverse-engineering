@@ -100,6 +100,25 @@ FORCE_STATE_HANDLER_NAMES = (
 )
 FORCE_STATE_RUNTIME_QUESTIONS = ["force-state/roster-death-persistence-visible-outcomes"]
 
+# This adjacent source-faithful macro group manipulates active-party membership,
+# activation state, battle-stat reset, or follower selection.  The labels remain
+# macro labels until the grouped runtime question establishes player-visible
+# effects.
+ACTIVE_PARTY_MACRO_NAMES = (
+    "joinBatParty",
+    "joinForceAI",
+    "resetForceBattleStats",
+    "addNewFollower",
+)
+
+ACTIVE_PARTY_HANDLER_NAMES = (
+    "csc51_joinBattleParty",
+    "csc54_joinForceAi",
+    "csc55_resetCharacterBattleStats",
+    "csc56_addFollower",
+)
+ACTIVE_PARTY_RUNTIME_QUESTIONS = ["force-state/active-party-ai-follower-runtime-matrix"]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -2120,8 +2139,10 @@ def _force_state_aliases(
 
 def _force_state_program_facts(
     program_corpus: dict[str, Any],
+    *,
+    macro_names: tuple[str, ...] = FORCE_STATE_MACRO_NAMES,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Retain all 304 programs, including zero-use rows, for the bounded macros."""
+    """Retain every program, including zero-use rows, for one bounded macro group."""
     source_sites: list[dict[str, Any]] = []
     program_totals: list[dict[str, Any]] = []
     for program in program_corpus["programs"]:
@@ -2129,7 +2150,7 @@ def _force_state_program_facts(
         counts: Counter[str] = Counter()
         for command in program["commands"]:
             macro = command["macro"]
-            if macro not in FORCE_STATE_MACRO_NAMES:
+            if macro not in macro_names:
                 continue
             counts[macro] += 1
             command_rows.append(
@@ -2144,13 +2165,13 @@ def _force_state_program_facts(
             {
                 "programId": program["id"],
                 "commandCount": sum(counts.values()),
-                "macroCounts": {name: counts[name] for name in FORCE_STATE_MACRO_NAMES},
+                "macroCounts": {name: counts[name] for name in macro_names},
             }
         )
         if command_rows:
             source_sites.append({"programId": program["id"], "commands": command_rows})
     if len(program_totals) != program_corpus["summary"]["programCount"]:
-        raise ValueError("force-state zero-inclusive program domain drift")
+        raise ValueError("bounded macro group zero-inclusive program domain drift")
     return source_sites, program_totals
 
 
@@ -2412,6 +2433,188 @@ def _force_state_section_guard(
     raise ValueError(f"force-state handler guard has no macro profile: {macro}")
 
 
+def _active_party_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard the four adjacent active-party handler sections at their use sites."""
+    if macro == "joinBatParty":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w #(?P<value>-?\d+),\(\(DIALOGUE_NAME_INDEX_1-\$1000000\)\)\.w",
+                r"move\.w \(a6\)\+,d0",
+                r"jsr j_IsInBattleParty",
+                r"bne\.w @[A-Za-z_][A-Za-z0-9_]*",
+                r"move\.w d0,d6",
+                r"jsr j_UpdateForce",
+                r"lea \(\(BATTLE_PARTY_MEMBERS-\$1000000\)\)\.w,a0",
+                r"move\.w \(\(BATTLE_PARTY_MEMBERS_NUMBER-\$1000000\)\)\.w,d7",
+                r"subq\.w #(?P<value>\d+),d7",
+                r"move\.b \(a0\),d0",
+                r"jsr j_GetCurrentHp",
+                r"tst\.w d1",
+                r"beq\.w @[A-Za-z_][A-Za-z0-9_]*",
+                r"addq\.l #1,a0",
+                r"dbf d7,@[A-Za-z_][A-Za-z0-9_]*",
+                r"move\.b \(a0\),d0",
+                r"move\.w d0,\(\(DIALOGUE_NAME_INDEX_1-\$1000000\)\)\.w",
+                r"jsr j_LeaveBattleParty",
+                r"move\.b d6,d0",
+                r"jsr j_JoinBattleParty",
+                r"rts",
+            ],
+            owner="csc51_joinBattleParty",
+        )
+        initialization_match = re.fullmatch(
+            r"move\.w #(?P<value>-?\d+),\(\(DIALOGUE_NAME_INDEX_1-\$1000000\)\)\.w",
+            ordered[0],
+        )
+        decrement_match = re.fullmatch(r"subq\.w #(?P<value>\d+),d7", ordered[8])
+        if initialization_match is None or decrement_match is None:
+            raise ValueError("active-party battle-party loop decrement use shape drift")
+        if _literal(initialization_match.group("value")) != -1:
+            raise ValueError("active-party battle-party initialization source use drift")
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[2],
+                    "branchInstruction": ordered[3],
+                    "fallthroughInstruction": ordered[4],
+                    "branchTargetInstruction": ordered[20],
+                },
+                {
+                    "testInstruction": ordered[11],
+                    "branchInstruction": ordered[12],
+                    "fallthroughInstruction": ordered[13],
+                    "branchTargetInstruction": ordered[15],
+                },
+            ],
+            "sourceConstantUses": [],
+            "sourceExpressionUses": [],
+            "sourceLiteralUses": [
+                {"value": _literal(initialization_match.group("value")), "instruction": ordered[0]},
+                {"value": _literal(decrement_match.group("value")), "instruction": ordered[8]},
+            ],
+            "mutationCallOrder": [ordered[0], ordered[16], ordered[17], ordered[19]],
+        }
+    if macro == "joinForceAI":
+        if "AIBITFIELD_AI_CONTROLLED" not in equates:
+            raise ValueError("active-party AI-control source constant is missing")
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"jsr j_GetActivationBitfield",
+                r"move\.w \(a6\)\+,d2",
+                r"bne\.s @[A-Za-z_][A-Za-z0-9_]*",
+                r"andi\.w #\(\$FFFF-AIBITFIELD_AI_CONTROLLED\),d1",
+                r"bra\.s @[A-Za-z_][A-Za-z0-9_]*",
+                r"ori\.w #AIBITFIELD_AI_CONTROLLED,d1",
+                r"jsr j_JoinForce",
+                r"jsr j_SetActivationBitfield",
+                r"rts",
+            ],
+            owner="csc54_joinForceAi",
+        )
+        clear_mask = 0xFFFF - equates["AIBITFIELD_AI_CONTROLLED"]
+        if clear_mask < 0:
+            raise ValueError("active-party AI-control clear mask source relation drift")
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[2],
+                    "branchInstruction": ordered[3],
+                    "fallthroughInstruction": ordered[4],
+                    "branchTargetInstruction": ordered[6],
+                }
+            ],
+            "sourceConstantUses": [
+                {
+                    "constant": "AIBITFIELD_AI_CONTROLLED",
+                    "value": equates["AIBITFIELD_AI_CONTROLLED"],
+                    "instruction": ordered[4],
+                },
+                {
+                    "constant": "AIBITFIELD_AI_CONTROLLED",
+                    "value": equates["AIBITFIELD_AI_CONTROLLED"],
+                    "instruction": ordered[6],
+                },
+            ],
+            "sourceExpressionUses": [
+                {
+                    "expression": "($FFFF-AIBITFIELD_AI_CONTROLLED)",
+                    "resolvedValue": clear_mask,
+                    "instruction": ordered[4],
+                }
+            ],
+            "sourceLiteralUses": [],
+            "mutationCallOrder": [ordered[4], ordered[6], ordered[7], ordered[8]],
+        }
+    if macro == "resetForceBattleStats":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [r"jsr ResetAlliesBattleStats", r"rts"],
+            owner="csc55_resetCharacterBattleStats",
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [],
+            "sourceConstantUses": [],
+            "sourceExpressionUses": [],
+            "sourceLiteralUses": [],
+            "mutationCallOrder": [ordered[0]],
+        }
+    if macro == "addNewFollower":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"moveq #0,d1",
+                r"lea \(\(EXPLORATION_ENTITIES-\$1000000\)\)\.w,a0",
+                r"cmpi\.b #(?P<sentinel>-?\d+),\(a0\)",
+                r"beq\.w @[A-Za-z_][A-Za-z0-9_]*",
+                r"move\.b \(a0\)\+,d1",
+                r"bra\.s @[A-Za-z_][A-Za-z0-9_]*",
+                r"move\.w #(?P<d2>\$?[0-9A-Fa-f]+),d2",
+                r"move\.w #(?P<d3>\$?[0-9A-Fa-f]+),d3",
+                r"jsr AddFollower",
+                r"rts",
+            ],
+            owner="csc56_addFollower",
+        )
+        sentinel_match = re.fullmatch(r"cmpi\.b #(?P<value>-?\d+),\(a0\)", ordered[4])
+        d2_match = re.fullmatch(r"move\.w #(?P<value>\$?[0-9A-Fa-f]+),d2", ordered[8])
+        d3_match = re.fullmatch(r"move\.w #(?P<value>\$?[0-9A-Fa-f]+),d3", ordered[9])
+        if sentinel_match is None or d2_match is None or d3_match is None:
+            raise ValueError("active-party follower literal use shape drift")
+        sentinel = _literal(sentinel_match.group("value"))
+        if sentinel != -1:
+            raise ValueError("active-party follower sentinel source use drift")
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[4],
+                    "branchInstruction": ordered[5],
+                    "fallthroughInstruction": ordered[6],
+                    "branchTargetInstruction": ordered[8],
+                }
+            ],
+            "sourceConstantUses": [],
+            "sourceExpressionUses": [],
+            "sourceLiteralUses": [
+                {"value": sentinel, "instruction": ordered[4]},
+                {"value": _literal(d2_match.group("value")), "instruction": ordered[8]},
+                {"value": _literal(d3_match.group("value")), "instruction": ordered[9]},
+            ],
+            "mutationCallOrder": [ordered[6], ordered[8], ordered[9], ordered[10]],
+        }
+    raise ValueError(f"active-party handler guard has no macro profile: {macro}")
+
+
 def _force_state_join_comment_bit(
     disasm: Path, handler: dict[str, Any], section_guard: dict[str, Any]
 ) -> None:
@@ -2434,6 +2637,90 @@ def _force_state_join_comment_bit(
     match = re.fullmatch(r"bclr #(?P<bit>\d+),d0", instruction)
     if match is None or int(match.group("bit")) != bit:
         raise ValueError("force-state join bit comment/use-site drift")
+
+
+def _force_state_caller_breakdown(
+    disasm: Path,
+    handlers: list[dict[str, Any]],
+    handler_names: tuple[str, ...],
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Keep direct/effective call identities and zero rows for a named handler group."""
+    instruction_targets = sorted(
+        {call["instructionTarget"] for calls in direct_call_rows.values() for call in calls}
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    bounded_handlers = {
+        handler["name"]: handler
+        for handler in (_handler_by_name(handlers, name) for name in handler_names)
+    }
+    target_resolutions = []
+    for target in instruction_targets:
+        effective_target = aliases.get(target, {}).get("effectiveTarget", target)
+        effective_target_owner = bounded_handlers.get(effective_target)
+        target_resolutions.append(
+            {
+                "instructionTarget": target,
+                "effectiveTarget": effective_target,
+                "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+                "effectiveTargetScope": (
+                    "internal" if effective_target_owner is not None else "external"
+                ),
+            }
+        )
+    effective_targets = sorted({row["effectiveTarget"] for row in target_resolutions})
+    if len(effective_targets) != len(target_resolutions):
+        raise ValueError("force-state effective target declaration is ambiguous")
+    resolved_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_handlers = []
+    for handler_name in handler_names:
+        calls = direct_call_rows[handler_name]
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in calls:
+            instruction_counts[call["instructionTarget"]] += 1
+            effective_counts[resolved_by_instruction[call["instructionTarget"]]] += 1
+        caller_handlers.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_handlers)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_handlers)
+        for target in effective_targets
+    }
+    scope_by_effective_target = {
+        row["effectiveTarget"]: row["effectiveTargetScope"] for row in target_resolutions
+    }
+    if set(scope_by_effective_target) != set(effective_totals):
+        raise ValueError("force-state effective target scope coverage drift")
+
+    def scoped_effective_totals(scope: str) -> dict[str, int]:
+        return {
+            target: effective_totals[target]
+            if scope_by_effective_target[target] == scope
+            else 0
+            for target in effective_totals
+        }
+
+    return {
+        "callerHandlers": caller_handlers,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalEffectiveTargetTotals": scoped_effective_totals("internal"),
+        "externalEffectiveTargetTotals": scoped_effective_totals("external"),
+    }
 
 
 def _force_state_command_facts(
@@ -2501,70 +2788,14 @@ def _force_state_command_facts(
                 "directCalls": direct_calls,
             }
         )
-    instruction_targets = sorted(
-        {call["instructionTarget"] for calls in direct_call_rows.values() for call in calls}
+    caller_breakdown = _force_state_caller_breakdown(
+        disasm,
+        handlers,
+        FORCE_STATE_HANDLER_NAMES,
+        direct_call_rows,
+        addresses,
+        rom,
     )
-    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
-    bounded_handlers = {
-        handler["name"]: handler
-        for handler in (_handler_by_name(handlers, name) for name in FORCE_STATE_HANDLER_NAMES)
-    }
-    target_resolutions = []
-    for target in instruction_targets:
-        effective_target = aliases.get(target, {}).get("effectiveTarget", target)
-        effective_target_owner = bounded_handlers.get(effective_target)
-        target_resolutions.append(
-            {
-                "instructionTarget": target,
-                "effectiveTarget": effective_target,
-                "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
-                "effectiveTargetScope": (
-                    "internal" if effective_target_owner is not None else "external"
-                ),
-            }
-        )
-    effective_targets = sorted({row["effectiveTarget"] for row in target_resolutions})
-    if len(effective_targets) != len(target_resolutions):
-        raise ValueError("force-state effective target declaration is ambiguous")
-    resolved_by_instruction = {
-        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
-    }
-    caller_handlers = []
-    for handler_name in FORCE_STATE_HANDLER_NAMES:
-        calls = direct_call_rows[handler_name]
-        instruction_counts = {target: 0 for target in instruction_targets}
-        effective_counts = {target: 0 for target in effective_targets}
-        for call in calls:
-            instruction_counts[call["instructionTarget"]] += 1
-            effective_counts[resolved_by_instruction[call["instructionTarget"]]] += 1
-        caller_handlers.append(
-            {
-                "handler": handler_name,
-                "instructionTargetSiteCounts": instruction_counts,
-                "effectiveTargetSiteCounts": effective_counts,
-            }
-        )
-    instruction_totals = {
-        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_handlers)
-        for target in instruction_targets
-    }
-    effective_totals = {
-        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_handlers)
-        for target in effective_targets
-    }
-    scope_by_effective_target = {
-        row["effectiveTarget"]: row["effectiveTargetScope"] for row in target_resolutions
-    }
-    if set(scope_by_effective_target) != set(effective_totals):
-        raise ValueError("force-state effective target scope coverage drift")
-
-    def scoped_effective_totals(scope: str) -> dict[str, int]:
-        return {
-            target: effective_totals[target]
-            if scope_by_effective_target[target] == scope
-            else 0
-            for target in effective_totals
-        }
 
     stats = build_stats_inventory(upstream_path)
     battleparty = next(
@@ -2590,14 +2821,7 @@ def _force_state_command_facts(
         "sourceSites": source_sites,
         "programTotals": program_totals,
         "handlers": handler_rows,
-        "callerBreakdown": {
-            "callerHandlers": caller_handlers,
-            "targetResolutions": target_resolutions,
-            "instructionTargetTotals": instruction_totals,
-            "effectiveTargetTotals": effective_totals,
-            "internalEffectiveTargetTotals": scoped_effective_totals("internal"),
-            "externalEffectiveTargetTotals": scoped_effective_totals("external"),
-        },
+        "callerBreakdown": caller_breakdown,
         "commonStatsIdentity": {
             "contractId": stats["id"],
             "upstreamCommit": stats["upstream"]["commit"],
@@ -2606,6 +2830,156 @@ def _force_state_command_facts(
             "services": sorted(required_services),
         },
         "runtimeQuestions": FORCE_STATE_RUNTIME_QUESTIONS,
+    }
+
+
+def _active_party_source_identity_joins(
+    disasm: Path, upstream_path: Path
+) -> dict[str, Any]:
+    """Join only the source owners that the active-party handlers call directly."""
+    stats = build_stats_inventory(upstream_path)
+    stats_sources = {
+        row["path"]: row
+        for row in stats["files"]
+        if row["path"]
+        in {
+            "code/common/stats/battleparty.asm",
+            "code/common/stats/combatantstats_1.asm",
+            "code/common/stats/combatantstats_2.asm",
+        }
+    }
+    expected_stats_symbols = {
+        "code/common/stats/battleparty.asm": [
+            "IsInBattleParty",
+            "JoinBattleParty",
+            "JoinForce",
+            "LeaveBattleParty",
+            "UpdateForce",
+        ],
+        "code/common/stats/combatantstats_1.asm": ["GetActivationBitfield"],
+        "code/common/stats/combatantstats_2.asm": ["SetActivationBitfield"],
+    }
+    if set(stats_sources) != set(expected_stats_symbols):
+        raise ValueError("active-party common-stats source identity coverage drift")
+    common_stats_sources = []
+    for path, symbols in expected_stats_symbols.items():
+        row = stats_sources[path]
+        if not set(symbols) <= set(row["globalLabels"]):
+            raise ValueError(f"active-party common-stats symbol identity drift: {path}")
+        common_stats_sources.append(
+            {"sourcePath": path, "sourceSha256": row["sha256"], "symbols": symbols}
+        )
+
+    follower_path = "code/common/scripting/entity/entityfunctions_2.asm"
+    follower_source = read_upstream_text(disasm / follower_path)
+    if re.search(r"^AddFollower:\s*$", follower_source, re.MULTILINE) is None:
+        raise ValueError("active-party follower owner symbol identity drift")
+    battle_stats_path = "code/common/scripting/map/resetalliesstats.asm"
+    battle_stats_source = read_upstream_text(disasm / battle_stats_path)
+    if re.search(r"^ResetAlliesBattleStats:\s*$", battle_stats_source, re.MULTILINE) is None:
+        raise ValueError("active-party battle-stats owner symbol identity drift")
+    return {
+        "commonStats": {
+            "contractId": stats["id"],
+            "upstreamCommit": stats["upstream"]["commit"],
+            "sources": common_stats_sources,
+        },
+        "followerOwner": {
+            "sourcePath": follower_path,
+            "sourceSha256": hashlib.sha256(follower_source.encode()).hexdigest().upper(),
+            "symbols": ["AddFollower"],
+        },
+        "battleStatsOwner": {
+            "sourcePath": battle_stats_path,
+            "sourceSha256": hashlib.sha256(battle_stats_source.encode()).hexdigest().upper(),
+            "symbols": ["ResetAlliesBattleStats"],
+        },
+    }
+
+
+def _active_party_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build the active-party/AI/follower four-command static contract."""
+    macro_to_handler = dict(zip(ACTIVE_PARTY_MACRO_NAMES, ACTIVE_PARTY_HANDLER_NAMES, strict=True))
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ACTIVE_PARTY_MACRO_NAMES
+    )
+    source_counts: Counter[str] = Counter()
+    for site in source_sites:
+        source_counts.update(command["macro"] for command in site["commands"])
+    for macro in ACTIVE_PARTY_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"active-party program total drift: {macro}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for macro, handler_name in macro_to_handler.items():
+        contract = macros[macro]
+        if contract["kind"] != "command" or contract["aliasOf"] is not None:
+            raise ValueError(f"active-party macro is not primary: {macro}")
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"active-party dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"active-party handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        direct_calls = _force_state_direct_calls(statements)
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "cursorReadWidths": [
+                    field["widthBytes"] for field in contract["operandLayout"]
+                ],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": _active_party_section_guard(macro, statements, equates),
+                "directCalls": direct_calls,
+            }
+        )
+    return {
+        "macros": [
+            {
+                "name": name,
+                "opcode": macros[name]["opcode"],
+                "encodedBytes": macros[name]["encodedBytes"],
+                "operandBytes": macros[name]["operandBytes"],
+                "operandLayout": macros[name]["operandLayout"],
+                "parameterOrdinals": macros[name]["parameterOrdinals"],
+                "handler": macro_to_handler[name],
+                "sourceCommandCount": source_counts[name],
+            }
+            for name in ACTIVE_PARTY_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": _force_state_caller_breakdown(
+            disasm,
+            handlers,
+            ACTIVE_PARTY_HANDLER_NAMES,
+            direct_call_rows,
+            addresses,
+            rom,
+        ),
+        "sourceIdentityJoins": _active_party_source_identity_joins(disasm, upstream_path),
+        "runtimeQuestions": ACTIVE_PARTY_RUNTIME_QUESTIONS,
     }
 
 
@@ -2651,6 +3025,17 @@ def build_map_script_engine_contract(
         upstream_path,
     )
     force_state_command_facts = _force_state_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+        upstream_path,
+    )
+    force_state_command_facts["activePartyCommandFacts"] = _active_party_command_facts(
         disasm,
         source_equates,
         macros,
@@ -2811,6 +3196,7 @@ def build_map_script_engine_contract(
             "entity-camera-text-wait-and-transition-frame-timing",
             "palette-fade-and-vdp-visible-presentation",
             *FORCE_STATE_RUNTIME_QUESTIONS,
+            *ACTIVE_PARTY_RUNTIME_QUESTIONS,
         ],
     }
 

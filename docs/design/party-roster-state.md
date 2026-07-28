@@ -1,8 +1,8 @@
 # Party and Roster State Contract
 
-- **Confirmed original structure:** six source-named map-script command forms, their physical stream
+- **Confirmed original structure:** ten source-named map-script command forms, their physical stream
   layouts, named handler branch/mutation/call order, source-site corpus, direct/effective caller
-  identity, and the provenance link to the common-stats roster source.
+  identity, and provenance joins to the common-stats and follower-owner sources.
 - **Inferred original behavior:** none in this contract.
 - **Unknown original behavior:** normal-story reachability, roster/list capacity, save persistence,
   and player-visible roster/death outcomes.
@@ -11,10 +11,12 @@
 ## Import Boundary
 
 A remake importer MUST retain the source forms `join`, `jumpIfDefeatedByLastAttack`, `jumpIfDead`,
-`allyDefeated`, `updateDefeatedAllies`, and `reviveAlly` as distinct ordered commands. It MUST preserve
+`allyDefeated`, `updateDefeatedAllies`, `reviveAlly`, `joinBatParty`, `joinForceAI`,
+`resetForceBattleStats`, and `addNewFollower` as distinct ordered commands. It MUST preserve
 each command's original byte width, operand width and stream offset, source program identity, command
-index, and raw operand text. It MUST retain all 304 program-total rows, including zero rows and the
-two zero-use forms; a zero source-use count does not establish runtime unreachability.
+index, and raw operand text. It MUST retain both complete 304-row program-total corpora, including
+zero rows and the two zero-use roster/death forms; a zero source-use count does not establish runtime
+unreachability.
 
 The importer MUST preserve macro and handler labels separately. In particular,
 `jumpIfDefeatedByLastAttack` is the source macro label for handler
@@ -39,22 +41,41 @@ The imported representation MUST preserve the following source-confirmed instruc
 - `reviveAlly` has one word. Its equality path decrements the source-named length, while the
   non-equality path copies a byte and advances both pointers; no capacity or persistence policy is
   supplied by this rule.
+- `joinBatParty` has one word. It retains the initial source `-1` write to
+  `DIALOGUE_NAME_INDEX_1` before the membership test, the `BATTLE_PARTY_MEMBERS_NUMBER` read, the
+  source `subq.w #2,d7` instruction, the current-HP zero branch, and the later replacement write
+  before `LeaveBattleParty` then `JoinBattleParty`. These state-write/call order facts do not define a
+  capacity or active/dead lifecycle.
+- `joinForceAI` has two words. Its second-word `bne` polarity, clear/set uses of
+  `AIBITFIELD_AI_CONTROLLED`, set-path-only `JoinForce` call, and common
+  `SetActivationBitfield` tail are separate ordered facts. A remake MUST NOT replace the source macro
+  label with an asserted “on/off” interpretation from its macro comment.
+- `resetForceBattleStats` has no operands and retains the exact `ResetAlliesBattleStats` service call.
+- `addNewFollower` has one word. It retains the `-1` scan sentinel, the last observed byte in `d1`,
+  the fixed `$FFE8`/`0` `d2`/`d3` source arguments, and the final `AddFollower` call order; none of
+  these register facts defines a follower lifecycle or visible effect.
 
 The imported direct-call graph MUST retain instruction target and effective target separately. A
 jump-interface alias is not erased: `j_JoinForce` remains the instruction target while `JoinForce`
 is the resolved target. The connection to `sf2-common-stats-static-v1` is source provenance for
 `code/common/stats/battleparty.asm` and its `JoinForce`/`UpdateForce` labels; it is not permission to
-copy sibling fixture data into this contract.
+copy sibling fixture data into this contract. The active-party group additionally retains the
+`GetActivationBitfield`/`SetActivationBitfield` owner paths, the `AddFollower` owner path, and the
+`ResetAlliesBattleStats` owner path as provenance identities only.
 
 ## Evidence and Runtime Boundary
+
+Evidence date: 2026-07-27.
 
 Executable evidence is fixture ID `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field `forceStateCommandFacts`; its verifier is
 `src/sf2tool/h2/map_script_engine.py`. It pins the upstream commit, US ROM hash, handler addresses,
 full 304-program source-site/total corpus, section guards, caller maps, and common-stats provenance
-identity.
+identity. The nested `forceStateCommandFacts.activePartyCommandFacts` field pins the four additional
+forms, their 29 sites, source-owner identities, and their own 304-row total corpus.
 
-`force-state/roster-death-persistence-visible-outcomes` remains the single grouped H3 question.
-Until it is observed, a remake MUST define its own save, capacity, roster membership, death/revive,
-and visible presentation policy explicitly rather than treating these static operations as a complete
-gameplay lifecycle.
+`force-state/roster-death-persistence-visible-outcomes` and
+`force-state/active-party-ai-follower-runtime-matrix` are the grouped H3 questions. Until they are
+observed, a remake MUST define its own save, capacity, roster membership, death/revive, activation,
+follower, and visible presentation policy explicitly rather than treating these static operations as a
+complete gameplay lifecycle.

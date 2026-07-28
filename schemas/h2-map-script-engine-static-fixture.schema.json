@@ -127,7 +127,14 @@
           "type": "array"
         },
         "runtimeQuestions": {
-          "type": "array"
+          "type": "array",
+          "const": [
+            "caller-dependent-story-branch-reachability-and-persistence",
+            "entity-camera-text-wait-and-transition-frame-timing",
+            "palette-fade-and-vdp-visible-presentation",
+            "force-state/roster-death-persistence-visible-outcomes",
+            "force-state/active-party-ai-follower-runtime-matrix"
+          ]
         },
         "dialogueCommandFacts": {
           "allOf": [
@@ -20142,7 +20149,4106 @@
                 },
                 "runtimeQuestions": [
                   "force-state/roster-death-persistence-visible-outcomes"
-                ]
+                ],
+                "activePartyCommandFacts": {
+                  "macros": [
+                    {
+                      "name": "joinBatParty",
+                      "opcode": 81,
+                      "encodedBytes": 4,
+                      "operandBytes": 2,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "handler": "csc51_joinBattleParty",
+                      "sourceCommandCount": 1
+                    },
+                    {
+                      "name": "joinForceAI",
+                      "opcode": 84,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 2,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2
+                      ],
+                      "handler": "csc54_joinForceAi",
+                      "sourceCommandCount": 4
+                    },
+                    {
+                      "name": "resetForceBattleStats",
+                      "opcode": 85,
+                      "encodedBytes": 2,
+                      "operandBytes": 0,
+                      "operandLayout": [],
+                      "parameterOrdinals": [],
+                      "handler": "csc55_resetCharacterBattleStats",
+                      "sourceCommandCount": 5
+                    },
+                    {
+                      "name": "addNewFollower",
+                      "opcode": 86,
+                      "encodedBytes": 4,
+                      "operandBytes": 2,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "handler": "csc56_addFollower",
+                      "sourceCommandCount": 19
+                    }
+                  ],
+                  "sourceSites": [
+                    {
+                      "programId": "abcs_battle01",
+                      "commands": [
+                        {
+                          "commandIndex": 1,
+                          "sourceLine": 5,
+                          "macro": "resetForceBattleStats",
+                          "arguments": []
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "abcs_battle26",
+                      "commands": [
+                        {
+                          "commandIndex": 70,
+                          "sourceLine": 97,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_HIGINS"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "abcs_battle32",
+                      "commands": [
+                        {
+                          "commandIndex": 39,
+                          "sourceLine": 53,
+                          "macro": "joinForceAI",
+                          "arguments": [
+                            "ALLY_JARO",
+                            "$0"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "rbcs_battle32",
+                      "commands": [
+                        {
+                          "commandIndex": 15,
+                          "sourceLine": 19,
+                          "macro": "joinForceAI",
+                          "arguments": [
+                            "ALLY_JARO",
+                            "$FFFF"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "bbcs_33",
+                      "commands": [
+                        {
+                          "commandIndex": 51,
+                          "sourceLine": 79,
+                          "macro": "joinBatParty",
+                          "arguments": [
+                            "ALLY_FRAYJA"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5E772",
+                      "commands": [
+                        {
+                          "commandIndex": 50,
+                          "sourceLine": 64,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_TAYA"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_512BA",
+                      "commands": [
+                        {
+                          "commandIndex": 5,
+                          "sourceLine": 185,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_KIWI"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_55A36",
+                      "commands": [
+                        {
+                          "commandIndex": 60,
+                          "sourceLine": 84,
+                          "macro": "joinForceAI",
+                          "arguments": [
+                            "ALLY_PETER",
+                            "$FFFF"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_55BEE",
+                      "commands": [
+                        {
+                          "commandIndex": 131,
+                          "sourceLine": 317,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "139"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_56146",
+                      "commands": [
+                        {
+                          "commandIndex": 7,
+                          "sourceLine": 209,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_MAY"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_56AE6",
+                      "commands": [
+                        {
+                          "commandIndex": 33,
+                          "sourceLine": 161,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_RICK"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_57AAA",
+                      "commands": [
+                        {
+                          "commandIndex": 110,
+                          "sourceLine": 148,
+                          "macro": "joinForceAI",
+                          "arguments": [
+                            "ALLY_PETER",
+                            "$0"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5249E",
+                      "commands": [
+                        {
+                          "commandIndex": 1,
+                          "sourceLine": 35,
+                          "macro": "resetForceBattleStats",
+                          "arguments": []
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5A8E6",
+                      "commands": [
+                        {
+                          "commandIndex": 5,
+                          "sourceLine": 252,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_ERIC"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5A92A",
+                      "commands": [
+                        {
+                          "commandIndex": 2,
+                          "sourceLine": 263,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_ERIC"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5A956",
+                      "commands": [
+                        {
+                          "commandIndex": 5,
+                          "sourceLine": 277,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_RANDOLF"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5A99A",
+                      "commands": [
+                        {
+                          "commandIndex": 2,
+                          "sourceLine": 288,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_RANDOLF"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5A9C6",
+                      "commands": [
+                        {
+                          "commandIndex": 5,
+                          "sourceLine": 302,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_TYRIN"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5AA0A",
+                      "commands": [
+                        {
+                          "commandIndex": 2,
+                          "sourceLine": 313,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_TYRIN"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5AA36",
+                      "commands": [
+                        {
+                          "commandIndex": 5,
+                          "sourceLine": 327,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_KARNA"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5AA7A",
+                      "commands": [
+                        {
+                          "commandIndex": 2,
+                          "sourceLine": 338,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_KARNA"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5E20A",
+                      "commands": [
+                        {
+                          "commandIndex": 7,
+                          "sourceLine": 83,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_ZYNK"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_615E6",
+                      "commands": [
+                        {
+                          "commandIndex": 794,
+                          "sourceLine": 1124,
+                          "macro": "resetForceBattleStats",
+                          "arguments": []
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_5CBB4",
+                      "commands": [
+                        {
+                          "commandIndex": 28,
+                          "sourceLine": 97,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_CLAUDE"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_503A6",
+                      "commands": [
+                        {
+                          "commandIndex": 1,
+                          "sourceLine": 88,
+                          "macro": "resetForceBattleStats",
+                          "arguments": []
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "cs_50806",
+                      "commands": [
+                        {
+                          "commandIndex": 50,
+                          "sourceLine": 382,
+                          "macro": "resetForceBattleStats",
+                          "arguments": []
+                        }
+                      ]
+                    },
+                    {
+                      "programId": "dms_01",
+                      "commands": [
+                        {
+                          "commandIndex": 1,
+                          "sourceLine": 5,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_SLADE"
+                          ]
+                        },
+                        {
+                          "commandIndex": 2,
+                          "sourceLine": 6,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_JAHA"
+                          ]
+                        },
+                        {
+                          "commandIndex": 3,
+                          "sourceLine": 7,
+                          "macro": "addNewFollower",
+                          "arguments": [
+                            "ALLY_ZYNK"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "programTotals": [
+                    {
+                      "programId": "cs_45284",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_45348",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_453F2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_45470",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "ms_BowieShrinkIn",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "ms_BowieGrowOut",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle00",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle01",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 1,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_01",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "rbcs_battle01",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_03",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle04",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_04",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle05",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "edcs_battle5",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_06",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle07",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_07",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle08",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_08",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_11",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle12",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "edcs_battle12",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle13",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle15",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_15",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle16",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_16",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle18",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_18",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle20",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle21",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_21",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle26",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "bbcs_26",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bscs_battle27",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle28",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_28",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_29",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle30",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_30",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_31",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle32",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 1,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_32",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "rbcs_battle32",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 1,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle33",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_33",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 1,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle34",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_34",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_35",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle36",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_36",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle37",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_37",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle38",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_38",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_39",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle40",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_40",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "rbcs_battle40_1",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "rbcs_battle40_2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_41",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle42",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "bbcs_42",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "abcs_battle43",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "edcs_battle43",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E3C2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E772",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_512BA",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_6283E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_513A0",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_513BA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51374",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5137A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_513CE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_513D6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_513E2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51444",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5144C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51454",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5145C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5148C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5149A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51652",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_516A8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_628C8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_6290C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51742",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51750",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51B14",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60656",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_606AC",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_606E0",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_606EA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60708",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_607DE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_6093A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60B10",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60BA6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60C42",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60CA4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60EB2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60F18",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60F64",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_60FA4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_6060E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54CC6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54E70",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54E78",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54E86",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54F26",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_55242",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_55288",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_55832",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_55A36",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 1,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_55BEE",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_56146",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_56172",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_56314",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_563B2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_56422",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_568F6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_569BC",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_56AE6",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_570B0",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_573EC",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_574A6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5766C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5779C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5797A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_57AAA",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 1,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_57D22",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58116",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58310",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58330",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58512",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_585FE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58856",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58AE2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58B7A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58E5C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58F5C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58F7E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_58FA4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D04E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_51F88",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_521BA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5247C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5249E",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 1,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_52530",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_528CA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_528D4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_52938",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_52A3C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_612BE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_6143C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_52F0C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_52F24",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_52F40",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53104",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_62D06",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_62D0E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53176",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_534D2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_535FA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53620",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5362A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53816",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_632EA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_6335E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53996",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_633B2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53B66",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_EndingKiss",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53EF4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53F2A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_59656",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5994E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5996E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_599A4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_599B2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_StartSpecialBattle",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_LeaveSpecialBattle",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D3AA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D3B8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_59E04",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_59F20",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_59FB8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5F3A2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5F3C4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A256",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A30C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A31E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A33A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A4FE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D63C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D644",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D652",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D712",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D724",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5D732",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A828",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A8CA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A8E6",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5A90E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A92A",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5A93A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A956",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5A97E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A99A",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5A9AA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5A9C6",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5A9EE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AA0A",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5AA1A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AA36",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5AA5E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AA7A",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5ABA8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5ABCC",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5ABE6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AC04",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AC1C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AC34",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AC4C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AC58",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5AF36",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5B016",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5B466",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5B6C0",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DA28",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DA7A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5FA9C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5FABC",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5FB30",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5FB6A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DD8E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DD9C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DE22",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DE2E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5DE76",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E0EE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E0F8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E20A",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_53FD8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_53FE0",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5F4AE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5F4B8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5F594",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5FE9A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5FF06",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_540C0",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54570",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_54578",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_600B2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_600CE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C312",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C3AA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C3D8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C4EE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C622",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E27C",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E320",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5E346",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_6150A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5EB26",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5EB44",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5EBFC",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5ED06",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5EDB8",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5EF60",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_615E6",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 1,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C6CA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C876",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C8D4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C8FE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5C914",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5CA5E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5CA6E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5CB34",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5CBB4",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 1
+                      }
+                    },
+                    {
+                      "programId": "cs_5CC26",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5CCF6",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_4FB64",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_4FC32",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_4FF5A",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_4FFDA",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_5023E",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_503A6",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 1,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_50806",
+                      "commandCount": 1,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 1,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "cs_50ABE",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "EndCutscene",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "IntroCutscene1",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "IntroCutscene2",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "IntroCutscene3",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "IntroCutscene4",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "dms_01",
+                      "commandCount": 3,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 3
+                      }
+                    },
+                    {
+                      "programId": "data/scripting/map/debugscripts.asm#L11",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "data/scripting/map/debugscripts.asm#L16",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "data/scripting/map/debugscripts.asm#L24",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "data/scripting/map/debugscripts.asm#L26",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "data/scripting/map/debugscripts.asm#L76",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    },
+                    {
+                      "programId": "data/scripting/map/debugscripts.asm#L86",
+                      "commandCount": 0,
+                      "macroCounts": {
+                        "joinBatParty": 0,
+                        "joinForceAI": 0,
+                        "resetForceBattleStats": 0,
+                        "addNewFollower": 0
+                      }
+                    }
+                  ],
+                  "handlers": [
+                    {
+                      "macro": "joinBatParty",
+                      "handler": "csc51_joinBattleParty",
+                      "address": 290562,
+                      "opcode": 81,
+                      "cursorReadWidths": [
+                        2
+                      ],
+                      "statementCount": 25,
+                      "guardedStatements": [
+                        "move.w #-1,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                        "nop",
+                        "move.w (a6)+,d0",
+                        "jsr j_IsInBattleParty",
+                        "bne.w @Return",
+                        "move.w d0,d6",
+                        "jsr j_UpdateForce",
+                        "lea ((BATTLE_PARTY_MEMBERS-$1000000)).w,a0",
+                        "nop",
+                        "move.w ((BATTLE_PARTY_MEMBERS_NUMBER-$1000000)).w,d7",
+                        "nop",
+                        "subq.w #2,d7",
+                        "move.b (a0),d0",
+                        "jsr j_GetCurrentHp",
+                        "tst.w d1",
+                        "beq.w @ReplaceLastActiveMember",
+                        "addq.l #1,a0",
+                        "dbf d7,@Loop",
+                        "move.b (a0),d0",
+                        "move.w d0,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                        "nop",
+                        "jsr j_LeaveBattleParty",
+                        "move.b d6,d0",
+                        "jsr j_JoinBattleParty",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w #-1,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                          "move.w (a6)+,d0",
+                          "jsr j_IsInBattleParty",
+                          "bne.w @Return",
+                          "move.w d0,d6",
+                          "jsr j_UpdateForce",
+                          "lea ((BATTLE_PARTY_MEMBERS-$1000000)).w,a0",
+                          "move.w ((BATTLE_PARTY_MEMBERS_NUMBER-$1000000)).w,d7",
+                          "subq.w #2,d7",
+                          "move.b (a0),d0",
+                          "jsr j_GetCurrentHp",
+                          "tst.w d1",
+                          "beq.w @ReplaceLastActiveMember",
+                          "addq.l #1,a0",
+                          "dbf d7,@Loop",
+                          "move.b (a0),d0",
+                          "move.w d0,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                          "jsr j_LeaveBattleParty",
+                          "move.b d6,d0",
+                          "jsr j_JoinBattleParty",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "jsr j_IsInBattleParty",
+                            "branchInstruction": "bne.w @Return",
+                            "fallthroughInstruction": "move.w d0,d6",
+                            "branchTargetInstruction": "rts"
+                          },
+                          {
+                            "testInstruction": "tst.w d1",
+                            "branchInstruction": "beq.w @ReplaceLastActiveMember",
+                            "fallthroughInstruction": "addq.l #1,a0",
+                            "branchTargetInstruction": "move.b (a0),d0"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "sourceExpressionUses": [],
+                        "sourceLiteralUses": [
+                          {
+                            "value": -1,
+                            "instruction": "move.w #-1,((DIALOGUE_NAME_INDEX_1-$1000000)).w"
+                          },
+                          {
+                            "value": 2,
+                            "instruction": "subq.w #2,d7"
+                          }
+                        ],
+                        "mutationCallOrder": [
+                          "move.w #-1,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                          "move.w d0,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                          "jsr j_LeaveBattleParty",
+                          "jsr j_JoinBattleParty"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_IsInBattleParty"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_UpdateForce"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_GetCurrentHp"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_LeaveBattleParty"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_JoinBattleParty"
+                        }
+                      ]
+                    },
+                    {
+                      "macro": "joinForceAI",
+                      "handler": "csc54_joinForceAi",
+                      "address": 290780,
+                      "opcode": 84,
+                      "cursorReadWidths": [
+                        2,
+                        2
+                      ],
+                      "statementCount": 10,
+                      "guardedStatements": [
+                        "move.w (a6)+,d0",
+                        "jsr j_GetActivationBitfield",
+                        "move.w (a6)+,d2",
+                        "bne.s @SetAiControl",
+                        "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1",
+                        "bra.s @Continue",
+                        "ori.w #AIBITFIELD_AI_CONTROLLED,d1",
+                        "jsr j_JoinForce",
+                        "jsr j_SetActivationBitfield",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d0",
+                          "jsr j_GetActivationBitfield",
+                          "move.w (a6)+,d2",
+                          "bne.s @SetAiControl",
+                          "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1",
+                          "bra.s @Continue",
+                          "ori.w #AIBITFIELD_AI_CONTROLLED,d1",
+                          "jsr j_JoinForce",
+                          "jsr j_SetActivationBitfield",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "move.w (a6)+,d2",
+                            "branchInstruction": "bne.s @SetAiControl",
+                            "fallthroughInstruction": "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1",
+                            "branchTargetInstruction": "ori.w #AIBITFIELD_AI_CONTROLLED,d1"
+                          }
+                        ],
+                        "sourceConstantUses": [
+                          {
+                            "constant": "AIBITFIELD_AI_CONTROLLED",
+                            "value": 4,
+                            "instruction": "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1"
+                          },
+                          {
+                            "constant": "AIBITFIELD_AI_CONTROLLED",
+                            "value": 4,
+                            "instruction": "ori.w #AIBITFIELD_AI_CONTROLLED,d1"
+                          }
+                        ],
+                        "sourceExpressionUses": [
+                          {
+                            "expression": "($FFFF-AIBITFIELD_AI_CONTROLLED)",
+                            "resolvedValue": 65531,
+                            "instruction": "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1"
+                          }
+                        ],
+                        "sourceLiteralUses": [],
+                        "mutationCallOrder": [
+                          "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1",
+                          "ori.w #AIBITFIELD_AI_CONTROLLED,d1",
+                          "jsr j_JoinForce",
+                          "jsr j_SetActivationBitfield"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_GetActivationBitfield"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_JoinForce"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_SetActivationBitfield"
+                        }
+                      ]
+                    },
+                    {
+                      "macro": "resetForceBattleStats",
+                      "handler": "csc55_resetCharacterBattleStats",
+                      "address": 290816,
+                      "opcode": 85,
+                      "cursorReadWidths": [],
+                      "statementCount": 2,
+                      "guardedStatements": [
+                        "jsr ResetAlliesBattleStats",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "jsr ResetAlliesBattleStats",
+                          "rts"
+                        ],
+                        "branchRecords": [],
+                        "sourceConstantUses": [],
+                        "sourceExpressionUses": [],
+                        "sourceLiteralUses": [],
+                        "mutationCallOrder": [
+                          "jsr ResetAlliesBattleStats"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "ResetAlliesBattleStats"
+                        }
+                      ]
+                    },
+                    {
+                      "macro": "addNewFollower",
+                      "handler": "csc56_addFollower",
+                      "address": 290824,
+                      "opcode": 86,
+                      "cursorReadWidths": [
+                        2
+                      ],
+                      "statementCount": 12,
+                      "guardedStatements": [
+                        "move.w (a6)+,d0",
+                        "bsr.w GetEntityAddressFromCharacter",
+                        "moveq #0,d1",
+                        "lea ((EXPLORATION_ENTITIES-$1000000)).w,a0",
+                        "cmpi.b #-1,(a0)",
+                        "beq.w @Break",
+                        "move.b (a0)+,d1",
+                        "bra.s @FindFollower_Loop",
+                        "move.w #$FFE8,d2",
+                        "move.w #0,d3",
+                        "jsr AddFollower",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d0",
+                          "bsr.w GetEntityAddressFromCharacter",
+                          "moveq #0,d1",
+                          "lea ((EXPLORATION_ENTITIES-$1000000)).w,a0",
+                          "cmpi.b #-1,(a0)",
+                          "beq.w @Break",
+                          "move.b (a0)+,d1",
+                          "bra.s @FindFollower_Loop",
+                          "move.w #$FFE8,d2",
+                          "move.w #0,d3",
+                          "jsr AddFollower",
+                          "rts"
+                        ],
+                        "branchRecords": [
+                          {
+                            "testInstruction": "cmpi.b #-1,(a0)",
+                            "branchInstruction": "beq.w @Break",
+                            "fallthroughInstruction": "move.b (a0)+,d1",
+                            "branchTargetInstruction": "move.w #$FFE8,d2"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "sourceExpressionUses": [],
+                        "sourceLiteralUses": [
+                          {
+                            "value": -1,
+                            "instruction": "cmpi.b #-1,(a0)"
+                          },
+                          {
+                            "value": 65512,
+                            "instruction": "move.w #$FFE8,d2"
+                          },
+                          {
+                            "value": 0,
+                            "instruction": "move.w #0,d3"
+                          }
+                        ],
+                        "mutationCallOrder": [
+                          "move.b (a0)+,d1",
+                          "move.w #$FFE8,d2",
+                          "move.w #0,d3",
+                          "jsr AddFollower"
+                        ]
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "bsr",
+                          "instructionTarget": "GetEntityAddressFromCharacter"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "AddFollower"
+                        }
+                      ]
+                    }
+                  ],
+                  "callerBreakdown": {
+                    "callerHandlers": [
+                      {
+                        "handler": "csc51_joinBattleParty",
+                        "instructionTargetSiteCounts": {
+                          "AddFollower": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "ResetAlliesBattleStats": 0,
+                          "j_GetActivationBitfield": 0,
+                          "j_GetCurrentHp": 1,
+                          "j_IsInBattleParty": 1,
+                          "j_JoinBattleParty": 1,
+                          "j_JoinForce": 0,
+                          "j_LeaveBattleParty": 1,
+                          "j_SetActivationBitfield": 0,
+                          "j_UpdateForce": 1
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "AddFollower": 0,
+                          "GetActivationBitfield": 0,
+                          "GetCurrentHp": 1,
+                          "GetEntityAddressFromCharacter": 0,
+                          "IsInBattleParty": 1,
+                          "JoinBattleParty": 1,
+                          "JoinForce": 0,
+                          "LeaveBattleParty": 1,
+                          "ResetAlliesBattleStats": 0,
+                          "SetActivationBitfield": 0,
+                          "UpdateForce": 1
+                        }
+                      },
+                      {
+                        "handler": "csc54_joinForceAi",
+                        "instructionTargetSiteCounts": {
+                          "AddFollower": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "ResetAlliesBattleStats": 0,
+                          "j_GetActivationBitfield": 1,
+                          "j_GetCurrentHp": 0,
+                          "j_IsInBattleParty": 0,
+                          "j_JoinBattleParty": 0,
+                          "j_JoinForce": 1,
+                          "j_LeaveBattleParty": 0,
+                          "j_SetActivationBitfield": 1,
+                          "j_UpdateForce": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "AddFollower": 0,
+                          "GetActivationBitfield": 1,
+                          "GetCurrentHp": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "IsInBattleParty": 0,
+                          "JoinBattleParty": 0,
+                          "JoinForce": 1,
+                          "LeaveBattleParty": 0,
+                          "ResetAlliesBattleStats": 0,
+                          "SetActivationBitfield": 1,
+                          "UpdateForce": 0
+                        }
+                      },
+                      {
+                        "handler": "csc55_resetCharacterBattleStats",
+                        "instructionTargetSiteCounts": {
+                          "AddFollower": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "ResetAlliesBattleStats": 1,
+                          "j_GetActivationBitfield": 0,
+                          "j_GetCurrentHp": 0,
+                          "j_IsInBattleParty": 0,
+                          "j_JoinBattleParty": 0,
+                          "j_JoinForce": 0,
+                          "j_LeaveBattleParty": 0,
+                          "j_SetActivationBitfield": 0,
+                          "j_UpdateForce": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "AddFollower": 0,
+                          "GetActivationBitfield": 0,
+                          "GetCurrentHp": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "IsInBattleParty": 0,
+                          "JoinBattleParty": 0,
+                          "JoinForce": 0,
+                          "LeaveBattleParty": 0,
+                          "ResetAlliesBattleStats": 1,
+                          "SetActivationBitfield": 0,
+                          "UpdateForce": 0
+                        }
+                      },
+                      {
+                        "handler": "csc56_addFollower",
+                        "instructionTargetSiteCounts": {
+                          "AddFollower": 1,
+                          "GetEntityAddressFromCharacter": 1,
+                          "ResetAlliesBattleStats": 0,
+                          "j_GetActivationBitfield": 0,
+                          "j_GetCurrentHp": 0,
+                          "j_IsInBattleParty": 0,
+                          "j_JoinBattleParty": 0,
+                          "j_JoinForce": 0,
+                          "j_LeaveBattleParty": 0,
+                          "j_SetActivationBitfield": 0,
+                          "j_UpdateForce": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "AddFollower": 1,
+                          "GetActivationBitfield": 0,
+                          "GetCurrentHp": 0,
+                          "GetEntityAddressFromCharacter": 1,
+                          "IsInBattleParty": 0,
+                          "JoinBattleParty": 0,
+                          "JoinForce": 0,
+                          "LeaveBattleParty": 0,
+                          "ResetAlliesBattleStats": 0,
+                          "SetActivationBitfield": 0,
+                          "UpdateForce": 0
+                        }
+                      }
+                    ],
+                    "targetResolutions": [
+                      {
+                        "instructionTarget": "AddFollower",
+                        "effectiveTarget": "AddFollower",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "GetEntityAddressFromCharacter",
+                        "effectiveTarget": "GetEntityAddressFromCharacter",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "ResetAlliesBattleStats",
+                        "effectiveTarget": "ResetAlliesBattleStats",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_GetActivationBitfield",
+                        "effectiveTarget": "GetActivationBitfield",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_GetCurrentHp",
+                        "effectiveTarget": "GetCurrentHp",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_IsInBattleParty",
+                        "effectiveTarget": "IsInBattleParty",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_JoinBattleParty",
+                        "effectiveTarget": "JoinBattleParty",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_JoinForce",
+                        "effectiveTarget": "JoinForce",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_LeaveBattleParty",
+                        "effectiveTarget": "LeaveBattleParty",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_SetActivationBitfield",
+                        "effectiveTarget": "SetActivationBitfield",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_UpdateForce",
+                        "effectiveTarget": "UpdateForce",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      }
+                    ],
+                    "instructionTargetTotals": {
+                      "AddFollower": 1,
+                      "GetEntityAddressFromCharacter": 1,
+                      "ResetAlliesBattleStats": 1,
+                      "j_GetActivationBitfield": 1,
+                      "j_GetCurrentHp": 1,
+                      "j_IsInBattleParty": 1,
+                      "j_JoinBattleParty": 1,
+                      "j_JoinForce": 1,
+                      "j_LeaveBattleParty": 1,
+                      "j_SetActivationBitfield": 1,
+                      "j_UpdateForce": 1
+                    },
+                    "effectiveTargetTotals": {
+                      "AddFollower": 1,
+                      "GetActivationBitfield": 1,
+                      "GetCurrentHp": 1,
+                      "GetEntityAddressFromCharacter": 1,
+                      "IsInBattleParty": 1,
+                      "JoinBattleParty": 1,
+                      "JoinForce": 1,
+                      "LeaveBattleParty": 1,
+                      "ResetAlliesBattleStats": 1,
+                      "SetActivationBitfield": 1,
+                      "UpdateForce": 1
+                    },
+                    "internalEffectiveTargetTotals": {
+                      "AddFollower": 0,
+                      "GetActivationBitfield": 0,
+                      "GetCurrentHp": 0,
+                      "GetEntityAddressFromCharacter": 0,
+                      "IsInBattleParty": 0,
+                      "JoinBattleParty": 0,
+                      "JoinForce": 0,
+                      "LeaveBattleParty": 0,
+                      "ResetAlliesBattleStats": 0,
+                      "SetActivationBitfield": 0,
+                      "UpdateForce": 0
+                    },
+                    "externalEffectiveTargetTotals": {
+                      "AddFollower": 1,
+                      "GetActivationBitfield": 1,
+                      "GetCurrentHp": 1,
+                      "GetEntityAddressFromCharacter": 1,
+                      "IsInBattleParty": 1,
+                      "JoinBattleParty": 1,
+                      "JoinForce": 1,
+                      "LeaveBattleParty": 1,
+                      "ResetAlliesBattleStats": 1,
+                      "SetActivationBitfield": 1,
+                      "UpdateForce": 1
+                    }
+                  },
+                  "sourceIdentityJoins": {
+                    "commonStats": {
+                      "contractId": "sf2-common-stats-static-v1",
+                      "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+                      "sources": [
+                        {
+                          "sourcePath": "code/common/stats/battleparty.asm",
+                          "sourceSha256": "670A25075D807BA60B0AA3C6D158DDF80E5248264753361DBC495F7655ED8B37",
+                          "symbols": [
+                            "IsInBattleParty",
+                            "JoinBattleParty",
+                            "JoinForce",
+                            "LeaveBattleParty",
+                            "UpdateForce"
+                          ]
+                        },
+                        {
+                          "sourcePath": "code/common/stats/combatantstats_1.asm",
+                          "sourceSha256": "4F3C81D22C3EF873D2CA7728DE50F26289B48697CB47EB56583A7D747CB03585",
+                          "symbols": [
+                            "GetActivationBitfield"
+                          ]
+                        },
+                        {
+                          "sourcePath": "code/common/stats/combatantstats_2.asm",
+                          "sourceSha256": "112970FB112D39C72A1C6E59B0EA164D98EE4AB3E98887F63DC6D3B890648991",
+                          "symbols": [
+                            "SetActivationBitfield"
+                          ]
+                        }
+                      ]
+                    },
+                    "followerOwner": {
+                      "sourcePath": "code/common/scripting/entity/entityfunctions_2.asm",
+                      "sourceSha256": "4FC789EE714532CBB65F33426B0E7C20A4CE803DFA4DF7D40FD2FC707E90C3CE",
+                      "symbols": [
+                        "AddFollower"
+                      ]
+                    },
+                    "battleStatsOwner": {
+                      "sourcePath": "code/common/scripting/map/resetalliesstats.asm",
+                      "sourceSha256": "D41170DD993F5F760CA5C90917186D152CCA8ED04F0680C1DD9DEFDBBBE22399",
+                      "symbols": [
+                        "ResetAlliesBattleStats"
+                      ]
+                    }
+                  },
+                  "runtimeQuestions": [
+                    "force-state/active-party-ai-follower-runtime-matrix"
+                  ]
+                }
               }
             }
           ]
@@ -22017,7 +26123,8 @@
         "handlers",
         "callerBreakdown",
         "commonStatsIdentity",
-        "runtimeQuestions"
+        "runtimeQuestions",
+        "activePartyCommandFacts"
       ],
       "properties": {
         "macros": {
@@ -22049,6 +26156,537 @@
         },
         "commonStatsIdentity": {
           "$ref": "#/definitions/forceStateCommonStatsIdentity"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "activePartyCommandFacts": {
+          "$ref": "#/definitions/activePartyCommandFacts"
+        }
+      }
+    },
+    "activePartyMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "joinBatParty",
+        "joinForceAI",
+        "resetForceBattleStats",
+        "addNewFollower"
+      ],
+      "properties": {
+        "joinBatParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "joinForceAI": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resetForceBattleStats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "addNewFollower": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activePartyProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/activePartyMacroCounts"
+        }
+      }
+    },
+    "activePartySourceLiteralUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "activePartySourceExpressionUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "resolvedValue",
+        "instruction"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "activePartySectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "branchRecords",
+        "sourceConstantUses",
+        "sourceExpressionUses",
+        "sourceLiteralUses",
+        "mutationCallOrder"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateConstantUse"
+          }
+        },
+        "sourceExpressionUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartySourceExpressionUse"
+          }
+        },
+        "sourceLiteralUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartySourceLiteralUse"
+          }
+        },
+        "mutationCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "activePartyHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "cursorReadWidths",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/activePartySectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateDirectCall"
+          }
+        }
+      }
+    },
+    "activePartyInstructionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AddFollower",
+        "GetEntityAddressFromCharacter",
+        "ResetAlliesBattleStats",
+        "j_GetActivationBitfield",
+        "j_GetCurrentHp",
+        "j_IsInBattleParty",
+        "j_JoinBattleParty",
+        "j_JoinForce",
+        "j_LeaveBattleParty",
+        "j_SetActivationBitfield",
+        "j_UpdateForce"
+      ],
+      "properties": {
+        "AddFollower": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ResetAlliesBattleStats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_IsInBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_JoinBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_JoinForce": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_LeaveBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_SetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_UpdateForce": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activePartyEffectiveCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AddFollower",
+        "GetActivationBitfield",
+        "GetCurrentHp",
+        "GetEntityAddressFromCharacter",
+        "IsInBattleParty",
+        "JoinBattleParty",
+        "JoinForce",
+        "LeaveBattleParty",
+        "ResetAlliesBattleStats",
+        "SetActivationBitfield",
+        "UpdateForce"
+      ],
+      "properties": {
+        "AddFollower": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "IsInBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "JoinBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "JoinForce": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LeaveBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ResetAlliesBattleStats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "UpdateForce": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activePartyCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/activePartyInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        }
+      }
+    },
+    "activePartyResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "activePartyCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyCaller"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/activePartyInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        }
+      }
+    },
+    "activePartySourceOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "activePartyCommonStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "sources"
+      ],
+      "properties": {
+        "contractId": {
+          "const": "sf2-common-stats-static-v1"
+        },
+        "upstreamCommit": {
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartySourceOwner"
+          }
+        }
+      }
+    },
+    "activePartySourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commonStats",
+        "followerOwner",
+        "battleStatsOwner"
+      ],
+      "properties": {
+        "commonStats": {
+          "$ref": "#/definitions/activePartyCommonStats"
+        },
+        "followerOwner": {
+          "$ref": "#/definitions/activePartySourceOwner"
+        },
+        "battleStatsOwner": {
+          "$ref": "#/definitions/activePartySourceOwner"
+        }
+      }
+    },
+    "activePartyCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateSourceSite"
+          }
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/activePartyCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/activePartySourceIdentityJoins"
         },
         "runtimeQuestions": {
           "type": "array",

@@ -12,6 +12,7 @@ from sf2tool.h2.map_script_engine import (
     ENTITY_DIALOGUE_CONSUMER,
     ENTITY_DIALOGUE_CONSUMER_PATH,
     PORTRAIT_HANDLER,
+    _active_party_section_guard,
     _cursor_flow,
     _dialogue_handler_facts,
     _direct_call_sites,
@@ -91,6 +92,7 @@ def test_force_state_call_parser_ignores_near_misses_and_accepts_size_suffixes()
             "move.w j_JoinForce,d0",
             "j_JoinForce:",
             "jsr (a0)",
+            "; jsr.w j_JoinForce",
             "jsr j_JoinForce ; comment is already stripped by handler parsing",
         ]
     )
@@ -150,6 +152,73 @@ def test_force_state_program_totals_keep_zero_rows_and_exact_site_order() -> Non
                 "allyDefeated": 0,
                 "updateDefeatedAllies": 0,
                 "reviveAlly": 0,
+            },
+        },
+    ]
+
+
+def test_active_party_program_totals_keep_zero_rows_and_exact_site_order() -> None:
+    corpus = {
+        "summary": {"programCount": 2},
+        "programs": [
+            {
+                "id": "first",
+                "commands": [
+                    {
+                        "index": 0,
+                        "sourceLine": 10,
+                        "macro": "joinForceAI",
+                        "arguments": ["1", "-1"],
+                    },
+                    {"index": 1, "sourceLine": 11, "macro": "wait", "arguments": []},
+                    {
+                        "index": 2,
+                        "sourceLine": 12,
+                        "macro": "joinForceAIs",
+                        "arguments": ["1", "-1"],
+                    },
+                ],
+            },
+            {"id": "second", "commands": []},
+        ],
+    }
+
+    sites, totals = _force_state_program_facts(
+        corpus, macro_names=map_script_engine.ACTIVE_PARTY_MACRO_NAMES
+    )
+
+    assert sites == [
+        {
+            "programId": "first",
+            "commands": [
+                {
+                    "commandIndex": 0,
+                    "sourceLine": 10,
+                    "macro": "joinForceAI",
+                    "arguments": ["1", "-1"],
+                }
+            ],
+        }
+    ]
+    assert totals == [
+        {
+            "programId": "first",
+            "commandCount": 1,
+            "macroCounts": {
+                "joinBatParty": 0,
+                "joinForceAI": 1,
+                "resetForceBattleStats": 0,
+                "addNewFollower": 0,
+            },
+        },
+        {
+            "programId": "second",
+            "commandCount": 0,
+            "macroCounts": {
+                "joinBatParty": 0,
+                "joinForceAI": 0,
+                "resetForceBattleStats": 0,
+                "addNewFollower": 0,
             },
         },
     ]
@@ -1148,6 +1217,32 @@ def test_force_state_contract_matches_complete_golden_and_zero_inclusive_maps(
     assert actual["runtimeQuestions"] == [
         "force-state/roster-death-persistence-visible-outcomes"
     ]
+    active = actual["activePartyCommandFacts"]
+    assert active == fixture["expected"]["forceStateCommandFacts"]["activePartyCommandFacts"]
+    assert [row["sourceCommandCount"] for row in active["macros"]] == [1, 4, 5, 19]
+    assert len(active["programTotals"]) == 304
+    assert active["callerBreakdown"]["effectiveTargetTotals"] == {
+        "AddFollower": 1,
+        "GetActivationBitfield": 1,
+        "GetCurrentHp": 1,
+        "GetEntityAddressFromCharacter": 1,
+        "IsInBattleParty": 1,
+        "JoinBattleParty": 1,
+        "JoinForce": 1,
+        "LeaveBattleParty": 1,
+        "ResetAlliesBattleStats": 1,
+        "SetActivationBitfield": 1,
+        "UpdateForce": 1,
+    }
+    assert active["runtimeQuestions"] == [
+        "force-state/active-party-ai-follower-runtime-matrix"
+    ]
+    assert active["handlers"][0]["sectionGuard"]["mutationCallOrder"] == [
+        "move.w #-1,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+        "move.w d0,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+        "jsr j_LeaveBattleParty",
+        "jsr j_JoinBattleParty",
+    ]
 
 
 def test_force_state_schemas_reject_nested_mutations_and_boundary_content(
@@ -1211,6 +1306,69 @@ def test_force_state_schemas_reject_nested_mutations_and_boundary_content(
     with pytest.raises(ValueError, match="sectionGuard"):
         validate_json(fixture_missing, fixture_schema, owner="force-state fixture missing field")
 
+    active_missing = deepcopy(map_script_engine_output)
+    del active_missing["forceStateCommandFacts"]["activePartyCommandFacts"]["handlers"][0][
+        "sectionGuard"
+    ]["sourceLiteralUses"][0]["instruction"]
+    with pytest.raises(ValueError, match="instruction"):
+        validate_json(active_missing, output_schema, owner="active-party output missing field")
+
+    active_renamed = deepcopy(map_script_engine_output)
+    literal = active_renamed["forceStateCommandFacts"]["activePartyCommandFacts"][
+        "handlers"
+    ][0]["sectionGuard"]["sourceLiteralUses"][0]
+    literal["sourceInstruction"] = literal.pop("instruction")
+    with pytest.raises(ValueError, match="instruction"):
+        validate_json(active_renamed, output_schema, owner="active-party output renamed field")
+
+    active_extra = deepcopy(map_script_engine_output)
+    active_extra["forceStateCommandFacts"]["activePartyCommandFacts"]["sourceIdentityJoins"][
+        "followerOwner"
+    ]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(active_extra, output_schema, owner="active-party output extra field")
+
+    active_owner_missing = deepcopy(map_script_engine_output)
+    del active_owner_missing["forceStateCommandFacts"]["activePartyCommandFacts"][
+        "sourceIdentityJoins"
+    ]["battleStatsOwner"]
+    with pytest.raises(ValueError, match="battleStatsOwner"):
+        validate_json(
+            active_owner_missing,
+            output_schema,
+            owner="active-party output missing battle-stats owner",
+        )
+
+    active_reordered = deepcopy(map_script_engine_output)
+    active_macros = active_reordered["forceStateCommandFacts"]["activePartyCommandFacts"][
+        "macros"
+    ]
+    active_macros[0], active_macros[1] = active_macros[1], active_macros[0]
+    with pytest.raises(ValueError, match="const"):
+        validate_json(active_reordered, output_schema, owner="active-party output reordered macros")
+
+    active_out_of_bounds = deepcopy(map_script_engine_output)
+    active_out_of_bounds["forceStateCommandFacts"]["activePartyCommandFacts"]["handlers"][
+        1
+    ]["sectionGuard"]["sourceConstantUses"][0]["value"] = 5
+    with pytest.raises(ValueError, match="const"):
+        validate_json(
+            active_out_of_bounds,
+            output_schema,
+            owner="active-party output source constant boundary",
+        )
+
+    fixture_active_missing = deepcopy(fixture)
+    del fixture_active_missing["expected"]["forceStateCommandFacts"]["activePartyCommandFacts"][
+        "handlers"
+    ][3]["sectionGuard"]["sourceLiteralUses"]
+    with pytest.raises(ValueError, match="sourceLiteralUses"):
+        validate_json(
+            fixture_active_missing,
+            fixture_schema,
+            owner="active-party fixture missing field",
+        )
+
 
 def test_force_state_section_guards_reject_mutated_branch_operands_before_fixture(
     monkeypatch,
@@ -1250,3 +1408,80 @@ def test_force_state_section_guard_rejects_branch_polarity_mutation() -> None:
     statements[3] = "beq.w alive"
     with pytest.raises(ValueError, match="csc0F_jumpIfCharacterDead statement is missing"):
         _force_state_section_guard("jumpIfDead", statements, {})
+
+
+@pytest.mark.parametrize(
+    ("handler_name", "original", "replacement", "error"),
+    [
+        (
+            "csc51_joinBattleParty",
+            "move.w #-1,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+            "move.w #0,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+            "initialization source use drift",
+        ),
+        (
+            "csc54_joinForceAi",
+            "ori.w #AIBITFIELD_AI_CONTROLLED,d1",
+            "ori.w #AIBITFIELD_NEUTRAL,d1",
+            "csc54_joinForceAi statement is missing",
+        ),
+        (
+            "csc55_resetCharacterBattleStats",
+            "jsr ResetAlliesBattleStats",
+            "jsr ResetAlliesBattleStatsLater",
+            "csc55_resetCharacterBattleStats statement is missing",
+        ),
+        (
+            "csc56_addFollower",
+            "jsr AddFollower",
+            "jsr AddFollowerLater",
+            "csc56_addFollower statement is missing",
+        ),
+    ],
+)
+def test_active_party_section_guards_reject_use_site_mutations_before_fixture(
+    monkeypatch, handler_name: str, original: str, replacement: str, error: str
+) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_use_site(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == handler_name:
+            return [statement.replace(original, replacement) for statement in statements]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_use_site)
+    with pytest.raises(ValueError, match=error):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_active_party_section_guard_rejects_follower_sentinel_and_call_order() -> None:
+    statements = [
+        "move.w (a6)+,d0",
+        "bsr.w GetEntityAddressFromCharacter",
+        "moveq #0,d1",
+        "lea ((EXPLORATION_ENTITIES-$1000000)).w,a0",
+        "cmpi.b #-1,(a0)",
+        "beq.w @break",
+        "move.b (a0)+,d1",
+        "bra.s @loop",
+        "move.w #$FFE8,d2",
+        "move.w #0,d3",
+        "jsr AddFollower",
+        "rts",
+    ]
+    guard = _active_party_section_guard("addNewFollower", statements, {})
+    assert guard["sourceLiteralUses"] == [
+        {"value": -1, "instruction": "cmpi.b #-1,(a0)"},
+        {"value": 65512, "instruction": "move.w #$FFE8,d2"},
+        {"value": 0, "instruction": "move.w #0,d3"},
+    ]
+    statements[4] = "cmpi.b #0,(a0)"
+    with pytest.raises(ValueError, match="follower sentinel"):
+        _active_party_section_guard("addNewFollower", statements, {})
+    statements[4] = "cmpi.b #-1,(a0)"
+    statements[10] = "jsr AddFollowerLater"
+    with pytest.raises(ValueError, match="csc56_addFollower statement is missing"):
+        _active_party_section_guard("addNewFollower", statements, {})

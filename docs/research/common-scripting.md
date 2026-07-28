@@ -7,7 +7,8 @@
   the regular entity map-sprite decode/DMA consumer shape, the complete six-command map-script dialogue
   family/program-reference/handler/consumer contract, the complete five-command map-script transition
   family/program-site/handler/caller contract, the complete six-command map-script roster/death
-  family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
+  family/program-site/handler/caller contract, the complete four-command map-script active-party/AI/
+  follower/battle-stat family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -235,6 +236,74 @@ source identity for the shared roster boundary, not a fabricated caller count.
 One shared future launch should distinguish roster/list contents, death/revive persistence, and
 visible/presentation outcomes across representative caller states. This static slice does not claim
 normal-story reachability, save persistence, roster capacity, list capacity, or visible effects.
+
+## Confirmed Map-Script Active-Party/AI/Follower Command Family
+
+Evidence date: 2026-07-27.
+
+**Confirmed:** the same `sf2-map-script-engine-static-v1` field
+`forceStateCommandFacts.activePartyCommandFacts` retains the adjacent source-named primary forms
+`joinBatParty`, `joinForceAI`, `resetForceBattleStats`, and `addNewFollower`. Their dispatcher bindings
+are `$51/$54/$55/$56`; their physical command sizes are 4/6/2/4 bytes; and their complete ordered
+source-site counts are 1/4/5/19 (29 total). Every one of the same 304 programs has an ordered,
+zero-inclusive total row. These are macro/source-layout facts, not a claim that source comments define
+the player-visible meaning of the forms.
+
+**Confirmed:** the four primary macro labels dispatch to `csc51_joinBattleParty` at `$46F02`,
+`csc54_joinForceAi` at `$46FDC`, `csc55_resetCharacterBattleStats` at `$47000`, and
+`csc56_addFollower` at `$47008`. The four exact section guards preserve each cursor-read width and
+the relevant instruction order. `csc51` first writes source literal `-1` to
+`DIALOGUE_NAME_INDEX_1`, then reads one word and calls `j_IsInBattleParty`; its guarded mutation/call
+summary keeps that initialization before the membership test and the later replacement write before
+`LeaveBattleParty` then `JoinBattleParty`. The fall-through updates force state, reads
+`BATTLE_PARTY_MEMBERS_NUMBER`, applies source literal `subq.w #2,d7`, and guards the
+`GetCurrentHp` zero branch. This keeps the source list symbol, loop literal, state writes, and physical
+cursor read distinct; it does not promote any of them into a roster/list capacity claim.
+
+**Confirmed:** `csc54` reads a first word before `j_GetActivationBitfield`, then its second word into
+`d2`; the following `bne.s` takes the `ori.w #AIBITFIELD_AI_CONTROLLED,d1; j_JoinForce` path and its
+fall-through executes `andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1`. Both paths reach the common
+`j_SetActivationBitfield` tail. The parsed `AIBITFIELD_AI_CONTROLLED` source value is 4 and the clear
+expression resolves to 65531. The macro comment's “on/off” label is retained only as source text and
+is not used as a behavioral interpretation.
+
+**Confirmed:** `csc55` contains exactly `jsr ResetAlliesBattleStats; rts`. `csc56` reads one word,
+calls `GetEntityAddressFromCharacter`, initializes `d1`, scans `EXPLORATION_ENTITIES` until the
+source literal byte `-1`, and leaves the last observed follower byte in `d1` on the non-sentinel loop
+path. Before `AddFollower`, it uses the exact source literals `$FFE8` in `d2` and `0` in `d3`. This is
+register/order evidence only; the state lifecycle and user-visible follower behavior remain unassigned.
+
+**Confirmed:** the instruction-scoped caller inventory has 11 direct identities and retains aliases
+alongside their effective targets. Every effective target has total 1: `AddFollower`,
+`GetActivationBitfield`, `GetCurrentHp`, `GetEntityAddressFromCharacter`, `IsInBattleParty`,
+`JoinBattleParty`, `JoinForce`, `LeaveBattleParty`, `ResetAlliesBattleStats`,
+`SetActivationBitfield`, and `UpdateForce`. The four per-handler maps retain zero counts across this
+complete target domain. Each jump-interface instruction target remains present with its pinned alias
+source path; no bounded implementation is an effective target, so derived internal totals are all zero
+and external totals retain the values above. Comments, labels, operand text, near-miss mnemonics, and
+register-indirect calls do not count as caller sites.
+
+**Confirmed:** the provenance-only source joins retain `sf2-common-stats-static-v1` identities for
+`battleparty.asm` (`IsInBattleParty`, `JoinBattleParty`, `JoinForce`, `LeaveBattleParty`, `UpdateForce`),
+`combatantstats_1.asm` (`GetActivationBitfield`), and `combatantstats_2.asm`
+(`SetActivationBitfield`), plus the direct follower owner
+`code/common/scripting/entity/entityfunctions_2.asm` (`AddFollower`) and the direct battle-stats owner
+`code/common/scripting/map/resetalliesstats.asm` (`ResetAlliesBattleStats`). The joins carry each
+source SHA-256 and do not copy any sibling fixture payload.
+
+**Unknown:** `force-state/active-party-ai-follower-runtime-matrix` is one grouped H3 queue. It must
+observe active-party membership, activation-bit effects, reset effects, follower-chain effects, and
+their persistence/visible outcomes under shared setup. This static slice claims neither normal-story
+reachability nor a lifecycle, capacity, save, hardware, or presentation effect.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` forms at lines 474-503;
+`code/common/scripting/map/mapscriptengine_1.asm` named sections at lines 1637-1811; the H1 listing
+addresses above; `sf2enums.asm::AIBITFIELD_AI_CONTROLLED`; and the follower/battle-stats owner files
+named above.
+Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, nested
+field `expected.forceStateCommandFacts.activePartyCommandFacts`.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm`,
