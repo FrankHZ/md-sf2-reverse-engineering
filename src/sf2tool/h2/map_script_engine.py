@@ -149,6 +149,16 @@ STORY_STATE_HANDLER_NAMES = (
 )
 STORY_STATE_RUNTIME_QUESTIONS = ["story-state/branch-prompt-persistence-matrix"]
 
+# Source labels describe the emitted six-byte block-copy operand payload without
+# assigning persistence, collision, or visible presentation semantics.
+MAP_BLOCK_MUTATION_MACRO_NAMES = ("setBlocks", "setBlocksVar")
+MAP_BLOCK_MUTATION_HANDLER_BY_MACRO = {
+    "setBlocks": "csc34_setBlocks",
+    "setBlocksVar": "csc35_setBlocksVar",
+}
+MAP_BLOCK_MUTATION_HANDLER_NAMES = ("csc34_setBlocks", "csc35_setBlocksVar")
+MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS = ["map-block-mutation/runtime-effects-matrix"]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -3479,6 +3489,545 @@ def _story_state_command_facts(
     }
 
 
+def _map_block_macro_operand_fields(disasm: Path) -> dict[str, list[dict[str, Any]]]:
+    """Parse the source comments and byte fields of the two bounded macro forms."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    fields_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in MAP_BLOCK_MUTATION_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"map-block mutation macro is missing: {macro}")
+        emission_rows = _emission_rows(body)
+        parameter_rows = [row for row in emission_rows if row["parameterOrdinals"]]
+        fields: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.b\s+\\(?P<ordinal>\d+)\s*;\s*(?P<label>[^;]+?)\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(fields) >= len(parameter_rows):
+                raise ValueError(f"map-block mutation operand emission drift: {macro}")
+            row = parameter_rows[len(fields)]
+            if row["parameterOrdinals"] != [int(match.group("ordinal"))]:
+                raise ValueError(f"map-block mutation operand ordinal drift: {macro}")
+            fields.append(
+                {
+                    "parameterOrdinal": int(match.group("ordinal")),
+                    "sourceLabel": match.group("label").strip(),
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if not fields:
+            raise ValueError(f"map-block mutation operand fields are missing: {macro}")
+        if len(fields) != len(parameter_rows):
+            raise ValueError(f"map-block mutation operand comment coverage drift: {macro}")
+        if [field["parameterOrdinal"] for field in fields] != list(
+            range(1, len(fields) + 1)
+        ):
+            raise ValueError(f"map-block mutation operand ordinal drift: {macro}")
+        fields_by_macro[macro] = fields
+    if fields_by_macro["setBlocks"] != fields_by_macro["setBlocksVar"]:
+        raise ValueError("map-block mutation macro field layout disagreement")
+    return fields_by_macro
+
+
+def _map_block_mutation_program_facts(
+    program_corpus: dict[str, Any], operand_fields: dict[str, list[dict[str, Any]]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach parsed byte operand records to all source-shaped mutation sites."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=MAP_BLOCK_MUTATION_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands: list[dict[str, Any]] = []
+        for command in site["commands"]:
+            fields = operand_fields[command["macro"]]
+            if len(command["arguments"]) != len(fields):
+                raise ValueError(
+                    "map-block mutation source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            order_key = ":".join(
+                (site["programId"], str(command["commandIndex"]), command["macro"])
+            )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": order_key,
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": field["parameterOrdinal"],
+                            "sourceLabel": field["sourceLabel"],
+                            "rawValue": raw_value,
+                            "value": _literal(raw_value),
+                        }
+                        for field, raw_value in zip(fields, command["arguments"], strict=True)
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _map_block_mutation_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Derive compact ordering and content checks for the two large source corpora."""
+    source_order_keys = [
+        command["sourceOrderKey"]
+        for site in source_sites
+        for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("map-block mutation source order keys are not unique")
+    program_total_order_keys = [row["programId"] for row in program_totals]
+    if len(program_total_order_keys) != len(set(program_total_order_keys)):
+        raise ValueError("map-block mutation program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_total_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _map_block_mutation_section_guard(
+    handler_name: str, statements: list[str]
+) -> dict[str, Any]:
+    """Guard the complete cursor/call/bit-set order of one mutation handler."""
+    common_patterns = [
+        r"move\.w \(a6\)\+,d0",
+        r"move\.w \(a6\)\+,d1",
+        r"move\.w \(a6\)\+,d2",
+        r"jsr \(CopyMapBlocks\)\.w",
+    ]
+    if handler_name == "csc34_setBlocks":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                *common_patterns,
+                r"bset #(?P<bit>\d+),\(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD\)\.l",
+                r"bset #(?P<bit>\d+),\(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD\)\.l",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        bit_set_uses = []
+        for instruction in ordered[4:6]:
+            match = re.fullmatch(
+                r"bset #(?P<bit>\d+),\(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD\)\.l",
+                instruction,
+            )
+            if match is None:
+                raise ValueError("map-block mutation bit-set use shape drift")
+            bit_set_uses.append(
+                {
+                    "bitIndex": _literal(match.group("bit")),
+                    "sourceTarget": "VIEW_PLANE_UPDATE_TOGGLE_BITFIELD",
+                    "instruction": instruction,
+                }
+            )
+        if bit_set_uses[1]["bitIndex"] != bit_set_uses[0]["bitIndex"] + 1:
+            raise ValueError("map-block mutation bit-set order drift")
+    elif handler_name == "csc35_setBlocksVar":
+        ordered = _force_state_ordered_statements(
+            statements, [*common_patterns, r"rts"], owner=handler_name
+        )
+        bit_set_uses = []
+    else:
+        raise ValueError(f"map-block mutation handler guard has no profile: {handler_name}")
+    if len(statements) != len(ordered):
+        raise ValueError(f"map-block mutation handler statement coverage drift: {handler_name}")
+    cursor_reads = []
+    width_by_size_suffix = {"b": 1, "w": 2, "l": 4}
+    for instruction in ordered[:3]:
+        match = re.fullmatch(
+            r"move\.(?P<size>[bwl]) \(a6\)\+,(?P<register>d[0-7])", instruction
+        )
+        if match is None:
+            raise ValueError("map-block mutation cursor read shape drift")
+        cursor_reads.append(
+            {
+                "handlerRegister": match.group("register"),
+                "transferredByteCount": width_by_size_suffix[match.group("size")],
+                "instruction": instruction,
+            }
+        )
+    return {
+        "orderedInstructions": ordered,
+        "cursorReadUseSites": cursor_reads,
+        "directCallOrder": [ordered[3]],
+        "postCallBitSetUseSites": bit_set_uses,
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _map_block_input_word_groups(
+    operand_fields: list[dict[str, Any]], section_guard: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Link byte-emitting macro operands to the parsed A6 word-read use sites."""
+    groups: list[dict[str, Any]] = []
+    field_index = 0
+    for read in section_guard["cursorReadUseSites"]:
+        start = field_index
+        remaining = read["transferredByteCount"]
+        while remaining:
+            if field_index >= len(operand_fields):
+                raise ValueError("map-block mutation cursor reads exceed macro fields")
+            field = operand_fields[field_index]
+            if field["widthBytes"] > remaining:
+                raise ValueError("map-block mutation cursor read splits one macro field")
+            remaining -= field["widthBytes"]
+            field_index += 1
+        fields = operand_fields[start:field_index]
+        groups.append(
+            {
+                "handlerRegister": read["handlerRegister"],
+                "sourceParameterOrdinals": [field["parameterOrdinal"] for field in fields],
+                "sourceLabels": [field["sourceLabel"] for field in fields],
+                "streamOffset": fields[0]["streamOffset"],
+                "transferredByteCount": read["transferredByteCount"],
+                "cursorReadInstruction": read["instruction"],
+            }
+        )
+    if field_index != len(operand_fields):
+        raise ValueError("map-block mutation macro fields exceed cursor reads")
+    return groups
+
+
+def _map_block_named_section_statements(
+    disasm: Path, source_path: str, name: str
+) -> list[str]:
+    """Read the bounded helper section without relying on a file-wide fragment."""
+    source = read_upstream_text(disasm / source_path)
+    match = re.search(
+        rf"^{re.escape(name)}:\s*\n(?P<body>.*?)"
+        rf"^\s*; End of function {re.escape(name)}\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if match is None:
+        raise ValueError(f"map-block mutation helper section is missing: {name}")
+    return _statements(match.group("body"))
+
+
+def _map_block_copy_helper_facts(
+    disasm: Path, equates: dict[str, int], addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Parse source use sites in the called helper without assigning game-level effects."""
+    constant = "BYTE_SHIFT_COUNT"
+    if constant not in equates:
+        raise ValueError("map-block mutation byte-shift constant is missing")
+    helper = {
+        "name": "CopyMapBlocks",
+        "sourcePath": "code/gameflow/exploration/exploration.asm",
+    }
+    if helper["name"] not in addresses:
+        raise ValueError("map-block mutation copy helper lacks an H1 address")
+    statements = _map_block_named_section_statements(
+        disasm, helper["sourcePath"], helper["name"]
+    )
+    ordered = _force_state_ordered_statements(
+        statements,
+        [
+            r"movem\.l d0-d7/a2,-\(sp\)",
+            r"clr\.w d7",
+            r"move\.b d1,d7",
+            r"subq\.w #1,d7",
+            r"move\.w d1,d6",
+            rf"lsr\.w #{constant},d6",
+            r"subq\.w #1,d6",
+            r"clr\.w d3",
+            r"move\.b d2,d3",
+            rf"lsr\.w #{constant},d2",
+            r"lsl\.w #(?P<bits>\d+),d3",
+            r"add\.w d3,d2",
+            r"add\.w d2,d2",
+            r"clr\.w d1",
+            r"move\.b d0,d1",
+            rf"lsr\.w #{constant},d0",
+            r"lsl\.w #(?P<bits>\d+),d1",
+            r"add\.w d1,d0",
+            r"add\.w d0,d0",
+            r"lea \(FF0000_RAM_START\)\.l,a2",
+            r"movem\.w d0/d2/d6,-\(sp\)",
+            r"move\.w \(a2,d0\.w\),\(a2,d2\.w\)",
+            r"addq\.w #(?P<stride>\d+),d0",
+            r"addq\.w #(?P<stride>\d+),d2",
+            r"dbf d6,[A-Za-z_][A-Za-z0-9_]*",
+            r"movem\.w \(sp\)\+,d0/d2/d6",
+            r"addi\.w #(?P<stride>\d+),d0",
+            r"addi\.w #(?P<stride>\d+),d2",
+            r"dbf d7,[A-Za-z_][A-Za-z0-9_]*",
+            r"movem\.l \(sp\)\+,d0-d7/a2",
+            r"rts",
+        ],
+        owner="CopyMapBlocks",
+    )
+    if len(statements) != len(ordered):
+        raise ValueError("map-block mutation copy-helper statement coverage drift")
+    shift_matches = [
+        re.fullmatch(r"lsl\.w #(?P<value>\d+),d[13]", ordered[index])
+        for index in (10, 16)
+    ]
+    word_stride_matches = [
+        re.fullmatch(r"addq\.w #(?P<value>\d+),d[02]", ordered[index])
+        for index in (22, 23)
+    ]
+    row_stride_matches = [
+        re.fullmatch(r"addi\.w #(?P<value>\d+),d[02]", ordered[index])
+        for index in (26, 27)
+    ]
+    if any(match is None for match in (*shift_matches, *word_stride_matches, *row_stride_matches)):
+        raise ValueError("map-block mutation copy-helper literal use shape drift")
+    row_shift_bits = _literal(shift_matches[0].group("value"))
+    word_copy_byte_stride = _literal(word_stride_matches[0].group("value"))
+    row_byte_stride = _literal(row_stride_matches[0].group("value"))
+    if (
+        any(_literal(match.group("value")) != row_shift_bits for match in shift_matches)
+        or any(
+            _literal(match.group("value")) != word_copy_byte_stride
+            for match in word_stride_matches
+        )
+        or any(_literal(match.group("value")) != row_byte_stride for match in row_stride_matches)
+    ):
+        raise ValueError("map-block mutation copy-helper paired literal disagreement")
+    if row_byte_stride != word_copy_byte_stride * (1 << row_shift_bits):
+        raise ValueError("map-block mutation copy-helper row-stride relationship drift")
+    return {
+        "helper": helper["name"],
+        "address": addresses[helper["name"]],
+        "orderedInstructions": ordered,
+        "inputByteShiftConstantUses": [
+            {"constant": constant, "value": equates[constant], "instruction": ordered[index]}
+            for index in (5, 9, 15)
+        ],
+        "addressRowShiftUses": [
+            {"value": row_shift_bits, "instruction": ordered[index]} for index in (10, 16)
+        ],
+        "wordCopyByteStrideUses": [
+            {"value": word_copy_byte_stride, "instruction": ordered[index]}
+            for index in (22, 23)
+        ],
+        "rowByteStrideUses": [
+            {"value": row_byte_stride, "instruction": ordered[index]}
+            for index in (26, 27)
+        ],
+        "copyInstruction": ordered[21],
+        "innerLoop": {
+            "counterRegister": "d6",
+            "seedInstruction": ordered[4],
+            "decrementInstruction": ordered[6],
+            "loopInstruction": ordered[24],
+        },
+        "outerLoop": {
+            "counterRegister": "d7",
+            "seedInstruction": ordered[2],
+            "decrementInstruction": ordered[3],
+            "loopInstruction": ordered[28],
+        },
+        "derivedAddressStride": {
+            "addressRowShiftBits": row_shift_bits,
+            "wordCopyByteStride": word_copy_byte_stride,
+            "rowByteStride": row_byte_stride,
+        },
+    }
+
+
+def _map_block_mutation_source_identity_joins(disasm: Path) -> dict[str, Any]:
+    """Record just the source owner of the direct helper call."""
+    source_path = "code/gameflow/exploration/exploration.asm"
+    source = read_upstream_text(disasm / source_path)
+    if re.search(r"^CopyMapBlocks:\s*$", source, re.MULTILINE) is None:
+        raise ValueError("map-block mutation copy helper owner symbol drift")
+    return {
+        "copyMapBlocksOwner": {
+            "sourcePath": source_path,
+            "sourceSha256": hashlib.sha256(source.encode()).hexdigest().upper(),
+            "symbols": ["CopyMapBlocks"],
+        }
+    }
+
+
+def _map_block_mutation_operand_value_bounds(
+    source_sites: list[dict[str, Any]], operand_fields: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Summarize each parsed source operand with source-site provenance for its bounds."""
+    values_by_ordinal: dict[int, list[tuple[int, str]]] = {
+        field["parameterOrdinal"]: [] for field in operand_fields
+    }
+    for site in source_sites:
+        for command in site["commands"]:
+            for operand in command["operandValues"]:
+                values_by_ordinal[operand["parameterOrdinal"]].append(
+                    (operand["value"], command["sourceOrderKey"])
+                )
+    rows = []
+    for field in operand_fields:
+        values = values_by_ordinal[field["parameterOrdinal"]]
+        if not values:
+            raise ValueError("map-block mutation operand has no source values")
+        minimum = min(values)
+        maximum = max(values)
+        rows.append(
+            {
+                "parameterOrdinal": field["parameterOrdinal"],
+                "sourceLabel": field["sourceLabel"],
+                "minimumValue": minimum[0],
+                "minimumSourceSiteKey": minimum[1],
+                "maximumValue": maximum[0],
+                "maximumSourceSiteKey": maximum[1],
+                "sourceValueCount": len(values),
+            }
+        )
+    return rows
+
+
+def _map_block_mutation_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the source-faithful static contract for map block mutation commands."""
+    operand_fields_by_macro = _map_block_macro_operand_fields(disasm)
+    source_sites, program_totals = _map_block_mutation_program_facts(
+        program_corpus, operand_fields_by_macro
+    )
+    corpus_order_facts = _map_block_mutation_corpus_order_facts(source_sites, program_totals)
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in MAP_BLOCK_MUTATION_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"map-block mutation program total drift: {macro}")
+        contract = macros[macro]
+        fields = operand_fields_by_macro[macro]
+        source_operand_bytes = sum(field["widthBytes"] for field in fields)
+        source_encoded_bytes = max(
+            field["streamOffset"] + field["widthBytes"] for field in fields
+        )
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"] != source_operand_bytes
+            or contract["encodedBytes"] != source_encoded_bytes
+            or contract["operandLayout"] != [
+                {
+                    "streamOffset": field["streamOffset"],
+                    "widthBytes": field["widthBytes"],
+                    "expression": f"\\{field['parameterOrdinal']}",
+                    "parameterOrdinals": [field["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for field in fields
+            ]
+        ):
+            raise ValueError(f"map-block mutation macro operand layout drift: {macro}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    primary_guard: dict[str, Any] | None = None
+    for handler_name in MAP_BLOCK_MUTATION_HANDLER_NAMES:
+        handler_macros = [
+            macro
+            for macro in MAP_BLOCK_MUTATION_MACRO_NAMES
+            if MAP_BLOCK_MUTATION_HANDLER_BY_MACRO[macro] == handler_name
+        ]
+        handler = _handler_by_name(handlers, handler_name)
+        opcode = macros[handler_macros[0]]["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"map-block mutation dispatcher target drift: {handler_name}")
+        if handler["opcodes"] != [opcode]:
+            raise ValueError(f"map-block mutation handler opcode drift: {handler_name}")
+        for macro in handler_macros:
+            contract = macros[macro]
+            if (
+                contract["kind"] != "command"
+                or contract["opcode"] != opcode
+                or handler["encodedCommandBytes"] != contract["encodedBytes"]
+            ):
+                raise ValueError(f"map-block mutation handler ABI drift: {macro}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _map_block_mutation_section_guard(handler_name, statements)
+        direct_calls = _force_state_direct_calls(statements)
+        if direct_calls != [{"opcode": "jsr", "instructionTarget": "CopyMapBlocks"}]:
+            raise ValueError(f"map-block mutation direct-call inventory drift: {handler_name}")
+        direct_call_rows[handler_name] = direct_calls
+        if primary_guard is None:
+            primary_guard = section_guard
+        elif section_guard["cursorReadUseSites"] != primary_guard["cursorReadUseSites"]:
+            raise ValueError("map-block mutation handler cursor-read disagreement")
+        handler_rows.append(
+            {
+                "handler": handler_name,
+                "macros": handler_macros,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": sum(source_counts[macro] for macro in handler_macros),
+                "cursorReadWidths": [
+                    read["transferredByteCount"] for read in section_guard["cursorReadUseSites"]
+                ],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    if primary_guard is None:
+        raise ValueError("map-block mutation primary handler guard is missing")
+    input_word_groups = _map_block_input_word_groups(
+        operand_fields_by_macro["setBlocks"], primary_guard
+    )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": MAP_BLOCK_MUTATION_HANDLER_BY_MACRO[macro],
+                "sourceOperandFields": operand_fields_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in MAP_BLOCK_MUTATION_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **corpus_order_facts,
+        "programTotals": program_totals,
+        "operandValueBounds": _map_block_mutation_operand_value_bounds(
+            source_sites, operand_fields_by_macro["setBlocks"]
+        ),
+        "inputWordGroups": input_word_groups,
+        "handlers": handler_rows,
+        "copyMapBlocksHelperFacts": _map_block_copy_helper_facts(disasm, equates, addresses),
+        "callerBreakdown": _force_state_caller_breakdown(
+            disasm,
+            handlers,
+            MAP_BLOCK_MUTATION_HANDLER_NAMES,
+            direct_call_rows,
+            addresses,
+            rom,
+        ),
+        "sourceIdentityJoins": _map_block_mutation_source_identity_joins(disasm),
+        "runtimeQuestions": MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -3552,6 +4101,16 @@ def build_map_script_engine_contract(
         addresses,
         rom,
         upstream_path,
+    )
+    map_block_mutation_command_facts = _map_block_mutation_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
     )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
@@ -3699,6 +4258,7 @@ def build_map_script_engine_contract(
         "transitionCommandFacts": transition_command_facts,
         "forceStateCommandFacts": force_state_command_facts,
         "storyStateCommandFacts": story_state_command_facts,
+        "mapBlockMutationCommandFacts": map_block_mutation_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -3706,6 +4266,7 @@ def build_map_script_engine_contract(
             *FORCE_STATE_RUNTIME_QUESTIONS,
             *ACTIVE_PARTY_RUNTIME_QUESTIONS,
             *STORY_STATE_RUNTIME_QUESTIONS,
+            *MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -3752,6 +4313,7 @@ def verify_map_script_engine_contract(
         "transitionCommandFacts": output["transitionCommandFacts"],
         "forceStateCommandFacts": output["forceStateCommandFacts"],
         "storyStateCommandFacts": output["storyStateCommandFacts"],
+        "mapBlockMutationCommandFacts": output["mapBlockMutationCommandFacts"],
     }
     for field in (
         "summary",
@@ -3775,6 +4337,7 @@ def verify_map_script_engine_contract(
         "transitionCommandFacts",
         "forceStateCommandFacts",
         "storyStateCommandFacts",
+        "mapBlockMutationCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

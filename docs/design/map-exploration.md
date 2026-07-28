@@ -122,6 +122,16 @@ mapping, battle-unlock translation `flag = 400 + battleIndex`, branch target/cur
 versus resolved service target identity. These are command-graph facts; global story ordering, save
 persistence, flag lifecycle, prompt presentation, and hardware effect remain outside the importer
 contract.
+Map-script imports MUST retain `setBlocks` and `setBlocksVar` as two distinct source command forms,
+not substitute a guessed map-edit operation. Each record MUST retain its two-byte opcode, six
+source-labeled one-byte fields (`source x`, `source y`, `width`, `height`, `destination x`,
+`destination y`), source program/command order, and the three paired A6 word reads into `d0`, `d1`,
+and `d2`. The static adapter boundary MUST retain the exact direct `CopyMapBlocks` call and the
+source-named bit-set sequence present only after `csc34_setBlocks`; it MUST separately retain the
+helper's parsed 8-bit shifts, 6-bit row shifts, 2-byte inner offsets, 128-byte outer offsets, and
+loop-counter instructions. These are source-layout and instruction-order facts. A remake MUST NOT
+infer a working-layout lifecycle, collision/pathfinding effect, render update, persistence, capacity,
+or hardware effect until `map-block-mutation/runtime-effects-matrix` supplies runtime evidence.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

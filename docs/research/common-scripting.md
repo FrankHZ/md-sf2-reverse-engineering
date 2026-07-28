@@ -8,7 +8,8 @@
   family/program-reference/handler/consumer contract, the complete five-command map-script transition
   family/program-site/handler/caller contract, the complete six-command map-script roster/death
   family/program-site/handler/caller contract, the complete four-command map-script active-party/AI/
-  follower/battle-stat family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
+  follower/battle-stat family/program-site/handler/caller contract, the complete two-command map-script
+  block-copy family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -304,6 +305,65 @@ named above.
 Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, nested
 field `expected.forceStateCommandFacts.activePartyCommandFacts`.
+
+## Confirmed Map-Script Block-Copy Command Family
+
+Evidence date: 2026-07-27.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `mapBlockMutationCommandFacts` retains the
+two source-named macro forms in source order: `setBlocks` opcode `$34` (201 sites, 8 encoded bytes)
+and `setBlocksVar` opcode `$35` (7 sites, 8 encoded bytes). Both emit a two-byte opcode followed by
+six one-byte fields whose unmodified macro-comment labels are `source x`, `source y`, `width`,
+`height`, `destination x`, and `destination y`. The 208 source commands retain complete program and
+command order through an exact compact order-key sequence plus SHA-256
+`063AFC8B1B2FB6B65BB7AA378710F04C95CF7D1FABBF2FCB1A1AD743EFB6B7A7`; all 304 program rows remain
+in a zero-inclusive source-total corpus with order/content SHA-256
+`71850FBEDC792D65CD15C2B2493E48A3AEA67175A68E6706BF522CB7A180FE57`. The physical six-byte operand
+payload, the three two-byte A6 cursor reads, the helper's two-byte `move.w` copy instruction, and the
+two 128-byte row-offset additions are recorded as separate quantities; none is a capacity or a
+runtime persistence claim.
+
+**Confirmed:** the `$34` dispatcher entry resolves to `csc34_setBlocks` at H1/ROM `$46566` and the
+`$35` entry to `csc35_setBlocksVar` at `$46582`. Each exact named section reads three A6 words into
+`d0`, `d1`, and `d2`, then directly calls `CopyMapBlocks`. The `$34` section subsequently sets source
+bit indices 0 then 1 in source symbol `VIEW_PLANE_UPDATE_TOGGLE_BITFIELD` before returning; the `$35`
+section returns immediately after that direct call. This is instruction/cursor/call/bit-set order only:
+the target symbol and macro names are retained without interpreting a visual, collision, persistence,
+or hardware result.
+
+**Confirmed:** each two-byte cursor read joins exactly one adjacent pair of the parsed byte fields:
+`d0` joins `source x`/`source y`, `d1` joins `width`/`height`, and `d2` joins
+`destination x`/`destination y`. The called helper `CopyMapBlocks` is at H1 `$03DB0` in
+`code/gameflow/exploration/exploration.asm`. Its three parsed `lsr.w #BYTE_SHIFT_COUNT` use sites
+resolve `BYTE_SHIFT_COUNT` from `sf2enums.asm` to 8; its two parsed left-shift use sites both use 6;
+its paired inner additions both use 2; and its paired outer additions both use 128. The extractor
+derives the observed address-row relationship `128 = 2 * 2^6` from those specific use sites and fails
+construction if either paired operand, opcode, or order changes. The `d6` and `d7` loop instructions
+remain separately recorded as source counters rather than converted into a block count.
+
+**Confirmed:** the comment-stripping instruction parser finds one direct `CopyMapBlocks` call in each
+handler. The complete declared target map therefore preserves both handler rows with direct and
+effective `CopyMapBlocks` count 1, aggregate direct/effective total 2, internal effective total 0,
+and external effective total 2. There is no used jump-interface alias in this two-call boundary.
+The only source-identity join is the called helper owner
+`code/gameflow/exploration/exploration.asm`, SHA-256
+`C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0`, symbol `CopyMapBlocks`.
+Comments, labels, near-miss mnemonics, and operands do not become caller sites.
+
+**Unknown:** `map-block-mutation/runtime-effects-matrix` is the sole grouped H3 queue. One shared
+launch must determine the relevant state mutation, collision/pathfinding interaction, visible-update
+timing, and persistence across representative source forms. This static slice does not claim any of
+those runtime outcomes.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` lines 345-364;
+`code/common/scripting/map/mapscriptengine_1.asm` lines 66-91; `sf2enums.asm:9`;
+`code/gameflow/exploration/exploration.asm` lines 724-764; H1 addresses `$46566`, `$46582`, and
+`$03DB0`; local US-ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.mapBlockMutationCommandFacts`.
 
 ## Confirmed Map-Script Story-State Branch/Prompt Command Family
 

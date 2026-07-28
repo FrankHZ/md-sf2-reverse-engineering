@@ -99,6 +99,10 @@ The current evidence is deep but narrow:
   and seven zero-reference programs; 347/348 program labels have a reference.
   Story-state extraction adds 51 reads over six flags and 95 write-producing commands over 56 flags
   across 89 programs, including prompt flag 89 and battle-unlock base 400.
+  The adjacent map-block-copy extraction adds all 208 `setBlocks`/`setBlocksVar` commands across the
+  same 304 zero-inclusive program rows, exact macro/handler/cursor/call order, paired helper shift/
+  byte-offset use sites, and the two-call direct/effective caller map; runtime effects remain one
+  grouped question.
   Story reachability and timing/presentation remain batched runtime questions.
   The entity-action source surface is additionally closed across three shared and 75
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
@@ -403,6 +407,15 @@ mutation guards, five direct/effective caller identities with alias resolution a
 per-handler/scope maps, and source-only joins to the game-flag and yes/no owners. Its only H3 follow-up
 is `story-state/branch-prompt-persistence-matrix`; reachability, persistence, lifecycle, prompt
 presentation, and hardware effects are not credited as static coverage.
+The adjacent map-block-copy slice is exact for two source forms: 201 `setBlocks` `$34` and seven
+`setBlocksVar` `$35` sites across a further complete 304-row zero-inclusive corpus. It retains all
+six one-byte source-label fields, the two 8-byte layouts, three exact A6 word reads, direct helper
+identity/order, the `$34`-only source bit-set order, and the called helper's paired 8/6/2/128 shift/
+offset use sites with independently named stream, transfer, copy, and row-offset quantities. Its
+two direct/effective caller rows preserve the zero internal and two external `CopyMapBlocks` totals.
+`map-block-mutation/runtime-effects-matrix` is the sole H3 follow-up; mutation lifecycle, collision,
+pathfinding, presentation timing, persistence, and hardware effect are not credited as static
+coverage.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

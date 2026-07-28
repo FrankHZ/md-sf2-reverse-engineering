@@ -23,6 +23,8 @@ from sf2tool.h2.map_script_engine import (
     _force_state_program_facts,
     _force_state_section_guard,
     _logical_source_lines,
+    _map_block_macro_operand_fields,
+    _map_block_mutation_section_guard,
     _modifier_source_labels,
     _program_corpus,
     _statements,
@@ -315,6 +317,144 @@ def test_story_state_program_totals_keep_aliases_and_zero_primary_carrier() -> N
             },
         },
     ]
+
+
+def test_map_block_mutation_program_totals_keep_both_source_forms() -> None:
+    corpus = {
+        "summary": {"programCount": 2},
+        "programs": [
+            {
+                "id": "first",
+                "commands": [
+                    {
+                        "index": 0,
+                        "sourceLine": 10,
+                        "macro": "setBlocks",
+                        "arguments": ["1", "2", "3", "4", "5", "6"],
+                    },
+                    {
+                        "index": 1,
+                        "sourceLine": 11,
+                        "macro": "setBlocksVar",
+                        "arguments": ["7", "8", "9", "10", "11", "12"],
+                    },
+                    {"index": 2, "sourceLine": 12, "macro": "setQuake", "arguments": []},
+                ],
+            },
+            {"id": "second", "commands": []},
+        ],
+    }
+
+    sites, totals = _force_state_program_facts(
+        corpus, macro_names=map_script_engine.MAP_BLOCK_MUTATION_MACRO_NAMES
+    )
+
+    assert sites == [
+        {
+            "programId": "first",
+            "commands": [
+                {
+                    "commandIndex": 0,
+                    "sourceLine": 10,
+                    "macro": "setBlocks",
+                    "arguments": ["1", "2", "3", "4", "5", "6"],
+                },
+                {
+                    "commandIndex": 1,
+                    "sourceLine": 11,
+                    "macro": "setBlocksVar",
+                    "arguments": ["7", "8", "9", "10", "11", "12"],
+                },
+            ],
+        }
+    ]
+    assert totals == [
+        {
+            "programId": "first",
+            "commandCount": 2,
+            "macroCounts": {"setBlocks": 1, "setBlocksVar": 1},
+        },
+        {
+            "programId": "second",
+            "commandCount": 0,
+            "macroCounts": {"setBlocks": 0, "setBlocksVar": 0},
+        },
+    ]
+
+
+def test_map_block_mutation_operand_field_parser_rejects_ordinal_drift(tmp_path) -> None:
+    macro_path = tmp_path / "sf2cutscenemacros.asm"
+    macro_path.write_text(
+        """
+setBlocks: macro
+    dc.w $34
+    dc.b \\1 ; source x
+    dc.b \\2 ; source y
+    endm
+setBlocksVar: macro
+    dc.w $35
+    dc.b \\1 ; source x
+    dc.b \\2 ; source y
+    endm
+""",
+        encoding="utf-8",
+    )
+    assert _map_block_macro_operand_fields(tmp_path) == {
+        "setBlocks": [
+            {"parameterOrdinal": 1, "sourceLabel": "source x", "streamOffset": 2, "widthBytes": 1},
+            {"parameterOrdinal": 2, "sourceLabel": "source y", "streamOffset": 3, "widthBytes": 1},
+        ],
+        "setBlocksVar": [
+            {"parameterOrdinal": 1, "sourceLabel": "source x", "streamOffset": 2, "widthBytes": 1},
+            {"parameterOrdinal": 2, "sourceLabel": "source y", "streamOffset": 3, "widthBytes": 1},
+        ],
+    }
+    original_text = macro_path.read_text(encoding="utf-8")
+    uncommented_text = original_text.replace("; source y", "", 1)
+    macro_path.write_text(uncommented_text, encoding="utf-8")
+    with pytest.raises(ValueError, match="comment coverage drift"):
+        _map_block_macro_operand_fields(tmp_path)
+    drifted_text = original_text.replace(
+        "dc.b \\2 ; source y", "dc.b \\3 ; source y", 1
+    )
+    macro_path.write_text(
+        drifted_text,
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="operand ordinal drift"):
+        _map_block_macro_operand_fields(tmp_path)
+
+
+def test_map_block_mutation_section_guard_rejects_bit_order_and_extra_statement() -> None:
+    statements = [
+        "move.w (a6)+,d0",
+        "move.w (a6)+,d1",
+        "move.w (a6)+,d2",
+        "jsr (CopyMapBlocks).w",
+        "bset #0,(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD).l",
+        "bset #1,(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD).l",
+        "rts",
+    ]
+    actual = _map_block_mutation_section_guard("csc34_setBlocks", statements)
+    assert actual["postCallBitSetUseSites"] == [
+        {
+            "bitIndex": 0,
+            "sourceTarget": "VIEW_PLANE_UPDATE_TOGGLE_BITFIELD",
+            "instruction": "bset #0,(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD).l",
+        },
+        {
+            "bitIndex": 1,
+            "sourceTarget": "VIEW_PLANE_UPDATE_TOGGLE_BITFIELD",
+            "instruction": "bset #1,(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD).l",
+        },
+    ]
+    statements[4], statements[5] = statements[5], statements[4]
+    with pytest.raises(ValueError, match="bit-set order drift"):
+        _map_block_mutation_section_guard("csc34_setBlocks", statements)
+    statements[4], statements[5] = statements[5], statements[4]
+    statements.insert(-1, "nop")
+    with pytest.raises(ValueError, match="statement coverage drift"):
+        _map_block_mutation_section_guard("csc34_setBlocks", statements)
 
 
 def test_story_state_corpus_order_facts_bind_order_and_canonical_content() -> None:
@@ -2032,3 +2172,363 @@ def test_story_state_section_guards_reject_use_site_mutations_before_fixture(
         build_map_script_engine_contract(
             repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
         )
+
+
+def test_map_block_mutation_contract_matches_complete_golden_and_helper_provenance(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["mapBlockMutationCommandFacts"]
+
+    assert actual == fixture["expected"]["mapBlockMutationCommandFacts"]
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["handler"],
+            row["sourceCommandCount"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("setBlocks", 52, 8, 6, "csc34_setBlocks", 201),
+        ("setBlocksVar", 53, 8, 6, "csc35_setBlocksVar", 7),
+    ]
+    assert len(actual["sourceSiteOrderKeys"]) == 208
+    assert len(actual["programTotalOrderKeys"]) == 304
+    assert actual["operandValueBounds"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceLabel": "source x",
+            "minimumValue": 0,
+            "minimumSourceSiteKey": "abcs_battle07:119:setBlocks",
+            "maximumValue": 63,
+            "maximumSourceSiteKey": "cs_528D4:15:setBlocks",
+            "sourceValueCount": 208,
+        },
+        {
+            "parameterOrdinal": 2,
+            "sourceLabel": "source y",
+            "minimumValue": 0,
+            "minimumSourceSiteKey": "bbcs_16:58:setBlocks",
+            "maximumValue": 63,
+            "maximumSourceSiteKey": "cs_503A6:148:setBlocks",
+            "sourceValueCount": 208,
+        },
+        {
+            "parameterOrdinal": 3,
+            "sourceLabel": "width",
+            "minimumValue": 1,
+            "minimumSourceSiteKey": "IntroCutscene1:133:setBlocks",
+            "maximumValue": 22,
+            "maximumSourceSiteKey": "cs_5ED06:6:setBlocks",
+            "sourceValueCount": 208,
+        },
+        {
+            "parameterOrdinal": 4,
+            "sourceLabel": "height",
+            "minimumValue": 1,
+            "minimumSourceSiteKey": "IntroCutscene1:133:setBlocks",
+            "maximumValue": 29,
+            "maximumSourceSiteKey": "bbcs_40:16:setBlocks",
+            "sourceValueCount": 208,
+        },
+        {
+            "parameterOrdinal": 5,
+            "sourceLabel": "destination x",
+            "minimumValue": 0,
+            "minimumSourceSiteKey": "bbcs_16:5:setBlocks",
+            "maximumValue": 63,
+            "maximumSourceSiteKey": "cs_503A6:124:setBlocks",
+            "sourceValueCount": 208,
+        },
+        {
+            "parameterOrdinal": 6,
+            "sourceLabel": "destination y",
+            "minimumValue": 0,
+            "minimumSourceSiteKey": "abcs_battle40:13:setBlocks",
+            "maximumValue": 63,
+            "maximumSourceSiteKey": "cs_503A6:124:setBlocks",
+            "sourceValueCount": 208,
+        },
+    ]
+    assert actual["inputWordGroups"] == [
+        {
+            "handlerRegister": "d0",
+            "sourceParameterOrdinals": [1, 2],
+            "sourceLabels": ["source x", "source y"],
+            "streamOffset": 2,
+            "transferredByteCount": 2,
+            "cursorReadInstruction": "move.w (a6)+,d0",
+        },
+        {
+            "handlerRegister": "d1",
+            "sourceParameterOrdinals": [3, 4],
+            "sourceLabels": ["width", "height"],
+            "streamOffset": 4,
+            "transferredByteCount": 2,
+            "cursorReadInstruction": "move.w (a6)+,d1",
+        },
+        {
+            "handlerRegister": "d2",
+            "sourceParameterOrdinals": [5, 6],
+            "sourceLabels": ["destination x", "destination y"],
+            "streamOffset": 6,
+            "transferredByteCount": 2,
+            "cursorReadInstruction": "move.w (a6)+,d2",
+        },
+    ]
+    assert [
+        (row["handler"], row["address"], row["opcode"], row["sourceCommandCount"])
+        for row in actual["handlers"]
+    ] == [
+        ("csc34_setBlocks", 288102, 52, 201),
+        ("csc35_setBlocksVar", 288130, 53, 7),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["postCallBitSetUseSites"] == [
+        {
+            "bitIndex": 0,
+            "sourceTarget": "VIEW_PLANE_UPDATE_TOGGLE_BITFIELD",
+            "instruction": "bset #0,(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD).l",
+        },
+        {
+            "bitIndex": 1,
+            "sourceTarget": "VIEW_PLANE_UPDATE_TOGGLE_BITFIELD",
+            "instruction": "bset #1,(VIEW_PLANE_UPDATE_TOGGLE_BITFIELD).l",
+        },
+    ]
+    assert actual["handlers"][1]["sectionGuard"]["postCallBitSetUseSites"] == []
+    assert actual["copyMapBlocksHelperFacts"]["derivedAddressStride"] == {
+        "addressRowShiftBits": 6,
+        "wordCopyByteStride": 2,
+        "rowByteStride": 128,
+    }
+    assert actual["copyMapBlocksHelperFacts"]["inputByteShiftConstantUses"] == [
+        {
+            "constant": "BYTE_SHIFT_COUNT",
+            "value": 8,
+            "instruction": "lsr.w #BYTE_SHIFT_COUNT,d6",
+        },
+        {
+            "constant": "BYTE_SHIFT_COUNT",
+            "value": 8,
+            "instruction": "lsr.w #BYTE_SHIFT_COUNT,d2",
+        },
+        {
+            "constant": "BYTE_SHIFT_COUNT",
+            "value": 8,
+            "instruction": "lsr.w #BYTE_SHIFT_COUNT,d0",
+        },
+    ]
+    assert actual["callerBreakdown"] == {
+        "callerHandlers": [
+            {
+                "handler": "csc34_setBlocks",
+                "instructionTargetSiteCounts": {"CopyMapBlocks": 1},
+                "effectiveTargetSiteCounts": {"CopyMapBlocks": 1},
+            },
+            {
+                "handler": "csc35_setBlocksVar",
+                "instructionTargetSiteCounts": {"CopyMapBlocks": 1},
+                "effectiveTargetSiteCounts": {"CopyMapBlocks": 1},
+            },
+        ],
+        "targetResolutions": [
+            {
+                "instructionTarget": "CopyMapBlocks",
+                "effectiveTarget": "CopyMapBlocks",
+                "aliasSourcePath": None,
+                "effectiveTargetScope": "external",
+            }
+        ],
+        "instructionTargetTotals": {"CopyMapBlocks": 2},
+        "effectiveTargetTotals": {"CopyMapBlocks": 2},
+        "internalEffectiveTargetTotals": {"CopyMapBlocks": 0},
+        "externalEffectiveTargetTotals": {"CopyMapBlocks": 2},
+    }
+    assert actual["sourceIdentityJoins"] == {
+        "copyMapBlocksOwner": {
+            "sourcePath": "code/gameflow/exploration/exploration.asm",
+            "sourceSha256": "C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0",
+            "symbols": ["CopyMapBlocks"],
+        }
+    }
+    assert actual["runtimeQuestions"] == ["map-block-mutation/runtime-effects-matrix"]
+
+
+def test_map_block_mutation_guards_reject_source_mutations_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_use_site(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc34_setBlocks":
+            return [
+                statement.replace("bset #1,", "bset #2,")
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_use_site)
+    with pytest.raises(ValueError, match="bit-set order drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_block_mutation_handler_order_fails_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_call_order(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc34_setBlocks":
+            statements[3], statements[4] = statements[4], statements[3]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_call_order)
+    with pytest.raises(ValueError, match="csc34_setBlocks statement is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_block_mutation_copy_stride_use_site_fails_before_fixture(monkeypatch) -> None:
+    original_section = map_script_engine._map_block_named_section_statements
+
+    def changed_row_stride(disasm, source_path, name):
+        statements = original_section(disasm, source_path, name)
+        if name == "CopyMapBlocks":
+            return [statement.replace("addi.w #128", "addi.w #64") for statement in statements]
+        return statements
+
+    monkeypatch.setattr(
+        map_script_engine, "_map_block_named_section_statements", changed_row_stride
+    )
+    with pytest.raises(ValueError, match="row-stride relationship drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_block_mutation_corpus_order_schema_rejects_source_reordering(
+    monkeypatch,
+) -> None:
+    original_program_corpus = map_script_engine._program_corpus
+
+    def reordered_block_mutation_programs(*args, **kwargs):
+        corpus = original_program_corpus(*args, **kwargs)
+        matching_indexes = [
+            index
+            for index, program in enumerate(corpus["programs"])
+            if any(
+                command["macro"] in map_script_engine.MAP_BLOCK_MUTATION_MACRO_NAMES
+                for command in program["commands"]
+            )
+        ]
+        first, second = matching_indexes[:2]
+        corpus["programs"][first], corpus["programs"][second] = (
+            corpus["programs"][second],
+            corpus["programs"][first],
+        )
+        return corpus
+
+    monkeypatch.setattr(map_script_engine, "_program_corpus", reordered_block_mutation_programs)
+    output = build_map_script_engine_contract(
+        repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+    )
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            output,
+            repo_path("schemas/map-script-engine-static.schema.json"),
+            owner="map-block mutation source-order output",
+        )
+
+
+def test_map_block_mutation_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="map-block mutation output")
+    validate_json(fixture, fixture_schema, owner="map-block mutation fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["mapBlockMutationCommandFacts"]["sourceSites"][0]["commands"][0][
+        "operandValues"
+    ][0]["value"]
+    with pytest.raises(ValueError, match="value"):
+        validate_json(missing, output_schema, owner="map-block mutation output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    operand = renamed["mapBlockMutationCommandFacts"]["sourceSites"][0]["commands"][0][
+        "operandValues"
+    ][0]
+    operand["label"] = operand.pop("sourceLabel")
+    with pytest.raises(ValueError, match="sourceLabel"):
+        validate_json(renamed, output_schema, owner="map-block mutation output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["mapBlockMutationCommandFacts"]["copyMapBlocksHelperFacts"]["innerLoop"][
+        "extra"
+    ] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="map-block mutation output extra field")
+
+    reordered_source = deepcopy(map_script_engine_output)
+    source_order = reordered_source["mapBlockMutationCommandFacts"]["sourceSiteOrderKeys"]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_source,
+            output_schema,
+            owner="map-block mutation output reordered source keys",
+        )
+
+    reordered_programs = deepcopy(map_script_engine_output)
+    program_order = reordered_programs["mapBlockMutationCommandFacts"]["programTotalOrderKeys"]
+    program_order[0], program_order[1] = program_order[1], program_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_programs,
+            output_schema,
+            owner="map-block mutation output reordered program keys",
+        )
+
+    out_of_boundary = deepcopy(map_script_engine_output)
+    out_of_boundary["mapBlockMutationCommandFacts"]["copyMapBlocksHelperFacts"][
+        "derivedAddressStride"
+    ]["rowByteStride"] = 127
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            out_of_boundary, output_schema, owner="map-block mutation output boundary"
+        )
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["mapBlockMutationCommandFacts"]["handlers"][0][
+        "sectionGuard"
+    ]["cursorReadUseSites"][0]["handlerRegister"]
+    with pytest.raises(ValueError, match="handlerRegister"):
+        validate_json(
+            fixture_missing, fixture_schema, owner="map-block mutation fixture missing field"
+        )
+
+
+def test_map_block_mutation_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("mapBlockMutationCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "mapBlockMutationCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        assert "sourceSites" not in exact["properties"]
+        assert "programTotals" not in exact["properties"]
+        facts = schema["definitions"]["mapBlockMutationCommandFacts"]
+        assert facts["additionalProperties"] is False
+        assert {"sourceSites", "programTotals"} <= set(facts["required"])
