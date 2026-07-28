@@ -17,6 +17,10 @@ from sf2tool.h2.map_script_engine import (
     _direct_call_sites,
     _emission_rows,
     _entity_dialogue_consumer_facts,
+    _force_state_aliases,
+    _force_state_direct_calls,
+    _force_state_program_facts,
+    _force_state_section_guard,
     _logical_source_lines,
     _modifier_source_labels,
     _program_corpus,
@@ -77,6 +81,105 @@ def test_logical_source_lines_join_ampersand_continuations() -> None:
     assert _logical_source_lines("  setBlocks 1,2,&\n    3,4,5,6\n") == [
         (1, "  setBlocks 1,2, 3,4,5,6")
     ]
+
+
+def test_force_state_call_parser_ignores_near_misses_and_accepts_size_suffixes() -> None:
+    calls = _force_state_direct_calls(
+        [
+            "jsr.w j_JoinForce",
+            "bsr.l GetCurrentHp",
+            "move.w j_JoinForce,d0",
+            "j_JoinForce:",
+            "jsr (a0)",
+            "jsr j_JoinForce ; comment is already stripped by handler parsing",
+        ]
+    )
+
+    assert calls == [
+        {"opcode": "jsr", "instructionTarget": "j_JoinForce"},
+        {"opcode": "bsr", "instructionTarget": "GetCurrentHp"},
+        {"opcode": "jsr", "instructionTarget": "j_JoinForce"},
+    ]
+
+
+def test_force_state_program_totals_keep_zero_rows_and_exact_site_order() -> None:
+    corpus = {
+        "summary": {"programCount": 2},
+        "programs": [
+            {
+                "id": "first",
+                "commands": [
+                    {"index": 0, "sourceLine": 10, "macro": "join", "arguments": ["1"]},
+                    {"index": 1, "sourceLine": 11, "macro": "wait", "arguments": []},
+                ],
+            },
+            {"id": "second", "commands": []},
+        ],
+    }
+
+    sites, totals = _force_state_program_facts(corpus)
+
+    assert sites == [
+        {
+            "programId": "first",
+            "commands": [
+                {"commandIndex": 0, "sourceLine": 10, "macro": "join", "arguments": ["1"]}
+            ],
+        }
+    ]
+    assert totals == [
+        {
+            "programId": "first",
+            "commandCount": 1,
+            "macroCounts": {
+                "join": 1,
+                "jumpIfDefeatedByLastAttack": 0,
+                "jumpIfDead": 0,
+                "allyDefeated": 0,
+                "updateDefeatedAllies": 0,
+                "reviveAlly": 0,
+            },
+        },
+        {
+            "programId": "second",
+            "commandCount": 0,
+            "macroCounts": {
+                "join": 0,
+                "jumpIfDefeatedByLastAttack": 0,
+                "jumpIfDead": 0,
+                "allyDefeated": 0,
+                "updateDefeatedAllies": 0,
+                "reviveAlly": 0,
+            },
+        },
+    ]
+
+
+def test_force_state_alias_parser_requires_named_jump_and_accepts_size_suffix(
+    tmp_path: Path,
+) -> None:
+    interface = tmp_path / "code/common/tech/jumpinterfaces"
+    interface.mkdir(parents=True)
+    alias_path = interface / "s02_jumpinterface.asm"
+    alias_path.write_text(
+        "; j_Target in a comment is not an alias definition\n"
+        "j_Target:\n"
+        "    jmp.w Target(pc) ; legal instruction-size suffix\n",
+        encoding="utf-8",
+    )
+    addresses = {"j_Target": 0, "Target": 4}
+    rom = b"\x4e\xfa\x00\x02" + b"\x00" * 4
+
+    assert _force_state_aliases(tmp_path, {"j_Target"}, addresses, rom) == {
+        "j_Target": {
+            "effectiveTarget": "Target",
+            "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        }
+    }
+
+    alias_path.write_text("j_Target:\n    jsr Target(pc)\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="alias instruction drift"):
+        _force_state_aliases(tmp_path, {"j_Target"}, addresses, rom)
 
 
 def test_program_corpus_owns_anonymous_and_jump_terminated_programs(tmp_path) -> None:
@@ -986,3 +1089,164 @@ def test_transition_guards_reject_mutated_service_use_site(monkeypatch) -> None:
         build_map_script_engine_contract(
             repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
         )
+
+
+def test_force_state_contract_matches_complete_golden_and_zero_inclusive_maps(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["forceStateCommandFacts"]
+
+    assert actual == fixture["expected"]["forceStateCommandFacts"]
+    assert [row["sourceCommandCount"] for row in actual["macros"]] == [34, 0, 0, 5, 1, 3]
+    assert len(actual["programTotals"]) == 304
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == {
+        "FadeOut_WaitForP1Input": 1,
+        "GetClass": 1,
+        "GetCombatantX": 1,
+        "GetCurrentHp": 1,
+        "JoinForce": 3,
+        "Sleep": 1,
+        "WaitForViewScrollEnd": 1,
+    }
+    assert actual["callerBreakdown"]["internalEffectiveTargetTotals"] == {
+        target: 0
+        for target in actual["callerBreakdown"]["effectiveTargetTotals"]
+    }
+    scopes = {
+        row["effectiveTarget"]: row["effectiveTargetScope"]
+        for row in actual["callerBreakdown"]["targetResolutions"]
+    }
+    assert scopes == {
+        "FadeOut_WaitForP1Input": "external",
+        "GetClass": "external",
+        "GetCombatantX": "external",
+        "GetCurrentHp": "external",
+        "JoinForce": "external",
+        "Sleep": "external",
+        "WaitForViewScrollEnd": "external",
+    }
+    assert actual["callerBreakdown"]["internalEffectiveTargetTotals"] == {
+        target: actual["callerBreakdown"]["effectiveTargetTotals"][target]
+        if scopes[target] == "internal"
+        else 0
+        for target in actual["callerBreakdown"]["effectiveTargetTotals"]
+    }
+    assert actual["callerBreakdown"]["externalEffectiveTargetTotals"] == {
+        target: actual["callerBreakdown"]["effectiveTargetTotals"][target]
+        if scopes[target] == "external"
+        else 0
+        for target in actual["callerBreakdown"]["effectiveTargetTotals"]
+    }
+    assert actual["commonStatsIdentity"] == {
+        "contractId": "sf2-common-stats-static-v1",
+        "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+        "sourcePath": "code/common/stats/battleparty.asm",
+        "sourceSha256": "670A25075D807BA60B0AA3C6D158DDF80E5248264753361DBC495F7655ED8B37",
+        "services": ["JoinForce", "UpdateForce"],
+    }
+    assert actual["runtimeQuestions"] == [
+        "force-state/roster-death-persistence-visible-outcomes"
+    ]
+
+
+def test_force_state_schemas_reject_nested_mutations_and_boundary_content(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="force-state output")
+    validate_json(fixture, fixture_schema, owner="force-state fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["forceStateCommandFacts"]["handlers"][0]["sectionGuard"]["branchRecords"][0][
+        "branchInstruction"
+    ]
+    with pytest.raises(ValueError, match="branchInstruction"):
+        validate_json(missing, output_schema, owner="force-state output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    branch = renamed["forceStateCommandFacts"]["handlers"][0]["sectionGuard"]["branchRecords"][0]
+    branch["branch"] = branch.pop("branchInstruction")
+    with pytest.raises(ValueError, match="branchInstruction"):
+        validate_json(renamed, output_schema, owner="force-state output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["forceStateCommandFacts"]["handlers"][0]["sectionGuard"]["branchRecords"][0][
+        "extra"
+    ] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="force-state output extra field")
+
+    reordered = deepcopy(map_script_engine_output)
+    totals = reordered["forceStateCommandFacts"]["programTotals"]
+    totals[0], totals[1] = totals[1], totals[0]
+    with pytest.raises(ValueError, match="const"):
+        validate_json(reordered, output_schema, owner="force-state output reordered totals")
+
+    out_of_bounds = deepcopy(map_script_engine_output)
+    out_of_bounds["forceStateCommandFacts"]["macros"][0]["encodedBytes"] = 3
+    with pytest.raises(ValueError, match="const"):
+        validate_json(out_of_bounds, output_schema, owner="force-state output boundary")
+
+    wrong_scope = deepcopy(map_script_engine_output)
+    wrong_scope["forceStateCommandFacts"]["callerBreakdown"]["targetResolutions"][0][
+        "effectiveTargetScope"
+    ] = "internal"
+    with pytest.raises(ValueError, match="const"):
+        validate_json(wrong_scope, output_schema, owner="force-state output wrong scope")
+
+    extra_effective_target = deepcopy(map_script_engine_output)
+    extra_effective_target["forceStateCommandFacts"]["callerBreakdown"][
+        "effectiveTargetTotals"
+    ]["OtherTarget"] = 0
+    with pytest.raises(ValueError, match="OtherTarget"):
+        validate_json(
+            extra_effective_target, output_schema, owner="force-state output extra target"
+        )
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["forceStateCommandFacts"]["handlers"][4]["sectionGuard"]
+    with pytest.raises(ValueError, match="sectionGuard"):
+        validate_json(fixture_missing, fixture_schema, owner="force-state fixture missing field")
+
+
+def test_force_state_section_guards_reject_mutated_branch_operands_before_fixture(
+    monkeypatch,
+) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_use_site(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc20_updateDefeatedAllies":
+            return [statement.replace("cmpi.w #-1,d1", "cmpi.w #0,d1") for statement in statements]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_use_site)
+    with pytest.raises(ValueError, match="comparison operand drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_force_state_section_guard_rejects_branch_polarity_mutation() -> None:
+    statements = [
+        "move.w (a6)+,d0",
+        "jsr j_GetCurrentHp",
+        "tst.w d1",
+        "bne.w alive",
+        "movea.l (a6),a6",
+        "bra.s return",
+        "addq.w #4,a6",
+        "rts",
+    ]
+    assert _force_state_section_guard("jumpIfDead", statements, {})["branchRecords"][0] == {
+        "testInstruction": "tst.w d1",
+        "branchInstruction": "bne.w alive",
+        "fallthroughInstruction": "movea.l (a6),a6",
+        "branchTargetInstruction": "addq.w #4,a6",
+    }
+    statements[3] = "beq.w alive"
+    with pytest.raises(ValueError, match="csc0F_jumpIfCharacterDead statement is missing"):
+        _force_state_section_guard("jumpIfDead", statements, {})

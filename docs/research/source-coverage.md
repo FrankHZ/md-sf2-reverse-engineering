@@ -379,6 +379,14 @@ the exact `MAP_CURRENT` source sentinel, named handler cursor/call/fall-through 
 parsed packed-coordinate multiplier, and zero-inclusive direct/effective caller maps for four service
 targets. The sole grouped H3 follow-up is `map-script-transition-presentation-matrix`; map/camera,
 event-consumer, fade, and display outcomes remain runtime questions rather than static claims.
+The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
+`jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
+`updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.
+Its contract preserves the source macro/handler label differences, physical byte layouts, six bounded
+named-section branch/mutation/call guards, seven direct/effective caller identities (including alias
+resolution), and a provenance-only join to the common-stats roster source. The sole grouped H3
+follow-up is `force-state/roster-death-persistence-visible-outcomes`; story reachability, list/roster
+capacity, persistence, and visible effects are not credited as static coverage.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

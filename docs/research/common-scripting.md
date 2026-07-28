@@ -6,6 +6,7 @@
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
   the regular entity map-sprite decode/DMA consumer shape, the complete six-command map-script dialogue
   family/program-reference/handler/consumer contract, the complete five-command map-script transition
+  family/program-site/handler/caller contract, the complete six-command map-script roster/death
   family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
@@ -169,6 +170,81 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` commit
 `mapscriptengine_2.asm` (`csc07` and dispatcher), `sf2enums.asm`, the H1 listing addresses, and the
 US ROM SHA-256 in the fixture. Reproduce with `uv run sf2 h2 map-script-engine`; the observed output
 is fixture ID `sf2-map-script-engine-static-v1`, transition field `transitionCommandFacts`.
+
+## Confirmed Map-Script Roster/Death Command Family
+
+**Confirmed:** `sf2-map-script-engine-static-v1` separately retains the source-named primary forms
+`join`, `jumpIfDefeatedByLastAttack`, `jumpIfDead`, `allyDefeated`, `updateDefeatedAllies`, and
+`reviveAlly`. Their dispatcher bindings are `$08/$0E/$0F/$1F/$20/$21`; physical command sizes are
+4/8/8/4/2/4 bytes. The six macro layouts retain their byte offsets and widths, while every one of the
+304 programs retains a zero-inclusive ordered total. Ordered source-site counts are 34/0/0/5/1/3.
+The two zero rows are source-use facts only; they do not claim that either handler is unreachable at
+runtime.
+
+**Confirmed:** the source macro labels and handler labels remain distinct: in particular,
+`jumpIfDefeatedByLastAttack` dispatches to `csc0E_jumpIfForceMemberInList`, and `jumpIfDead` dispatches
+to `csc0F_jumpIfCharacterDead`. Named-section guards cover the exact handler sections at H1/ROM
+addresses `$47398`, `$47440`, `$47464`, `$46ADE`, `$46AF0`, and `$46B1A` respectively. They retain A6
+word/long cursor reads separately from storage/list accesses, ordered branch mnemonics and polarity,
+and mutation/call order; no byte count is promoted into a list capacity.
+
+**Confirmed:** `csc08_joinForce` clears source-named `CURRENT_SPEECH_SFX`, waits for view scrolling,
+reads its one word, clears bit 15, then preserves the two music paths in source order. Its numeric
+special-selector use site is checked against parsed `COMBATANT_ENEMIES_START` 128; the source-named
+`ALLY_SARAH`/`ALLY_CHESTER` calls precede their source text form, while the other path calls
+`j_JoinForce` then `j_GetClass` before writing the two source-named dialogue indices. This is an
+instruction-order fact, not a claim about music, text, or player-visible presentation.
+
+**Confirmed:** `csc0E_jumpIfForceMemberInList` first decrements the source-named list length and uses
+`bcs`, then compares one list byte and uses `beq` to select the A6 long target; the non-match path
+loops with `dbf` and skips that long by four bytes. `csc0F_jumpIfCharacterDead` calls
+`j_GetCurrentHp`, tests `d1`, and uses `bne`: the fall-through selects the A6 long target and the
+branch path skips it. These static branch records preserve source polarity without assigning lifecycle
+meaning to either macro name.
+
+**Confirmed:** `csc1F_addDefeatedAlly` indexes from `DEAD_COMBATANTS_LIST_LENGTH`, stores the low byte
+of its A6 word operand, then increments that length. `csc21_reviveAlly` separately reads the length,
+uses the carry branch for the empty case, compares list bytes, decrements the length on the equality
+path, and copies/increments both pointers only on the non-equality path. `csc20_updateDefeatedAllies`
+uses the parsed low byte of its `$FFFFFF80` immediate as `COMBATANT_ENEMIES_START` 128, calls
+`j_GetCombatantX`, then executes `cmpi.w #-1,d1; beq` before the list write and local length increment.
+Thus the write is on the non-equality fall-through path. The nearby source comment is retained as a
+source comment only; it is not treated as behavior when it disagrees with this guarded instruction
+sequence.
+
+**Confirmed:** the instruction-scoped caller inventory preserves seven direct target identities,
+their ordered site counts, and aliases separately from effective targets. The effective totals are
+`FadeOut_WaitForP1Input` 1, `GetClass` 1, `GetCombatantX` 1, `GetCurrentHp` 1, `JoinForce` 3, `Sleep`
+1, and `WaitForViewScrollEnd` 1. Every six-handler caller row includes zero counts for this complete
+target domain. `j_JoinForce` resolves through the pinned `s02_jumpinterface.asm` definition to
+`JoinForce`; `j_GetClass`, `j_GetCombatantX`, `j_GetCurrentHp`, and the fade alias retain the same
+dual identity. The bounded handler surface contains no effective target implementation, so internal
+effective totals are zero and external totals retain the values above. Each resolution records its
+parsed `effectiveTargetScope`; the two zero-inclusive scope-total maps are derived from that map and
+the effective totals, rather than being fixed all-external constants. Comments, labels, operands,
+near-miss mnemonics, and register-indirect calls are not caller sites.
+
+**Confirmed:** the common-stats connection is a provenance identity join, not a copy of another
+fixture: `code/common/stats/battleparty.asm`, SHA-256
+`670A25075D807BA60B0AA3C6D158DDF80E5248264753361DBC495F7655ED8B37`, exports source labels
+`JoinForce` and `UpdateForce` in `sf2-common-stats-static-v1` at the same pinned commit. Only
+`JoinForce` is an effective caller target in this six-handler slice; `UpdateForce` remains a retained
+source identity for the shared roster boundary, not a fabricated caller count.
+
+**Unknown:** `force-state/roster-death-persistence-visible-outcomes` is the sole grouped H3 queue.
+One shared future launch should distinguish roster/list contents, death/revive persistence, and
+visible/presentation outcomes across representative caller states. This static slice does not claim
+normal-story reachability, save persistence, roster capacity, list capacity, or visible effects.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm`,
+`code/common/scripting/map/mapscriptengine_1.asm` (`csc1F`, `csc20`, `csc21`),
+`mapscriptengine_2.asm` (`csc08`, `csc0E`, `csc0F`), `sf2enums.asm`,
+`code/common/tech/jumpinterfaces/s02_jumpinterface.asm`,
+`code/common/tech/jumpinterfaces/s05_jumpinterface.asm`, `code/common/stats/battleparty.asm`, H1
+listing, and the fixture's US ROM SHA-256. Reproduce with `uv run sf2 h2 map-script-engine`; the
+tracked fixture is `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`forceStateCommandFacts`.
 
 Two hundred ninety-six programs have H1 entry addresses. Eight remain source-only: the labeled but
 unassembled `rbcs_battle01`, one unlabeled unused suspend scene in map 72, and six unlabeled debug

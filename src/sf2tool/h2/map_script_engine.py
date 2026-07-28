@@ -11,6 +11,7 @@ from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import _access_rows, _global_access_rows
 from sf2tool.h2.map_content import build_map_content_contract
 from sf2tool.h2.sprite_dialogue import build_sprite_dialogue_contract
+from sf2tool.h2.stats import build_stats_inventory
 from sf2tool.h2.text_banks import build_text_line_domain_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
@@ -76,6 +77,28 @@ TRANSITION_SERVICE_TARGETS = (
     "EnableDisplayAndInterrupts",
 )
 TRANSITION_RUNTIME_QUESTIONS = ["map-script-transition-presentation-matrix"]
+
+# These source-faithful macro names delimit the force-state slice. Behavior is
+# reconstructed from their handler sections; macro names alone are not a
+# semantic interpretation.
+FORCE_STATE_MACRO_NAMES = (
+    "join",
+    "jumpIfDefeatedByLastAttack",
+    "jumpIfDead",
+    "allyDefeated",
+    "updateDefeatedAllies",
+    "reviveAlly",
+)
+
+FORCE_STATE_HANDLER_NAMES = (
+    "csc08_joinForce",
+    "csc0E_jumpIfForceMemberInList",
+    "csc0F_jumpIfCharacterDead",
+    "csc1F_addDefeatedAlly",
+    "csc20_updateDefeatedAllies",
+    "csc21_reviveAlly",
+)
+FORCE_STATE_RUNTIME_QUESTIONS = ["force-state/roster-death-persistence-visible-outcomes"]
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -2014,6 +2037,578 @@ def _transition_command_facts(
     }
 
 
+def _force_state_direct_calls(statements: list[str]) -> list[dict[str, str]]:
+    """Parse only call instructions; comments, labels, and operands do not count."""
+    calls: list[dict[str, str]] = []
+    pattern = re.compile(
+        r"^(?P<opcode>bsr|jsr)(?:\.[bwls])?\s+\(?(?P<target>[A-Za-z_][A-Za-z0-9_]*)\)?(?:\.[bwls])?(?:\s|$)"
+    )
+    for raw_statement in statements:
+        statement = raw_statement.split(";", 1)[0].strip()
+        match = pattern.fullmatch(statement)
+        if match is not None and not re.fullmatch(r"[ad][0-7]", match.group("target")):
+            calls.append(
+                {
+                    "opcode": match.group("opcode"),
+                    "instructionTarget": match.group("target"),
+                }
+            )
+    return calls
+
+
+def _force_state_aliases(
+    disasm: Path, instruction_targets: set[str], addresses: dict[str, int], rom: bytes
+) -> dict[str, dict[str, str]]:
+    """Resolve the jump-interface spelling used by this bounded caller inventory."""
+    aliases: dict[str, dict[str, str]] = {}
+    interface_root = disasm / "code/common/tech/jumpinterfaces"
+    for path in sorted(interface_root.rglob("*.asm"), key=lambda item: item.as_posix()):
+        pending_label: str | None = None
+        for raw in read_upstream_text(path).splitlines():
+            statement = raw.split(";", 1)[0].strip()
+            if not statement:
+                continue
+            label = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*):", statement)
+            if label is not None:
+                pending_label = label.group(1)
+                continue
+            if pending_label not in instruction_targets:
+                pending_label = None
+                continue
+            jump = re.fullmatch(
+                r"jmp(?:\.[bwls])?\s+(?P<target>[A-Za-z_][A-Za-z0-9_]*)(?:\(pc\))?",
+                statement,
+            )
+            if jump is None:
+                raise ValueError(
+                    "force-state jump-interface alias instruction drift: "
+                    f"{pending_label}"
+                )
+            target = jump.group("target")
+            if pending_label not in addresses or target not in addresses:
+                raise ValueError(
+                    "force-state jump-interface alias address is missing: "
+                    f"{pending_label} -> {target}"
+                )
+            alias_address = addresses[pending_label]
+            instruction = rom[alias_address : alias_address + 4]
+            if len(instruction) != 4 or instruction[:2] != b"\x4e\xfa":
+                raise ValueError(
+                    f"force-state jump-interface ROM opcode drift: {pending_label}"
+                )
+            rom_target = alias_address + 2 + int.from_bytes(
+                instruction[2:], "big", signed=True
+            )
+            if rom_target != addresses[target]:
+                raise ValueError(
+                    "force-state jump-interface source/ROM target drift: "
+                    f"{pending_label} -> {target}"
+                )
+            aliases[pending_label] = {
+                "effectiveTarget": target,
+                "sourcePath": path.relative_to(disasm).as_posix(),
+            }
+            pending_label = None
+    expected = {target for target in instruction_targets if target.startswith("j_")}
+    if set(aliases) != expected:
+        raise ValueError(
+            "force-state jump-interface alias coverage drift: "
+            f"expected {sorted(expected)}, got {sorted(aliases)}"
+        )
+    return dict(sorted(aliases.items()))
+
+
+def _force_state_program_facts(
+    program_corpus: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Retain all 304 programs, including zero-use rows, for the bounded macros."""
+    source_sites: list[dict[str, Any]] = []
+    program_totals: list[dict[str, Any]] = []
+    for program in program_corpus["programs"]:
+        command_rows = []
+        counts: Counter[str] = Counter()
+        for command in program["commands"]:
+            macro = command["macro"]
+            if macro not in FORCE_STATE_MACRO_NAMES:
+                continue
+            counts[macro] += 1
+            command_rows.append(
+                {
+                    "commandIndex": command["index"],
+                    "sourceLine": command["sourceLine"],
+                    "macro": macro,
+                    "arguments": command["arguments"],
+                }
+            )
+        program_totals.append(
+            {
+                "programId": program["id"],
+                "commandCount": sum(counts.values()),
+                "macroCounts": {name: counts[name] for name in FORCE_STATE_MACRO_NAMES},
+            }
+        )
+        if command_rows:
+            source_sites.append({"programId": program["id"], "commands": command_rows})
+    if len(program_totals) != program_corpus["summary"]["programCount"]:
+        raise ValueError("force-state zero-inclusive program domain drift")
+    return source_sites, program_totals
+
+
+def _force_state_ordered_statements(
+    statements: list[str], patterns: list[str], *, owner: str
+) -> list[str]:
+    """Guard one named section's relevant instruction order, not a file fragment."""
+    position = 0
+    matched: list[str] = []
+    for pattern in patterns:
+        index, _ = _next_statement(statements, position, pattern, owner=owner)
+        matched.append(statements[index])
+        position = index + 1
+    return matched
+
+
+def _force_state_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Parse branch polarity and mutation/call ordering in one bounded handler section."""
+    if macro == "join":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w #0,\(\(CURRENT_SPEECH_SFX-\$1000000\)\)\.w",
+                r"jsr \(WaitForViewScrollEnd\)\.w",
+                r"move\.w \(a6\)\+,d0",
+                r"bclr #(?P<join_bit>\d+),d0",
+                r"bne\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"sndCom MUSIC_JOIN",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"sndCom MUSIC_SAD_JOIN",
+                r"cmpi\.w #(?P<special_selector>\d+),d0",
+                r"bne\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"move\.w #ALLY_SARAH,d0",
+                r"jsr j_JoinForce",
+                r"move\.w #ALLY_CHESTER,d0",
+                r"jsr j_JoinForce",
+                r"txt 447",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"jsr j_JoinForce",
+                r"jsr j_GetClass",
+                r"move\.w d0,\(\(DIALOGUE_NAME_INDEX_1-\$1000000\)\)\.w",
+                r"move\.w d1,\(\(DIALOGUE_NAME_INDEX_2-\$1000000\)\)\.w",
+                r"txt 446",
+                r"jsr j_FadeOut_WaitForP1Input",
+                r"clsTxt",
+                r"moveq #10,d0",
+                r"jsr \(Sleep\)\.w",
+                r"rts",
+            ],
+            owner="csc08_joinForce",
+        )
+        selector = _literal(re.fullmatch(r"cmpi\.w #(?P<value>\d+),d0", ordered[8]).group("value"))
+        if selector != equates["COMBATANT_ENEMIES_START"]:
+            raise ValueError("force-state join special-selector source use drift")
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[3],
+                    "branchInstruction": ordered[4],
+                    "fallthroughInstruction": ordered[5],
+                    "branchTargetInstruction": ordered[7],
+                },
+                {
+                    "testInstruction": ordered[8],
+                    "branchInstruction": ordered[9],
+                    "fallthroughInstruction": ordered[10],
+                    "branchTargetInstruction": ordered[16],
+                },
+            ],
+            "sourceConstantUses": [
+                {
+                    "constant": "COMBATANT_ENEMIES_START",
+                    "value": selector,
+                    "instruction": ordered[8],
+                },
+                {
+                    "constant": "ALLY_SARAH",
+                    "value": equates["ALLY_SARAH"],
+                    "instruction": ordered[10],
+                },
+                {
+                    "constant": "ALLY_CHESTER",
+                    "value": equates["ALLY_CHESTER"],
+                    "instruction": ordered[12],
+                },
+            ],
+        }
+    if macro == "jumpIfDefeatedByLastAttack":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"lea \(\(DEAD_COMBATANTS_LIST-\$1000000\)\)\.w,a1",
+                r"move\.w \(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w,d7",
+                r"subq\.w #1,d7",
+                r"bcs\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"cmp\.b \(a1\)\+,d0",
+                r"beq\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"dbf d7,[A-Za-z_][A-Za-z0-9_]*",
+                r"addq\.w #4,a6",
+                r"bra\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"movea\.l \(a6\),a6",
+                r"rts",
+            ],
+            owner="csc0E_jumpIfForceMemberInList",
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[3],
+                    "branchInstruction": ordered[4],
+                    "fallthroughInstruction": ordered[5],
+                    "branchTargetInstruction": ordered[11],
+                },
+                {
+                    "testInstruction": ordered[5],
+                    "branchInstruction": ordered[6],
+                    "fallthroughInstruction": ordered[7],
+                    "branchTargetInstruction": ordered[10],
+                },
+            ],
+            "sourceConstantUses": [],
+        }
+    if macro == "jumpIfDead":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"jsr j_GetCurrentHp",
+                r"tst\.w d1",
+                r"bne\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"movea\.l \(a6\),a6",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"addq\.w #4,a6",
+                r"rts",
+            ],
+            owner="csc0F_jumpIfCharacterDead",
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[2],
+                    "branchInstruction": ordered[3],
+                    "fallthroughInstruction": ordered[4],
+                    "branchTargetInstruction": ordered[6],
+                }
+            ],
+            "sourceConstantUses": [],
+        }
+    if macro == "allyDefeated":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"lea \(\(DEAD_COMBATANTS_LIST-\$1000000\)\)\.w,a1",
+                r"adda\.w \(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w,a1",
+                r"move\.w \(a6\)\+,d0",
+                r"move\.b d0,\(a1\)",
+                r"addq\.w #1,\(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w",
+                r"rts",
+            ],
+            owner="csc1F_addDefeatedAlly",
+        )
+        return {"orderedInstructions": ordered, "branchRecords": [], "sourceConstantUses": []}
+    if macro == "updateDefeatedAllies":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"lea \(\(DEAD_COMBATANTS_LIST-\$1000000\)\)\.w,a1",
+                r"move\.w \(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w,d2",
+                r"adda\.w d2,a1",
+                r"moveq #(?P<start>\$?[0-9A-Fa-f]+),d0",
+                r"moveq #(?P<loop>\$?[0-9A-Fa-f]+),d7",
+                r"jsr j_GetCombatantX",
+                r"cmpi\.w #(?P<not_found>-?\d+),d1",
+                r"beq\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"move\.b d0,\(a1\)\+",
+                r"addq\.w #1,d2",
+                r"addq\.b #1,d0",
+                r"dbf d7,[A-Za-z_][A-Za-z0-9_]*",
+                r"move\.w d2,\(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w",
+                r"rts",
+            ],
+            owner="csc20_updateDefeatedAllies",
+        )
+        start_match = re.fullmatch(r"moveq #(?P<value>\$?[0-9A-Fa-f]+),d0", ordered[3])
+        if start_match is None:
+            raise ValueError("force-state defeated scan start use shape drift")
+        start = _literal(start_match.group("value"))
+        if start & 0xFF != equates["COMBATANT_ENEMIES_START"]:
+            raise ValueError("force-state defeated scan start source use drift")
+        comparison_match = re.fullmatch(r"cmpi\.w #(?P<value>-?\d+),d1", ordered[6])
+        if comparison_match is None:
+            raise ValueError("force-state defeated comparison use shape drift")
+        comparison = _literal(comparison_match.group("value"))
+        if comparison != -1:
+            raise ValueError("force-state defeated comparison operand drift")
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[6],
+                    "branchInstruction": ordered[7],
+                    "fallthroughInstruction": ordered[8],
+                    "branchTargetInstruction": ordered[10],
+                }
+            ],
+            "sourceConstantUses": [
+                {
+                    "constant": "COMBATANT_ENEMIES_START",
+                    "value": equates["COMBATANT_ENEMIES_START"],
+                    "instruction": ordered[3],
+                }
+            ],
+        }
+    if macro == "reviveAlly":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"lea \(\(DEAD_COMBATANTS_LIST-\$1000000\)\)\.w,a1",
+                r"lea \(\(DEAD_COMBATANTS_LIST-\$1000000\)\)\.w,a2",
+                r"move\.w \(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w,d7",
+                r"subq\.w #1,d7",
+                r"bcs\.w [A-Za-z_][A-Za-z0-9_]*",
+                r"cmp\.b \(a1\),d0",
+                r"bne\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"addq\.l #1,a1",
+                r"subq\.w #1,\(\(DEAD_COMBATANTS_LIST_LENGTH-\$1000000\)\)\.w",
+                r"bra\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"move\.b \(a1\)\+,\(a2\)\+",
+                r"dbf d7,[A-Za-z_][A-Za-z0-9_]*",
+                r"rts",
+            ],
+            owner="csc21_reviveAlly",
+        )
+        return {
+            "orderedInstructions": ordered,
+            "branchRecords": [
+                {
+                    "testInstruction": ordered[4],
+                    "branchInstruction": ordered[5],
+                    "fallthroughInstruction": ordered[6],
+                    "branchTargetInstruction": ordered[13],
+                },
+                {
+                    "testInstruction": ordered[6],
+                    "branchInstruction": ordered[7],
+                    "fallthroughInstruction": ordered[8],
+                    "branchTargetInstruction": ordered[11],
+                },
+            ],
+            "sourceConstantUses": [],
+        }
+    raise ValueError(f"force-state handler guard has no macro profile: {macro}")
+
+
+def _force_state_join_comment_bit(
+    disasm: Path, handler: dict[str, Any], section_guard: dict[str, Any]
+) -> None:
+    """Cross-check the nearby source comment against the guarded join bit use site."""
+    source = read_upstream_text(disasm / handler["sourcePath"])
+    label = re.search(r"^csc08_joinForce:\s*$", source, re.MULTILINE)
+    if label is None:
+        raise ValueError("force-state join section label is missing")
+    comments = list(
+        re.finditer(
+            r"^\s*;.*?\bbit (?P<bit>\d+) set for sad join music\s*$",
+            source[: label.start()],
+            re.MULTILINE,
+        )
+    )
+    if not comments:
+        raise ValueError("force-state join bit source comment is missing")
+    bit = int(comments[-1].group("bit"))
+    instruction = section_guard["branchRecords"][0]["testInstruction"]
+    match = re.fullmatch(r"bclr #(?P<bit>\d+),d0", instruction)
+    if match is None or int(match.group("bit")) != bit:
+        raise ValueError("force-state join bit comment/use-site drift")
+
+
+def _force_state_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build the six-command roster/death source-site and handler identity spine."""
+    required_constants = (
+        "ALLY_SARAH",
+        "ALLY_CHESTER",
+        "COMBATANT_ENEMIES_START",
+    )
+    missing = [name for name in required_constants if name not in equates]
+    if missing:
+        raise ValueError(f"force-state source constants are missing: {missing}")
+    macro_to_handler = dict(zip(FORCE_STATE_MACRO_NAMES, FORCE_STATE_HANDLER_NAMES, strict=True))
+    source_sites, program_totals = _force_state_program_facts(program_corpus)
+    source_counts: Counter[str] = Counter()
+    for site in source_sites:
+        source_counts.update(command["macro"] for command in site["commands"])
+    for macro in FORCE_STATE_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"force-state program total drift: {macro}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for macro, handler_name in macro_to_handler.items():
+        contract = macros[macro]
+        if contract["kind"] != "command" or contract["aliasOf"] is not None:
+            raise ValueError(f"force-state macro is not primary: {macro}")
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"force-state dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"force-state handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        direct_calls = _force_state_direct_calls(statements)
+        section_guard = _force_state_section_guard(macro, statements, equates)
+        if macro == "join":
+            _force_state_join_comment_bit(disasm, handler, section_guard)
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "cursorReadWidths": [
+                    field["widthBytes"] for field in contract["operandLayout"]
+                ],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    instruction_targets = sorted(
+        {call["instructionTarget"] for calls in direct_call_rows.values() for call in calls}
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    bounded_handlers = {
+        handler["name"]: handler
+        for handler in (_handler_by_name(handlers, name) for name in FORCE_STATE_HANDLER_NAMES)
+    }
+    target_resolutions = []
+    for target in instruction_targets:
+        effective_target = aliases.get(target, {}).get("effectiveTarget", target)
+        effective_target_owner = bounded_handlers.get(effective_target)
+        target_resolutions.append(
+            {
+                "instructionTarget": target,
+                "effectiveTarget": effective_target,
+                "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+                "effectiveTargetScope": (
+                    "internal" if effective_target_owner is not None else "external"
+                ),
+            }
+        )
+    effective_targets = sorted({row["effectiveTarget"] for row in target_resolutions})
+    if len(effective_targets) != len(target_resolutions):
+        raise ValueError("force-state effective target declaration is ambiguous")
+    resolved_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_handlers = []
+    for handler_name in FORCE_STATE_HANDLER_NAMES:
+        calls = direct_call_rows[handler_name]
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in calls:
+            instruction_counts[call["instructionTarget"]] += 1
+            effective_counts[resolved_by_instruction[call["instructionTarget"]]] += 1
+        caller_handlers.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_handlers)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_handlers)
+        for target in effective_targets
+    }
+    scope_by_effective_target = {
+        row["effectiveTarget"]: row["effectiveTargetScope"] for row in target_resolutions
+    }
+    if set(scope_by_effective_target) != set(effective_totals):
+        raise ValueError("force-state effective target scope coverage drift")
+
+    def scoped_effective_totals(scope: str) -> dict[str, int]:
+        return {
+            target: effective_totals[target]
+            if scope_by_effective_target[target] == scope
+            else 0
+            for target in effective_totals
+        }
+
+    stats = build_stats_inventory(upstream_path)
+    battleparty = next(
+        row for row in stats["files"] if row["path"] == "code/common/stats/battleparty.asm"
+    )
+    required_services = {"JoinForce", "UpdateForce"}
+    if not required_services <= set(battleparty["globalLabels"]):
+        raise ValueError("force-state common-stats battleparty identity drift")
+    return {
+        "macros": [
+            {
+                "name": name,
+                "opcode": macros[name]["opcode"],
+                "encodedBytes": macros[name]["encodedBytes"],
+                "operandBytes": macros[name]["operandBytes"],
+                "operandLayout": macros[name]["operandLayout"],
+                "parameterOrdinals": macros[name]["parameterOrdinals"],
+                "handler": macro_to_handler[name],
+                "sourceCommandCount": source_counts[name],
+            }
+            for name in FORCE_STATE_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": {
+            "callerHandlers": caller_handlers,
+            "targetResolutions": target_resolutions,
+            "instructionTargetTotals": instruction_totals,
+            "effectiveTargetTotals": effective_totals,
+            "internalEffectiveTargetTotals": scoped_effective_totals("internal"),
+            "externalEffectiveTargetTotals": scoped_effective_totals("external"),
+        },
+        "commonStatsIdentity": {
+            "contractId": stats["id"],
+            "upstreamCommit": stats["upstream"]["commit"],
+            "sourcePath": battleparty["path"],
+            "sourceSha256": battleparty["sha256"],
+            "services": sorted(required_services),
+        },
+        "runtimeQuestions": FORCE_STATE_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -2053,6 +2648,17 @@ def build_map_script_engine_contract(
         handlers,
         program_corpus,
         rom_path,
+        upstream_path,
+    )
+    force_state_command_facts = _force_state_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
         upstream_path,
     )
     table_address = addresses["rjt_cutsceneScriptCommands"]
@@ -2199,10 +2805,12 @@ def build_map_script_engine_contract(
         "programCorpus": program_corpus,
         "dialogueCommandFacts": dialogue_command_facts,
         "transitionCommandFacts": transition_command_facts,
+        "forceStateCommandFacts": force_state_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
             "palette-fade-and-vdp-visible-presentation",
+            *FORCE_STATE_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -2247,6 +2855,7 @@ def verify_map_script_engine_contract(
         ],
         "dialogueCommandFacts": output["dialogueCommandFacts"],
         "transitionCommandFacts": output["transitionCommandFacts"],
+        "forceStateCommandFacts": output["forceStateCommandFacts"],
     }
     for field in (
         "summary",
@@ -2268,6 +2877,7 @@ def verify_map_script_engine_contract(
         "storyBattleUnlockFlags",
         "dialogueCommandFacts",
         "transitionCommandFacts",
+        "forceStateCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

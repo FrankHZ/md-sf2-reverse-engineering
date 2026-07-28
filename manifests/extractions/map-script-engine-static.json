@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "sf2-map-script-engine-static-v1",
   "outputPath": "local/derived/map-script-engine-static.json",
-  "outputSha256": "B225C60B8892DCA82890152B61FCBEF787A393A99E09F22E6C66B6623F9FEDF8",
+  "outputSha256": "C8236E9F42F125324B5CDB4F9996EDD4EF5207BEDD540F70A194CC575BD59D3A",
   "summary": {
     "dispatcherSlotCount": 90,
     "uniqueHandlerCount": 83,
