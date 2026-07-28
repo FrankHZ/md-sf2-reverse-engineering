@@ -28,6 +28,9 @@ from sf2tool.h2.map_script_engine import (
     _logical_source_lines,
     _map_block_macro_operand_fields,
     _map_block_mutation_section_guard,
+    _map_lifecycle_macro_annotations,
+    _map_lifecycle_read_use_site,
+    _map_lifecycle_section_guard,
     _modifier_source_labels,
     _program_corpus,
     _statements,
@@ -609,6 +612,153 @@ def test_entity_population_section_guard_rejects_vint_order_and_extra_statement(
         )
 
 
+def test_map_lifecycle_macro_annotations_preserve_source_comments(tmp_path) -> None:
+    macro_path = tmp_path / "sf2cutscenemacros.asm"
+    macro_path.write_text(
+        """
+resetMap: macro
+    dc.w $36
+    endm
+loadMapFadeIn: macro
+    dc.w $37
+    dc.w \\1 ; map
+    dc.w \\2 ; camera X
+    dc.w \\3 ; camera Y
+    endm
+reloadMap: macro
+    dc.w $46
+    dc.w \\1 ; camera X
+    dc.w \\2 ; camera Y
+    endm
+mapLoad: macro
+    dc.w $48
+    dc.w \\1 ; map
+    dc.w \\2 ; camera X
+    dc.w \\3 ; camera Y
+    endm
+""",
+        encoding="utf-8",
+    )
+    actual = _map_lifecycle_macro_annotations(tmp_path)
+    assert actual["resetMap"] == []
+    assert actual["loadMapFadeIn"] == [
+        {"parameterOrdinal": 1, "sourceComment": "map", "streamOffset": 2, "widthBytes": 2},
+        {
+            "parameterOrdinal": 2,
+            "sourceComment": "camera X",
+            "streamOffset": 4,
+            "widthBytes": 2,
+        },
+        {
+            "parameterOrdinal": 3,
+            "sourceComment": "camera Y",
+            "streamOffset": 6,
+            "widthBytes": 2,
+        },
+    ]
+    source = macro_path.read_text(encoding="utf-8")
+    macro_path.write_text(
+        source.replace("dc.w \\2 ; camera X", "dc.w \\3 ; camera X", 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="operand ordinal"):
+        _map_lifecycle_macro_annotations(tmp_path)
+    macro_path.write_text(source.replace("dc.w \\1 ; map", "dc.w \\1", 1), encoding="utf-8")
+    with pytest.raises(ValueError, match="comment is missing"):
+        _map_lifecycle_macro_annotations(tmp_path)
+
+
+def test_map_lifecycle_cursor_read_parser_accepts_sizes_and_rejects_near_misses() -> None:
+    assert [_map_lifecycle_read_use_site(instruction) for instruction in (
+        "move.b (a6)+,d1",
+        "move.w (a0),d2",
+        "move.l (a6)+,d3",
+    )] == [
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d1",
+            "transferredByteCount": 1,
+            "cursorAdvanceByteCount": 1,
+            "instruction": "move.b (a6)+,d1",
+        },
+        {
+            "sourceRegister": "a0",
+            "destinationRegister": "d2",
+            "transferredByteCount": 2,
+            "cursorAdvanceByteCount": 0,
+            "instruction": "move.w (a0),d2",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d3",
+            "transferredByteCount": 4,
+            "cursorAdvanceByteCount": 4,
+            "instruction": "move.l (a6)+,d3",
+        },
+    ]
+    for near_miss in (
+        "moveq #0,d1",
+        "read: move.w (a6)+,d1",
+        "; move.w (a6)+,d1",
+        "move.w (a6)+,d1 ; cursor read",
+        "move.w (a1)+,d1",
+        "move.w (a6)+,a0",
+    ):
+        with pytest.raises(ValueError, match="map-lifecycle read use shape"):
+            _map_lifecycle_read_use_site(near_miss)
+
+
+def test_map_lifecycle_section_guard_rejects_branch_polarity_and_call_order() -> None:
+    statements = [
+        "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+        "nop",
+        "move.w (a6),d1",
+        "jsr (LoadMapTilesets).w",
+        "jsr (WaitForVInt).w",
+        "tst.b ((FADING_SETTING-$1000000)).w",
+        "bne.s loc_465C4",
+        "trap #VINT_FUNCTIONS",
+        "dc.w VINTS_DEACTIVATE",
+        "dc.l 0",
+        "clr.l d0",
+        "move.w (a6)+,d1",
+        "move.w (a6)+,d0",
+        "lsl.w #BYTE_SHIFT_COUNT,d0",
+        "move.w (a6)+,d2",
+        "andi.w #BYTE_MASK,d2",
+        "or.w d2,d0",
+        "mulu.w #3,d0",
+        "move.l a6,-(sp)",
+        "jsr (LoadMap).w",
+        "movea.l (sp)+,a6",
+        "jsr (EnableDisplayAndInterrupts).w",
+        "trap #VINT_FUNCTIONS",
+        "dc.w VINTS_ACTIVATE",
+        "dc.l 0",
+        "jsr (WaitForVInt).w",
+        "rts",
+    ]
+    annotations = [
+        {"parameterOrdinal": 1, "sourceComment": "map", "streamOffset": 2, "widthBytes": 2},
+        {"parameterOrdinal": 2, "sourceComment": "camera X", "streamOffset": 4, "widthBytes": 2},
+        {"parameterOrdinal": 3, "sourceComment": "camera Y", "streamOffset": 6, "widthBytes": 2},
+    ]
+    equates = {"BYTE_SHIFT_COUNT": 8, "BYTE_MASK": 255, "VINTS_DEACTIVATE": 3, "VINTS_ACTIVATE": 4}
+    actual = _map_lifecycle_section_guard("mapLoad", statements, annotations, equates)
+    assert actual["branchRecords"] == [
+        {
+            "testInstruction": "tst.b ((FADING_SETTING-$1000000)).w",
+            "branchInstruction": "bne.s loc_465C4",
+            "fallthroughInstruction": "trap #VINT_FUNCTIONS",
+        }
+    ]
+    statements[6] = "beq.s loc_465C4"
+    with pytest.raises(ValueError, match="csc48_loadMap statement is missing"):
+        _map_lifecycle_section_guard("mapLoad", statements, annotations, equates)
+    statements[6] = "bne.s loc_465C4"
+    statements[19], statements[21] = statements[21], statements[19]
+    with pytest.raises(ValueError, match="csc48_loadMap statement is missing"):
+        _map_lifecycle_section_guard("mapLoad", statements, annotations, equates)
 def test_story_state_corpus_order_facts_bind_order_and_canonical_content() -> None:
     source_sites = [
         {
@@ -3064,3 +3214,534 @@ def test_entity_population_schema_exact_blocks_keep_large_corpora_compact() -> N
         facts = schema["definitions"]["entityPopulationCommandFacts"]
         assert facts["additionalProperties"] is False
         assert {"sourceSites", "programTotals"} <= set(facts["required"])
+
+
+def test_map_lifecycle_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["mapLifecycleCommandFacts"]
+    assert actual == fixture["expected"]["mapLifecycleCommandFacts"]
+    assert [
+        (
+            macro["name"],
+            macro["opcode"],
+            macro["encodedBytes"],
+            macro["operandBytes"],
+            macro["sourceCommandCount"],
+        )
+        for macro in actual["macros"]
+    ] == [
+        ("resetMap", 54, 2, 0, 7),
+        ("loadMapFadeIn", 55, 8, 6, 60),
+        ("reloadMap", 70, 6, 4, 24),
+        ("mapLoad", 72, 8, 6, 17),
+    ]
+    assert actual["macros"][1]["sourceOperandAnnotations"] == [
+        {"parameterOrdinal": 1, "sourceComment": "map", "streamOffset": 2, "widthBytes": 2},
+        {
+            "parameterOrdinal": 2,
+            "sourceComment": "camera X",
+            "streamOffset": 4,
+            "widthBytes": 2,
+        },
+        {
+            "parameterOrdinal": 3,
+            "sourceComment": "camera Y",
+            "streamOffset": 6,
+            "widthBytes": 2,
+        },
+    ]
+    assert actual["macros"][2]["sourceOperandAnnotations"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "camera X",
+            "streamOffset": 2,
+            "widthBytes": 2,
+        },
+        {
+            "parameterOrdinal": 2,
+            "sourceComment": "camera Y",
+            "streamOffset": 4,
+            "widthBytes": 2,
+        },
+    ]
+    assert len(actual["sourceSites"]) == 81
+    assert (
+        actual["sourceSitesSha256"]
+        == "4F07DC2BD06A9E326A61CF43867FCBD2027BC35E76FAD9EEE09B622E11DC13A8"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert (
+        actual["programTotalsSha256"]
+        == "E553A857B356B1B334DE3C68DAD17D966C46C6788EADB62EAFD6A966D6EBEB84"
+    )
+    assert [
+        (
+            handler["macro"],
+            handler["handler"],
+            handler["address"],
+            handler["opcode"],
+            handler["sourceCommandCount"],
+            handler["statementCount"],
+        )
+        for handler in actual["handlers"]
+    ] == [
+        ("resetMap", "csc36_resetMap", 288142, 54, 7, 4),
+        ("loadMapFadeIn", "csc37_loadMapAndFadeIn", 288154, 55, 60, 5),
+        ("reloadMap", "csc46_reloadMap", 288520, 70, 24, 22),
+        ("mapLoad", "csc48_loadMap", 288182, 72, 17, 27),
+    ]
+    assert actual["handlers"][1]["continuation"] == {
+        "handler": "csc48_loadMap",
+        "address": 288182,
+        "sectionGuard": actual["handlers"][3]["sectionGuard"],
+        "directCalls": actual["handlers"][3]["directCalls"],
+    }
+    assert actual["handlers"][2]["sectionGuard"]["sourceD1SelectorUseSite"] == {
+        "literalValue": -1,
+        "instruction": "moveq #-1,d1",
+    }
+    assert actual["handlers"][3]["sectionGuard"]["mapProbeUseSite"] == {
+        "sourceRegister": "a6",
+        "destinationRegister": "d1",
+        "transferredByteCount": 2,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "move.w (a6),d1",
+    }
+    assert actual["handlers"][3]["sectionGuard"]["branchRecords"] == [
+        {
+            "testInstruction": "tst.b ((FADING_SETTING-$1000000)).w",
+            "branchInstruction": "bne.s loc_465C4",
+            "fallthroughInstruction": "trap #VINT_FUNCTIONS",
+            "branchTarget": {
+                "targetLabel": "loc_465C4",
+                "targetInstruction": "jsr (WaitForVInt).w",
+                "targetStatementIndex": 4,
+            },
+        }
+    ]
+    assert actual["handlers"][3]["sectionGuard"]["operandPackUseSites"] == {
+        "parameterOrdinals": [2, 3],
+        "sourceComments": ["camera X", "camera Y"],
+        "shiftUseSite": {
+            "symbol": "BYTE_SHIFT_COUNT",
+            "value": 8,
+            "instruction": "lsl.w #BYTE_SHIFT_COUNT,d0",
+        },
+        "maskUseSite": {
+            "symbol": "BYTE_MASK",
+            "value": 255,
+            "instruction": "andi.w #BYTE_MASK,d2",
+        },
+        "mergeInstruction": "or.w d2,d0",
+        "multiplierUseSite": {"value": 3, "instruction": "mulu.w #3,d0"},
+    }
+    assert actual["handlers"][3]["sectionGuard"]["directCallOrder"] == [
+        "jsr (LoadMapTilesets).w",
+        "jsr (WaitForVInt).w",
+        "jsr (LoadMap).w",
+        "jsr (EnableDisplayAndInterrupts).w",
+        "jsr (WaitForVInt).w",
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "EnableDisplayAndInterrupts": 2,
+        "LoadMap": 2,
+        "LoadMapTilesets": 1,
+        "ResetCurrentMap": 1,
+        "WaitForVInt": 3,
+    }
+    assert actual["callerBreakdown"]["callerHandlers"] == [
+        {
+            "handler": "csc36_resetMap",
+            "instructionTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 0,
+                "LoadMap": 0,
+                "LoadMapTilesets": 0,
+                "ResetCurrentMap": 1,
+                "WaitForVInt": 0,
+            },
+            "effectiveTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 0,
+                "LoadMap": 0,
+                "LoadMapTilesets": 0,
+                "ResetCurrentMap": 1,
+                "WaitForVInt": 0,
+            },
+        },
+        {
+            "handler": "csc37_loadMapAndFadeIn",
+            "instructionTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 0,
+                "LoadMap": 0,
+                "LoadMapTilesets": 0,
+                "ResetCurrentMap": 0,
+                "WaitForVInt": 0,
+            },
+            "effectiveTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 0,
+                "LoadMap": 0,
+                "LoadMapTilesets": 0,
+                "ResetCurrentMap": 0,
+                "WaitForVInt": 0,
+            },
+        },
+        {
+            "handler": "csc46_reloadMap",
+            "instructionTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 1,
+                "LoadMap": 1,
+                "LoadMapTilesets": 0,
+                "ResetCurrentMap": 0,
+                "WaitForVInt": 1,
+            },
+            "effectiveTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 1,
+                "LoadMap": 1,
+                "LoadMapTilesets": 0,
+                "ResetCurrentMap": 0,
+                "WaitForVInt": 1,
+            },
+        },
+        {
+            "handler": "csc48_loadMap",
+            "instructionTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 1,
+                "LoadMap": 1,
+                "LoadMapTilesets": 1,
+                "ResetCurrentMap": 0,
+                "WaitForVInt": 2,
+            },
+            "effectiveTargetSiteCounts": {
+                "EnableDisplayAndInterrupts": 1,
+                "LoadMap": 1,
+                "LoadMapTilesets": 1,
+                "ResetCurrentMap": 0,
+                "WaitForVInt": 2,
+            },
+        },
+    ]
+    assert actual["callerBreakdown"]["targetResolutions"] == [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": target,
+            "aliasSourcePath": None,
+            "effectiveTargetScope": "external",
+        }
+        for target in (
+            "EnableDisplayAndInterrupts",
+            "LoadMap",
+            "LoadMapTilesets",
+            "ResetCurrentMap",
+            "WaitForVInt",
+        )
+    ]
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["instructionTargetTotals"]
+    assert actual["callerBreakdown"]["internalEffectiveTargetTotals"] == {
+        target: 0 for target in actual["callerBreakdown"]["effectiveTargetTotals"]
+    }
+    assert actual["callerBreakdown"]["externalEffectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["effectiveTargetTotals"]
+    assert actual["sourceIdentityJoins"]["handlerSource"] == {
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+        "symbols": [
+            "csc36_resetMap",
+            "csc37_loadMapAndFadeIn",
+            "csc46_reloadMap",
+            "csc48_loadMap",
+        ],
+    }
+    assert actual["runtimeQuestions"] == ["map-lifecycle/runtime-effects-matrix"]
+
+
+def test_map_lifecycle_opcode_operand_order_and_polarity_guards_fail_before_fixture(
+    monkeypatch,
+) -> None:
+    original_macros = map_script_engine._map_macro_contracts
+
+    def changed_opcode(disasm):
+        macros = original_macros(disasm)
+        macros["resetMap"]["opcode"] = 56
+        return macros
+
+    monkeypatch.setattr(map_script_engine, "_map_macro_contracts", changed_opcode)
+    with pytest.raises(ValueError, match="dispatcher target drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_lifecycle_operand_use_site_guard_fails_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_operand(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc46_reloadMap":
+            return [
+                statement.replace("mulu.w #3,d0", "mulu.w #4,d0")
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_operand)
+    monkeypatch.setattr(map_script_engine, "_transition_command_facts", lambda *args, **kwargs: {})
+    with pytest.raises(ValueError, match="shared operand-pack use-site drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_lifecycle_call_order_and_branch_polarity_guards_fail_before_fixture(
+    monkeypatch,
+) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_branch(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc48_loadMap":
+            return [
+                statement.replace("bne.s loc_465C4", "beq.s loc_465C4")
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_branch)
+    with pytest.raises(ValueError, match="csc48_loadMap statement is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_lifecycle_branch_target_and_label_guards_fail_before_fixture(
+    monkeypatch,
+) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_branch_target(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc48_loadMap":
+            return [
+                statement.replace("bne.s loc_465C4", "bne.s loc_465C5")
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_branch_target)
+    with pytest.raises(ValueError, match="branch target label drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_lifecycle_branch_target_label_owner_guard_fails_before_fixture(
+    monkeypatch,
+) -> None:
+    original_source = map_script_engine._map_lifecycle_named_section_source
+
+    def changed_target_label(disasm, handler):
+        source = original_source(disasm, handler)
+        if handler["name"] == "csc48_loadMap":
+            return source.replace("loc_465C4:", "loc_465C5:")
+        return source
+
+    monkeypatch.setattr(
+        map_script_engine, "_map_lifecycle_named_section_source", changed_target_label
+    )
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_lifecycle_call_order_guard_fails_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_call_order(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc48_loadMap":
+            statements[19], statements[21] = statements[21], statements[19]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_call_order)
+    with pytest.raises(ValueError, match="csc48_loadMap statement is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_map_lifecycle_corpus_order_schema_rejects_source_reordering(monkeypatch) -> None:
+    original_program_corpus = map_script_engine._program_corpus
+
+    def reordered_lifecycle_programs(*args, **kwargs):
+        corpus = original_program_corpus(*args, **kwargs)
+        matching_indexes = [
+            index
+            for index, program in enumerate(corpus["programs"])
+            if any(
+                command["macro"] in map_script_engine.MAP_LIFECYCLE_MACRO_NAMES
+                for command in program["commands"]
+            )
+        ]
+        first, second = matching_indexes[:2]
+        corpus["programs"][first], corpus["programs"][second] = (
+            corpus["programs"][second],
+            corpus["programs"][first],
+        )
+        return corpus
+
+    monkeypatch.setattr(map_script_engine, "_program_corpus", reordered_lifecycle_programs)
+    output = build_map_script_engine_contract(
+        repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+    )
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            output,
+            repo_path("schemas/map-script-engine-static.schema.json"),
+            owner="map-lifecycle source-order output",
+        )
+
+
+def test_map_lifecycle_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="map-lifecycle output")
+    validate_json(fixture, fixture_schema, owner="map-lifecycle fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["mapLifecycleCommandFacts"]["handlers"][3]["sectionGuard"][
+        "mapProbeUseSite"
+    ]["destinationRegister"]
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(missing, output_schema, owner="map-lifecycle output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    annotation = renamed["mapLifecycleCommandFacts"]["macros"][1][
+        "sourceOperandAnnotations"
+    ][0]
+    annotation["label"] = annotation.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(renamed, output_schema, owner="map-lifecycle output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["mapLifecycleCommandFacts"]["sourceIdentityJoins"]["calleeOwners"][0][
+        "extra"
+    ] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="map-lifecycle output extra field")
+
+    reordered_source = deepcopy(map_script_engine_output)
+    source_order = reordered_source["mapLifecycleCommandFacts"]["sourceSiteOrderKeys"]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_source,
+            output_schema,
+            owner="map-lifecycle output reordered source keys",
+        )
+
+    reordered_programs = deepcopy(map_script_engine_output)
+    program_order = reordered_programs["mapLifecycleCommandFacts"]["programTotalOrderKeys"]
+    program_order[0], program_order[1] = program_order[1], program_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_programs,
+            output_schema,
+            owner="map-lifecycle output reordered program keys",
+        )
+
+    out_of_boundary = deepcopy(map_script_engine_output)
+    out_of_boundary["mapLifecycleCommandFacts"]["handlers"][3]["sectionGuard"][
+        "operandPackUseSites"
+    ]["multiplierUseSite"]["value"] = 4
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(out_of_boundary, output_schema, owner="map-lifecycle output boundary")
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["mapLifecycleCommandFacts"]["handlers"][3][
+        "sectionGuard"
+    ]["mapProbeUseSite"]["destinationRegister"]
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(fixture_missing, fixture_schema, owner="map-lifecycle fixture missing field")
+
+    fixture_renamed = deepcopy(fixture)
+    annotation = fixture_renamed["expected"]["mapLifecycleCommandFacts"]["macros"][1][
+        "sourceOperandAnnotations"
+    ][0]
+    annotation["label"] = annotation.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(fixture_renamed, fixture_schema, owner="map-lifecycle fixture renamed field")
+
+    fixture_extra = deepcopy(fixture)
+    fixture_extra["expected"]["mapLifecycleCommandFacts"]["sourceIdentityJoins"][
+        "calleeOwners"
+    ][0]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(fixture_extra, fixture_schema, owner="map-lifecycle fixture extra field")
+
+    fixture_reordered = deepcopy(fixture)
+    source_order = fixture_reordered["expected"]["mapLifecycleCommandFacts"][
+        "sourceSiteOrderKeys"
+    ]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            fixture_reordered,
+            fixture_schema,
+            owner="map-lifecycle fixture reordered source keys",
+        )
+
+    fixture_out_of_boundary = deepcopy(fixture)
+    fixture_out_of_boundary["expected"]["mapLifecycleCommandFacts"]["handlers"][3][
+        "sectionGuard"
+    ]["operandPackUseSites"]["multiplierUseSite"]["value"] = 4
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            fixture_out_of_boundary,
+            fixture_schema,
+            owner="map-lifecycle fixture boundary",
+        )
+
+
+def test_map_lifecycle_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("mapLifecycleCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "mapLifecycleCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        assert "sourceSites" not in exact["properties"]
+        assert "programTotals" not in exact["properties"]
+        facts = schema["definitions"]["mapLifecycleCommandFacts"]
+        assert facts["additionalProperties"] is False
+        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+        lifecycle_definitions = {
+            name: value
+            for name, value in schema["definitions"].items()
+            if name.startswith("mapLifecycle")
+        }
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        for definition in lifecycle_definitions.values():
+            assert_closed_objects(definition)

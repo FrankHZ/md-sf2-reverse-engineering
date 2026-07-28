@@ -178,6 +178,24 @@ ENTITY_POPULATION_RUNTIME_QUESTIONS = [
     "entity-population-reload/runtime-effects-matrix"
 ]
 
+# These names retain the macro/handler spelling and source operand comments. They
+# describe the bounded map-load control-flow surface without assigning persistence,
+# placement, collision, rendering, or presentation behavior.
+MAP_LIFECYCLE_MACRO_NAMES = (
+    "resetMap",
+    "loadMapFadeIn",
+    "reloadMap",
+    "mapLoad",
+)
+MAP_LIFECYCLE_HANDLER_BY_MACRO = {
+    "resetMap": "csc36_resetMap",
+    "loadMapFadeIn": "csc37_loadMapAndFadeIn",
+    "reloadMap": "csc46_reloadMap",
+    "mapLoad": "csc48_loadMap",
+}
+MAP_LIFECYCLE_HANDLER_NAMES = tuple(MAP_LIFECYCLE_HANDLER_BY_MACRO.values())
+MAP_LIFECYCLE_RUNTIME_QUESTIONS = ["map-lifecycle/runtime-effects-matrix"]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -4643,6 +4661,816 @@ def _entity_population_command_facts(
     }
 
 
+def _map_lifecycle_macro_annotations(disasm: Path) -> dict[str, list[dict[str, Any]]]:
+    """Parse the bounded macro operand comments with their emitted byte shape."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in MAP_LIFECYCLE_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"map-lifecycle macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"map-lifecycle operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"map-lifecycle operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"map-lifecycle operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"map-lifecycle operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"map-lifecycle operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _map_lifecycle_resolve_operand(value: str, equates: dict[str, int]) -> dict[str, Any]:
+    """Resolve one source operand against the single parsed map-script equate map."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        return {"rawValue": value, "resolvedValue": _literal(token), "resolution": "literal"}
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+
+
+def _map_lifecycle_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+    canonical_map_ids: set[int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Retain every bounded source use and all zero-inclusive program totals."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=MAP_LIFECYCLE_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "map-lifecycle source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            operand_values = []
+            for annotation, argument in zip(annotations, command["arguments"], strict=True):
+                resolved = _map_lifecycle_resolve_operand(argument, equates)
+                map_domain: str | None = None
+                if annotation["sourceComment"] == "map":
+                    value = resolved["resolvedValue"]
+                    if value in canonical_map_ids:
+                        map_domain = "canonical-map"
+                    elif argument == "MAP_CURRENT" and value == equates["MAP_CURRENT"]:
+                        map_domain = "source-map-current"
+                    else:
+                        raise ValueError("map-lifecycle map operand domain drift")
+                operand_values.append(
+                    {
+                        "parameterOrdinal": annotation["parameterOrdinal"],
+                        "sourceComment": annotation["sourceComment"],
+                        "streamOffset": annotation["streamOffset"],
+                        "widthBytes": annotation["widthBytes"],
+                        **resolved,
+                        "mapDomain": map_domain,
+                    }
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": operand_values,
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _map_lifecycle_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind the full ordered corpora compactly without expanding them in schemas."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("map-lifecycle source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("map-lifecycle program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _map_lifecycle_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one bounded A6 cursor/probe read and keep transfer separate from advance."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \((?P<source>a[06])\)(?P<increment>\+)?,(?P<target>d[0-7])",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("map-lifecycle read use shape drift")
+    transferred_bytes = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": match.group("source"),
+        "destinationRegister": match.group("target"),
+        "transferredByteCount": transferred_bytes,
+        "cursorAdvanceByteCount": transferred_bytes if match.group("increment") else 0,
+        "instruction": instruction,
+    }
+
+
+def _map_lifecycle_vint_record(
+    statements: list[str], index: int, phase: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Tie a VInt phase to its exact trap and adjacent data records."""
+    symbol = "VINTS_DEACTIVATE" if phase == "deactivate" else "VINTS_ACTIVATE"
+    expected = ["trap #VINT_FUNCTIONS", f"dc.w {symbol}", "dc.l 0"]
+    if statements[index : index + len(expected)] != expected:
+        raise ValueError(f"map-lifecycle VInt {phase} use-site order drift")
+    if symbol not in equates:
+        raise ValueError(f"map-lifecycle VInt source constant is missing: {symbol}")
+    return {
+        "phase": phase,
+        "operationSymbol": symbol,
+        "operationValue": equates[symbol],
+        "trapInstruction": statements[index],
+        "operationInstruction": statements[index + 1],
+        "argumentInstruction": statements[index + 2],
+    }
+
+
+def _map_lifecycle_constant_use(
+    symbol: str, instruction: str, pattern: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Record a parsed source equate only when its named instruction use is exact."""
+    if symbol not in equates or re.fullmatch(pattern, instruction) is None:
+        raise ValueError(f"map-lifecycle source constant use drift: {symbol}")
+    return {"symbol": symbol, "value": equates[symbol], "instruction": instruction}
+
+
+def _map_lifecycle_operand_pack_use_sites(
+    annotations: list[dict[str, Any]],
+    statements: list[str],
+    *,
+    shift_index: int,
+    mask_index: int,
+    merge_index: int,
+    multiplier_index: int,
+    equates: dict[str, int],
+) -> dict[str, Any]:
+    """Bind camera-comment operands to the exact D0/D2 transform use sites."""
+    camera_annotations = annotations[-2:]
+    if [row["sourceComment"] for row in camera_annotations] != ["camera X", "camera Y"]:
+        raise ValueError("map-lifecycle camera operand annotation drift")
+    multiplier_match = re.fullmatch(r"mulu\.w #(?P<value>\d+),d0", statements[multiplier_index])
+    if multiplier_match is None:
+        raise ValueError("map-lifecycle operand multiplier use-site drift")
+    if statements[merge_index] != "or.w d2,d0":
+        raise ValueError("map-lifecycle operand merge use-site drift")
+    return {
+        "parameterOrdinals": [row["parameterOrdinal"] for row in camera_annotations],
+        "sourceComments": [row["sourceComment"] for row in camera_annotations],
+        "shiftUseSite": _map_lifecycle_constant_use(
+            "BYTE_SHIFT_COUNT",
+            statements[shift_index],
+            r"lsl\.w #BYTE_SHIFT_COUNT,d0",
+            equates,
+        ),
+        "maskUseSite": _map_lifecycle_constant_use(
+            "BYTE_MASK",
+            statements[mask_index],
+            r"andi\.w #BYTE_MASK,d2",
+            equates,
+        ),
+        "mergeInstruction": statements[merge_index],
+        "multiplierUseSite": {
+            "value": _literal(multiplier_match.group("value")),
+            "instruction": statements[multiplier_index],
+        },
+    }
+
+
+def _map_lifecycle_section_guard(
+    macro: str,
+    statements: list[str],
+    annotations: list[dict[str, Any]],
+    equates: dict[str, int],
+) -> dict[str, Any]:
+    """Guard complete named sections, including cursor, branch, VInt, call, and mutation order."""
+    if macro == "resetMap":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.l a6,-\(sp\)",
+                r"jsr \(ResetCurrentMap\)\.l",
+                r"movea\.l \(sp\)\+,a6",
+                r"rts",
+            ],
+            owner="csc36_resetMap",
+        )
+        cursor_indexes: tuple[int, ...] = ()
+        map_probe: dict[str, Any] | None = None
+        vint_records: list[dict[str, Any]] = []
+        branch_records: list[dict[str, Any]] = []
+        mutation_records: list[dict[str, Any]] = []
+        source_constant_uses: list[dict[str, Any]] = []
+        operand_pack_use_sites: dict[str, Any] | None = None
+        selector_use_site: dict[str, Any] | None = None
+        direct_call_order = [ordered[1]]
+    elif macro == "loadMapFadeIn":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b #OUT_TO_BLACK,\(\(FADING_SETTING-\$1000000\)\)\.w",
+                r"clr\.w \(FADING_TIMER_WORD\)\.l",
+                r"clr\.b \(\(FADING_POINTER-\$1000000\)\)\.w",
+                (
+                    r"move\.b \(\(FADING_COUNTER_MAX-\$1000000\)\)\.w,"
+                    r"\(\(FADING_COUNTER-\$1000000\)\)\.w"
+                ),
+                r"move\.b #%1111,\(\(FADING_PALETTE_BITFIELD-\$1000000\)\)\.w",
+            ],
+            owner="csc37_loadMapAndFadeIn",
+        )
+        if "OUT_TO_BLACK" not in equates:
+            raise ValueError("map-lifecycle fade source constant is missing")
+        cursor_indexes = ()
+        map_probe = None
+        vint_records = []
+        branch_records = []
+        mutation_records = [
+            {
+                "sourceSymbols": ["FADING_SETTING"],
+                "sourceValueSymbol": "OUT_TO_BLACK",
+                "sourceValue": equates["OUT_TO_BLACK"],
+                "literalValue": None,
+                "instruction": ordered[0],
+            },
+            {
+                "sourceSymbols": ["FADING_TIMER_WORD"],
+                "sourceValueSymbol": None,
+                "sourceValue": None,
+                "literalValue": None,
+                "instruction": ordered[1],
+            },
+            {
+                "sourceSymbols": ["FADING_POINTER"],
+                "sourceValueSymbol": None,
+                "sourceValue": None,
+                "literalValue": None,
+                "instruction": ordered[2],
+            },
+            {
+                "sourceSymbols": ["FADING_COUNTER_MAX", "FADING_COUNTER"],
+                "sourceValueSymbol": None,
+                "sourceValue": None,
+                "literalValue": None,
+                "instruction": ordered[3],
+            },
+            {
+                "sourceSymbols": ["FADING_PALETTE_BITFIELD"],
+                "sourceValueSymbol": None,
+                "sourceValue": None,
+                "literalValue": 15,
+                "instruction": ordered[4],
+            },
+        ]
+        source_constant_uses = [
+            {
+                "symbol": "OUT_TO_BLACK",
+                "value": equates["OUT_TO_BLACK"],
+                "instruction": ordered[0],
+            }
+        ]
+        operand_pack_use_sites = None
+        selector_use_site = None
+        direct_call_order = []
+    elif macro == "mapLoad":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b #-1,\(\(VIEW_TARGET_ENTITY-\$1000000\)\)\.w",
+                r"nop",
+                r"move\.w \(a6\),d1",
+                r"jsr \(LoadMapTilesets\)\.w",
+                r"jsr \(WaitForVInt\)\.w",
+                r"tst\.b \(\(FADING_SETTING-\$1000000\)\)\.w",
+                r"bne\.s [A-Za-z_][A-Za-z0-9_]*",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_DEACTIVATE",
+                r"dc\.l 0",
+                r"clr\.l d0",
+                r"move\.w \(a6\)\+,d1",
+                r"move\.w \(a6\)\+,d0",
+                r"lsl\.w #BYTE_SHIFT_COUNT,d0",
+                r"move\.w \(a6\)\+,d2",
+                r"andi\.w #BYTE_MASK,d2",
+                r"or\.w d2,d0",
+                r"mulu\.w #\d+,d0",
+                r"move\.l a6,-\(sp\)",
+                r"jsr \(LoadMap\)\.w",
+                r"movea\.l \(sp\)\+,a6",
+                r"jsr \(EnableDisplayAndInterrupts\)\.w",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_ACTIVATE",
+                r"dc\.l 0",
+                r"jsr \(WaitForVInt\)\.w",
+                r"rts",
+            ],
+            owner="csc48_loadMap",
+        )
+        cursor_indexes = (11, 12, 14)
+        map_probe = _map_lifecycle_read_use_site(ordered[2])
+        vint_records = [
+            _map_lifecycle_vint_record(ordered, 7, "deactivate", equates),
+            _map_lifecycle_vint_record(ordered, 22, "activate", equates),
+        ]
+        branch_records = [
+            {
+                "testInstruction": ordered[5],
+                "branchInstruction": ordered[6],
+                "fallthroughInstruction": ordered[7],
+            }
+        ]
+        mutation_records = [
+            {
+                "sourceSymbols": ["VIEW_TARGET_ENTITY"],
+                "sourceValueSymbol": None,
+                "sourceValue": None,
+                "literalValue": -1,
+                "instruction": ordered[0],
+            }
+        ]
+        source_constant_uses = []
+        operand_pack_use_sites = _map_lifecycle_operand_pack_use_sites(
+            annotations,
+            ordered,
+            shift_index=13,
+            mask_index=15,
+            merge_index=16,
+            multiplier_index=17,
+            equates=equates,
+        )
+        selector_use_site = None
+        direct_call_order = [ordered[index] for index in (3, 4, 19, 21, 25)]
+    elif macro == "reloadMap":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b #-1,\(\(VIEW_TARGET_ENTITY-\$1000000\)\)\.w",
+                r"nop",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_DEACTIVATE",
+                r"dc\.l 0",
+                r"clr\.l d0",
+                r"moveq #-1,d1",
+                r"move\.w \(a6\)\+,d0",
+                r"lsl\.w #BYTE_SHIFT_COUNT,d0",
+                r"move\.w \(a6\)\+,d2",
+                r"andi\.w #BYTE_MASK,d2",
+                r"or\.w d2,d0",
+                r"mulu\.w #\d+,d0",
+                r"move\.l a6,-\(sp\)",
+                r"jsr \(LoadMap\)\.w",
+                r"movea\.l \(sp\)\+,a6",
+                r"jsr \(EnableDisplayAndInterrupts\)\.w",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_ACTIVATE",
+                r"dc\.l 0",
+                r"jsr \(WaitForVInt\)\.w",
+                r"rts",
+            ],
+            owner="csc46_reloadMap",
+        )
+        cursor_indexes = (7, 9)
+        map_probe = None
+        vint_records = [
+            _map_lifecycle_vint_record(ordered, 2, "deactivate", equates),
+            _map_lifecycle_vint_record(ordered, 17, "activate", equates),
+        ]
+        branch_records = []
+        mutation_records = [
+            {
+                "sourceSymbols": ["VIEW_TARGET_ENTITY"],
+                "sourceValueSymbol": None,
+                "sourceValue": None,
+                "literalValue": -1,
+                "instruction": ordered[0],
+            }
+        ]
+        source_constant_uses = []
+        operand_pack_use_sites = _map_lifecycle_operand_pack_use_sites(
+            annotations,
+            ordered,
+            shift_index=8,
+            mask_index=10,
+            merge_index=11,
+            multiplier_index=12,
+            equates=equates,
+        )
+        selector_use_site = {"literalValue": -1, "instruction": ordered[6]}
+        direct_call_order = [ordered[index] for index in (14, 16, 20)]
+    else:
+        raise ValueError(f"map-lifecycle guard has no macro profile: {macro}")
+    if len(statements) != len(ordered):
+        raise ValueError(f"map-lifecycle handler statement coverage drift: {macro}")
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _map_lifecycle_read_use_site(ordered[index]) for index in cursor_indexes
+        ],
+        "mapProbeUseSite": map_probe,
+        "vintControlRecords": vint_records,
+        "branchRecords": branch_records,
+        "sourceStateMutationRecords": mutation_records,
+        "sourceConstantUses": source_constant_uses,
+        "operandPackUseSites": operand_pack_use_sites,
+        "sourceD1SelectorUseSite": selector_use_site,
+        "directCallOrder": direct_call_order,
+        "returnInstruction": ordered[-1] if ordered[-1] == "rts" else None,
+    }
+
+
+def _map_lifecycle_named_section_source(disasm: Path, handler: dict[str, Any]) -> str:
+    """Read one bounded named section with labels retained for local target resolution."""
+    source = read_upstream_text(disasm / handler["sourcePath"])
+    match = re.search(
+        rf"^{re.escape(handler['name'])}:\s*\n(?P<body>.*?)"
+        rf"^\s*; End of function {re.escape(handler['name'])}\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if match is None:
+        raise ValueError(f"map-lifecycle named section is missing: {handler['name']}")
+    return match.group("body")
+
+
+def _map_lifecycle_branch_target_record(
+    section_source: str, branch_instruction: str, ordered_instructions: list[str]
+) -> dict[str, Any]:
+    """Resolve csc48's guarded branch operand to its labeled first VInt wait site."""
+    branch = re.fullmatch(r"bne\.s (?P<label>[A-Za-z_][A-Za-z0-9_]*)", branch_instruction)
+    if branch is None:
+        raise ValueError("map-lifecycle branch target instruction drift")
+    label = branch.group("label")
+    if label != "loc_465C4":
+        raise ValueError("map-lifecycle branch target label drift")
+    label_match = re.search(rf"^{re.escape(label)}:\s*$", section_source, re.MULTILINE)
+    if label_match is None:
+        raise ValueError("map-lifecycle branch target label is missing")
+    target_statements = _statements(section_source[label_match.end() :])
+    if not target_statements:
+        raise ValueError("map-lifecycle branch target has no instruction")
+    target_instruction = target_statements[0]
+    target_statement_index = len(_statements(section_source[: label_match.start()]))
+    if (
+        target_instruction != "jsr (WaitForVInt).w"
+        or target_statement_index >= len(ordered_instructions)
+        or ordered_instructions[target_statement_index] != target_instruction
+    ):
+        raise ValueError("map-lifecycle branch target instruction drift")
+    wait_indexes = [
+        index
+        for index, instruction in enumerate(ordered_instructions)
+        if instruction == "jsr (WaitForVInt).w"
+    ]
+    if not wait_indexes or target_statement_index != wait_indexes[0]:
+        raise ValueError("map-lifecycle branch target first-wait relationship drift")
+    return {
+        "targetLabel": label,
+        "targetInstruction": target_instruction,
+        "targetStatementIndex": target_statement_index,
+    }
+
+
+def _map_lifecycle_fallthrough_guard(disasm: Path) -> None:
+    """Prove that the fade section has no independent return before csc48 begins."""
+    source = read_upstream_text(disasm / "code/common/scripting/map/mapscriptengine_1.asm")
+    fade = re.search(r"^csc37_loadMapAndFadeIn:\s*$", source, re.MULTILINE)
+    load = re.search(r"^csc48_loadMap:\s*$", source, re.MULTILINE)
+    if fade is None or load is None or fade.start() >= load.start():
+        raise ValueError("map-lifecycle fade/load source order drift")
+    between = source[fade.end() : load.start()]
+    if re.search(r"\brts\b", between) or re.search(
+        r"^[A-Za-z_][A-Za-z0-9_]*:\s*$", between, re.MULTILINE
+    ):
+        raise ValueError("map-lifecycle fade/load fallthrough drift")
+
+
+def _map_lifecycle_caller_breakdown(
+    disasm: Path,
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Keep parsed direct targets and resolved effective targets as separate identities."""
+    instruction_targets = sorted(
+        {call["instructionTarget"] for rows in direct_call_rows.values() for call in rows}
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    bounded_handlers = set(MAP_LIFECYCLE_HANDLER_NAMES)
+    target_resolutions = []
+    for target in instruction_targets:
+        effective_target = aliases.get(target, {}).get("effectiveTarget", target)
+        target_resolutions.append(
+            {
+                "instructionTarget": target,
+                "effectiveTarget": effective_target,
+                "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+                "effectiveTargetScope": (
+                    "internal" if effective_target in bounded_handlers else "external"
+                ),
+            }
+        )
+    effective_targets = sorted({row["effectiveTarget"] for row in target_resolutions})
+    resolution_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_rows = []
+    for handler_name in MAP_LIFECYCLE_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler_name]:
+            instruction_counts[call["instructionTarget"]] += 1
+            effective_counts[resolution_by_instruction[call["instructionTarget"]]] += 1
+        caller_rows.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_rows)
+        for target in effective_targets
+    }
+    scopes = {row["effectiveTarget"]: row["effectiveTargetScope"] for row in target_resolutions}
+
+    def scoped_totals(scope: str) -> dict[str, int]:
+        return {
+            target: effective_totals[target] if scopes[target] == scope else 0
+            for target in effective_targets
+        }
+
+    return {
+        "callerHandlers": caller_rows,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalEffectiveTargetTotals": scoped_totals("internal"),
+        "externalEffectiveTargetTotals": scoped_totals("external"),
+    }
+
+
+def _map_lifecycle_source_identity_joins(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Record the bounded handler source and independent owner identities."""
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    handler_source = read_upstream_text(disasm / handler_path)
+    if any(
+        re.search(rf"^{re.escape(symbol)}:\s*$", handler_source, re.MULTILINE) is None
+        for symbol in MAP_LIFECYCLE_HANDLER_NAMES
+    ):
+        raise ValueError("map-lifecycle handler source identity drift")
+    owner_specs = (
+        ("code/gameflow/exploration/exploration.asm", ("ResetCurrentMap",), None),
+        ("code/common/maps/mapload.asm", ("LoadMapTilesets", "LoadMap"), None),
+        ("code/common/tech/interrupts/vdpcontrol.asm", ("EnableDisplayAndInterrupts",), None),
+        ("code/common/tech/interrupts/vintengine_1.asm", ("WaitForVInt",), None),
+    )
+    owners = []
+    for source_path, symbols, related_contract_id in owner_specs:
+        source = read_upstream_text(disasm / source_path)
+        for symbol in symbols:
+            if symbol not in addresses or re.search(
+                rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE
+            ) is None:
+                raise ValueError(f"map-lifecycle source owner symbol drift: {symbol}")
+        owners.append(
+            {
+                "sourcePath": source_path,
+                "sourceSha256": hashlib.sha256(source.encode()).hexdigest().upper(),
+                "symbols": list(symbols),
+                "relatedContractId": related_contract_id,
+            }
+        )
+    return {
+        "handlerSource": {
+            "sourcePath": handler_path,
+            "sourceSha256": hashlib.sha256(handler_source.encode()).hexdigest().upper(),
+            "symbols": list(MAP_LIFECYCLE_HANDLER_NAMES),
+        },
+        "calleeOwners": owners,
+    }
+
+
+def _map_lifecycle_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    rom_path: Path,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build the static contract for reset/load/reload forms without runtime interpretation."""
+    required_equates = (
+        "MAP_CURRENT",
+        "BYTE_SHIFT_COUNT",
+        "BYTE_MASK",
+        "VINTS_DEACTIVATE",
+        "VINTS_ACTIVATE",
+    )
+    missing = [name for name in required_equates if name not in equates]
+    if missing:
+        raise ValueError(f"map-lifecycle source constants are missing: {missing}")
+    map_content = build_map_content_contract(rom_path, upstream_path)
+    canonical_map_ids = {row["map"] for row in map_content["mapEntries"]}
+    if len(canonical_map_ids) != map_content["summary"]["mapCount"]:
+        raise ValueError("map-lifecycle canonical map identity drift")
+    annotations_by_macro = _map_lifecycle_macro_annotations(disasm)
+    source_sites, program_totals = _map_lifecycle_program_facts(
+        program_corpus, annotations_by_macro, equates, canonical_map_ids
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in MAP_LIFECYCLE_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"map-lifecycle program total drift: {macro}")
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        source_operand_bytes = sum(row["widthBytes"] for row in annotations)
+        source_encoded_bytes = (
+            max((row["streamOffset"] + row["widthBytes"] for row in annotations), default=2)
+        )
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"] != source_operand_bytes
+            or contract["encodedBytes"] != source_encoded_bytes
+            or contract["operandLayout"]
+            != [
+                {
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "expression": f"\\{row['parameterOrdinal']}",
+                    "parameterOrdinals": [row["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for row in annotations
+            ]
+        ):
+            raise ValueError(f"map-lifecycle macro ABI drift: {macro}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    guards_by_macro: dict[str, dict[str, Any]] = {}
+    handlers_by_macro: dict[str, dict[str, Any]] = {}
+    for macro in MAP_LIFECYCLE_MACRO_NAMES:
+        handler_name = MAP_LIFECYCLE_HANDLER_BY_MACRO[macro]
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"map-lifecycle dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"map-lifecycle handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _map_lifecycle_section_guard(
+            macro, statements, annotations_by_macro[macro], equates
+        )
+        if macro == "mapLoad":
+            section_guard["branchRecords"][0]["branchTarget"] = (
+                _map_lifecycle_branch_target_record(
+                    _map_lifecycle_named_section_source(disasm, handler),
+                    section_guard["branchRecords"][0]["branchInstruction"],
+                    section_guard["orderedInstructions"],
+                )
+            )
+        direct_calls = _force_state_direct_calls(statements)
+        if direct_calls != _force_state_direct_calls(section_guard["directCallOrder"]):
+            raise ValueError(f"map-lifecycle direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        guards_by_macro[macro] = section_guard
+        handlers_by_macro[macro] = handler
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations_by_macro[macro],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+                "continuation": None,
+            }
+        )
+    _map_lifecycle_fallthrough_guard(disasm)
+    map_load_guard = guards_by_macro["mapLoad"]
+    load_fade_row = next(row for row in handler_rows if row["macro"] == "loadMapFadeIn")
+    load_fade_row["continuation"] = {
+        "handler": handlers_by_macro["mapLoad"]["name"],
+        "address": handlers_by_macro["mapLoad"]["address"],
+        "sectionGuard": map_load_guard,
+        "directCalls": direct_call_rows[handlers_by_macro["mapLoad"]["name"]],
+    }
+    for macro in ("loadMapFadeIn", "mapLoad", "reloadMap"):
+        guard = map_load_guard if macro == "loadMapFadeIn" else guards_by_macro[macro]
+        cursor_bytes = sum(
+            row["cursorAdvanceByteCount"] for row in guard["scriptCursorReadUseSites"]
+        )
+        if cursor_bytes != macros[macro]["operandBytes"]:
+            raise ValueError(f"map-lifecycle script cursor width drift: {macro}")
+    if (
+        map_load_guard["operandPackUseSites"] is None
+        or guards_by_macro["reloadMap"]["operandPackUseSites"] is None
+        or map_load_guard["operandPackUseSites"]["multiplierUseSite"]
+        != guards_by_macro["reloadMap"]["operandPackUseSites"]["multiplierUseSite"]
+    ):
+        raise ValueError("map-lifecycle shared operand-pack use-site drift")
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": MAP_LIFECYCLE_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in MAP_LIFECYCLE_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_map_lifecycle_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "canonicalMapDomain": {
+            "contractId": map_content["id"],
+            "mapCount": map_content["summary"]["mapCount"],
+            "mapIds": sorted(canonical_map_ids),
+            "sourceMapCurrentValue": equates["MAP_CURRENT"],
+        },
+        "handlers": handler_rows,
+        "callerBreakdown": _map_lifecycle_caller_breakdown(
+            disasm, direct_call_rows, addresses, rom
+        ),
+        "sourceIdentityJoins": _map_lifecycle_source_identity_joins(disasm, addresses),
+        "runtimeQuestions": MAP_LIFECYCLE_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -4736,6 +5564,18 @@ def build_map_script_engine_contract(
         program_corpus,
         addresses,
         rom,
+    )
+    map_lifecycle_command_facts = _map_lifecycle_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+        rom_path,
+        upstream_path,
     )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
@@ -4885,6 +5725,7 @@ def build_map_script_engine_contract(
         "storyStateCommandFacts": story_state_command_facts,
         "mapBlockMutationCommandFacts": map_block_mutation_command_facts,
         "entityPopulationCommandFacts": entity_population_command_facts,
+        "mapLifecycleCommandFacts": map_lifecycle_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -4894,6 +5735,7 @@ def build_map_script_engine_contract(
             *STORY_STATE_RUNTIME_QUESTIONS,
             *MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS,
             *ENTITY_POPULATION_RUNTIME_QUESTIONS,
+            *MAP_LIFECYCLE_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -4942,6 +5784,7 @@ def verify_map_script_engine_contract(
         "storyStateCommandFacts": output["storyStateCommandFacts"],
         "mapBlockMutationCommandFacts": output["mapBlockMutationCommandFacts"],
         "entityPopulationCommandFacts": output["entityPopulationCommandFacts"],
+        "mapLifecycleCommandFacts": output["mapLifecycleCommandFacts"],
     }
     for field in (
         "summary",
@@ -4967,6 +5810,7 @@ def verify_map_script_engine_contract(
         "storyStateCommandFacts",
         "mapBlockMutationCommandFacts",
         "entityPopulationCommandFacts",
+        "mapLifecycleCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

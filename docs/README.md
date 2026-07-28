@@ -78,8 +78,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   program-site/handler/caller 合同、六个 map-script roster/death command 的 43 条 ordered
   program-site/handler/caller 合同、两个 map-script block-copy command 的 208 条 ordered
   program-site/handler/cursor/helper/caller 合同、四个 map-script entity population/reload command 的
-  96 条 ordered program-site/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick
-  entity movement H3。
+  96 条 ordered program-site/handler/caller 合同、四个 map-script map lifecycle command 的 108 条
+  ordered program-site/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
+  movement H3。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
@@ -200,6 +201,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   cursor/VInt/call/constant handler guard，以及保留 direct `j_InitializeMapEntities` 与 resolved
   `InitializeMapEntities` identity 的 zero-inclusive caller map；其唯一 H3 queue 为
   `entity-population-reload/runtime-effects-matrix`。
+  同一 304-row 零计数 corpus 还固定四个 map lifecycle form（108 sites）、四个 named handler 的
+  cursor/probe、VInt、branch、call/fall-through guards，以及 five-target zero-inclusive caller map；
+  唯一 H3 queue 为 `map-lifecycle/runtime-effects-matrix`。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
   39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot
@@ -217,7 +221,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`map-exploration.md`](./design/map-exploration.md)：79-map import boundary、共享 block/layout
   ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
-  entity population/reload form 与现代 renderer 的原版事实/未知/可现代化边界。
+  entity population/reload form、四个 source-faithful map lifecycle form 与现代 renderer 的
+  原版事实/未知/可现代化边界。
 - [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
   投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
   effective-level 缺陷的原版事实和重制选择边界。

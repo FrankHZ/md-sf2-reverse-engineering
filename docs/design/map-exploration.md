@@ -145,6 +145,18 @@ target. A remake MAY translate these records into its own entity-loading interfa
 that interface independently. The original static contract does not establish spawning, slot
 allocation, capacity, persistence, activation, rendering, collision/pathfinding, or normal-story
 reachability.
+Map-script imports MUST separately retain the source-faithful map lifecycle records `resetMap`,
+`loadMapFadeIn`, `reloadMap`, and `mapLoad` in `sf2-map-script-engine-static-v1` at
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field `expected.mapLifecycleCommandFacts`.
+The four forms MUST remain distinct, preserving opcode/operand widths, source comments, complete
+program ordering, and the exact named handler facts: cursor transfer versus non-advancing probe,
+VInt operation records, branch polarity/target identity, direct instruction/effective target identity, call order,
+and the physical `csc37_loadMapAndFadeIn` continuation into `csc48_loadMap`. A remake MAY introduce
+its own lifecycle interface only after defining that interface independently. The original static
+contract does not establish map persistence, working-layout replacement, entity reload effects,
+camera/player placement, collision/pathfinding refresh, presentation timing, fade visuals, hardware
+effects, or normal-story reachability; those remain in
+`map-lifecycle/runtime-effects-matrix`.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

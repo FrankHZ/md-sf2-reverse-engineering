@@ -25,7 +25,8 @@
     "forceStateCommandFacts",
     "storyStateCommandFacts",
     "mapBlockMutationCommandFacts",
-    "entityPopulationCommandFacts"
+    "entityPopulationCommandFacts",
+    "mapLifecycleCommandFacts"
   ],
   "properties": {
     "schemaVersion": {
@@ -313,8 +314,8 @@
     },
     "runtimeQuestions": {
       "type": "array",
-      "minItems": 8,
-      "maxItems": 8,
+      "minItems": 9,
+      "maxItems": 9,
       "items": {
         "type": "string"
       },
@@ -326,7 +327,8 @@
         "force-state/active-party-ai-follower-runtime-matrix",
         "story-state/branch-prompt-persistence-matrix",
         "map-block-mutation/runtime-effects-matrix",
-        "entity-population-reload/runtime-effects-matrix"
+        "entity-population-reload/runtime-effects-matrix",
+        "map-lifecycle/runtime-effects-matrix"
       ]
     },
     "dialogueCommandFacts": {
@@ -28226,6 +28228,1621 @@
           }
         }
       ]
+    },
+    "mapLifecycleCommandFacts": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/mapLifecycleCommandFacts"
+        },
+        {
+          "type": "object",
+          "required": [
+            "macros",
+            "sourceSiteOrderKeys",
+            "sourceSitesSha256",
+            "programTotalOrderKeys",
+            "programTotalsSha256",
+            "canonicalMapDomain",
+            "handlers",
+            "callerBreakdown",
+            "sourceIdentityJoins",
+            "runtimeQuestions"
+          ],
+          "properties": {
+            "macros": {
+              "const": [
+                {
+                  "name": "resetMap",
+                  "opcode": 54,
+                  "encodedBytes": 2,
+                  "operandBytes": 0,
+                  "operandLayout": [],
+                  "parameterOrdinals": [],
+                  "handler": "csc36_resetMap",
+                  "sourceOperandAnnotations": [],
+                  "sourceCommandCount": 7
+                },
+                {
+                  "name": "loadMapFadeIn",
+                  "opcode": 55,
+                  "encodedBytes": 8,
+                  "operandBytes": 6,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 6,
+                      "widthBytes": 2,
+                      "expression": "\\3",
+                      "parameterOrdinals": [
+                        3
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "handler": "csc37_loadMapAndFadeIn",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "map",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "camera X",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 3,
+                      "sourceComment": "camera Y",
+                      "streamOffset": 6,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 60
+                },
+                {
+                  "name": "reloadMap",
+                  "opcode": 70,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc46_reloadMap",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "camera X",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "camera Y",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 24
+                },
+                {
+                  "name": "mapLoad",
+                  "opcode": 72,
+                  "encodedBytes": 8,
+                  "operandBytes": 6,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 6,
+                      "widthBytes": 2,
+                      "expression": "\\3",
+                      "parameterOrdinals": [
+                        3
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "handler": "csc48_loadMap",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "map",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "camera X",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 3,
+                      "sourceComment": "camera Y",
+                      "streamOffset": 6,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 17
+                }
+              ]
+            },
+            "sourceSiteOrderKeys": {
+              "const": [
+                "abcs_battle01:2:loadMapFadeIn",
+                "bbcs_01:1:loadMapFadeIn",
+                "abcs_battle04:1:loadMapFadeIn",
+                "bbcs_04:1:loadMapFadeIn",
+                "bbcs_06:1:loadMapFadeIn",
+                "abcs_battle07:1:loadMapFadeIn",
+                "bbcs_07:2:loadMapFadeIn",
+                "abcs_battle08:1:loadMapFadeIn",
+                "bbcs_08:1:loadMapFadeIn",
+                "bbcs_11:2:loadMapFadeIn",
+                "abcs_battle13:2:loadMapFadeIn",
+                "abcs_battle15:1:loadMapFadeIn",
+                "bbcs_15:1:loadMapFadeIn",
+                "bbcs_16:1:loadMapFadeIn",
+                "abcs_battle18:1:loadMapFadeIn",
+                "bbcs_18:1:loadMapFadeIn",
+                "abcs_battle20:1:loadMapFadeIn",
+                "abcs_battle21:1:loadMapFadeIn",
+                "bbcs_21:1:loadMapFadeIn",
+                "abcs_battle26:1:loadMapFadeIn",
+                "bbcs_26:1:loadMapFadeIn",
+                "abcs_battle28:1:loadMapFadeIn",
+                "bbcs_28:1:loadMapFadeIn",
+                "bbcs_29:1:loadMapFadeIn",
+                "abcs_battle30:1:loadMapFadeIn",
+                "bbcs_30:1:loadMapFadeIn",
+                "bbcs_31:1:loadMapFadeIn",
+                "abcs_battle32:1:loadMapFadeIn",
+                "bbcs_32:1:loadMapFadeIn",
+                "abcs_battle33:1:loadMapFadeIn",
+                "bbcs_33:1:loadMapFadeIn",
+                "abcs_battle34:1:loadMapFadeIn",
+                "bbcs_34:1:loadMapFadeIn",
+                "bbcs_35:1:loadMapFadeIn",
+                "abcs_battle36:1:loadMapFadeIn",
+                "bbcs_36:1:loadMapFadeIn",
+                "abcs_battle37:1:loadMapFadeIn",
+                "bbcs_37:1:loadMapFadeIn",
+                "abcs_battle38:1:loadMapFadeIn",
+                "bbcs_38:1:loadMapFadeIn",
+                "bbcs_39:1:loadMapFadeIn",
+                "abcs_battle40:1:loadMapFadeIn",
+                "bbcs_40:1:loadMapFadeIn",
+                "bbcs_41:1:loadMapFadeIn",
+                "abcs_battle42:1:loadMapFadeIn",
+                "bbcs_42:1:loadMapFadeIn",
+                "cs_606EA:4:reloadMap",
+                "cs_607DE:7:reloadMap",
+                "cs_60C42:11:reloadMap",
+                "cs_55832:1:mapLoad",
+                "cs_55832:4:resetMap",
+                "cs_55832:6:reloadMap",
+                "cs_55832:10:loadMapFadeIn",
+                "cs_570B0:1:reloadMap",
+                "cs_58FA4:1:reloadMap",
+                "cs_5249E:2:resetMap",
+                "cs_5249E:7:reloadMap",
+                "cs_5249E:20:loadMapFadeIn",
+                "cs_52938:14:reloadMap",
+                "cs_612BE:1:mapLoad",
+                "cs_53B66:109:resetMap",
+                "cs_53B66:111:reloadMap",
+                "cs_59656:1:reloadMap",
+                "cs_5996E:2:reloadMap",
+                "cs_59E04:2:reloadMap",
+                "cs_5B016:1:reloadMap",
+                "cs_5FABC:1:reloadMap",
+                "cs_5FB6A:41:mapLoad",
+                "cs_5FB6A:51:mapLoad",
+                "cs_5FB6A:74:mapLoad",
+                "cs_540C0:8:reloadMap",
+                "cs_54578:51:loadMapFadeIn",
+                "cs_5E320:0:mapLoad",
+                "cs_5EB44:2:reloadMap",
+                "cs_5EBFC:0:loadMapFadeIn",
+                "cs_5ED06:1:loadMapFadeIn",
+                "cs_5ED06:12:loadMapFadeIn",
+                "cs_5ED06:22:loadMapFadeIn",
+                "cs_5EDB8:1:loadMapFadeIn",
+                "cs_5EF60:1:loadMapFadeIn",
+                "cs_5EF60:82:mapLoad",
+                "cs_615E6:2:reloadMap",
+                "cs_615E6:785:mapLoad",
+                "cs_615E6:786:resetMap",
+                "cs_615E6:788:reloadMap",
+                "cs_5CC26:4:mapLoad",
+                "cs_5CC26:34:mapLoad",
+                "cs_5CCF6:4:mapLoad",
+                "cs_5CCF6:34:mapLoad",
+                "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23:0:resetMap",
+                "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23:1:reloadMap",
+                "cs_503A6:2:reloadMap",
+                "cs_503A6:56:loadMapFadeIn",
+                "cs_503A6:121:loadMapFadeIn",
+                "EndCutscene:0:mapLoad",
+                "IntroCutscene1:1:mapLoad",
+                "IntroCutscene1:107:reloadMap",
+                "IntroCutscene2:1:mapLoad",
+                "IntroCutscene2:5:resetMap",
+                "IntroCutscene2:7:reloadMap",
+                "IntroCutscene2:9:loadMapFadeIn",
+                "IntroCutscene3:1:mapLoad",
+                "IntroCutscene3:4:resetMap",
+                "IntroCutscene3:6:reloadMap",
+                "IntroCutscene3:8:loadMapFadeIn",
+                "IntroCutscene3:195:reloadMap",
+                "IntroCutscene4:1:mapLoad",
+                "data/scripting/map/debugscripts.asm#L16:5:loadMapFadeIn"
+              ]
+            },
+            "sourceSitesSha256": {
+              "const": "4F07DC2BD06A9E326A61CF43867FCBD2027BC35E76FAD9EEE09B622E11DC13A8"
+            },
+            "programTotalOrderKeys": {
+              "const": [
+                "cs_45284",
+                "cs_45348",
+                "cs_453F2",
+                "cs_45470",
+                "ms_BowieShrinkIn",
+                "ms_BowieGrowOut",
+                "abcs_battle00",
+                "abcs_battle01",
+                "bbcs_01",
+                "rbcs_battle01",
+                "bbcs_03",
+                "abcs_battle04",
+                "bbcs_04",
+                "abcs_battle05",
+                "edcs_battle5",
+                "bbcs_06",
+                "abcs_battle07",
+                "bbcs_07",
+                "abcs_battle08",
+                "bbcs_08",
+                "bbcs_11",
+                "abcs_battle12",
+                "edcs_battle12",
+                "abcs_battle13",
+                "abcs_battle15",
+                "bbcs_15",
+                "abcs_battle16",
+                "bbcs_16",
+                "abcs_battle18",
+                "bbcs_18",
+                "abcs_battle20",
+                "abcs_battle21",
+                "bbcs_21",
+                "abcs_battle26",
+                "bbcs_26",
+                "bscs_battle27",
+                "abcs_battle28",
+                "bbcs_28",
+                "bbcs_29",
+                "abcs_battle30",
+                "bbcs_30",
+                "bbcs_31",
+                "abcs_battle32",
+                "bbcs_32",
+                "rbcs_battle32",
+                "abcs_battle33",
+                "bbcs_33",
+                "abcs_battle34",
+                "bbcs_34",
+                "bbcs_35",
+                "abcs_battle36",
+                "bbcs_36",
+                "abcs_battle37",
+                "bbcs_37",
+                "abcs_battle38",
+                "bbcs_38",
+                "bbcs_39",
+                "abcs_battle40",
+                "bbcs_40",
+                "rbcs_battle40_1",
+                "rbcs_battle40_2",
+                "bbcs_41",
+                "abcs_battle42",
+                "bbcs_42",
+                "abcs_battle43",
+                "edcs_battle43",
+                "cs_5E3C2",
+                "cs_5E772",
+                "cs_512BA",
+                "cs_6283E",
+                "cs_513A0",
+                "cs_513BA",
+                "cs_51374",
+                "cs_5137A",
+                "cs_513CE",
+                "cs_513D6",
+                "cs_513E2",
+                "cs_51444",
+                "cs_5144C",
+                "cs_51454",
+                "cs_5145C",
+                "cs_5148C",
+                "cs_5149A",
+                "cs_51652",
+                "cs_516A8",
+                "cs_628C8",
+                "cs_6290C",
+                "cs_51742",
+                "cs_51750",
+                "cs_51B14",
+                "cs_60656",
+                "cs_606AC",
+                "cs_606E0",
+                "cs_606EA",
+                "cs_60708",
+                "cs_607DE",
+                "cs_6093A",
+                "cs_60B10",
+                "cs_60BA6",
+                "cs_60C42",
+                "cs_60CA4",
+                "cs_60EB2",
+                "cs_60F18",
+                "cs_60F64",
+                "cs_60FA4",
+                "cs_6060E",
+                "cs_54CC6",
+                "cs_54E70",
+                "cs_54E78",
+                "cs_54E86",
+                "cs_54F26",
+                "cs_55242",
+                "cs_55288",
+                "cs_55832",
+                "cs_55A36",
+                "cs_55BEE",
+                "cs_56146",
+                "cs_56172",
+                "cs_56314",
+                "cs_563B2",
+                "cs_56422",
+                "cs_568F6",
+                "cs_569BC",
+                "cs_56AE6",
+                "cs_570B0",
+                "cs_573EC",
+                "cs_574A6",
+                "cs_5766C",
+                "cs_5779C",
+                "cs_5797A",
+                "cs_57AAA",
+                "cs_57D22",
+                "cs_58116",
+                "cs_58310",
+                "cs_58330",
+                "cs_58512",
+                "cs_585FE",
+                "cs_58856",
+                "cs_58AE2",
+                "cs_58B7A",
+                "cs_58E5C",
+                "cs_58F5C",
+                "cs_58F7E",
+                "cs_58FA4",
+                "cs_5D04E",
+                "cs_51F88",
+                "cs_521BA",
+                "cs_5247C",
+                "cs_5249E",
+                "cs_52530",
+                "cs_528CA",
+                "cs_528D4",
+                "cs_52938",
+                "cs_52A3C",
+                "cs_612BE",
+                "cs_6143C",
+                "cs_52F0C",
+                "cs_52F24",
+                "cs_52F40",
+                "cs_53104",
+                "cs_62D06",
+                "cs_62D0E",
+                "cs_53176",
+                "cs_534D2",
+                "cs_535FA",
+                "cs_53620",
+                "cs_5362A",
+                "cs_53816",
+                "cs_632EA",
+                "cs_6335E",
+                "cs_53996",
+                "cs_633B2",
+                "cs_53B66",
+                "cs_EndingKiss",
+                "cs_53EF4",
+                "cs_53F2A",
+                "cs_59656",
+                "cs_5994E",
+                "cs_5996E",
+                "cs_599A4",
+                "cs_599B2",
+                "cs_StartSpecialBattle",
+                "cs_LeaveSpecialBattle",
+                "cs_5D3AA",
+                "cs_5D3B8",
+                "cs_59E04",
+                "cs_59F20",
+                "cs_59FB8",
+                "cs_5F3A2",
+                "cs_5F3C4",
+                "cs_5A256",
+                "cs_5A30C",
+                "cs_5A31E",
+                "cs_5A33A",
+                "cs_5A4FE",
+                "cs_5D63C",
+                "cs_5D644",
+                "cs_5D652",
+                "cs_5D712",
+                "cs_5D724",
+                "cs_5D732",
+                "cs_5A828",
+                "cs_5A8CA",
+                "cs_5A8E6",
+                "cs_5A90E",
+                "cs_5A92A",
+                "cs_5A93A",
+                "cs_5A956",
+                "cs_5A97E",
+                "cs_5A99A",
+                "cs_5A9AA",
+                "cs_5A9C6",
+                "cs_5A9EE",
+                "cs_5AA0A",
+                "cs_5AA1A",
+                "cs_5AA36",
+                "cs_5AA5E",
+                "cs_5AA7A",
+                "cs_5ABA8",
+                "cs_5ABCC",
+                "cs_5ABE6",
+                "cs_5AC04",
+                "cs_5AC1C",
+                "cs_5AC34",
+                "cs_5AC4C",
+                "cs_5AC58",
+                "cs_5AF36",
+                "cs_5B016",
+                "cs_5B466",
+                "cs_5B6C0",
+                "cs_5DA28",
+                "cs_5DA7A",
+                "cs_5FA9C",
+                "cs_5FABC",
+                "cs_5FB30",
+                "cs_5FB6A",
+                "cs_5DD8E",
+                "cs_5DD9C",
+                "cs_5DE22",
+                "cs_5DE2E",
+                "cs_5DE76",
+                "cs_5E0EE",
+                "cs_5E0F8",
+                "cs_5E20A",
+                "cs_53FD8",
+                "cs_53FE0",
+                "cs_5F4AE",
+                "cs_5F4B8",
+                "cs_5F594",
+                "cs_5FE9A",
+                "cs_5FF06",
+                "cs_540C0",
+                "cs_54570",
+                "cs_54578",
+                "cs_600B2",
+                "cs_600CE",
+                "cs_5C312",
+                "cs_5C3AA",
+                "cs_5C3D8",
+                "cs_5C4EE",
+                "cs_5C622",
+                "cs_5E27C",
+                "cs_5E320",
+                "cs_5E346",
+                "cs_6150A",
+                "cs_5EB26",
+                "cs_5EB44",
+                "cs_5EBFC",
+                "cs_5ED06",
+                "cs_5EDB8",
+                "cs_5EF60",
+                "cs_615E6",
+                "cs_5C6CA",
+                "cs_5C876",
+                "cs_5C8D4",
+                "cs_5C8FE",
+                "cs_5C914",
+                "cs_5CA5E",
+                "cs_5CA6E",
+                "cs_5CB34",
+                "cs_5CBB4",
+                "cs_5CC26",
+                "cs_5CCF6",
+                "cs_4FB64",
+                "cs_4FC32",
+                "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                "cs_4FF5A",
+                "cs_4FFDA",
+                "cs_5023E",
+                "cs_503A6",
+                "cs_50806",
+                "cs_50ABE",
+                "EndCutscene",
+                "IntroCutscene1",
+                "IntroCutscene2",
+                "IntroCutscene3",
+                "IntroCutscene4",
+                "dms_01",
+                "data/scripting/map/debugscripts.asm#L11",
+                "data/scripting/map/debugscripts.asm#L16",
+                "data/scripting/map/debugscripts.asm#L24",
+                "data/scripting/map/debugscripts.asm#L26",
+                "data/scripting/map/debugscripts.asm#L76",
+                "data/scripting/map/debugscripts.asm#L86"
+              ]
+            },
+            "programTotalsSha256": {
+              "const": "E553A857B356B1B334DE3C68DAD17D966C46C6788EADB62EAFD6A966D6EBEB84"
+            },
+            "canonicalMapDomain": {
+              "const": {
+                "contractId": "sf2-map-content-static-v1",
+                "mapCount": 79,
+                "mapIds": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12,
+                  13,
+                  14,
+                  15,
+                  16,
+                  17,
+                  18,
+                  19,
+                  20,
+                  21,
+                  22,
+                  23,
+                  24,
+                  25,
+                  26,
+                  27,
+                  28,
+                  29,
+                  30,
+                  31,
+                  32,
+                  33,
+                  34,
+                  35,
+                  36,
+                  37,
+                  38,
+                  39,
+                  40,
+                  41,
+                  42,
+                  43,
+                  44,
+                  45,
+                  46,
+                  47,
+                  48,
+                  49,
+                  50,
+                  51,
+                  52,
+                  53,
+                  54,
+                  55,
+                  56,
+                  57,
+                  58,
+                  59,
+                  60,
+                  61,
+                  62,
+                  63,
+                  64,
+                  65,
+                  66,
+                  67,
+                  68,
+                  69,
+                  70,
+                  71,
+                  72,
+                  73,
+                  74,
+                  75,
+                  76,
+                  77,
+                  78
+                ],
+                "sourceMapCurrentValue": 255
+              }
+            },
+            "handlers": {
+              "const": [
+                {
+                  "macro": "resetMap",
+                  "handler": "csc36_resetMap",
+                  "address": 288142,
+                  "opcode": 54,
+                  "sourceCommandCount": 7,
+                  "operandAnnotations": [],
+                  "statementCount": 4,
+                  "guardedStatements": [
+                    "move.l a6,-(sp)",
+                    "jsr (ResetCurrentMap).l",
+                    "movea.l (sp)+,a6",
+                    "rts"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.l a6,-(sp)",
+                      "jsr (ResetCurrentMap).l",
+                      "movea.l (sp)+,a6",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [],
+                    "mapProbeUseSite": null,
+                    "vintControlRecords": [],
+                    "branchRecords": [],
+                    "sourceStateMutationRecords": [],
+                    "sourceConstantUses": [],
+                    "operandPackUseSites": null,
+                    "sourceD1SelectorUseSite": null,
+                    "directCallOrder": [
+                      "jsr (ResetCurrentMap).l"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "ResetCurrentMap"
+                    }
+                  ],
+                  "continuation": null
+                },
+                {
+                  "macro": "loadMapFadeIn",
+                  "handler": "csc37_loadMapAndFadeIn",
+                  "address": 288154,
+                  "opcode": 55,
+                  "sourceCommandCount": 60,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "map",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "camera X",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 3,
+                      "sourceComment": "camera Y",
+                      "streamOffset": 6,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 5,
+                  "guardedStatements": [
+                    "move.b #OUT_TO_BLACK,((FADING_SETTING-$1000000)).w",
+                    "clr.w (FADING_TIMER_WORD).l",
+                    "clr.b ((FADING_POINTER-$1000000)).w",
+                    "move.b ((FADING_COUNTER_MAX-$1000000)).w,((FADING_COUNTER-$1000000)).w",
+                    "move.b #%1111,((FADING_PALETTE_BITFIELD-$1000000)).w"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.b #OUT_TO_BLACK,((FADING_SETTING-$1000000)).w",
+                      "clr.w (FADING_TIMER_WORD).l",
+                      "clr.b ((FADING_POINTER-$1000000)).w",
+                      "move.b ((FADING_COUNTER_MAX-$1000000)).w,((FADING_COUNTER-$1000000)).w",
+                      "move.b #%1111,((FADING_PALETTE_BITFIELD-$1000000)).w"
+                    ],
+                    "scriptCursorReadUseSites": [],
+                    "mapProbeUseSite": null,
+                    "vintControlRecords": [],
+                    "branchRecords": [],
+                    "sourceStateMutationRecords": [
+                      {
+                        "sourceSymbols": [
+                          "FADING_SETTING"
+                        ],
+                        "sourceValueSymbol": "OUT_TO_BLACK",
+                        "sourceValue": 2,
+                        "literalValue": null,
+                        "instruction": "move.b #OUT_TO_BLACK,((FADING_SETTING-$1000000)).w"
+                      },
+                      {
+                        "sourceSymbols": [
+                          "FADING_TIMER_WORD"
+                        ],
+                        "sourceValueSymbol": null,
+                        "sourceValue": null,
+                        "literalValue": null,
+                        "instruction": "clr.w (FADING_TIMER_WORD).l"
+                      },
+                      {
+                        "sourceSymbols": [
+                          "FADING_POINTER"
+                        ],
+                        "sourceValueSymbol": null,
+                        "sourceValue": null,
+                        "literalValue": null,
+                        "instruction": "clr.b ((FADING_POINTER-$1000000)).w"
+                      },
+                      {
+                        "sourceSymbols": [
+                          "FADING_COUNTER_MAX",
+                          "FADING_COUNTER"
+                        ],
+                        "sourceValueSymbol": null,
+                        "sourceValue": null,
+                        "literalValue": null,
+                        "instruction": "move.b ((FADING_COUNTER_MAX-$1000000)).w,((FADING_COUNTER-$1000000)).w"
+                      },
+                      {
+                        "sourceSymbols": [
+                          "FADING_PALETTE_BITFIELD"
+                        ],
+                        "sourceValueSymbol": null,
+                        "sourceValue": null,
+                        "literalValue": 15,
+                        "instruction": "move.b #%1111,((FADING_PALETTE_BITFIELD-$1000000)).w"
+                      }
+                    ],
+                    "sourceConstantUses": [
+                      {
+                        "symbol": "OUT_TO_BLACK",
+                        "value": 2,
+                        "instruction": "move.b #OUT_TO_BLACK,((FADING_SETTING-$1000000)).w"
+                      }
+                    ],
+                    "operandPackUseSites": null,
+                    "sourceD1SelectorUseSite": null,
+                    "directCallOrder": [],
+                    "returnInstruction": null
+                  },
+                  "directCalls": [],
+                  "continuation": {
+                    "handler": "csc48_loadMap",
+                    "address": 288182,
+                    "sectionGuard": {
+                      "orderedInstructions": [
+                        "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                        "nop",
+                        "move.w (a6),d1",
+                        "jsr (LoadMapTilesets).w",
+                        "jsr (WaitForVInt).w",
+                        "tst.b ((FADING_SETTING-$1000000)).w",
+                        "bne.s loc_465C4",
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_DEACTIVATE",
+                        "dc.l 0",
+                        "clr.l d0",
+                        "move.w (a6)+,d1",
+                        "move.w (a6)+,d0",
+                        "lsl.w #BYTE_SHIFT_COUNT,d0",
+                        "move.w (a6)+,d2",
+                        "andi.w #BYTE_MASK,d2",
+                        "or.w d2,d0",
+                        "mulu.w #3,d0",
+                        "move.l a6,-(sp)",
+                        "jsr (LoadMap).w",
+                        "movea.l (sp)+,a6",
+                        "jsr (EnableDisplayAndInterrupts).w",
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_ACTIVATE",
+                        "dc.l 0",
+                        "jsr (WaitForVInt).w",
+                        "rts"
+                      ],
+                      "scriptCursorReadUseSites": [
+                        {
+                          "sourceRegister": "a6",
+                          "destinationRegister": "d1",
+                          "transferredByteCount": 2,
+                          "cursorAdvanceByteCount": 2,
+                          "instruction": "move.w (a6)+,d1"
+                        },
+                        {
+                          "sourceRegister": "a6",
+                          "destinationRegister": "d0",
+                          "transferredByteCount": 2,
+                          "cursorAdvanceByteCount": 2,
+                          "instruction": "move.w (a6)+,d0"
+                        },
+                        {
+                          "sourceRegister": "a6",
+                          "destinationRegister": "d2",
+                          "transferredByteCount": 2,
+                          "cursorAdvanceByteCount": 2,
+                          "instruction": "move.w (a6)+,d2"
+                        }
+                      ],
+                      "mapProbeUseSite": {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d1",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 0,
+                        "instruction": "move.w (a6),d1"
+                      },
+                      "vintControlRecords": [
+                        {
+                          "phase": "deactivate",
+                          "operationSymbol": "VINTS_DEACTIVATE",
+                          "operationValue": 3,
+                          "trapInstruction": "trap #VINT_FUNCTIONS",
+                          "operationInstruction": "dc.w VINTS_DEACTIVATE",
+                          "argumentInstruction": "dc.l 0"
+                        },
+                        {
+                          "phase": "activate",
+                          "operationSymbol": "VINTS_ACTIVATE",
+                          "operationValue": 4,
+                          "trapInstruction": "trap #VINT_FUNCTIONS",
+                          "operationInstruction": "dc.w VINTS_ACTIVATE",
+                          "argumentInstruction": "dc.l 0"
+                        }
+                      ],
+                      "branchRecords": [
+                        {
+                          "testInstruction": "tst.b ((FADING_SETTING-$1000000)).w",
+                          "branchInstruction": "bne.s loc_465C4",
+                          "fallthroughInstruction": "trap #VINT_FUNCTIONS",
+                          "branchTarget": {
+                            "targetLabel": "loc_465C4",
+                            "targetInstruction": "jsr (WaitForVInt).w",
+                            "targetStatementIndex": 4
+                          }
+                        }
+                      ],
+                      "sourceStateMutationRecords": [
+                        {
+                          "sourceSymbols": [
+                            "VIEW_TARGET_ENTITY"
+                          ],
+                          "sourceValueSymbol": null,
+                          "sourceValue": null,
+                          "literalValue": -1,
+                          "instruction": "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w"
+                        }
+                      ],
+                      "sourceConstantUses": [],
+                      "operandPackUseSites": {
+                        "parameterOrdinals": [
+                          2,
+                          3
+                        ],
+                        "sourceComments": [
+                          "camera X",
+                          "camera Y"
+                        ],
+                        "shiftUseSite": {
+                          "symbol": "BYTE_SHIFT_COUNT",
+                          "value": 8,
+                          "instruction": "lsl.w #BYTE_SHIFT_COUNT,d0"
+                        },
+                        "maskUseSite": {
+                          "symbol": "BYTE_MASK",
+                          "value": 255,
+                          "instruction": "andi.w #BYTE_MASK,d2"
+                        },
+                        "mergeInstruction": "or.w d2,d0",
+                        "multiplierUseSite": {
+                          "value": 3,
+                          "instruction": "mulu.w #3,d0"
+                        }
+                      },
+                      "sourceD1SelectorUseSite": null,
+                      "directCallOrder": [
+                        "jsr (LoadMapTilesets).w",
+                        "jsr (WaitForVInt).w",
+                        "jsr (LoadMap).w",
+                        "jsr (EnableDisplayAndInterrupts).w",
+                        "jsr (WaitForVInt).w"
+                      ],
+                      "returnInstruction": "rts"
+                    },
+                    "directCalls": [
+                      {
+                        "opcode": "jsr",
+                        "instructionTarget": "LoadMapTilesets"
+                      },
+                      {
+                        "opcode": "jsr",
+                        "instructionTarget": "WaitForVInt"
+                      },
+                      {
+                        "opcode": "jsr",
+                        "instructionTarget": "LoadMap"
+                      },
+                      {
+                        "opcode": "jsr",
+                        "instructionTarget": "EnableDisplayAndInterrupts"
+                      },
+                      {
+                        "opcode": "jsr",
+                        "instructionTarget": "WaitForVInt"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "macro": "reloadMap",
+                  "handler": "csc46_reloadMap",
+                  "address": 288520,
+                  "opcode": 70,
+                  "sourceCommandCount": 24,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "camera X",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "camera Y",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 22,
+                  "guardedStatements": [
+                    "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                    "nop",
+                    "trap #VINT_FUNCTIONS",
+                    "dc.w VINTS_DEACTIVATE",
+                    "dc.l 0",
+                    "clr.l d0",
+                    "moveq #-1,d1",
+                    "move.w (a6)+,d0",
+                    "lsl.w #BYTE_SHIFT_COUNT,d0",
+                    "move.w (a6)+,d2",
+                    "andi.w #BYTE_MASK,d2",
+                    "or.w d2,d0",
+                    "mulu.w #3,d0",
+                    "move.l a6,-(sp)",
+                    "jsr (LoadMap).w",
+                    "movea.l (sp)+,a6",
+                    "jsr (EnableDisplayAndInterrupts).w",
+                    "trap #VINT_FUNCTIONS",
+                    "dc.w VINTS_ACTIVATE",
+                    "dc.l 0",
+                    "jsr (WaitForVInt).w",
+                    "rts"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                      "nop",
+                      "trap #VINT_FUNCTIONS",
+                      "dc.w VINTS_DEACTIVATE",
+                      "dc.l 0",
+                      "clr.l d0",
+                      "moveq #-1,d1",
+                      "move.w (a6)+,d0",
+                      "lsl.w #BYTE_SHIFT_COUNT,d0",
+                      "move.w (a6)+,d2",
+                      "andi.w #BYTE_MASK,d2",
+                      "or.w d2,d0",
+                      "mulu.w #3,d0",
+                      "move.l a6,-(sp)",
+                      "jsr (LoadMap).w",
+                      "movea.l (sp)+,a6",
+                      "jsr (EnableDisplayAndInterrupts).w",
+                      "trap #VINT_FUNCTIONS",
+                      "dc.w VINTS_ACTIVATE",
+                      "dc.l 0",
+                      "jsr (WaitForVInt).w",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d2",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d2"
+                      }
+                    ],
+                    "mapProbeUseSite": null,
+                    "vintControlRecords": [
+                      {
+                        "phase": "deactivate",
+                        "operationSymbol": "VINTS_DEACTIVATE",
+                        "operationValue": 3,
+                        "trapInstruction": "trap #VINT_FUNCTIONS",
+                        "operationInstruction": "dc.w VINTS_DEACTIVATE",
+                        "argumentInstruction": "dc.l 0"
+                      },
+                      {
+                        "phase": "activate",
+                        "operationSymbol": "VINTS_ACTIVATE",
+                        "operationValue": 4,
+                        "trapInstruction": "trap #VINT_FUNCTIONS",
+                        "operationInstruction": "dc.w VINTS_ACTIVATE",
+                        "argumentInstruction": "dc.l 0"
+                      }
+                    ],
+                    "branchRecords": [],
+                    "sourceStateMutationRecords": [
+                      {
+                        "sourceSymbols": [
+                          "VIEW_TARGET_ENTITY"
+                        ],
+                        "sourceValueSymbol": null,
+                        "sourceValue": null,
+                        "literalValue": -1,
+                        "instruction": "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w"
+                      }
+                    ],
+                    "sourceConstantUses": [],
+                    "operandPackUseSites": {
+                      "parameterOrdinals": [
+                        1,
+                        2
+                      ],
+                      "sourceComments": [
+                        "camera X",
+                        "camera Y"
+                      ],
+                      "shiftUseSite": {
+                        "symbol": "BYTE_SHIFT_COUNT",
+                        "value": 8,
+                        "instruction": "lsl.w #BYTE_SHIFT_COUNT,d0"
+                      },
+                      "maskUseSite": {
+                        "symbol": "BYTE_MASK",
+                        "value": 255,
+                        "instruction": "andi.w #BYTE_MASK,d2"
+                      },
+                      "mergeInstruction": "or.w d2,d0",
+                      "multiplierUseSite": {
+                        "value": 3,
+                        "instruction": "mulu.w #3,d0"
+                      }
+                    },
+                    "sourceD1SelectorUseSite": {
+                      "literalValue": -1,
+                      "instruction": "moveq #-1,d1"
+                    },
+                    "directCallOrder": [
+                      "jsr (LoadMap).w",
+                      "jsr (EnableDisplayAndInterrupts).w",
+                      "jsr (WaitForVInt).w"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "LoadMap"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "EnableDisplayAndInterrupts"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt"
+                    }
+                  ],
+                  "continuation": null
+                },
+                {
+                  "macro": "mapLoad",
+                  "handler": "csc48_loadMap",
+                  "address": 288182,
+                  "opcode": 72,
+                  "sourceCommandCount": 17,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "map",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "camera X",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 3,
+                      "sourceComment": "camera Y",
+                      "streamOffset": 6,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 27,
+                  "guardedStatements": [
+                    "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                    "nop",
+                    "move.w (a6),d1",
+                    "jsr (LoadMapTilesets).w",
+                    "jsr (WaitForVInt).w",
+                    "tst.b ((FADING_SETTING-$1000000)).w",
+                    "bne.s loc_465C4",
+                    "trap #VINT_FUNCTIONS",
+                    "dc.w VINTS_DEACTIVATE",
+                    "dc.l 0",
+                    "clr.l d0",
+                    "move.w (a6)+,d1",
+                    "move.w (a6)+,d0",
+                    "lsl.w #BYTE_SHIFT_COUNT,d0",
+                    "move.w (a6)+,d2",
+                    "andi.w #BYTE_MASK,d2",
+                    "or.w d2,d0",
+                    "mulu.w #3,d0",
+                    "move.l a6,-(sp)",
+                    "jsr (LoadMap).w",
+                    "movea.l (sp)+,a6",
+                    "jsr (EnableDisplayAndInterrupts).w",
+                    "trap #VINT_FUNCTIONS",
+                    "dc.w VINTS_ACTIVATE",
+                    "dc.l 0",
+                    "jsr (WaitForVInt).w",
+                    "rts"
+                  ],
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w",
+                      "nop",
+                      "move.w (a6),d1",
+                      "jsr (LoadMapTilesets).w",
+                      "jsr (WaitForVInt).w",
+                      "tst.b ((FADING_SETTING-$1000000)).w",
+                      "bne.s loc_465C4",
+                      "trap #VINT_FUNCTIONS",
+                      "dc.w VINTS_DEACTIVATE",
+                      "dc.l 0",
+                      "clr.l d0",
+                      "move.w (a6)+,d1",
+                      "move.w (a6)+,d0",
+                      "lsl.w #BYTE_SHIFT_COUNT,d0",
+                      "move.w (a6)+,d2",
+                      "andi.w #BYTE_MASK,d2",
+                      "or.w d2,d0",
+                      "mulu.w #3,d0",
+                      "move.l a6,-(sp)",
+                      "jsr (LoadMap).w",
+                      "movea.l (sp)+,a6",
+                      "jsr (EnableDisplayAndInterrupts).w",
+                      "trap #VINT_FUNCTIONS",
+                      "dc.w VINTS_ACTIVATE",
+                      "dc.l 0",
+                      "jsr (WaitForVInt).w",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d1",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d1"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d2",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d2"
+                      }
+                    ],
+                    "mapProbeUseSite": {
+                      "sourceRegister": "a6",
+                      "destinationRegister": "d1",
+                      "transferredByteCount": 2,
+                      "cursorAdvanceByteCount": 0,
+                      "instruction": "move.w (a6),d1"
+                    },
+                    "vintControlRecords": [
+                      {
+                        "phase": "deactivate",
+                        "operationSymbol": "VINTS_DEACTIVATE",
+                        "operationValue": 3,
+                        "trapInstruction": "trap #VINT_FUNCTIONS",
+                        "operationInstruction": "dc.w VINTS_DEACTIVATE",
+                        "argumentInstruction": "dc.l 0"
+                      },
+                      {
+                        "phase": "activate",
+                        "operationSymbol": "VINTS_ACTIVATE",
+                        "operationValue": 4,
+                        "trapInstruction": "trap #VINT_FUNCTIONS",
+                        "operationInstruction": "dc.w VINTS_ACTIVATE",
+                        "argumentInstruction": "dc.l 0"
+                      }
+                    ],
+                    "branchRecords": [
+                      {
+                        "testInstruction": "tst.b ((FADING_SETTING-$1000000)).w",
+                        "branchInstruction": "bne.s loc_465C4",
+                        "fallthroughInstruction": "trap #VINT_FUNCTIONS",
+                        "branchTarget": {
+                          "targetLabel": "loc_465C4",
+                          "targetInstruction": "jsr (WaitForVInt).w",
+                          "targetStatementIndex": 4
+                        }
+                      }
+                    ],
+                    "sourceStateMutationRecords": [
+                      {
+                        "sourceSymbols": [
+                          "VIEW_TARGET_ENTITY"
+                        ],
+                        "sourceValueSymbol": null,
+                        "sourceValue": null,
+                        "literalValue": -1,
+                        "instruction": "move.b #-1,((VIEW_TARGET_ENTITY-$1000000)).w"
+                      }
+                    ],
+                    "sourceConstantUses": [],
+                    "operandPackUseSites": {
+                      "parameterOrdinals": [
+                        2,
+                        3
+                      ],
+                      "sourceComments": [
+                        "camera X",
+                        "camera Y"
+                      ],
+                      "shiftUseSite": {
+                        "symbol": "BYTE_SHIFT_COUNT",
+                        "value": 8,
+                        "instruction": "lsl.w #BYTE_SHIFT_COUNT,d0"
+                      },
+                      "maskUseSite": {
+                        "symbol": "BYTE_MASK",
+                        "value": 255,
+                        "instruction": "andi.w #BYTE_MASK,d2"
+                      },
+                      "mergeInstruction": "or.w d2,d0",
+                      "multiplierUseSite": {
+                        "value": 3,
+                        "instruction": "mulu.w #3,d0"
+                      }
+                    },
+                    "sourceD1SelectorUseSite": null,
+                    "directCallOrder": [
+                      "jsr (LoadMapTilesets).w",
+                      "jsr (WaitForVInt).w",
+                      "jsr (LoadMap).w",
+                      "jsr (EnableDisplayAndInterrupts).w",
+                      "jsr (WaitForVInt).w"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "LoadMapTilesets"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "LoadMap"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "EnableDisplayAndInterrupts"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt"
+                    }
+                  ],
+                  "continuation": null
+                }
+              ]
+            },
+            "callerBreakdown": {
+              "const": {
+                "callerHandlers": [
+                  {
+                    "handler": "csc36_resetMap",
+                    "instructionTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 0,
+                      "LoadMap": 0,
+                      "LoadMapTilesets": 0,
+                      "ResetCurrentMap": 1,
+                      "WaitForVInt": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 0,
+                      "LoadMap": 0,
+                      "LoadMapTilesets": 0,
+                      "ResetCurrentMap": 1,
+                      "WaitForVInt": 0
+                    }
+                  },
+                  {
+                    "handler": "csc37_loadMapAndFadeIn",
+                    "instructionTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 0,
+                      "LoadMap": 0,
+                      "LoadMapTilesets": 0,
+                      "ResetCurrentMap": 0,
+                      "WaitForVInt": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 0,
+                      "LoadMap": 0,
+                      "LoadMapTilesets": 0,
+                      "ResetCurrentMap": 0,
+                      "WaitForVInt": 0
+                    }
+                  },
+                  {
+                    "handler": "csc46_reloadMap",
+                    "instructionTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 1,
+                      "LoadMap": 1,
+                      "LoadMapTilesets": 0,
+                      "ResetCurrentMap": 0,
+                      "WaitForVInt": 1
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 1,
+                      "LoadMap": 1,
+                      "LoadMapTilesets": 0,
+                      "ResetCurrentMap": 0,
+                      "WaitForVInt": 1
+                    }
+                  },
+                  {
+                    "handler": "csc48_loadMap",
+                    "instructionTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 1,
+                      "LoadMap": 1,
+                      "LoadMapTilesets": 1,
+                      "ResetCurrentMap": 0,
+                      "WaitForVInt": 2
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "EnableDisplayAndInterrupts": 1,
+                      "LoadMap": 1,
+                      "LoadMapTilesets": 1,
+                      "ResetCurrentMap": 0,
+                      "WaitForVInt": 2
+                    }
+                  }
+                ],
+                "targetResolutions": [
+                  {
+                    "instructionTarget": "EnableDisplayAndInterrupts",
+                    "effectiveTarget": "EnableDisplayAndInterrupts",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "LoadMap",
+                    "effectiveTarget": "LoadMap",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "LoadMapTilesets",
+                    "effectiveTarget": "LoadMapTilesets",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "ResetCurrentMap",
+                    "effectiveTarget": "ResetCurrentMap",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "WaitForVInt",
+                    "effectiveTarget": "WaitForVInt",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  }
+                ],
+                "instructionTargetTotals": {
+                  "EnableDisplayAndInterrupts": 2,
+                  "LoadMap": 2,
+                  "LoadMapTilesets": 1,
+                  "ResetCurrentMap": 1,
+                  "WaitForVInt": 3
+                },
+                "effectiveTargetTotals": {
+                  "EnableDisplayAndInterrupts": 2,
+                  "LoadMap": 2,
+                  "LoadMapTilesets": 1,
+                  "ResetCurrentMap": 1,
+                  "WaitForVInt": 3
+                },
+                "internalEffectiveTargetTotals": {
+                  "EnableDisplayAndInterrupts": 0,
+                  "LoadMap": 0,
+                  "LoadMapTilesets": 0,
+                  "ResetCurrentMap": 0,
+                  "WaitForVInt": 0
+                },
+                "externalEffectiveTargetTotals": {
+                  "EnableDisplayAndInterrupts": 2,
+                  "LoadMap": 2,
+                  "LoadMapTilesets": 1,
+                  "ResetCurrentMap": 1,
+                  "WaitForVInt": 3
+                }
+              }
+            },
+            "sourceIdentityJoins": {
+              "const": {
+                "handlerSource": {
+                  "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                  "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+                  "symbols": [
+                    "csc36_resetMap",
+                    "csc37_loadMapAndFadeIn",
+                    "csc46_reloadMap",
+                    "csc48_loadMap"
+                  ]
+                },
+                "calleeOwners": [
+                  {
+                    "sourcePath": "code/gameflow/exploration/exploration.asm",
+                    "sourceSha256": "C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0",
+                    "symbols": [
+                      "ResetCurrentMap"
+                    ],
+                    "relatedContractId": null
+                  },
+                  {
+                    "sourcePath": "code/common/maps/mapload.asm",
+                    "sourceSha256": "F577003A2763A902A5E9EB984424B0550F1B01D13D892222EDCFCF100EF68DA1",
+                    "symbols": [
+                      "LoadMapTilesets",
+                      "LoadMap"
+                    ],
+                    "relatedContractId": null
+                  },
+                  {
+                    "sourcePath": "code/common/tech/interrupts/vdpcontrol.asm",
+                    "sourceSha256": "9243DD50414C807F05065C3E79E5729E7E619641842C869DE4D6C750F8ED264D",
+                    "symbols": [
+                      "EnableDisplayAndInterrupts"
+                    ],
+                    "relatedContractId": null
+                  },
+                  {
+                    "sourcePath": "code/common/tech/interrupts/vintengine_1.asm",
+                    "sourceSha256": "821F90102990423998C034067132AD8BFCBD97A6D5CD33AF009545FF7C7CA8F5",
+                    "symbols": [
+                      "WaitForVInt"
+                    ],
+                    "relatedContractId": null
+                  }
+                ]
+              }
+            },
+            "runtimeQuestions": {
+              "const": [
+                "map-lifecycle/runtime-effects-matrix"
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   "definitions": {
@@ -36386,6 +38003,1026 @@
           },
           "minItems": 1,
           "maxItems": 1
+        }
+      }
+    },
+    "mapLifecycleAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleOperandLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 0
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "rawValue",
+        "resolvedValue",
+        "resolution",
+        "mapDomain"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "resolution": {
+          "type": "string"
+        },
+        "mapDomain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapLifecycleSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleOperandValue"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleSourceCommand"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapLifecycleMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "encodedBytes": {
+          "type": "integer"
+        },
+        "operandBytes": {
+          "type": "integer"
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleOperandLayout"
+          },
+          "minItems": 0
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 0
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleAnnotation"
+          },
+          "minItems": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resetMap",
+        "loadMapFadeIn",
+        "reloadMap",
+        "mapLoad"
+      ],
+      "properties": {
+        "resetMap": {
+          "type": "integer"
+        },
+        "loadMapFadeIn": {
+          "type": "integer"
+        },
+        "reloadMap": {
+          "type": "integer"
+        },
+        "mapLoad": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/mapLifecycleMacroCounts"
+        }
+      }
+    },
+    "mapLifecycleCursorRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationRegister",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationRegister": {
+          "type": "string"
+        },
+        "transferredByteCount": {
+          "type": "integer"
+        },
+        "cursorAdvanceByteCount": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleVintRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "operationSymbol",
+        "operationValue",
+        "trapInstruction",
+        "operationInstruction",
+        "argumentInstruction"
+      ],
+      "properties": {
+        "phase": {
+          "type": "string"
+        },
+        "operationSymbol": {
+          "type": "string"
+        },
+        "operationValue": {
+          "type": "integer"
+        },
+        "trapInstruction": {
+          "type": "string"
+        },
+        "operationInstruction": {
+          "type": "string"
+        },
+        "argumentInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleBranchRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "fallthroughInstruction",
+        "branchTarget"
+      ],
+      "properties": {
+        "testInstruction": {
+          "type": "string"
+        },
+        "branchInstruction": {
+          "type": "string"
+        },
+        "fallthroughInstruction": {
+          "type": "string"
+        },
+        "branchTarget": {
+          "$ref": "#/definitions/mapLifecycleBranchTarget"
+        }
+      }
+    },
+    "mapLifecycleMutationRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceSymbols",
+        "sourceValueSymbol",
+        "sourceValue",
+        "literalValue",
+        "instruction"
+      ],
+      "properties": {
+        "sourceSymbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sourceValueSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "literalValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleOperandPackUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinals",
+        "sourceComments",
+        "shiftUseSite",
+        "maskUseSite",
+        "mergeInstruction",
+        "multiplierUseSite"
+      ],
+      "properties": {
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 0
+        },
+        "sourceComments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "shiftUseSite": {
+          "$ref": "#/definitions/mapLifecycleConstantUse"
+        },
+        "maskUseSite": {
+          "$ref": "#/definitions/mapLifecycleConstantUse"
+        },
+        "mergeInstruction": {
+          "type": "string"
+        },
+        "multiplierUseSite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "instruction"
+          ],
+          "properties": {
+            "value": {
+              "type": "integer"
+            },
+            "instruction": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "mapLifecycleSelectorUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "literalValue",
+        "instruction"
+      ],
+      "properties": {
+        "literalValue": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "scriptCursorReadUseSites",
+        "mapProbeUseSite",
+        "vintControlRecords",
+        "branchRecords",
+        "sourceStateMutationRecords",
+        "sourceConstantUses",
+        "operandPackUseSites",
+        "sourceD1SelectorUseSite",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "scriptCursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleCursorRead"
+          },
+          "minItems": 0
+        },
+        "mapProbeUseSite": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleCursorRead"
+            }
+          ]
+        },
+        "vintControlRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleVintRecord"
+          },
+          "minItems": 0
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleBranchRecord"
+          },
+          "minItems": 0
+        },
+        "sourceStateMutationRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleMutationRecord"
+          },
+          "minItems": 0
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleConstantUse"
+          },
+          "minItems": 0
+        },
+        "operandPackUseSites": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleOperandPackUse"
+            }
+          ]
+        },
+        "sourceD1SelectorUseSite": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleSelectorUse"
+            }
+          ]
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "returnInstruction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapLifecycleDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "type": "string"
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleContinuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "address",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer"
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapLifecycleSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleDirectCall"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "operandAnnotations",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls",
+        "continuation"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "operandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleAnnotation"
+          },
+          "minItems": 0
+        },
+        "statementCount": {
+          "type": "integer"
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapLifecycleSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleDirectCall"
+          },
+          "minItems": 0
+        },
+        "continuation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleContinuation"
+            }
+          ]
+        }
+      }
+    },
+    "mapLifecycleTargetCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "EnableDisplayAndInterrupts",
+        "LoadMap",
+        "LoadMapTilesets",
+        "ResetCurrentMap",
+        "WaitForVInt"
+      ],
+      "properties": {
+        "EnableDisplayAndInterrupts": {
+          "type": "integer"
+        },
+        "LoadMap": {
+          "type": "integer"
+        },
+        "LoadMapTilesets": {
+          "type": "integer"
+        },
+        "ResetCurrentMap": {
+          "type": "integer"
+        },
+        "WaitForVInt": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleCallerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        }
+      }
+    },
+    "mapLifecycleTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleCallerHandler"
+          },
+          "minItems": 0
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleTargetResolution"
+          },
+          "minItems": 0
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        }
+      }
+    },
+    "mapLifecycleHandlerSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleCalleeOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols",
+        "relatedContractId"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "relatedContractId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapLifecycleSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handlerSource",
+        "calleeOwners"
+      ],
+      "properties": {
+        "handlerSource": {
+          "$ref": "#/definitions/mapLifecycleHandlerSource"
+        },
+        "calleeOwners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleCalleeOwner"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "canonicalMapDomain",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleMacro"
+          },
+          "minItems": 0
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleSourceSite"
+          },
+          "minItems": 0
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleProgramTotal"
+          },
+          "minItems": 0
+        },
+        "canonicalMapDomain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "contractId",
+            "mapCount",
+            "mapIds",
+            "sourceMapCurrentValue"
+          ],
+          "properties": {
+            "contractId": {
+              "type": "string"
+            },
+            "mapCount": {
+              "type": "integer"
+            },
+            "mapIds": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "minItems": 0
+            },
+            "sourceMapCurrentValue": {
+              "type": "integer"
+            }
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleHandler"
+          },
+          "minItems": 0
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/mapLifecycleCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/mapLifecycleSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleBranchTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetLabel",
+        "targetInstruction",
+        "targetStatementIndex"
+      ],
+      "properties": {
+        "targetLabel": {
+          "type": "string"
+        },
+        "targetInstruction": {
+          "type": "string"
+        },
+        "targetStatementIndex": {
+          "type": "integer"
         }
       }
     }

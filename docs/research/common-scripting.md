@@ -436,6 +436,71 @@ The extractor additionally records the pinned callee-owner paths and SHA-256 val
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
 `expected.entityPopulationCommandFacts`.
 
+## Confirmed Map-Script Map Load/Reload/Reset Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `mapLifecycleCommandFacts` keeps four
+source-faithful forms in macro source order: `resetMap` opcode `$36` (7 sites, 2 encoded bytes),
+`loadMapFadeIn` `$37` (60 sites, 8 bytes), `reloadMap` `$46` (24 sites, 6 bytes), and `mapLoad`
+`$48` (17 sites, 8 bytes). The two three-word forms retain the source comments `map`, `camera X`,
+and `camera Y`; `reloadMap` retains `camera X` and `camera Y`; and `resetMap` has no operand
+field. The contract preserves source text and physical widths, not a claim that these operand labels
+describe runtime placement or a persistent map state.
+
+**Confirmed:** the bounded corpus has 108 commands in 81 non-empty source program groups and a
+complete 304-row zero-inclusive program inventory. Its ordered source-site SHA-256 is
+`4F07DC2BD06A9E326A61CF43867FCBD2027BC35E76FAD9EEE09B622E11DC13A8`; its ordered program-total
+SHA-256 is `E553A857B356B1B334DE3C68DAD17D966C46C6788EADB62EAFD6A966D6EBEB84`. The map-comment
+operands are independently checked against the existing 79-ID canonical map domain, while their raw
+text and the source `MAP_CURRENT` value remain distinct facts.
+
+**Confirmed:** the four exact named handler sections are `csc36_resetMap` at H1/ROM `$4658E`,
+`csc37_loadMapAndFadeIn` at `$4659A`, `csc46_reloadMap` at `$46708`, and `csc48_loadMap` at
+`$465B6`. `csc36` saves A6, directly calls `ResetCurrentMap`, restores A6, and returns. `csc37`
+performs five source-named state writes in order—using parsed `OUT_TO_BLACK` value 2 in its first
+write—and has no return before the physical `csc48` section. Its retained continuation is therefore
+the exact `csc48` section, not an inferred call. `csc48` retains a non-advancing A6 word probe into
+D1 before `LoadMapTilesets`, then `WaitForVInt`, `tst.b` of the source `FADING_SETTING`, and
+`bne.s loc_465C4`; the bounded section parser resolves that target label to the immediate first
+`jsr (WaitForVInt).w` at normalized statement index 4. It then records VInt deactivate, three
+advancing A6 word reads, and the packed D0 sequence
+`lsl.w #BYTE_SHIFT_COUNT,d0` (8), `andi.w #BYTE_MASK,d2` (255), `or.w d2,d0`, and `mulu.w #3,d0`.
+It saves/restores A6 around `LoadMap`, calls `EnableDisplayAndInterrupts`, activates VInt, waits once,
+then returns. `csc46` has its own two advancing word reads, `moveq #-1,d1`, the same parsed
+shift/mask/merge/multiply use sites, `LoadMap`/`EnableDisplayAndInterrupts`/`WaitForVInt` order, and
+paired VInt records (`VINTS_DEACTIVATE` 3, `VINTS_ACTIVATE` 4). These are guarded instruction,
+branch-polarity, cursor-transfer, and call-order records; they do not establish display or fade
+behavior.
+
+**Confirmed:** the comment-stripping direct-call parser retains physical instruction identity and a
+zero-inclusive declared target domain. Aggregate direct/effective totals are `ResetCurrentMap` 1,
+`LoadMapTilesets` 1, `LoadMap` 2, `EnableDisplayAndInterrupts` 2, and `WaitForVInt` 3. Every target
+is external to this four-handler surface, so internal effective totals are zero and external totals
+equal the effective totals. No direct jump-interface alias occurs here. The source-owner joins retain
+`ResetCurrentMap` in `code/gameflow/exploration/exploration.asm`; `LoadMapTilesets` and `LoadMap` in
+`code/common/maps/mapload.asm`; `EnableDisplayAndInterrupts` in
+`code/common/tech/interrupts/vdpcontrol.asm`; and `WaitForVInt` in
+`code/common/tech/interrupts/vintengine_1.asm`, each with the pinned file SHA-256 in the fixture.
+Labels, comments, near-miss mnemonics, and operands do not count as calls.
+
+**Unknown:** `map-lifecycle/runtime-effects-matrix` is the sole grouped H3 queue. One shared runtime
+matrix must determine map persistence, working-layout replacement, entity reload effects,
+camera/player placement, collision/pathfinding refresh, presentation timing, fade visuals, hardware
+effects, and normal-story reachability. This static slice does not promote macro names, state-symbol
+names, VInt records, or service calls into any of those outcomes.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `resetMap`,
+`loadMapFadeIn`, `reloadMap`, and `mapLoad`; `code/common/scripting/map/mapscriptengine_1.asm`
+symbols `csc36_resetMap`, `csc37_loadMapAndFadeIn`, `csc46_reloadMap`, and `csc48_loadMap`;
+`sf2enums.asm` constants `OUT_TO_BLACK`, `BYTE_SHIFT_COUNT`, `BYTE_MASK`, `VINTS_DEACTIVATE`, and
+`VINTS_ACTIVATE`; H1 addresses above; and local US-ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.mapLifecycleCommandFacts`.
+
 ## Confirmed Map-Script Story-State Branch/Prompt Command Family
 
 Evidence date: 2026-07-27.

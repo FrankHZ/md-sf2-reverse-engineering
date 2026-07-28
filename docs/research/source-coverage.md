@@ -426,6 +426,15 @@ resolves it to an `InitializeMapEntities` effective total of three. The sole H3 
 `entity-population-reload/runtime-effects-matrix`; spawning, slot allocation, capacity, persistence,
 activation, rendering, collision/pathfinding, and normal-story reachability are not credited as static
 coverage.
+The adjacent map lifecycle slice is exact for four source-faithful forms: seven `resetMap` `$36`,
+60 `loadMapFadeIn` `$37`, 24 `reloadMap` `$46`, and 17 `mapLoad` `$48` sites (108 total) across a
+further complete 304-row zero-inclusive corpus. It preserves macro operand comments, four named
+handler guards, the `csc37` physical continuation into `csc48`, exact A6 transfer/probe widths,
+the `csc48` `bne.s loc_465C4` target-to-first-`WaitForVInt` identity, VInt records, packed-operand
+use sites, and zero-inclusive direct/effective caller maps for `ResetCurrentMap`, `LoadMapTilesets`, `LoadMap`, `EnableDisplayAndInterrupts`, and
+`WaitForVInt`. `map-lifecycle/runtime-effects-matrix` is its sole H3 queue; map persistence,
+working-layout replacement, entity reload, placement, collision/pathfinding, presentation, fade,
+hardware, and normal-story behavior remain uncredited static questions.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline
