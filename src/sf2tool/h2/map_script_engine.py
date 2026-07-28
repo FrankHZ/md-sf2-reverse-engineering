@@ -9,6 +9,8 @@ from typing import Any
 
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import _access_rows, _global_access_rows
+from sf2tool.h2.sprite_dialogue import build_sprite_dialogue_contract
+from sf2tool.h2.text_banks import build_text_line_domain_contract
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import display_path, repo_path
 from sf2tool.research_index import listing_symbol_addresses
@@ -27,6 +29,36 @@ ENGINE_PATHS = (
     Path("code/common/scripting/map/mapscriptengine_2.asm"),
 )
 DISPATCH_SOURCE = ENGINE_PATHS[1]
+
+DIALOGUE_MACROS = (
+    "nextSingleText",
+    "nextSingleTextVar",
+    "nextText",
+    "nextTextVar",
+    "textCursor",
+    "hideText",
+)
+DIALOGUE_DISPLAY_MACROS = DIALOGUE_MACROS[:4]
+DIALOGUE_HANDLER_BY_MACRO = {
+    "nextSingleText": "csc00_displaySingleTextbox",
+    "nextSingleTextVar": "csc01_displaySingleTextboxWithVars",
+    "nextText": "csc02_displayTextbox",
+    "nextTextVar": "csc03_displayTextboxWithVars",
+    "textCursor": "csc04_setTextIndex",
+    "hideText": "csc09_hideDialogueAndPortraitWindows",
+}
+DIALOGUE_MODIFIER_MACROS = ("nextSingleText", "nextText")
+PORTRAIT_HANDLER = "csc1D_showPortrait"
+ENTITY_DIALOGUE_CONSUMER_PATH = Path(
+    "code/common/scripting/entity/getentityportaitandspeechsfx.asm"
+)
+ENTITY_DIALOGUE_CONSUMER = "GetEntityPortaitAndSpeechSfx"
+DIALOGUE_CALLER_HANDLER_NAMES = tuple(
+    DIALOGUE_HANDLER_BY_MACRO[macro] for macro in DIALOGUE_MACROS
+) + (PORTRAIT_HANDLER,)
+DIALOGUE_CALLEE_TARGETS = (PORTRAIT_HANDLER, ENTITY_DIALOGUE_CONSUMER)
+DIALOGUE_CONSTANT_NAMES = ("COMBATANT_MASK_ALL", "ENTITY_NONE")
+DIALOGUE_RUNTIME_QUESTIONS = ["dialogue-presentation/runtime-matrix"]
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -888,6 +920,695 @@ def _program_corpus(
     }
 
 
+def _dialogue_equates(disasm: Path) -> dict[str, int]:
+    """Parse the named source constants used by the dialogue command boundary once."""
+    source = read_upstream_text(disasm / "sf2enums.asm")
+    values: dict[str, int] = {}
+    for match in re.finditer(
+        r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*):\s+equ\s+(?P<value>\$?[0-9A-Fa-f]+)\b",
+        source,
+        re.MULTILINE,
+    ):
+        values[match.group("name")] = _literal(match.group("value"))
+    missing = [name for name in DIALOGUE_CONSTANT_NAMES if name not in values]
+    if missing:
+        raise ValueError(f"dialogue source constants are missing: {missing}")
+    return values
+
+
+def _resolved_dialogue_operand(argument: str, constants: dict[str, int]) -> int:
+    argument = argument.strip()
+    if argument in constants:
+        return constants[argument]
+    try:
+        return _literal(argument)
+    except ValueError as error:
+        raise ValueError(
+            f"dialogue operand is not a literal or source constant: {argument}"
+        ) from error
+
+
+def _handler_by_name(handlers: list[dict[str, Any]], name: str) -> dict[str, Any]:
+    rows = [row for row in handlers if row["name"] == name]
+    if len(rows) != 1:
+        raise ValueError(f"dialogue handler inventory is ambiguous: {name}")
+    return rows[0]
+
+
+def _next_statement(
+    statements: list[str], start: int, pattern: str, *, owner: str
+) -> tuple[int, re.Match[str]]:
+    for index in range(start, len(statements)):
+        match = re.fullmatch(pattern, statements[index])
+        if match is not None:
+            return index, match
+    raise ValueError(f"{owner} statement is missing: {pattern}")
+
+
+def _direct_call_sites(statements: list[str], target: str) -> list[int]:
+    pattern = re.compile(
+        rf"^(?:bsr|jsr)(?:\.[bwls])?\s+\(?{re.escape(target)}\)?(?:\.[bwls])?(?:\s|$)"
+    )
+    return [index for index, statement in enumerate(statements) if pattern.match(statement)]
+
+
+def _stable_handler_statements(disasm: Path, handler: dict[str, Any]) -> list[str]:
+    """Read one named handler section without relying on a file-wide fragment search."""
+    source = read_upstream_text(disasm / handler["sourcePath"])
+    match = re.search(
+        rf"^{re.escape(handler['name'])}:\s*\n(?P<body>.*?)"
+        rf"^\s*; End of function {re.escape(handler['name'])}\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if match is None:
+        raise ValueError(f"dialogue handler section is missing: {handler['name']}")
+    statements = _statements(match.group("body"))
+    if len(statements) != handler["statementCount"]:
+        raise ValueError(f"dialogue handler statement inventory drift: {handler['name']}")
+    return statements
+
+
+def _signed_word(value: int) -> int:
+    return value - 0x10000 if value & 0x8000 else value
+
+
+def _dialogue_caller_breakdown(
+    disasm: Path, handlers: list[dict[str, Any]], entity_dialogue_consumer: dict[str, Any]
+) -> dict[str, Any]:
+    """Inventory direct instruction targets and their resolved effective targets per handler."""
+    caller_handlers = [
+        _handler_by_name(handlers, name) for name in DIALOGUE_CALLER_HANDLER_NAMES
+    ]
+    bounded_source_paths = {handler["sourcePath"] for handler in caller_handlers}
+    portrait_handler = _handler_by_name(handlers, PORTRAIT_HANDLER)
+    if entity_dialogue_consumer["function"] != ENTITY_DIALOGUE_CONSUMER:
+        raise ValueError("dialogue external consumer identity drift")
+    target_resolutions = [
+        {
+            "instructionTarget": PORTRAIT_HANDLER,
+            "effectiveTarget": portrait_handler["name"],
+            "effectiveTargetSourcePath": portrait_handler["sourcePath"],
+        },
+        {
+            "instructionTarget": ENTITY_DIALOGUE_CONSUMER,
+            "effectiveTarget": entity_dialogue_consumer["function"],
+            "effectiveTargetSourcePath": entity_dialogue_consumer["sourcePath"],
+        },
+    ]
+    if [row["instructionTarget"] for row in target_resolutions] != list(DIALOGUE_CALLEE_TARGETS):
+        raise ValueError("dialogue instruction target declaration drift")
+    if len({row["effectiveTarget"] for row in target_resolutions}) != len(target_resolutions):
+        raise ValueError("dialogue effective target declaration is ambiguous")
+    for row in target_resolutions:
+        row["effectiveTargetScope"] = (
+            "internal"
+            if row["effectiveTargetSourcePath"] in bounded_source_paths
+            else "external"
+        )
+
+    effective_targets = [row["effectiveTarget"] for row in target_resolutions]
+    caller_rows = []
+    for handler in caller_handlers:
+        statements = _stable_handler_statements(disasm, handler)
+        instruction_counts = {
+            target: len(_direct_call_sites(statements, target))
+            for target in DIALOGUE_CALLEE_TARGETS
+        }
+        if any(count not in {0, 1} for count in instruction_counts.values()):
+            raise ValueError(f"dialogue caller site count drift: {handler['name']}")
+        effective_counts = {target: 0 for target in effective_targets}
+        for resolution in target_resolutions:
+            effective_counts[resolution["effectiveTarget"]] += instruction_counts[
+                resolution["instructionTarget"]
+            ]
+        caller_rows.append(
+            {
+                "handler": handler["name"],
+                "sourcePath": handler["sourcePath"],
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in DIALOGUE_CALLEE_TARGETS
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_rows)
+        for target in effective_targets
+    }
+
+    def scoped_totals(counts: dict[str, int], *, target_field: str, scope: str) -> dict[str, int]:
+        scopes = {
+            row[target_field]: row["effectiveTargetScope"] for row in target_resolutions
+        }
+        return {
+            target: counts[target] if scopes[target] == scope else 0 for target in counts
+        }
+
+    return {
+        "callerHandlers": caller_rows,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalInstructionTargetTotals": scoped_totals(
+            instruction_totals, target_field="instructionTarget", scope="internal"
+        ),
+        "externalInstructionTargetTotals": scoped_totals(
+            instruction_totals, target_field="instructionTarget", scope="external"
+        ),
+        "internalEffectiveTargetTotals": scoped_totals(
+            effective_totals, target_field="effectiveTarget", scope="internal"
+        ),
+        "externalEffectiveTargetTotals": scoped_totals(
+            effective_totals, target_field="effectiveTarget", scope="external"
+        ),
+    }
+
+
+def _dialogue_handler_facts(
+    disasm: Path,
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    modifier_entity_byte_pairs: Counter[tuple[int, int]],
+    entity_dialogue_consumer: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    """Guard the named dialogue handlers from their smallest stable sections."""
+    handler_facts = []
+    sentinel_values = []
+    for macro in DIALOGUE_MACROS:
+        contract = macros[macro]
+        if contract["kind"] != "command" or contract["aliasOf"] is not None:
+            raise ValueError(f"dialogue macro is not a primary command: {macro}")
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != DIALOGUE_HANDLER_BY_MACRO[macro]:
+            raise ValueError(f"dialogue macro dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, DIALOGUE_HANDLER_BY_MACRO[macro])
+        if handler["opcodes"] != [opcode]:
+            raise ValueError(f"dialogue handler opcode inventory drift: {handler['name']}")
+        if handler["encodedCommandBytes"] != contract["encodedBytes"]:
+            raise ValueError(f"dialogue handler encoded-width drift: {handler['name']}")
+        statements = _stable_handler_statements(disasm, handler)
+        if macro in DIALOGUE_DISPLAY_MACROS:
+            skip_index = next(
+                (
+                    index
+                    for index, statement in enumerate(statements)
+                    if statement == "tst.b ((SKIP_CUTSCENE_TEXT-$1000000)).w"
+                ),
+                None,
+            )
+            skip_guard = None
+            expects_skip_guard = macro in {"nextSingleText", "nextText"}
+            if (skip_index is not None) != expects_skip_guard:
+                raise ValueError(f"dialogue skip-guard admission drift: {handler['name']}")
+            if skip_index is not None:
+                branch_index, branch = _next_statement(
+                    statements,
+                    skip_index + 1,
+                    r"bne\.[bwls]\s+\S+",
+                    owner=handler["name"],
+                )
+                if branch_index != skip_index + 1:
+                    raise ValueError(f"dialogue skip-guard order drift: {handler['name']}")
+                skip_guard = {
+                    "predicate": statements[skip_index],
+                    "branch": branch.group(0),
+                }
+
+            sentinel_index, sentinel = _next_statement(
+                statements,
+                0,
+                r"cmpi\.w\s+#(?P<value>-?\$?[0-9A-Fa-f]+),\(a6\)",
+                owner=handler["name"],
+            )
+            branch_index, branch = _next_statement(
+                statements,
+                sentinel_index + 1,
+                r"beq\.[bwls]\s+\S+",
+                owner=handler["name"],
+            )
+            if branch_index != sentinel_index + 1:
+                raise ValueError(f"dialogue sentinel-branch order drift: {handler['name']}")
+            sentinel_value = _literal(sentinel.group("value")) & 0xFFFF
+            sentinel_values.append(sentinel_value)
+            portrait_sites = _direct_call_sites(statements, PORTRAIT_HANDLER)
+            consumer_sites = _direct_call_sites(statements, ENTITY_DIALOGUE_CONSUMER)
+            if len(portrait_sites) != 1 or len(consumer_sites) != 1:
+                raise ValueError(f"dialogue helper call count drift: {handler['name']}")
+            if portrait_sites[0] >= consumer_sites[0]:
+                raise ValueError(f"dialogue helper call order drift: {handler['name']}")
+            increment_index, _ = _next_statement(
+                statements,
+                consumer_sites[0] + 1,
+                r"addq\.w\s+#1,\(\(CUTSCENE_DIALOG_INDEX-\$1000000\)\)\.w",
+                owner=handler["name"],
+            )
+            display_index, _ = _next_statement(
+                statements,
+                consumer_sites[0] + 1,
+                r"jsr\s+\(DisplayText\)\.l",
+                owner=handler["name"],
+            )
+            if display_index >= increment_index:
+                raise ValueError(f"dialogue display/index increment order drift: {handler['name']}")
+            name_index_statements = [
+                statement
+                for statement in statements
+                if statement
+                in {
+                    "move.w (a6)+,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                    "move.w (a6)+,((DIALOGUE_NAME_INDEX_2-$1000000)).w",
+                }
+            ]
+            if macro.endswith("Var"):
+                if name_index_statements != [
+                    "move.w (a6)+,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                    "move.w (a6)+,((DIALOGUE_NAME_INDEX_2-$1000000)).w",
+                ]:
+                    raise ValueError(
+                        f"dialogue variable name-word consumption drift: {handler['name']}"
+                    )
+            elif name_index_statements:
+                raise ValueError(f"dialogue fixed handler consumes name words: {handler['name']}")
+            is_single = macro.startswith("nextSingle")
+            close_sequence = [
+                "jsr j_ClosePortraitWindow",
+                "clsTxt",
+                "moveq #10,d0",
+                "jsr (Sleep).w",
+            ]
+            if is_single:
+                cursor = increment_index + 1
+                for statement in close_sequence:
+                    cursor, _ = _next_statement(
+                        statements, cursor, re.escape(statement), owner=handler["name"]
+                    )
+                    cursor += 1
+            elif any(statement in statements for statement in close_sequence):
+                raise ValueError(f"dialogue continuing close/sleep shape drift: {handler['name']}")
+            handler_facts.append(
+                {
+                    "macro": macro,
+                    "handler": handler["name"],
+                    "address": handler["address"],
+                    "opcode": opcode,
+                    "skipGuard": skip_guard,
+                    "modifierEntityWordSentinel": {
+                        "unsignedValue": sentinel_value,
+                        "signedValue": _signed_word(sentinel_value),
+                        "branch": branch.group(0),
+                    },
+                    "nameWordDestinationCount": len(name_index_statements),
+                    "displayThenIndexIncrement": True,
+                    "singleCloseSleepSequence": is_single,
+                }
+            )
+        elif macro == "textCursor":
+            cursor_index, _ = _next_statement(
+                statements,
+                0,
+                r"move\.w\s+\(a6\)\+,\(\(CUTSCENE_DIALOG_INDEX-\$1000000\)\)\.w",
+                owner=handler["name"],
+            )
+            if cursor_index != 0:
+                raise ValueError("dialogue text-index write is not the first handler statement")
+            handler_facts.append(
+                {
+                    "macro": macro,
+                    "handler": handler["name"],
+                    "address": handler["address"],
+                    "opcode": opcode,
+                    "cursorWrite": statements[cursor_index],
+                }
+            )
+        else:
+            close_index, _ = _next_statement(
+                statements,
+                0,
+                r"jsr\s+j_ClosePortraitWindow",
+                owner=handler["name"],
+            )
+            clear_index, _ = _next_statement(
+                statements, close_index + 1, r"clsTxt", owner=handler["name"]
+            )
+            if (close_index, clear_index) != (0, 1):
+                raise ValueError("dialogue hide-window call order drift")
+            handler_facts.append(
+                {
+                    "macro": macro,
+                    "handler": handler["name"],
+                    "address": handler["address"],
+                    "opcode": opcode,
+                    "closeThenClear": True,
+                }
+            )
+
+    if len(set(sentinel_values)) != 1:
+        raise ValueError("dialogue handlers disagree on modifier/entity word sentinel")
+    sentinel_value = sentinel_values[0]
+
+    portrait_handler = _handler_by_name(handlers, PORTRAIT_HANDLER)
+    portrait_statements = _stable_handler_statements(disasm, portrait_handler)
+    word_read_index, _ = _next_statement(
+        portrait_statements,
+        0,
+        r"move\.w\s+\(a6\)\+,d0",
+        owner=PORTRAIT_HANDLER,
+    )
+    bit_rows = []
+    cursor = word_read_index + 1
+    for destination in ("d3", "d4"):
+        zero_index, _ = _next_statement(
+            portrait_statements,
+            cursor,
+            rf"moveq\s+#0,{destination}",
+            owner=PORTRAIT_HANDLER,
+        )
+        bit_index, bit_match = _next_statement(
+            portrait_statements,
+            zero_index + 1,
+            r"btst\s+#(?P<bit>\$?[0-9A-Fa-f]+),d0",
+            owner=PORTRAIT_HANDLER,
+        )
+        branch_index, _ = _next_statement(
+            portrait_statements,
+            bit_index + 1,
+            r"beq\.[bwls]\s+\S+",
+            owner=PORTRAIT_HANDLER,
+        )
+        set_index, _ = _next_statement(
+            portrait_statements,
+            branch_index + 1,
+            rf"moveq\s+#-1,{destination}",
+            owner=PORTRAIT_HANDLER,
+        )
+        if not (zero_index < bit_index < branch_index < set_index):
+            raise ValueError(f"portrait modifier branch order drift: {destination}")
+        bit_rows.append({"bit": _literal(bit_match.group("bit")), "destination": destination})
+        cursor = set_index + 1
+    handler_tested_modifier_byte_mask = 0
+    for row in bit_rows:
+        byte_bit = row["bit"] - 8
+        if not 0 <= byte_bit <= 7:
+            raise ValueError("portrait modifier bit is outside the packed modifier byte")
+        handler_tested_modifier_byte_mask |= 1 << byte_bit
+    if len({row["bit"] for row in bit_rows}) != len(bit_rows):
+        raise ValueError("portrait modifier bit test is duplicated")
+    full_word_sentinel_bytes = (sentinel_value >> 8, sentinel_value & 0xFF)
+    for modifier, entity in modifier_entity_byte_pairs:
+        if (modifier, entity) == full_word_sentinel_bytes:
+            continue
+        if modifier & ~handler_tested_modifier_byte_mask:
+            raise ValueError(
+                "dialogue non-sentinel modifier byte exceeds handler-tested modifier byte mask"
+            )
+    consumer_sites = _direct_call_sites(portrait_statements, ENTITY_DIALOGUE_CONSUMER)
+    if len(consumer_sites) != 1:
+        raise ValueError("portrait helper consumer call count drift")
+    if consumer_sites[0] < cursor:
+        raise ValueError("portrait helper consumer call order drift")
+    return (
+        handler_facts,
+        {
+            "handler": PORTRAIT_HANDLER,
+            "address": portrait_handler["address"],
+            "sourcePath": portrait_handler["sourcePath"],
+            "modifierEntityWordRead": portrait_statements[word_read_index],
+            "handlerTestedModifierByteMask": handler_tested_modifier_byte_mask,
+            "modifierBitTests": bit_rows,
+        },
+        _dialogue_caller_breakdown(disasm, handlers, entity_dialogue_consumer),
+    )
+
+
+def _entity_dialogue_consumer_facts(
+    disasm: Path, constants: dict[str, int], addresses: dict[str, int]
+) -> dict[str, Any]:
+    source = read_upstream_text(disasm / ENTITY_DIALOGUE_CONSUMER_PATH)
+    function = re.search(
+        rf"^{ENTITY_DIALOGUE_CONSUMER}:\s*\n(?P<body>.*?)"
+        rf"^\s*; End of function {ENTITY_DIALOGUE_CONSUMER}\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if function is None:
+        raise ValueError("entity dialogue consumer function is missing")
+    statements = _statements(function.group("body"))
+    mask_index, mask = _next_statement(
+        statements,
+        0,
+        r"andi\.w\s+#(?P<name>[A-Za-z_][A-Za-z0-9_]*),d0",
+        owner=ENTITY_DIALOGUE_CONSUMER,
+    )
+    constant_name = mask.group("name")
+    if constant_name != "COMBATANT_MASK_ALL" or constant_name not in constants:
+        raise ValueError("entity dialogue consumer low-domain mask drift")
+    entity_call_index, _ = _next_statement(
+        statements,
+        mask_index + 1,
+        r"bsr\.w\s+GetEntityAddressFromCharacter",
+        owner=ENTITY_DIALOGUE_CONSUMER,
+    )
+    map_sprite_index, _ = _next_statement(
+        statements,
+        entity_call_index + 1,
+        r"move\.b\s+ENTITYDEF_OFFSET_MAPSPRITE\(a5\),d0",
+        owner=ENTITY_DIALOGUE_CONSUMER,
+    )
+    if not (mask_index < entity_call_index < map_sprite_index):
+        raise ValueError("entity dialogue consumer low-domain order drift")
+    if ENTITY_DIALOGUE_CONSUMER not in addresses:
+        raise ValueError("entity dialogue consumer H1 address is missing")
+    return {
+        "function": ENTITY_DIALOGUE_CONSUMER,
+        "address": addresses[ENTITY_DIALOGUE_CONSUMER],
+        "sourcePath": ENTITY_DIALOGUE_CONSUMER_PATH.as_posix(),
+        "lowDomainMask": {"constant": constant_name, "value": constants[constant_name]},
+        "mapSpriteLoad": statements[map_sprite_index],
+    }
+
+
+def _modifier_source_labels(
+    disasm: Path, modifier_bit_tests: list[dict[str, Any]], sentinel_value: int
+) -> list[dict[str, Any]]:
+    """Retain the macro's original modifier labels without treating them as new semantics."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    labels_by_macro: list[dict[int, str]] = []
+    for macro in DIALOGUE_MODIFIER_MACROS:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"dialogue modifier macro is missing: {macro}")
+        match = re.search(r"dc\.b\s+\\1\s*;\s*portrait modifier \(([^)]+)\)", body)
+        if match is None:
+            raise ValueError(f"dialogue modifier labels are missing: {macro}")
+        labels = {}
+        for entry in match.group(1).split(","):
+            value, label = entry.strip().split("-", 1)
+            labels[_literal(value)] = label
+        labels_by_macro.append(labels)
+    if labels_by_macro[0] != labels_by_macro[1]:
+        raise ValueError("dialogue modifier labels disagree between source macros")
+    labels = labels_by_macro[0]
+    full_word_sentinel_high_byte = sentinel_value >> 8
+    expected_by_bit = {bit - 8: bit for bit in (row["bit"] for row in modifier_bit_tests)}
+    result = []
+    for value, label in sorted(labels.items()):
+        row = {
+            "modifierByteValue": value,
+            "sourceLabel": label,
+            "handlerWordBit": None,
+        }
+        if value not in {0, full_word_sentinel_high_byte}:
+            if value <= 0 or value & (value - 1) or value.bit_length() - 1 not in expected_by_bit:
+                raise ValueError("dialogue modifier label no longer matches a handler bit test")
+            row["handlerWordBit"] = expected_by_bit[value.bit_length() - 1]
+        result.append(row)
+    if full_word_sentinel_high_byte not in labels or 0 not in labels:
+        raise ValueError("dialogue modifier label boundary drift")
+    return result
+
+
+def _dialogue_command_facts(
+    disasm: Path,
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom_path: Path,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build the dialogue command contract from program references and source use sites."""
+    constants = _dialogue_equates(disasm)
+    programs = program_corpus["programs"]
+    source_references = []
+    program_totals = []
+    source_counts: Counter[str] = Counter()
+    modifier_values: Counter[int] = Counter()
+    modifier_entity_byte_pairs: Counter[tuple[int, int]] = Counter()
+    entity_values: Counter[int] = Counter()
+    text_cursor_values: Counter[int] = Counter()
+    for program in programs:
+        counts: Counter[str] = Counter()
+        command_indexes = []
+        for command in program["commands"]:
+            macro = command["macro"]
+            if macro not in DIALOGUE_MACROS:
+                continue
+            command_indexes.append(command["index"])
+            source_counts[macro] += 1
+            counts[macro] += 1
+            arguments = command["arguments"]
+            if macro in DIALOGUE_DISPLAY_MACROS:
+                if len(arguments) < 2:
+                    raise ValueError(f"dialogue display command lacks modifier/entity: {macro}")
+                modifier = _resolved_dialogue_operand(arguments[0], constants)
+                entity = _resolved_dialogue_operand(arguments[1], constants)
+                if not 0 <= modifier <= 0xFF or not 0 <= entity <= 0xFF:
+                    raise ValueError(f"dialogue modifier/entity byte domain drift: {macro}")
+                modifier_values[modifier] += 1
+                modifier_entity_byte_pairs[(modifier, entity)] += 1
+                entity_values[entity] += 1
+            elif macro == "textCursor":
+                if len(arguments) != 1:
+                    raise ValueError("dialogue text cursor operand count drift")
+                text_cursor_values[_resolved_dialogue_operand(arguments[0], constants)] += 1
+            elif arguments:
+                raise ValueError("dialogue hide command unexpectedly has operands")
+        program_totals.append(
+            {
+                "programId": program["id"],
+                "commandCount": sum(counts.values()),
+                "macroCounts": {name: counts[name] for name in DIALOGUE_MACROS},
+            }
+        )
+        if command_indexes:
+            source_references.append(
+                {"programId": program["id"], "commandIndexes": command_indexes}
+            )
+    if len(program_totals) != program_corpus["summary"]["programCount"]:
+        raise ValueError("dialogue zero-inclusive program total coverage drift")
+    if sum(len(row["commandIndexes"]) for row in source_references) != sum(source_counts.values()):
+        raise ValueError("dialogue source reference count drift")
+    flattened_references = [
+        (row["programId"], command_index)
+        for row in source_references
+        for command_index in row["commandIndexes"]
+    ]
+    if len(set(flattened_references)) != len(flattened_references):
+        raise ValueError("dialogue source reference identity drift")
+    for name in DIALOGUE_MACROS:
+        if sum(row["macroCounts"][name] for row in program_totals) != source_counts[name]:
+            raise ValueError(f"dialogue per-program total drift: {name}")
+
+    text_line_domain = build_text_line_domain_contract(rom_path, upstream_path)
+    domain = text_line_domain["gamescriptFacts"]
+    if not text_cursor_values:
+        raise ValueError("dialogue text-cursor source use is absent")
+    if (
+        min(text_cursor_values) < domain["firstLineId"]
+        or max(text_cursor_values) > domain["lastLineId"]
+    ):
+        raise ValueError("dialogue text-cursor value is outside the source text-line domain")
+
+    sprite_dialogue = build_sprite_dialogue_contract(rom_path, upstream_path)
+    if (
+        sprite_dialogue["upstream"]["commit"] != text_line_domain["upstream"]["commit"]
+        or sprite_dialogue["romSha256"] != text_line_domain["romSha256"]
+        or sprite_dialogue["summary"]["rowCount"] != 119
+    ):
+        raise ValueError("dialogue sprite-property contract provenance or row boundary drift")
+
+    entity_dialogue_consumer = _entity_dialogue_consumer_facts(disasm, constants, addresses)
+    handler_facts, portrait_helper, caller_breakdown = _dialogue_handler_facts(
+        disasm,
+        macros,
+        dispatch_targets,
+        handlers,
+        modifier_entity_byte_pairs,
+        entity_dialogue_consumer,
+    )
+    modifier_source_labels = _modifier_source_labels(
+        disasm,
+        portrait_helper["modifierBitTests"],
+        handler_facts[0]["modifierEntityWordSentinel"]["unsignedValue"],
+    )
+    selected_macros = []
+    for name in DIALOGUE_MACROS:
+        contract = macros[name]
+        selected_macros.append(
+            {
+                "name": name,
+                "opcode": contract["opcode"],
+                "encodedBytes": contract["encodedBytes"],
+                "operandBytes": contract["operandBytes"],
+                "operandLayout": contract["operandLayout"],
+                "parameterOrdinals": contract["parameterOrdinals"],
+                "handler": DIALOGUE_HANDLER_BY_MACRO[name],
+                "handlerAddress": _handler_by_name(
+                    handlers, DIALOGUE_HANDLER_BY_MACRO[name]
+                )["address"],
+                "sourceCommandCount": source_counts[name],
+            }
+        )
+    return {
+        "macros": selected_macros,
+        "sourceSiteReferences": source_references,
+        "programTotals": program_totals,
+        "operandFacts": {
+            "constants": {name: constants[name] for name in DIALOGUE_CONSTANT_NAMES},
+            "modifierByteCounts": [
+                {"value": value, "count": modifier_values[value]}
+                for value in sorted(modifier_values)
+            ],
+            "modifierSourceLabels": modifier_source_labels,
+            "entityByteCounts": [
+                {"value": value, "count": entity_values[value]} for value in sorted(entity_values)
+            ],
+            "textCursorValueCounts": [
+                {"value": value, "count": text_cursor_values[value]}
+                for value in sorted(text_cursor_values)
+            ],
+            "textCursorValueBounds": {
+                "minimum": min(text_cursor_values),
+                "maximum": max(text_cursor_values),
+                "domainMinimum": domain["firstLineId"],
+                "domainMaximum": domain["lastLineId"],
+            },
+        },
+        "handlers": handler_facts,
+        "portraitHelper": portrait_helper,
+        "callerBreakdown": caller_breakdown,
+        "entityDialogueConsumer": entity_dialogue_consumer,
+        "textLineDomain": {
+            "contractId": text_line_domain["id"],
+            "upstreamCommit": text_line_domain["upstream"]["commit"],
+            "romSha256": text_line_domain["romSha256"],
+            "sourcePath": domain["sourcePath"],
+            "lineIdCount": domain["lineIdCount"],
+            "firstLineId": domain["firstLineId"],
+            "lastLineId": domain["lastLineId"],
+            "idsAreContiguous": domain["idsAreContiguous"],
+        },
+        "spriteDialogueTable": {
+            "contractId": sprite_dialogue["id"],
+            "upstreamCommit": sprite_dialogue["upstream"]["commit"],
+            "romSha256": sprite_dialogue["romSha256"],
+            "tableAddress": sprite_dialogue["table"]["table_MapspriteDialogueProperties"],
+            "consumerAddress": sprite_dialogue["table"][ENTITY_DIALOGUE_CONSUMER],
+            "rowCount": sprite_dialogue["summary"]["rowCount"],
+            "recordByteCount": sprite_dialogue["summary"]["recordByteCount"],
+            "tableByteCount": sprite_dialogue["summary"]["tableByteCount"],
+            "sourcePath": sprite_dialogue["romRange"]["sourcePath"],
+        },
+        "runtimeQuestions": DIALOGUE_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -907,6 +1628,16 @@ def build_map_script_engine_contract(
     dispatch_source = read_upstream_text(disasm / DISPATCH_SOURCE)
     targets = _dispatch_targets(dispatch_source)
     handlers = _handler_rows(disasm, addresses, targets, source_counts, macros)
+    dialogue_command_facts = _dialogue_command_facts(
+        disasm,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom_path,
+        upstream_path,
+    )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
     expected_words = b"".join(
@@ -1049,6 +1780,7 @@ def build_map_script_engine_contract(
         "unusedMacros": sorted(name for name in macros if source_counts[name] == 0),
         "handlers": handlers,
         "programCorpus": program_corpus,
+        "dialogueCommandFacts": dialogue_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -1095,6 +1827,7 @@ def verify_map_script_engine_contract(
         "storyBattleUnlockFlags": output["programCorpus"]["storyState"][
             "battleUnlockFlags"
         ],
+        "dialogueCommandFacts": output["dialogueCommandFacts"],
     }
     for field in (
         "summary",
@@ -1114,6 +1847,7 @@ def verify_map_script_engine_contract(
         "storyDirectSetFlags",
         "storyDirectClearFlags",
         "storyBattleUnlockFlags",
+        "dialogueCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

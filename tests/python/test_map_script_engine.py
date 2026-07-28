@@ -1,11 +1,32 @@
+from collections import Counter
+from copy import deepcopy
+from pathlib import Path
+
+import pytest
+
+from sf2tool.h2 import map_script_engine
 from sf2tool.h2.map_script_engine import (
+    DIALOGUE_HANDLER_BY_MACRO,
+    DIALOGUE_MACROS,
+    DIALOGUE_MODIFIER_MACROS,
+    ENTITY_DIALOGUE_CONSUMER,
+    ENTITY_DIALOGUE_CONSUMER_PATH,
+    PORTRAIT_HANDLER,
     _cursor_flow,
+    _dialogue_handler_facts,
+    _direct_call_sites,
     _emission_rows,
+    _entity_dialogue_consumer_facts,
     _logical_source_lines,
+    _modifier_source_labels,
     _program_corpus,
+    _statements,
     _story_state_facts,
     _substitute_alias_layout,
+    build_map_script_engine_contract,
 )
+from sf2tool.jsonio import load_json, validate_json
+from sf2tool.paths import repo_path
 
 
 def test_emission_rows_preserve_shorthand_width_and_stream_offset() -> None:
@@ -128,3 +149,548 @@ def test_story_state_facts_resolve_prompt_and_battle_flag_domains(tmp_path) -> N
     }
     assert actual["readWriteOverlapFlags"] == [89]
     assert actual["battleUnlockFlags"] == [404]
+
+
+def _named_handler(name: str, statements: list[str]) -> str:
+    return "\n".join(
+        [
+            f"{name}:",
+            *[f"    {statement}" for statement in statements],
+            f"; End of function {name}",
+            "",
+        ]
+    )
+
+
+def _synthetic_dialogue_handler_inputs(tmp_path: Path):
+    map_path = tmp_path / "code/common/scripting/map"
+    map_path.mkdir(parents=True)
+    second_path = map_path / "mapscriptengine_2.asm"
+    first_path = map_path / "mapscriptengine_1.asm"
+    bodies: dict[str, list[str]] = {}
+
+    for macro in DIALOGUE_MACROS[:4]:
+        is_single = macro.startswith("nextSingle")
+        has_skip_guard = macro in {"nextSingleText", "nextText"}
+        has_vars = macro.endswith("Var")
+        statements = []
+        if has_skip_guard:
+            statements.extend(["tst.b ((SKIP_CUTSCENE_TEXT-$1000000)).w", "bne.s @skip"])
+        statements.extend(
+            [
+                "cmpi.w #-1,(a6)",
+                "beq.s @noPortrait",
+                "bsr.w csc1D_showPortrait",
+                "bsr.w GetEntityPortaitAndSpeechSfx",
+            ]
+        )
+        if has_vars:
+            statements.extend(
+                [
+                    "move.w (a6)+,((DIALOGUE_NAME_INDEX_1-$1000000)).w",
+                    "move.w (a6)+,((DIALOGUE_NAME_INDEX_2-$1000000)).w",
+                ]
+            )
+        statements.extend(
+            [
+                "jsr (DisplayText).l",
+                "addq.w #1,((CUTSCENE_DIALOG_INDEX-$1000000)).w",
+            ]
+        )
+        if is_single:
+            statements.extend(
+                ["jsr j_ClosePortraitWindow", "clsTxt", "moveq #10,d0", "jsr (Sleep).w"]
+            )
+        statements.append("rts")
+        bodies[DIALOGUE_HANDLER_BY_MACRO[macro]] = statements
+
+    bodies[DIALOGUE_HANDLER_BY_MACRO["textCursor"]] = [
+        "move.w (a6)+,((CUTSCENE_DIALOG_INDEX-$1000000)).w",
+        "rts",
+    ]
+    bodies[DIALOGUE_HANDLER_BY_MACRO["hideText"]] = [
+        "jsr j_ClosePortraitWindow",
+        "clsTxt",
+        "rts",
+    ]
+    second_path.write_text(
+        "".join(_named_handler(name, statements) for name, statements in bodies.items()),
+        encoding="utf-8",
+    )
+    portrait_statements = [
+        "move.w (a6)+,d0",
+        "moveq #0,d3",
+        "btst #$F,d0",
+        "beq.s @rightDone",
+        "moveq #-1,d3",
+        "moveq #0,d4",
+        "btst #$E,d0",
+        "beq.s @mirrorDone",
+        "moveq #-1,d4",
+        "bsr.w GetEntityPortaitAndSpeechSfx",
+        "rts",
+    ]
+    first_path.write_text(
+        _named_handler("csc1D_showPortrait", portrait_statements), encoding="utf-8"
+    )
+
+    widths = [4, 6, 4, 8, 4, 2]
+    targets = ["csc_doNothing"] * 10
+    handlers = []
+    opcodes_by_macro = {
+        "nextSingleText": 0,
+        "nextSingleTextVar": 1,
+        "nextText": 2,
+        "nextTextVar": 3,
+        "textCursor": 4,
+        "hideText": 9,
+    }
+    for address, (macro, width) in enumerate(
+        zip(DIALOGUE_MACROS, widths, strict=True), start=100
+    ):
+        name = DIALOGUE_HANDLER_BY_MACRO[macro]
+        targets[opcodes_by_macro[macro]] = name
+        handlers.append(
+            {
+                "name": name,
+                "opcodes": [next(index for index, target in enumerate(targets) if target == name)],
+                "encodedCommandBytes": width,
+                "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+                "statementCount": len(_statements("\n".join(bodies[name]))),
+                "address": address,
+            }
+        )
+    handlers.append(
+        {
+            "name": "csc1D_showPortrait",
+            "opcodes": [29],
+            "encodedCommandBytes": 4,
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": len(_statements("\n".join(portrait_statements))),
+            "address": 99,
+        }
+    )
+    macros = {
+        name: {
+            "kind": "command",
+            "aliasOf": None,
+            "opcode": index,
+            "encodedBytes": widths[position],
+        }
+        for position, (name, index) in enumerate(
+            zip(DIALOGUE_MACROS, opcodes_by_macro.values(), strict=True)
+        )
+    }
+    return macros, targets, handlers
+
+
+def _modifier_entity_pairs() -> Counter[tuple[int, int]]:
+    return Counter({(0, 1): 1, (128, 128): 1, (192, 128): 1, (255, 255): 1})
+
+
+def _synthetic_entity_dialogue_consumer() -> dict[str, str]:
+    return {
+        "function": ENTITY_DIALOGUE_CONSUMER,
+        "sourcePath": ENTITY_DIALOGUE_CONSUMER_PATH.as_posix(),
+    }
+
+
+def test_dialogue_handler_guards_reject_use_site_order_and_operand_mutations(tmp_path) -> None:
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(tmp_path)
+    facts, portrait, callers = _dialogue_handler_facts(
+        tmp_path,
+        macros,
+        targets,
+        handlers,
+        _modifier_entity_pairs(),
+        _synthetic_entity_dialogue_consumer(),
+    )
+
+    assert [row["macro"] for row in facts] == list(DIALOGUE_MACROS)
+    assert portrait["handlerTestedModifierByteMask"] == 192
+    assert portrait["modifierBitTests"] == [
+        {"bit": 15, "destination": "d3"},
+        {"bit": 14, "destination": "d4"},
+    ]
+    targets_by_handler = {
+        "csc00_displaySingleTextbox": (1, 1),
+        "csc01_displaySingleTextboxWithVars": (1, 1),
+        "csc02_displayTextbox": (1, 1),
+        "csc03_displayTextboxWithVars": (1, 1),
+        "csc04_setTextIndex": (0, 0),
+        "csc09_hideDialogueAndPortraitWindows": (0, 0),
+        PORTRAIT_HANDLER: (0, 1),
+    }
+    assert callers == {
+        "callerHandlers": [
+            {
+                "handler": handler,
+                "sourcePath": (
+                    "code/common/scripting/map/mapscriptengine_1.asm"
+                    if handler == PORTRAIT_HANDLER
+                    else "code/common/scripting/map/mapscriptengine_2.asm"
+                ),
+                "instructionTargetSiteCounts": {
+                    PORTRAIT_HANDLER: portrait_count,
+                    ENTITY_DIALOGUE_CONSUMER: consumer_count,
+                },
+                "effectiveTargetSiteCounts": {
+                    PORTRAIT_HANDLER: portrait_count,
+                    ENTITY_DIALOGUE_CONSUMER: consumer_count,
+                },
+            }
+            for handler, (portrait_count, consumer_count) in targets_by_handler.items()
+        ],
+        "targetResolutions": [
+            {
+                "instructionTarget": PORTRAIT_HANDLER,
+                "effectiveTarget": PORTRAIT_HANDLER,
+                "effectiveTargetSourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                "effectiveTargetScope": "internal",
+            },
+            {
+                "instructionTarget": ENTITY_DIALOGUE_CONSUMER,
+                "effectiveTarget": ENTITY_DIALOGUE_CONSUMER,
+                "effectiveTargetSourcePath": ENTITY_DIALOGUE_CONSUMER_PATH.as_posix(),
+                "effectiveTargetScope": "external",
+            },
+        ],
+        "instructionTargetTotals": {PORTRAIT_HANDLER: 4, ENTITY_DIALOGUE_CONSUMER: 5},
+        "effectiveTargetTotals": {PORTRAIT_HANDLER: 4, ENTITY_DIALOGUE_CONSUMER: 5},
+        "internalInstructionTargetTotals": {PORTRAIT_HANDLER: 4, ENTITY_DIALOGUE_CONSUMER: 0},
+        "externalInstructionTargetTotals": {PORTRAIT_HANDLER: 0, ENTITY_DIALOGUE_CONSUMER: 5},
+        "internalEffectiveTargetTotals": {PORTRAIT_HANDLER: 4, ENTITY_DIALOGUE_CONSUMER: 0},
+        "externalEffectiveTargetTotals": {PORTRAIT_HANDLER: 0, ENTITY_DIALOGUE_CONSUMER: 5},
+    }
+
+    bad_macros = deepcopy(macros)
+    bad_macros["nextText"]["opcode"] = 1
+    with pytest.raises(ValueError, match="dispatcher target"):
+        _dialogue_handler_facts(
+            tmp_path,
+            bad_macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+    engine = tmp_path / "code/common/scripting/map/mapscriptengine_2.asm"
+    engine.write_text(
+        engine.read_text(encoding="utf-8").replace(
+            "addq.w #1,((CUTSCENE_DIALOG_INDEX-$1000000)).w",
+            "addq.w #2,((CUTSCENE_DIALOG_INDEX-$1000000)).w",
+            1,
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="addq"):
+        _dialogue_handler_facts(
+            tmp_path,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+
+def test_dialogue_handler_guards_reject_call_order_mutation(tmp_path) -> None:
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(tmp_path)
+    engine = tmp_path / "code/common/scripting/map/mapscriptengine_2.asm"
+    engine.write_text(
+        engine.read_text(encoding="utf-8").replace(
+            "bsr.w GetEntityPortaitAndSpeechSfx\n    jsr (DisplayText).l",
+            "jsr (DisplayText).l\n    bsr.w GetEntityPortaitAndSpeechSfx",
+            1,
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="DisplayText"):
+        _dialogue_handler_facts(
+            tmp_path,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+    target_root = tmp_path / "target"
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(target_root)
+    engine = target_root / "code/common/scripting/map/mapscriptengine_2.asm"
+    engine.write_text(
+        engine.read_text(encoding="utf-8").replace(
+            "bsr.w csc1D_showPortrait", "bsr.w csc1C_otherPortrait", 1
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="helper call count"):
+        _dialogue_handler_facts(
+            target_root,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+
+def test_dialogue_handler_guards_reject_sentinel_skip_bit_and_name_mutations(tmp_path) -> None:
+    sentinel_root = tmp_path / "sentinel"
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(sentinel_root)
+    second = sentinel_root / "code/common/scripting/map/mapscriptengine_2.asm"
+    second.write_text(
+        second.read_text(encoding="utf-8").replace("cmpi.w #-1,(a6)", "cmpi.w #0,(a6)", 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="disagree"):
+        _dialogue_handler_facts(
+            sentinel_root,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+    skip_root = tmp_path / "skip"
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(skip_root)
+    second = skip_root / "code/common/scripting/map/mapscriptengine_2.asm"
+    second.write_text(
+        second.read_text(encoding="utf-8").replace("bne.s @skip", "beq.s @skip", 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="bne"):
+        _dialogue_handler_facts(
+            skip_root,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+    bit_root = tmp_path / "bit"
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(bit_root)
+    first = bit_root / "code/common/scripting/map/mapscriptengine_1.asm"
+    first.write_text(
+        first.read_text(encoding="utf-8").replace("btst #$F,d0", "btst #$D,d0", 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="handler-tested modifier"):
+        _dialogue_handler_facts(
+            bit_root,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+    unsupported_root = tmp_path / "unsupported"
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(unsupported_root)
+    unsupported_pairs = _modifier_entity_pairs()
+    unsupported_pairs[(1, 1)] = 1
+    with pytest.raises(ValueError, match="handler-tested modifier"):
+        _dialogue_handler_facts(
+            unsupported_root,
+            macros,
+            targets,
+            handlers,
+            unsupported_pairs,
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+    name_root = tmp_path / "name"
+    macros, targets, handlers = _synthetic_dialogue_handler_inputs(name_root)
+    second = name_root / "code/common/scripting/map/mapscriptengine_2.asm"
+    second.write_text(
+        second.read_text(encoding="utf-8").replace(
+            "DIALOGUE_NAME_INDEX_2", "DIALOGUE_NAME_INDEX_3", 1
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="name-word"):
+        _dialogue_handler_facts(
+            name_root,
+            macros,
+            targets,
+            handlers,
+            _modifier_entity_pairs(),
+            _synthetic_entity_dialogue_consumer(),
+        )
+
+
+def test_entity_dialogue_consumer_guard_rejects_mask_mutation(tmp_path) -> None:
+    path = tmp_path / "code/common/scripting/entity"
+    path.mkdir(parents=True)
+    source_path = path / "getentityportaitandspeechsfx.asm"
+    source_path.write_text(
+        _named_handler(
+            "GetEntityPortaitAndSpeechSfx",
+            [
+                "andi.w #COMBATANT_MASK_ALL,d0",
+                "bsr.w GetEntityAddressFromCharacter",
+                "move.b ENTITYDEF_OFFSET_MAPSPRITE(a5),d0",
+                "rts",
+            ],
+        ),
+        encoding="utf-8",
+    )
+    constants = {"COMBATANT_MASK_ALL": 255, "COMBATANT_MASK_INDEX": 63}
+    actual = _entity_dialogue_consumer_facts(
+        tmp_path, constants, {"GetEntityPortaitAndSpeechSfx": 0x45638}
+    )
+    assert actual["lowDomainMask"] == {"constant": "COMBATANT_MASK_ALL", "value": 255}
+
+    source_path.write_text(
+        source_path.read_text(encoding="utf-8").replace(
+            "COMBATANT_MASK_ALL", "COMBATANT_MASK_INDEX"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="low-domain mask"):
+        _entity_dialogue_consumer_facts(
+            tmp_path, constants, {"GetEntityPortaitAndSpeechSfx": 0x45638}
+        )
+
+
+def test_dialogue_text_cursor_rejects_source_line_domain_boundary(monkeypatch) -> None:
+    original = map_script_engine.build_text_line_domain_contract
+
+    def narrowed_domain(*args, **kwargs):
+        value = original(*args, **kwargs)
+        value["gamescriptFacts"]["lastLineId"] = 4232
+        return value
+
+    monkeypatch.setattr(map_script_engine, "build_text_line_domain_contract", narrowed_domain)
+    with pytest.raises(ValueError, match="outside the source text-line domain"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_dialogue_modifier_labels_and_call_parser_reject_near_misses(tmp_path) -> None:
+    (tmp_path / "sf2cutscenemacros.asm").write_text(
+        "".join(
+            f"{macro}: macro\n"
+            "    dc.b \\1 ; portrait modifier "
+            "($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)\n"
+            "    endm\n"
+            for macro in DIALOGUE_MODIFIER_MACROS
+        ),
+        encoding="utf-8",
+    )
+    labels = _modifier_source_labels(
+        tmp_path,
+        [{"bit": 15, "destination": "d3"}, {"bit": 14, "destination": "d4"}],
+        0xFFFF,
+    )
+    assert labels[1] == {
+        "modifierByteValue": 64,
+        "sourceLabel": "mirrored",
+        "handlerWordBit": 14,
+    }
+    source = _statements(
+        "; bsr.w GetEntityPortaitAndSpeechSfx\n"
+        "GetEntityPortaitAndSpeechSfx:\n"
+        "bsr.s GetEntityPortaitAndSpeechSfx ; legal short suffix\n"
+        "jsr (GetEntityPortaitAndSpeechSfx).w\n"
+        "move.w #GetEntityPortaitAndSpeechSfx,d0\n"
+    )
+    assert _direct_call_sites(source, "GetEntityPortaitAndSpeechSfx") == [0, 1]
+
+    macro_path = tmp_path / "sf2cutscenemacros.asm"
+    macro_path.write_text(
+        macro_path.read_text(encoding="utf-8").replace("$40-mirrored", "$20-mirrored"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="handler bit test"):
+        _modifier_source_labels(
+            tmp_path,
+            [{"bit": 15, "destination": "d3"}, {"bit": 14, "destination": "d4"}],
+            0xFFFF,
+        )
+
+
+@pytest.fixture(scope="module")
+def map_script_engine_output() -> dict:
+    return build_map_script_engine_contract(
+        repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+    )
+
+
+def test_dialogue_contract_matches_complete_golden_fixture(map_script_engine_output: dict) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["dialogueCommandFacts"]
+
+    assert actual == fixture["expected"]["dialogueCommandFacts"]
+    assert len(actual["programTotals"]) == 304
+    assert sum(
+        len(row["commandIndexes"]) for row in actual["sourceSiteReferences"]
+    ) == 2883
+
+
+def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="dialogue output")
+    validate_json(fixture, fixture_schema, owner="dialogue fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["dialogueCommandFacts"]["macros"][0]["operandLayout"][0]["widthBytes"]
+    with pytest.raises(ValueError, match="widthBytes"):
+        validate_json(missing, output_schema, owner="dialogue output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    operand = renamed["dialogueCommandFacts"]["macros"][0]["operandLayout"][0]
+    operand["widthByte"] = operand.pop("widthBytes")
+    with pytest.raises(ValueError, match="widthBytes"):
+        validate_json(renamed, output_schema, owner="dialogue output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["dialogueCommandFacts"]["entityDialogueConsumer"]["lowDomainMask"]["extra"] = 1
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="dialogue output extra field")
+
+    reordered = deepcopy(map_script_engine_output)
+    references = reordered["dialogueCommandFacts"]["sourceSiteReferences"]
+    references[0], references[1] = references[1], references[0]
+    with pytest.raises(ValueError, match="const"):
+        validate_json(reordered, output_schema, owner="dialogue output reordered sites")
+
+    missing_zero_caller = deepcopy(map_script_engine_output)
+    del missing_zero_caller["dialogueCommandFacts"]["callerBreakdown"]["callerHandlers"][4]
+    with pytest.raises(ValueError, match="const"):
+        validate_json(
+            missing_zero_caller, output_schema, owner="dialogue output missing zero caller"
+        )
+
+    extra_caller_target = deepcopy(map_script_engine_output)
+    extra_caller_target["dialogueCommandFacts"]["callerBreakdown"]["callerHandlers"][4][
+        "instructionTargetSiteCounts"
+    ]["csc1C_otherPortrait"] = 0
+    with pytest.raises(ValueError, match="csc1C_otherPortrait"):
+        validate_json(
+            extra_caller_target, output_schema, owner="dialogue output extra caller target"
+        )
+
+    reordered_callers = deepcopy(map_script_engine_output)
+    caller_rows = reordered_callers["dialogueCommandFacts"]["callerBreakdown"][
+        "callerHandlers"
+    ]
+    caller_rows[4], caller_rows[5] = caller_rows[5], caller_rows[4]
+    with pytest.raises(ValueError, match="const"):
+        validate_json(reordered_callers, output_schema, owner="dialogue output reordered callers")
+
+    boundary = deepcopy(fixture)
+    bounds = boundary["expected"]["dialogueCommandFacts"]["operandFacts"][
+        "textCursorValueBounds"
+    ]
+    bounds["maximum"] += 1
+    with pytest.raises(ValueError, match="const"):
+        validate_json(boundary, fixture_schema, owner="dialogue fixture boundary")

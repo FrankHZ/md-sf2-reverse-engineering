@@ -364,6 +364,14 @@ the corresponding caller state occurs during normal play.
 The same corpus now owns every explicit story-flag access: six read flags, 56 write flags, and only
 three read/write overlaps (71, 76, 89). Runtime work can therefore select complete flag cohorts rather
 than launching one case per command.
+Its bounded dialogue-command family is separately exact: six primary macros account for 2,883 ordered
+program-command references (2,058 `nextSingleText`, 0 `nextSingleTextVar`, 577 `nextText`, 0
+`nextTextVar`, 234 `textCursor`, 14 `hideText`) and zero-inclusive totals for all 304 programs.
+The static contract retains physical macro bytes separately from handler word reads; guards the named
+skip/sentinel/call/index/close sections; and joins the independent 4,267-line text-ID domain and
+119-row sprite-dialogue table by source/ROM provenance. Its only new H3 work is the grouped
+`dialogue-presentation/runtime-matrix`; timing, rendering, and story-specific meaning remain outside
+this static credit.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

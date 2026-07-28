@@ -4,14 +4,15 @@
   dispatcher/handler/source-use contract, the 80-slot entity-script dispatch table, interpreter
   admission/termination rules, text-bank selection, complete context-
   Huffman tree corpus, all 17 compressed text banks/4,267 decoded records, and
-  the regular entity map-sprite decode/DMA consumer shape, the complete 119-row sprite-dialogue
+  the regular entity map-sprite decode/DMA consumer shape, the complete six-command map-script dialogue
+  family/program-reference/handler/consumer contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
 - Status: **Inferred** for named helper intent where only call structure is modeled
 - Status: **Unknown** for caller-dependent story meaning, text rendering timing,
   and individual script content
-- Evidence date: 2026-07-19
+- Evidence date: 2026-07-27
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -75,6 +76,49 @@ and four cross-program edges; the 51 conditional jumps divide into 35 same-progr
 cross-program edges. All 122 `executeSubroutine` targets resolve to 68000 symbols outside the map-
 script program graph. Thus the corpus has 184 explicit transfers with no unowned script target.
 This proves graph topology, not which flag-dependent route is reachable in a particular save state.
+
+## Confirmed Map-Script Dialogue Command Family
+
+The `sf2-map-script-engine-static-v1` contract now isolates `nextSingleText`, `nextSingleTextVar`,
+`nextText`, `nextTextVar`, `textCursor`, and `hideText` without re-parsing a partial source corpus.
+It retains their exact `$00..$04/$09` dispatcher binding, macro operand layout and physical width, and
+an ordered compact reference to every one of their 2,883 existing commands: 2,058/0/577/0/234/14 in
+that macro order. The reference is grouped by program command index, while zero-inclusive counts retain
+all 304 programs. This distinction prevents 2,883 copied command records from becoming a second source
+of truth.
+
+The four display handlers compare the packed modifier/entity word with `-1`, call
+`csc1D_showPortrait` before `GetEntityPortaitAndSpeechSfx`, call `DisplayText`, then increment
+`CUTSCENE_DIALOG_INDEX`. `csc00`/`csc02` alone preserve the skip-flag test and branch; the two single
+handlers then close portrait, clear text, and call `Sleep` with source immediate 10, while the
+continuing forms do not contain that sequence. The two `*Var` named sections each read two words into
+the source-named dialogue-name indices. `textCursor` writes its word to `CUTSCENE_DIALOG_INDEX`, and
+`hideText` orders the close call before text clear. These are instruction-order facts from the named
+handler sections, not a claim about rendered text, waits, or player-visible timing.
+
+The bounded caller domain retains all six dialogue handlers plus `csc1D_showPortrait` in source order,
+including the zero/zero rows for `csc04_setTextIndex` and `csc09_hideDialogueAndPortraitWindows`.
+Each row has separate direct-instruction and resolved-effective target maps for
+`csc1D_showPortrait` and `GetEntityPortaitAndSpeechSfx`; they are equal for this direct-call corpus but
+remain separately recorded. Both total maps are 4/5, while path-derived internal/external totals are
+4/0 and 0/5 respectively: the portrait helper's parsed source path is within the bounded map-script
+handler surface and the entity consumer's parsed source path is outside it.
+
+`csc1D_showPortrait` reads the packed word and tests bits 15 then 14; those parsed handler use-sites
+derive the high-byte `handlerTestedModifierByteMask` `$C0`. Every observed modifier byte outside the
+packed-word `$FFFF` sentinel has no bits outside that use-site-derived mask; the raw source domain and
+counts are retained as observations rather than the mask's authority. The two macro comments preserve
+original modifier labels `$40` `mirrored`, `$80` `display on right`, and `$FF` `undisplayed`; the
+contract records those labels separately from both the tested word bits and the full-word sentinel. The
+source/ROM-backed text-line domain is contiguous 0..4,266, so all 234 explicit cursor values
+(240..4,233) are within it. The
+consumer first masks the entity/character value with parsed `COMBATANT_MASK_ALL` 255, then loads its
+map-sprite byte. Its only table join is by the sibling 119-row sprite-dialogue contract's identity,
+pinned commit, ROM hash, source path, and addresses; no decoded text or sibling fixture data is copied.
+
+The grouped H3 queue has one dialogue item: `dialogue-presentation/runtime-matrix`, covering skip,
+packed modifier/entity handling, portrait/speech presentation, input/wait cadence, and close/clear/sleep
+observation under shared setup. Story meaning and visible timing remain **Unknown**.
 
 Two hundred ninety-six programs have H1 entry addresses. Eight remain source-only: the labeled but
 unassembled `rbcs_battle01`, one unlabeled unused suspend scene in map 72, and six unlabeled debug

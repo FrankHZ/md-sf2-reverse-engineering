@@ -73,7 +73,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`common-scripting.md`](./research/common-scripting.md)：entity/map/text/credits 的 29 文件
   inventory、90/80 槽解释器、完整 255-entry/86-tree/1,536-leaf context-Huffman corpus、
   17-bank/4,267-string/152,679-symbol 静态解码、80-glyph variable-width font/256-entry ASCII
-  map 数据流、完整 entity-action 静态链和单启动 13-case/20-tick entity movement H3。
+  map 数据流、六个 map-script dialogue command 的 2,883 条 ordered program reference/handler/
+  text-line/sprite-dialogue consumer 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
+  movement H3。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
 - [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
@@ -218,6 +220,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   helper 与控制器/时序未知边界。
 - [`window-system.md`](./design/window-system.md)：八槽 window entry、layout 分配/回收、packed
   coordinate 寻址、VInt composition/DMA 调用顺序，以及呈现时序未知边界。
+- [`dialogue-system.md`](./design/dialogue-system.md)：六个 map-script dialogue command 的物理
+  layout、cursor/name-index/portrait consumer 静态顺序，以及单一集中 H3 presentation matrix 边界。
 - [`randomness.md`](./design/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG 与有界采样的
   静态/运行时合同，以及 retry 与 seed-copy 隔离边界。
 
