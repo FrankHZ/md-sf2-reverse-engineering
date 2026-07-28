@@ -145,6 +145,18 @@ target. A remake MAY translate these records into its own entity-loading interfa
 that interface independently. The original static contract does not establish spawning, slot
 allocation, capacity, persistence, activation, rendering, collision/pathfinding, or normal-story
 reachability.
+Map-script imports MUST retain the two source-named forms `roofEvent` and `stepEvent` as distinct
+ordered records in `sf2-map-script-engine-static-v1` at
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.mapInteractionTriggerCommandFacts`. Each record MUST preserve its two word-width operands,
+the raw `trigger X`/`trigger Y` comments, source program/command identity, the two advancing A6 word
+reads, both parsed `MAP_TILE_SIZE` use sites, direct target identity/order, and return boundary.
+The zero-inclusive direct/effective caller maps and the source-only link to the 79-table/94-record
+step corpus and 79-table/114-record roof corpus MUST remain separate from the eight command sites.
+A remake MAY adapt these records only through an independently specified interface. This static
+contract does not establish interaction reachability, coordinate units, map table selection, callee
+effects, collision/pathfinding, persistence, timing, rendering, or player-visible behavior; those
+remain in `map-interaction-trigger/runtime-effects-matrix`.
 Map-script imports MUST separately retain the source-faithful map lifecycle records `resetMap`,
 `loadMapFadeIn`, `reloadMap`, and `mapLoad` in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field `expected.mapLifecycleCommandFacts`.

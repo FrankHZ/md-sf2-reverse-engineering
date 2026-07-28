@@ -3,6 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft7Validator, FormatChecker
 
 from sf2tool.h2 import map_script_engine
 from sf2tool.h2.map_script_engine import (
@@ -3744,4 +3745,434 @@ def test_map_lifecycle_schema_exact_blocks_keep_large_corpora_compact() -> None:
                     assert_closed_objects(child)
 
         for definition in lifecycle_definitions.values():
+            assert_closed_objects(definition)
+
+
+def test_map_interaction_trigger_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["mapInteractionTriggerCommandFacts"]
+    assert actual == fixture["expected"]["mapInteractionTriggerCommandFacts"]
+    assert [
+        (
+            macro["name"],
+            macro["opcode"],
+            macro["encodedBytes"],
+            macro["operandBytes"],
+            macro["sourceCommandCount"],
+        )
+        for macro in actual["macros"]
+    ] == [("roofEvent", 67, 6, 4, 2), ("stepEvent", 71, 6, 4, 6)]
+    assert [
+        macro["sourceOperandAnnotations"] for macro in actual["macros"]
+    ] == [
+        [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "trigger X",
+                "streamOffset": 2,
+                "widthBytes": 2,
+            },
+            {
+                "parameterOrdinal": 2,
+                "sourceComment": "trigger Y",
+                "streamOffset": 4,
+                "widthBytes": 2,
+            },
+        ],
+        [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "trigger X",
+                "streamOffset": 2,
+                "widthBytes": 2,
+            },
+            {
+                "parameterOrdinal": 2,
+                "sourceComment": "trigger Y",
+                "streamOffset": 4,
+                "widthBytes": 2,
+            },
+        ],
+    ]
+    assert actual["sourceSiteOrderKeys"] == [
+        "cs_62D0E:15:roofEvent",
+        "cs_5AC58:5:stepEvent",
+        "cs_5AC58:20:stepEvent",
+        "cs_5AF36:37:stepEvent",
+        "cs_5B016:15:stepEvent",
+        "cs_540C0:23:roofEvent",
+        "cs_540C0:24:stepEvent",
+        "cs_540C0:25:stepEvent",
+    ]
+    assert (
+        actual["sourceSitesSha256"]
+        == "525013B1AD4B1796BBBD398C063A3F7AF5DDD72D3B062888B1F1E7A26ECF58AB"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert (
+        actual["programTotalsSha256"]
+        == "D82DA66400E77E7881A4482AFF5A7541E64DA60E57068306B70102606E72F1E8"
+    )
+    assert [
+        (
+            handler["macro"],
+            handler["handler"],
+            handler["address"],
+            handler["opcode"],
+            handler["sourceCommandCount"],
+            handler["statementCount"],
+        )
+        for handler in actual["handlers"]
+    ] == [
+        ("roofEvent", "csc43_RoofEvent", 288438, 67, 2, 6),
+        ("stepEvent", "csc47_StepEvent", 288582, 71, 6, 6),
+    ]
+    for handler, target in zip(
+        actual["handlers"], ("PerformMapBlockCopyScript", "OpenDoor"), strict=True
+    ):
+        assert handler["sectionGuard"] == {
+            "orderedInstructions": [
+                "move.w (a6)+,d0",
+                "move.w (a6)+,d1",
+                "mulu.w #MAP_TILE_SIZE,d0",
+                "mulu.w #MAP_TILE_SIZE,d1",
+                f"jsr ({target}).w",
+                "rts",
+            ],
+            "scriptCursorReadUseSites": [
+                {
+                    "sourceRegister": "a6",
+                    "destinationRegister": register,
+                    "transferredByteCount": 2,
+                    "cursorAdvanceByteCount": 2,
+                    "instruction": f"move.w (a6)+,{register}",
+                }
+                for register in ("d0", "d1")
+            ],
+            "tileSizeUseSites": [
+                {
+                    "symbol": "MAP_TILE_SIZE",
+                    "value": 384,
+                    "destinationRegister": register,
+                    "instruction": f"mulu.w #MAP_TILE_SIZE,{register}",
+                }
+                for register in ("d0", "d1")
+            ],
+            "directCallOrder": [f"jsr ({target}).w"],
+            "returnInstruction": "rts",
+        }
+        assert handler["directCalls"] == [
+            {"opcode": "jsr", "instructionTarget": target}
+        ]
+    assert actual["callerBreakdown"] == {
+        "callerHandlers": [
+            {
+                "handler": "csc43_RoofEvent",
+                "instructionTargetSiteCounts": {
+                    "PerformMapBlockCopyScript": 1,
+                    "OpenDoor": 0,
+                },
+                "effectiveTargetSiteCounts": {
+                    "PerformMapBlockCopyScript": 1,
+                    "OpenDoor": 0,
+                },
+            },
+            {
+                "handler": "csc47_StepEvent",
+                "instructionTargetSiteCounts": {
+                    "PerformMapBlockCopyScript": 0,
+                    "OpenDoor": 1,
+                },
+                "effectiveTargetSiteCounts": {
+                    "PerformMapBlockCopyScript": 0,
+                    "OpenDoor": 1,
+                },
+            },
+        ],
+        "targetResolutions": [
+            {
+                "instructionTarget": target,
+                "effectiveTarget": target,
+                "aliasSourcePath": None,
+                "effectiveTargetScope": "external",
+            }
+            for target in ("PerformMapBlockCopyScript", "OpenDoor")
+        ],
+        "instructionTargetTotals": {"PerformMapBlockCopyScript": 1, "OpenDoor": 1},
+        "effectiveTargetTotals": {"PerformMapBlockCopyScript": 1, "OpenDoor": 1},
+        "internalEffectiveTargetTotals": {"PerformMapBlockCopyScript": 0, "OpenDoor": 0},
+        "externalEffectiveTargetTotals": {"PerformMapBlockCopyScript": 1, "OpenDoor": 1},
+    }
+    assert actual["sourceIdentityJoins"] == {
+        "handlerSource": {
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+            "symbols": ["csc43_RoofEvent", "csc47_StepEvent"],
+        },
+        "calleeOwner": {
+            "sourcePath": "code/gameflow/exploration/exploration.asm",
+            "sourceSha256": "C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0",
+            "symbols": ["PerformMapBlockCopyScript", "OpenDoor"],
+            "relatedContractId": None,
+        },
+        "eventTableBoundary": {
+            "mapContentContractId": "sf2-map-content-static-v1",
+            "canonicalMapImportContractId": "sf2-canonical-map-import-v1",
+            "mapContentSectionCounts": {"stepEvents": 79, "roofEvents": 79},
+            "mapContentRecordCounts": {"stepEvents": 94, "roofEvents": 114},
+            "canonicalResourceCounts": {"stepEventTables": 79, "roofEventTables": 79},
+            "canonicalRecordCounts": {"stepEvents": 94, "roofEvents": 114},
+        },
+    }
+    assert actual["runtimeQuestions"] == ["map-interaction-trigger/runtime-effects-matrix"]
+
+
+def test_map_interaction_trigger_named_section_guards_reject_operand_and_order_drift() -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    handler_profile = {
+        "csc43_RoofEvent": {
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": 6,
+        },
+        "csc47_StepEvent": {
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": 6,
+        },
+    }
+    statements_by_handler = {
+        handler: map_script_engine._stable_handler_statements(
+            disasm, {"name": handler, **profile}
+        )
+        for handler, profile in handler_profile.items()
+    }
+
+    roof_statements = statements_by_handler["csc43_RoofEvent"]
+    assert map_script_engine._map_interaction_trigger_section_guard(
+        "roofEvent", "csc43_RoofEvent", roof_statements, equates
+    )["directCallOrder"] == ["jsr (PerformMapBlockCopyScript).w"]
+    changed_operand = [
+        statement.replace("mulu.w #MAP_TILE_SIZE,d1", "mulu.w #384,d1")
+        for statement in roof_statements
+    ]
+    with pytest.raises(ValueError, match="csc43_RoofEvent statement is missing"):
+        map_script_engine._map_interaction_trigger_section_guard(
+            "roofEvent", "csc43_RoofEvent", changed_operand, equates
+        )
+
+    step_statements = statements_by_handler["csc47_StepEvent"]
+    changed_call_order = step_statements.copy()
+    changed_call_order[3], changed_call_order[4] = (
+        changed_call_order[4],
+        changed_call_order[3],
+    )
+    with pytest.raises(ValueError, match="csc47_StepEvent statement is missing"):
+        map_script_engine._map_interaction_trigger_section_guard(
+            "stepEvent", "csc47_StepEvent", changed_call_order, equates
+        )
+
+
+def test_map_interaction_trigger_bounded_construction_rejects_dispatcher_drift_before_fixture(
+) -> None:
+    """Keep one construction-level guard without building the full 304-program contract."""
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    macros = map_script_engine._map_macro_contracts(disasm)
+    dispatch_source = map_script_engine.read_upstream_text(
+        disasm / map_script_engine.DISPATCH_SOURCE
+    )
+    handler_profiles = {
+        "csc43_RoofEvent": {
+            "opcodes": [67],
+            "encodedCommandBytes": 6,
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": 6,
+            "address": 288438,
+        },
+        "csc47_StepEvent": {
+            "opcodes": [71],
+            "encodedCommandBytes": 6,
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": 6,
+            "address": 288582,
+        },
+    }
+    program_corpus = {
+        "programs": [
+            {
+                "id": "bounded_interaction_trigger_guard",
+                "commands": [
+                    {
+                        "index": 0,
+                        "sourceLine": 1,
+                        "macro": "roofEvent",
+                        "arguments": ["0", "0"],
+                    }
+                ],
+            }
+        ],
+        "summary": {"programCount": 1},
+    }
+    macros["roofEvent"]["opcode"] = 68
+    with pytest.raises(ValueError, match="dispatcher target drift: roofEvent"):
+        map_script_engine._map_interaction_trigger_command_facts(
+            disasm,
+            map_script_engine._source_equates(disasm),
+            macros,
+            map_script_engine._dispatch_targets(dispatch_source),
+            [
+                {"name": handler, **profile}
+                for handler, profile in handler_profiles.items()
+            ],
+            program_corpus,
+            {},
+            b"",
+            repo_path("local/roms/sf2-us.bin"),
+            repo_path("local/upstream/SF2DISASM"),
+        )
+
+
+def test_map_interaction_trigger_parsers_reject_near_misses_and_preserve_comments(
+    monkeypatch,
+) -> None:
+    assert map_script_engine._map_interaction_trigger_read_use_site("move.w (a6)+,d0") == {
+        "sourceRegister": "a6",
+        "destinationRegister": "d0",
+        "transferredByteCount": 2,
+        "cursorAdvanceByteCount": 2,
+        "instruction": "move.w (a6)+,d0",
+    }
+    assert map_script_engine._map_interaction_trigger_read_use_site("move.w (a6)+,d1")[
+        "destinationRegister"
+    ] == "d1"
+    for near_miss in (
+        "move.b (a6)+,d0",
+        "move.l (a6)+,d0",
+        "move.w (a6)+,d2",
+        "label_move.w (a6)+,d0",
+        "; move.w (a6)+,d0",
+        "move.w (a6)+,d0 ; comment",
+    ):
+        with pytest.raises(ValueError, match="cursor-read use-site drift"):
+            map_script_engine._map_interaction_trigger_read_use_site(near_miss)
+    assert map_script_engine._force_state_direct_calls(
+        ["; jsr (OpenDoor).w", "move.w (a6)+,d0"]
+    ) == []
+
+    original_read = map_script_engine.read_upstream_text
+
+    def missing_operand_comment(path):
+        source = original_read(path)
+        if path.name == "sf2cutscenemacros.asm":
+            return source.replace("dc.w \\1 ; trigger X", "dc.w \\1", 1)
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", missing_operand_comment)
+    with pytest.raises(ValueError, match="operand comment is missing: roofEvent"):
+        map_script_engine._map_interaction_trigger_macro_annotations(
+            repo_path("local/upstream/SF2DISASM/disasm")
+        )
+
+
+def test_map_interaction_trigger_schemas_reject_nested_mutations_and_exact_order() -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    facts = fixture["expected"]["mapInteractionTriggerCommandFacts"]
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+
+    for path in schema_paths:
+        schema = load_json(path)
+        property_schema = schema["properties"].get("mapInteractionTriggerCommandFacts")
+        if property_schema is None:
+            property_schema = schema["properties"]["expected"]["properties"][
+                "mapInteractionTriggerCommandFacts"
+            ]
+        exact_properties = property_schema["allOf"][1]["properties"]
+
+        def definition_validator(
+            name: str, *, schema: dict = schema
+        ) -> Draft7Validator:
+            return Draft7Validator(
+                {
+                    "$schema": schema["$schema"],
+                    "definitions": {name: schema["definitions"][name]},
+                    "$ref": f"#/definitions/{name}",
+                },
+                format_checker=FormatChecker(),
+            )
+
+        def rejects(validator: Draft7Validator, instance: object) -> None:
+            assert next(validator.iter_errors(instance), None) is not None
+
+        tile_validator = definition_validator("mapInteractionTriggerTileSizeUse")
+        annotation_validator = definition_validator("mapInteractionTriggerOperandAnnotation")
+        owner_validator = definition_validator("mapInteractionTriggerCalleeOwner")
+        source_order_validator = Draft7Validator(exact_properties["sourceSiteOrderKeys"])
+        handler_validator = Draft7Validator(exact_properties["handlers"])
+
+        missing = deepcopy(facts["handlers"][0]["sectionGuard"]["tileSizeUseSites"][0])
+        del missing["destinationRegister"]
+        rejects(tile_validator, missing)
+
+        renamed = deepcopy(facts["macros"][0]["sourceOperandAnnotations"][0])
+        renamed["label"] = renamed.pop("sourceComment")
+        rejects(annotation_validator, renamed)
+
+        extra = deepcopy(facts["sourceIdentityJoins"]["calleeOwner"])
+        extra["extra"] = True
+        rejects(owner_validator, extra)
+
+        reordered = facts["sourceSiteOrderKeys"].copy()
+        reordered[0], reordered[1] = reordered[1], reordered[0]
+        rejects(source_order_validator, reordered)
+
+        out_of_boundary = deepcopy(facts["handlers"])
+        out_of_boundary[0]["sectionGuard"]["tileSizeUseSites"][0]["value"] = 383
+        rejects(handler_validator, out_of_boundary)
+
+
+def test_map_interaction_trigger_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("mapInteractionTriggerCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "mapInteractionTriggerCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        assert "sourceSites" not in exact["properties"]
+        assert "programTotals" not in exact["properties"]
+        assert {
+            "sourceSiteOrderKeys",
+            "sourceSitesSha256",
+            "programTotalOrderKeys",
+            "programTotalsSha256",
+        } <= set(exact["properties"])
+        facts = schema["definitions"]["mapInteractionTriggerCommandFacts"]
+        assert facts["additionalProperties"] is False
+        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+        interaction_definitions = {
+            name: value
+            for name, value in schema["definitions"].items()
+            if name.startswith("mapInteractionTrigger")
+        }
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        for definition in interaction_definitions.values():
             assert_closed_objects(definition)

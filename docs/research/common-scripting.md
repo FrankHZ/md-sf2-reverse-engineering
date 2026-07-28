@@ -501,6 +501,64 @@ symbols `csc36_resetMap`, `csc37_loadMapAndFadeIn`, `csc46_reloadMap`, and `csc4
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
 `expected.mapLifecycleCommandFacts`.
 
+## Confirmed Map-Script Source-Named Trigger Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `mapInteractionTriggerCommandFacts` retains
+the two source-named macro forms in source order: `roofEvent` opcode `$43` (2 sites, 6 encoded bytes)
+and `stepEvent` opcode `$47` (6 sites, 6 encoded bytes). Both emit a two-byte opcode followed by
+two advancing two-byte operands at offsets 2 and 4. The source comments `trigger X` and `trigger Y`
+are preserved verbatim as labels only; they do not establish a player-visible trigger effect, a map
+layer meaning, a collision rule, or a persistence rule.
+
+**Confirmed:** the bounded corpus has 8 commands in 5 non-empty source program groups and a complete
+304-row zero-inclusive program inventory. Its exact source-site order is
+`cs_62D0E:15:roofEvent`, `cs_5AC58:5:stepEvent`, `cs_5AC58:20:stepEvent`,
+`cs_5AF36:37:stepEvent`, `cs_5B016:15:stepEvent`, `cs_540C0:23:roofEvent`,
+`cs_540C0:24:stepEvent`, and `cs_540C0:25:stepEvent`. The ordered source-site SHA-256 is
+`525013B1AD4B1796BBBD398C063A3F7AF5DDD72D3B062888B1F1E7A26ECF58AB`; the ordered program-total
+SHA-256 is `D82DA66400E77E7881A4482AFF5A7541E64DA60E57068306B70102606E72F1E8`.
+
+**Confirmed:** `csc43_RoofEvent` is H1/ROM `$46696` and `csc47_StepEvent` is `$46726`.
+Each bounded named section has exactly six normalized statements: advancing `move.w (a6)+,d0` and
+`move.w (a6)+,d1`, parsed `mulu.w #MAP_TILE_SIZE,d0` and `mulu.w #MAP_TILE_SIZE,d1`, one direct
+call, and `rts`. The one parsed `sf2enums.asm` equate `MAP_TILE_SIZE` has value 384; both multiplier
+records resolve that same parsed source symbol rather than duplicating a numeric multiplier. The
+direct-call order is `jsr (PerformMapBlockCopyScript).w` for `csc43` and `jsr (OpenDoor).w` for
+`csc47`. These are exact source control-flow and operand facts, not a claim about copying, opening,
+or a visible interaction result.
+
+**Confirmed:** the comment-stripping call parser keeps the declared direct/effective target domain
+zero-inclusive. `csc43_RoofEvent` has one `PerformMapBlockCopyScript` site and zero `OpenDoor` sites;
+`csc47_StepEvent` has the inverse. Aggregate direct and effective totals are one for each target;
+internal effective totals are zero for both and external effective totals are one for both. Neither
+instruction target is a jump-interface alias. The provenance-only owner join records both symbols in
+`code/gameflow/exploration/exploration.asm` with its pinned SHA-256; labels, comments, near-miss
+mnemonics, and operands do not count as call sites.
+
+**Confirmed:** the independently parsed `sf2-map-content-static-v1` map sections contain 79
+`stepEvents` tables and 79 `roofEvents` tables, with 94 and 114 records respectively. The existing
+canonical-map-import event-table decoder independently produces 79 `stepEventTables`, 79
+`roofEventTables`, and the same 94/114 record counts. This boundary is a provenance join to table
+corpora; it does not map either eight-site command corpus to a table record or assert which data is
+observed at runtime.
+
+**Unknown:** `map-interaction-trigger/runtime-effects-matrix` is the sole grouped H3 queue. One shared
+runtime matrix must determine command reachability under normal play, coordinate interpretation,
+callee effects, map/table selection, collision/pathfinding changes, persistence, timing, presentation,
+and hardware-visible consequences. No such lifecycle or effect is promoted from this static slice.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `roofEvent` and
+`stepEvent`; `code/common/scripting/map/mapscriptengine_1.asm` symbols `csc43_RoofEvent` and
+`csc47_StepEvent`; `sf2enums.asm` equate `MAP_TILE_SIZE`; owner source
+`code/gameflow/exploration/exploration.asm` symbols `PerformMapBlockCopyScript` and `OpenDoor`; and
+local US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.mapInteractionTriggerCommandFacts`.
+
 ## Confirmed Map-Script Story-State Branch/Prompt Command Family
 
 Evidence date: 2026-07-27.

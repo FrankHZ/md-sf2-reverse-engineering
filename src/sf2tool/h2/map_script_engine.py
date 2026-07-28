@@ -196,6 +196,25 @@ MAP_LIFECYCLE_HANDLER_BY_MACRO = {
 MAP_LIFECYCLE_HANDLER_NAMES = tuple(MAP_LIFECYCLE_HANDLER_BY_MACRO.values())
 MAP_LIFECYCLE_RUNTIME_QUESTIONS = ["map-lifecycle/runtime-effects-matrix"]
 
+# The source macro labels and operand comments delimit this static slice.  They
+# do not establish player-visible interaction, door, roof, collision, or map
+# presentation behavior.
+MAP_INTERACTION_TRIGGER_MACRO_NAMES = ("roofEvent", "stepEvent")
+MAP_INTERACTION_TRIGGER_HANDLER_BY_MACRO = {
+    "roofEvent": "csc43_RoofEvent",
+    "stepEvent": "csc47_StepEvent",
+}
+MAP_INTERACTION_TRIGGER_HANDLER_NAMES = tuple(
+    MAP_INTERACTION_TRIGGER_HANDLER_BY_MACRO.values()
+)
+MAP_INTERACTION_TRIGGER_DIRECT_TARGETS = (
+    "PerformMapBlockCopyScript",
+    "OpenDoor",
+)
+MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS = [
+    "map-interaction-trigger/runtime-effects-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -5471,6 +5490,496 @@ def _map_lifecycle_command_facts(
     }
 
 
+def _map_interaction_trigger_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse the bounded macro widths, offsets, and source operand comments."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in MAP_INTERACTION_TRIGGER_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"map-interaction-trigger macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"map-interaction-trigger operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"map-interaction-trigger operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"map-interaction-trigger operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"map-interaction-trigger operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"map-interaction-trigger operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _map_interaction_trigger_resolve_operand(
+    value: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Retain each source operand spelling while resolving an actual source equate."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        return {"rawValue": value, "resolvedValue": _literal(token), "resolution": "literal"}
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+
+
+def _map_interaction_trigger_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach physical source operand records to every bounded macro occurrence."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=MAP_INTERACTION_TRIGGER_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "map-interaction-trigger source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            source_order_key = ":".join(
+                (site["programId"], str(command["commandIndex"]), command["macro"])
+            )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": source_order_key,
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_map_interaction_trigger_resolve_operand(argument, equates),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _map_interaction_trigger_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind complete source order and the zero-inclusive program domain compactly."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("map-interaction-trigger source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("map-interaction-trigger program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _map_interaction_trigger_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one bounded advancing A6 word read, including its legal suffix."""
+    match = re.fullmatch(r"move\.w \(a6\)\+,(?P<target>d[01])", instruction)
+    if match is None:
+        raise ValueError("map-interaction-trigger cursor-read use-site drift")
+    return {
+        "sourceRegister": "a6",
+        "destinationRegister": match.group("target"),
+        "transferredByteCount": 2,
+        "cursorAdvanceByteCount": 2,
+        "instruction": instruction,
+    }
+
+
+def _map_interaction_trigger_tile_size_use_site(
+    instruction: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Bind a parsed multiplier operand to the one authoritative tile-size equate."""
+    match = re.fullmatch(
+        r"mulu\.w #(?P<symbol>[A-Za-z_][A-Za-z0-9_]*),(?P<target>d[01])",
+        instruction,
+    )
+    if match is None or match.group("symbol") != "MAP_TILE_SIZE":
+        raise ValueError("map-interaction-trigger tile-size use-site drift")
+    if match.group("symbol") not in equates:
+        raise ValueError("map-interaction-trigger MAP_TILE_SIZE equate is missing")
+    return {
+        "symbol": match.group("symbol"),
+        "value": equates[match.group("symbol")],
+        "destinationRegister": match.group("target"),
+        "instruction": instruction,
+    }
+
+
+def _map_interaction_trigger_section_guard(
+    macro: str, handler_name: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard exact operand, call, and return order inside one named source section."""
+    target = {
+        "roofEvent": "PerformMapBlockCopyScript",
+        "stepEvent": "OpenDoor",
+    }.get(macro)
+    if target is None:
+        raise ValueError(f"map-interaction-trigger has no macro profile: {macro}")
+    ordered = _force_state_ordered_statements(
+        statements,
+        [
+            r"move\.w \(a6\)\+,d0",
+            r"move\.w \(a6\)\+,d1",
+            r"mulu\.w #MAP_TILE_SIZE,d0",
+            r"mulu\.w #MAP_TILE_SIZE,d1",
+            rf"jsr \({re.escape(target)}\)\.w",
+            r"rts",
+        ],
+        owner=handler_name,
+    )
+    if len(statements) != len(ordered):
+        raise ValueError(f"map-interaction-trigger handler statement coverage drift: {macro}")
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _map_interaction_trigger_read_use_site(ordered[index]) for index in (0, 1)
+        ],
+        "tileSizeUseSites": [
+            _map_interaction_trigger_tile_size_use_site(ordered[index], equates)
+            for index in (2, 3)
+        ],
+        "directCallOrder": [ordered[4]],
+        "returnInstruction": ordered[5] if ordered[5] == "rts" else None,
+    }
+
+
+def _map_interaction_trigger_caller_breakdown(
+    disasm: Path,
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Preserve direct/effective target identity with zero-inclusive site maps."""
+    instruction_targets = list(MAP_INTERACTION_TRIGGER_DIRECT_TARGETS)
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    bounded_handlers = set(MAP_INTERACTION_TRIGGER_HANDLER_NAMES)
+    target_resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": aliases.get(target, {}).get("effectiveTarget", target),
+            "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+            "effectiveTargetScope": (
+                "internal"
+                if aliases.get(target, {}).get("effectiveTarget", target) in bounded_handlers
+                else "external"
+            ),
+        }
+        for target in instruction_targets
+    ]
+    effective_targets = [row["effectiveTarget"] for row in target_resolutions]
+    if len(effective_targets) != len(set(effective_targets)):
+        raise ValueError("map-interaction-trigger effective target identity drift")
+    resolution_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_rows = []
+    for handler_name in MAP_INTERACTION_TRIGGER_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler_name]:
+            target = call["instructionTarget"]
+            if target not in instruction_counts:
+                raise ValueError(f"map-interaction-trigger unexpected direct target: {target}")
+            instruction_counts[target] += 1
+            effective_counts[resolution_by_instruction[target]] += 1
+        caller_rows.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_rows)
+        for target in effective_targets
+    }
+    scopes = {row["effectiveTarget"]: row["effectiveTargetScope"] for row in target_resolutions}
+
+    def scoped_totals(scope: str) -> dict[str, int]:
+        return {
+            target: effective_totals[target] if scopes[target] == scope else 0
+            for target in effective_targets
+        }
+
+    return {
+        "callerHandlers": caller_rows,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalEffectiveTargetTotals": scoped_totals("internal"),
+        "externalEffectiveTargetTotals": scoped_totals("external"),
+    }
+
+
+def _map_interaction_trigger_source_identity_joins(
+    disasm: Path,
+    addresses: dict[str, int],
+    map_content: dict[str, Any],
+    canonical_event_tables: dict[str, Any],
+) -> dict[str, Any]:
+    """Record independent source owners and parsed step/roof table-boundary evidence."""
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    handler_source = read_upstream_text(disasm / handler_path)
+    if any(
+        re.search(rf"^{re.escape(symbol)}:\s*$", handler_source, re.MULTILINE) is None
+        for symbol in MAP_INTERACTION_TRIGGER_HANDLER_NAMES
+    ):
+        raise ValueError("map-interaction-trigger handler source identity drift")
+    owner_path = "code/gameflow/exploration/exploration.asm"
+    owner_source = read_upstream_text(disasm / owner_path)
+    if any(
+        symbol not in addresses
+        or re.search(rf"^{re.escape(symbol)}:\s*$", owner_source, re.MULTILINE) is None
+        for symbol in MAP_INTERACTION_TRIGGER_DIRECT_TARGETS
+    ):
+        raise ValueError("map-interaction-trigger callee owner source identity drift")
+    map_content_counts = {
+        "stepEvents": map_content["recordCounts"]["stepEvents"],
+        "roofEvents": map_content["recordCounts"]["roofEvents"],
+    }
+    canonical_counts = {
+        "stepEvents": canonical_event_tables["recordCounts"]["stepEvents"],
+        "roofEvents": canonical_event_tables["recordCounts"]["roofEvents"],
+    }
+    if map_content_counts != canonical_counts:
+        raise ValueError("map-interaction-trigger event table record-count disagreement")
+    return {
+        "handlerSource": {
+            "sourcePath": handler_path,
+            "sourceSha256": hashlib.sha256(handler_source.encode()).hexdigest().upper(),
+            "symbols": list(MAP_INTERACTION_TRIGGER_HANDLER_NAMES),
+        },
+        "calleeOwner": {
+            "sourcePath": owner_path,
+            "sourceSha256": hashlib.sha256(owner_source.encode()).hexdigest().upper(),
+            "symbols": list(MAP_INTERACTION_TRIGGER_DIRECT_TARGETS),
+            "relatedContractId": None,
+        },
+        "eventTableBoundary": {
+            "mapContentContractId": map_content["id"],
+            "canonicalMapImportContractId": canonical_event_tables["contractId"],
+            "mapContentSectionCounts": {
+                "stepEvents": map_content["sectionCounts"]["stepEvents"],
+                "roofEvents": map_content["sectionCounts"]["roofEvents"],
+            },
+            "mapContentRecordCounts": map_content_counts,
+            "canonicalResourceCounts": canonical_event_tables["resourceCounts"],
+            "canonicalRecordCounts": canonical_counts,
+        },
+    }
+
+
+def _map_interaction_trigger_canonical_event_tables(
+    disasm: Path, map_content: dict[str, Any]
+) -> dict[str, Any]:
+    """Run the existing canonical-import event-table decoder without its cyclic full join."""
+    # The full canonical import also builds map events, which depends on this
+    # map-script contract.  Its bounded content-resource decoder is independent
+    # of that cycle and is the parser that supplies canonical step/roof tables.
+    from sf2tool.h2.map_content import _parse_equates
+    from sf2tool.h2.map_import import ID as canonical_map_import_id
+    from sf2tool.h2.map_import import _content_resources
+
+    resources = _content_resources(map_content, disasm, _parse_equates(disasm))
+    table_names = {
+        "stepEvents": "stepEventTables",
+        "roofEvents": "roofEventTables",
+    }
+    return {
+        "contractId": canonical_map_import_id,
+        "resourceCounts": {
+            "stepEventTables": len(resources["stepEventTables"]),
+            "roofEventTables": len(resources["roofEventTables"]),
+        },
+        "recordCounts": {
+            event_name: sum(len(row["records"]) for row in resources[table_name])
+            for event_name, table_name in table_names.items()
+        },
+    }
+
+
+def _map_interaction_trigger_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    rom_path: Path,
+    upstream_path: Path,
+) -> dict[str, Any]:
+    """Build a source-faithful static contract for roofEvent and stepEvent only."""
+    if "MAP_TILE_SIZE" not in equates:
+        raise ValueError("map-interaction-trigger MAP_TILE_SIZE equate is missing")
+    annotations_by_macro = _map_interaction_trigger_macro_annotations(disasm)
+    source_sites, program_totals = _map_interaction_trigger_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in MAP_INTERACTION_TRIGGER_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"map-interaction-trigger program total drift: {macro}")
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"] != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"]
+            != max(row["streamOffset"] + row["widthBytes"] for row in annotations)
+            or contract["operandLayout"]
+            != [
+                {
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "expression": f"\\{row['parameterOrdinal']}",
+                    "parameterOrdinals": [row["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for row in annotations
+            ]
+        ):
+            raise ValueError(f"map-interaction-trigger macro ABI drift: {macro}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for macro in MAP_INTERACTION_TRIGGER_MACRO_NAMES:
+        handler_name = MAP_INTERACTION_TRIGGER_HANDLER_BY_MACRO[macro]
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"map-interaction-trigger dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"map-interaction-trigger handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _map_interaction_trigger_section_guard(
+            macro, handler_name, statements, equates
+        )
+        if sum(
+            row["cursorAdvanceByteCount"]
+            for row in section_guard["scriptCursorReadUseSites"]
+        ) != contract["operandBytes"]:
+            raise ValueError(f"map-interaction-trigger script cursor width drift: {macro}")
+        direct_calls = _force_state_direct_calls(statements)
+        expected_direct_calls = [
+            {
+                "opcode": "jsr",
+                "instructionTarget": MAP_INTERACTION_TRIGGER_DIRECT_TARGETS[
+                    MAP_INTERACTION_TRIGGER_MACRO_NAMES.index(macro)
+                ],
+            }
+        ]
+        if direct_calls != expected_direct_calls or direct_calls != _force_state_direct_calls(
+            section_guard["directCallOrder"]
+        ):
+            raise ValueError(f"map-interaction-trigger direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations_by_macro[macro],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    map_content = build_map_content_contract(rom_path, upstream_path)
+    canonical_event_tables = _map_interaction_trigger_canonical_event_tables(
+        disasm, map_content
+    )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": MAP_INTERACTION_TRIGGER_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in MAP_INTERACTION_TRIGGER_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_map_interaction_trigger_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": _map_interaction_trigger_caller_breakdown(
+            disasm, direct_call_rows, addresses, rom
+        ),
+        "sourceIdentityJoins": _map_interaction_trigger_source_identity_joins(
+            disasm, addresses, map_content, canonical_event_tables
+        ),
+        "runtimeQuestions": MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -5566,6 +6075,18 @@ def build_map_script_engine_contract(
         rom,
     )
     map_lifecycle_command_facts = _map_lifecycle_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+        rom_path,
+        upstream_path,
+    )
+    map_interaction_trigger_command_facts = _map_interaction_trigger_command_facts(
         disasm,
         source_equates,
         macros,
@@ -5726,6 +6247,7 @@ def build_map_script_engine_contract(
         "mapBlockMutationCommandFacts": map_block_mutation_command_facts,
         "entityPopulationCommandFacts": entity_population_command_facts,
         "mapLifecycleCommandFacts": map_lifecycle_command_facts,
+        "mapInteractionTriggerCommandFacts": map_interaction_trigger_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -5736,6 +6258,7 @@ def build_map_script_engine_contract(
             *MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS,
             *ENTITY_POPULATION_RUNTIME_QUESTIONS,
             *MAP_LIFECYCLE_RUNTIME_QUESTIONS,
+            *MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -5785,6 +6308,9 @@ def verify_map_script_engine_contract(
         "mapBlockMutationCommandFacts": output["mapBlockMutationCommandFacts"],
         "entityPopulationCommandFacts": output["entityPopulationCommandFacts"],
         "mapLifecycleCommandFacts": output["mapLifecycleCommandFacts"],
+        "mapInteractionTriggerCommandFacts": output[
+            "mapInteractionTriggerCommandFacts"
+        ],
     }
     for field in (
         "summary",
@@ -5811,6 +6337,7 @@ def verify_map_script_engine_contract(
         "mapBlockMutationCommandFacts",
         "entityPopulationCommandFacts",
         "mapLifecycleCommandFacts",
+        "mapInteractionTriggerCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

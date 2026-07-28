@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-27
+- Evidence date: 2026-07-28
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -435,6 +435,16 @@ use sites, and zero-inclusive direct/effective caller maps for `ResetCurrentMap`
 `WaitForVInt`. `map-lifecycle/runtime-effects-matrix` is its sole H3 queue; map persistence,
 working-layout replacement, entity reload, placement, collision/pathfinding, presentation, fade,
 hardware, and normal-story behavior remain uncredited static questions.
+The adjacent source-named trigger slice is exact for two forms: two `roofEvent` `$43` and six
+`stepEvent` `$47` sites across a further complete 304-row zero-inclusive corpus. It preserves both
+two-word physical layouts and `trigger X`/`trigger Y` source comments, six-statement named-section
+guards for two advancing A6 word reads, two parsed `MAP_TILE_SIZE` (384) multiplier use sites, direct
+call/order/return identity, and two-target zero-inclusive direct/effective caller maps. A
+provenance-only join retains the `PerformMapBlockCopyScript`/`OpenDoor` owner source and independently
+parsed 79 step-table/79 roof-table and 94-step-record/114-roof-record boundaries from map content and
+the canonical import decoder. `map-interaction-trigger/runtime-effects-matrix` is the sole H3 queue;
+runtime reachability, coordinate interpretation, callee effects, table selection, collision,
+persistence, timing, and presentation remain uncredited static questions.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline

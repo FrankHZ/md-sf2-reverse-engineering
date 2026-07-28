@@ -400,7 +400,8 @@
       "story-state/branch-prompt-persistence-matrix",
       "map-block-mutation/runtime-effects-matrix",
       "entity-population-reload/runtime-effects-matrix",
-      "map-lifecycle/runtime-effects-matrix"
+      "map-lifecycle/runtime-effects-matrix",
+      "map-interaction-trigger/runtime-effects-matrix"
     ],
     "dialogueCommandFacts": {
       "macros": [
@@ -63142,6 +63143,3381 @@
       },
       "runtimeQuestions": [
         "map-lifecycle/runtime-effects-matrix"
+      ]
+    },
+    "mapInteractionTriggerCommandFacts": {
+      "macros": [
+        {
+          "name": "roofEvent",
+          "opcode": 67,
+          "encodedBytes": 6,
+          "operandBytes": 4,
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 4,
+              "widthBytes": 2,
+              "expression": "\\2",
+              "parameterOrdinals": [
+                2
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1,
+            2
+          ],
+          "handler": "csc43_RoofEvent",
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "trigger X",
+              "streamOffset": 2,
+              "widthBytes": 2
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "trigger Y",
+              "streamOffset": 4,
+              "widthBytes": 2
+            }
+          ],
+          "sourceCommandCount": 2
+        },
+        {
+          "name": "stepEvent",
+          "opcode": 71,
+          "encodedBytes": 6,
+          "operandBytes": 4,
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 4,
+              "widthBytes": 2,
+              "expression": "\\2",
+              "parameterOrdinals": [
+                2
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1,
+            2
+          ],
+          "handler": "csc47_StepEvent",
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "trigger X",
+              "streamOffset": 2,
+              "widthBytes": 2
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "trigger Y",
+              "streamOffset": 4,
+              "widthBytes": 2
+            }
+          ],
+          "sourceCommandCount": 6
+        }
+      ],
+      "sourceSites": [
+        {
+          "programId": "cs_62D0E",
+          "commands": [
+            {
+              "commandIndex": 15,
+              "sourceLine": 76,
+              "macro": "roofEvent",
+              "arguments": [
+                "29",
+                "23"
+              ],
+              "sourceOrderKey": "cs_62D0E:15:roofEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "29",
+                  "resolvedValue": 29,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "23",
+                  "resolvedValue": 23,
+                  "resolution": "literal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "programId": "cs_5AC58",
+          "commands": [
+            {
+              "commandIndex": 5,
+              "sourceLine": 9,
+              "macro": "stepEvent",
+              "arguments": [
+                "17",
+                "11"
+              ],
+              "sourceOrderKey": "cs_5AC58:5:stepEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "17",
+                  "resolvedValue": 17,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "11",
+                  "resolvedValue": 11,
+                  "resolution": "literal"
+                }
+              ]
+            },
+            {
+              "commandIndex": 20,
+              "sourceLine": 28,
+              "macro": "stepEvent",
+              "arguments": [
+                "15",
+                "20"
+              ],
+              "sourceOrderKey": "cs_5AC58:20:stepEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "15",
+                  "resolvedValue": 15,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "20",
+                  "resolvedValue": 20,
+                  "resolution": "literal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "programId": "cs_5AF36",
+          "commands": [
+            {
+              "commandIndex": 37,
+              "sourceLine": 237,
+              "macro": "stepEvent",
+              "arguments": [
+                "12",
+                "13"
+              ],
+              "sourceOrderKey": "cs_5AF36:37:stepEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "12",
+                  "resolvedValue": 12,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "13",
+                  "resolvedValue": 13,
+                  "resolution": "literal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "programId": "cs_5B016",
+          "commands": [
+            {
+              "commandIndex": 15,
+              "sourceLine": 267,
+              "macro": "stepEvent",
+              "arguments": [
+                "17",
+                "11"
+              ],
+              "sourceOrderKey": "cs_5B016:15:stepEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "17",
+                  "resolvedValue": 17,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "11",
+                  "resolvedValue": 11,
+                  "resolution": "literal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "programId": "cs_540C0",
+          "commands": [
+            {
+              "commandIndex": 23,
+              "sourceLine": 56,
+              "macro": "roofEvent",
+              "arguments": [
+                "4",
+                "9"
+              ],
+              "sourceOrderKey": "cs_540C0:23:roofEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "4",
+                  "resolvedValue": 4,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "9",
+                  "resolvedValue": 9,
+                  "resolution": "literal"
+                }
+              ]
+            },
+            {
+              "commandIndex": 24,
+              "sourceLine": 57,
+              "macro": "stepEvent",
+              "arguments": [
+                "4",
+                "9"
+              ],
+              "sourceOrderKey": "cs_540C0:24:stepEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "4",
+                  "resolvedValue": 4,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "9",
+                  "resolvedValue": 9,
+                  "resolution": "literal"
+                }
+              ]
+            },
+            {
+              "commandIndex": 25,
+              "sourceLine": 58,
+              "macro": "stepEvent",
+              "arguments": [
+                "11",
+                "9"
+              ],
+              "sourceOrderKey": "cs_540C0:25:stepEvent",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "trigger X",
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "rawValue": "11",
+                  "resolvedValue": 11,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "trigger Y",
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "rawValue": "9",
+                  "resolvedValue": 9,
+                  "resolution": "literal"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sourceSiteOrderKeys": [
+        "cs_62D0E:15:roofEvent",
+        "cs_5AC58:5:stepEvent",
+        "cs_5AC58:20:stepEvent",
+        "cs_5AF36:37:stepEvent",
+        "cs_5B016:15:stepEvent",
+        "cs_540C0:23:roofEvent",
+        "cs_540C0:24:stepEvent",
+        "cs_540C0:25:stepEvent"
+      ],
+      "sourceSitesSha256": "525013B1AD4B1796BBBD398C063A3F7AF5DDD72D3B062888B1F1E7A26ECF58AB",
+      "programTotalOrderKeys": [
+        "cs_45284",
+        "cs_45348",
+        "cs_453F2",
+        "cs_45470",
+        "ms_BowieShrinkIn",
+        "ms_BowieGrowOut",
+        "abcs_battle00",
+        "abcs_battle01",
+        "bbcs_01",
+        "rbcs_battle01",
+        "bbcs_03",
+        "abcs_battle04",
+        "bbcs_04",
+        "abcs_battle05",
+        "edcs_battle5",
+        "bbcs_06",
+        "abcs_battle07",
+        "bbcs_07",
+        "abcs_battle08",
+        "bbcs_08",
+        "bbcs_11",
+        "abcs_battle12",
+        "edcs_battle12",
+        "abcs_battle13",
+        "abcs_battle15",
+        "bbcs_15",
+        "abcs_battle16",
+        "bbcs_16",
+        "abcs_battle18",
+        "bbcs_18",
+        "abcs_battle20",
+        "abcs_battle21",
+        "bbcs_21",
+        "abcs_battle26",
+        "bbcs_26",
+        "bscs_battle27",
+        "abcs_battle28",
+        "bbcs_28",
+        "bbcs_29",
+        "abcs_battle30",
+        "bbcs_30",
+        "bbcs_31",
+        "abcs_battle32",
+        "bbcs_32",
+        "rbcs_battle32",
+        "abcs_battle33",
+        "bbcs_33",
+        "abcs_battle34",
+        "bbcs_34",
+        "bbcs_35",
+        "abcs_battle36",
+        "bbcs_36",
+        "abcs_battle37",
+        "bbcs_37",
+        "abcs_battle38",
+        "bbcs_38",
+        "bbcs_39",
+        "abcs_battle40",
+        "bbcs_40",
+        "rbcs_battle40_1",
+        "rbcs_battle40_2",
+        "bbcs_41",
+        "abcs_battle42",
+        "bbcs_42",
+        "abcs_battle43",
+        "edcs_battle43",
+        "cs_5E3C2",
+        "cs_5E772",
+        "cs_512BA",
+        "cs_6283E",
+        "cs_513A0",
+        "cs_513BA",
+        "cs_51374",
+        "cs_5137A",
+        "cs_513CE",
+        "cs_513D6",
+        "cs_513E2",
+        "cs_51444",
+        "cs_5144C",
+        "cs_51454",
+        "cs_5145C",
+        "cs_5148C",
+        "cs_5149A",
+        "cs_51652",
+        "cs_516A8",
+        "cs_628C8",
+        "cs_6290C",
+        "cs_51742",
+        "cs_51750",
+        "cs_51B14",
+        "cs_60656",
+        "cs_606AC",
+        "cs_606E0",
+        "cs_606EA",
+        "cs_60708",
+        "cs_607DE",
+        "cs_6093A",
+        "cs_60B10",
+        "cs_60BA6",
+        "cs_60C42",
+        "cs_60CA4",
+        "cs_60EB2",
+        "cs_60F18",
+        "cs_60F64",
+        "cs_60FA4",
+        "cs_6060E",
+        "cs_54CC6",
+        "cs_54E70",
+        "cs_54E78",
+        "cs_54E86",
+        "cs_54F26",
+        "cs_55242",
+        "cs_55288",
+        "cs_55832",
+        "cs_55A36",
+        "cs_55BEE",
+        "cs_56146",
+        "cs_56172",
+        "cs_56314",
+        "cs_563B2",
+        "cs_56422",
+        "cs_568F6",
+        "cs_569BC",
+        "cs_56AE6",
+        "cs_570B0",
+        "cs_573EC",
+        "cs_574A6",
+        "cs_5766C",
+        "cs_5779C",
+        "cs_5797A",
+        "cs_57AAA",
+        "cs_57D22",
+        "cs_58116",
+        "cs_58310",
+        "cs_58330",
+        "cs_58512",
+        "cs_585FE",
+        "cs_58856",
+        "cs_58AE2",
+        "cs_58B7A",
+        "cs_58E5C",
+        "cs_58F5C",
+        "cs_58F7E",
+        "cs_58FA4",
+        "cs_5D04E",
+        "cs_51F88",
+        "cs_521BA",
+        "cs_5247C",
+        "cs_5249E",
+        "cs_52530",
+        "cs_528CA",
+        "cs_528D4",
+        "cs_52938",
+        "cs_52A3C",
+        "cs_612BE",
+        "cs_6143C",
+        "cs_52F0C",
+        "cs_52F24",
+        "cs_52F40",
+        "cs_53104",
+        "cs_62D06",
+        "cs_62D0E",
+        "cs_53176",
+        "cs_534D2",
+        "cs_535FA",
+        "cs_53620",
+        "cs_5362A",
+        "cs_53816",
+        "cs_632EA",
+        "cs_6335E",
+        "cs_53996",
+        "cs_633B2",
+        "cs_53B66",
+        "cs_EndingKiss",
+        "cs_53EF4",
+        "cs_53F2A",
+        "cs_59656",
+        "cs_5994E",
+        "cs_5996E",
+        "cs_599A4",
+        "cs_599B2",
+        "cs_StartSpecialBattle",
+        "cs_LeaveSpecialBattle",
+        "cs_5D3AA",
+        "cs_5D3B8",
+        "cs_59E04",
+        "cs_59F20",
+        "cs_59FB8",
+        "cs_5F3A2",
+        "cs_5F3C4",
+        "cs_5A256",
+        "cs_5A30C",
+        "cs_5A31E",
+        "cs_5A33A",
+        "cs_5A4FE",
+        "cs_5D63C",
+        "cs_5D644",
+        "cs_5D652",
+        "cs_5D712",
+        "cs_5D724",
+        "cs_5D732",
+        "cs_5A828",
+        "cs_5A8CA",
+        "cs_5A8E6",
+        "cs_5A90E",
+        "cs_5A92A",
+        "cs_5A93A",
+        "cs_5A956",
+        "cs_5A97E",
+        "cs_5A99A",
+        "cs_5A9AA",
+        "cs_5A9C6",
+        "cs_5A9EE",
+        "cs_5AA0A",
+        "cs_5AA1A",
+        "cs_5AA36",
+        "cs_5AA5E",
+        "cs_5AA7A",
+        "cs_5ABA8",
+        "cs_5ABCC",
+        "cs_5ABE6",
+        "cs_5AC04",
+        "cs_5AC1C",
+        "cs_5AC34",
+        "cs_5AC4C",
+        "cs_5AC58",
+        "cs_5AF36",
+        "cs_5B016",
+        "cs_5B466",
+        "cs_5B6C0",
+        "cs_5DA28",
+        "cs_5DA7A",
+        "cs_5FA9C",
+        "cs_5FABC",
+        "cs_5FB30",
+        "cs_5FB6A",
+        "cs_5DD8E",
+        "cs_5DD9C",
+        "cs_5DE22",
+        "cs_5DE2E",
+        "cs_5DE76",
+        "cs_5E0EE",
+        "cs_5E0F8",
+        "cs_5E20A",
+        "cs_53FD8",
+        "cs_53FE0",
+        "cs_5F4AE",
+        "cs_5F4B8",
+        "cs_5F594",
+        "cs_5FE9A",
+        "cs_5FF06",
+        "cs_540C0",
+        "cs_54570",
+        "cs_54578",
+        "cs_600B2",
+        "cs_600CE",
+        "cs_5C312",
+        "cs_5C3AA",
+        "cs_5C3D8",
+        "cs_5C4EE",
+        "cs_5C622",
+        "cs_5E27C",
+        "cs_5E320",
+        "cs_5E346",
+        "cs_6150A",
+        "cs_5EB26",
+        "cs_5EB44",
+        "cs_5EBFC",
+        "cs_5ED06",
+        "cs_5EDB8",
+        "cs_5EF60",
+        "cs_615E6",
+        "cs_5C6CA",
+        "cs_5C876",
+        "cs_5C8D4",
+        "cs_5C8FE",
+        "cs_5C914",
+        "cs_5CA5E",
+        "cs_5CA6E",
+        "cs_5CB34",
+        "cs_5CBB4",
+        "cs_5CC26",
+        "cs_5CCF6",
+        "cs_4FB64",
+        "cs_4FC32",
+        "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+        "cs_4FF5A",
+        "cs_4FFDA",
+        "cs_5023E",
+        "cs_503A6",
+        "cs_50806",
+        "cs_50ABE",
+        "EndCutscene",
+        "IntroCutscene1",
+        "IntroCutscene2",
+        "IntroCutscene3",
+        "IntroCutscene4",
+        "dms_01",
+        "data/scripting/map/debugscripts.asm#L11",
+        "data/scripting/map/debugscripts.asm#L16",
+        "data/scripting/map/debugscripts.asm#L24",
+        "data/scripting/map/debugscripts.asm#L26",
+        "data/scripting/map/debugscripts.asm#L76",
+        "data/scripting/map/debugscripts.asm#L86"
+      ],
+      "programTotalsSha256": "D82DA66400E77E7881A4482AFF5A7541E64DA60E57068306B70102606E72F1E8",
+      "programTotals": [
+        {
+          "programId": "cs_45284",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_45348",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_453F2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_45470",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "ms_BowieShrinkIn",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "ms_BowieGrowOut",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle00",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle01",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_01",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "rbcs_battle01",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_03",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle04",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_04",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle05",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "edcs_battle5",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_06",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle07",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_07",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle08",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_08",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_11",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle12",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "edcs_battle12",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle13",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle15",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_15",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle16",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_16",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle18",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_18",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle20",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle21",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_21",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle26",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_26",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bscs_battle27",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle28",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_28",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_29",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle30",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_30",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_31",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle32",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_32",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "rbcs_battle32",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle33",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_33",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle34",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_34",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_35",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle36",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_36",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle37",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_37",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle38",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_38",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_39",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle40",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_40",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "rbcs_battle40_1",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "rbcs_battle40_2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_41",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle42",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "bbcs_42",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "abcs_battle43",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "edcs_battle43",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E3C2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E772",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_512BA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6283E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_513A0",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_513BA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51374",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5137A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_513CE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_513D6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_513E2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51444",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5144C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51454",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5145C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5148C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5149A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51652",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_516A8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_628C8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6290C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51742",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51750",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51B14",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60656",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_606AC",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_606E0",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_606EA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60708",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_607DE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6093A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60B10",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60BA6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60C42",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60CA4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60EB2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60F18",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60F64",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_60FA4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6060E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_54CC6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_54E70",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_54E78",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_54E86",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_54F26",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_55242",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_55288",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_55832",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_55A36",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_55BEE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_56146",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_56172",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_56314",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_563B2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_56422",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_568F6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_569BC",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_56AE6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_570B0",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_573EC",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_574A6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5766C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5779C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5797A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_57AAA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_57D22",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58116",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58310",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58330",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58512",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_585FE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58856",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58AE2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58B7A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58E5C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58F5C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58F7E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_58FA4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D04E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_51F88",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_521BA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5247C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5249E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_52530",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_528CA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_528D4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_52938",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_52A3C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_612BE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6143C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_52F0C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_52F24",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_52F40",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53104",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_62D06",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_62D0E",
+          "commandCount": 1,
+          "macroCounts": {
+            "roofEvent": 1,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53176",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_534D2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_535FA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53620",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5362A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53816",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_632EA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6335E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53996",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_633B2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53B66",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_EndingKiss",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53EF4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53F2A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_59656",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5994E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5996E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_599A4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_599B2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_StartSpecialBattle",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_LeaveSpecialBattle",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D3AA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D3B8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_59E04",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_59F20",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_59FB8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5F3A2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5F3C4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A256",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A30C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A31E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A33A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A4FE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D63C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D644",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D652",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D712",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D724",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5D732",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A828",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A8CA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A8E6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A90E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A92A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A93A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A956",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A97E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A99A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A9AA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A9C6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5A9EE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AA0A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AA1A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AA36",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AA5E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AA7A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5ABA8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5ABCC",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5ABE6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AC04",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AC1C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AC34",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AC4C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5AC58",
+          "commandCount": 2,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 2
+          }
+        },
+        {
+          "programId": "cs_5AF36",
+          "commandCount": 1,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 1
+          }
+        },
+        {
+          "programId": "cs_5B016",
+          "commandCount": 1,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 1
+          }
+        },
+        {
+          "programId": "cs_5B466",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5B6C0",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DA28",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DA7A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5FA9C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5FABC",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5FB30",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5FB6A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DD8E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DD9C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DE22",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DE2E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5DE76",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E0EE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E0F8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E20A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53FD8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_53FE0",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5F4AE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5F4B8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5F594",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5FE9A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5FF06",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_540C0",
+          "commandCount": 3,
+          "macroCounts": {
+            "roofEvent": 1,
+            "stepEvent": 2
+          }
+        },
+        {
+          "programId": "cs_54570",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_54578",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_600B2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_600CE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C312",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C3AA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C3D8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C4EE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C622",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E27C",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E320",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5E346",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_6150A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5EB26",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5EB44",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5EBFC",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5ED06",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5EDB8",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5EF60",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_615E6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C6CA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C876",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C8D4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C8FE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5C914",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5CA5E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5CA6E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5CB34",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5CBB4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5CC26",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5CCF6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_4FB64",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_4FC32",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_4FF5A",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_4FFDA",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_5023E",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_503A6",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_50806",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "cs_50ABE",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "EndCutscene",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "IntroCutscene1",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "IntroCutscene2",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "IntroCutscene3",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "IntroCutscene4",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "dms_01",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/scripting/map/debugscripts.asm#L11",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/scripting/map/debugscripts.asm#L16",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/scripting/map/debugscripts.asm#L24",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/scripting/map/debugscripts.asm#L26",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/scripting/map/debugscripts.asm#L76",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        },
+        {
+          "programId": "data/scripting/map/debugscripts.asm#L86",
+          "commandCount": 0,
+          "macroCounts": {
+            "roofEvent": 0,
+            "stepEvent": 0
+          }
+        }
+      ],
+      "handlers": [
+        {
+          "macro": "roofEvent",
+          "handler": "csc43_RoofEvent",
+          "address": 288438,
+          "opcode": 67,
+          "sourceCommandCount": 2,
+          "operandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "trigger X",
+              "streamOffset": 2,
+              "widthBytes": 2
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "trigger Y",
+              "streamOffset": 4,
+              "widthBytes": 2
+            }
+          ],
+          "statementCount": 6,
+          "guardedStatements": [
+            "move.w (a6)+,d0",
+            "move.w (a6)+,d1",
+            "mulu.w #MAP_TILE_SIZE,d0",
+            "mulu.w #MAP_TILE_SIZE,d1",
+            "jsr (PerformMapBlockCopyScript).w",
+            "rts"
+          ],
+          "sectionGuard": {
+            "orderedInstructions": [
+              "move.w (a6)+,d0",
+              "move.w (a6)+,d1",
+              "mulu.w #MAP_TILE_SIZE,d0",
+              "mulu.w #MAP_TILE_SIZE,d1",
+              "jsr (PerformMapBlockCopyScript).w",
+              "rts"
+            ],
+            "scriptCursorReadUseSites": [
+              {
+                "sourceRegister": "a6",
+                "destinationRegister": "d0",
+                "transferredByteCount": 2,
+                "cursorAdvanceByteCount": 2,
+                "instruction": "move.w (a6)+,d0"
+              },
+              {
+                "sourceRegister": "a6",
+                "destinationRegister": "d1",
+                "transferredByteCount": 2,
+                "cursorAdvanceByteCount": 2,
+                "instruction": "move.w (a6)+,d1"
+              }
+            ],
+            "tileSizeUseSites": [
+              {
+                "symbol": "MAP_TILE_SIZE",
+                "value": 384,
+                "destinationRegister": "d0",
+                "instruction": "mulu.w #MAP_TILE_SIZE,d0"
+              },
+              {
+                "symbol": "MAP_TILE_SIZE",
+                "value": 384,
+                "destinationRegister": "d1",
+                "instruction": "mulu.w #MAP_TILE_SIZE,d1"
+              }
+            ],
+            "directCallOrder": [
+              "jsr (PerformMapBlockCopyScript).w"
+            ],
+            "returnInstruction": "rts"
+          },
+          "directCalls": [
+            {
+              "opcode": "jsr",
+              "instructionTarget": "PerformMapBlockCopyScript"
+            }
+          ]
+        },
+        {
+          "macro": "stepEvent",
+          "handler": "csc47_StepEvent",
+          "address": 288582,
+          "opcode": 71,
+          "sourceCommandCount": 6,
+          "operandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "trigger X",
+              "streamOffset": 2,
+              "widthBytes": 2
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "trigger Y",
+              "streamOffset": 4,
+              "widthBytes": 2
+            }
+          ],
+          "statementCount": 6,
+          "guardedStatements": [
+            "move.w (a6)+,d0",
+            "move.w (a6)+,d1",
+            "mulu.w #MAP_TILE_SIZE,d0",
+            "mulu.w #MAP_TILE_SIZE,d1",
+            "jsr (OpenDoor).w",
+            "rts"
+          ],
+          "sectionGuard": {
+            "orderedInstructions": [
+              "move.w (a6)+,d0",
+              "move.w (a6)+,d1",
+              "mulu.w #MAP_TILE_SIZE,d0",
+              "mulu.w #MAP_TILE_SIZE,d1",
+              "jsr (OpenDoor).w",
+              "rts"
+            ],
+            "scriptCursorReadUseSites": [
+              {
+                "sourceRegister": "a6",
+                "destinationRegister": "d0",
+                "transferredByteCount": 2,
+                "cursorAdvanceByteCount": 2,
+                "instruction": "move.w (a6)+,d0"
+              },
+              {
+                "sourceRegister": "a6",
+                "destinationRegister": "d1",
+                "transferredByteCount": 2,
+                "cursorAdvanceByteCount": 2,
+                "instruction": "move.w (a6)+,d1"
+              }
+            ],
+            "tileSizeUseSites": [
+              {
+                "symbol": "MAP_TILE_SIZE",
+                "value": 384,
+                "destinationRegister": "d0",
+                "instruction": "mulu.w #MAP_TILE_SIZE,d0"
+              },
+              {
+                "symbol": "MAP_TILE_SIZE",
+                "value": 384,
+                "destinationRegister": "d1",
+                "instruction": "mulu.w #MAP_TILE_SIZE,d1"
+              }
+            ],
+            "directCallOrder": [
+              "jsr (OpenDoor).w"
+            ],
+            "returnInstruction": "rts"
+          },
+          "directCalls": [
+            {
+              "opcode": "jsr",
+              "instructionTarget": "OpenDoor"
+            }
+          ]
+        }
+      ],
+      "callerBreakdown": {
+        "callerHandlers": [
+          {
+            "handler": "csc43_RoofEvent",
+            "instructionTargetSiteCounts": {
+              "PerformMapBlockCopyScript": 1,
+              "OpenDoor": 0
+            },
+            "effectiveTargetSiteCounts": {
+              "PerformMapBlockCopyScript": 1,
+              "OpenDoor": 0
+            }
+          },
+          {
+            "handler": "csc47_StepEvent",
+            "instructionTargetSiteCounts": {
+              "PerformMapBlockCopyScript": 0,
+              "OpenDoor": 1
+            },
+            "effectiveTargetSiteCounts": {
+              "PerformMapBlockCopyScript": 0,
+              "OpenDoor": 1
+            }
+          }
+        ],
+        "targetResolutions": [
+          {
+            "instructionTarget": "PerformMapBlockCopyScript",
+            "effectiveTarget": "PerformMapBlockCopyScript",
+            "aliasSourcePath": null,
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "OpenDoor",
+            "effectiveTarget": "OpenDoor",
+            "aliasSourcePath": null,
+            "effectiveTargetScope": "external"
+          }
+        ],
+        "instructionTargetTotals": {
+          "PerformMapBlockCopyScript": 1,
+          "OpenDoor": 1
+        },
+        "effectiveTargetTotals": {
+          "PerformMapBlockCopyScript": 1,
+          "OpenDoor": 1
+        },
+        "internalEffectiveTargetTotals": {
+          "PerformMapBlockCopyScript": 0,
+          "OpenDoor": 0
+        },
+        "externalEffectiveTargetTotals": {
+          "PerformMapBlockCopyScript": 1,
+          "OpenDoor": 1
+        }
+      },
+      "sourceIdentityJoins": {
+        "handlerSource": {
+          "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+          "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+          "symbols": [
+            "csc43_RoofEvent",
+            "csc47_StepEvent"
+          ]
+        },
+        "calleeOwner": {
+          "sourcePath": "code/gameflow/exploration/exploration.asm",
+          "sourceSha256": "C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0",
+          "symbols": [
+            "PerformMapBlockCopyScript",
+            "OpenDoor"
+          ],
+          "relatedContractId": null
+        },
+        "eventTableBoundary": {
+          "mapContentContractId": "sf2-map-content-static-v1",
+          "canonicalMapImportContractId": "sf2-canonical-map-import-v1",
+          "mapContentSectionCounts": {
+            "stepEvents": 79,
+            "roofEvents": 79
+          },
+          "mapContentRecordCounts": {
+            "stepEvents": 94,
+            "roofEvents": 114
+          },
+          "canonicalResourceCounts": {
+            "stepEventTables": 79,
+            "roofEventTables": 79
+          },
+          "canonicalRecordCounts": {
+            "stepEvents": 94,
+            "roofEvents": 114
+          }
+        }
+      },
+      "runtimeQuestions": [
+        "map-interaction-trigger/runtime-effects-matrix"
       ]
     }
   }
