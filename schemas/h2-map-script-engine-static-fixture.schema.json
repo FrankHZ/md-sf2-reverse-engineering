@@ -68,7 +68,8 @@
         "transitionCommandFacts",
         "forceStateCommandFacts",
         "storyStateCommandFacts",
-        "mapBlockMutationCommandFacts"
+        "mapBlockMutationCommandFacts",
+        "entityPopulationCommandFacts"
       ],
       "properties": {
         "summary": {
@@ -137,10 +138,11 @@
             "force-state/roster-death-persistence-visible-outcomes",
             "force-state/active-party-ai-follower-runtime-matrix",
             "story-state/branch-prompt-persistence-matrix",
-            "map-block-mutation/runtime-effects-matrix"
+            "map-block-mutation/runtime-effects-matrix",
+            "entity-population-reload/runtime-effects-matrix"
           ],
-          "minItems": 7,
-          "maxItems": 7
+          "minItems": 8,
+          "maxItems": 8
         },
         "dialogueCommandFacts": {
           "allOf": [
@@ -26627,6 +26629,1418 @@
               }
             }
           ]
+        },
+        "entityPopulationCommandFacts": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/entityPopulationCommandFacts"
+            },
+            {
+              "type": "object",
+              "required": [
+                "macros",
+                "sourceSiteOrderKeys",
+                "sourceSitesSha256",
+                "programTotalOrderKeys",
+                "programTotalsSha256",
+                "handlers",
+                "callerBreakdown",
+                "sourceIdentityJoins",
+                "runtimeQuestions"
+              ],
+              "properties": {
+                "macros": {
+                  "const": [
+                    {
+                      "name": "newEntity",
+                      "opcode": 43,
+                      "encodedBytes": 8,
+                      "operandBytes": 6,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 1,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 5,
+                          "widthBytes": 1,
+                          "expression": "\\3",
+                          "parameterOrdinals": [
+                            3
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 6,
+                          "widthBytes": 1,
+                          "expression": "\\4",
+                          "parameterOrdinals": [
+                            4
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 7,
+                          "widthBytes": 1,
+                          "expression": "\\5",
+                          "parameterOrdinals": [
+                            5
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                      ],
+                      "handler": "csc2B_initializeNewEntity",
+                      "sourceOperandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "entity number",
+                          "streamOffset": 2,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 2,
+                          "sourceComment": "X",
+                          "streamOffset": 4,
+                          "widthBytes": 1
+                        },
+                        {
+                          "parameterOrdinal": 3,
+                          "sourceComment": "Y",
+                          "streamOffset": 5,
+                          "widthBytes": 1
+                        },
+                        {
+                          "parameterOrdinal": 4,
+                          "sourceComment": "facing",
+                          "streamOffset": 6,
+                          "widthBytes": 1
+                        },
+                        {
+                          "parameterOrdinal": 5,
+                          "sourceComment": "mapsprite",
+                          "streamOffset": 7,
+                          "widthBytes": 1
+                        }
+                      ],
+                      "sourceCommandCount": 18
+                    },
+                    {
+                      "name": "loadMapEntities",
+                      "opcode": 66,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 4,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "handler": "csc42_loadMapEntities",
+                      "sourceOperandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "address of entity table",
+                          "streamOffset": 2,
+                          "widthBytes": 4
+                        }
+                      ],
+                      "sourceCommandCount": 69
+                    },
+                    {
+                      "name": "reloadEntities",
+                      "opcode": 68,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 4,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "handler": "csc44_reloadEntities",
+                      "sourceOperandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "address of entity table",
+                          "streamOffset": 2,
+                          "widthBytes": 4
+                        }
+                      ],
+                      "sourceCommandCount": 2
+                    },
+                    {
+                      "name": "loadEntitiesFromMapSetup",
+                      "opcode": 73,
+                      "encodedBytes": 8,
+                      "operandBytes": 6,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 2,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 6,
+                          "widthBytes": 2,
+                          "expression": "\\3",
+                          "parameterOrdinals": [
+                            3
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2,
+                        3
+                      ],
+                      "handler": "csc49_loadEntitiesFromMapSetup",
+                      "sourceOperandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "",
+                          "streamOffset": 2,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 2,
+                          "sourceComment": "",
+                          "streamOffset": 4,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 3,
+                          "sourceComment": "",
+                          "streamOffset": 6,
+                          "widthBytes": 2
+                        }
+                      ],
+                      "sourceCommandCount": 7
+                    }
+                  ]
+                },
+                "sourceSiteOrderKeys": {
+                  "const": [
+                    "abcs_battle01:3:loadMapEntities",
+                    "bbcs_01:2:loadMapEntities",
+                    "abcs_battle04:2:loadMapEntities",
+                    "bbcs_04:2:loadMapEntities",
+                    "bbcs_06:2:loadMapEntities",
+                    "abcs_battle07:2:loadMapEntities",
+                    "bbcs_07:3:loadMapEntities",
+                    "abcs_battle08:2:loadMapEntities",
+                    "bbcs_08:2:loadMapEntities",
+                    "bbcs_11:3:loadMapEntities",
+                    "abcs_battle13:3:loadMapEntities",
+                    "abcs_battle15:2:loadMapEntities",
+                    "bbcs_15:2:loadMapEntities",
+                    "bbcs_16:3:loadMapEntities",
+                    "abcs_battle18:2:loadMapEntities",
+                    "bbcs_18:2:loadMapEntities",
+                    "abcs_battle20:2:loadMapEntities",
+                    "abcs_battle21:2:loadMapEntities",
+                    "bbcs_21:2:loadMapEntities",
+                    "abcs_battle26:2:loadMapEntities",
+                    "bbcs_26:2:loadMapEntities",
+                    "abcs_battle28:2:loadMapEntities",
+                    "bbcs_28:2:loadMapEntities",
+                    "bbcs_29:2:loadMapEntities",
+                    "abcs_battle30:2:loadMapEntities",
+                    "bbcs_30:2:loadMapEntities",
+                    "bbcs_31:2:loadMapEntities",
+                    "abcs_battle32:2:loadMapEntities",
+                    "bbcs_32:2:loadMapEntities",
+                    "abcs_battle33:2:loadMapEntities",
+                    "bbcs_33:2:loadMapEntities",
+                    "abcs_battle34:2:loadMapEntities",
+                    "bbcs_34:2:loadMapEntities",
+                    "bbcs_35:2:loadMapEntities",
+                    "abcs_battle36:2:loadMapEntities",
+                    "bbcs_36:2:loadMapEntities",
+                    "abcs_battle37:2:loadMapEntities",
+                    "bbcs_37:2:loadMapEntities",
+                    "abcs_battle38:2:loadMapEntities",
+                    "bbcs_38:2:loadMapEntities",
+                    "bbcs_39:2:loadMapEntities",
+                    "abcs_battle40:2:loadMapEntities",
+                    "bbcs_40:2:loadMapEntities",
+                    "bbcs_41:2:loadMapEntities",
+                    "abcs_battle42:2:loadMapEntities",
+                    "bbcs_42:2:loadMapEntities",
+                    "cs_55242:1:newEntity",
+                    "cs_55288:1:newEntity",
+                    "cs_55832:2:loadMapEntities",
+                    "cs_55832:76:reloadEntities",
+                    "cs_56422:76:loadMapEntities",
+                    "cs_58330:81:reloadEntities",
+                    "cs_58FA4:2:loadMapEntities",
+                    "cs_5249E:3:loadEntitiesFromMapSetup",
+                    "cs_53176:2:newEntity",
+                    "cs_53176:3:newEntity",
+                    "cs_53176:4:newEntity",
+                    "cs_53176:5:newEntity",
+                    "cs_53176:7:newEntity",
+                    "cs_53176:8:newEntity",
+                    "cs_53176:9:newEntity",
+                    "cs_5FB6A:42:loadMapEntities",
+                    "cs_5FB6A:52:loadEntitiesFromMapSetup",
+                    "cs_5FB6A:75:loadMapEntities",
+                    "cs_5DD8E:0:newEntity",
+                    "cs_5E0EE:0:newEntity",
+                    "cs_5F594:0:newEntity",
+                    "cs_5FF06:4:newEntity",
+                    "cs_54578:52:loadMapEntities",
+                    "cs_5E320:1:loadMapEntities",
+                    "cs_5EB44:3:loadMapEntities",
+                    "cs_5EBFC:2:loadMapEntities",
+                    "cs_5ED06:2:loadMapEntities",
+                    "cs_5ED06:13:loadMapEntities",
+                    "cs_5ED06:23:loadMapEntities",
+                    "cs_5EDB8:2:loadMapEntities",
+                    "cs_5EF60:2:loadEntitiesFromMapSetup",
+                    "cs_5EF60:83:loadMapEntities",
+                    "cs_5CC26:5:loadEntitiesFromMapSetup",
+                    "cs_5CC26:35:loadEntitiesFromMapSetup",
+                    "cs_5CCF6:5:loadEntitiesFromMapSetup",
+                    "cs_5CCF6:35:loadEntitiesFromMapSetup",
+                    "cs_4FC32:1:newEntity",
+                    "cs_4FF5A:1:newEntity",
+                    "cs_4FFDA:1:newEntity",
+                    "cs_4FFDA:2:newEntity",
+                    "cs_4FFDA:3:newEntity",
+                    "cs_503A6:4:loadMapEntities",
+                    "cs_503A6:57:loadMapEntities",
+                    "cs_503A6:122:loadMapEntities",
+                    "cs_50806:1:loadMapEntities",
+                    "EndCutscene:1:loadMapEntities",
+                    "IntroCutscene1:3:loadMapEntities",
+                    "IntroCutscene2:2:loadMapEntities",
+                    "IntroCutscene3:2:loadMapEntities",
+                    "IntroCutscene4:2:loadMapEntities"
+                  ]
+                },
+                "sourceSitesSha256": {
+                  "const": "BE26AD2D93D08929FC28BD451629EC8B275ED3832E24A4D732F033408A0785FD"
+                },
+                "programTotalOrderKeys": {
+                  "const": [
+                    "cs_45284",
+                    "cs_45348",
+                    "cs_453F2",
+                    "cs_45470",
+                    "ms_BowieShrinkIn",
+                    "ms_BowieGrowOut",
+                    "abcs_battle00",
+                    "abcs_battle01",
+                    "bbcs_01",
+                    "rbcs_battle01",
+                    "bbcs_03",
+                    "abcs_battle04",
+                    "bbcs_04",
+                    "abcs_battle05",
+                    "edcs_battle5",
+                    "bbcs_06",
+                    "abcs_battle07",
+                    "bbcs_07",
+                    "abcs_battle08",
+                    "bbcs_08",
+                    "bbcs_11",
+                    "abcs_battle12",
+                    "edcs_battle12",
+                    "abcs_battle13",
+                    "abcs_battle15",
+                    "bbcs_15",
+                    "abcs_battle16",
+                    "bbcs_16",
+                    "abcs_battle18",
+                    "bbcs_18",
+                    "abcs_battle20",
+                    "abcs_battle21",
+                    "bbcs_21",
+                    "abcs_battle26",
+                    "bbcs_26",
+                    "bscs_battle27",
+                    "abcs_battle28",
+                    "bbcs_28",
+                    "bbcs_29",
+                    "abcs_battle30",
+                    "bbcs_30",
+                    "bbcs_31",
+                    "abcs_battle32",
+                    "bbcs_32",
+                    "rbcs_battle32",
+                    "abcs_battle33",
+                    "bbcs_33",
+                    "abcs_battle34",
+                    "bbcs_34",
+                    "bbcs_35",
+                    "abcs_battle36",
+                    "bbcs_36",
+                    "abcs_battle37",
+                    "bbcs_37",
+                    "abcs_battle38",
+                    "bbcs_38",
+                    "bbcs_39",
+                    "abcs_battle40",
+                    "bbcs_40",
+                    "rbcs_battle40_1",
+                    "rbcs_battle40_2",
+                    "bbcs_41",
+                    "abcs_battle42",
+                    "bbcs_42",
+                    "abcs_battle43",
+                    "edcs_battle43",
+                    "cs_5E3C2",
+                    "cs_5E772",
+                    "cs_512BA",
+                    "cs_6283E",
+                    "cs_513A0",
+                    "cs_513BA",
+                    "cs_51374",
+                    "cs_5137A",
+                    "cs_513CE",
+                    "cs_513D6",
+                    "cs_513E2",
+                    "cs_51444",
+                    "cs_5144C",
+                    "cs_51454",
+                    "cs_5145C",
+                    "cs_5148C",
+                    "cs_5149A",
+                    "cs_51652",
+                    "cs_516A8",
+                    "cs_628C8",
+                    "cs_6290C",
+                    "cs_51742",
+                    "cs_51750",
+                    "cs_51B14",
+                    "cs_60656",
+                    "cs_606AC",
+                    "cs_606E0",
+                    "cs_606EA",
+                    "cs_60708",
+                    "cs_607DE",
+                    "cs_6093A",
+                    "cs_60B10",
+                    "cs_60BA6",
+                    "cs_60C42",
+                    "cs_60CA4",
+                    "cs_60EB2",
+                    "cs_60F18",
+                    "cs_60F64",
+                    "cs_60FA4",
+                    "cs_6060E",
+                    "cs_54CC6",
+                    "cs_54E70",
+                    "cs_54E78",
+                    "cs_54E86",
+                    "cs_54F26",
+                    "cs_55242",
+                    "cs_55288",
+                    "cs_55832",
+                    "cs_55A36",
+                    "cs_55BEE",
+                    "cs_56146",
+                    "cs_56172",
+                    "cs_56314",
+                    "cs_563B2",
+                    "cs_56422",
+                    "cs_568F6",
+                    "cs_569BC",
+                    "cs_56AE6",
+                    "cs_570B0",
+                    "cs_573EC",
+                    "cs_574A6",
+                    "cs_5766C",
+                    "cs_5779C",
+                    "cs_5797A",
+                    "cs_57AAA",
+                    "cs_57D22",
+                    "cs_58116",
+                    "cs_58310",
+                    "cs_58330",
+                    "cs_58512",
+                    "cs_585FE",
+                    "cs_58856",
+                    "cs_58AE2",
+                    "cs_58B7A",
+                    "cs_58E5C",
+                    "cs_58F5C",
+                    "cs_58F7E",
+                    "cs_58FA4",
+                    "cs_5D04E",
+                    "cs_51F88",
+                    "cs_521BA",
+                    "cs_5247C",
+                    "cs_5249E",
+                    "cs_52530",
+                    "cs_528CA",
+                    "cs_528D4",
+                    "cs_52938",
+                    "cs_52A3C",
+                    "cs_612BE",
+                    "cs_6143C",
+                    "cs_52F0C",
+                    "cs_52F24",
+                    "cs_52F40",
+                    "cs_53104",
+                    "cs_62D06",
+                    "cs_62D0E",
+                    "cs_53176",
+                    "cs_534D2",
+                    "cs_535FA",
+                    "cs_53620",
+                    "cs_5362A",
+                    "cs_53816",
+                    "cs_632EA",
+                    "cs_6335E",
+                    "cs_53996",
+                    "cs_633B2",
+                    "cs_53B66",
+                    "cs_EndingKiss",
+                    "cs_53EF4",
+                    "cs_53F2A",
+                    "cs_59656",
+                    "cs_5994E",
+                    "cs_5996E",
+                    "cs_599A4",
+                    "cs_599B2",
+                    "cs_StartSpecialBattle",
+                    "cs_LeaveSpecialBattle",
+                    "cs_5D3AA",
+                    "cs_5D3B8",
+                    "cs_59E04",
+                    "cs_59F20",
+                    "cs_59FB8",
+                    "cs_5F3A2",
+                    "cs_5F3C4",
+                    "cs_5A256",
+                    "cs_5A30C",
+                    "cs_5A31E",
+                    "cs_5A33A",
+                    "cs_5A4FE",
+                    "cs_5D63C",
+                    "cs_5D644",
+                    "cs_5D652",
+                    "cs_5D712",
+                    "cs_5D724",
+                    "cs_5D732",
+                    "cs_5A828",
+                    "cs_5A8CA",
+                    "cs_5A8E6",
+                    "cs_5A90E",
+                    "cs_5A92A",
+                    "cs_5A93A",
+                    "cs_5A956",
+                    "cs_5A97E",
+                    "cs_5A99A",
+                    "cs_5A9AA",
+                    "cs_5A9C6",
+                    "cs_5A9EE",
+                    "cs_5AA0A",
+                    "cs_5AA1A",
+                    "cs_5AA36",
+                    "cs_5AA5E",
+                    "cs_5AA7A",
+                    "cs_5ABA8",
+                    "cs_5ABCC",
+                    "cs_5ABE6",
+                    "cs_5AC04",
+                    "cs_5AC1C",
+                    "cs_5AC34",
+                    "cs_5AC4C",
+                    "cs_5AC58",
+                    "cs_5AF36",
+                    "cs_5B016",
+                    "cs_5B466",
+                    "cs_5B6C0",
+                    "cs_5DA28",
+                    "cs_5DA7A",
+                    "cs_5FA9C",
+                    "cs_5FABC",
+                    "cs_5FB30",
+                    "cs_5FB6A",
+                    "cs_5DD8E",
+                    "cs_5DD9C",
+                    "cs_5DE22",
+                    "cs_5DE2E",
+                    "cs_5DE76",
+                    "cs_5E0EE",
+                    "cs_5E0F8",
+                    "cs_5E20A",
+                    "cs_53FD8",
+                    "cs_53FE0",
+                    "cs_5F4AE",
+                    "cs_5F4B8",
+                    "cs_5F594",
+                    "cs_5FE9A",
+                    "cs_5FF06",
+                    "cs_540C0",
+                    "cs_54570",
+                    "cs_54578",
+                    "cs_600B2",
+                    "cs_600CE",
+                    "cs_5C312",
+                    "cs_5C3AA",
+                    "cs_5C3D8",
+                    "cs_5C4EE",
+                    "cs_5C622",
+                    "cs_5E27C",
+                    "cs_5E320",
+                    "cs_5E346",
+                    "cs_6150A",
+                    "cs_5EB26",
+                    "cs_5EB44",
+                    "cs_5EBFC",
+                    "cs_5ED06",
+                    "cs_5EDB8",
+                    "cs_5EF60",
+                    "cs_615E6",
+                    "cs_5C6CA",
+                    "cs_5C876",
+                    "cs_5C8D4",
+                    "cs_5C8FE",
+                    "cs_5C914",
+                    "cs_5CA5E",
+                    "cs_5CA6E",
+                    "cs_5CB34",
+                    "cs_5CBB4",
+                    "cs_5CC26",
+                    "cs_5CCF6",
+                    "cs_4FB64",
+                    "cs_4FC32",
+                    "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                    "cs_4FF5A",
+                    "cs_4FFDA",
+                    "cs_5023E",
+                    "cs_503A6",
+                    "cs_50806",
+                    "cs_50ABE",
+                    "EndCutscene",
+                    "IntroCutscene1",
+                    "IntroCutscene2",
+                    "IntroCutscene3",
+                    "IntroCutscene4",
+                    "dms_01",
+                    "data/scripting/map/debugscripts.asm#L11",
+                    "data/scripting/map/debugscripts.asm#L16",
+                    "data/scripting/map/debugscripts.asm#L24",
+                    "data/scripting/map/debugscripts.asm#L26",
+                    "data/scripting/map/debugscripts.asm#L76",
+                    "data/scripting/map/debugscripts.asm#L86"
+                  ]
+                },
+                "programTotalsSha256": {
+                  "const": "45DAE48D41348AE403864F15E2FAD1C30E17637CD3037C03A41BC8105A124F65"
+                },
+                "handlers": {
+                  "const": [
+                    {
+                      "macro": "newEntity",
+                      "handler": "csc2B_initializeNewEntity",
+                      "address": 290360,
+                      "opcode": 43,
+                      "sourceCommandCount": 18,
+                      "operandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "entity number",
+                          "streamOffset": 2,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 2,
+                          "sourceComment": "X",
+                          "streamOffset": 4,
+                          "widthBytes": 1
+                        },
+                        {
+                          "parameterOrdinal": 3,
+                          "sourceComment": "Y",
+                          "streamOffset": 5,
+                          "widthBytes": 1
+                        },
+                        {
+                          "parameterOrdinal": 4,
+                          "sourceComment": "facing",
+                          "streamOffset": 6,
+                          "widthBytes": 1
+                        },
+                        {
+                          "parameterOrdinal": 5,
+                          "sourceComment": "mapsprite",
+                          "streamOffset": 7,
+                          "widthBytes": 1
+                        }
+                      ],
+                      "statementCount": 12,
+                      "guardedStatements": [
+                        "move.w (a6)+,d0",
+                        "clr.w d1",
+                        "clr.w d2",
+                        "clr.w d3",
+                        "clr.w d4",
+                        "move.b (a6)+,d1",
+                        "move.b (a6)+,d2",
+                        "move.b (a6)+,d3",
+                        "move.b (a6)+,d4",
+                        "move.l #eas_Init,d5",
+                        "jsr InitializeNewEntity",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d0",
+                          "clr.w d1",
+                          "clr.w d2",
+                          "clr.w d3",
+                          "clr.w d4",
+                          "move.b (a6)+,d1",
+                          "move.b (a6)+,d2",
+                          "move.b (a6)+,d3",
+                          "move.b (a6)+,d4",
+                          "move.l #eas_Init,d5",
+                          "jsr InitializeNewEntity",
+                          "rts"
+                        ],
+                        "scriptCursorReadUseSites": [
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d0",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a6)+,d0"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d1",
+                            "transferredByteCount": 1,
+                            "instruction": "move.b (a6)+,d1"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d2",
+                            "transferredByteCount": 1,
+                            "instruction": "move.b (a6)+,d2"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d3",
+                            "transferredByteCount": 1,
+                            "instruction": "move.b (a6)+,d3"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d4",
+                            "transferredByteCount": 1,
+                            "instruction": "move.b (a6)+,d4"
+                          }
+                        ],
+                        "pointerReadUseSites": [],
+                        "vintControlRecords": [],
+                        "sourceConstantUses": [
+                          {
+                            "symbol": "eas_Init",
+                            "value": 286926,
+                            "instruction": "move.l #eas_Init,d5"
+                          }
+                        ],
+                        "directCallOrder": [
+                          "jsr InitializeNewEntity"
+                        ],
+                        "returnInstruction": "rts"
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "InitializeNewEntity"
+                        }
+                      ]
+                    },
+                    {
+                      "macro": "loadMapEntities",
+                      "handler": "csc42_loadMapEntities",
+                      "address": 288394,
+                      "opcode": 66,
+                      "sourceCommandCount": 69,
+                      "operandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "address of entity table",
+                          "streamOffset": 2,
+                          "widthBytes": 4
+                        }
+                      ],
+                      "statementCount": 15,
+                      "guardedStatements": [
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_DEACTIVATE",
+                        "dc.l 0",
+                        "jsr (DisableDisplayAndInterrupts).w",
+                        "movea.l (a6)+,a0",
+                        "move.w (a0)+,d1",
+                        "move.w (a0)+,d2",
+                        "move.w (a0)+,d3",
+                        "jsr InitializeMapEntities",
+                        "jsr (LoadEntityMapsprites).w",
+                        "jsr (EnableDisplayAndInterrupts).w",
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_ACTIVATE",
+                        "dc.l 0",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "trap #VINT_FUNCTIONS",
+                          "dc.w VINTS_DEACTIVATE",
+                          "dc.l 0",
+                          "jsr (DisableDisplayAndInterrupts).w",
+                          "movea.l (a6)+,a0",
+                          "move.w (a0)+,d1",
+                          "move.w (a0)+,d2",
+                          "move.w (a0)+,d3",
+                          "jsr InitializeMapEntities",
+                          "jsr (LoadEntityMapsprites).w",
+                          "jsr (EnableDisplayAndInterrupts).w",
+                          "trap #VINT_FUNCTIONS",
+                          "dc.w VINTS_ACTIVATE",
+                          "dc.l 0",
+                          "rts"
+                        ],
+                        "scriptCursorReadUseSites": [
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "a0",
+                            "transferredByteCount": 4,
+                            "instruction": "movea.l (a6)+,a0"
+                          }
+                        ],
+                        "pointerReadUseSites": [
+                          {
+                            "sourceRegister": "a0",
+                            "destinationRegister": "d1",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a0)+,d1"
+                          },
+                          {
+                            "sourceRegister": "a0",
+                            "destinationRegister": "d2",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a0)+,d2"
+                          },
+                          {
+                            "sourceRegister": "a0",
+                            "destinationRegister": "d3",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a0)+,d3"
+                          }
+                        ],
+                        "vintControlRecords": [
+                          {
+                            "phase": "deactivate",
+                            "operationSymbol": "VINTS_DEACTIVATE",
+                            "operationValue": 3,
+                            "trapInstruction": "trap #VINT_FUNCTIONS",
+                            "operationInstruction": "dc.w VINTS_DEACTIVATE",
+                            "argumentInstruction": "dc.l 0"
+                          },
+                          {
+                            "phase": "activate",
+                            "operationSymbol": "VINTS_ACTIVATE",
+                            "operationValue": 4,
+                            "trapInstruction": "trap #VINT_FUNCTIONS",
+                            "operationInstruction": "dc.w VINTS_ACTIVATE",
+                            "argumentInstruction": "dc.l 0"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "directCallOrder": [
+                          "jsr (DisableDisplayAndInterrupts).w",
+                          "jsr InitializeMapEntities",
+                          "jsr (LoadEntityMapsprites).w",
+                          "jsr (EnableDisplayAndInterrupts).w"
+                        ],
+                        "returnInstruction": "rts"
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "DisableDisplayAndInterrupts"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "InitializeMapEntities"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "LoadEntityMapsprites"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "EnableDisplayAndInterrupts"
+                        }
+                      ]
+                    },
+                    {
+                      "macro": "reloadEntities",
+                      "handler": "csc44_reloadEntities",
+                      "address": 288456,
+                      "opcode": 68,
+                      "sourceCommandCount": 2,
+                      "operandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "address of entity table",
+                          "streamOffset": 2,
+                          "widthBytes": 4
+                        }
+                      ],
+                      "statementCount": 19,
+                      "guardedStatements": [
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_DEACTIVATE",
+                        "dc.l 0",
+                        "moveq #0,d0",
+                        "bsr.w GetEntityAddressFromCharacter",
+                        "moveq #0,d1",
+                        "move.w (a5),d1",
+                        "divu.w #MAP_TILE_SIZE,d1",
+                        "moveq #0,d2",
+                        "move.w ENTITYDEF_OFFSET_Y(a5),d2",
+                        "divu.w #MAP_TILE_SIZE,d2",
+                        "clr.w d3",
+                        "move.b ENTITYDEF_OFFSET_FACING(a5),d3",
+                        "movea.l (a6)+,a0",
+                        "jsr InitializeMapEntities",
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_ACTIVATE",
+                        "dc.l 0",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "trap #VINT_FUNCTIONS",
+                          "dc.w VINTS_DEACTIVATE",
+                          "dc.l 0",
+                          "moveq #0,d0",
+                          "bsr.w GetEntityAddressFromCharacter",
+                          "moveq #0,d1",
+                          "move.w (a5),d1",
+                          "divu.w #MAP_TILE_SIZE,d1",
+                          "moveq #0,d2",
+                          "move.w ENTITYDEF_OFFSET_Y(a5),d2",
+                          "divu.w #MAP_TILE_SIZE,d2",
+                          "clr.w d3",
+                          "move.b ENTITYDEF_OFFSET_FACING(a5),d3",
+                          "movea.l (a6)+,a0",
+                          "jsr InitializeMapEntities",
+                          "trap #VINT_FUNCTIONS",
+                          "dc.w VINTS_ACTIVATE",
+                          "dc.l 0",
+                          "rts"
+                        ],
+                        "scriptCursorReadUseSites": [
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "a0",
+                            "transferredByteCount": 4,
+                            "instruction": "movea.l (a6)+,a0"
+                          }
+                        ],
+                        "pointerReadUseSites": [],
+                        "vintControlRecords": [
+                          {
+                            "phase": "deactivate",
+                            "operationSymbol": "VINTS_DEACTIVATE",
+                            "operationValue": 3,
+                            "trapInstruction": "trap #VINT_FUNCTIONS",
+                            "operationInstruction": "dc.w VINTS_DEACTIVATE",
+                            "argumentInstruction": "dc.l 0"
+                          },
+                          {
+                            "phase": "activate",
+                            "operationSymbol": "VINTS_ACTIVATE",
+                            "operationValue": 4,
+                            "trapInstruction": "trap #VINT_FUNCTIONS",
+                            "operationInstruction": "dc.w VINTS_ACTIVATE",
+                            "argumentInstruction": "dc.l 0"
+                          }
+                        ],
+                        "sourceConstantUses": [
+                          {
+                            "symbol": "MAP_TILE_SIZE",
+                            "value": 384,
+                            "instruction": "divu.w #MAP_TILE_SIZE,d1"
+                          },
+                          {
+                            "symbol": "ENTITYDEF_OFFSET_Y",
+                            "value": 2,
+                            "instruction": "move.w ENTITYDEF_OFFSET_Y(a5),d2"
+                          },
+                          {
+                            "symbol": "MAP_TILE_SIZE",
+                            "value": 384,
+                            "instruction": "divu.w #MAP_TILE_SIZE,d2"
+                          },
+                          {
+                            "symbol": "ENTITYDEF_OFFSET_FACING",
+                            "value": 16,
+                            "instruction": "move.b ENTITYDEF_OFFSET_FACING(a5),d3"
+                          }
+                        ],
+                        "directCallOrder": [
+                          "bsr.w GetEntityAddressFromCharacter",
+                          "jsr InitializeMapEntities"
+                        ],
+                        "returnInstruction": "rts"
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "bsr",
+                          "instructionTarget": "GetEntityAddressFromCharacter"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "InitializeMapEntities"
+                        }
+                      ]
+                    },
+                    {
+                      "macro": "loadEntitiesFromMapSetup",
+                      "handler": "csc49_loadEntitiesFromMapSetup",
+                      "address": 288600,
+                      "opcode": 73,
+                      "sourceCommandCount": 7,
+                      "operandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "",
+                          "streamOffset": 2,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 2,
+                          "sourceComment": "",
+                          "streamOffset": 4,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 3,
+                          "sourceComment": "",
+                          "streamOffset": 6,
+                          "widthBytes": 2
+                        }
+                      ],
+                      "statementCount": 15,
+                      "guardedStatements": [
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_DEACTIVATE",
+                        "dc.l 0",
+                        "jsr (DisableDisplayAndInterrupts).w",
+                        "jsr GetMapSetupEntityList",
+                        "move.w (a6)+,d1",
+                        "move.w (a6)+,d2",
+                        "move.w (a6)+,d3",
+                        "jsr j_InitializeMapEntities",
+                        "jsr (LoadEntityMapsprites).w",
+                        "jsr (EnableDisplayAndInterrupts).w",
+                        "trap #VINT_FUNCTIONS",
+                        "dc.w VINTS_ACTIVATE",
+                        "dc.l 0",
+                        "rts"
+                      ],
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "trap #VINT_FUNCTIONS",
+                          "dc.w VINTS_DEACTIVATE",
+                          "dc.l 0",
+                          "jsr (DisableDisplayAndInterrupts).w",
+                          "jsr GetMapSetupEntityList",
+                          "move.w (a6)+,d1",
+                          "move.w (a6)+,d2",
+                          "move.w (a6)+,d3",
+                          "jsr j_InitializeMapEntities",
+                          "jsr (LoadEntityMapsprites).w",
+                          "jsr (EnableDisplayAndInterrupts).w",
+                          "trap #VINT_FUNCTIONS",
+                          "dc.w VINTS_ACTIVATE",
+                          "dc.l 0",
+                          "rts"
+                        ],
+                        "scriptCursorReadUseSites": [
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d1",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a6)+,d1"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d2",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a6)+,d2"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d3",
+                            "transferredByteCount": 2,
+                            "instruction": "move.w (a6)+,d3"
+                          }
+                        ],
+                        "pointerReadUseSites": [],
+                        "vintControlRecords": [
+                          {
+                            "phase": "deactivate",
+                            "operationSymbol": "VINTS_DEACTIVATE",
+                            "operationValue": 3,
+                            "trapInstruction": "trap #VINT_FUNCTIONS",
+                            "operationInstruction": "dc.w VINTS_DEACTIVATE",
+                            "argumentInstruction": "dc.l 0"
+                          },
+                          {
+                            "phase": "activate",
+                            "operationSymbol": "VINTS_ACTIVATE",
+                            "operationValue": 4,
+                            "trapInstruction": "trap #VINT_FUNCTIONS",
+                            "operationInstruction": "dc.w VINTS_ACTIVATE",
+                            "argumentInstruction": "dc.l 0"
+                          }
+                        ],
+                        "sourceConstantUses": [],
+                        "directCallOrder": [
+                          "jsr (DisableDisplayAndInterrupts).w",
+                          "jsr GetMapSetupEntityList",
+                          "jsr j_InitializeMapEntities",
+                          "jsr (LoadEntityMapsprites).w",
+                          "jsr (EnableDisplayAndInterrupts).w"
+                        ],
+                        "returnInstruction": "rts"
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "DisableDisplayAndInterrupts"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "GetMapSetupEntityList"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "j_InitializeMapEntities"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "LoadEntityMapsprites"
+                        },
+                        {
+                          "opcode": "jsr",
+                          "instructionTarget": "EnableDisplayAndInterrupts"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "callerBreakdown": {
+                  "const": {
+                    "callerHandlers": [
+                      {
+                        "handler": "csc2B_initializeNewEntity",
+                        "instructionTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 0,
+                          "EnableDisplayAndInterrupts": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "GetMapSetupEntityList": 0,
+                          "InitializeMapEntities": 0,
+                          "InitializeNewEntity": 1,
+                          "LoadEntityMapsprites": 0,
+                          "j_InitializeMapEntities": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 0,
+                          "EnableDisplayAndInterrupts": 0,
+                          "GetEntityAddressFromCharacter": 0,
+                          "GetMapSetupEntityList": 0,
+                          "InitializeMapEntities": 0,
+                          "InitializeNewEntity": 1,
+                          "LoadEntityMapsprites": 0
+                        }
+                      },
+                      {
+                        "handler": "csc42_loadMapEntities",
+                        "instructionTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 1,
+                          "EnableDisplayAndInterrupts": 1,
+                          "GetEntityAddressFromCharacter": 0,
+                          "GetMapSetupEntityList": 0,
+                          "InitializeMapEntities": 1,
+                          "InitializeNewEntity": 0,
+                          "LoadEntityMapsprites": 1,
+                          "j_InitializeMapEntities": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 1,
+                          "EnableDisplayAndInterrupts": 1,
+                          "GetEntityAddressFromCharacter": 0,
+                          "GetMapSetupEntityList": 0,
+                          "InitializeMapEntities": 1,
+                          "InitializeNewEntity": 0,
+                          "LoadEntityMapsprites": 1
+                        }
+                      },
+                      {
+                        "handler": "csc44_reloadEntities",
+                        "instructionTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 0,
+                          "EnableDisplayAndInterrupts": 0,
+                          "GetEntityAddressFromCharacter": 1,
+                          "GetMapSetupEntityList": 0,
+                          "InitializeMapEntities": 1,
+                          "InitializeNewEntity": 0,
+                          "LoadEntityMapsprites": 0,
+                          "j_InitializeMapEntities": 0
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 0,
+                          "EnableDisplayAndInterrupts": 0,
+                          "GetEntityAddressFromCharacter": 1,
+                          "GetMapSetupEntityList": 0,
+                          "InitializeMapEntities": 1,
+                          "InitializeNewEntity": 0,
+                          "LoadEntityMapsprites": 0
+                        }
+                      },
+                      {
+                        "handler": "csc49_loadEntitiesFromMapSetup",
+                        "instructionTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 1,
+                          "EnableDisplayAndInterrupts": 1,
+                          "GetEntityAddressFromCharacter": 0,
+                          "GetMapSetupEntityList": 1,
+                          "InitializeMapEntities": 0,
+                          "InitializeNewEntity": 0,
+                          "LoadEntityMapsprites": 1,
+                          "j_InitializeMapEntities": 1
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "DisableDisplayAndInterrupts": 1,
+                          "EnableDisplayAndInterrupts": 1,
+                          "GetEntityAddressFromCharacter": 0,
+                          "GetMapSetupEntityList": 1,
+                          "InitializeMapEntities": 1,
+                          "InitializeNewEntity": 0,
+                          "LoadEntityMapsprites": 1
+                        }
+                      }
+                    ],
+                    "targetResolutions": [
+                      {
+                        "instructionTarget": "DisableDisplayAndInterrupts",
+                        "effectiveTarget": "DisableDisplayAndInterrupts",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "EnableDisplayAndInterrupts",
+                        "effectiveTarget": "EnableDisplayAndInterrupts",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "GetEntityAddressFromCharacter",
+                        "effectiveTarget": "GetEntityAddressFromCharacter",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "GetMapSetupEntityList",
+                        "effectiveTarget": "GetMapSetupEntityList",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "InitializeMapEntities",
+                        "effectiveTarget": "InitializeMapEntities",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "InitializeNewEntity",
+                        "effectiveTarget": "InitializeNewEntity",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "LoadEntityMapsprites",
+                        "effectiveTarget": "LoadEntityMapsprites",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      },
+                      {
+                        "instructionTarget": "j_InitializeMapEntities",
+                        "effectiveTarget": "InitializeMapEntities",
+                        "aliasSourcePath": "code/common/tech/jumpinterfaces/s07_jumpinterface.asm",
+                        "effectiveTargetScope": "external"
+                      }
+                    ],
+                    "instructionTargetTotals": {
+                      "DisableDisplayAndInterrupts": 2,
+                      "EnableDisplayAndInterrupts": 2,
+                      "GetEntityAddressFromCharacter": 1,
+                      "GetMapSetupEntityList": 1,
+                      "InitializeMapEntities": 2,
+                      "InitializeNewEntity": 1,
+                      "LoadEntityMapsprites": 2,
+                      "j_InitializeMapEntities": 1
+                    },
+                    "effectiveTargetTotals": {
+                      "DisableDisplayAndInterrupts": 2,
+                      "EnableDisplayAndInterrupts": 2,
+                      "GetEntityAddressFromCharacter": 1,
+                      "GetMapSetupEntityList": 1,
+                      "InitializeMapEntities": 3,
+                      "InitializeNewEntity": 1,
+                      "LoadEntityMapsprites": 2
+                    },
+                    "internalEffectiveTargetTotals": {
+                      "DisableDisplayAndInterrupts": 0,
+                      "EnableDisplayAndInterrupts": 0,
+                      "GetEntityAddressFromCharacter": 0,
+                      "GetMapSetupEntityList": 0,
+                      "InitializeMapEntities": 0,
+                      "InitializeNewEntity": 0,
+                      "LoadEntityMapsprites": 0
+                    },
+                    "externalEffectiveTargetTotals": {
+                      "DisableDisplayAndInterrupts": 2,
+                      "EnableDisplayAndInterrupts": 2,
+                      "GetEntityAddressFromCharacter": 1,
+                      "GetMapSetupEntityList": 1,
+                      "InitializeMapEntities": 3,
+                      "InitializeNewEntity": 1,
+                      "LoadEntityMapsprites": 2
+                    }
+                  }
+                },
+                "sourceIdentityJoins": {
+                  "const": {
+                    "calleeOwners": [
+                      {
+                        "sourcePath": "code/common/scripting/entity/entityfunctions_1.asm",
+                        "sourceSha256": "4910EF39D1F57E655BACF5E31C7890B752F18CE3431A39669F9EA3657FEEBCC2",
+                        "symbols": [
+                          "InitializeNewEntity"
+                        ],
+                        "relatedContractId": null
+                      },
+                      {
+                        "sourcePath": "code/common/scripting/map/mapfunctions.asm",
+                        "sourceSha256": "B497B9DEF6C277734D99572EA1AE603DB31C383A21D99267B228025F33581929",
+                        "symbols": [
+                          "InitializeMapEntities"
+                        ],
+                        "relatedContractId": "sf2-map-entities-static-v1"
+                      },
+                      {
+                        "sourcePath": "code/common/scripting/entity/entityscriptengine_2.asm",
+                        "sourceSha256": "2FB8DABA0CE8613606F604D7D06168C447E3B62E6A5717729B3FDBB662A5B7A3",
+                        "symbols": [
+                          "LoadEntityMapsprites"
+                        ],
+                        "relatedContractId": null
+                      },
+                      {
+                        "sourcePath": "code/common/scripting/map/mapsetupsfunctions_1.asm",
+                        "sourceSha256": "F99AF47A35E9148176E66865694B2BCEE3D3DF8C6013227F5CB8ECA330AC6531",
+                        "symbols": [
+                          "GetMapSetupEntityList"
+                        ],
+                        "relatedContractId": "sf2-map-setup-static-v1"
+                      },
+                      {
+                        "sourcePath": "code/common/tech/interrupts/vdpcontrol.asm",
+                        "sourceSha256": "9243DD50414C807F05065C3E79E5729E7E619641842C869DE4D6C750F8ED264D",
+                        "symbols": [
+                          "DisableDisplayAndInterrupts",
+                          "EnableDisplayAndInterrupts"
+                        ],
+                        "relatedContractId": null
+                      },
+                      {
+                        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                        "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+                        "symbols": [
+                          "GetEntityAddressFromCharacter"
+                        ],
+                        "relatedContractId": null
+                      }
+                    ],
+                    "entityActionInitializer": {
+                      "sourcePath": "data/scripting/entity/eas_actions.asm",
+                      "sourceSha256": "8C4312D69370D882C32A61276D94D744C3252FD6C32EB9351932F17EE39178F0",
+                      "symbol": "eas_Init",
+                      "address": 286926,
+                      "relatedContractId": "sf2-entity-action-scripts-static-v1"
+                    }
+                  }
+                },
+                "runtimeQuestions": {
+                  "const": [
+                    "entity-population-reload/runtime-effects-matrix"
+                  ]
+                }
+              }
+            }
+          ]
         }
       }
     }
@@ -32124,6 +33538,2659 @@
                     "type": "string"
                   },
                   "minItems": 1
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "entityPopulationOperandLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationOperandAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityPopulationOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "rawValue",
+        "resolvedValue",
+        "resolution"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "resolution": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes",
+              "rawValue",
+              "resolvedValue",
+              "resolution"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "widthBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "resolvedValue": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "resolution": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "entityPopulationSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "commandIndex",
+              "sourceLine",
+              "macro",
+              "arguments",
+              "sourceOrderKey",
+              "operandValues"
+            ],
+            "properties": {
+              "commandIndex": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "macro": {
+                "type": "string"
+              },
+              "arguments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "sourceOrderKey": {
+                "type": "string"
+              },
+              "operandValues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "rawValue",
+                    "resolvedValue",
+                    "resolution"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "streamOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "widthBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "rawValue": {
+                      "type": "string"
+                    },
+                    "resolvedValue": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "resolution": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "entityPopulationMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "newEntity",
+        "loadMapEntities",
+        "reloadEntities",
+        "loadEntitiesFromMapSetup"
+      ],
+      "properties": {
+        "newEntity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loadMapEntities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reloadEntities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loadEntitiesFromMapSetup": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityPopulationProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "newEntity",
+            "loadMapEntities",
+            "reloadEntities",
+            "loadEntitiesFromMapSetup"
+          ],
+          "properties": {
+            "newEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "loadMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reloadEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "loadEntitiesFromMapSetup": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "entityPopulationMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "streamOffset",
+              "widthBytes",
+              "expression",
+              "parameterOrdinals",
+              "encoding"
+            ],
+            "properties": {
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "widthBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "expression": {
+                "type": "string"
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 1
+              },
+              "encoding": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "widthBytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityPopulationReadUseSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationRegister",
+        "transferredByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationRegister": {
+          "type": "string"
+        },
+        "transferredByteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationVintControlRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "operationSymbol",
+        "operationValue",
+        "trapInstruction",
+        "operationInstruction",
+        "argumentInstruction"
+      ],
+      "properties": {
+        "phase": {
+          "type": "string"
+        },
+        "operationSymbol": {
+          "type": "string"
+        },
+        "operationValue": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trapInstruction": {
+          "type": "string"
+        },
+        "operationInstruction": {
+          "type": "string"
+        },
+        "argumentInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "scriptCursorReadUseSites",
+        "pointerReadUseSites",
+        "vintControlRecords",
+        "sourceConstantUses",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "scriptCursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceRegister",
+              "destinationRegister",
+              "transferredByteCount",
+              "instruction"
+            ],
+            "properties": {
+              "sourceRegister": {
+                "type": "string"
+              },
+              "destinationRegister": {
+                "type": "string"
+              },
+              "transferredByteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "pointerReadUseSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceRegister",
+              "destinationRegister",
+              "transferredByteCount",
+              "instruction"
+            ],
+            "properties": {
+              "sourceRegister": {
+                "type": "string"
+              },
+              "destinationRegister": {
+                "type": "string"
+              },
+              "transferredByteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "vintControlRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "phase",
+              "operationSymbol",
+              "operationValue",
+              "trapInstruction",
+              "operationInstruction",
+              "argumentInstruction"
+            ],
+            "properties": {
+              "phase": {
+                "type": "string"
+              },
+              "operationSymbol": {
+                "type": "string"
+              },
+              "operationValue": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "trapInstruction": {
+                "type": "string"
+              },
+              "operationInstruction": {
+                "type": "string"
+              },
+              "argumentInstruction": {
+                "type": "string"
+              }
+            }
+          },
+          "maxItems": 2
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbol",
+              "value",
+              "instruction"
+            ],
+            "properties": {
+              "symbol": {
+                "type": "string"
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "returnInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "type": "string"
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "operandAnnotations",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandAnnotations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "widthBytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sectionGuard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "orderedInstructions",
+            "scriptCursorReadUseSites",
+            "pointerReadUseSites",
+            "vintControlRecords",
+            "sourceConstantUses",
+            "directCallOrder",
+            "returnInstruction"
+          ],
+          "properties": {
+            "orderedInstructions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "scriptCursorReadUseSites": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceRegister",
+                  "destinationRegister",
+                  "transferredByteCount",
+                  "instruction"
+                ],
+                "properties": {
+                  "sourceRegister": {
+                    "type": "string"
+                  },
+                  "destinationRegister": {
+                    "type": "string"
+                  },
+                  "transferredByteCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "minItems": 1
+            },
+            "pointerReadUseSites": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceRegister",
+                  "destinationRegister",
+                  "transferredByteCount",
+                  "instruction"
+                ],
+                "properties": {
+                  "sourceRegister": {
+                    "type": "string"
+                  },
+                  "destinationRegister": {
+                    "type": "string"
+                  },
+                  "transferredByteCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "vintControlRecords": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "phase",
+                  "operationSymbol",
+                  "operationValue",
+                  "trapInstruction",
+                  "operationInstruction",
+                  "argumentInstruction"
+                ],
+                "properties": {
+                  "phase": {
+                    "type": "string"
+                  },
+                  "operationSymbol": {
+                    "type": "string"
+                  },
+                  "operationValue": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "trapInstruction": {
+                    "type": "string"
+                  },
+                  "operationInstruction": {
+                    "type": "string"
+                  },
+                  "argumentInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "maxItems": 2
+            },
+            "sourceConstantUses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "symbol",
+                  "value",
+                  "instruction"
+                ],
+                "properties": {
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "directCallOrder": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "returnInstruction": {
+              "type": "string"
+            }
+          }
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "opcode",
+              "instructionTarget"
+            ],
+            "properties": {
+              "opcode": {
+                "type": "string"
+              },
+              "instructionTarget": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "entityPopulationInstructionCountMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "DisableDisplayAndInterrupts",
+        "EnableDisplayAndInterrupts",
+        "GetEntityAddressFromCharacter",
+        "GetMapSetupEntityList",
+        "InitializeMapEntities",
+        "InitializeNewEntity",
+        "LoadEntityMapsprites",
+        "j_InitializeMapEntities"
+      ],
+      "properties": {
+        "DisableDisplayAndInterrupts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "EnableDisplayAndInterrupts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMapSetupEntityList": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "InitializeMapEntities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "InitializeNewEntity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LoadEntityMapsprites": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_InitializeMapEntities": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityPopulationEffectiveCountMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "DisableDisplayAndInterrupts",
+        "EnableDisplayAndInterrupts",
+        "GetEntityAddressFromCharacter",
+        "GetMapSetupEntityList",
+        "InitializeMapEntities",
+        "InitializeNewEntity",
+        "LoadEntityMapsprites"
+      ],
+      "properties": {
+        "DisableDisplayAndInterrupts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "EnableDisplayAndInterrupts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMapSetupEntityList": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "InitializeMapEntities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "InitializeNewEntity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LoadEntityMapsprites": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityPopulationCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DisableDisplayAndInterrupts",
+            "EnableDisplayAndInterrupts",
+            "GetEntityAddressFromCharacter",
+            "GetMapSetupEntityList",
+            "InitializeMapEntities",
+            "InitializeNewEntity",
+            "LoadEntityMapsprites",
+            "j_InitializeMapEntities"
+          ],
+          "properties": {
+            "DisableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EnableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetEntityAddressFromCharacter": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetMapSetupEntityList": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeNewEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LoadEntityMapsprites": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "j_InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "effectiveTargetSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DisableDisplayAndInterrupts",
+            "EnableDisplayAndInterrupts",
+            "GetEntityAddressFromCharacter",
+            "GetMapSetupEntityList",
+            "InitializeMapEntities",
+            "InitializeNewEntity",
+            "LoadEntityMapsprites"
+          ],
+          "properties": {
+            "DisableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EnableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetEntityAddressFromCharacter": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetMapSetupEntityList": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeNewEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LoadEntityMapsprites": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "entityPopulationTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "handler",
+              "instructionTargetSiteCounts",
+              "effectiveTargetSiteCounts"
+            ],
+            "properties": {
+              "handler": {
+                "type": "string"
+              },
+              "instructionTargetSiteCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "DisableDisplayAndInterrupts",
+                  "EnableDisplayAndInterrupts",
+                  "GetEntityAddressFromCharacter",
+                  "GetMapSetupEntityList",
+                  "InitializeMapEntities",
+                  "InitializeNewEntity",
+                  "LoadEntityMapsprites",
+                  "j_InitializeMapEntities"
+                ],
+                "properties": {
+                  "DisableDisplayAndInterrupts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "EnableDisplayAndInterrupts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "GetEntityAddressFromCharacter": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "GetMapSetupEntityList": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "InitializeMapEntities": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "InitializeNewEntity": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "LoadEntityMapsprites": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "j_InitializeMapEntities": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "effectiveTargetSiteCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "DisableDisplayAndInterrupts",
+                  "EnableDisplayAndInterrupts",
+                  "GetEntityAddressFromCharacter",
+                  "GetMapSetupEntityList",
+                  "InitializeMapEntities",
+                  "InitializeNewEntity",
+                  "LoadEntityMapsprites"
+                ],
+                "properties": {
+                  "DisableDisplayAndInterrupts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "EnableDisplayAndInterrupts": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "GetEntityAddressFromCharacter": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "GetMapSetupEntityList": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "InitializeMapEntities": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "InitializeNewEntity": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "LoadEntityMapsprites": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "aliasSourcePath",
+              "effectiveTargetScope"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "aliasSourcePath": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "effectiveTargetScope": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 8,
+          "maxItems": 8
+        },
+        "instructionTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DisableDisplayAndInterrupts",
+            "EnableDisplayAndInterrupts",
+            "GetEntityAddressFromCharacter",
+            "GetMapSetupEntityList",
+            "InitializeMapEntities",
+            "InitializeNewEntity",
+            "LoadEntityMapsprites",
+            "j_InitializeMapEntities"
+          ],
+          "properties": {
+            "DisableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EnableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetEntityAddressFromCharacter": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetMapSetupEntityList": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeNewEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LoadEntityMapsprites": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "j_InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "effectiveTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DisableDisplayAndInterrupts",
+            "EnableDisplayAndInterrupts",
+            "GetEntityAddressFromCharacter",
+            "GetMapSetupEntityList",
+            "InitializeMapEntities",
+            "InitializeNewEntity",
+            "LoadEntityMapsprites"
+          ],
+          "properties": {
+            "DisableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EnableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetEntityAddressFromCharacter": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetMapSetupEntityList": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeNewEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LoadEntityMapsprites": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "internalEffectiveTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DisableDisplayAndInterrupts",
+            "EnableDisplayAndInterrupts",
+            "GetEntityAddressFromCharacter",
+            "GetMapSetupEntityList",
+            "InitializeMapEntities",
+            "InitializeNewEntity",
+            "LoadEntityMapsprites"
+          ],
+          "properties": {
+            "DisableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EnableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetEntityAddressFromCharacter": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetMapSetupEntityList": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeNewEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LoadEntityMapsprites": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "externalEffectiveTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DisableDisplayAndInterrupts",
+            "EnableDisplayAndInterrupts",
+            "GetEntityAddressFromCharacter",
+            "GetMapSetupEntityList",
+            "InitializeMapEntities",
+            "InitializeNewEntity",
+            "LoadEntityMapsprites"
+          ],
+          "properties": {
+            "DisableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EnableDisplayAndInterrupts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetEntityAddressFromCharacter": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GetMapSetupEntityList": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeMapEntities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "InitializeNewEntity": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LoadEntityMapsprites": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "entityPopulationSourceOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols",
+        "relatedContractId"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "relatedContractId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "entityPopulationInitializer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbol",
+        "address",
+        "relatedContractId"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relatedContractId": {
+          "type": "string"
+        }
+      }
+    },
+    "entityPopulationSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calleeOwners",
+        "entityActionInitializer"
+      ],
+      "properties": {
+        "calleeOwners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourcePath",
+              "sourceSha256",
+              "symbols",
+              "relatedContractId"
+            ],
+            "properties": {
+              "sourcePath": {
+                "type": "string"
+              },
+              "sourceSha256": {
+                "type": "string"
+              },
+              "symbols": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "relatedContractId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "entityActionInitializer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourcePath",
+            "sourceSha256",
+            "symbol",
+            "address",
+            "relatedContractId"
+          ],
+          "properties": {
+            "sourcePath": {
+              "type": "string"
+            },
+            "sourceSha256": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "address": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "relatedContractId": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "entityPopulationCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "encodedBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "operandBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "widthBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "minItems": 1
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "minItems": 1
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 1
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "streamOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "widthBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "minItems": 1
+              },
+              "sourceCommandCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commands"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "commandIndex",
+                    "sourceLine",
+                    "macro",
+                    "arguments",
+                    "sourceOrderKey",
+                    "operandValues"
+                  ],
+                  "properties": {
+                    "commandIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "sourceLine": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "macro": {
+                      "type": "string"
+                    },
+                    "arguments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1
+                    },
+                    "sourceOrderKey": {
+                      "type": "string"
+                    },
+                    "operandValues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "parameterOrdinal",
+                          "sourceComment",
+                          "streamOffset",
+                          "widthBytes",
+                          "rawValue",
+                          "resolvedValue",
+                          "resolution"
+                        ],
+                        "properties": {
+                          "parameterOrdinal": {
+                            "type": "integer"
+                          },
+                          "sourceComment": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "streamOffset": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "widthBytes": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "rawValue": {
+                            "type": "string"
+                          },
+                          "resolvedValue": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "resolution": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "minItems": 1
+                    }
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commandCount",
+              "macroCounts"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "macroCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "newEntity",
+                  "loadMapEntities",
+                  "reloadEntities",
+                  "loadEntitiesFromMapSetup"
+                ],
+                "properties": {
+                  "newEntity": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "loadMapEntities": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reloadEntities": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "loadEntitiesFromMapSetup": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "guardedStatements",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "opcode": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceCommandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "streamOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "widthBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "minItems": 1
+              },
+              "statementCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "guardedStatements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "pointerReadUseSites",
+                  "vintControlRecords",
+                  "sourceConstantUses",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationRegister",
+                        "transferredByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationRegister": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "minItems": 1
+                  },
+                  "pointerReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationRegister",
+                        "transferredByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationRegister": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "vintControlRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "phase",
+                        "operationSymbol",
+                        "operationValue",
+                        "trapInstruction",
+                        "operationInstruction",
+                        "argumentInstruction"
+                      ],
+                      "properties": {
+                        "phase": {
+                          "type": "string"
+                        },
+                        "operationSymbol": {
+                          "type": "string"
+                        },
+                        "operationValue": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "trapInstruction": {
+                          "type": "string"
+                        },
+                        "operationInstruction": {
+                          "type": "string"
+                        },
+                        "argumentInstruction": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "maxItems": 2
+                  },
+                  "sourceConstantUses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "symbol",
+                        "value",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "symbol": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "DisableDisplayAndInterrupts",
+                      "EnableDisplayAndInterrupts",
+                      "GetEntityAddressFromCharacter",
+                      "GetMapSetupEntityList",
+                      "InitializeMapEntities",
+                      "InitializeNewEntity",
+                      "LoadEntityMapsprites",
+                      "j_InitializeMapEntities"
+                    ],
+                    "properties": {
+                      "DisableDisplayAndInterrupts": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "EnableDisplayAndInterrupts": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "GetMapSetupEntityList": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "InitializeMapEntities": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "InitializeNewEntity": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "LoadEntityMapsprites": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "j_InitializeMapEntities": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "DisableDisplayAndInterrupts",
+                      "EnableDisplayAndInterrupts",
+                      "GetEntityAddressFromCharacter",
+                      "GetMapSetupEntityList",
+                      "InitializeMapEntities",
+                      "InitializeNewEntity",
+                      "LoadEntityMapsprites"
+                    ],
+                    "properties": {
+                      "DisableDisplayAndInterrupts": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "EnableDisplayAndInterrupts": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "GetMapSetupEntityList": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "InitializeMapEntities": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "InitializeNewEntity": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "LoadEntityMapsprites": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "minItems": 4,
+              "maxItems": 4
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              },
+              "minItems": 8,
+              "maxItems": 8
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DisableDisplayAndInterrupts",
+                "EnableDisplayAndInterrupts",
+                "GetEntityAddressFromCharacter",
+                "GetMapSetupEntityList",
+                "InitializeMapEntities",
+                "InitializeNewEntity",
+                "LoadEntityMapsprites",
+                "j_InitializeMapEntities"
+              ],
+              "properties": {
+                "DisableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "EnableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetMapSetupEntityList": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeMapEntities": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeNewEntity": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "LoadEntityMapsprites": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "j_InitializeMapEntities": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DisableDisplayAndInterrupts",
+                "EnableDisplayAndInterrupts",
+                "GetEntityAddressFromCharacter",
+                "GetMapSetupEntityList",
+                "InitializeMapEntities",
+                "InitializeNewEntity",
+                "LoadEntityMapsprites"
+              ],
+              "properties": {
+                "DisableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "EnableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetMapSetupEntityList": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeMapEntities": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeNewEntity": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "LoadEntityMapsprites": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DisableDisplayAndInterrupts",
+                "EnableDisplayAndInterrupts",
+                "GetEntityAddressFromCharacter",
+                "GetMapSetupEntityList",
+                "InitializeMapEntities",
+                "InitializeNewEntity",
+                "LoadEntityMapsprites"
+              ],
+              "properties": {
+                "DisableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "EnableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetMapSetupEntityList": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeMapEntities": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeNewEntity": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "LoadEntityMapsprites": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "DisableDisplayAndInterrupts",
+                "EnableDisplayAndInterrupts",
+                "GetEntityAddressFromCharacter",
+                "GetMapSetupEntityList",
+                "InitializeMapEntities",
+                "InitializeNewEntity",
+                "LoadEntityMapsprites"
+              ],
+              "properties": {
+                "DisableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "EnableDisplayAndInterrupts": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "GetMapSetupEntityList": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeMapEntities": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "InitializeNewEntity": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "LoadEntityMapsprites": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "sourceIdentityJoins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "calleeOwners",
+            "entityActionInitializer"
+          ],
+          "properties": {
+            "calleeOwners": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourcePath",
+                  "sourceSha256",
+                  "symbols",
+                  "relatedContractId"
+                ],
+                "properties": {
+                  "sourcePath": {
+                    "type": "string"
+                  },
+                  "sourceSha256": {
+                    "type": "string"
+                  },
+                  "symbols": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1
+                  },
+                  "relatedContractId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "minItems": 6,
+              "maxItems": 6
+            },
+            "entityActionInitializer": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "sourceSha256",
+                "symbol",
+                "address",
+                "relatedContractId"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "relatedContractId": {
+                  "type": "string"
                 }
               }
             }

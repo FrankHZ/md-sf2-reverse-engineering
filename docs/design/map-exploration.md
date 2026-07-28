@@ -2,8 +2,9 @@
 
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
-  dispatch rules, static transition-consumer priority, load-path-specific layout persistence, and
-  batched frame-level entity movement/action timing
+  dispatch rules, static transition-consumer priority, load-path-specific layout persistence,
+  source-shaped map-script entity population/reload command records, and batched frame-level entity
+  movement/action timing
 - **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
   hardware-level animation scanline timing, and final VDP-visible rendered parity
@@ -132,6 +133,18 @@ helper's parsed 8-bit shifts, 6-bit row shifts, 2-byte inner offsets, 128-byte o
 loop-counter instructions. These are source-layout and instruction-order facts. A remake MUST NOT
 infer a working-layout lifecycle, collision/pathfinding effect, render update, persistence, capacity,
 or hardware effect until `map-block-mutation/runtime-effects-matrix` supplies runtime evidence.
+Map-script imports MUST retain the four source-named forms `newEntity`, `loadMapEntities`,
+`reloadEntities`, and `loadEntitiesFromMapSetup` as distinct ordered command records in
+`sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityPopulationCommandFacts`. Each record MUST preserve its physical opcode/operand widths,
+source comment (including a deliberate blank comment), source program/command identity, and exact
+handler cursor-read, VInt, direct-call, and source-constant records. Direct instruction target and
+resolved effective target identities MUST remain distinct: in particular,
+`j_InitializeMapEntities` is not a replacement spelling for the `InitializeMapEntities` effective
+target. A remake MAY translate these records into its own entity-loading interface only after defining
+that interface independently. The original static contract does not establish spawning, slot
+allocation, capacity, persistence, activation, rendering, collision/pathfinding, or normal-story
+reachability.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

@@ -159,6 +159,25 @@ MAP_BLOCK_MUTATION_HANDLER_BY_MACRO = {
 MAP_BLOCK_MUTATION_HANDLER_NAMES = ("csc34_setBlocks", "csc35_setBlocksVar")
 MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS = ["map-block-mutation/runtime-effects-matrix"]
 
+# These names retain the macro/handler spelling without assigning allocation,
+# persistence, collision, or presentation behavior to the commands.
+ENTITY_POPULATION_MACRO_NAMES = (
+    "newEntity",
+    "loadMapEntities",
+    "reloadEntities",
+    "loadEntitiesFromMapSetup",
+)
+ENTITY_POPULATION_HANDLER_BY_MACRO = {
+    "newEntity": "csc2B_initializeNewEntity",
+    "loadMapEntities": "csc42_loadMapEntities",
+    "reloadEntities": "csc44_reloadEntities",
+    "loadEntitiesFromMapSetup": "csc49_loadEntitiesFromMapSetup",
+}
+ENTITY_POPULATION_HANDLER_NAMES = tuple(ENTITY_POPULATION_HANDLER_BY_MACRO.values())
+ENTITY_POPULATION_RUNTIME_QUESTIONS = [
+    "entity-population-reload/runtime-effects-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -4028,6 +4047,602 @@ def _map_block_mutation_command_facts(
     }
 
 
+def _entity_population_macro_annotations(disasm: Path) -> dict[str, list[dict[str, Any]]]:
+    """Parse byte widths, offsets, and source comments for the bounded macro forms."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in ENTITY_POPULATION_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"entity-population macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"entity-population operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"entity-population operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"entity-population operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"entity-population operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"entity-population operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _entity_population_resolve_operand(value: str, equates: dict[str, int]) -> dict[str, Any]:
+    """Keep source operands distinct when they are numeric equates versus symbols."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        return {"rawValue": value, "resolvedValue": _literal(token), "resolution": "literal"}
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+
+
+def _entity_population_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach source-faithful operand records to each bounded command occurrence."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ENTITY_POPULATION_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "entity-population source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            source_order_key = ":".join(
+                (site["programId"], str(command["commandIndex"]), command["macro"])
+            )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": source_order_key,
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_entity_population_resolve_operand(argument, equates),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _entity_population_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind the complete source-command and zero-inclusive program corpus compactly."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("entity-population source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("entity-population program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _entity_population_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse a bounded source-pointer read with its instruction size suffix."""
+    match = re.fullmatch(
+        r"move(?P<address>a)?\.(?P<size>[bwl]) \((?P<source>a[06])\)\+,(?P<target>[ad][0-7])",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("entity-population pointer-read use shape drift")
+    is_address_move = match.group("address") is not None
+    target = match.group("target")
+    if is_address_move != target.startswith("a") or (
+        is_address_move and match.group("size") != "l"
+    ):
+        raise ValueError("entity-population pointer-read use shape drift")
+    return {
+        "sourceRegister": match.group("source"),
+        "destinationRegister": target,
+        "transferredByteCount": {"b": 1, "w": 2, "l": 4}[match.group("size")],
+        "instruction": instruction,
+    }
+
+
+def _entity_population_vint_record(
+    statements: list[str], index: int, phase: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Tie each VInt phase name to its adjacent trap data use sites."""
+    expected_symbol = "VINTS_DEACTIVATE" if phase == "deactivate" else "VINTS_ACTIVATE"
+    expected = ["trap #VINT_FUNCTIONS", f"dc.w {expected_symbol}", "dc.l 0"]
+    if statements[index : index + len(expected)] != expected:
+        raise ValueError(f"entity-population VInt {phase} use-site order drift")
+    if expected_symbol not in equates:
+        raise ValueError(f"entity-population VInt source constant is missing: {expected_symbol}")
+    return {
+        "phase": phase,
+        "operationSymbol": expected_symbol,
+        "operationValue": equates[expected_symbol],
+        "trapInstruction": statements[index],
+        "operationInstruction": statements[index + 1],
+        "argumentInstruction": statements[index + 2],
+    }
+
+
+def _entity_population_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int], addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Guard the complete named-handler instruction shape for one source form."""
+    if macro == "newEntity":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"clr\.w d1",
+                r"clr\.w d2",
+                r"clr\.w d3",
+                r"clr\.w d4",
+                r"move\.b \(a6\)\+,d1",
+                r"move\.b \(a6\)\+,d2",
+                r"move\.b \(a6\)\+,d3",
+                r"move\.b \(a6\)\+,d4",
+                r"move\.l #eas_Init,d5",
+                r"jsr InitializeNewEntity",
+                r"rts",
+            ],
+            owner="csc2B_initializeNewEntity",
+        )
+        cursor_indexes = (0, 5, 6, 7, 8)
+        pointer_indexes: tuple[int, ...] = ()
+        vint_records = []
+        source_constant_uses = [
+            {
+                "symbol": "eas_Init",
+                "value": addresses["eas_Init"],
+                "instruction": ordered[9],
+            }
+        ]
+        direct_call_order = [ordered[10]]
+    elif macro == "loadMapEntities":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_DEACTIVATE",
+                r"dc\.l 0",
+                r"jsr \(DisableDisplayAndInterrupts\)\.w",
+                r"movea\.l \(a6\)\+,a0",
+                r"move\.w \(a0\)\+,d1",
+                r"move\.w \(a0\)\+,d2",
+                r"move\.w \(a0\)\+,d3",
+                r"jsr InitializeMapEntities",
+                r"jsr \(LoadEntityMapsprites\)\.w",
+                r"jsr \(EnableDisplayAndInterrupts\)\.w",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_ACTIVATE",
+                r"dc\.l 0",
+                r"rts",
+            ],
+            owner="csc42_loadMapEntities",
+        )
+        cursor_indexes = (4,)
+        pointer_indexes = (5, 6, 7)
+        vint_records = [
+            _entity_population_vint_record(ordered, 0, "deactivate", equates),
+            _entity_population_vint_record(ordered, 11, "activate", equates),
+        ]
+        source_constant_uses = []
+        direct_call_order = [ordered[index] for index in (3, 8, 9, 10)]
+    elif macro == "reloadEntities":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_DEACTIVATE",
+                r"dc\.l 0",
+                r"moveq #0,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"moveq #0,d1",
+                r"move\.w \(a5\),d1",
+                r"divu\.w #MAP_TILE_SIZE,d1",
+                r"moveq #0,d2",
+                r"move\.w ENTITYDEF_OFFSET_Y\(a5\),d2",
+                r"divu\.w #MAP_TILE_SIZE,d2",
+                r"clr\.w d3",
+                r"move\.b ENTITYDEF_OFFSET_FACING\(a5\),d3",
+                r"movea\.l \(a6\)\+,a0",
+                r"jsr InitializeMapEntities",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_ACTIVATE",
+                r"dc\.l 0",
+                r"rts",
+            ],
+            owner="csc44_reloadEntities",
+        )
+        cursor_indexes = (13,)
+        pointer_indexes = ()
+        vint_records = [
+            _entity_population_vint_record(ordered, 0, "deactivate", equates),
+            _entity_population_vint_record(ordered, 15, "activate", equates),
+        ]
+        required_symbols = ("MAP_TILE_SIZE", "ENTITYDEF_OFFSET_Y", "ENTITYDEF_OFFSET_FACING")
+        if any(symbol not in equates for symbol in required_symbols):
+            raise ValueError("entity-population reload source constants are missing")
+        source_constant_uses = [
+            {
+                "symbol": "MAP_TILE_SIZE",
+                "value": equates["MAP_TILE_SIZE"],
+                "instruction": ordered[7],
+            },
+            {
+                "symbol": "ENTITYDEF_OFFSET_Y",
+                "value": equates["ENTITYDEF_OFFSET_Y"],
+                "instruction": ordered[9],
+            },
+            {
+                "symbol": "MAP_TILE_SIZE",
+                "value": equates["MAP_TILE_SIZE"],
+                "instruction": ordered[10],
+            },
+            {
+                "symbol": "ENTITYDEF_OFFSET_FACING",
+                "value": equates["ENTITYDEF_OFFSET_FACING"],
+                "instruction": ordered[12],
+            },
+        ]
+        direct_call_order = [ordered[index] for index in (4, 14)]
+    elif macro == "loadEntitiesFromMapSetup":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_DEACTIVATE",
+                r"dc\.l 0",
+                r"jsr \(DisableDisplayAndInterrupts\)\.w",
+                r"jsr GetMapSetupEntityList",
+                r"move\.w \(a6\)\+,d1",
+                r"move\.w \(a6\)\+,d2",
+                r"move\.w \(a6\)\+,d3",
+                r"jsr j_InitializeMapEntities",
+                r"jsr \(LoadEntityMapsprites\)\.w",
+                r"jsr \(EnableDisplayAndInterrupts\)\.w",
+                r"trap #VINT_FUNCTIONS",
+                r"dc\.w VINTS_ACTIVATE",
+                r"dc\.l 0",
+                r"rts",
+            ],
+            owner="csc49_loadEntitiesFromMapSetup",
+        )
+        cursor_indexes = (5, 6, 7)
+        pointer_indexes = ()
+        vint_records = [
+            _entity_population_vint_record(ordered, 0, "deactivate", equates),
+            _entity_population_vint_record(ordered, 11, "activate", equates),
+        ]
+        source_constant_uses = []
+        direct_call_order = [ordered[index] for index in (3, 4, 8, 9, 10)]
+    else:
+        raise ValueError(f"entity-population guard has no macro profile: {macro}")
+    if len(statements) != len(ordered):
+        raise ValueError(f"entity-population handler statement coverage drift: {macro}")
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _entity_population_read_use_site(ordered[index]) for index in cursor_indexes
+        ],
+        "pointerReadUseSites": [
+            _entity_population_read_use_site(ordered[index]) for index in pointer_indexes
+        ],
+        "vintControlRecords": vint_records,
+        "sourceConstantUses": source_constant_uses,
+        "directCallOrder": direct_call_order,
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _entity_population_caller_breakdown(
+    disasm: Path,
+    handlers: list[dict[str, Any]],
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Retain instruction aliases even when several identities share one effective target."""
+    instruction_targets = sorted(
+        {call["instructionTarget"] for rows in direct_call_rows.values() for call in rows}
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    bounded_handlers = set(ENTITY_POPULATION_HANDLER_NAMES)
+    target_resolutions = []
+    for target in instruction_targets:
+        effective_target = aliases.get(target, {}).get("effectiveTarget", target)
+        target_resolutions.append(
+            {
+                "instructionTarget": target,
+                "effectiveTarget": effective_target,
+                "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+                "effectiveTargetScope": (
+                    "internal" if effective_target in bounded_handlers else "external"
+                ),
+            }
+        )
+    effective_targets = sorted({row["effectiveTarget"] for row in target_resolutions})
+    resolution_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_rows = []
+    for handler_name in ENTITY_POPULATION_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler_name]:
+            instruction_counts[call["instructionTarget"]] += 1
+            effective_counts[resolution_by_instruction[call["instructionTarget"]]] += 1
+        caller_rows.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_rows)
+        for target in effective_targets
+    }
+    scopes_by_effective_target: dict[str, str] = {}
+    for row in target_resolutions:
+        current = scopes_by_effective_target.setdefault(
+            row["effectiveTarget"], row["effectiveTargetScope"]
+        )
+        if current != row["effectiveTargetScope"]:
+            raise ValueError("entity-population effective target scope disagreement")
+
+    def scoped_totals(scope: str) -> dict[str, int]:
+        return {
+            target: effective_totals[target]
+            if scopes_by_effective_target[target] == scope
+            else 0
+            for target in effective_targets
+        }
+
+    return {
+        "callerHandlers": caller_rows,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalEffectiveTargetTotals": scoped_totals("internal"),
+        "externalEffectiveTargetTotals": scoped_totals("external"),
+    }
+
+
+def _entity_population_source_identity_joins(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Join neighboring contracts by pinned source identity, never copied fixture payloads."""
+    owner_specs = (
+        ("code/common/scripting/entity/entityfunctions_1.asm", ("InitializeNewEntity",), None),
+        (
+            "code/common/scripting/map/mapfunctions.asm",
+            ("InitializeMapEntities",),
+            "sf2-map-entities-static-v1",
+        ),
+        (
+            "code/common/scripting/entity/entityscriptengine_2.asm",
+            ("LoadEntityMapsprites",),
+            None,
+        ),
+        (
+            "code/common/scripting/map/mapsetupsfunctions_1.asm",
+            ("GetMapSetupEntityList",),
+            "sf2-map-setup-static-v1",
+        ),
+        (
+            "code/common/tech/interrupts/vdpcontrol.asm",
+            ("DisableDisplayAndInterrupts", "EnableDisplayAndInterrupts"),
+            None,
+        ),
+        (
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            ("GetEntityAddressFromCharacter",),
+            None,
+        ),
+    )
+    callee_owners = []
+    for source_path, symbols, related_contract_id in owner_specs:
+        source = read_upstream_text(disasm / source_path)
+        for symbol in symbols:
+            has_source_label = re.search(
+                rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE
+            )
+            if symbol not in addresses or has_source_label is None:
+                raise ValueError(f"entity-population source owner symbol drift: {symbol}")
+        callee_owners.append(
+            {
+                "sourcePath": source_path,
+                "sourceSha256": hashlib.sha256(source.encode()).hexdigest().upper(),
+                "symbols": list(symbols),
+                "relatedContractId": related_contract_id,
+            }
+        )
+    init_path = "data/scripting/entity/eas_actions.asm"
+    init_source = read_upstream_text(disasm / init_path)
+    if "eas_Init" not in addresses or re.search(
+        r"^eas_Init:\s*", init_source, re.MULTILINE
+    ) is None:
+        raise ValueError("entity-population entity-action initializer identity drift")
+    return {
+        "calleeOwners": callee_owners,
+        "entityActionInitializer": {
+            "sourcePath": init_path,
+            "sourceSha256": hashlib.sha256(init_source.encode()).hexdigest().upper(),
+            "symbol": "eas_Init",
+            "address": addresses["eas_Init"],
+            "relatedContractId": "sf2-entity-action-scripts-static-v1",
+        },
+    }
+
+
+def _entity_population_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the static source/handler/caller contract for entity-population forms."""
+    annotations_by_macro = _entity_population_macro_annotations(disasm)
+    source_sites, program_totals = _entity_population_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in ENTITY_POPULATION_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"entity-population program total drift: {macro}")
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        source_operand_bytes = sum(row["widthBytes"] for row in annotations)
+        source_encoded_bytes = max(
+            row["streamOffset"] + row["widthBytes"] for row in annotations
+        )
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"] != source_operand_bytes
+            or contract["encodedBytes"] != source_encoded_bytes
+            or contract["operandLayout"]
+            != [
+                {
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "expression": f"\\{row['parameterOrdinal']}",
+                    "parameterOrdinals": [row["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for row in annotations
+            ]
+        ):
+            raise ValueError(f"entity-population macro ABI drift: {macro}")
+
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for macro in ENTITY_POPULATION_MACRO_NAMES:
+        handler_name = ENTITY_POPULATION_HANDLER_BY_MACRO[macro]
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"entity-population dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"entity-population handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _entity_population_section_guard(
+            macro, statements, equates, addresses
+        )
+        script_cursor_bytes = sum(
+            row["transferredByteCount"] for row in section_guard["scriptCursorReadUseSites"]
+        )
+        if script_cursor_bytes != contract["operandBytes"]:
+            raise ValueError(f"entity-population script cursor width drift: {macro}")
+        direct_calls = _force_state_direct_calls(statements)
+        if direct_calls != _force_state_direct_calls(section_guard["directCallOrder"]):
+            raise ValueError(f"entity-population direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations_by_macro[macro],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": ENTITY_POPULATION_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in ENTITY_POPULATION_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_entity_population_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": _entity_population_caller_breakdown(
+            disasm, handlers, direct_call_rows, addresses, rom
+        ),
+        "sourceIdentityJoins": _entity_population_source_identity_joins(disasm, addresses),
+        "runtimeQuestions": ENTITY_POPULATION_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -4103,6 +4718,16 @@ def build_map_script_engine_contract(
         upstream_path,
     )
     map_block_mutation_command_facts = _map_block_mutation_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
+    entity_population_command_facts = _entity_population_command_facts(
         disasm,
         source_equates,
         macros,
@@ -4259,6 +4884,7 @@ def build_map_script_engine_contract(
         "forceStateCommandFacts": force_state_command_facts,
         "storyStateCommandFacts": story_state_command_facts,
         "mapBlockMutationCommandFacts": map_block_mutation_command_facts,
+        "entityPopulationCommandFacts": entity_population_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -4267,6 +4893,7 @@ def build_map_script_engine_contract(
             *ACTIVE_PARTY_RUNTIME_QUESTIONS,
             *STORY_STATE_RUNTIME_QUESTIONS,
             *MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS,
+            *ENTITY_POPULATION_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -4314,6 +4941,7 @@ def verify_map_script_engine_contract(
         "forceStateCommandFacts": output["forceStateCommandFacts"],
         "storyStateCommandFacts": output["storyStateCommandFacts"],
         "mapBlockMutationCommandFacts": output["mapBlockMutationCommandFacts"],
+        "entityPopulationCommandFacts": output["entityPopulationCommandFacts"],
     }
     for field in (
         "summary",
@@ -4338,6 +4966,7 @@ def verify_map_script_engine_contract(
         "forceStateCommandFacts",
         "storyStateCommandFacts",
         "mapBlockMutationCommandFacts",
+        "entityPopulationCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",

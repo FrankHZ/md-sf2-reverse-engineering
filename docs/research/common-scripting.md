@@ -9,7 +9,8 @@
   family/program-site/handler/caller contract, the complete six-command map-script roster/death
   family/program-site/handler/caller contract, the complete four-command map-script active-party/AI/
   follower/battle-stat family/program-site/handler/caller contract, the complete two-command map-script
-  block-copy family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
+  block-copy family/program-site/handler/caller contract, the complete four-command map-script entity
+  population/reload family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -364,6 +365,76 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `uv run sf2 h2 map-script-engine`; observed result is
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
 `expected.mapBlockMutationCommandFacts`.
+
+## Confirmed Map-Script Entity Population/Reload Command Family
+
+Evidence date: 2026-07-27.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `entityPopulationCommandFacts` retains four
+source-named macro forms in source order: `newEntity` opcode `$2B` (18 sites, 8 encoded bytes),
+`loadMapEntities` `$42` (69 sites, 6 bytes), `reloadEntities` `$44` (2 sites, 6 bytes), and
+`loadEntitiesFromMapSetup` `$49` (7 sites, 8 bytes). `newEntity` emits the two-byte opcode, one
+two-byte field whose unmodified source comment is `entity number`, then one-byte fields labeled `X`,
+`Y`, `facing`, and `mapsprite`. The `$42` and `$44` forms each emit one four-byte field labeled
+`address of entity table`; the three `$49` word fields retain their deliberately blank source comments
+rather than receiving invented semantic names. This is a source-layout contract, not a claim that any
+name describes a runtime allocation or spawn operation.
+
+**Confirmed:** the complete bounded corpus contains 96 commands in 78 non-empty program groups:
+18 `newEntity`, 69 `loadMapEntities`, 2 `reloadEntities`, and 7 `loadEntitiesFromMapSetup`. It retains
+the complete ordered command keys and source-site SHA-256
+`BE26AD2D93D08929FC28BD451629EC8B275ED3832E24A4D732F033408A0785FD`, plus all 304 program totals,
+including zero-use rows, with SHA-256
+`45DAE48D41348AE403864F15E2FAD1C30E17637CD3037C03A41BC8105A124F65`. The four named handler
+sections are separately guarded: `csc2B_initializeNewEntity` at H1/ROM `$46E38`,
+`csc42_loadMapEntities` at `$4668A`, `csc44_reloadEntities` at `$466C8`, and
+`csc49_loadEntitiesFromMapSetup` at `$46758`. A source opcode, ordered statement, read size, direct
+call, VInt trap record, or source-constant operand mutation makes construction fail before fixture
+comparison.
+
+**Confirmed:** `csc2B_initializeNewEntity` consumes A6 reads of 2/1/1/1/1 bytes into D0/D1/D2/D3/D4
+after clearing the latter four words, loads source symbol `eas_Init` (H1 `$460CE`) into D5, then directly
+calls `InitializeNewEntity`. `csc42_loadMapEntities` uses the source `VINTS_DEACTIVATE` value 3 before
+`DisableDisplayAndInterrupts`, consumes one four-byte A6 read into A0 followed by three two-byte A0
+reads into D1/D2/D3, calls `InitializeMapEntities`, `LoadEntityMapsprites`, and
+`EnableDisplayAndInterrupts` in that order, then uses `VINTS_ACTIVATE` value 4. `csc44_reloadEntities`
+has the same paired VInt records, calls `GetEntityAddressFromCharacter` before
+`InitializeMapEntities`, and retains its two `divu.w #MAP_TILE_SIZE` use sites (parsed value 384),
+`ENTITYDEF_OFFSET_Y` read (2), and `ENTITYDEF_OFFSET_FACING` byte read (16) as separate source facts.
+`csc49_loadEntitiesFromMapSetup` brackets its `GetMapSetupEntityList`, three two-byte A6 reads, and
+`j_InitializeMapEntities`/`LoadEntityMapsprites` sequence with the same disable/enable and VInt order.
+These statements record operands, transfer widths, call order, and labels only; they do not assign a
+stored-byte count or a unit to the values.
+
+**Confirmed:** the comment-stripping instruction parser preserves instruction and effective identities.
+Across the four handlers, instruction-target totals are `DisableDisplayAndInterrupts` 2,
+`EnableDisplayAndInterrupts` 2, `GetEntityAddressFromCharacter` 1, `GetMapSetupEntityList` 1,
+`InitializeMapEntities` 2, `InitializeNewEntity` 1, `LoadEntityMapsprites` 2, and
+`j_InitializeMapEntities` 1. The last identity resolves through
+`code/common/tech/jumpinterfaces/s07_jumpinterface.asm::j_InitializeMapEntities` to effective target
+`InitializeMapEntities`, making its effective total 3; all other effective totals match their direct
+identity. Each handler retains a zero-inclusive count for the complete declared target domain. No
+effective implementation lies inside this four-handler surface, so every internal effective total is
+zero and external effective totals equal the effective totals. Comments, labels, near-miss mnemonics,
+and operands do not count as callers.
+
+**Unknown:** `entity-population-reload/runtime-effects-matrix` is the sole grouped H3 queue. One shared
+launch must determine spawning, slot allocation, capacity, persistence, activation, rendering,
+collision/pathfinding, and normal-story reachability for representative forms. The static contract does
+not promote source labels, cursor reads, target identity, or VInt records into any of those runtime
+claims.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` forms `newEntity`,
+`loadMapEntities`, `reloadEntities`, and `loadEntitiesFromMapSetup`; `code/common/scripting/map/mapscriptengine_1.asm`
+symbols `csc2B_initializeNewEntity`, `csc42_loadMapEntities`,
+`csc44_reloadEntities`, and `csc49_loadEntitiesFromMapSetup`; `sf2enums.asm`;
+`code/common/tech/jumpinterfaces/s07_jumpinterface.asm::j_InitializeMapEntities`; the H1 symbols above;
+and local US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+The extractor additionally records the pinned callee-owner paths and SHA-256 values in
+`sourceIdentityJoins`. Reproduce with `uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.entityPopulationCommandFacts`.
 
 ## Confirmed Map-Script Story-State Branch/Prompt Command Family
 

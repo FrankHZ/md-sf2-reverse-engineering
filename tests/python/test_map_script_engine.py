@@ -18,6 +18,9 @@ from sf2tool.h2.map_script_engine import (
     _direct_call_sites,
     _emission_rows,
     _entity_dialogue_consumer_facts,
+    _entity_population_macro_annotations,
+    _entity_population_read_use_site,
+    _entity_population_section_guard,
     _force_state_aliases,
     _force_state_direct_calls,
     _force_state_program_facts,
@@ -455,6 +458,155 @@ def test_map_block_mutation_section_guard_rejects_bit_order_and_extra_statement(
     statements.insert(-1, "nop")
     with pytest.raises(ValueError, match="statement coverage drift"):
         _map_block_mutation_section_guard("csc34_setBlocks", statements)
+
+
+def test_entity_population_macro_annotations_preserve_blank_source_comments(tmp_path) -> None:
+    macro_path = tmp_path / "sf2cutscenemacros.asm"
+    macro_path.write_text(
+        """
+newEntity: macro
+    dc.w $2B
+    dc.w \\1 ; entity number
+    dc.b \\2 ; X
+    endm
+loadMapEntities: macro
+    dc.w $42
+    dc.l \\1 ; address of entity table
+    endm
+reloadEntities: macro
+    dc.w $44
+    dc.l \\1 ; address of entity table
+    endm
+loadEntitiesFromMapSetup: macro
+    dc.w $49
+    dc.w \\1 ;
+    dc.w \\2 ;
+    dc.w \\3 ;
+    endm
+""",
+        encoding="utf-8",
+    )
+    actual = _entity_population_macro_annotations(tmp_path)
+    assert actual["newEntity"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "entity number",
+            "streamOffset": 2,
+            "widthBytes": 2,
+        },
+        {
+            "parameterOrdinal": 2,
+            "sourceComment": "X",
+            "streamOffset": 4,
+            "widthBytes": 1,
+        },
+    ]
+    assert [row["sourceComment"] for row in actual["loadEntitiesFromMapSetup"]] == [
+        "",
+        "",
+        "",
+    ]
+    source = macro_path.read_text(encoding="utf-8")
+    drifted = source.replace("dc.w \\2 ;\n", "dc.w \\4 ;\n", 1)
+    macro_path.write_text(drifted, encoding="utf-8")
+    with pytest.raises(ValueError, match="operand ordinal"):
+        _entity_population_macro_annotations(tmp_path)
+
+    missing_comment = source.replace(
+        "dc.w \\1 ; entity number", "dc.w \\1", 1
+    )
+    macro_path.write_text(missing_comment, encoding="utf-8")
+    with pytest.raises(ValueError, match="comment is missing"):
+        _entity_population_macro_annotations(tmp_path)
+
+
+def test_entity_population_pointer_read_parser_accepts_sizes_and_rejects_near_misses() -> None:
+    assert [_entity_population_read_use_site(instruction) for instruction in (
+        "move.b (a6)+,d1",
+        "move.w (a0)+,d2",
+        "move.l (a6)+,d3",
+        "movea.l (a6)+,a0",
+    )] == [
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d1",
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d1",
+        },
+        {
+            "sourceRegister": "a0",
+            "destinationRegister": "d2",
+            "transferredByteCount": 2,
+            "instruction": "move.w (a0)+,d2",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d3",
+            "transferredByteCount": 4,
+            "instruction": "move.l (a6)+,d3",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "a0",
+            "transferredByteCount": 4,
+            "instruction": "movea.l (a6)+,a0",
+        },
+    ]
+    for near_miss in (
+        "moveq #0,d1",
+        "read: move.w (a6)+,d1",
+        "; move.w (a6)+,d1",
+        "move.w (a6)+,d1 ; source pointer read",
+        "move.w (a6),d1",
+        "move.w (a1)+,d1",
+        "move.w (a6)+,a0",
+    ):
+        with pytest.raises(ValueError, match="pointer-read use shape"):
+            _entity_population_read_use_site(near_miss)
+
+
+def test_entity_population_section_guard_rejects_vint_order_and_extra_statement() -> None:
+    statements = [
+        "trap #VINT_FUNCTIONS",
+        "dc.w VINTS_DEACTIVATE",
+        "dc.l 0",
+        "jsr (DisableDisplayAndInterrupts).w",
+        "movea.l (a6)+,a0",
+        "move.w (a0)+,d1",
+        "move.w (a0)+,d2",
+        "move.w (a0)+,d3",
+        "jsr InitializeMapEntities",
+        "jsr (LoadEntityMapsprites).w",
+        "jsr (EnableDisplayAndInterrupts).w",
+        "trap #VINT_FUNCTIONS",
+        "dc.w VINTS_ACTIVATE",
+        "dc.l 0",
+        "rts",
+    ]
+    actual = _entity_population_section_guard(
+        "loadMapEntities",
+        statements,
+        {"VINTS_DEACTIVATE": 3, "VINTS_ACTIVATE": 4},
+        {"eas_Init": 0},
+    )
+    assert actual["vintControlRecords"][1]["operationValue"] == 4
+    statements[12] = "dc.w VINTS_DEACTIVATE"
+    with pytest.raises(ValueError, match="VINTS_ACTIVATE"):
+        _entity_population_section_guard(
+            "loadMapEntities",
+            statements,
+            {"VINTS_DEACTIVATE": 3, "VINTS_ACTIVATE": 4},
+            {"eas_Init": 0},
+        )
+    statements[12] = "dc.w VINTS_ACTIVATE"
+    statements.insert(-1, "nop")
+    with pytest.raises(ValueError, match="statement coverage drift"):
+        _entity_population_section_guard(
+            "loadMapEntities",
+            statements,
+            {"VINTS_DEACTIVATE": 3, "VINTS_ACTIVATE": 4},
+            {"eas_Init": 0},
+        )
 
 
 def test_story_state_corpus_order_facts_bind_order_and_canonical_content() -> None:
@@ -2530,5 +2682,385 @@ def test_map_block_mutation_schema_exact_blocks_keep_large_corpora_compact() -> 
         assert "sourceSites" not in exact["properties"]
         assert "programTotals" not in exact["properties"]
         facts = schema["definitions"]["mapBlockMutationCommandFacts"]
+        assert facts["additionalProperties"] is False
+        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+
+
+def test_entity_population_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityPopulationCommandFacts"]
+    assert actual == fixture["expected"]["entityPopulationCommandFacts"]
+    assert [
+        (
+            macro["name"],
+            macro["opcode"],
+            macro["encodedBytes"],
+            macro["operandBytes"],
+            macro["sourceCommandCount"],
+        )
+        for macro in actual["macros"]
+    ] == [
+        ("newEntity", 43, 8, 6, 18),
+        ("loadMapEntities", 66, 6, 4, 69),
+        ("reloadEntities", 68, 6, 4, 2),
+        ("loadEntitiesFromMapSetup", 73, 8, 6, 7),
+    ]
+    assert actual["macros"][0]["sourceOperandAnnotations"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "entity number",
+            "streamOffset": 2,
+            "widthBytes": 2,
+        },
+        {"parameterOrdinal": 2, "sourceComment": "X", "streamOffset": 4, "widthBytes": 1},
+        {"parameterOrdinal": 3, "sourceComment": "Y", "streamOffset": 5, "widthBytes": 1},
+        {"parameterOrdinal": 4, "sourceComment": "facing", "streamOffset": 6, "widthBytes": 1},
+        {"parameterOrdinal": 5, "sourceComment": "mapsprite", "streamOffset": 7, "widthBytes": 1},
+    ]
+    assert [row["sourceComment"] for row in actual["macros"][3]["sourceOperandAnnotations"]] == [
+        "",
+        "",
+        "",
+    ]
+    assert len(actual["sourceSites"]) == 78
+    assert (
+        actual["sourceSitesSha256"]
+        == "BE26AD2D93D08929FC28BD451629EC8B275ED3832E24A4D732F033408A0785FD"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert (
+        actual["programTotalsSha256"]
+        == "45DAE48D41348AE403864F15E2FAD1C30E17637CD3037C03A41BC8105A124F65"
+    )
+    assert [
+        (
+            handler["macro"],
+            handler["handler"],
+            handler["address"],
+            handler["opcode"],
+            handler["sourceCommandCount"],
+            handler["statementCount"],
+        )
+        for handler in actual["handlers"]
+    ] == [
+        ("newEntity", "csc2B_initializeNewEntity", 290360, 43, 18, 12),
+        ("loadMapEntities", "csc42_loadMapEntities", 288394, 66, 69, 15),
+        ("reloadEntities", "csc44_reloadEntities", 288456, 68, 2, 19),
+        ("loadEntitiesFromMapSetup", "csc49_loadEntitiesFromMapSetup", 288600, 73, 7, 15),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["scriptCursorReadUseSites"] == [
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d0",
+            "transferredByteCount": 2,
+            "instruction": "move.w (a6)+,d0",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d1",
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d1",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d2",
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d2",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d3",
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d3",
+        },
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": "d4",
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d4",
+        },
+    ]
+    assert actual["handlers"][1]["sectionGuard"]["pointerReadUseSites"] == [
+        {
+            "sourceRegister": "a0",
+            "destinationRegister": register,
+            "transferredByteCount": 2,
+            "instruction": f"move.w (a0)+,{register}",
+        }
+        for register in ("d1", "d2", "d3")
+    ]
+    assert actual["handlers"][2]["sectionGuard"]["sourceConstantUses"] == [
+        {"symbol": "MAP_TILE_SIZE", "value": 384, "instruction": "divu.w #MAP_TILE_SIZE,d1"},
+        {
+            "symbol": "ENTITYDEF_OFFSET_Y",
+            "value": 2,
+            "instruction": "move.w ENTITYDEF_OFFSET_Y(a5),d2",
+        },
+        {"symbol": "MAP_TILE_SIZE", "value": 384, "instruction": "divu.w #MAP_TILE_SIZE,d2"},
+        {
+            "symbol": "ENTITYDEF_OFFSET_FACING",
+            "value": 16,
+            "instruction": "move.b ENTITYDEF_OFFSET_FACING(a5),d3",
+        },
+    ]
+    assert actual["handlers"][3]["sectionGuard"]["directCallOrder"] == [
+        "jsr (DisableDisplayAndInterrupts).w",
+        "jsr GetMapSetupEntityList",
+        "jsr j_InitializeMapEntities",
+        "jsr (LoadEntityMapsprites).w",
+        "jsr (EnableDisplayAndInterrupts).w",
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "DisableDisplayAndInterrupts": 2,
+        "EnableDisplayAndInterrupts": 2,
+        "GetEntityAddressFromCharacter": 1,
+        "GetMapSetupEntityList": 1,
+        "InitializeMapEntities": 2,
+        "InitializeNewEntity": 1,
+        "LoadEntityMapsprites": 2,
+        "j_InitializeMapEntities": 1,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == {
+        "DisableDisplayAndInterrupts": 2,
+        "EnableDisplayAndInterrupts": 2,
+        "GetEntityAddressFromCharacter": 1,
+        "GetMapSetupEntityList": 1,
+        "InitializeMapEntities": 3,
+        "InitializeNewEntity": 1,
+        "LoadEntityMapsprites": 2,
+    }
+    assert actual["callerBreakdown"]["internalEffectiveTargetTotals"] == {
+        target: 0 for target in actual["callerBreakdown"]["effectiveTargetTotals"]
+    }
+    assert (
+        actual["callerBreakdown"]["externalEffectiveTargetTotals"]
+        == actual["callerBreakdown"]["effectiveTargetTotals"]
+    )
+    assert actual["callerBreakdown"]["targetResolutions"][-1] == {
+        "instructionTarget": "j_InitializeMapEntities",
+        "effectiveTarget": "InitializeMapEntities",
+        "aliasSourcePath": "code/common/tech/jumpinterfaces/s07_jumpinterface.asm",
+        "effectiveTargetScope": "external",
+    }
+    assert actual["sourceIdentityJoins"]["entityActionInitializer"] == {
+        "sourcePath": "data/scripting/entity/eas_actions.asm",
+        "sourceSha256": "8C4312D69370D882C32A61276D94D744C3252FD6C32EB9351932F17EE39178F0",
+        "symbol": "eas_Init",
+        "address": 286926,
+        "relatedContractId": "sf2-entity-action-scripts-static-v1",
+    }
+    assert actual["runtimeQuestions"] == ["entity-population-reload/runtime-effects-matrix"]
+
+
+def test_entity_population_guards_reject_use_site_and_call_order_mutations_before_fixture(
+    monkeypatch,
+) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_use_site(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc44_reloadEntities":
+            return [
+                statement.replace("divu.w #MAP_TILE_SIZE,d2", "divs.w #MAP_TILE_SIZE,d2")
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_use_site)
+    with pytest.raises(ValueError, match="MAP_TILE_SIZE"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_entity_population_alias_target_mutation_fails_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_alias_target(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc49_loadEntitiesFromMapSetup":
+            return [
+                statement.replace("jsr j_InitializeMapEntities", "jsr InitializeMapEntities")
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_alias_target)
+    with pytest.raises(ValueError, match="j_InitializeMapEntities"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_entity_population_handler_order_fails_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_call_order(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc42_loadMapEntities":
+            statements[3], statements[4] = statements[4], statements[3]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_call_order)
+    with pytest.raises(ValueError, match="csc42_loadMapEntities statement is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_entity_population_corpus_order_schema_rejects_source_reordering(monkeypatch) -> None:
+    original_program_corpus = map_script_engine._program_corpus
+
+    def reordered_entity_population_programs(*args, **kwargs):
+        corpus = original_program_corpus(*args, **kwargs)
+        matching_indexes = [
+            index
+            for index, program in enumerate(corpus["programs"])
+            if any(
+                command["macro"] in map_script_engine.ENTITY_POPULATION_MACRO_NAMES
+                for command in program["commands"]
+            )
+        ]
+        first, second = matching_indexes[:2]
+        corpus["programs"][first], corpus["programs"][second] = (
+            corpus["programs"][second],
+            corpus["programs"][first],
+        )
+        return corpus
+
+    monkeypatch.setattr(map_script_engine, "_program_corpus", reordered_entity_population_programs)
+    output = build_map_script_engine_contract(
+        repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+    )
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            output,
+            repo_path("schemas/map-script-engine-static.schema.json"),
+            owner="entity-population source-order output",
+        )
+
+
+def test_entity_population_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="entity-population output")
+    validate_json(fixture, fixture_schema, owner="entity-population fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["entityPopulationCommandFacts"]["handlers"][0]["sectionGuard"][
+        "scriptCursorReadUseSites"
+    ][0]["destinationRegister"]
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(missing, output_schema, owner="entity-population output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    annotation = renamed["entityPopulationCommandFacts"]["macros"][0]["sourceOperandAnnotations"][0]
+    annotation["label"] = annotation.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(renamed, output_schema, owner="entity-population output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["entityPopulationCommandFacts"]["sourceIdentityJoins"]["calleeOwners"][0]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="entity-population output extra field")
+
+    reordered_source = deepcopy(map_script_engine_output)
+    source_order = reordered_source["entityPopulationCommandFacts"]["sourceSiteOrderKeys"]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_source,
+            output_schema,
+            owner="entity-population output reordered source keys",
+        )
+
+    reordered_programs = deepcopy(map_script_engine_output)
+    program_order = reordered_programs["entityPopulationCommandFacts"]["programTotalOrderKeys"]
+    program_order[0], program_order[1] = program_order[1], program_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            reordered_programs,
+            output_schema,
+            owner="entity-population output reordered program keys",
+        )
+
+    out_of_boundary = deepcopy(map_script_engine_output)
+    out_of_boundary["entityPopulationCommandFacts"]["handlers"][2]["sectionGuard"][
+        "sourceConstantUses"
+    ][0]["value"] = 383
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(out_of_boundary, output_schema, owner="entity-population output boundary")
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["entityPopulationCommandFacts"]["handlers"][1]["sectionGuard"][
+        "vintControlRecords"
+    ][0]["operationValue"]
+    with pytest.raises(ValueError, match="operationValue"):
+        validate_json(
+            fixture_missing, fixture_schema, owner="entity-population fixture missing field"
+        )
+
+    fixture_renamed = deepcopy(fixture)
+    annotation = fixture_renamed["expected"]["entityPopulationCommandFacts"]["macros"][0][
+        "sourceOperandAnnotations"
+    ][0]
+    annotation["label"] = annotation.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(
+            fixture_renamed, fixture_schema, owner="entity-population fixture renamed field"
+        )
+
+    fixture_extra = deepcopy(fixture)
+    fixture_extra["expected"]["entityPopulationCommandFacts"]["sourceIdentityJoins"][
+        "calleeOwners"
+    ][0]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(fixture_extra, fixture_schema, owner="entity-population fixture extra field")
+
+    fixture_reordered = deepcopy(fixture)
+    source_order = fixture_reordered["expected"]["entityPopulationCommandFacts"][
+        "sourceSiteOrderKeys"
+    ]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            fixture_reordered,
+            fixture_schema,
+            owner="entity-population fixture reordered source keys",
+        )
+
+    fixture_out_of_boundary = deepcopy(fixture)
+    fixture_out_of_boundary["expected"]["entityPopulationCommandFacts"]["handlers"][2][
+        "sectionGuard"
+    ]["sourceConstantUses"][0]["value"] = 383
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            fixture_out_of_boundary,
+            fixture_schema,
+            owner="entity-population fixture boundary",
+        )
+
+
+def test_entity_population_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("entityPopulationCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "entityPopulationCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        assert "sourceSites" not in exact["properties"]
+        assert "programTotals" not in exact["properties"]
+        facts = schema["definitions"]["entityPopulationCommandFacts"]
         assert facts["additionalProperties"] is False
         assert {"sourceSites", "programTotals"} <= set(facts["required"])

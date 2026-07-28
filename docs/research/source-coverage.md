@@ -416,6 +416,16 @@ two direct/effective caller rows preserve the zero internal and two external `Co
 `map-block-mutation/runtime-effects-matrix` is the sole H3 follow-up; mutation lifecycle, collision,
 pathfinding, presentation timing, persistence, and hardware effect are not credited as static
 coverage.
+The adjacent entity population/reload slice is exact for four source forms: 18 `newEntity` `$2B`, 69
+`loadMapEntities` `$42`, two `reloadEntities` `$44`, and seven `loadEntitiesFromMapSetup` `$49` sites
+(96 total) across a further complete 304-row zero-inclusive corpus. It retains physical command
+layouts and source comments (including the three deliberately blank `$49` labels), four exact named
+handler cursor/read/VInt/call/constant guards, and a zero-inclusive direct/effective caller inventory.
+The direct `j_InitializeMapEntities` identity remains distinct while the parsed jump-interface alias
+resolves it to an `InitializeMapEntities` effective total of three. The sole H3 follow-up is
+`entity-population-reload/runtime-effects-matrix`; spawning, slot allocation, capacity, persistence,
+activation, rendering, collision/pathfinding, and normal-story reachability are not credited as static
+coverage.
 The distributed entity-action frontier is now closed rather than provisional. Its 75 non-shared ASM
 files comprise 42 under `data/maps`, 26 under `data/battles`, six under `data/scripting`, and one
 under `code`. All 1,472 commands have exactly one owner: 1,217 commands in 361 terminated inline
