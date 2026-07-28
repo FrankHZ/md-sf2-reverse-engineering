@@ -237,6 +237,22 @@ MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS = [
     "map-script-camera-control/runtime-effects-matrix"
 ]
 
+# These source labels identify four adjacent command forms whose handlers read
+# entity fields and script operands.  They do not establish placement, facing,
+# animation, visibility, coordinate units, reachability, or player-visible
+# effects; those questions stay grouped in the H3 queue below.
+ENTITY_PLACEMENT_MACRO_NAMES = ("setPos", "setPosFlash", "setFacing", "setDest")
+ENTITY_PLACEMENT_HANDLER_BY_MACRO = {
+    "setPos": "csc19_setEntityPosAndFacing",
+    "setPosFlash": "csc17_setEntityPosAndFacingWithFlash",
+    "setFacing": "csc23_setEntityFacing",
+    "setDest": "csc29_setEntityDest",
+}
+ENTITY_PLACEMENT_HANDLER_NAMES = tuple(ENTITY_PLACEMENT_HANDLER_BY_MACRO.values())
+ENTITY_PLACEMENT_RUNTIME_QUESTIONS = [
+    "map-script-entity-placement/runtime-effects-reachability-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -4766,6 +4782,25 @@ def _map_camera_control_cursor_read_use_site(instruction: str) -> dict[str, Any]
     }
 
 
+def _entity_placement_cursor_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one source-bounded A6 operand transfer for the placement slice."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \(a6\)(?P<advance>\+)?,"
+        r"(?P<target>d[0-7]|[A-Za-z_][A-Za-z0-9_]*\(a5\))",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("entity-placement cursor-read use-site drift")
+    transferred_bytes = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": "a6",
+        "destinationOperand": match.group("target"),
+        "transferredByteCount": transferred_bytes,
+        "cursorAdvanceByteCount": transferred_bytes if match.group("advance") else 0,
+        "instruction": instruction,
+    }
+
+
 def _map_camera_control_cursor_write_use_site(instruction: str) -> dict[str, Any]:
     """Parse the bounded A6-to-source-named-state transfer without semantic naming."""
     match = re.fullmatch(
@@ -5352,6 +5387,783 @@ def _map_camera_control_command_facts(
         "callerBreakdown": caller_breakdown,
         "sourceIdentityJoins": _map_camera_control_source_identity_joins(disasm, addresses),
         "runtimeQuestions": MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS,
+    }
+
+
+def _entity_placement_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse the placement macros' physical operand comments and byte offsets."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in ENTITY_PLACEMENT_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"entity-placement macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"entity-placement operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"entity-placement operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"entity-placement operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"entity-placement operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"entity-placement operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _entity_placement_resolve_operand(
+    value: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Resolve only literals and symbols present in the parsed equate map."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        return {"rawValue": value, "resolvedValue": _literal(token), "resolution": "literal"}
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+
+
+def _entity_placement_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach source-layout operands to each occurrence and every program total."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ENTITY_PLACEMENT_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "entity-placement source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_entity_placement_resolve_operand(argument, equates),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _entity_placement_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Pin the complete ordered sites and zero-inclusive program domain compactly."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("entity-placement source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("entity-placement program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _entity_placement_constant_use(
+    symbol: str, instruction: str, pattern: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Record a parsed source constant only when its exact use site still names it."""
+    if symbol not in equates or re.fullmatch(pattern, instruction) is None:
+        raise ValueError(f"entity-placement source constant use drift: {symbol}")
+    return {"symbol": symbol, "value": equates[symbol], "instruction": instruction}
+
+
+def _entity_placement_branch_target_record(
+    section_source: str,
+    branch_instruction: str,
+    expected_target_instruction: str,
+    ordered_instructions: list[str],
+) -> dict[str, Any]:
+    """Resolve one local branch label to its guarded first target instruction."""
+    branch = re.fullmatch(
+        r"(?:b(?:hi|pl|ne)\.[bwls]|dbf) (?:d7,)?(?P<label>@?[A-Za-z_][A-Za-z0-9_]*)",
+        branch_instruction,
+    )
+    if branch is None:
+        raise ValueError("entity-placement branch instruction drift")
+    label = branch.group("label")
+    label_match = re.search(rf"^{re.escape(label)}:\s*$", section_source, re.MULTILINE)
+    if label_match is None:
+        raise ValueError("entity-placement branch target label is missing")
+    target_statements = _statements(section_source[label_match.end() :])
+    if not target_statements:
+        raise ValueError("entity-placement branch target has no instruction")
+    target_instruction = target_statements[0]
+    target_statement_index = len(_statements(section_source[: label_match.start()]))
+    if (
+        target_instruction != expected_target_instruction
+        or target_statement_index >= len(ordered_instructions)
+        or ordered_instructions[target_statement_index] != target_instruction
+    ):
+        raise ValueError("entity-placement branch target instruction drift")
+    return {
+        "targetLabel": label,
+        "targetInstruction": target_instruction,
+        "targetStatementIndex": target_statement_index,
+    }
+
+
+def _entity_placement_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard one complete named handler section before fixture comparison."""
+    if macro == "setPosFlash":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b \(a6\),d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"move\.w \(a5\),d1",
+                r"move\.w #\$FE80,d2",
+                r"moveq #30,d7",
+                r"move\.w d2,\(a5\)",
+                r"jsr \(WaitForVInt\)\.w",
+                r"jsr \(WaitForVInt\)\.w",
+                r"move\.w d1,\(a5\)",
+                r"move\.w d7,d0",
+                r"subi\.w #15,d0",
+                r"bhi\.s loc_469D0",
+                r"moveq #1,d0",
+                r"add\.w d0,d0",
+                r"jsr \(Sleep\)\.w",
+                r"dbf d7,loc_469BA",
+                r"bra\.w csc19_setEntityPosAndFacing",
+            ],
+            owner="csc17_setEntityPosAndFacingWithFlash",
+        )
+        cursor_indexes = (0,)
+        state_reads = [{"sourceOperand": "(a5)", "instruction": ordered[2]}]
+        state_writes = [
+            {"sourceOperand": "(a5)", "instruction": ordered[index]}
+            for index in (5, 8)
+        ]
+        constant_uses: list[dict[str, Any]] = []
+        literal_uses = [
+            {"literalText": "$FE80", "value": _literal("$FE80"), "instruction": ordered[3]},
+            {"literalText": "30", "value": _literal("30"), "instruction": ordered[4]},
+            {"literalText": "15", "value": _literal("15"), "instruction": ordered[10]},
+            {"literalText": "1", "value": _literal("1"), "instruction": ordered[12]},
+        ]
+        branches = [
+            (ordered[11], "add.w d0,d0"),
+            (ordered[15], "move.w d2,(a5)"),
+        ]
+        alive_status_cursor_adjustment = None
+        direct_call_order = [ordered[index] for index in (1, 6, 7, 14)]
+        shared_tail_instruction = ordered[16]
+        return_instruction = None
+    elif macro == "setPos":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b \(a6\),d0",
+                r"moveq #4,d7",
+                r"bsr\.w AdjustScriptPointerByCharacterAliveStatus",
+                r"move\.b \(a6\)\+,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"moveq #0,d0",
+                r"move\.b \(a6\)\+,d0",
+                r"mulu\.w #MAP_TILE_SIZE,d0",
+                r"move\.w d0,\(a5\)",
+                r"move\.w d0,ENTITYDEF_OFFSET_XDEST\(a5\)",
+                r"moveq #0,d0",
+                r"move\.b \(a6\)\+,d0",
+                r"mulu\.w #MAP_TILE_SIZE,d0",
+                r"move\.w d0,ENTITYDEF_OFFSET_Y\(a5\)",
+                r"move\.w d0,ENTITYDEF_OFFSET_YDEST\(a5\)",
+                r"move\.b \(a6\)\+,ENTITYDEF_OFFSET_FACING\(a5\)",
+                r"bsr\.w UpdateEntitySprite_0",
+                r"rts",
+            ],
+            owner="csc19_setEntityPosAndFacing",
+        )
+        cursor_indexes = (0, 3, 6, 11, 15)
+        state_reads = []
+        state_writes = [
+            {"sourceOperand": operand, "instruction": ordered[index]}
+            for operand, index in (
+                ("(a5)", 8),
+                ("ENTITYDEF_OFFSET_XDEST(a5)", 9),
+                ("ENTITYDEF_OFFSET_Y(a5)", 13),
+                ("ENTITYDEF_OFFSET_YDEST(a5)", 14),
+                ("ENTITYDEF_OFFSET_FACING(a5)", 15),
+            )
+        ]
+        constant_uses = [
+            _entity_placement_constant_use(
+                "MAP_TILE_SIZE", ordered[index], r"mulu\.w #MAP_TILE_SIZE,d0", equates
+            )
+            for index in (7, 12)
+        ]
+        literal_uses = [
+            {"literalText": "4", "value": _literal("4"), "instruction": ordered[1]}
+        ] + [
+            {"literalText": "0", "value": _literal("0"), "instruction": ordered[index]}
+            for index in (5, 10)
+        ]
+        branches = []
+        alive_status_cursor_adjustment = {
+            "selectorPreReadInstruction": ordered[0],
+            "adjustmentLiteralInstruction": ordered[1],
+            "adjustmentLiteralText": "4",
+            "adjustmentLiteralValue": _literal("4"),
+            "callInstruction": ordered[2],
+        }
+        direct_call_order = [ordered[index] for index in (2, 4, 16)]
+        shared_tail_instruction = None
+        return_instruction = ordered[-1]
+    elif macro == "setFacing":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b \(a6\),d0",
+                r"moveq #2,d7",
+                r"bsr\.w AdjustScriptPointerByCharacterAliveStatus",
+                r"move\.b \(a6\)\+,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"move\.b \(a6\)\+,ENTITYDEF_OFFSET_FACING\(a5\)",
+                r"bsr\.w UpdateEntitySprite_0",
+                r"rts",
+            ],
+            owner="csc23_setEntityFacing",
+        )
+        cursor_indexes = (0, 3, 5)
+        state_reads = []
+        state_writes = [
+            {"sourceOperand": "ENTITYDEF_OFFSET_FACING(a5)", "instruction": ordered[5]}
+        ]
+        constant_uses = []
+        literal_uses = [
+            {"literalText": "2", "value": _literal("2"), "instruction": ordered[1]}
+        ]
+        branches = []
+        alive_status_cursor_adjustment = {
+            "selectorPreReadInstruction": ordered[0],
+            "adjustmentLiteralInstruction": ordered[1],
+            "adjustmentLiteralText": "2",
+            "adjustmentLiteralValue": _literal("2"),
+            "callInstruction": ordered[2],
+        }
+        direct_call_order = [ordered[index] for index in (2, 4, 6)]
+        shared_tail_instruction = None
+        return_instruction = ordered[-1]
+    elif macro == "setDest":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.w \(a6\)\+,d0",
+                r"move\.w d0,d6",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"moveq #0,d1",
+                r"moveq #0,d2",
+                r"move\.w \(a6\)\+,d1",
+                r"move\.w \(a6\)\+,d2",
+                r"mulu\.w #MAP_TILE_SIZE,d1",
+                r"mulu\.w #MAP_TILE_SIZE,d2",
+                r"move\.w d1,ENTITYDEF_OFFSET_XDEST\(a5\)",
+                r"move\.w d2,ENTITYDEF_OFFSET_YDEST\(a5\)",
+                r"move\.w #32,d3",
+                r"sub\.w \(a5\),d1",
+                r"bpl\.s loc_46DC4",
+                r"neg\.w d1",
+                r"neg\.w d3",
+                r"move\.w d1,ENTITYDEF_OFFSET_XTRAVEL\(a5\)",
+                r"move\.w d3,ENTITYDEF_OFFSET_XVELOCITY\(a5\)",
+                r"move\.w #32,d3",
+                r"sub\.w ENTITYDEF_OFFSET_Y\(a5\),d2",
+                r"bpl\.s loc_46DDA",
+                r"neg\.w d2",
+                r"neg\.w d3",
+                r"move\.w d2,ENTITYDEF_OFFSET_YTRAVEL\(a5\)",
+                r"move\.w d3,ENTITYDEF_OFFSET_YVELOCITY\(a5\)",
+                r"btst #\$F,d6",
+                r"bne\.s return_46DEC",
+                r"bsr\.w WaitForEntityToStopMoving",
+                r"rts",
+            ],
+            owner="csc29_setEntityDest",
+        )
+        cursor_indexes = (0, 5, 6)
+        state_reads = [
+            {"sourceOperand": "(a5)", "instruction": ordered[12]},
+            {"sourceOperand": "ENTITYDEF_OFFSET_Y(a5)", "instruction": ordered[19]},
+        ]
+        state_writes = [
+            {"sourceOperand": operand, "instruction": ordered[index]}
+            for operand, index in (
+                ("ENTITYDEF_OFFSET_XDEST(a5)", 9),
+                ("ENTITYDEF_OFFSET_YDEST(a5)", 10),
+                ("ENTITYDEF_OFFSET_XTRAVEL(a5)", 16),
+                ("ENTITYDEF_OFFSET_XVELOCITY(a5)", 17),
+                ("ENTITYDEF_OFFSET_YTRAVEL(a5)", 23),
+                ("ENTITYDEF_OFFSET_YVELOCITY(a5)", 24),
+            )
+        ]
+        constant_uses = [
+            _entity_placement_constant_use(
+                "MAP_TILE_SIZE", ordered[index], r"mulu\.w #MAP_TILE_SIZE,d[12]", equates
+            )
+            for index in (7, 8)
+        ]
+        literal_uses = [
+            {"literalText": "0", "value": _literal("0"), "instruction": ordered[index]}
+            for index in (3, 4)
+        ] + [
+            {"literalText": "32", "value": _literal("32"), "instruction": ordered[index]}
+            for index in (11, 18)
+        ] + [
+            {"literalText": "$F", "value": _literal("$F"), "instruction": ordered[25]}
+        ]
+        branches = [
+            (ordered[13], "move.w d1,ENTITYDEF_OFFSET_XTRAVEL(a5)"),
+            (ordered[20], "move.w d2,ENTITYDEF_OFFSET_YTRAVEL(a5)"),
+            (ordered[26], "rts"),
+        ]
+        alive_status_cursor_adjustment = None
+        direct_call_order = [ordered[index] for index in (2, 27)]
+        shared_tail_instruction = None
+        return_instruction = ordered[-1]
+    else:
+        raise ValueError(f"entity-placement guard has no macro profile: {macro}")
+    if len(statements) != len(ordered):
+        raise ValueError(f"entity-placement handler statement coverage drift: {macro}")
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _entity_placement_cursor_read_use_site(ordered[index]) for index in cursor_indexes
+        ],
+        "sourceStateReads": state_reads,
+        "sourceStateWrites": state_writes,
+        "sourceConstantUses": constant_uses,
+        "sourceLiteralUseSites": literal_uses,
+        "branchRecords": [
+            {
+                "branchInstruction": instruction,
+                "expectedTargetInstruction": target_instruction,
+            }
+            for instruction, target_instruction in branches
+        ],
+        "aliveStatusCursorAdjustment": alive_status_cursor_adjustment,
+        "directCallOrder": direct_call_order,
+        "sharedTailInstruction": shared_tail_instruction,
+        "sharedTail": None,
+        "returnInstruction": return_instruction,
+    }
+
+
+def _entity_placement_caller_breakdown(
+    disasm: Path,
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Keep per-handler direct/effective counts across the parsed target domain."""
+    instruction_targets = list(
+        dict.fromkeys(
+            call["instructionTarget"]
+            for handler_name in ENTITY_PLACEMENT_HANDLER_NAMES
+            for call in direct_call_rows[handler_name]
+        )
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    bounded_handlers = set(ENTITY_PLACEMENT_HANDLER_NAMES)
+    target_resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": aliases.get(target, {}).get("effectiveTarget", target),
+            "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+            "effectiveTargetScope": (
+                "internal"
+                if aliases.get(target, {}).get("effectiveTarget", target) in bounded_handlers
+                else "external"
+            ),
+        }
+        for target in instruction_targets
+    ]
+    effective_targets = list(
+        dict.fromkeys(row["effectiveTarget"] for row in target_resolutions)
+    )
+    resolution_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in target_resolutions
+    }
+    caller_rows = []
+    for handler_name in ENTITY_PLACEMENT_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler_name]:
+            target = call["instructionTarget"]
+            if target not in instruction_counts:
+                raise ValueError(f"entity-placement unexpected direct target: {target}")
+            instruction_counts[target] += 1
+            effective_counts[resolution_by_instruction[target]] += 1
+        caller_rows.append(
+            {
+                "handler": handler_name,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_rows)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_rows)
+        for target in effective_targets
+    }
+    return {
+        "callerHandlers": caller_rows,
+        "targetResolutions": target_resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalInstructionTargetTotals": {
+            target: (
+                instruction_totals[target]
+                if target_resolutions[instruction_targets.index(target)]["effectiveTargetScope"]
+                == "internal"
+                else 0
+            )
+            for target in instruction_targets
+        },
+        "externalInstructionTargetTotals": {
+            target: (
+                instruction_totals[target]
+                if target_resolutions[instruction_targets.index(target)]["effectiveTargetScope"]
+                == "external"
+                else 0
+            )
+            for target in instruction_targets
+        },
+        "internalEffectiveTargetTotals": {
+            target: (
+                effective_totals[target]
+                if next(
+                    row["effectiveTargetScope"]
+                    for row in target_resolutions
+                    if row["effectiveTarget"] == target
+                )
+                == "internal"
+                else 0
+            )
+            for target in effective_targets
+        },
+        "externalEffectiveTargetTotals": {
+            target: (
+                effective_totals[target]
+                if next(
+                    row["effectiveTargetScope"]
+                    for row in target_resolutions
+                    if row["effectiveTarget"] == target
+                )
+                == "external"
+                else 0
+            )
+            for target in effective_targets
+        },
+    }
+
+
+def _entity_placement_update_entity_sprite_wrapper_use_site(
+    section_source: str,
+) -> dict[str, str]:
+    """Guard the named wrapper's saved-register/call/restore instruction sequence."""
+    statements = _statements(section_source)
+    ordered = _force_state_ordered_statements(
+        statements,
+        [
+            r"movem\.l d6/a0,-\(sp\)",
+            r"move\.b ENTITYDEF_OFFSET_FACING\(a5\),d6",
+            r"movea\.l a5,a0",
+            r"jsr \(ChangeEntityMapsprite\)\.w",
+            r"movem\.l \(sp\)\+,d6/a0",
+            r"rts",
+        ],
+        owner="UpdateEntitySprite_0",
+    )
+    if len(statements) != len(ordered):
+        raise ValueError("UpdateEntitySprite_0 statement coverage drift")
+    return {"instruction": ordered[3]}
+
+
+def _entity_placement_source_identity_joins(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Join source owners and the independently parsed entity-action fixture by identity."""
+    owner_specs = (
+        (
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            (
+                *ENTITY_PLACEMENT_HANDLER_NAMES,
+                "GetEntityAddressFromCharacter",
+                "UpdateEntitySprite_0",
+                "AdjustScriptPointerByCharacterAliveStatus",
+            ),
+        ),
+        ("code/common/scripting/entity/entityfunctions_2.asm", ("WaitForEntityToStopMoving",)),
+        ("code/common/scripting/entity/entityscriptengine_2.asm", ("ChangeEntityMapsprite",)),
+        ("code/common/tech/interrupts/vintengine_1.asm", ("WaitForVInt", "Sleep")),
+    )
+    owners = []
+    for source_path, symbols in owner_specs:
+        source = read_upstream_text(disasm / source_path)
+        for symbol in symbols:
+            if symbol not in addresses or re.search(
+                rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE
+            ) is None:
+                raise ValueError(f"entity-placement source owner symbol drift: {symbol}")
+        owners.append(
+            {
+                "sourcePath": source_path,
+                "sourceSha256": hashlib.sha256(source.encode()).hexdigest().upper(),
+                "symbols": list(symbols),
+            }
+        )
+    entity_action_fixture = load_json(
+        repo_path("tests/fixtures/h2/entity-action-scripts-static-v1.json")
+    )
+    required_functions = ("UpdateEntityData", "ChangeEntityMapsprite")
+    for symbol in required_functions:
+        if symbol not in entity_action_fixture["function"] or symbol not in addresses:
+            raise ValueError("entity-placement entity-action fixture function drift")
+        if entity_action_fixture["function"][symbol] != addresses[symbol]:
+            raise ValueError(f"entity-placement entity-action address join drift: {symbol}")
+    wrapper_section = _map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "UpdateEntitySprite_0",
+    )
+    wrapper_use_site = _entity_placement_update_entity_sprite_wrapper_use_site(
+        wrapper_section
+    )
+    return {
+        "sourceOwners": owners,
+        "entityActionStaticContractJoin": {
+            "fixturePath": "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+            "fixtureId": entity_action_fixture["id"],
+            "upstreamCommit": entity_action_fixture["upstreamCommit"],
+            "independentlyParsedFunctions": [
+                {
+                    "symbol": symbol,
+                    "address": entity_action_fixture["function"][symbol],
+                }
+                for symbol in required_functions
+            ],
+            "wrapperInstruction": wrapper_use_site["instruction"],
+        },
+    }
+
+
+def _entity_placement_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the four-command source contract without assigning runtime behavior."""
+    if "MAP_TILE_SIZE" not in equates:
+        raise ValueError("entity-placement MAP_TILE_SIZE source constant is missing")
+    annotations_by_macro = _entity_placement_macro_annotations(disasm)
+    source_sites, program_totals = _entity_placement_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in ENTITY_PLACEMENT_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"entity-placement program total drift: {macro}")
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"] != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"]
+            != max(row["streamOffset"] + row["widthBytes"] for row in annotations)
+            or contract["operandLayout"]
+            != [
+                {
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "expression": f"\\{row['parameterOrdinal']}",
+                    "parameterOrdinals": [row["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for row in annotations
+            ]
+        ):
+            raise ValueError(f"entity-placement macro ABI drift: {macro}")
+
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    section_guards: dict[str, dict[str, Any]] = {}
+    for macro in ENTITY_PLACEMENT_MACRO_NAMES:
+        handler_name = ENTITY_PLACEMENT_HANDLER_BY_MACRO[macro]
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"entity-placement dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"entity-placement handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _entity_placement_section_guard(macro, statements, equates)
+        section_source = _map_camera_control_named_section_source(
+            disasm, handler_path, handler_name
+        )
+        for branch_record in section_guard["branchRecords"]:
+            branch_record["branchTarget"] = _entity_placement_branch_target_record(
+                section_source,
+                branch_record["branchInstruction"],
+                branch_record.pop("expectedTargetInstruction"),
+                section_guard["orderedInstructions"],
+            )
+        if macro == "setPosFlash":
+            if "setPos" not in section_guards:
+                raise ValueError("entity-placement shared tail guard order drift")
+            tail_guard = section_guards["setPos"]
+            tail_source = _map_camera_control_named_section_source(
+                disasm,
+                handler_path,
+                ENTITY_PLACEMENT_HANDLER_BY_MACRO["setPos"],
+            )
+            tail_statements = _statements(tail_source)
+            if tail_statements[0] != tail_guard["orderedInstructions"][0]:
+                raise ValueError("entity-placement shared tail target instruction drift")
+            section_guard["sharedTail"] = {
+                "targetHandler": ENTITY_PLACEMENT_HANDLER_BY_MACRO["setPos"],
+                "targetFirstInstruction": tail_statements[0],
+                "cursorReadUseSites": tail_guard["scriptCursorReadUseSites"],
+            }
+        cursor_bytes = sum(
+            row["cursorAdvanceByteCount"] for row in section_guard["scriptCursorReadUseSites"]
+        )
+        if macro == "setPosFlash":
+            cursor_bytes += sum(
+                row["cursorAdvanceByteCount"]
+                for row in section_guard["sharedTail"]["cursorReadUseSites"]
+            )
+        if cursor_bytes != contract["operandBytes"]:
+            raise ValueError(f"entity-placement script cursor width drift: {macro}")
+        direct_calls = _force_state_direct_calls(statements)
+        expected_calls = _force_state_direct_calls(section_guard["directCallOrder"])
+        if direct_calls != expected_calls:
+            raise ValueError(f"entity-placement direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        section_guards[macro] = section_guard
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations_by_macro[macro],
+                "statementCount": len(statements),
+                "guardedStatements": statements,
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    caller_breakdown = _entity_placement_caller_breakdown(
+        disasm, direct_call_rows, addresses, rom
+    )
+    if caller_breakdown["instructionTargetTotals"] != {
+        target: sum(
+            row["instructionTargetSiteCounts"][target]
+            for row in caller_breakdown["callerHandlers"]
+        )
+        for target in caller_breakdown["instructionTargetTotals"]
+    }:
+        raise ValueError("entity-placement instruction total drift")
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": ENTITY_PLACEMENT_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in ENTITY_PLACEMENT_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_entity_placement_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": caller_breakdown,
+        "sourceIdentityJoins": _entity_placement_source_identity_joins(disasm, addresses),
+        "runtimeQuestions": ENTITY_PLACEMENT_RUNTIME_QUESTIONS,
     }
 
 
@@ -6783,6 +7595,16 @@ def build_map_script_engine_contract(
         addresses,
         rom,
     )
+    entity_placement_command_facts = _entity_placement_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
     expected_words = b"".join(
@@ -6934,6 +7756,7 @@ def build_map_script_engine_contract(
         "mapLifecycleCommandFacts": map_lifecycle_command_facts,
         "mapInteractionTriggerCommandFacts": map_interaction_trigger_command_facts,
         "mapCameraControlCommandFacts": map_camera_control_command_facts,
+        "entityPlacementCommandFacts": entity_placement_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -6946,6 +7769,7 @@ def build_map_script_engine_contract(
             *MAP_LIFECYCLE_RUNTIME_QUESTIONS,
             *MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS,
             *MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS,
+            *ENTITY_PLACEMENT_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -6999,6 +7823,7 @@ def verify_map_script_engine_contract(
             "mapInteractionTriggerCommandFacts"
         ],
         "mapCameraControlCommandFacts": output["mapCameraControlCommandFacts"],
+        "entityPlacementCommandFacts": output["entityPlacementCommandFacts"],
     }
     for field in (
         "summary",
@@ -7027,11 +7852,17 @@ def verify_map_script_engine_contract(
         "mapLifecycleCommandFacts",
         "mapInteractionTriggerCommandFacts",
         "mapCameraControlCommandFacts",
+        "entityPlacementCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
     ):
         actual = program_fields.get(field)
+        if field == "entityPlacementCommandFacts":
+            actual = {
+                key: output["entityPlacementCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
         if field == "dispatcherFacts":
             actual = {
                 "sha256": output["dispatcher"]["sha256"],

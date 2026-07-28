@@ -19,6 +19,11 @@ from sf2tool.h2.map_script_engine import (
     _direct_call_sites,
     _emission_rows,
     _entity_dialogue_consumer_facts,
+    _entity_placement_branch_target_record,
+    _entity_placement_cursor_read_use_site,
+    _entity_placement_macro_annotations,
+    _entity_placement_section_guard,
+    _entity_placement_update_entity_sprite_wrapper_use_site,
     _entity_population_macro_annotations,
     _entity_population_read_use_site,
     _entity_population_section_guard,
@@ -210,6 +215,35 @@ cameraSpeed: macro
     ):
         with pytest.raises(ValueError, match="cursor-read"):
             _map_camera_control_cursor_read_use_site(near_miss)
+
+
+def test_map_entity_placement_cursor_read_parser_preserves_advance_and_sizes() -> None:
+    assert _entity_placement_cursor_read_use_site("move.b (a6),d0") == {
+        "sourceRegister": "a6",
+        "destinationOperand": "d0",
+        "transferredByteCount": 1,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "move.b (a6),d0",
+    }
+    assert _entity_placement_cursor_read_use_site("move.w (a6)+,d2") == {
+        "sourceRegister": "a6",
+        "destinationOperand": "d2",
+        "transferredByteCount": 2,
+        "cursorAdvanceByteCount": 2,
+        "instruction": "move.w (a6)+,d2",
+    }
+    assert _entity_placement_cursor_read_use_site("move.l (a6)+,d7")[
+        "transferredByteCount"
+    ] == 4
+    for near_miss in (
+        "move.w (a6),a0",
+        "move.w (a5)+,d0",
+        "move.w (a6)+,d0 ; comment",
+        "label: move.w (a6)+,d0",
+        "; move.w (a6)+,d0",
+    ):
+        with pytest.raises(ValueError, match="entity-placement cursor-read"):
+            _entity_placement_cursor_read_use_site(near_miss)
 
 
 def test_map_camera_control_section_guard_rejects_operand_branch_and_call_order() -> None:
@@ -4720,3 +4754,408 @@ def test_map_interaction_trigger_schema_exact_blocks_keep_large_corpora_compact(
 
         for definition in interaction_definitions.values():
             assert_closed_objects(definition)
+
+
+def test_map_entity_placement_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityPlacementCommandFacts"]
+    assert fixture["expected"]["entityPlacementCommandFacts"] == {
+        key: actual[key] for key in fixture["expected"]["entityPlacementCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("setPos", 25, 6, 4, 608),
+        ("setPosFlash", 23, 6, 4, 2),
+        ("setFacing", 35, 4, 2, 1579),
+        ("setDest", 41, 8, 6, 99),
+    ]
+    assert [row["sourceOperandAnnotations"] for row in actual["macros"]] == [
+        [
+            {
+                "parameterOrdinal": ordinal,
+                "sourceComment": comment,
+                "streamOffset": ordinal + 1,
+                "widthBytes": 1,
+            }
+            for ordinal, comment in enumerate(("entity to act", "X", "Y", "facing"), 1)
+        ],
+        [
+            {
+                "parameterOrdinal": ordinal,
+                "sourceComment": comment,
+                "streamOffset": ordinal + 1,
+                "widthBytes": 1,
+            }
+            for ordinal, comment in enumerate(("entity to act", "X", "Y", "facing"), 1)
+        ],
+        [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "entity to act",
+                "streamOffset": 2,
+                "widthBytes": 1,
+            },
+            {
+                "parameterOrdinal": 2,
+                "sourceComment": "facing",
+                "streamOffset": 3,
+                "widthBytes": 1,
+            },
+        ],
+        [
+            {
+                "parameterOrdinal": ordinal,
+                "sourceComment": comment,
+                "streamOffset": ordinal * 2,
+                "widthBytes": 2,
+            }
+            for ordinal, comment in enumerate(("entity to act", "X", "Y"), 1)
+        ],
+    ]
+    assert len(actual["sourceSites"]) == 204
+    assert len(actual["sourceSiteOrderKeys"]) == 2288
+    assert actual["sourceSitesSha256"] == (
+        "C451E4B4F2B154D9B01F7321E288D1E9DEC16A656E55730826C9E1800BE64734"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "5AE7802BB7D93463304AE491B89F136C763AF0E3BAF1EC85877F68E24867B388"
+    )
+    assert [
+        (
+            row["macro"],
+            row["handler"],
+            row["address"],
+            row["opcode"],
+            row["sourceCommandCount"],
+            row["statementCount"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        ("setPos", "csc19_setEntityPosAndFacing", 289298, 25, 608, 18),
+        ("setPosFlash", "csc17_setEntityPosAndFacingWithFlash", 289196, 23, 2, 17),
+        ("setFacing", "csc23_setEntityFacing", 289824, 35, 1579, 8),
+        ("setDest", "csc29_setEntityDest", 290200, 41, 99, 29),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["aliveStatusCursorAdjustment"] == {
+        "selectorPreReadInstruction": "move.b (a6),d0",
+        "adjustmentLiteralInstruction": "moveq #4,d7",
+        "adjustmentLiteralText": "4",
+        "adjustmentLiteralValue": 4,
+        "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+    }
+    assert actual["handlers"][1]["sectionGuard"]["sharedTail"] == {
+        "targetHandler": "csc19_setEntityPosAndFacing",
+        "targetFirstInstruction": "move.b (a6),d0",
+        "cursorReadUseSites": actual["handlers"][0]["sectionGuard"][
+            "scriptCursorReadUseSites"
+        ],
+    }
+    assert actual["handlers"][3]["sectionGuard"]["branchRecords"] == [
+        {
+            "branchInstruction": "bpl.s loc_46DC4",
+            "branchTarget": {
+                "targetLabel": "loc_46DC4",
+                "targetInstruction": "move.w d1,ENTITYDEF_OFFSET_XTRAVEL(a5)",
+                "targetStatementIndex": 16,
+            },
+        },
+        {
+            "branchInstruction": "bpl.s loc_46DDA",
+            "branchTarget": {
+                "targetLabel": "loc_46DDA",
+                "targetInstruction": "move.w d2,ENTITYDEF_OFFSET_YTRAVEL(a5)",
+                "targetStatementIndex": 23,
+            },
+        },
+        {
+            "branchInstruction": "bne.s return_46DEC",
+            "branchTarget": {
+                "targetLabel": "return_46DEC",
+                "targetInstruction": "rts",
+                "targetStatementIndex": 28,
+            },
+        },
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "AdjustScriptPointerByCharacterAliveStatus": 2,
+        "GetEntityAddressFromCharacter": 4,
+        "UpdateEntitySprite_0": 2,
+        "WaitForVInt": 2,
+        "Sleep": 1,
+        "WaitForEntityToStopMoving": 1,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["instructionTargetTotals"]
+    for field in ("internalInstructionTargetTotals", "internalEffectiveTargetTotals"):
+        assert actual["callerBreakdown"][field] == {
+            target: 0
+            for target in actual["callerBreakdown"]["instructionTargetTotals"]
+        }
+    assert actual["sourceIdentityJoins"]["entityActionStaticContractJoin"] == {
+        "fixturePath": "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+        "fixtureId": "sf2-entity-action-scripts-static-v1",
+        "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+        "independentlyParsedFunctions": [
+            {"symbol": "UpdateEntityData", "address": 23916},
+            {"symbol": "ChangeEntityMapsprite", "address": 24744},
+        ],
+        "wrapperInstruction": "jsr (ChangeEntityMapsprite).w",
+    }
+    assert actual["runtimeQuestions"] == [
+        "map-script-entity-placement/runtime-effects-reachability-matrix"
+    ]
+
+
+def test_map_entity_placement_source_guards_reject_use_site_order_and_label_drift() -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    facts = fixture["expected"]["entityPlacementCommandFacts"]
+    equates = map_script_engine._source_equates(disasm)
+    assert _entity_placement_macro_annotations(disasm)["setPos"] == facts["macros"][0][
+        "sourceOperandAnnotations"
+    ]
+    handler = facts["handlers"][0]
+    statements = map_script_engine._stable_handler_statements(
+        disasm,
+        {
+            "name": handler["handler"],
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": handler["statementCount"],
+        },
+    )
+    assert _entity_placement_section_guard("setPos", statements, equates)[
+        "directCallOrder"
+    ] == [
+        "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+        "bsr.w GetEntityAddressFromCharacter",
+        "bsr.w UpdateEntitySprite_0",
+    ]
+    with pytest.raises(ValueError, match="csc19_setEntityPosAndFacing statement is missing"):
+        _entity_placement_section_guard(
+            "setPos",
+            [
+                statement.replace("moveq #4,d7", "moveq #5,d7")
+                for statement in statements
+            ],
+            equates,
+        )
+    alive_adjustment_reordered = statements.copy()
+    alive_adjustment_reordered[0], alive_adjustment_reordered[1] = (
+        alive_adjustment_reordered[1],
+        alive_adjustment_reordered[0],
+    )
+    with pytest.raises(ValueError, match="csc19_setEntityPosAndFacing statement is missing"):
+        _entity_placement_section_guard("setPos", alive_adjustment_reordered, equates)
+    with pytest.raises(ValueError, match="csc19_setEntityPosAndFacing statement is missing"):
+        _entity_placement_section_guard(
+            "setPos",
+            [
+                statement.replace("bsr.w UpdateEntitySprite_0", "bsr.w UpdateEntityData")
+                for statement in statements
+            ],
+            equates,
+        )
+    with pytest.raises(ValueError, match="csc19_setEntityPosAndFacing statement is missing"):
+        _entity_placement_section_guard(
+            "setPos",
+            [
+                statement.replace("mulu.w #MAP_TILE_SIZE,d0", "mulu.w #384,d0")
+                for statement in statements
+            ],
+            equates,
+        )
+    flash = facts["handlers"][1]
+    flash_statements = map_script_engine._stable_handler_statements(
+        disasm,
+        {
+            "name": flash["handler"],
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": flash["statementCount"],
+        },
+    )
+    with pytest.raises(
+        ValueError, match="csc17_setEntityPosAndFacingWithFlash statement is missing"
+    ):
+        _entity_placement_section_guard(
+            "setPosFlash",
+            [
+                statement.replace(
+                    "bra.w csc19_setEntityPosAndFacing", "bra.w csc23_setEntityFacing"
+                )
+                for statement in flash_statements
+            ],
+            equates,
+        )
+    destination = facts["handlers"][3]
+    destination_statements = map_script_engine._stable_handler_statements(
+        disasm,
+        {
+            "name": destination["handler"],
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "statementCount": destination["statementCount"],
+        },
+    )
+    with pytest.raises(ValueError, match="csc29_setEntityDest statement is missing"):
+        _entity_placement_section_guard(
+            "setDest",
+            [
+                statement.replace("bpl.s loc_46DC4", "bne.s loc_46DC4")
+                for statement in destination_statements
+            ],
+            equates,
+        )
+    section_source = map_script_engine._map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "csc29_setEntityDest",
+    )
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _entity_placement_branch_target_record(
+            section_source.replace("loc_46DC4:", "loc_46DC5:"),
+            "bpl.s loc_46DC4",
+            "move.w d1,ENTITYDEF_OFFSET_XTRAVEL(a5)",
+            destination_statements,
+        )
+    wrapper_source = map_script_engine._map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "UpdateEntitySprite_0",
+    )
+    assert _entity_placement_update_entity_sprite_wrapper_use_site(wrapper_source) == {
+        "instruction": facts["sourceIdentityJoins"]["entityActionStaticContractJoin"][
+            "wrapperInstruction"
+        ]
+    }
+    wrapper_statements = _statements(wrapper_source)
+    target_drift = [
+        statement.replace("(ChangeEntityMapsprite).w", "(UpdateEntityData).w")
+        for statement in wrapper_statements
+    ]
+    opcode_drift = [
+        statement.replace("jsr (ChangeEntityMapsprite).w", "bsr (ChangeEntityMapsprite).w")
+        for statement in wrapper_statements
+    ]
+    order_drift = wrapper_statements.copy()
+    order_drift[2], order_drift[3] = order_drift[3], order_drift[2]
+    for mutation in (target_drift, opcode_drift, order_drift):
+        with pytest.raises(ValueError, match="UpdateEntitySprite_0 statement is missing"):
+            _entity_placement_update_entity_sprite_wrapper_use_site("\n".join(mutation))
+
+
+def test_map_entity_placement_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    sources = (
+        map_script_engine_output,
+        fixture,
+    )
+    for schema_path, source in zip(schema_paths, sources, strict=True):
+        schema = schema_path
+        validate_json(source, schema, owner="entity-placement baseline")
+
+        missing = deepcopy(source)
+        target = (
+            missing["entityPlacementCommandFacts"]
+            if source is map_script_engine_output
+            else missing["expected"]["entityPlacementCommandFacts"]
+        )
+        del target["handlers"][3]["sectionGuard"]["branchRecords"][0]["branchTarget"][
+            "targetStatementIndex"
+        ]
+        with pytest.raises(ValueError, match="targetStatementIndex"):
+            validate_json(missing, schema, owner="entity-placement missing nested field")
+
+        renamed = deepcopy(source)
+        target = (
+            renamed["entityPlacementCommandFacts"]
+            if source is map_script_engine_output
+            else renamed["expected"]["entityPlacementCommandFacts"]
+        )
+        operand = target["macros"][0]["sourceOperandAnnotations"][0]
+        operand["label"] = operand.pop("sourceComment")
+        with pytest.raises(ValueError, match="sourceComment"):
+            validate_json(renamed, schema, owner="entity-placement renamed nested field")
+
+        extra = deepcopy(source)
+        target = (
+            extra["entityPlacementCommandFacts"]
+            if source is map_script_engine_output
+            else extra["expected"]["entityPlacementCommandFacts"]
+        )
+        target["handlers"][1]["sectionGuard"]["sharedTail"]["extra"] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema, owner="entity-placement extra nested field")
+
+        reordered = deepcopy(source)
+        target = (
+            reordered["entityPlacementCommandFacts"]
+            if source is map_script_engine_output
+            else reordered["expected"]["entityPlacementCommandFacts"]
+        )
+        source_order = target["sourceSiteOrderKeys"]
+        source_order[0], source_order[1] = source_order[1], source_order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema, owner="entity-placement exact source order")
+
+        boundary = deepcopy(source)
+        target = (
+            boundary["entityPlacementCommandFacts"]
+            if source is map_script_engine_output
+            else boundary["expected"]["entityPlacementCommandFacts"]
+        )
+        target["handlers"][0]["sectionGuard"]["aliveStatusCursorAdjustment"][
+            "adjustmentLiteralValue"
+        ] = 5
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema, owner="entity-placement exact boundary")
+
+
+def test_map_entity_placement_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("entityPlacementCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "entityPlacementCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        assert "sourceSites" not in exact["properties"]
+        assert "programTotals" not in exact["properties"]
+        facts = schema["definitions"]["entityPlacementCommandFacts"]
+        assert facts["additionalProperties"] is False
+        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        for name, definition in schema["definitions"].items():
+            if name.startswith("entityPlacement"):
+                assert_closed_objects(definition)

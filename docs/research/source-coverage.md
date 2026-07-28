@@ -393,6 +393,16 @@ sites resolve to 384, while per-handler internal/external direct/effective calle
 zero-inclusive. `map-script-camera-control/runtime-effects-matrix` is its sole H3 follow-up;
 target/destination meaning, units, speed, timing, reachability, and presentation remain outside this
 static credit.
+The adjacent entity-placement slice is exact for four source-named forms: 608 `setPos` `$19`, two
+`setPosFlash` `$17`, 1,579 `setFacing` `$23`, and 99 `setDest` `$29` commands (2,288 total) across
+204 non-empty groups and the same 304-row zero-inclusive program domain. It preserves physical macro
+bytes/comments, four named handler section guards, alive-status cursor-adjustment and shared-tail
+boundaries, parsed `MAP_TILE_SIZE` use sites, source-shaped state reads/writes, resolved local branch
+targets, and six-target zero-inclusive direct/effective caller maps. The provenance join to the
+independently parsed entity-action static fixture does not promote a runtime movement/animation fact.
+`map-script-entity-placement/runtime-effects-reachability-matrix` is its sole grouped H3 follow-up;
+reachability, operand/state meaning, units, timing, persistence, collision, and presentation remain
+outside this static credit.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

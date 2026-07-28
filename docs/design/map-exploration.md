@@ -3,7 +3,7 @@
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
   dispatch rules, static transition-consumer priority, load-path-specific layout persistence,
-  source-shaped map-script entity population/reload and camera-control command records, and batched frame-level entity
+  source-shaped map-script entity population/reload, camera-control, and entity-placement command records, and batched frame-level entity
   movement/action timing
 - **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
@@ -114,6 +114,19 @@ remain distinct identities, including zero-count per-handler rows, and the two p
 `MAP_TILE_SIZE` use sites in `SetCameraDestination` MUST remain independent source records. A remake
 MAY define an engine-specific camera interface independently; this static contract establishes neither
 target/destination meaning, coordinate units, speed effect, timing, reachability, nor presentation.
+Map-script imports MUST separately retain the source-named `setPos`, `setPosFlash`, `setFacing`, and
+`setDest` records in `sf2-map-script-engine-static-v1` at
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityPlacementCommandFacts`. Each record MUST preserve its opcode, encoded/operand byte
+widths, raw macro comments, program/command identity, and compact complete-source order/hash boundary.
+The import boundary MUST also retain the exact named handler records: `csc19`/`csc23` non-advancing
+selector read plus alive-status cursor-adjustment call and advancing reads; `csc17`'s local branch
+targets and `csc19` shared-tail edge; `csc29`'s three local branch targets; parsed `MAP_TILE_SIZE`
+multiplier use sites; source-shaped state read/write operands; and zero-inclusive direct/effective
+caller maps. These source records MUST NOT be normalized into a placement, facing, movement,
+visibility, animation, coordinate-unit, collision, persistence, timing, or rendering model. A remake
+MAY define its own entity-state interface independently; all original runtime consequences remain in
+`map-script-entity-placement/runtime-effects-reachability-matrix`.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

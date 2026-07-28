@@ -11,7 +11,8 @@
   follower/battle-stat family/program-site/handler/caller contract, the complete three-command map-script
   camera-control family/program-site/handler/caller/service contract, the complete two-command map-script
   block-copy family/program-site/handler/caller contract, the complete four-command map-script entity
-  population/reload family/program-site/handler/caller contract, the complete 119-row sprite-dialogue
+  population/reload family/program-site/handler/caller contract, the complete four-command map-script
+  entity-placement source/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -230,6 +231,71 @@ The input identity is the local US ROM SHA-256
 `uv run sf2 h2 map-script-engine`; observed result is
 `tests/fixtures/h2/map-script-engine-static-v1.json`, fixture ID
 `sf2-map-script-engine-static-v1`, field `expected.mapCameraControlCommandFacts`.
+
+## Confirmed Map-Script Entity-Placement Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `entityPlacementCommandFacts` retains four
+source-named macro forms in macro source order: `setPos` `$19` (608 sites, 6 encoded bytes, 4 operand
+bytes), `setPosFlash` `$17` (2, 6, 4), `setFacing` `$23` (1,579, 4, 2), and `setDest` `$29` (99, 8,
+6). Their byte/word operand widths and raw comments remain separate source facts: the two four-byte
+forms label `entity to act`, `X`, `Y`, and `facing`; `setFacing` labels `entity to act` and `facing`;
+and `setDest` labels three word fields `entity to act`, `X`, and `Y`. These source labels and widths do
+not establish a coordinate unit, placement, facing, animation, visibility, or player-visible result.
+
+**Confirmed:** the complete bounded corpus has 2,288 command occurrences in 204 non-empty source
+program groups, while its 304 `programTotals` rows are zero-inclusive. The extractor keeps complete
+source/program order separately and pins the ordered source-site and program-total corpora with SHA-256
+`C451E4B4F2B154D9B01F7321E288D1E9DEC16A656E55730826C9E1800BE64734` and
+`5AE7802BB7D93463304AE491B89F136C763AF0E3BAF1EC85877F68E24867B388`. The tracked fixture uses these
+compact order/hash constraints rather than copying the large source-site or program-total records.
+
+**Confirmed:** the four named handler sections are H1/ROM `csc19_setEntityPosAndFacing` `$46A32`
+(18 statements), `csc17_setEntityPosAndFacingWithFlash` `$469CC` (17), `csc23_setEntityFacing`
+`$46C60` (8), and `csc29_setEntityDest` `$46DB8` (29). `csc19` and `csc23` each preserve their
+non-advancing A6 selector read, parsed `moveq #4,d7` or `moveq #2,d7`, and ordered
+`AdjustScriptPointerByCharacterAliveStatus` call before their advancing operand reads. `csc17` has no
+local return: its guarded `bra.w csc19_setEntityPosAndFacing` shared-tail edge retains the target
+handler and first instruction, while its two local branches resolve to `loc_469D0`/`add.w d0,d0` and
+`loc_469BA`/`move.w d2,(a5)`. `csc29` separately resolves its two `bpl.s` targets and its `bne.s`
+return target. These are control-flow records only, not evidence for an effect of the source names.
+
+**Confirmed:** all source reads and writes remain source-shaped operands. `csc19` records its `(a5)`,
+`ENTITYDEF_OFFSET_XDEST`, `ENTITYDEF_OFFSET_Y`, `ENTITYDEF_OFFSET_YDEST`, and
+`ENTITYDEF_OFFSET_FACING` writes; `csc23` records its facing-offset write; `csc17` records its two
+`(a5)` writes; and `csc29` records its `(a5)`/`ENTITYDEF_OFFSET_Y` reads and six destination/travel/
+velocity-named writes. The two `mulu.w #MAP_TILE_SIZE` use sites in both `csc19` and `csc29` resolve the
+single parsed `sf2enums.asm` equate to 384. The literal `$FE80`, 30, 15, 1, 2, 32, and `$F` records are
+kept as parsed source immediates; no lifecycle, unit, or hardware interpretation is assigned to them.
+
+**Confirmed:** the comment-stripping instruction parser retains six direct instruction identities and
+zero-inclusive per-handler maps. Aggregate direct/effective totals are
+`AdjustScriptPointerByCharacterAliveStatus` 2, `GetEntityAddressFromCharacter` 4,
+`UpdateEntitySprite_0` 2, `WaitForVInt` 2, `Sleep` 1, and `WaitForEntityToStopMoving` 1. No current
+call instruction is a jump-interface alias, so instruction and effective identities are equal; all
+six internal maps are explicitly zero and the external maps retain the totals. Labels, comments,
+near-miss mnemonics, and operands do not count as calls. The provenance join independently binds the
+`UpdateEntitySprite_0` wrapper's `jsr (ChangeEntityMapsprite).w` to the existing
+`sf2-entity-action-scripts-static-v1` fixture, which separately records `UpdateEntityData` and
+`ChangeEntityMapsprite`; it does not assert a runtime call edge to `UpdateEntityData`.
+
+### Runtime questions — entity placement
+
+**Unknown:** `map-script-entity-placement/runtime-effects-reachability-matrix` is the sole grouped H3
+queue. One shared launch must determine normal-story reachability; alive-status cursor consequences;
+the meaning and units of all operands; resulting entity state; animation/visibility/presentation;
+wait/sleep/VInt timing; map/collision/pathfinding interaction; and persistence. This static contract
+does not promote any of those outcomes from macro, field, or callee names.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `setPos`,
+`setPosFlash`, `setFacing`, and `setDest`; `code/common/scripting/map/mapscriptengine_1.asm` named
+sections and helper symbols above; `sf2enums.asm::MAP_TILE_SIZE`; H1 listing addresses; and local US
+ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityPlacementCommandFacts`.
 
 ## Confirmed Map-Script Roster/Death Command Family
 
