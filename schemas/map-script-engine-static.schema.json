@@ -33,7 +33,8 @@
     "entityActionBridgeCommandFacts",
     "entityLifecyclePresentationCommandFacts",
     "entityGestureRelationshipMotionCommandFacts",
-    "screenPresentationCommandFacts"
+    "screenPresentationCommandFacts",
+    "entityPresentationFxCommandFacts"
   ],
   "properties": {
     "schemaVersion": {
@@ -321,8 +322,8 @@
     },
     "runtimeQuestions": {
       "type": "array",
-      "minItems": 16,
-      "maxItems": 16,
+      "minItems": 17,
+      "maxItems": 17,
       "items": {
         "type": "string"
       },
@@ -342,7 +343,8 @@
         "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
         "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
         "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
-        "map-script-screen-presentation/runtime-effects-matrix"
+        "map-script-screen-presentation/runtime-effects-matrix",
+        "map-script-entity-presentation-fx/runtime-effects-matrix"
       ]
     },
     "dialogueCommandFacts": {
@@ -46761,6 +46763,1414 @@
           }
         }
       ]
+    },
+    "entityPresentationFxCommandFacts": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/entityPresentationFxCommandFacts"
+        },
+        {
+          "properties": {
+            "macros": {
+              "const": [
+                {
+                  "name": "animEntityFX",
+                  "opcode": 34,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "shorthand:ENTITY_TRANSITION_"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc22_animateEntityFadeInOrOut",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "transition type",
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "encoding": "shorthand:ENTITY_TRANSITION_"
+                    }
+                  ],
+                  "sourceCommandCount": 66
+                },
+                {
+                  "name": "headshake",
+                  "opcode": 39,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc27_entityShakeHead",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    }
+                  ],
+                  "sourceCommandCount": 63
+                },
+                {
+                  "name": "entityFlashWhite",
+                  "opcode": 24,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc18_flashEntityWhite",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "duration",
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    }
+                  ],
+                  "sourceCommandCount": 48
+                }
+              ]
+            },
+            "sourceSiteOrderKeys": {
+              "const": [
+                "abcs_battle01:29:animEntityFX",
+                "abcs_battle01:48:animEntityFX",
+                "abcs_battle01:58:animEntityFX",
+                "bbcs_01:49:animEntityFX",
+                "bbcs_06:18:headshake",
+                "abcs_battle07:85:headshake",
+                "abcs_battle07:93:headshake",
+                "abcs_battle07:101:entityFlashWhite",
+                "abcs_battle07:132:entityFlashWhite",
+                "abcs_battle07:139:animEntityFX",
+                "abcs_battle07:142:animEntityFX",
+                "abcs_battle07:259:entityFlashWhite",
+                "abcs_battle07:310:animEntityFX",
+                "abcs_battle07:313:animEntityFX",
+                "abcs_battle07:331:headshake",
+                "bbcs_07:5:animEntityFX",
+                "bbcs_07:83:animEntityFX",
+                "abcs_battle08:38:headshake",
+                "abcs_battle13:14:headshake",
+                "abcs_battle15:24:entityFlashWhite",
+                "abcs_battle15:28:entityFlashWhite",
+                "bbcs_16:62:animEntityFX",
+                "bbcs_16:71:animEntityFX",
+                "abcs_battle26:17:entityFlashWhite",
+                "abcs_battle26:20:animEntityFX",
+                "abcs_battle26:22:animEntityFX",
+                "abcs_battle26:32:headshake",
+                "bbcs_26:30:animEntityFX",
+                "bbcs_26:50:animEntityFX",
+                "bbcs_26:87:animEntityFX",
+                "bbcs_26:88:entityFlashWhite",
+                "bbcs_26:91:animEntityFX",
+                "bbcs_26:94:animEntityFX",
+                "bbcs_26:128:animEntityFX",
+                "abcs_battle28:55:entityFlashWhite",
+                "abcs_battle28:90:entityFlashWhite",
+                "bbcs_28:69:headshake",
+                "bbcs_29:46:animEntityFX",
+                "bbcs_29:49:animEntityFX",
+                "bbcs_29:51:animEntityFX",
+                "bbcs_29:54:animEntityFX",
+                "bbcs_29:56:animEntityFX",
+                "bbcs_29:59:animEntityFX",
+                "bbcs_29:61:entityFlashWhite",
+                "abcs_battle30:30:entityFlashWhite",
+                "abcs_battle30:42:entityFlashWhite",
+                "abcs_battle30:48:entityFlashWhite",
+                "abcs_battle30:56:entityFlashWhite",
+                "abcs_battle30:61:animEntityFX",
+                "abcs_battle30:96:entityFlashWhite",
+                "abcs_battle30:105:entityFlashWhite",
+                "abcs_battle30:111:animEntityFX",
+                "bbcs_31:10:animEntityFX",
+                "bbcs_31:11:animEntityFX",
+                "bbcs_31:18:animEntityFX",
+                "bbcs_31:48:animEntityFX",
+                "bbcs_31:68:animEntityFX",
+                "bbcs_31:94:animEntityFX",
+                "bbcs_34:11:animEntityFX",
+                "bbcs_34:27:animEntityFX",
+                "bbcs_34:39:animEntityFX",
+                "bbcs_35:29:animEntityFX",
+                "bbcs_35:32:animEntityFX",
+                "bbcs_35:58:animEntityFX",
+                "abcs_battle36:11:animEntityFX",
+                "abcs_battle36:13:animEntityFX",
+                "abcs_battle36:23:animEntityFX",
+                "abcs_battle37:40:entityFlashWhite",
+                "bbcs_37:22:animEntityFX",
+                "bbcs_37:24:animEntityFX",
+                "bbcs_37:43:animEntityFX",
+                "abcs_battle38:58:headshake",
+                "abcs_battle38:111:headshake",
+                "abcs_battle40:44:entityFlashWhite",
+                "abcs_battle40:77:entityFlashWhite",
+                "bbcs_40:63:entityFlashWhite",
+                "abcs_battle42:162:animEntityFX",
+                "cs_55288:23:headshake",
+                "cs_55BEE:57:headshake",
+                "cs_5779C:74:headshake",
+                "cs_58116:11:headshake",
+                "cs_58512:26:animEntityFX",
+                "cs_58512:28:animEntityFX",
+                "cs_58856:48:headshake",
+                "cs_58B7A:54:headshake",
+                "cs_58B7A:108:headshake",
+                "cs_5249E:26:headshake",
+                "cs_52530:27:headshake",
+                "cs_612BE:35:animEntityFX",
+                "cs_612BE:44:animEntityFX",
+                "cs_62D0E:126:headshake",
+                "cs_62D0E:183:headshake",
+                "cs_534D2:17:headshake",
+                "cs_53B66:38:headshake",
+                "cs_53B66:55:entityFlashWhite",
+                "cs_53B66:58:entityFlashWhite",
+                "cs_53B66:80:animEntityFX",
+                "cs_59656:40:headshake",
+                "cs_59656:41:headshake",
+                "cs_59656:42:headshake",
+                "cs_5D3B8:8:headshake",
+                "cs_5A33A:31:entityFlashWhite",
+                "cs_5A33A:33:entityFlashWhite",
+                "cs_5A33A:43:headshake",
+                "cs_5D644:1:animEntityFX",
+                "cs_5AC58:46:headshake",
+                "cs_5AC58:86:animEntityFX",
+                "cs_5AC58:88:animEntityFX",
+                "cs_5B016:23:headshake",
+                "cs_5B6C0:4:entityFlashWhite",
+                "cs_5B6C0:116:entityFlashWhite",
+                "cs_5B6C0:121:headshake",
+                "cs_5B6C0:138:entityFlashWhite",
+                "cs_5DA7A:9:headshake",
+                "cs_5FB30:3:headshake",
+                "cs_5FF06:2:entityFlashWhite",
+                "cs_600CE:24:headshake",
+                "cs_600CE:25:headshake",
+                "cs_600CE:27:headshake",
+                "cs_600CE:28:headshake",
+                "cs_600CE:30:headshake",
+                "cs_5EB44:28:animEntityFX",
+                "cs_5EB44:31:animEntityFX",
+                "cs_5EBFC:30:animEntityFX",
+                "cs_615E6:215:entityFlashWhite",
+                "cs_615E6:218:entityFlashWhite",
+                "cs_615E6:221:entityFlashWhite",
+                "cs_615E6:261:animEntityFX",
+                "cs_615E6:289:entityFlashWhite",
+                "cs_615E6:315:headshake",
+                "cs_615E6:320:entityFlashWhite",
+                "cs_615E6:324:entityFlashWhite",
+                "cs_615E6:351:animEntityFX",
+                "cs_615E6:358:animEntityFX",
+                "cs_615E6:407:animEntityFX",
+                "cs_615E6:410:animEntityFX",
+                "cs_615E6:417:animEntityFX",
+                "cs_615E6:439:headshake",
+                "cs_615E6:449:headshake",
+                "cs_615E6:455:headshake",
+                "cs_615E6:456:headshake",
+                "cs_615E6:470:headshake",
+                "cs_615E6:471:headshake",
+                "cs_615E6:472:headshake",
+                "cs_615E6:473:headshake",
+                "cs_615E6:474:headshake",
+                "cs_615E6:475:headshake",
+                "cs_615E6:477:headshake",
+                "cs_615E6:503:headshake",
+                "cs_615E6:514:headshake",
+                "cs_615E6:535:headshake",
+                "cs_615E6:566:headshake",
+                "cs_615E6:600:entityFlashWhite",
+                "cs_615E6:676:entityFlashWhite",
+                "cs_615E6:699:entityFlashWhite",
+                "cs_615E6:719:headshake",
+                "cs_615E6:726:entityFlashWhite",
+                "cs_5C6CA:16:entityFlashWhite",
+                "cs_5CC26:0:entityFlashWhite",
+                "cs_5CC26:39:entityFlashWhite",
+                "cs_5CCF6:0:entityFlashWhite",
+                "cs_5CCF6:39:entityFlashWhite",
+                "IntroCutscene1:77:headshake",
+                "IntroCutscene1:135:headshake",
+                "IntroCutscene2:66:animEntityFX",
+                "IntroCutscene3:34:headshake",
+                "IntroCutscene3:150:headshake",
+                "IntroCutscene3:176:headshake",
+                "IntroCutscene3:177:headshake",
+                "IntroCutscene3:217:headshake",
+                "IntroCutscene4:155:headshake",
+                "IntroCutscene4:221:entityFlashWhite",
+                "IntroCutscene4:224:entityFlashWhite",
+                "data/scripting/map/debugscripts.asm#L11:2:entityFlashWhite",
+                "data/scripting/map/debugscripts.asm#L86:1:entityFlashWhite",
+                "data/scripting/map/debugscripts.asm#L86:4:entityFlashWhite",
+                "data/scripting/map/debugscripts.asm#L86:5:animEntityFX"
+              ]
+            },
+            "sourceSitesSha256": {
+              "const": "A5A1424438C21C3A3B7602F8537851AD559F1193E72B5D998AF184BED04B4738"
+            },
+            "programTotalOrderKeys": {
+              "const": [
+                "cs_45284",
+                "cs_45348",
+                "cs_453F2",
+                "cs_45470",
+                "ms_BowieShrinkIn",
+                "ms_BowieGrowOut",
+                "abcs_battle00",
+                "abcs_battle01",
+                "bbcs_01",
+                "rbcs_battle01",
+                "bbcs_03",
+                "abcs_battle04",
+                "bbcs_04",
+                "abcs_battle05",
+                "edcs_battle5",
+                "bbcs_06",
+                "abcs_battle07",
+                "bbcs_07",
+                "abcs_battle08",
+                "bbcs_08",
+                "bbcs_11",
+                "abcs_battle12",
+                "edcs_battle12",
+                "abcs_battle13",
+                "abcs_battle15",
+                "bbcs_15",
+                "abcs_battle16",
+                "bbcs_16",
+                "abcs_battle18",
+                "bbcs_18",
+                "abcs_battle20",
+                "abcs_battle21",
+                "bbcs_21",
+                "abcs_battle26",
+                "bbcs_26",
+                "bscs_battle27",
+                "abcs_battle28",
+                "bbcs_28",
+                "bbcs_29",
+                "abcs_battle30",
+                "bbcs_30",
+                "bbcs_31",
+                "abcs_battle32",
+                "bbcs_32",
+                "rbcs_battle32",
+                "abcs_battle33",
+                "bbcs_33",
+                "abcs_battle34",
+                "bbcs_34",
+                "bbcs_35",
+                "abcs_battle36",
+                "bbcs_36",
+                "abcs_battle37",
+                "bbcs_37",
+                "abcs_battle38",
+                "bbcs_38",
+                "bbcs_39",
+                "abcs_battle40",
+                "bbcs_40",
+                "rbcs_battle40_1",
+                "rbcs_battle40_2",
+                "bbcs_41",
+                "abcs_battle42",
+                "bbcs_42",
+                "abcs_battle43",
+                "edcs_battle43",
+                "cs_5E3C2",
+                "cs_5E772",
+                "cs_512BA",
+                "cs_6283E",
+                "cs_513A0",
+                "cs_513BA",
+                "cs_51374",
+                "cs_5137A",
+                "cs_513CE",
+                "cs_513D6",
+                "cs_513E2",
+                "cs_51444",
+                "cs_5144C",
+                "cs_51454",
+                "cs_5145C",
+                "cs_5148C",
+                "cs_5149A",
+                "cs_51652",
+                "cs_516A8",
+                "cs_628C8",
+                "cs_6290C",
+                "cs_51742",
+                "cs_51750",
+                "cs_51B14",
+                "cs_60656",
+                "cs_606AC",
+                "cs_606E0",
+                "cs_606EA",
+                "cs_60708",
+                "cs_607DE",
+                "cs_6093A",
+                "cs_60B10",
+                "cs_60BA6",
+                "cs_60C42",
+                "cs_60CA4",
+                "cs_60EB2",
+                "cs_60F18",
+                "cs_60F64",
+                "cs_60FA4",
+                "cs_6060E",
+                "cs_54CC6",
+                "cs_54E70",
+                "cs_54E78",
+                "cs_54E86",
+                "cs_54F26",
+                "cs_55242",
+                "cs_55288",
+                "cs_55832",
+                "cs_55A36",
+                "cs_55BEE",
+                "cs_56146",
+                "cs_56172",
+                "cs_56314",
+                "cs_563B2",
+                "cs_56422",
+                "cs_568F6",
+                "cs_569BC",
+                "cs_56AE6",
+                "cs_570B0",
+                "cs_573EC",
+                "cs_574A6",
+                "cs_5766C",
+                "cs_5779C",
+                "cs_5797A",
+                "cs_57AAA",
+                "cs_57D22",
+                "cs_58116",
+                "cs_58310",
+                "cs_58330",
+                "cs_58512",
+                "cs_585FE",
+                "cs_58856",
+                "cs_58AE2",
+                "cs_58B7A",
+                "cs_58E5C",
+                "cs_58F5C",
+                "cs_58F7E",
+                "cs_58FA4",
+                "cs_5D04E",
+                "cs_51F88",
+                "cs_521BA",
+                "cs_5247C",
+                "cs_5249E",
+                "cs_52530",
+                "cs_528CA",
+                "cs_528D4",
+                "cs_52938",
+                "cs_52A3C",
+                "cs_612BE",
+                "cs_6143C",
+                "cs_52F0C",
+                "cs_52F24",
+                "cs_52F40",
+                "cs_53104",
+                "cs_62D06",
+                "cs_62D0E",
+                "cs_53176",
+                "cs_534D2",
+                "cs_535FA",
+                "cs_53620",
+                "cs_5362A",
+                "cs_53816",
+                "cs_632EA",
+                "cs_6335E",
+                "cs_53996",
+                "cs_633B2",
+                "cs_53B66",
+                "cs_EndingKiss",
+                "cs_53EF4",
+                "cs_53F2A",
+                "cs_59656",
+                "cs_5994E",
+                "cs_5996E",
+                "cs_599A4",
+                "cs_599B2",
+                "cs_StartSpecialBattle",
+                "cs_LeaveSpecialBattle",
+                "cs_5D3AA",
+                "cs_5D3B8",
+                "cs_59E04",
+                "cs_59F20",
+                "cs_59FB8",
+                "cs_5F3A2",
+                "cs_5F3C4",
+                "cs_5A256",
+                "cs_5A30C",
+                "cs_5A31E",
+                "cs_5A33A",
+                "cs_5A4FE",
+                "cs_5D63C",
+                "cs_5D644",
+                "cs_5D652",
+                "cs_5D712",
+                "cs_5D724",
+                "cs_5D732",
+                "cs_5A828",
+                "cs_5A8CA",
+                "cs_5A8E6",
+                "cs_5A90E",
+                "cs_5A92A",
+                "cs_5A93A",
+                "cs_5A956",
+                "cs_5A97E",
+                "cs_5A99A",
+                "cs_5A9AA",
+                "cs_5A9C6",
+                "cs_5A9EE",
+                "cs_5AA0A",
+                "cs_5AA1A",
+                "cs_5AA36",
+                "cs_5AA5E",
+                "cs_5AA7A",
+                "cs_5ABA8",
+                "cs_5ABCC",
+                "cs_5ABE6",
+                "cs_5AC04",
+                "cs_5AC1C",
+                "cs_5AC34",
+                "cs_5AC4C",
+                "cs_5AC58",
+                "cs_5AF36",
+                "cs_5B016",
+                "cs_5B466",
+                "cs_5B6C0",
+                "cs_5DA28",
+                "cs_5DA7A",
+                "cs_5FA9C",
+                "cs_5FABC",
+                "cs_5FB30",
+                "cs_5FB6A",
+                "cs_5DD8E",
+                "cs_5DD9C",
+                "cs_5DE22",
+                "cs_5DE2E",
+                "cs_5DE76",
+                "cs_5E0EE",
+                "cs_5E0F8",
+                "cs_5E20A",
+                "cs_53FD8",
+                "cs_53FE0",
+                "cs_5F4AE",
+                "cs_5F4B8",
+                "cs_5F594",
+                "cs_5FE9A",
+                "cs_5FF06",
+                "cs_540C0",
+                "cs_54570",
+                "cs_54578",
+                "cs_600B2",
+                "cs_600CE",
+                "cs_5C312",
+                "cs_5C3AA",
+                "cs_5C3D8",
+                "cs_5C4EE",
+                "cs_5C622",
+                "cs_5E27C",
+                "cs_5E320",
+                "cs_5E346",
+                "cs_6150A",
+                "cs_5EB26",
+                "cs_5EB44",
+                "cs_5EBFC",
+                "cs_5ED06",
+                "cs_5EDB8",
+                "cs_5EF60",
+                "cs_615E6",
+                "cs_5C6CA",
+                "cs_5C876",
+                "cs_5C8D4",
+                "cs_5C8FE",
+                "cs_5C914",
+                "cs_5CA5E",
+                "cs_5CA6E",
+                "cs_5CB34",
+                "cs_5CBB4",
+                "cs_5CC26",
+                "cs_5CCF6",
+                "cs_4FB64",
+                "cs_4FC32",
+                "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                "cs_4FF5A",
+                "cs_4FFDA",
+                "cs_5023E",
+                "cs_503A6",
+                "cs_50806",
+                "cs_50ABE",
+                "EndCutscene",
+                "IntroCutscene1",
+                "IntroCutscene2",
+                "IntroCutscene3",
+                "IntroCutscene4",
+                "dms_01",
+                "data/scripting/map/debugscripts.asm#L11",
+                "data/scripting/map/debugscripts.asm#L16",
+                "data/scripting/map/debugscripts.asm#L24",
+                "data/scripting/map/debugscripts.asm#L26",
+                "data/scripting/map/debugscripts.asm#L76",
+                "data/scripting/map/debugscripts.asm#L86"
+              ]
+            },
+            "programTotalsSha256": {
+              "const": "921183412DB9E4E0BE1CAE4960A9702CD410BB85886CD92C967EED89AAE2CDB0"
+            },
+            "handlers": {
+              "const": [
+                {
+                  "macro": "animEntityFX",
+                  "handler": "csc22_animateEntityFadeInOrOut",
+                  "address": 289602,
+                  "opcode": 34,
+                  "sourceCommandCount": 66,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "transition type",
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "encoding": "shorthand:ENTITY_TRANSITION_"
+                    }
+                  ],
+                  "statementCount": 31,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "lea (FF6802_LOADING_SPACE).l,a0",
+                      "move.w (a6)+,d0",
+                      "moveq #0,d1",
+                      "cmpi.w #6,d0",
+                      "beq.w loc_46BE2",
+                      "moveq #-1,d1",
+                      "cmpi.w #7,d0",
+                      "beq.w loc_46BE2",
+                      "move.w d0,d2",
+                      "lsl.w #3,d0",
+                      "lea table_EntityFadingDefinitions(pc,d0.w),a1",
+                      "move.w (a1),d0",
+                      "move.w 2(a1),d1",
+                      "moveq #22,d7",
+                      "bsr.w LoadMapsprite",
+                      "jsr ApplySpriteCropEffect",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "add.w 4(a1),d0",
+                      "add.w 6(a1),d1",
+                      "dbf d7,@Transistion_Loop",
+                      "cmpi.w #4,d2",
+                      "bne.s @Return",
+                      "bsr.w LoadMapsprite",
+                      "move.l #$FFFF,d0",
+                      "jsr sub_45E10",
+                      "bsr.w DmaMapsprite",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "sourceImmediateUseSites": [
+                      {
+                        "instruction": "moveq #0,d1",
+                        "rawValue": "0",
+                        "resolvedValue": 0,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "cmpi.w #6,d0",
+                        "rawValue": "6",
+                        "resolvedValue": 6,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "moveq #-1,d1",
+                        "rawValue": "-1",
+                        "resolvedValue": -1,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "cmpi.w #7,d0",
+                        "rawValue": "7",
+                        "resolvedValue": 7,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "lsl.w #3,d0",
+                        "rawValue": "3",
+                        "resolvedValue": 3,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "moveq #22,d7",
+                        "rawValue": "22",
+                        "resolvedValue": 22,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "cmpi.w #4,d2",
+                        "rawValue": "4",
+                        "resolvedValue": 4,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "move.l #$FFFF,d0",
+                        "rawValue": "$FFFF",
+                        "resolvedValue": 65535,
+                        "resolution": "literal"
+                      }
+                    ],
+                    "sourceOperandInstructions": [
+                      "lea (FF6802_LOADING_SPACE).l,a0",
+                      "lea table_EntityFadingDefinitions(pc,d0.w),a1"
+                    ],
+                    "branchRecords": [
+                      {
+                        "branchInstruction": "beq.w loc_46BE2",
+                        "branchTarget": {
+                          "targetLabel": "loc_46BE2",
+                          "targetInstruction": "tst.w d1",
+                          "targetStatementIndex": 0,
+                          "targetSectionAnchor": "loc_46BE2"
+                        }
+                      },
+                      {
+                        "branchInstruction": "beq.w loc_46BE2",
+                        "branchTarget": {
+                          "targetLabel": "loc_46BE2",
+                          "targetInstruction": "tst.w d1",
+                          "targetStatementIndex": 0,
+                          "targetSectionAnchor": "loc_46BE2"
+                        }
+                      },
+                      {
+                        "branchInstruction": "bne.s @Return",
+                        "branchTarget": {
+                          "targetLabel": "@Return",
+                          "targetInstruction": "rts",
+                          "targetStatementIndex": 30,
+                          "targetSectionAnchor": "csc22_animateEntityFadeInOrOut"
+                        }
+                      }
+                    ],
+                    "loopRecords": [
+                      {
+                        "loopInstruction": "dbf d7,@Transistion_Loop",
+                        "loopTarget": {
+                          "counterRegister": "d7",
+                          "loopInstruction": "dbf d7,@Transistion_Loop",
+                          "targetLabel": "@Transistion_Loop",
+                          "targetInstruction": "bsr.w LoadMapsprite",
+                          "targetStatementIndex": 16,
+                          "targetSectionAnchor": "csc22_animateEntityFadeInOrOut"
+                        }
+                      }
+                    ],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "bsr.w LoadMapsprite",
+                      "jsr ApplySpriteCropEffect",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45E10",
+                      "bsr.w DmaMapsprite"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "LoadMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "ApplySpriteCropEffect",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "DmaMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "LoadMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "sub_45E10",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "DmaMapsprite",
+                      "addressingForm": "direct"
+                    }
+                  ]
+                },
+                {
+                  "macro": "headshake",
+                  "handler": "csc27_entityShakeHead",
+                  "address": 289972,
+                  "opcode": 39,
+                  "sourceCommandCount": 63,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    }
+                  ],
+                  "statementCount": 22,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                      "lea (FF6802_LOADING_SPACE).l,a0",
+                      "moveq #6,d7",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45D1C",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45D46",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "dbf d7,loc_46CC8",
+                      "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "sourceImmediateUseSites": [
+                      {
+                        "instruction": "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                        "rawValue": "-1",
+                        "resolvedValue": -1,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "moveq #6,d7",
+                        "rawValue": "6",
+                        "resolvedValue": 6,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                        "rawValue": "0",
+                        "resolvedValue": 0,
+                        "resolution": "literal"
+                      }
+                    ],
+                    "sourceOperandInstructions": [
+                      "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                      "lea (FF6802_LOADING_SPACE).l,a0",
+                      "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                    ],
+                    "branchRecords": [],
+                    "loopRecords": [
+                      {
+                        "loopInstruction": "dbf d7,loc_46CC8",
+                        "loopTarget": {
+                          "counterRegister": "d7",
+                          "loopInstruction": "dbf d7,loc_46CC8",
+                          "targetLabel": "loc_46CC8",
+                          "targetInstruction": "bsr.w LoadMapsprite",
+                          "targetStatementIndex": 5,
+                          "targetSectionAnchor": "csc27_entityShakeHead"
+                        }
+                      }
+                    ],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45D1C",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45D46",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "LoadMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "sub_45D1C",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "DmaMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "UpdateEntitySprite_0",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "LoadMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "sub_45D46",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "DmaMapsprite",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "UpdateEntitySprite_0",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    }
+                  ]
+                },
+                {
+                  "macro": "entityFlashWhite",
+                  "handler": "csc18_flashEntityWhite",
+                  "address": 289246,
+                  "opcode": 24,
+                  "sourceCommandCount": 48,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "duration",
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "encoding": "direct"
+                    }
+                  ],
+                  "statementCount": 14,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "move.w (a6)+,d7",
+                      "lsr.w #2,d7",
+                      "ori.b #%100,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "andi.b #%11111011,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "dbf d7,loc_469E8",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d7",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d7"
+                      }
+                    ],
+                    "sourceImmediateUseSites": [
+                      {
+                        "instruction": "lsr.w #2,d7",
+                        "rawValue": "2",
+                        "resolvedValue": 2,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "ori.b #%100,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                        "rawValue": "%100",
+                        "resolvedValue": 4,
+                        "resolution": "literal"
+                      },
+                      {
+                        "instruction": "andi.b #%11111011,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                        "rawValue": "%11111011",
+                        "resolvedValue": 251,
+                        "resolution": "literal"
+                      }
+                    ],
+                    "sourceOperandInstructions": [
+                      "ori.b #%100,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                      "andi.b #%11111011,ENTITYDEF_OFFSET_FLAGS_B(a5)"
+                    ],
+                    "branchRecords": [],
+                    "loopRecords": [
+                      {
+                        "loopInstruction": "dbf d7,loc_469E8",
+                        "loopTarget": {
+                          "counterRegister": "d7",
+                          "loopInstruction": "dbf d7,loc_469E8",
+                          "targetLabel": "loc_469E8",
+                          "targetInstruction": "ori.b #%100,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                          "targetStatementIndex": 4,
+                          "targetSectionAnchor": "csc18_flashEntityWhite"
+                        }
+                      }
+                    ],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "jsr (WaitForVInt).w"
+                    ],
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "UpdateEntitySprite_0",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "UpdateEntitySprite_0",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt",
+                      "addressingForm": "direct"
+                    }
+                  ]
+                }
+              ]
+            },
+            "callerBreakdown": {
+              "const": {
+                "callerHandlers": [
+                  {
+                    "handler": "csc22_animateEntityFadeInOrOut",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "LoadMapsprite": 2,
+                      "ApplySpriteCropEffect": 1,
+                      "DmaMapsprite": 2,
+                      "WaitForVInt": 2,
+                      "sub_45E10": 1,
+                      "sub_45D1C": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "sub_45D46": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "LoadMapsprite": 2,
+                      "ApplySpriteCropEffect": 1,
+                      "DmaMapsprite": 2,
+                      "WaitForVInt": 2,
+                      "sub_45E10": 1,
+                      "sub_45D1C": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "sub_45D46": 0
+                    }
+                  },
+                  {
+                    "handler": "csc27_entityShakeHead",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "LoadMapsprite": 2,
+                      "ApplySpriteCropEffect": 0,
+                      "DmaMapsprite": 2,
+                      "WaitForVInt": 6,
+                      "sub_45E10": 0,
+                      "sub_45D1C": 1,
+                      "UpdateEntitySprite_0": 2,
+                      "sub_45D46": 1
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "LoadMapsprite": 2,
+                      "ApplySpriteCropEffect": 0,
+                      "DmaMapsprite": 2,
+                      "WaitForVInt": 6,
+                      "sub_45E10": 0,
+                      "sub_45D1C": 1,
+                      "UpdateEntitySprite_0": 2,
+                      "sub_45D46": 1
+                    }
+                  },
+                  {
+                    "handler": "csc18_flashEntityWhite",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "LoadMapsprite": 0,
+                      "ApplySpriteCropEffect": 0,
+                      "DmaMapsprite": 0,
+                      "WaitForVInt": 4,
+                      "sub_45E10": 0,
+                      "sub_45D1C": 0,
+                      "UpdateEntitySprite_0": 2,
+                      "sub_45D46": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "LoadMapsprite": 0,
+                      "ApplySpriteCropEffect": 0,
+                      "DmaMapsprite": 0,
+                      "WaitForVInt": 4,
+                      "sub_45E10": 0,
+                      "sub_45D1C": 0,
+                      "UpdateEntitySprite_0": 2,
+                      "sub_45D46": 0
+                    }
+                  }
+                ],
+                "targetResolutions": [
+                  {
+                    "instructionTarget": "GetEntityAddressFromCharacter",
+                    "effectiveTarget": "GetEntityAddressFromCharacter",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "LoadMapsprite",
+                    "effectiveTarget": "LoadMapsprite",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "ApplySpriteCropEffect",
+                    "effectiveTarget": "ApplySpriteCropEffect",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "DmaMapsprite",
+                    "effectiveTarget": "DmaMapsprite",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "WaitForVInt",
+                    "effectiveTarget": "WaitForVInt",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "sub_45E10",
+                    "effectiveTarget": "sub_45E10",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "sub_45D1C",
+                    "effectiveTarget": "sub_45D1C",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "UpdateEntitySprite_0",
+                    "effectiveTarget": "UpdateEntitySprite_0",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "sub_45D46",
+                    "effectiveTarget": "sub_45D46",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  }
+                ],
+                "instructionTargetTotals": {
+                  "GetEntityAddressFromCharacter": 3,
+                  "LoadMapsprite": 4,
+                  "ApplySpriteCropEffect": 1,
+                  "DmaMapsprite": 4,
+                  "WaitForVInt": 12,
+                  "sub_45E10": 1,
+                  "sub_45D1C": 1,
+                  "UpdateEntitySprite_0": 4,
+                  "sub_45D46": 1
+                },
+                "effectiveTargetTotals": {
+                  "GetEntityAddressFromCharacter": 3,
+                  "LoadMapsprite": 4,
+                  "ApplySpriteCropEffect": 1,
+                  "DmaMapsprite": 4,
+                  "WaitForVInt": 12,
+                  "sub_45E10": 1,
+                  "sub_45D1C": 1,
+                  "UpdateEntitySprite_0": 4,
+                  "sub_45D46": 1
+                },
+                "internalInstructionTargetTotals": {
+                  "GetEntityAddressFromCharacter": 0,
+                  "LoadMapsprite": 0,
+                  "ApplySpriteCropEffect": 0,
+                  "DmaMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "sub_45E10": 0,
+                  "sub_45D1C": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "sub_45D46": 0
+                },
+                "externalInstructionTargetTotals": {
+                  "GetEntityAddressFromCharacter": 3,
+                  "LoadMapsprite": 4,
+                  "ApplySpriteCropEffect": 1,
+                  "DmaMapsprite": 4,
+                  "WaitForVInt": 12,
+                  "sub_45E10": 1,
+                  "sub_45D1C": 1,
+                  "UpdateEntitySprite_0": 4,
+                  "sub_45D46": 1
+                },
+                "internalEffectiveTargetTotals": {
+                  "GetEntityAddressFromCharacter": 0,
+                  "LoadMapsprite": 0,
+                  "ApplySpriteCropEffect": 0,
+                  "DmaMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "sub_45E10": 0,
+                  "sub_45D1C": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "sub_45D46": 0
+                },
+                "externalEffectiveTargetTotals": {
+                  "GetEntityAddressFromCharacter": 3,
+                  "LoadMapsprite": 4,
+                  "ApplySpriteCropEffect": 1,
+                  "DmaMapsprite": 4,
+                  "WaitForVInt": 12,
+                  "sub_45E10": 1,
+                  "sub_45D1C": 1,
+                  "UpdateEntitySprite_0": 4,
+                  "sub_45D46": 1
+                }
+              }
+            },
+            "runtimeQuestions": {
+              "const": [
+                "map-script-entity-presentation-fx/runtime-effects-matrix"
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   "definitions": {
@@ -63193,6 +64603,1010 @@
                   "type": "integer"
                 },
                 "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entityPresentationFxCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes",
+              "rawValue",
+              "resolvedValue",
+              "resolution",
+              "encoding"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": "string"
+              },
+              "streamOffset": {
+                "type": "integer"
+              },
+              "widthBytes": {
+                "type": "integer"
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "resolvedValue": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "resolution": {
+                "type": "string"
+              },
+              "encoding": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "entityPresentationFxSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityPresentationFxCommand"
+          }
+        }
+      }
+    },
+    "entityPresentationFxProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "animEntityFX",
+            "headshake",
+            "entityFlashWhite"
+          ],
+          "properties": {
+            "animEntityFX": {
+              "type": "integer"
+            },
+            "headshake": {
+              "type": "integer"
+            },
+            "entityFlashWhite": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "entityPresentationFxCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "minItems": 61,
+          "maxItems": 61,
+          "items": {
+            "$ref": "#/definitions/entityPresentationFxSourceSite"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "minItems": 177,
+          "maxItems": 177,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "minItems": 304,
+          "maxItems": 304,
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "minItems": 304,
+          "maxItems": 304,
+          "items": {
+            "$ref": "#/definitions/entityPresentationFxProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex",
+                            "targetSectionAnchor"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            },
+                            "targetSectionAnchor": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex",
+                            "targetSectionAnchor"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            },
+                            "targetSectionAnchor": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "LoadMapsprite",
+                      "ApplySpriteCropEffect",
+                      "DmaMapsprite",
+                      "WaitForVInt",
+                      "sub_45E10",
+                      "sub_45D1C",
+                      "UpdateEntitySprite_0",
+                      "sub_45D46"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "ApplySpriteCropEffect": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "sub_45E10": {
+                        "type": "integer"
+                      },
+                      "sub_45D1C": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "sub_45D46": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "LoadMapsprite",
+                      "ApplySpriteCropEffect",
+                      "DmaMapsprite",
+                      "WaitForVInt",
+                      "sub_45E10",
+                      "sub_45D1C",
+                      "UpdateEntitySprite_0",
+                      "sub_45D46"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "ApplySpriteCropEffect": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "sub_45E10": {
+                        "type": "integer"
+                      },
+                      "sub_45D1C": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "sub_45D46": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "minItems": 9,
+              "maxItems": 9,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": "null"
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
                   "type": "integer"
                 }
               }

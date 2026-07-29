@@ -367,6 +367,21 @@ SCREEN_PRESENTATION_RUNTIME_QUESTIONS = [
     "map-script-screen-presentation/runtime-effects-matrix"
 ]
 
+ENTITY_PRESENTATION_FX_MACRO_NAMES = (
+    "animEntityFX",
+    "headshake",
+    "entityFlashWhite",
+)
+ENTITY_PRESENTATION_FX_HANDLER_BY_MACRO = {
+    "animEntityFX": "csc22_animateEntityFadeInOrOut",
+    "headshake": "csc27_entityShakeHead",
+    "entityFlashWhite": "csc18_flashEntityWhite",
+}
+ENTITY_PRESENTATION_FX_HANDLER_NAMES = tuple(ENTITY_PRESENTATION_FX_HANDLER_BY_MACRO.values())
+ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS = [
+    "map-script-entity-presentation-fx/runtime-effects-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -8611,6 +8626,49 @@ def _screen_presentation_macro_annotations(
     return annotations_by_macro
 
 
+def _entity_presentation_fx_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse direct and shorthand physical operands with their raw source comments."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in ENTITY_PRESENTATION_FX_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"entity-presentation-fx macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            stripped = raw_line.strip()
+            if not stripped.startswith(("dc.", "defineShorthand.")):
+                continue
+            ordinal_match = re.search(r"\\(?P<ordinal>\d+)", stripped)
+            if ordinal_match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"entity-presentation-fx operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(ordinal_match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"entity-presentation-fx operand ordinal drift: {macro}")
+            comment_match = re.search(r";\s*(?P<comment>.*)$", raw_line)
+            if comment_match is None:
+                raise ValueError(f"entity-presentation-fx operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment_match.group("comment"),
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "encoding": row["encoding"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"entity-presentation-fx operand comment coverage drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
 def _screen_presentation_resolve_operand(
     value: str, equates: dict[str, int]
 ) -> dict[str, Any]:
@@ -9170,6 +9228,409 @@ def _screen_presentation_command_facts(
     }
 
 
+def _entity_presentation_fx_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach encoded entity-presentation operands to every scoped source command."""
+
+    def operand_value(annotation: dict[str, Any], argument: str) -> dict[str, Any]:
+        resolved = _screen_presentation_resolve_operand(argument, equates)
+        if (resolved["resolution"] == "symbol") != (resolved["resolvedValue"] is None):
+            raise ValueError("entity-presentation-fx operand resolution/value drift")
+        return {
+            "parameterOrdinal": annotation["parameterOrdinal"],
+            "sourceComment": annotation["sourceComment"],
+            "streamOffset": annotation["streamOffset"],
+            "widthBytes": annotation["widthBytes"],
+            "encoding": annotation["encoding"],
+            **resolved,
+        }
+
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ENTITY_PRESENTATION_FX_MACRO_NAMES
+    )
+    annotated_sites = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "entity-presentation-fx source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        operand_value(annotation, argument)
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _entity_presentation_fx_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind the complete bounded command corpus with compact exact-order records."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("entity-presentation-fx source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("entity-presentation-fx program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _entity_presentation_fx_direct_calls(
+    statements: list[str],
+) -> list[dict[str, str]]:
+    """Retain direct-call target identity and PC-relative spelling within the FX sections."""
+    return _screen_presentation_direct_calls(statements)
+
+
+def _entity_presentation_fx_function_chunk_target_record(
+    disasm: Path,
+    handler_name: str,
+    branch_instruction: str,
+    expected_target_instruction: str,
+) -> dict[str, Any]:
+    """Resolve a guarded branch into the separately marked source chunk of its handler."""
+    branch = re.fullmatch(
+        r"b(?:cc|cs|eq|ge|ne|pl)\.[bwls] (?P<label>@?[A-Za-z_][A-Za-z0-9_]*)",
+        branch_instruction,
+    )
+    if branch is None:
+        raise ValueError("entity-presentation-fx function-chunk branch drift")
+    label = branch.group("label")
+    source = read_upstream_text(
+        disasm / "code/common/scripting/map/mapscriptengine_1.asm"
+    )
+    match = re.search(
+        rf"^{re.escape(label)}:\s*\n(?P<body>.*?)"
+        rf"^; END OF FUNCTION CHUNK FOR {re.escape(handler_name)}\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if match is None:
+        raise ValueError("entity-presentation-fx function-chunk target is missing")
+    target_statements = _statements(match.group("body"))
+    if not target_statements or target_statements[0] != expected_target_instruction:
+        raise ValueError("entity-presentation-fx function-chunk target instruction drift")
+    return {
+        "targetLabel": label,
+        "targetInstruction": target_statements[0],
+        "targetStatementIndex": 0,
+        "targetSectionAnchor": label,
+    }
+
+
+def _entity_presentation_fx_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard complete source order, cursor reads, branches, loops, and calls per FX handler."""
+    expected_by_macro = {
+        "entityFlashWhite": """
+move.w (a6)+,d0
+bsr.w GetEntityAddressFromCharacter
+move.w (a6)+,d7
+lsr.w #2,d7
+ori.b #%100,ENTITYDEF_OFFSET_FLAGS_B(a5)
+bsr.w UpdateEntitySprite_0
+jsr (WaitForVInt).w
+jsr (WaitForVInt).w
+andi.b #%11111011,ENTITYDEF_OFFSET_FLAGS_B(a5)
+bsr.w UpdateEntitySprite_0
+jsr (WaitForVInt).w
+jsr (WaitForVInt).w
+dbf d7,loc_469E8
+rts
+""".strip().splitlines(),
+        "animEntityFX": """
+move.w (a6)+,d0
+bsr.w GetEntityAddressFromCharacter
+lea (FF6802_LOADING_SPACE).l,a0
+move.w (a6)+,d0
+moveq #0,d1
+cmpi.w #6,d0
+beq.w loc_46BE2
+moveq #-1,d1
+cmpi.w #7,d0
+beq.w loc_46BE2
+move.w d0,d2
+lsl.w #3,d0
+lea table_EntityFadingDefinitions(pc,d0.w),a1
+move.w (a1),d0
+move.w 2(a1),d1
+moveq #22,d7
+bsr.w LoadMapsprite
+jsr ApplySpriteCropEffect
+bsr.w DmaMapsprite
+jsr (WaitForVInt).w
+jsr (WaitForVInt).w
+add.w 4(a1),d0
+add.w 6(a1),d1
+dbf d7,@Transistion_Loop
+cmpi.w #4,d2
+bne.s @Return
+bsr.w LoadMapsprite
+move.l #$FFFF,d0
+jsr sub_45E10
+bsr.w DmaMapsprite
+rts
+""".strip().splitlines(),
+        "headshake": """
+move.w (a6)+,d0
+bsr.w GetEntityAddressFromCharacter
+move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)
+lea (FF6802_LOADING_SPACE).l,a0
+moveq #6,d7
+bsr.w LoadMapsprite
+jsr sub_45D1C
+bsr.w DmaMapsprite
+jsr (WaitForVInt).w
+jsr (WaitForVInt).w
+bsr.w UpdateEntitySprite_0
+jsr (WaitForVInt).w
+bsr.w LoadMapsprite
+jsr sub_45D46
+bsr.w DmaMapsprite
+jsr (WaitForVInt).w
+jsr (WaitForVInt).w
+bsr.w UpdateEntitySprite_0
+jsr (WaitForVInt).w
+dbf d7,loc_46CC8
+move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)
+rts
+""".strip().splitlines(),
+    }
+    if macro not in expected_by_macro:
+        raise ValueError(f"entity-presentation-fx handler profile is missing: {macro}")
+    ordered = _force_state_ordered_statements(
+        statements,
+        [re.escape(instruction) for instruction in expected_by_macro[macro]],
+        owner=ENTITY_PRESENTATION_FX_HANDLER_BY_MACRO[macro],
+    )
+    if len(statements) != len(ordered):
+        raise ValueError(f"entity-presentation-fx handler statement coverage drift: {macro}")
+    cursor_indexes = {
+        "entityFlashWhite": (0, 2),
+        "animEntityFX": (0, 3),
+        "headshake": (0,),
+    }[macro]
+    loop_pairs = {
+        "entityFlashWhite": (12, 4),
+        "animEntityFX": (23, 16),
+        "headshake": (19, 5),
+    }
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _screen_presentation_cursor_read_use_site(ordered[index])
+            for index in cursor_indexes
+        ],
+        "sourceImmediateUseSites": _screen_presentation_immediate_use_sites(
+            ordered, equates
+        ),
+        "sourceOperandInstructions": [
+            instruction
+            for instruction in ordered
+            if any(
+                operand in instruction
+                for operand in (
+                    "ENTITYDEF_OFFSET_FLAGS_B",
+                    "ENTITYDEF_OFFSET_ANIMCOUNTER",
+                    "FF6802_LOADING_SPACE",
+                    "table_EntityFadingDefinitions",
+                )
+            )
+        ],
+        "branchRecords": (
+            [
+                {
+                    "branchInstruction": ordered[6],
+                    "expectedTargetInstruction": "tst.w d1",
+                },
+                {
+                    "branchInstruction": ordered[9],
+                    "expectedTargetInstruction": "tst.w d1",
+                },
+                {
+                    "branchInstruction": ordered[25],
+                    "expectedTargetInstruction": ordered[30],
+                },
+            ]
+            if macro == "animEntityFX"
+            else []
+        ),
+        "loopRecords": [
+            {"loopInstruction": ordered[branch], "expectedTargetInstruction": ordered[target]}
+            for branch, target in (loop_pairs[macro],)
+        ],
+        "directCallOrder": [
+            instruction for instruction in ordered if instruction.startswith(("bsr", "jsr"))
+        ],
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _entity_presentation_fx_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the bounded three-form static entity-presentation FX contract."""
+    annotations_by_macro = _entity_presentation_fx_macro_annotations(disasm)
+    source_sites, program_totals = _entity_presentation_fx_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    for macro in ENTITY_PRESENTATION_FX_MACRO_NAMES:
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"entity-presentation-fx program total drift: {macro}")
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"]
+            != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"] != 2 + contract["operandBytes"]
+            or contract["parameterOrdinals"]
+            != [row["parameterOrdinal"] for row in annotations]
+            or [row["encoding"] for row in contract["operandLayout"]]
+            != [row["encoding"] for row in annotations]
+        ):
+            raise ValueError(f"entity-presentation-fx macro ABI drift: {macro}")
+        handler_name = ENTITY_PRESENTATION_FX_HANDLER_BY_MACRO[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"entity-presentation-fx dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if opcode not in handler["opcodes"] or handler["encodedCommandBytes"] != contract[
+            "encodedBytes"
+        ]:
+            raise ValueError(f"entity-presentation-fx handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _entity_presentation_fx_section_guard(macro, statements, equates)
+        if sum(
+            row["cursorAdvanceByteCount"]
+            for row in section_guard["scriptCursorReadUseSites"]
+        ) != contract["operandBytes"]:
+            raise ValueError(f"entity-presentation-fx script cursor width drift: {macro}")
+        section_source = _map_camera_control_named_section_source(
+            disasm, handler_path, handler_name
+        )
+        for branch in section_guard["branchRecords"]:
+            expected_target_instruction = branch.pop("expectedTargetInstruction")
+            if (
+                macro == "animEntityFX"
+                and branch["branchInstruction"].startswith("beq.w loc_46BE2")
+            ):
+                branch["branchTarget"] = (
+                    _entity_presentation_fx_function_chunk_target_record(
+                        disasm,
+                        handler_name,
+                        branch["branchInstruction"],
+                        expected_target_instruction,
+                    )
+                )
+            else:
+                branch["branchTarget"] = _screen_presentation_branch_target_record(
+                    section_source,
+                    branch["branchInstruction"],
+                    expected_target_instruction,
+                    section_guard["orderedInstructions"],
+                )
+                branch["branchTarget"]["targetSectionAnchor"] = handler_name
+        for loop in section_guard["loopRecords"]:
+            loop["loopTarget"] = _screen_presentation_loop_target_record(
+                section_source,
+                loop["loopInstruction"],
+                loop.pop("expectedTargetInstruction"),
+                section_guard["orderedInstructions"],
+            )
+            loop["loopTarget"]["targetSectionAnchor"] = handler_name
+        direct_calls = _entity_presentation_fx_direct_calls(statements)
+        if direct_calls != _entity_presentation_fx_direct_calls(
+            section_guard["directCallOrder"]
+        ):
+            raise ValueError(f"entity-presentation-fx direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations,
+                "statementCount": len(statements),
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": ENTITY_PRESENTATION_FX_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in ENTITY_PRESENTATION_FX_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_entity_presentation_fx_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": _entity_gesture_relationship_motion_caller_breakdown(
+            disasm,
+            direct_call_rows,
+            addresses,
+            rom,
+            handler_names=ENTITY_PRESENTATION_FX_HANDLER_NAMES,
+        ),
+        "runtimeQuestions": ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS,
+    }
+
+
 def _entity_gesture_relationship_motion_resolve_operand(
     value: str, equates: dict[str, int]
 ) -> dict[str, Any]:
@@ -9653,12 +10114,13 @@ def _entity_gesture_relationship_motion_caller_breakdown(
     direct_call_rows: dict[str, list[dict[str, str]]],
     addresses: dict[str, int],
     rom: bytes,
+    handler_names: tuple[str, ...] = ENTITY_GESTURE_RELATIONSHIP_MOTION_HANDLER_NAMES,
 ) -> dict[str, Any]:
     """Retain zero-inclusive instruction and effective target identities per bounded handler."""
     instruction_targets = list(
         dict.fromkeys(
             call["instructionTarget"]
-            for handler in ENTITY_GESTURE_RELATIONSHIP_MOTION_HANDLER_NAMES
+            for handler in handler_names
             for call in direct_call_rows[handler]
         )
     )
@@ -9671,7 +10133,7 @@ def _entity_gesture_relationship_motion_caller_breakdown(
             "effectiveTargetScope": (
                 "internal"
                 if aliases.get(target, {}).get("effectiveTarget", target)
-                in ENTITY_GESTURE_RELATIONSHIP_MOTION_HANDLER_NAMES
+                in handler_names
                 else "external"
             ),
         }
@@ -9688,7 +10150,7 @@ def _entity_gesture_relationship_motion_caller_breakdown(
         row["effectiveTarget"]: row["effectiveTargetScope"] for row in resolutions
     }
     caller_handlers = []
-    for handler in ENTITY_GESTURE_RELATIONSHIP_MOTION_HANDLER_NAMES:
+    for handler in handler_names:
         instruction_counts = {target: 0 for target in instruction_targets}
         effective_counts = {target: 0 for target in effective_targets}
         for call in direct_call_rows[handler]:
@@ -10746,6 +11208,16 @@ def build_map_script_engine_contract(
         addresses,
         rom,
     )
+    entity_presentation_fx_command_facts = _entity_presentation_fx_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
     expected_words = b"".join(
@@ -10904,6 +11376,7 @@ def build_map_script_engine_contract(
             entity_gesture_relationship_motion_command_facts
         ),
         "screenPresentationCommandFacts": screen_presentation_command_facts,
+        "entityPresentationFxCommandFacts": entity_presentation_fx_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -10921,6 +11394,7 @@ def build_map_script_engine_contract(
             *ENTITY_LIFECYCLE_PRESENTATION_RUNTIME_QUESTIONS,
             *ENTITY_GESTURE_RELATIONSHIP_MOTION_RUNTIME_QUESTIONS,
             *SCREEN_PRESENTATION_RUNTIME_QUESTIONS,
+            *ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -10983,6 +11457,7 @@ def verify_map_script_engine_contract(
             "entityGestureRelationshipMotionCommandFacts"
         ],
         "screenPresentationCommandFacts": output["screenPresentationCommandFacts"],
+        "entityPresentationFxCommandFacts": output["entityPresentationFxCommandFacts"],
     }
     for field in (
         "summary",
@@ -11016,6 +11491,7 @@ def verify_map_script_engine_contract(
         "entityLifecyclePresentationCommandFacts",
         "entityGestureRelationshipMotionCommandFacts",
         "screenPresentationCommandFacts",
+        "entityPresentationFxCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
@@ -11044,6 +11520,11 @@ def verify_map_script_engine_contract(
         if field == "screenPresentationCommandFacts":
             actual = {
                 key: output["screenPresentationCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "entityPresentationFxCommandFacts":
+            actual = {
+                key: output["entityPresentationFxCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "dispatcherFacts":

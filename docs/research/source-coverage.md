@@ -445,6 +445,15 @@ source immediate/operand records, branch/loop target identity, and five-target z
 direct/effective caller maps that preserve seven PC-relative `LaunchFading` sites.
 `map-script-screen-presentation/runtime-effects-matrix` is the sole grouped H3 follow-up; source names
 do not credit visual, timing, palette, VDP, persistence, or reachability behavior as static coverage.
+**Confirmed:** the adjacent entity-presentation-FX slice is exact for three source-named forms: 66
+`animEntityFX` `$22`,
+63 `headshake` `$27`, and 48 `entityFlashWhite` `$18` commands (177 total). It retains 61 ordered
+source-site rows, the complete 304-row zero-inclusive program domain, exact direct/shorthand operand
+annotations, three complete handler guards, the separately marked `loc_46BE2` function-chunk target for
+the two matching branches, and nine-target zero-inclusive direct/effective caller maps. The sole grouped
+H3 follow-up is `map-script-entity-presentation-fx/runtime-effects-matrix`; source names, fields,
+literals, tables, and callee names do not credit an entity effect, selector meaning, visual, timing,
+persistence, or reachability behavior as static coverage.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

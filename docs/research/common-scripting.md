@@ -528,6 +528,58 @@ Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.screenPresentationCommandFacts`.
 
+## Confirmed Map-Script Entity Presentation-FX Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.entityPresentationFxCommandFacts` retains three source-named macro forms in source order:
+`animEntityFX` `$22` (66 commands, 6 encoded bytes, 4 operand bytes), `headshake` `$27` (63, 4,
+2), and `entityFlashWhite` `$18` (48, 6, 4). The physical operand annotations are exact: entity-to-act
+for all three, transition-type via `defineShorthand.w ENTITY_TRANSITION_` for `animEntityFX`, and
+duration for `entityFlashWhite`. These source spellings, comments, and encodings do not establish an
+effect, selector meaning, lifetime, or visual result.
+
+**Confirmed:** the bounded corpus has 177 ordered command occurrences in 61 non-empty source-site rows,
+with all 304 declared programs retained as zero-inclusive `programTotals` rows. The extractor retains
+complete raw rows plus exact compact order keys and hashes:
+`A5A1424438C21C3A3B7602F8537851AD559F1193E72B5D998AF184BED04B4738` for source sites and
+`921183412DB9E4E0BE1CAE4960A9702CD410BB85886CD92C967EED89AAE2CDB0` for program totals.
+
+**Confirmed:** the three bounded H1/ROM handler sections are
+`csc22_animateEntityFadeInOrOut` `$46B42` (31 statements), `csc27_entityShakeHead` `$46CB4` (22),
+and `csc18_flashEntityWhite` `$469DE` (14). Their complete guards retain A6 reads and advance widths,
+immediate and source-operand instruction records, direct-call order/target form, local loop target
+identity, and return boundaries. The two `beq.w loc_46BE2` records in the first section additionally
+resolve to the separately marked `loc_46BE2` function chunk and its first `tst.w d1` instruction; this
+is a source control-flow target, not a runtime selector interpretation. Parsed numeric records such as
+`#3`, `#22`, `#6`, `%100`, and `%11111011` remain source instruction values rather than named scales,
+durations, masks, or effects.
+
+**Confirmed:** instruction-scoped caller parsing retains nine direct/effective target identities with
+zero-inclusive per-handler maps: `GetEntityAddressFromCharacter` 3, `LoadMapsprite` 4,
+`ApplySpriteCropEffect` 1, `DmaMapsprite` 4, `WaitForVInt` 12, `sub_45E10` 1, `sub_45D1C` 1,
+`UpdateEntitySprite_0` 4, and `sub_45D46` 1. All internal totals are zero; all nine effective targets
+are external and no direct call resolves through a jump-interface alias. The inventory retains call-site
+identity only, not a claim about callee effects.
+
+### Runtime questions — entity presentation FX
+
+**Unknown:** `map-script-entity-presentation-fx/runtime-effects-matrix` is the sole grouped H3 queue.
+One shared launch must establish normal-story reachability; entity/transition operand meaning; visible
+output; timing and completion; repeat behavior; state persistence; and interactions with map/entity
+state. No macro, comment, handler, literal, field, table, or callee name promotes those runtime outcomes
+from this static contract.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros named above;
+`code/common/scripting/map/mapscriptengine_1.asm` named sections and `loc_46BE2` function chunk above;
+H1 listing symbols/addresses; and local US ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityPresentationFxCommandFacts`.
+
 ## Confirmed Map-Script Roster/Death Command Family
 
 **Confirmed:** `sf2-map-script-engine-static-v1` separately retains the source-named primary forms

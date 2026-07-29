@@ -41,6 +41,10 @@ from sf2tool.h2.map_script_engine import (
     _entity_population_macro_annotations,
     _entity_population_read_use_site,
     _entity_population_section_guard,
+    _entity_presentation_fx_direct_calls,
+    _entity_presentation_fx_function_chunk_target_record,
+    _entity_presentation_fx_macro_annotations,
+    _entity_presentation_fx_section_guard,
     _force_state_aliases,
     _force_state_direct_calls,
     _force_state_program_facts,
@@ -6833,6 +6837,370 @@ def test_map_screen_presentation_schema_compacts_raw_corpora_and_closes_shapes()
                 assert item["additionalProperties"] is False
                 assert "prefixItems" not in item
                 assert "const" not in item
+        else:
+            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        assert_closed_objects(facts)
+
+
+def test_map_entity_presentation_fx_macro_annotations_preserve_shorthand_encoding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    annotations = _entity_presentation_fx_macro_annotations(disasm)
+    assert annotations["animEntityFX"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "entity to act",
+            "streamOffset": 2,
+            "widthBytes": 2,
+            "encoding": "direct",
+        },
+        {
+            "parameterOrdinal": 2,
+            "sourceComment": "transition type",
+            "streamOffset": 4,
+            "widthBytes": 2,
+            "encoding": "shorthand:ENTITY_TRANSITION_",
+        },
+    ]
+    assert annotations["headshake"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "entity to act",
+            "streamOffset": 2,
+            "widthBytes": 2,
+            "encoding": "direct",
+        }
+    ]
+    assert annotations["entityFlashWhite"][1]["sourceComment"] == "duration"
+    original_reader = map_script_engine.read_upstream_text
+
+    def annotation_altered_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            prefix, marker, fx_and_after = source.partition("animEntityFX: macro")
+            return prefix + marker + fx_and_after.replace(
+                "defineShorthand.w ENTITY_TRANSITION_,\\2 ; transition type",
+                "defineShorthand.w ENTITY_TRANSITION_,\\2",
+                1,
+            )
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", annotation_altered_reader)
+    with pytest.raises(ValueError, match="operand comment is missing"):
+        _entity_presentation_fx_macro_annotations(disasm)
+
+
+def test_map_entity_presentation_fx_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityPresentationFxCommandFacts"]
+    assert fixture["expected"]["entityPresentationFxCommandFacts"] == {
+        key: actual[key]
+        for key in fixture["expected"]["entityPresentationFxCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+            row["handler"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("animEntityFX", 34, 6, 4, 66, "csc22_animateEntityFadeInOrOut"),
+        ("headshake", 39, 4, 2, 63, "csc27_entityShakeHead"),
+        ("entityFlashWhite", 24, 6, 4, 48, "csc18_flashEntityWhite"),
+    ]
+    assert sum(row["sourceCommandCount"] for row in actual["macros"]) == 177
+    assert (len(actual["sourceSites"]), len(actual["sourceSiteOrderKeys"])) == (61, 177)
+    assert actual["sourceSitesSha256"] == (
+        "A5A1424438C21C3A3B7602F8537851AD559F1193E72B5D998AF184BED04B4738"
+    )
+    assert (len(actual["programTotals"]), len(actual["programTotalOrderKeys"])) == (304, 304)
+    assert actual["programTotalsSha256"] == (
+        "921183412DB9E4E0BE1CAE4960A9702CD410BB85886CD92C967EED89AAE2CDB0"
+    )
+    assert [
+        (row["macro"], row["handler"], row["address"], row["statementCount"])
+        for row in actual["handlers"]
+    ] == [
+        ("animEntityFX", "csc22_animateEntityFadeInOrOut", 289602, 31),
+        ("headshake", "csc27_entityShakeHead", 289972, 22),
+        ("entityFlashWhite", "csc18_flashEntityWhite", 289246, 14),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["branchRecords"] == [
+        {
+            "branchInstruction": "beq.w loc_46BE2",
+            "branchTarget": {
+                "targetLabel": "loc_46BE2",
+                "targetInstruction": "tst.w d1",
+                "targetStatementIndex": 0,
+                "targetSectionAnchor": "loc_46BE2",
+            },
+        },
+        {
+            "branchInstruction": "beq.w loc_46BE2",
+            "branchTarget": {
+                "targetLabel": "loc_46BE2",
+                "targetInstruction": "tst.w d1",
+                "targetStatementIndex": 0,
+                "targetSectionAnchor": "loc_46BE2",
+            },
+        },
+        {
+            "branchInstruction": "bne.s @Return",
+            "branchTarget": {
+                "targetLabel": "@Return",
+                "targetInstruction": "rts",
+                "targetStatementIndex": 30,
+                "targetSectionAnchor": "csc22_animateEntityFadeInOrOut",
+            },
+        },
+    ]
+    assert actual["handlers"][2]["sectionGuard"]["loopRecords"] == [
+        {
+            "loopInstruction": "dbf d7,loc_469E8",
+            "loopTarget": {
+                "counterRegister": "d7",
+                "loopInstruction": "dbf d7,loc_469E8",
+                "targetLabel": "loc_469E8",
+                "targetInstruction": "ori.b #%100,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                "targetStatementIndex": 4,
+                "targetSectionAnchor": "csc18_flashEntityWhite",
+            },
+        }
+    ]
+    target_totals = {
+        "GetEntityAddressFromCharacter": 3,
+        "LoadMapsprite": 4,
+        "ApplySpriteCropEffect": 1,
+        "DmaMapsprite": 4,
+        "WaitForVInt": 12,
+        "sub_45E10": 1,
+        "sub_45D1C": 1,
+        "UpdateEntitySprite_0": 4,
+        "sub_45D46": 1,
+    }
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == target_totals
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == target_totals
+    assert actual["callerBreakdown"]["internalInstructionTargetTotals"] == {
+        target: 0 for target in target_totals
+    }
+    assert actual["callerBreakdown"]["externalEffectiveTargetTotals"] == target_totals
+    assert actual["runtimeQuestions"] == [
+        "map-script-entity-presentation-fx/runtime-effects-matrix"
+    ]
+
+
+def test_map_entity_presentation_fx_source_guards_reject_local_drift(
+    map_script_engine_output: dict,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    facts = map_script_engine_output["entityPresentationFxCommandFacts"]
+    source_handlers = {row["name"]: row for row in map_script_engine_output["handlers"]}
+    for handler in facts["handlers"]:
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        guard = _entity_presentation_fx_section_guard(
+            handler["macro"], statements, equates
+        )
+        for field in (
+            "orderedInstructions",
+            "scriptCursorReadUseSites",
+            "sourceImmediateUseSites",
+            "sourceOperandInstructions",
+            "directCallOrder",
+            "returnInstruction",
+        ):
+            assert guard[field] == handler["sectionGuard"][field]
+    mutations = (
+        ("animEntityFX", "lsl.w #3,d0", "lsl.w #2,d0"),
+        ("headshake", "moveq #6,d7", "moveq #5,d7"),
+        ("entityFlashWhite", "lsr.w #2,d7", "lsr.w #3,d7"),
+    )
+    guarded_handlers = {row["macro"]: row for row in facts["handlers"]}
+    for macro, original, replacement in mutations:
+        handler = guarded_handlers[macro]
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        with pytest.raises(ValueError, match="statement is missing"):
+            _entity_presentation_fx_section_guard(
+                macro,
+                [statement.replace(original, replacement) for statement in statements],
+                equates,
+            )
+    original_reader = map_script_engine.read_upstream_text
+
+    def chunk_mutating_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.name == "mapscriptengine_1.asm":
+            return source.replace("tst.w   d1              ; manage param 6/7", "tst.w   d2", 1)
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", chunk_mutating_reader)
+    with pytest.raises(ValueError, match="function-chunk target instruction drift"):
+        _entity_presentation_fx_function_chunk_target_record(
+            disasm,
+            "csc22_animateEntityFadeInOrOut",
+            "beq.w loc_46BE2",
+            "tst.w d1",
+        )
+
+
+def test_map_entity_presentation_fx_direct_call_parser_and_resolution_guard(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assert _entity_presentation_fx_direct_calls(
+        [
+            "bsr.w NamedService ; comment",
+            "jsr (OtherService).l",
+            "jsr ThirdService(pc)",
+        ]
+    ) == [
+        {"opcode": "bsr", "instructionTarget": "NamedService", "addressingForm": "direct"},
+        {"opcode": "jsr", "instructionTarget": "OtherService", "addressingForm": "direct"},
+        {"opcode": "jsr", "instructionTarget": "ThirdService", "addressingForm": "pc-relative"},
+    ]
+    assert _entity_presentation_fx_direct_calls(
+        [
+            "label: bsr.w NamedService",
+            "; jsr OtherService",
+            "move.w NamedService,d0",
+            "jsr a0",
+            "jsr NamedService(pc),d0",
+        ]
+    ) == []
+    original_resolver = map_script_engine._screen_presentation_resolve_operand
+
+    def malformed_resolution(value: str, equates: dict[str, int]) -> dict:
+        if value == "MOSAIC_OUT":
+            return {"rawValue": value, "resolvedValue": None, "resolution": "literal"}
+        return original_resolver(value, equates)
+
+    monkeypatch.setattr(
+        map_script_engine, "_screen_presentation_resolve_operand", malformed_resolution
+    )
+    with pytest.raises(ValueError, match="operand resolution/value drift"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"),
+            repo_path("local/upstream/SF2DISASM"),
+        )
+
+
+def test_map_entity_presentation_fx_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="entity presentation FX baseline")
+        target_path = (
+            ("entityPresentationFxCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "entityPresentationFxCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["macros"][0]["sourceOperandAnnotations"][0]["encoding"]
+        with pytest.raises(ValueError, match="encoding"):
+            validate_json(missing, schema_path, owner="entity presentation FX missing nested")
+
+        renamed = deepcopy(source)
+        branch = target_for(renamed)["handlers"][0]["sectionGuard"]["branchRecords"][0][
+            "branchTarget"
+        ]
+        branch["targetSection"] = branch.pop("targetSectionAnchor")
+        with pytest.raises(ValueError, match="targetSectionAnchor"):
+            validate_json(renamed, schema_path, owner="entity presentation FX renamed nested")
+
+        extra = deepcopy(source)
+        target_for(extra)["handlers"][0]["directCalls"][0]["extra"] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="entity presentation FX extra nested")
+
+        reordered = deepcopy(source)
+        order = target_for(reordered)["sourceSiteOrderKeys"]
+        order[0], order[1] = order[1], order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema_path, owner="entity presentation FX exact source order")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["macros"][2]["sourceCommandCount"] = 49
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema_path, owner="entity presentation FX exact boundary")
+
+
+def test_map_entity_presentation_fx_schema_compacts_raw_corpora_and_closes_shapes() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("entityPresentationFxCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "entityPresentationFxCommandFacts"
+            ]
+        exact = contract["allOf"][1]["properties"]
+        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
+        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
+        definition_name = (
+            "entityPresentationFxCommandFacts"
+            if "entityPresentationFxCommandFacts" in schema["definitions"]
+            else "entityPresentationFxFixtureCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if definition_name == "entityPresentationFxCommandFacts":
+            assert facts["properties"]["sourceSites"] == {
+                "type": "array",
+                "minItems": 61,
+                "maxItems": 61,
+                "items": {"$ref": "#/definitions/entityPresentationFxSourceSite"},
+            }
+            assert facts["properties"]["programTotals"] == {
+                "type": "array",
+                "minItems": 304,
+                "maxItems": 304,
+                "items": {"$ref": "#/definitions/entityPresentationFxProgramTotal"},
+            }
+            command = schema["definitions"]["entityPresentationFxCommand"]
+            operand_value = command["properties"]["operandValues"]["items"]
+            assert operand_value["additionalProperties"] is False
+            assert set(operand_value["required"]) >= {"encoding", "resolution", "resolvedValue"}
+            assert operand_value["properties"]["resolvedValue"] == {
+                "type": ["integer", "null"]
+            }
         else:
             assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
 

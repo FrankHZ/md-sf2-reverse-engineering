@@ -181,6 +181,17 @@ PC-relative/direct addressing form, effective target caller maps, and return bou
 source-layout and control-flow records. A remake MUST NOT normalize them into a screen effect, map
 effect, visual, palette, VDP, timing, persistence, or reachability model; all original runtime
 consequences remain in `map-script-screen-presentation/runtime-effects-matrix`.
+Map-script imports MUST separately retain the three source-named forms `animEntityFX`, `headshake`, and
+`entityFlashWhite` in `sf2-map-script-engine-static-v1` at
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityPresentationFxCommandFacts`. Each record MUST preserve opcode, physical operand widths,
+the direct versus `ENTITY_TRANSITION_` shorthand encoding, raw macro comments, complete command/program
+order, and the zero-inclusive program domain. The import boundary MUST retain named handler instruction
+order: A6 transfer widths, immediate/source-operand records, the separately marked `loc_46BE2` branch
+chunk target, loop-target records, instruction/effective target caller maps, and return boundaries.
+These are source-layout and control-flow records. A remake MUST NOT normalize them into an entity effect,
+head motion, color change, transition meaning, visual, timing, persistence, or reachability model; all
+original runtime consequences remain in `map-script-entity-presentation-fx/runtime-effects-matrix`.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,
