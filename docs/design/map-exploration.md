@@ -3,7 +3,7 @@
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
   dispatch rules, static transition-consumer priority, load-path-specific layout persistence,
-  source-shaped map-script entity population/reload, camera-control, and entity-placement command records, and batched frame-level entity
+  source-shaped map-script entity population/reload, cloneEntity, camera-control, and entity-placement command records, and batched frame-level entity
   movement/action timing
 - **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
@@ -248,6 +248,18 @@ target. A remake MAY translate these records into its own entity-loading interfa
 that interface independently. The original static contract does not establish spawning, slot
 allocation, capacity, persistence, activation, rendering, collision/pathfinding, or normal-story
 reachability.
+Map-script imports MUST retain source-named `cloneEntity` as a distinct ordered record in
+`sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityCloneCommandFacts`. The record MUST preserve opcode `$25`, its six-byte physical
+layout, the two raw source comments, ordered source-site identity, and the complete 304-row
+zero-inclusive program domain through its compact order/hash contract. It MUST also preserve the
+complete `csc25_cloneEntity` section: two advancing two-byte A6 reads, ordered
+`GetEntityAddressFromCharacter` calls, the source-named `ENTITYDEF_OFFSET_ENTNUM` offset-18 byte read
+into D1, the following lookup, the matching byte write from D1, and return. The importer MUST keep the
+four operand bytes separate from the one-byte field transfer. It MUST NOT infer a stored record span,
+loop/counter, whole-record copy, entity lifecycle, allocation, collision/pathfinding, visibility,
+persistence, timing, rendering, or normal-story reachability; those questions remain in
+`map-script-entity-clone/runtime-effects-matrix`.
 Map-script imports MUST retain the two source-named forms `roofEvent` and `stepEvent` as distinct
 ordered records in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field

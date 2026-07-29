@@ -399,6 +399,14 @@ MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS = [
     "map-script-ui-command/runtime-effects-matrix"
 ]
 
+# This source-named command has two word operands and one bounded handler.
+# Its static contract records only the A6 reads, lookup calls, and one entity
+# field-byte transfer; it does not infer a whole-record or runtime clone effect.
+ENTITY_CLONE_MACRO_NAMES = ("cloneEntity",)
+ENTITY_CLONE_HANDLER_BY_MACRO = {"cloneEntity": "csc25_cloneEntity"}
+ENTITY_CLONE_HANDLER_NAMES = tuple(ENTITY_CLONE_HANDLER_BY_MACRO.values())
+ENTITY_CLONE_RUNTIME_QUESTIONS = ["map-script-entity-clone/runtime-effects-matrix"]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -4330,6 +4338,51 @@ def _entity_population_macro_annotations(disasm: Path) -> dict[str, list[dict[st
     return annotations_by_macro
 
 
+def _entity_clone_macro_annotations(disasm: Path) -> dict[str, list[dict[str, Any]]]:
+    """Parse the source comments and physical layout for the lone clone form."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in ENTITY_CLONE_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"entity-clone macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"entity-clone operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"entity-clone operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"entity-clone operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"entity-clone operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"entity-clone operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
 def _entity_population_resolve_operand(value: str, equates: dict[str, int]) -> dict[str, Any]:
     """Keep source operands distinct when they are numeric equates versus symbols."""
     token = value.strip()
@@ -4878,6 +4931,325 @@ def _entity_population_command_facts(
         ),
         "sourceIdentityJoins": _entity_population_source_identity_joins(disasm, addresses),
         "runtimeQuestions": ENTITY_POPULATION_RUNTIME_QUESTIONS,
+    }
+
+
+def _entity_clone_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach source-faithful operand records to every cloneEntity command."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ENTITY_CLONE_MACRO_NAMES
+    )
+    annotated_sites: list[dict[str, Any]] = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "entity-clone source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_entity_population_resolve_operand(argument, equates),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _entity_clone_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind the complete source-command and zero-inclusive program corpus compactly."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("entity-clone source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("entity-clone program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _entity_clone_cursor_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one A6 cursor read without treating non-instructions as a read."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \((?P<source>a6)\)\+,(?P<target>d[0-7])",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("entity-clone cursor-read use shape drift")
+    transferred_byte_count = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": match.group("source"),
+        "destinationRegister": match.group("target"),
+        "transferredByteCount": transferred_byte_count,
+        "cursorAdvanceByteCount": transferred_byte_count,
+        "instruction": instruction,
+    }
+
+
+def _entity_clone_field_read_use_site(
+    instruction: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Parse the guarded entity-field byte read and resolve its source equate once."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) (?P<symbol>ENTITYDEF_OFFSET_[A-Z0-9_]+)\(a5\),(?P<target>d[0-7])",
+        instruction,
+    )
+    if match is None or match.group("symbol") not in equates:
+        raise ValueError("entity-clone field-read use shape drift")
+    return {
+        "baseRegister": "a5",
+        "offsetSymbol": match.group("symbol"),
+        "offsetValue": equates[match.group("symbol")],
+        "destinationRegister": match.group("target"),
+        "transferredByteCount": {"b": 1, "w": 2, "l": 4}[match.group("size")],
+        "instruction": instruction,
+    }
+
+
+def _entity_clone_field_write_use_site(
+    instruction: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Parse the guarded entity-field byte write and resolve its source equate once."""
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) (?P<source>d[0-7]),(?P<symbol>ENTITYDEF_OFFSET_[A-Z0-9_]+)\(a5\)",
+        instruction,
+    )
+    if match is None or match.group("symbol") not in equates:
+        raise ValueError("entity-clone field-write use shape drift")
+    return {
+        "sourceRegister": match.group("source"),
+        "baseRegister": "a5",
+        "offsetSymbol": match.group("symbol"),
+        "offsetValue": equates[match.group("symbol")],
+        "transferredByteCount": {"b": 1, "w": 2, "l": 4}[match.group("size")],
+        "instruction": instruction,
+    }
+
+
+def _entity_clone_section_guard(
+    statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard the whole handler: two operand lookups then one ordered field transfer."""
+    ordered = _force_state_ordered_statements(
+        statements,
+        [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"move\.b ENTITYDEF_OFFSET_ENTNUM\(a5\),d1",
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"move\.b d1,ENTITYDEF_OFFSET_ENTNUM\(a5\)",
+            r"rts",
+        ],
+        owner="csc25_cloneEntity",
+    )
+    if len(statements) != len(ordered):
+        raise ValueError("entity-clone handler statement coverage drift")
+    if "ENTITYDEF_OFFSET_ENTNUM" not in equates:
+        raise ValueError("entity-clone field offset source constant is missing")
+    cursor_reads = [
+        _entity_clone_cursor_read_use_site(ordered[index]) for index in (0, 3)
+    ]
+    source_field_read = _entity_clone_field_read_use_site(ordered[2], equates)
+    destination_field_write = _entity_clone_field_write_use_site(ordered[5], equates)
+    if (
+        source_field_read["offsetSymbol"] != "ENTITYDEF_OFFSET_ENTNUM"
+        or destination_field_write["offsetSymbol"] != "ENTITYDEF_OFFSET_ENTNUM"
+        or source_field_read["offsetValue"] != destination_field_write["offsetValue"]
+        or source_field_read["destinationRegister"] != destination_field_write["sourceRegister"]
+        or source_field_read["transferredByteCount"]
+        != destination_field_write["transferredByteCount"]
+    ):
+        raise ValueError("entity-clone field-transfer use-site relationship drift")
+    lookup_calls = [ordered[index] for index in (1, 4)]
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": cursor_reads,
+        "entityLookupSequence": [
+            {
+                "role": role,
+                "cursorReadInstruction": cursor_read["instruction"],
+                "lookupCallInstruction": lookup_call,
+                "resultAddressRegister": "a5",
+            }
+            for role, cursor_read, lookup_call in zip(
+                ("source", "destination"), cursor_reads, lookup_calls, strict=True
+            )
+        ],
+        "entnumFieldTransfer": {
+            "sourceFieldRead": source_field_read,
+            "destinationFieldWrite": destination_field_write,
+            "derivedTransferByteCount": source_field_read["transferredByteCount"],
+        },
+        "loopRecords": [],
+        "directCallOrder": lookup_calls,
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _entity_clone_source_identity_joins(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Keep a provenance-only join to the existing entity-address lookup source owner."""
+    source_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    source = read_upstream_text(disasm / source_path)
+    for symbol in ("csc25_cloneEntity", "GetEntityAddressFromCharacter"):
+        has_source_label = re.search(
+            rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE
+        )
+        if symbol not in addresses or has_source_label is None:
+            raise ValueError(f"entity-clone source identity drift: {symbol}")
+    source_sha256 = hashlib.sha256(source.encode()).hexdigest().upper()
+    return {
+        "handlerSource": {
+            "sourcePath": source_path,
+            "sourceSha256": source_sha256,
+            "symbol": "csc25_cloneEntity",
+        },
+        "entityAddressLookupOwner": {
+            "sourceFactPath": "entityPopulationCommandFacts.sourceIdentityJoins.calleeOwners",
+            "sourcePath": source_path,
+            "sourceSha256": source_sha256,
+            "symbol": "GetEntityAddressFromCharacter",
+        },
+    }
+
+
+def _entity_clone_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the cloneEntity static contract without inferring a whole-record effect."""
+    annotations_by_macro = _entity_clone_macro_annotations(disasm)
+    source_sites, program_totals = _entity_clone_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    macro = ENTITY_CLONE_MACRO_NAMES[0]
+    contract = macros[macro]
+    annotations = annotations_by_macro[macro]
+    if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+        raise ValueError("entity-clone program total drift")
+    if (
+        contract["kind"] != "command"
+        or contract["opcode"] is None
+        or contract["operandBytes"] != sum(row["widthBytes"] for row in annotations)
+        or contract["encodedBytes"]
+        != max(row["streamOffset"] + row["widthBytes"] for row in annotations)
+        or contract["operandLayout"]
+        != [
+            {
+                "streamOffset": row["streamOffset"],
+                "widthBytes": row["widthBytes"],
+                "expression": f"\\{row['parameterOrdinal']}",
+                "parameterOrdinals": [row["parameterOrdinal"]],
+                "encoding": "direct",
+            }
+            for row in annotations
+        ]
+    ):
+        raise ValueError("entity-clone macro ABI drift")
+    handler_name = ENTITY_CLONE_HANDLER_BY_MACRO[macro]
+    opcode = contract["opcode"]
+    if opcode is None or dispatch_targets[opcode] != handler_name:
+        raise ValueError("entity-clone dispatcher target drift")
+    handler = _handler_by_name(handlers, handler_name)
+    if handler["opcodes"] != [opcode] or handler["encodedCommandBytes"] != contract["encodedBytes"]:
+        raise ValueError("entity-clone handler ABI drift")
+    statements = _stable_handler_statements(disasm, handler)
+    section_guard = _entity_clone_section_guard(statements, equates)
+    if (
+        sum(
+            row["cursorAdvanceByteCount"]
+            for row in section_guard["scriptCursorReadUseSites"]
+        )
+        != contract["operandBytes"]
+    ):
+        raise ValueError("entity-clone script cursor width drift")
+    direct_calls = _force_state_direct_calls(statements)
+    if direct_calls != _force_state_direct_calls(section_guard["directCallOrder"]):
+        raise ValueError("entity-clone direct-call order drift")
+    handler_row = {
+        "macro": macro,
+        "handler": handler_name,
+        "sourcePath": handler["sourcePath"],
+        "address": handler["address"],
+        "opcode": opcode,
+        "sourceCommandCount": source_counts[macro],
+        "operandAnnotations": annotations,
+        "statementCount": len(statements),
+        "sectionGuard": section_guard,
+        "directCalls": direct_calls,
+    }
+    direct_call_rows = {handler_name: direct_calls}
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": opcode,
+                "encodedBytes": contract["encodedBytes"],
+                "operandBytes": contract["operandBytes"],
+                "operandLayout": contract["operandLayout"],
+                "parameterOrdinals": contract["parameterOrdinals"],
+                "handler": handler_name,
+                "sourceOperandAnnotations": annotations,
+                "sourceCommandCount": source_counts[macro],
+            }
+        ],
+        "sourceSites": source_sites,
+        **_entity_clone_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": [handler_row],
+        "callerBreakdown": _entity_gesture_relationship_motion_caller_breakdown(
+            disasm,
+            direct_call_rows,
+            addresses,
+            rom,
+            handler_names=ENTITY_CLONE_HANDLER_NAMES,
+        ),
+        "sourceIdentityJoins": _entity_clone_source_identity_joins(disasm, addresses),
+        "runtimeQuestions": ENTITY_CLONE_RUNTIME_QUESTIONS,
     }
 
 
@@ -11501,6 +11873,16 @@ def build_map_script_engine_contract(
         addresses,
         rom,
     )
+    entity_clone_command_facts = _entity_clone_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
     map_lifecycle_command_facts = _map_lifecycle_command_facts(
         disasm,
         source_equates,
@@ -11748,6 +12130,7 @@ def build_map_script_engine_contract(
         "storyStateCommandFacts": story_state_command_facts,
         "mapBlockMutationCommandFacts": map_block_mutation_command_facts,
         "entityPopulationCommandFacts": entity_population_command_facts,
+        "entityCloneCommandFacts": entity_clone_command_facts,
         "mapLifecycleCommandFacts": map_lifecycle_command_facts,
         "mapInteractionTriggerCommandFacts": map_interaction_trigger_command_facts,
         "mapCameraControlCommandFacts": map_camera_control_command_facts,
@@ -11778,6 +12161,7 @@ def build_map_script_engine_contract(
             *SCREEN_PRESENTATION_RUNTIME_QUESTIONS,
             *ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS,
             *MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS,
+            *ENTITY_CLONE_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -11827,6 +12211,7 @@ def verify_map_script_engine_contract(
         "storyStateCommandFacts": output["storyStateCommandFacts"],
         "mapBlockMutationCommandFacts": output["mapBlockMutationCommandFacts"],
         "entityPopulationCommandFacts": output["entityPopulationCommandFacts"],
+        "entityCloneCommandFacts": output["entityCloneCommandFacts"],
         "mapLifecycleCommandFacts": output["mapLifecycleCommandFacts"],
         "mapInteractionTriggerCommandFacts": output[
             "mapInteractionTriggerCommandFacts"
@@ -11868,6 +12253,7 @@ def verify_map_script_engine_contract(
         "storyStateCommandFacts",
         "mapBlockMutationCommandFacts",
         "entityPopulationCommandFacts",
+        "entityCloneCommandFacts",
         "mapLifecycleCommandFacts",
         "mapInteractionTriggerCommandFacts",
         "mapCameraControlCommandFacts",
@@ -11890,6 +12276,11 @@ def verify_map_script_engine_contract(
         if field == "mapScriptUiPrimaryCommandFacts":
             actual = {
                 key: output["mapScriptUiPrimaryCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "entityCloneCommandFacts":
+            actual = {
+                key: output["entityCloneCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "entityActionBridgeCommandFacts":

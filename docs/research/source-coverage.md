@@ -462,6 +462,19 @@ seven-target alias-aware direct/effective caller maps. The sole grouped H3 follo
 `map-script-ui-command/runtime-effects-matrix`; source names, packed fields, aliases, literals, and
 callee names do not credit UI output, input/choice, timing, persistence, save behavior, or reachability
 as static coverage.
+**Confirmed:** the residual source-named `cloneEntity` `$25` boundary is exact for nine commands in
+two source rows and the same 304-row zero-inclusive program domain. It retains two two-byte operand
+comments, the complete seven-statement `csc25_cloneEntity` section, two ordered A6 word reads and
+`GetEntityAddressFromCharacter` calls, and the one-byte `ENTITYDEF_OFFSET_ENTNUM` read/write transfer
+at parsed offset 18. The section has no parsed loop, counter, or whole-record span, so static coverage
+does not promote the macro name into record-copy, lifetime, allocation, collision, rendering,
+persistence, or reachability behavior. Its sole H3 follow-up is
+`map-script-entity-clone/runtime-effects-matrix`.
+**Confirmed:** after the dedicated map-script command-family records, exactly ten tracked macro
+definitions remain without a dedicated `*CommandFacts` macro list: `csc_end`, `csc06`, `csc14`,
+`csc15`, `csc2D`, `cscNop`, `csWait`, `executeSubroutine`, `jump`, and `playSound`. This is a
+source-inventory ownership boundary only; it does not make those forms semantically unclassified or
+remove the separate alias, handler, and program-corpus coverage already recorded elsewhere.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

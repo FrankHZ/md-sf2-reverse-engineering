@@ -78,7 +78,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   program-site/handler/caller 合同、六个 map-script roster/death command 的 43 条 ordered
   program-site/handler/caller 合同、两个 map-script block-copy command 的 208 条 ordered
   program-site/handler/cursor/helper/caller 合同、四个 map-script entity population/reload command 的
-  96 条 ordered program-site/handler/caller 合同、三个 map-script camera-control command 的 415 条
+  96 条 ordered program-site/handler/caller 合同、单个 source-named `cloneEntity` command 的 9 条
+  ordered program-site/handler/caller 合同、三个 map-script camera-control command 的 415 条
   ordered program-site/handler/caller/service 合同、四个 map-script map lifecycle command 的 108 条
   ordered program-site/handler/caller 合同、两个 source-named map-script trigger command 的 8 条
   ordered program-site/handler/caller/table-boundary 合同、四个 source-named map-script entity-placement
@@ -231,6 +232,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   三个 named handler 的 A6 cursor、immediate/operand、branch/stack/call/return guards，及
   provenance join 的 portrait-helper 与 seven-target alias-aware caller map；唯一 H3 queue 为
   `map-script-ui-command/runtime-effects-matrix`。
+  同一 304-row 零计数 corpus 还固定单个 source-named `cloneEntity` `$25` form（9 sites）、完整
+  `csc25_cloneEntity` 的两次 A6 word read/lookup 及唯一一字节 `ENTITYDEF_OFFSET_ENTNUM` transfer，
+  而不把它提升为 whole-record copy/span；唯一 H3 queue 为
+  `map-script-entity-clone/runtime-effects-matrix`。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
   39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot
@@ -248,7 +253,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`map-exploration.md`](./design/map-exploration.md)：79-map import boundary、共享 block/layout
   ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
-  entity population/reload form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
+  entity population/reload form、单个 source-faithful `cloneEntity` form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
   trigger form、四个 source-named entity-placement form、六个 source-named entity-action bridge form、八个 source-named
   entity lifecycle/presentation form、七个 source-named entity gesture/relationship/motion form、十二个 source-named
   screen/map-presentation form 与现代 renderer 的

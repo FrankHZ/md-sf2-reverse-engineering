@@ -79,7 +79,8 @@
         "entityGestureRelationshipMotionCommandFacts",
         "screenPresentationCommandFacts",
         "entityPresentationFxCommandFacts",
-        "mapScriptUiPrimaryCommandFacts"
+        "mapScriptUiPrimaryCommandFacts",
+        "entityCloneCommandFacts"
       ],
       "properties": {
         "summary": {
@@ -140,12 +141,6 @@
           "type": "array"
         },
         "runtimeQuestions": {
-          "type": "array",
-          "minItems": 18,
-          "maxItems": 18,
-          "items": {
-            "type": "string"
-          },
           "const": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -164,7 +159,8 @@
             "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
             "map-script-screen-presentation/runtime-effects-matrix",
             "map-script-entity-presentation-fx/runtime-effects-matrix",
-            "map-script-ui-command/runtime-effects-matrix"
+            "map-script-ui-command/runtime-effects-matrix",
+            "map-script-entity-clone/runtime-effects-matrix"
           ]
         },
         "dialogueCommandFacts": {
@@ -48870,6 +48866,570 @@
               }
             }
           ]
+        },
+        "entityCloneCommandFacts": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/entityCloneCommandFactsFixture"
+            },
+            {
+              "type": "object",
+              "required": [
+                "macros",
+                "sourceSiteOrderKeys",
+                "sourceSitesSha256",
+                "programTotalOrderKeys",
+                "programTotalsSha256",
+                "handlers",
+                "callerBreakdown",
+                "sourceIdentityJoins",
+                "runtimeQuestions"
+              ],
+              "properties": {
+                "macros": {
+                  "const": [
+                    {
+                      "name": "cloneEntity",
+                      "opcode": 37,
+                      "encodedBytes": 6,
+                      "operandBytes": 4,
+                      "operandLayout": [
+                        {
+                          "streamOffset": 2,
+                          "widthBytes": 2,
+                          "expression": "\\1",
+                          "parameterOrdinals": [
+                            1
+                          ],
+                          "encoding": "direct"
+                        },
+                        {
+                          "streamOffset": 4,
+                          "widthBytes": 2,
+                          "expression": "\\2",
+                          "parameterOrdinals": [
+                            2
+                          ],
+                          "encoding": "direct"
+                        }
+                      ],
+                      "parameterOrdinals": [
+                        1,
+                        2
+                      ],
+                      "handler": "csc25_cloneEntity",
+                      "sourceOperandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "copied entity",
+                          "streamOffset": 2,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 2,
+                          "sourceComment": "entity clone",
+                          "streamOffset": 4,
+                          "widthBytes": 2
+                        }
+                      ],
+                      "sourceCommandCount": 9
+                    }
+                  ]
+                },
+                "sourceSiteOrderKeys": {
+                  "const": [
+                    "bbcs_16:7:cloneEntity",
+                    "bbcs_16:8:cloneEntity",
+                    "bbcs_16:9:cloneEntity",
+                    "bbcs_16:10:cloneEntity",
+                    "bbcs_16:11:cloneEntity",
+                    "bbcs_16:12:cloneEntity",
+                    "bbcs_16:13:cloneEntity",
+                    "bbcs_16:14:cloneEntity",
+                    "IntroCutscene2:4:cloneEntity"
+                  ]
+                },
+                "sourceSitesSha256": {
+                  "const": "867E601D639D063120D3A3A5C7B5CE52664A59A1A6D2CC397C8861A896F042A2"
+                },
+                "programTotalOrderKeys": {
+                  "const": [
+                    "cs_45284",
+                    "cs_45348",
+                    "cs_453F2",
+                    "cs_45470",
+                    "ms_BowieShrinkIn",
+                    "ms_BowieGrowOut",
+                    "abcs_battle00",
+                    "abcs_battle01",
+                    "bbcs_01",
+                    "rbcs_battle01",
+                    "bbcs_03",
+                    "abcs_battle04",
+                    "bbcs_04",
+                    "abcs_battle05",
+                    "edcs_battle5",
+                    "bbcs_06",
+                    "abcs_battle07",
+                    "bbcs_07",
+                    "abcs_battle08",
+                    "bbcs_08",
+                    "bbcs_11",
+                    "abcs_battle12",
+                    "edcs_battle12",
+                    "abcs_battle13",
+                    "abcs_battle15",
+                    "bbcs_15",
+                    "abcs_battle16",
+                    "bbcs_16",
+                    "abcs_battle18",
+                    "bbcs_18",
+                    "abcs_battle20",
+                    "abcs_battle21",
+                    "bbcs_21",
+                    "abcs_battle26",
+                    "bbcs_26",
+                    "bscs_battle27",
+                    "abcs_battle28",
+                    "bbcs_28",
+                    "bbcs_29",
+                    "abcs_battle30",
+                    "bbcs_30",
+                    "bbcs_31",
+                    "abcs_battle32",
+                    "bbcs_32",
+                    "rbcs_battle32",
+                    "abcs_battle33",
+                    "bbcs_33",
+                    "abcs_battle34",
+                    "bbcs_34",
+                    "bbcs_35",
+                    "abcs_battle36",
+                    "bbcs_36",
+                    "abcs_battle37",
+                    "bbcs_37",
+                    "abcs_battle38",
+                    "bbcs_38",
+                    "bbcs_39",
+                    "abcs_battle40",
+                    "bbcs_40",
+                    "rbcs_battle40_1",
+                    "rbcs_battle40_2",
+                    "bbcs_41",
+                    "abcs_battle42",
+                    "bbcs_42",
+                    "abcs_battle43",
+                    "edcs_battle43",
+                    "cs_5E3C2",
+                    "cs_5E772",
+                    "cs_512BA",
+                    "cs_6283E",
+                    "cs_513A0",
+                    "cs_513BA",
+                    "cs_51374",
+                    "cs_5137A",
+                    "cs_513CE",
+                    "cs_513D6",
+                    "cs_513E2",
+                    "cs_51444",
+                    "cs_5144C",
+                    "cs_51454",
+                    "cs_5145C",
+                    "cs_5148C",
+                    "cs_5149A",
+                    "cs_51652",
+                    "cs_516A8",
+                    "cs_628C8",
+                    "cs_6290C",
+                    "cs_51742",
+                    "cs_51750",
+                    "cs_51B14",
+                    "cs_60656",
+                    "cs_606AC",
+                    "cs_606E0",
+                    "cs_606EA",
+                    "cs_60708",
+                    "cs_607DE",
+                    "cs_6093A",
+                    "cs_60B10",
+                    "cs_60BA6",
+                    "cs_60C42",
+                    "cs_60CA4",
+                    "cs_60EB2",
+                    "cs_60F18",
+                    "cs_60F64",
+                    "cs_60FA4",
+                    "cs_6060E",
+                    "cs_54CC6",
+                    "cs_54E70",
+                    "cs_54E78",
+                    "cs_54E86",
+                    "cs_54F26",
+                    "cs_55242",
+                    "cs_55288",
+                    "cs_55832",
+                    "cs_55A36",
+                    "cs_55BEE",
+                    "cs_56146",
+                    "cs_56172",
+                    "cs_56314",
+                    "cs_563B2",
+                    "cs_56422",
+                    "cs_568F6",
+                    "cs_569BC",
+                    "cs_56AE6",
+                    "cs_570B0",
+                    "cs_573EC",
+                    "cs_574A6",
+                    "cs_5766C",
+                    "cs_5779C",
+                    "cs_5797A",
+                    "cs_57AAA",
+                    "cs_57D22",
+                    "cs_58116",
+                    "cs_58310",
+                    "cs_58330",
+                    "cs_58512",
+                    "cs_585FE",
+                    "cs_58856",
+                    "cs_58AE2",
+                    "cs_58B7A",
+                    "cs_58E5C",
+                    "cs_58F5C",
+                    "cs_58F7E",
+                    "cs_58FA4",
+                    "cs_5D04E",
+                    "cs_51F88",
+                    "cs_521BA",
+                    "cs_5247C",
+                    "cs_5249E",
+                    "cs_52530",
+                    "cs_528CA",
+                    "cs_528D4",
+                    "cs_52938",
+                    "cs_52A3C",
+                    "cs_612BE",
+                    "cs_6143C",
+                    "cs_52F0C",
+                    "cs_52F24",
+                    "cs_52F40",
+                    "cs_53104",
+                    "cs_62D06",
+                    "cs_62D0E",
+                    "cs_53176",
+                    "cs_534D2",
+                    "cs_535FA",
+                    "cs_53620",
+                    "cs_5362A",
+                    "cs_53816",
+                    "cs_632EA",
+                    "cs_6335E",
+                    "cs_53996",
+                    "cs_633B2",
+                    "cs_53B66",
+                    "cs_EndingKiss",
+                    "cs_53EF4",
+                    "cs_53F2A",
+                    "cs_59656",
+                    "cs_5994E",
+                    "cs_5996E",
+                    "cs_599A4",
+                    "cs_599B2",
+                    "cs_StartSpecialBattle",
+                    "cs_LeaveSpecialBattle",
+                    "cs_5D3AA",
+                    "cs_5D3B8",
+                    "cs_59E04",
+                    "cs_59F20",
+                    "cs_59FB8",
+                    "cs_5F3A2",
+                    "cs_5F3C4",
+                    "cs_5A256",
+                    "cs_5A30C",
+                    "cs_5A31E",
+                    "cs_5A33A",
+                    "cs_5A4FE",
+                    "cs_5D63C",
+                    "cs_5D644",
+                    "cs_5D652",
+                    "cs_5D712",
+                    "cs_5D724",
+                    "cs_5D732",
+                    "cs_5A828",
+                    "cs_5A8CA",
+                    "cs_5A8E6",
+                    "cs_5A90E",
+                    "cs_5A92A",
+                    "cs_5A93A",
+                    "cs_5A956",
+                    "cs_5A97E",
+                    "cs_5A99A",
+                    "cs_5A9AA",
+                    "cs_5A9C6",
+                    "cs_5A9EE",
+                    "cs_5AA0A",
+                    "cs_5AA1A",
+                    "cs_5AA36",
+                    "cs_5AA5E",
+                    "cs_5AA7A",
+                    "cs_5ABA8",
+                    "cs_5ABCC",
+                    "cs_5ABE6",
+                    "cs_5AC04",
+                    "cs_5AC1C",
+                    "cs_5AC34",
+                    "cs_5AC4C",
+                    "cs_5AC58",
+                    "cs_5AF36",
+                    "cs_5B016",
+                    "cs_5B466",
+                    "cs_5B6C0",
+                    "cs_5DA28",
+                    "cs_5DA7A",
+                    "cs_5FA9C",
+                    "cs_5FABC",
+                    "cs_5FB30",
+                    "cs_5FB6A",
+                    "cs_5DD8E",
+                    "cs_5DD9C",
+                    "cs_5DE22",
+                    "cs_5DE2E",
+                    "cs_5DE76",
+                    "cs_5E0EE",
+                    "cs_5E0F8",
+                    "cs_5E20A",
+                    "cs_53FD8",
+                    "cs_53FE0",
+                    "cs_5F4AE",
+                    "cs_5F4B8",
+                    "cs_5F594",
+                    "cs_5FE9A",
+                    "cs_5FF06",
+                    "cs_540C0",
+                    "cs_54570",
+                    "cs_54578",
+                    "cs_600B2",
+                    "cs_600CE",
+                    "cs_5C312",
+                    "cs_5C3AA",
+                    "cs_5C3D8",
+                    "cs_5C4EE",
+                    "cs_5C622",
+                    "cs_5E27C",
+                    "cs_5E320",
+                    "cs_5E346",
+                    "cs_6150A",
+                    "cs_5EB26",
+                    "cs_5EB44",
+                    "cs_5EBFC",
+                    "cs_5ED06",
+                    "cs_5EDB8",
+                    "cs_5EF60",
+                    "cs_615E6",
+                    "cs_5C6CA",
+                    "cs_5C876",
+                    "cs_5C8D4",
+                    "cs_5C8FE",
+                    "cs_5C914",
+                    "cs_5CA5E",
+                    "cs_5CA6E",
+                    "cs_5CB34",
+                    "cs_5CBB4",
+                    "cs_5CC26",
+                    "cs_5CCF6",
+                    "cs_4FB64",
+                    "cs_4FC32",
+                    "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                    "cs_4FF5A",
+                    "cs_4FFDA",
+                    "cs_5023E",
+                    "cs_503A6",
+                    "cs_50806",
+                    "cs_50ABE",
+                    "EndCutscene",
+                    "IntroCutscene1",
+                    "IntroCutscene2",
+                    "IntroCutscene3",
+                    "IntroCutscene4",
+                    "dms_01",
+                    "data/scripting/map/debugscripts.asm#L11",
+                    "data/scripting/map/debugscripts.asm#L16",
+                    "data/scripting/map/debugscripts.asm#L24",
+                    "data/scripting/map/debugscripts.asm#L26",
+                    "data/scripting/map/debugscripts.asm#L76",
+                    "data/scripting/map/debugscripts.asm#L86"
+                  ]
+                },
+                "programTotalsSha256": {
+                  "const": "36F45DF30945F8AA1883D1982702DE9A7290D4C0E797F52923C90471E85ECE70"
+                },
+                "handlers": {
+                  "const": [
+                    {
+                      "macro": "cloneEntity",
+                      "handler": "csc25_cloneEntity",
+                      "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                      "address": 289882,
+                      "opcode": 37,
+                      "sourceCommandCount": 9,
+                      "operandAnnotations": [
+                        {
+                          "parameterOrdinal": 1,
+                          "sourceComment": "copied entity",
+                          "streamOffset": 2,
+                          "widthBytes": 2
+                        },
+                        {
+                          "parameterOrdinal": 2,
+                          "sourceComment": "entity clone",
+                          "streamOffset": 4,
+                          "widthBytes": 2
+                        }
+                      ],
+                      "statementCount": 7,
+                      "sectionGuard": {
+                        "orderedInstructions": [
+                          "move.w (a6)+,d0",
+                          "bsr.w GetEntityAddressFromCharacter",
+                          "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1",
+                          "move.w (a6)+,d0",
+                          "bsr.w GetEntityAddressFromCharacter",
+                          "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+                          "rts"
+                        ],
+                        "scriptCursorReadUseSites": [
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d0",
+                            "transferredByteCount": 2,
+                            "cursorAdvanceByteCount": 2,
+                            "instruction": "move.w (a6)+,d0"
+                          },
+                          {
+                            "sourceRegister": "a6",
+                            "destinationRegister": "d0",
+                            "transferredByteCount": 2,
+                            "cursorAdvanceByteCount": 2,
+                            "instruction": "move.w (a6)+,d0"
+                          }
+                        ],
+                        "entityLookupSequence": [
+                          {
+                            "role": "source",
+                            "cursorReadInstruction": "move.w (a6)+,d0",
+                            "lookupCallInstruction": "bsr.w GetEntityAddressFromCharacter",
+                            "resultAddressRegister": "a5"
+                          },
+                          {
+                            "role": "destination",
+                            "cursorReadInstruction": "move.w (a6)+,d0",
+                            "lookupCallInstruction": "bsr.w GetEntityAddressFromCharacter",
+                            "resultAddressRegister": "a5"
+                          }
+                        ],
+                        "entnumFieldTransfer": {
+                          "sourceFieldRead": {
+                            "baseRegister": "a5",
+                            "offsetSymbol": "ENTITYDEF_OFFSET_ENTNUM",
+                            "offsetValue": 18,
+                            "destinationRegister": "d1",
+                            "transferredByteCount": 1,
+                            "instruction": "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1"
+                          },
+                          "destinationFieldWrite": {
+                            "sourceRegister": "d1",
+                            "baseRegister": "a5",
+                            "offsetSymbol": "ENTITYDEF_OFFSET_ENTNUM",
+                            "offsetValue": 18,
+                            "transferredByteCount": 1,
+                            "instruction": "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)"
+                          },
+                          "derivedTransferByteCount": 1
+                        },
+                        "loopRecords": [],
+                        "directCallOrder": [
+                          "bsr.w GetEntityAddressFromCharacter",
+                          "bsr.w GetEntityAddressFromCharacter"
+                        ],
+                        "returnInstruction": "rts"
+                      },
+                      "directCalls": [
+                        {
+                          "opcode": "bsr",
+                          "instructionTarget": "GetEntityAddressFromCharacter"
+                        },
+                        {
+                          "opcode": "bsr",
+                          "instructionTarget": "GetEntityAddressFromCharacter"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "callerBreakdown": {
+                  "const": {
+                    "callerHandlers": [
+                      {
+                        "handler": "csc25_cloneEntity",
+                        "instructionTargetSiteCounts": {
+                          "GetEntityAddressFromCharacter": 2
+                        },
+                        "effectiveTargetSiteCounts": {
+                          "GetEntityAddressFromCharacter": 2
+                        }
+                      }
+                    ],
+                    "targetResolutions": [
+                      {
+                        "instructionTarget": "GetEntityAddressFromCharacter",
+                        "effectiveTarget": "GetEntityAddressFromCharacter",
+                        "aliasSourcePath": null,
+                        "effectiveTargetScope": "external"
+                      }
+                    ],
+                    "instructionTargetTotals": {
+                      "GetEntityAddressFromCharacter": 2
+                    },
+                    "effectiveTargetTotals": {
+                      "GetEntityAddressFromCharacter": 2
+                    },
+                    "internalInstructionTargetTotals": {
+                      "GetEntityAddressFromCharacter": 0
+                    },
+                    "externalInstructionTargetTotals": {
+                      "GetEntityAddressFromCharacter": 2
+                    },
+                    "internalEffectiveTargetTotals": {
+                      "GetEntityAddressFromCharacter": 0
+                    },
+                    "externalEffectiveTargetTotals": {
+                      "GetEntityAddressFromCharacter": 2
+                    }
+                  }
+                },
+                "sourceIdentityJoins": {
+                  "const": {
+                    "handlerSource": {
+                      "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                      "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+                      "symbol": "csc25_cloneEntity"
+                    },
+                    "entityAddressLookupOwner": {
+                      "sourceFactPath": "entityPopulationCommandFacts.sourceIdentityJoins.calleeOwners",
+                      "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+                      "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+                      "symbol": "GetEntityAddressFromCharacter"
+                    }
+                  }
+                },
+                "runtimeQuestions": {
+                  "const": [
+                    "map-script-entity-clone/runtime-effects-matrix"
+                  ]
+                }
+              }
+            }
+          ]
         }
       }
     }
@@ -66084,6 +66644,1367 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "entityCloneCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commands"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "commandIndex",
+                    "sourceLine",
+                    "macro",
+                    "arguments",
+                    "sourceOrderKey",
+                    "operandValues"
+                  ],
+                  "properties": {
+                    "commandIndex": {
+                      "type": "integer"
+                    },
+                    "sourceLine": {
+                      "type": "integer"
+                    },
+                    "macro": {
+                      "type": "string"
+                    },
+                    "arguments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "sourceOrderKey": {
+                      "type": "string"
+                    },
+                    "operandValues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "parameterOrdinal",
+                          "sourceComment",
+                          "streamOffset",
+                          "widthBytes",
+                          "rawValue",
+                          "resolvedValue",
+                          "resolution"
+                        ],
+                        "properties": {
+                          "parameterOrdinal": {
+                            "type": "integer"
+                          },
+                          "sourceComment": {
+                            "type": "string"
+                          },
+                          "streamOffset": {
+                            "type": "integer"
+                          },
+                          "widthBytes": {
+                            "type": "integer"
+                          },
+                          "rawValue": {
+                            "type": "string"
+                          },
+                          "resolvedValue": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "resolution": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commandCount",
+              "macroCounts"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commandCount": {
+                "type": "integer"
+              },
+              "macroCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "cloneEntity"
+                ],
+                "properties": {
+                  "cloneEntity": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "sourcePath",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "entityLookupSequence",
+                  "entnumFieldTransfer",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationRegister",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationRegister": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "entityLookupSequence": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "role",
+                        "cursorReadInstruction",
+                        "lookupCallInstruction",
+                        "resultAddressRegister"
+                      ],
+                      "properties": {
+                        "role": {
+                          "type": "string"
+                        },
+                        "cursorReadInstruction": {
+                          "type": "string"
+                        },
+                        "lookupCallInstruction": {
+                          "type": "string"
+                        },
+                        "resultAddressRegister": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "entnumFieldTransfer": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sourceFieldRead",
+                      "destinationFieldWrite",
+                      "derivedTransferByteCount"
+                    ],
+                    "properties": {
+                      "sourceFieldRead": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "baseRegister",
+                          "offsetSymbol",
+                          "offsetValue",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "baseRegister": {
+                            "type": "string"
+                          },
+                          "offsetSymbol": {
+                            "type": "string"
+                          },
+                          "offsetValue": {
+                            "type": "integer"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer"
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "destinationFieldWrite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "baseRegister",
+                          "offsetSymbol",
+                          "offsetValue",
+                          "transferredByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "baseRegister": {
+                            "type": "string"
+                          },
+                          "offsetSymbol": {
+                            "type": "string"
+                          },
+                          "offsetValue": {
+                            "type": "integer"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer"
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "derivedTransferByteCount": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": false
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "sourceIdentityJoins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handlerSource",
+            "entityAddressLookupOwner"
+          ],
+          "properties": {
+            "handlerSource": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "sourceSha256",
+                "symbol"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "type": "string"
+                }
+              }
+            },
+            "entityAddressLookupOwner": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceFactPath",
+                "sourcePath",
+                "sourceSha256",
+                "symbol"
+              ],
+              "properties": {
+                "sourceFactPath": {
+                  "type": "string"
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entityCloneCommandFactsFixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "sourcePath",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "entityLookupSequence",
+                  "entnumFieldTransfer",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationRegister",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationRegister": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "entityLookupSequence": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "role",
+                        "cursorReadInstruction",
+                        "lookupCallInstruction",
+                        "resultAddressRegister"
+                      ],
+                      "properties": {
+                        "role": {
+                          "type": "string"
+                        },
+                        "cursorReadInstruction": {
+                          "type": "string"
+                        },
+                        "lookupCallInstruction": {
+                          "type": "string"
+                        },
+                        "resultAddressRegister": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "entnumFieldTransfer": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sourceFieldRead",
+                      "destinationFieldWrite",
+                      "derivedTransferByteCount"
+                    ],
+                    "properties": {
+                      "sourceFieldRead": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "baseRegister",
+                          "offsetSymbol",
+                          "offsetValue",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "baseRegister": {
+                            "type": "string"
+                          },
+                          "offsetSymbol": {
+                            "type": "string"
+                          },
+                          "offsetValue": {
+                            "type": "integer"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer"
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "destinationFieldWrite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "baseRegister",
+                          "offsetSymbol",
+                          "offsetValue",
+                          "transferredByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "baseRegister": {
+                            "type": "string"
+                          },
+                          "offsetSymbol": {
+                            "type": "string"
+                          },
+                          "offsetValue": {
+                            "type": "integer"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer"
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "derivedTransferByteCount": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": false
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "sourceIdentityJoins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handlerSource",
+            "entityAddressLookupOwner"
+          ],
+          "properties": {
+            "handlerSource": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "sourceSha256",
+                "symbol"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "type": "string"
+                }
+              }
+            },
+            "entityAddressLookupOwner": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceFactPath",
+                "sourcePath",
+                "sourceSha256",
+                "symbol"
+              ],
+              "properties": {
+                "sourceFactPath": {
+                  "type": "string"
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }

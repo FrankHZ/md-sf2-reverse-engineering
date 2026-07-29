@@ -896,6 +896,56 @@ The extractor additionally records the pinned callee-owner paths and SHA-256 val
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
 `expected.entityPopulationCommandFacts`.
 
+## Confirmed Map-Script `cloneEntity` Command Boundary
+
+Evidence date: 2026-07-29.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field `entityCloneCommandFacts` retains the single
+source-named form `cloneEntity`: opcode `$25`, six encoded bytes, and two two-byte operands (four
+encoded operand bytes). Its unmodified source comments are `copied entity` and `entity clone`; those
+comments remain source text rather than lifecycle or presentation claims. The complete corpus contains
+nine commands in two source rows: `bbcs_16` command indexes 7-14 have ordered literal pairs
+129/130, 131/132, 131/133, 131/134, 131/135, 131/136, 131/137, and 131/138; `IntroCutscene2`
+command index 4 has 132/131. The contract retains all 304 zero-inclusive program totals: only
+`bbcs_16` has eight uses and `IntroCutscene2` has one. The compact ordered source-site and
+program-total SHA-256 values are respectively
+`867E601D639D063120D3A3A5C7B5CE52664A59A1A6D2CC397C8861A896F042A2` and
+`36F45DF30945F8AA1883D1982702DE9A7290D4C0E797F52923C90471E85ECE70`.
+
+**Confirmed:** the complete named section `csc25_cloneEntity` is H1/ROM `$46C5A`. It consumes two
+advancing `move.w (a6)+,d0` reads, each transferring and advancing two bytes, then calls
+`GetEntityAddressFromCharacter` after each read in that exact order. The first lookup result is read
+as `move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1`; after the second lookup, the exact post-lookup write is
+`move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)`, then `rts`. The parsed source equate
+`ENTITYDEF_OFFSET_ENTNUM` is 18, and each field instruction transfers one byte. The derived
+one-byte transfer is tied to those two parsed use sites, while the four script-operand bytes remain
+separate from it. The bounded section has no loop instruction, counter, or parsed whole-record span:
+the one-byte `ENTITYDEF_OFFSET_ENTNUM` transfer is the only record-field transfer this static slice
+confirms. An opcode, operand width, field symbol, lookup order, transfer order, or return mutation
+fails parser construction before golden-fixture comparison.
+
+**Confirmed:** instruction-scoped caller parsing retains two `bsr` sites whose instruction and
+effective target are both `GetEntityAddressFromCharacter`. Its one-handler, zero-inclusive maps have
+direct/effective total 2, internal direct/effective total 0, and external direct/effective total 2;
+there is no jump-interface alias. The provenance-only join points to the existing entity-population
+callee-owner record, without copying entity population, placement, action, or lifecycle facts.
+
+**Unknown:** `map-script-entity-clone/runtime-effects-matrix` is the sole grouped H3 queue. A shared
+runtime matrix must determine any whole-record behavior, entity identity effect, lifetime, allocation,
+visibility, collision/pathfinding, persistence, timing, rendering, and normal-story reachability.
+None of those claims follows from the macro name, source comments, A6 reads, lookup calls, or the
+single source-named field-byte transfer.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm::cloneEntity`;
+`code/common/scripting/map/mapscriptengine_2.asm` dispatcher slot `$25`;
+`code/common/scripting/map/mapscriptengine_1.asm::csc25_cloneEntity` and
+`GetEntityAddressFromCharacter`; `sf2enums.asm::ENTITYDEF_OFFSET_ENTNUM`; H1 `$46C5A`; and local
+US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.entityCloneCommandFacts`.
+
 ## Confirmed Map-Script Map Load/Reload/Reset Command Family
 
 Evidence date: 2026-07-28.

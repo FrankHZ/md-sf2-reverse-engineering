@@ -24,6 +24,11 @@ from sf2tool.h2.map_script_engine import (
     _entity_action_bridge_macro_facts,
     _entity_action_bridge_payload_invocation,
     _entity_action_bridge_section_guard,
+    _entity_clone_cursor_read_use_site,
+    _entity_clone_field_read_use_site,
+    _entity_clone_field_write_use_site,
+    _entity_clone_macro_annotations,
+    _entity_clone_section_guard,
     _entity_dialogue_consumer_facts,
     _entity_gesture_relationship_motion_branch_target_record,
     _entity_gesture_relationship_motion_cursor_read_use_site,
@@ -852,6 +857,49 @@ loadEntitiesFromMapSetup: macro
     macro_path.write_text(missing_comment, encoding="utf-8")
     with pytest.raises(ValueError, match="comment is missing"):
         _entity_population_macro_annotations(tmp_path)
+
+
+def test_entity_clone_macro_annotations_preserve_source_comments(tmp_path) -> None:
+    macro_path = tmp_path / "sf2cutscenemacros.asm"
+    macro_path.write_text(
+        """
+cloneEntity: macro
+    dc.w $25
+    dc.w \\1 ; copied entity
+    dc.w \\2 ; entity clone
+    endm
+""",
+        encoding="utf-8",
+    )
+    actual = _entity_clone_macro_annotations(tmp_path)
+    assert actual == {
+        "cloneEntity": [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "copied entity",
+                "streamOffset": 2,
+                "widthBytes": 2,
+            },
+            {
+                "parameterOrdinal": 2,
+                "sourceComment": "entity clone",
+                "streamOffset": 4,
+                "widthBytes": 2,
+            },
+        ]
+    }
+    source = macro_path.read_text(encoding="utf-8")
+    macro_path.write_text(
+        source.replace("dc.w \\2 ; entity clone", "dc.w \\3 ; entity clone"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="operand ordinal"):
+        _entity_clone_macro_annotations(tmp_path)
+    macro_path.write_text(
+        source.replace("dc.w \\1 ; copied entity", "dc.w \\1"), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="comment is missing"):
+        _entity_clone_macro_annotations(tmp_path)
 
 
 def test_entity_population_pointer_read_parser_accepts_sizes_and_rejects_near_misses() -> None:
@@ -3842,6 +3890,415 @@ def test_entity_population_schema_exact_blocks_keep_large_corpora_compact() -> N
         facts = schema["definitions"]["entityPopulationCommandFacts"]
         assert facts["additionalProperties"] is False
         assert {"sourceSites", "programTotals"} <= set(facts["required"])
+
+
+def test_entity_clone_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityCloneCommandFacts"]
+    expected = fixture["expected"]["entityCloneCommandFacts"]
+    assert {key: actual[key] for key in expected} == expected
+    assert actual["macros"] == [
+        {
+            "name": "cloneEntity",
+            "opcode": 37,
+            "encodedBytes": 6,
+            "operandBytes": 4,
+            "operandLayout": [
+                {
+                    "streamOffset": 2,
+                    "widthBytes": 2,
+                    "expression": "\\1",
+                    "parameterOrdinals": [1],
+                    "encoding": "direct",
+                },
+                {
+                    "streamOffset": 4,
+                    "widthBytes": 2,
+                    "expression": "\\2",
+                    "parameterOrdinals": [2],
+                    "encoding": "direct",
+                },
+            ],
+            "parameterOrdinals": [1, 2],
+            "handler": "csc25_cloneEntity",
+            "sourceOperandAnnotations": [
+                {
+                    "parameterOrdinal": 1,
+                    "sourceComment": "copied entity",
+                    "streamOffset": 2,
+                    "widthBytes": 2,
+                },
+                {
+                    "parameterOrdinal": 2,
+                    "sourceComment": "entity clone",
+                    "streamOffset": 4,
+                    "widthBytes": 2,
+                },
+            ],
+            "sourceCommandCount": 9,
+        }
+    ]
+    assert [
+        (
+            site["programId"],
+            command["commandIndex"],
+            command["sourceLine"],
+            command["arguments"],
+            [value["resolvedValue"] for value in command["operandValues"]],
+            command["sourceOrderKey"],
+        )
+        for site in actual["sourceSites"]
+        for command in site["commands"]
+    ] == [
+        ("bbcs_16", 7, 11, ["129", "130"], [129, 130], "bbcs_16:7:cloneEntity"),
+        ("bbcs_16", 8, 12, ["131", "132"], [131, 132], "bbcs_16:8:cloneEntity"),
+        ("bbcs_16", 9, 13, ["131", "133"], [131, 133], "bbcs_16:9:cloneEntity"),
+        ("bbcs_16", 10, 14, ["131", "134"], [131, 134], "bbcs_16:10:cloneEntity"),
+        ("bbcs_16", 11, 15, ["131", "135"], [131, 135], "bbcs_16:11:cloneEntity"),
+        ("bbcs_16", 12, 16, ["131", "136"], [131, 136], "bbcs_16:12:cloneEntity"),
+        ("bbcs_16", 13, 17, ["131", "137"], [131, 137], "bbcs_16:13:cloneEntity"),
+        ("bbcs_16", 14, 18, ["131", "138"], [131, 138], "bbcs_16:14:cloneEntity"),
+        ("IntroCutscene2", 4, 8, ["132", "131"], [132, 131], "IntroCutscene2:4:cloneEntity"),
+    ]
+    assert actual["sourceSitesSha256"] == (
+        "867E601D639D063120D3A3A5C7B5CE52664A59A1A6D2CC397C8861A896F042A2"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "36F45DF30945F8AA1883D1982702DE9A7290D4C0E797F52923C90471E85ECE70"
+    )
+    assert [
+        (row["programId"], row["commandCount"], row["macroCounts"])
+        for row in actual["programTotals"]
+        if row["commandCount"]
+    ] == [
+        ("bbcs_16", 8, {"cloneEntity": 8}),
+        ("IntroCutscene2", 1, {"cloneEntity": 1}),
+    ]
+    assert all(
+        row["macroCounts"] == {"cloneEntity": row["commandCount"]}
+        for row in actual["programTotals"]
+    )
+    assert actual["handlers"] == [
+        {
+            "macro": "cloneEntity",
+            "handler": "csc25_cloneEntity",
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "address": 289882,
+            "opcode": 37,
+            "sourceCommandCount": 9,
+            "operandAnnotations": actual["macros"][0]["sourceOperandAnnotations"],
+            "statementCount": 7,
+            "sectionGuard": {
+                "orderedInstructions": [
+                    "move.w (a6)+,d0",
+                    "bsr.w GetEntityAddressFromCharacter",
+                    "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1",
+                    "move.w (a6)+,d0",
+                    "bsr.w GetEntityAddressFromCharacter",
+                    "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+                    "rts",
+                ],
+                "scriptCursorReadUseSites": [
+                    {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0",
+                    },
+                    {
+                        "sourceRegister": "a6",
+                        "destinationRegister": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0",
+                    },
+                ],
+                "entityLookupSequence": [
+                    {
+                        "role": "source",
+                        "cursorReadInstruction": "move.w (a6)+,d0",
+                        "lookupCallInstruction": "bsr.w GetEntityAddressFromCharacter",
+                        "resultAddressRegister": "a5",
+                    },
+                    {
+                        "role": "destination",
+                        "cursorReadInstruction": "move.w (a6)+,d0",
+                        "lookupCallInstruction": "bsr.w GetEntityAddressFromCharacter",
+                        "resultAddressRegister": "a5",
+                    },
+                ],
+                "entnumFieldTransfer": {
+                    "sourceFieldRead": {
+                        "baseRegister": "a5",
+                        "offsetSymbol": "ENTITYDEF_OFFSET_ENTNUM",
+                        "offsetValue": 18,
+                        "destinationRegister": "d1",
+                        "transferredByteCount": 1,
+                        "instruction": "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1",
+                    },
+                    "destinationFieldWrite": {
+                        "sourceRegister": "d1",
+                        "baseRegister": "a5",
+                        "offsetSymbol": "ENTITYDEF_OFFSET_ENTNUM",
+                        "offsetValue": 18,
+                        "transferredByteCount": 1,
+                        "instruction": "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+                    },
+                    "derivedTransferByteCount": 1,
+                },
+                "loopRecords": [],
+                "directCallOrder": [
+                    "bsr.w GetEntityAddressFromCharacter",
+                    "bsr.w GetEntityAddressFromCharacter",
+                ],
+                "returnInstruction": "rts",
+            },
+            "directCalls": [
+                {"opcode": "bsr", "instructionTarget": "GetEntityAddressFromCharacter"},
+                {"opcode": "bsr", "instructionTarget": "GetEntityAddressFromCharacter"},
+            ],
+        }
+    ]
+    assert actual["callerBreakdown"] == {
+        "callerHandlers": [
+            {
+                "handler": "csc25_cloneEntity",
+                "instructionTargetSiteCounts": {"GetEntityAddressFromCharacter": 2},
+                "effectiveTargetSiteCounts": {"GetEntityAddressFromCharacter": 2},
+            }
+        ],
+        "targetResolutions": [
+            {
+                "instructionTarget": "GetEntityAddressFromCharacter",
+                "effectiveTarget": "GetEntityAddressFromCharacter",
+                "aliasSourcePath": None,
+                "effectiveTargetScope": "external",
+            }
+        ],
+        "instructionTargetTotals": {"GetEntityAddressFromCharacter": 2},
+        "effectiveTargetTotals": {"GetEntityAddressFromCharacter": 2},
+        "internalInstructionTargetTotals": {"GetEntityAddressFromCharacter": 0},
+        "externalInstructionTargetTotals": {"GetEntityAddressFromCharacter": 2},
+        "internalEffectiveTargetTotals": {"GetEntityAddressFromCharacter": 0},
+        "externalEffectiveTargetTotals": {"GetEntityAddressFromCharacter": 2},
+    }
+    assert actual["sourceIdentityJoins"] == {
+        "handlerSource": {
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+            "symbol": "csc25_cloneEntity",
+        },
+        "entityAddressLookupOwner": {
+            "sourceFactPath": "entityPopulationCommandFacts.sourceIdentityJoins.calleeOwners",
+            "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+            "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+            "symbol": "GetEntityAddressFromCharacter",
+        },
+    }
+    assert actual["runtimeQuestions"] == ["map-script-entity-clone/runtime-effects-matrix"]
+
+
+def test_entity_clone_use_site_and_call_order_guards_fail_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def changed_field_width(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc25_cloneEntity":
+            return [
+                statement.replace(
+                    "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+                    "move.w d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+                )
+                for statement in statements
+            ]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", changed_field_width)
+    with pytest.raises(ValueError, match="csc25_cloneEntity statement is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_entity_clone_order_guard_rejects_reordered_lookup_before_fixture(monkeypatch) -> None:
+    original_statements = map_script_engine._stable_handler_statements
+
+    def reordered_lookup(disasm, handler):
+        statements = original_statements(disasm, handler)
+        if handler["name"] == "csc25_cloneEntity":
+            statements[2], statements[3] = statements[3], statements[2]
+        return statements
+
+    monkeypatch.setattr(map_script_engine, "_stable_handler_statements", reordered_lookup)
+    with pytest.raises(ValueError, match="csc25_cloneEntity statement is missing"):
+        build_map_script_engine_contract(
+            repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
+        )
+
+
+def test_entity_clone_use_site_parsers_accept_suffixes_and_reject_near_misses() -> None:
+    assert [_entity_clone_cursor_read_use_site(instruction) for instruction in (
+        "move.b (a6)+,d0",
+        "move.w (a6)+,d1",
+        "move.l (a6)+,d7",
+    )] == [
+        {
+            "sourceRegister": "a6",
+            "destinationRegister": register,
+            "transferredByteCount": width,
+            "cursorAdvanceByteCount": width,
+            "instruction": instruction,
+        }
+        for instruction, register, width in (
+            ("move.b (a6)+,d0", "d0", 1),
+            ("move.w (a6)+,d1", "d1", 2),
+            ("move.l (a6)+,d7", "d7", 4),
+        )
+    ]
+    equates = {"ENTITYDEF_OFFSET_ENTNUM": 18}
+    assert _entity_clone_field_read_use_site(
+        "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1", equates
+    )["transferredByteCount"] == 1
+    assert _entity_clone_field_read_use_site(
+        "move.w ENTITYDEF_OFFSET_ENTNUM(a5),d1", equates
+    )["transferredByteCount"] == 2
+    assert _entity_clone_field_write_use_site(
+        "move.l d1,ENTITYDEF_OFFSET_ENTNUM(a5)", equates
+    )["transferredByteCount"] == 4
+    for parser, instruction in (
+        (_entity_clone_cursor_read_use_site, "move.w (a6)+,d0 ; comment"),
+        (_entity_clone_cursor_read_use_site, "label: move.w (a6)+,d0"),
+        (_entity_clone_cursor_read_use_site, "; move.w (a6)+,d0"),
+        (_entity_clone_field_read_use_site, "move.b ENTITYDEF_OFFSET_ENTNUM(a4),d1"),
+        (_entity_clone_field_write_use_site, "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5) ; comment"),
+    ):
+        with pytest.raises(ValueError, match="entity-clone"):
+            if parser is _entity_clone_cursor_read_use_site:
+                parser(instruction)
+            else:
+                parser(instruction, equates)
+
+
+def test_entity_clone_section_guard_rejects_extra_statement_and_field_relationship_drift() -> None:
+    statements = [
+        "move.w (a6)+,d0",
+        "bsr.w GetEntityAddressFromCharacter",
+        "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1",
+        "move.w (a6)+,d0",
+        "bsr.w GetEntityAddressFromCharacter",
+        "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+        "rts",
+    ]
+    actual = _entity_clone_section_guard(statements, {"ENTITYDEF_OFFSET_ENTNUM": 18})
+    assert actual["entnumFieldTransfer"]["derivedTransferByteCount"] == 1
+    assert actual["loopRecords"] == []
+    statements[5] = "move.b d1,ENTITYDEF_OFFSET_MAPSPRITE(a5)"
+    with pytest.raises(ValueError, match="csc25_cloneEntity statement is missing"):
+        _entity_clone_section_guard(statements, {"ENTITYDEF_OFFSET_ENTNUM": 18})
+    statements[5] = "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)"
+    statements.insert(-1, "nop")
+    with pytest.raises(ValueError, match="statement coverage drift"):
+        _entity_clone_section_guard(statements, {"ENTITYDEF_OFFSET_ENTNUM": 18})
+
+
+def test_entity_clone_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
+    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    validate_json(map_script_engine_output, output_schema, owner="entity-clone output")
+    validate_json(fixture, fixture_schema, owner="entity-clone fixture")
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["entityCloneCommandFacts"]["handlers"][0]["sectionGuard"][
+        "entnumFieldTransfer"
+    ]["sourceFieldRead"]["destinationRegister"]
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(missing, output_schema, owner="entity-clone output missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    read = renamed["entityCloneCommandFacts"]["handlers"][0]["sectionGuard"][
+        "entnumFieldTransfer"
+    ]["sourceFieldRead"]
+    read["register"] = read.pop("destinationRegister")
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(renamed, output_schema, owner="entity-clone output renamed field")
+
+    extra = deepcopy(map_script_engine_output)
+    extra["entityCloneCommandFacts"]["handlers"][0]["sectionGuard"][
+        "entityLookupSequence"
+    ][0]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(extra, output_schema, owner="entity-clone output extra field")
+
+    reordered = deepcopy(map_script_engine_output)
+    source_order = reordered["entityCloneCommandFacts"]["sourceSiteOrderKeys"]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(reordered, output_schema, owner="entity-clone output reordered keys")
+
+    out_of_boundary = deepcopy(map_script_engine_output)
+    out_of_boundary["entityCloneCommandFacts"]["handlers"][0]["sectionGuard"][
+        "entnumFieldTransfer"
+    ]["derivedTransferByteCount"] = 2
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(out_of_boundary, output_schema, owner="entity-clone output boundary")
+
+    fixture_missing = deepcopy(fixture)
+    del fixture_missing["expected"]["entityCloneCommandFacts"]["handlers"][0][
+        "sectionGuard"
+    ]["entnumFieldTransfer"]["sourceFieldRead"]["destinationRegister"]
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(fixture_missing, fixture_schema, owner="entity-clone fixture missing")
+
+    fixture_extra = deepcopy(fixture)
+    fixture_extra["expected"]["entityCloneCommandFacts"]["sourceIdentityJoins"][
+        "handlerSource"
+    ]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(fixture_extra, fixture_schema, owner="entity-clone fixture extra")
+
+    fixture_reordered = deepcopy(fixture)
+    source_order = fixture_reordered["expected"]["entityCloneCommandFacts"][
+        "sourceSiteOrderKeys"
+    ]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(fixture_reordered, fixture_schema, owner="entity-clone fixture order")
+
+    fixture_out_of_boundary = deepcopy(fixture)
+    fixture_out_of_boundary["expected"]["entityCloneCommandFacts"]["handlers"][0][
+        "sectionGuard"
+    ]["entnumFieldTransfer"]["derivedTransferByteCount"] = 2
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            fixture_out_of_boundary,
+            fixture_schema,
+            owner="entity-clone fixture boundary",
+        )
+
+
+def test_entity_clone_schema_exact_blocks_keep_raw_corpora_out_of_fixture() -> None:
+    output_schema = load_json(repo_path("schemas/map-script-engine-static.schema.json"))
+    fixture_schema = load_json(repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"))
+    output_contract = output_schema["properties"]["entityCloneCommandFacts"]
+    fixture_contract = fixture_schema["properties"]["expected"]["properties"][
+        "entityCloneCommandFacts"
+    ]
+    assert {"sourceSites", "programTotals"} <= set(
+        output_schema["definitions"]["entityCloneCommandFacts"]["required"]
+    )
+    assert {"sourceSites", "programTotals"}.isdisjoint(
+        fixture_schema["definitions"]["entityCloneCommandFactsFixture"]["required"]
+    )
+    for contract in (output_contract, fixture_contract):
+        exact = contract["allOf"][1]
+        assert {"sourceSites", "programTotals"}.isdisjoint(exact["properties"])
 
 
 def test_map_lifecycle_contract_matches_complete_golden_fixture(
