@@ -279,6 +279,36 @@ ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS = [
     "map-script-entity-action-bridge/runtime-effects-reachability-matrix"
 ]
 
+# These source labels delimit command forms whose handlers access entity fields,
+# flags, or adjacent sprite state. They do not establish visibility, animation,
+# AI, collision, timing, or presentation behavior.
+ENTITY_LIFECYCLE_PRESENTATION_MACRO_NAMES = (
+    "hide",
+    "startEntity",
+    "stopEntity",
+    "waitIdle",
+    "setSprite",
+    "setPriority",
+    "removeShadow",
+    "setSize",
+)
+ENTITY_LIFECYCLE_PRESENTATION_HANDLER_BY_MACRO = {
+    "hide": "csc2E_hideEntity",
+    "startEntity": "csc1B_startEntityAnim",
+    "stopEntity": "csc1C_stopEntityAnim",
+    "waitIdle": "csc16_waitUntilEntityIdle",
+    "setSprite": "csc1A_setEntitySprite",
+    "setPriority": "csc53_setPriority",
+    "removeShadow": "csc30_removeEntityShadow",
+    "setSize": "csc50_setEntitySize",
+}
+ENTITY_LIFECYCLE_PRESENTATION_HANDLER_NAMES = tuple(
+    ENTITY_LIFECYCLE_PRESENTATION_HANDLER_BY_MACRO.values()
+)
+ENTITY_LIFECYCLE_PRESENTATION_RUNTIME_QUESTIONS = [
+    "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -8429,6 +8459,701 @@ def _entity_action_bridge_command_facts(
     }
 
 
+def _entity_lifecycle_presentation_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse the eight bounded macro operand comments and physical layouts."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in ENTITY_LIFECYCLE_PRESENTATION_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"entity-lifecycle macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"entity-lifecycle operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            comment = match.group("comment")
+            if row["parameterOrdinals"] != [ordinal] or comment is None:
+                raise ValueError(f"entity-lifecycle operand annotation drift: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows) or [
+            row["parameterOrdinal"] for row in annotations
+        ] != list(range(1, len(annotations) + 1)):
+            raise ValueError(f"entity-lifecycle operand annotation coverage drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _entity_lifecycle_presentation_resolve_operand(
+    value: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Resolve source operands only through the parsed equate map or literal grammar."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        return {"rawValue": value, "resolvedValue": _literal(token), "resolution": "literal"}
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+
+
+def _entity_lifecycle_presentation_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach source operand layout records to every bounded program occurrence."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ENTITY_LIFECYCLE_PRESENTATION_MACRO_NAMES
+    )
+    annotated_sites = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "entity-lifecycle source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_entity_lifecycle_presentation_resolve_operand(
+                                argument, equates
+                            ),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _entity_lifecycle_presentation_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Pin the complete ordered site corpus and zero-inclusive program domain."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("entity-lifecycle source order keys are not unique")
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("entity-lifecycle program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _entity_lifecycle_presentation_cursor_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one bounded A6 operand read while retaining advance separately."""
+    instruction = instruction.split(";", 1)[0].strip()
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \(a6\)(?P<advance>\+)?,(?P<destination>.+)",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("entity-lifecycle cursor-read use-site drift")
+    transferred = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": "a6",
+        "destinationOperand": match.group("destination"),
+        "transferredByteCount": transferred,
+        "cursorAdvanceByteCount": transferred if match.group("advance") else 0,
+        "instruction": instruction,
+    }
+
+
+def _entity_lifecycle_presentation_constant_use(
+    symbol: str, instruction: str, pattern: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Record a source equate only through its exact parsed handler use site."""
+    if symbol not in equates or re.fullmatch(pattern, instruction) is None:
+        raise ValueError(f"entity-lifecycle source constant use drift: {symbol}")
+    return {"symbol": symbol, "value": equates[symbol], "instruction": instruction}
+
+
+def _entity_lifecycle_presentation_branch_target_record(
+    section_source: str,
+    branch_instruction: str,
+    expected_target_instruction: str,
+    ordered_instructions: list[str],
+) -> dict[str, Any]:
+    """Resolve a bounded branch target to its exact first instruction and order index."""
+    branch = re.fullmatch(
+        r"(?:b(?:cc|ne)|bra)\.[bwls] (?P<label>@?[A-Za-z_][A-Za-z0-9_]*)",
+        branch_instruction,
+    )
+    if branch is None:
+        raise ValueError("entity-lifecycle branch instruction drift")
+    label = branch.group("label")
+    label_match = re.search(rf"^{re.escape(label)}:\s*$", section_source, re.MULTILINE)
+    if label_match is None:
+        raise ValueError("entity-lifecycle branch target label is missing")
+    target_statements = _statements(section_source[label_match.end() :])
+    if not target_statements:
+        raise ValueError("entity-lifecycle branch target is empty")
+    target_instruction = target_statements[0]
+    target_index = len(_statements(section_source[: label_match.start()]))
+    if (
+        target_instruction != expected_target_instruction
+        or target_index >= len(ordered_instructions)
+        or ordered_instructions[target_index] != target_instruction
+    ):
+        raise ValueError("entity-lifecycle branch target instruction drift")
+    return {
+        "targetLabel": label,
+        "targetInstruction": target_instruction,
+        "targetStatementIndex": target_index,
+    }
+
+
+def _entity_lifecycle_presentation_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard every relevant instruction in one complete bounded handler section."""
+    expected_by_macro = {
+        "hide": [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"jsr HideEntity",
+            r"rts",
+        ],
+        "startEntity": [
+            r"move\.w \(a6\),d0",
+            r"moveq #2,d7",
+            r"bsr\.w AdjustScriptPointerByCharacterAliveStatus",
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"move\.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER\(a5\)",
+            r"rts",
+        ],
+        "stopEntity": [
+            r"move\.w \(a6\),d0",
+            r"moveq #2,d7",
+            r"bsr\.w AdjustScriptPointerByCharacterAliveStatus",
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"move\.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER\(a5\)",
+            r"rts",
+        ],
+        "waitIdle": [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"cmpi\.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+            r"bne\.s loc_469A0",
+            r"rts",
+        ],
+        "setSprite": [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"move\.w \(a6\)\+,d0",
+            r"cmpi\.w #COMBATANT_ALLIES_NUMBER,d0",
+            r"bcc\.s @NotAlly",
+            r"jsr GetAllyMapsprite",
+            r"move\.w d4,d0",
+            r"move\.b d0,ENTITYDEF_OFFSET_MAPSPRITE\(a5\)",
+            r"jsr \(WaitForVInt\)\.w",
+            r"bsr\.w UpdateEntitySprite_0",
+            r"rts",
+        ],
+        "setPriority": [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"lea \(\(byte_FFAFB0-\$1000000\)\)\.w,a0",
+            r"nop",
+            r"move\.w \(a6\)\+,d1",
+            r"bne\.s loc_46FD4",
+            r"clr\.b \(a0,d0\.w\)",
+            r"bra\.s return_46FDA",
+            r"move\.b #1,\(a0,d0\.w\)",
+            r"rts",
+        ],
+        "removeShadow": [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"lea \(FF6802_LOADING_SPACE\)\.l,a0",
+            r"bsr\.w LoadMapsprite",
+            r"jsr sub_45A8C",
+            r"bsr\.w DmaMapsprite",
+            r"jsr \(WaitForVInt\)\.w",
+            r"rts",
+        ],
+        "setSize": [
+            r"move\.w \(a6\)\+,d0",
+            r"bsr\.w GetEntityAddressFromCharacter",
+            r"move\.w \(\(SPRITE_SIZE-\$1000000\)\)\.w,d6",
+            r"move\.w \(a6\)\+,\(\(SPRITE_SIZE-\$1000000\)\)\.w",
+            r"ori\.b #%1000,ENTITYDEF_OFFSET_FLAGS_B\(a5\)",
+            r"bsr\.w UpdateEntitySprite_0",
+            r"jsr \(WaitForVInt\)\.w",
+            r"move\.w d6,\(\(SPRITE_SIZE-\$1000000\)\)\.w",
+            r"rts",
+        ],
+    }
+    if macro not in expected_by_macro:
+        raise ValueError(f"entity-lifecycle handler profile is missing: {macro}")
+    ordered = _force_state_ordered_statements(
+        statements,
+        expected_by_macro[macro],
+        owner=ENTITY_LIFECYCLE_PRESENTATION_HANDLER_BY_MACRO[macro],
+    )
+    if len(statements) != len(ordered):
+        raise ValueError(f"entity-lifecycle handler statement coverage drift: {macro}")
+    cursor_indexes = {
+        "hide": (0,),
+        "startEntity": (0, 3),
+        "stopEntity": (0, 3),
+        "waitIdle": (0,),
+        "setSprite": (0, 2),
+        "setPriority": (0, 4),
+        "removeShadow": (0,),
+        "setSize": (0, 3),
+    }[macro]
+    cursor_reads = [
+        _entity_lifecycle_presentation_cursor_read_use_site(ordered[index])
+        for index in cursor_indexes
+    ]
+    alive_adjustment = (
+        {
+            "selectorPreReadUseSite": cursor_reads[0],
+            "adjustmentLiteralInstruction": ordered[1],
+            "adjustmentLiteralText": "2",
+            "adjustmentLiteralValue": _literal("2"),
+            "callInstruction": ordered[2],
+        }
+        if macro in {"startEntity", "stopEntity"}
+        else None
+    )
+    state_reads: list[dict[str, str]] = []
+    state_writes: list[dict[str, str]] = []
+    address_setup_use_sites: list[dict[str, str]] = []
+    bit_mutation_use_sites: list[dict[str, Any]] = []
+    constant_uses: list[dict[str, Any]] = []
+    literal_uses: list[dict[str, Any]] = []
+    branches: list[tuple[str, str]] = []
+    if macro == "startEntity":
+        state_writes = [
+            {
+                "sourceOperand": "ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                "instruction": ordered[5],
+            }
+        ]
+        literal_uses = [{"literalText": "0", "value": _literal("0"), "instruction": ordered[5]}]
+    elif macro == "stopEntity":
+        state_writes = [
+            {
+                "sourceOperand": "ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                "instruction": ordered[5],
+            }
+        ]
+        literal_uses = [{"literalText": "-1", "value": _literal("-1"), "instruction": ordered[5]}]
+    elif macro == "waitIdle":
+        state_reads = [
+            {
+                "sourceOperand": "ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                "instruction": ordered[2],
+            }
+        ]
+        branches = [(ordered[3], ordered[2])]
+    elif macro == "setSprite":
+        constant_uses = [
+            _entity_lifecycle_presentation_constant_use(
+                "COMBATANT_ALLIES_NUMBER",
+                ordered[3],
+                r"cmpi\.w #COMBATANT_ALLIES_NUMBER,d0",
+                equates,
+            )
+        ]
+        state_writes = [
+            {
+                "sourceOperand": "ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                "instruction": ordered[7],
+            }
+        ]
+        branches = [(ordered[4], ordered[7])]
+    elif macro == "setPriority":
+        address_setup_use_sites = [
+            {
+                "sourceOperand": "((byte_FFAFB0-$1000000)).w",
+                "instruction": ordered[2],
+            }
+        ]
+        state_writes = [
+            {"sourceOperand": "(a0,d0.w)", "instruction": ordered[index]}
+            for index in (6, 8)
+        ]
+        literal_uses = [{"literalText": "1", "value": _literal("1"), "instruction": ordered[8]}]
+        branches = [(ordered[5], ordered[8]), (ordered[7], ordered[9])]
+    elif macro == "removeShadow":
+        address_setup_use_sites = [
+            {
+                "sourceOperand": "(FF6802_LOADING_SPACE).l",
+                "instruction": ordered[2],
+            }
+        ]
+    elif macro == "setSize":
+        state_reads = [{"sourceOperand": "((SPRITE_SIZE-$1000000)).w", "instruction": ordered[2]}]
+        state_writes = [
+            {"sourceOperand": "((SPRITE_SIZE-$1000000)).w", "instruction": ordered[index]}
+            for index in (3, 7)
+        ]
+        bit_mutation_use_sites = [
+            {
+                "sourceOperand": "ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                "operation": "or-immediate",
+                "immediateText": "%1000",
+                "immediateValue": int("1000", 2),
+                "bitIndices": [3],
+                "instruction": ordered[4],
+            }
+        ]
+    direct_call_order = [
+        instruction for instruction in ordered if instruction.startswith(("bsr", "jsr"))
+    ]
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": cursor_reads,
+        "aliveStatusPointerAdjustment": alive_adjustment,
+        "stateReads": state_reads,
+        "stateWrites": state_writes,
+        "addressSetupUseSites": address_setup_use_sites,
+        "bitMutationUseSites": bit_mutation_use_sites,
+        "sourceConstantUseSites": constant_uses,
+        "literalUseSites": literal_uses,
+        "branchRecords": [
+            {"branchInstruction": instruction, "expectedTargetInstruction": target}
+            for instruction, target in branches
+        ],
+        "directCallOrder": direct_call_order,
+        "fallthroughInstruction": None,
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _entity_lifecycle_presentation_caller_breakdown(
+    disasm: Path,
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Retain zero-inclusive direct and alias-resolved target maps per handler."""
+    instruction_targets = list(
+        dict.fromkeys(
+            call["instructionTarget"]
+            for handler in ENTITY_LIFECYCLE_PRESENTATION_HANDLER_NAMES
+            for call in direct_call_rows[handler]
+        )
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": aliases.get(target, {}).get("effectiveTarget", target),
+            "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+            "effectiveTargetScope": (
+                "internal"
+                if aliases.get(target, {}).get("effectiveTarget", target)
+                in ENTITY_LIFECYCLE_PRESENTATION_HANDLER_NAMES
+                else "external"
+            ),
+        }
+        for target in instruction_targets
+    ]
+    effective_targets = list(dict.fromkeys(row["effectiveTarget"] for row in resolutions))
+    effective_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in resolutions
+    }
+    scope_by_instruction = {
+        row["instructionTarget"]: row["effectiveTargetScope"] for row in resolutions
+    }
+    scope_by_effective = {
+        row["effectiveTarget"]: row["effectiveTargetScope"] for row in resolutions
+    }
+    caller_handlers = []
+    for handler in ENTITY_LIFECYCLE_PRESENTATION_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler]:
+            target = call["instructionTarget"]
+            instruction_counts[target] += 1
+            effective_counts[effective_by_instruction[target]] += 1
+        caller_handlers.append(
+            {
+                "handler": handler,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_handlers)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_handlers)
+        for target in effective_targets
+    }
+    return {
+        "callerHandlers": caller_handlers,
+        "targetResolutions": resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalInstructionTargetTotals": {
+            target: instruction_totals[target]
+            if scope_by_instruction[target] == "internal"
+            else 0
+            for target in instruction_targets
+        },
+        "externalInstructionTargetTotals": {
+            target: instruction_totals[target]
+            if scope_by_instruction[target] == "external"
+            else 0
+            for target in instruction_targets
+        },
+        "internalEffectiveTargetTotals": {
+            target: effective_totals[target]
+            if scope_by_effective[target] == "internal"
+            else 0
+            for target in effective_targets
+        },
+        "externalEffectiveTargetTotals": {
+            target: effective_totals[target]
+            if scope_by_effective[target] == "external"
+            else 0
+            for target in effective_targets
+        },
+    }
+
+
+def _entity_lifecycle_presentation_source_identity_joins(
+    disasm: Path, addresses: dict[str, int]
+) -> dict[str, Any]:
+    """Join maintained identity contracts without assigning a runtime relationship."""
+    fixture_specs = (
+        (
+            "entityActionStaticContract",
+            "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+            "sf2-entity-action-scripts-static-v1",
+        ),
+        (
+            "mapSpriteAssignmentStaticContract",
+            "tests/fixtures/h2/map-sprite-assignments-static-v1.json",
+            "sf2-map-sprite-assignments-static-v1",
+        ),
+        (
+            "spriteDialogueStaticContract",
+            "tests/fixtures/h2/sprite-dialogue-static-v1.json",
+            "sf2-sprite-dialogue-static-v1",
+        ),
+    )
+    joins: dict[str, Any] = {}
+    for key, fixture_path, fixture_id in fixture_specs:
+        fixture = load_json(repo_path(fixture_path))
+        if fixture.get("id") != fixture_id or not isinstance(
+            fixture.get("upstreamCommit"), str
+        ):
+            raise ValueError(f"entity-lifecycle fixture identity drift: {fixture_id}")
+        joins[key] = {
+            "fixturePath": fixture_path,
+            "fixtureId": fixture["id"],
+            "upstreamCommit": fixture["upstreamCommit"],
+        }
+    entity_action = load_json(
+        repo_path("tests/fixtures/h2/entity-action-scripts-static-v1.json")
+    )
+    wrapper_source = _map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "UpdateEntitySprite_0",
+    )
+    wrapper_instruction = _entity_placement_update_entity_sprite_wrapper_use_site(
+        wrapper_source
+    )["instruction"]
+    for symbol in ("UpdateEntityData", "ChangeEntityMapsprite"):
+        if (
+            symbol not in entity_action["function"]
+            or symbol not in addresses
+            or entity_action["function"][symbol] != addresses[symbol]
+        ):
+            raise ValueError(f"entity-lifecycle entity-action address join drift: {symbol}")
+    joins["entityActionStaticContract"].update(
+        {
+            "independentlyParsedFunctions": [
+                {"symbol": symbol, "address": entity_action["function"][symbol]}
+                for symbol in ("UpdateEntityData", "ChangeEntityMapsprite")
+            ],
+            "wrapperInstruction": wrapper_instruction,
+        }
+    )
+    return joins
+
+
+def _entity_lifecycle_presentation_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the eight-form static source boundary without inferring runtime effects."""
+    annotations_by_macro = _entity_lifecycle_presentation_macro_annotations(disasm)
+    source_sites, program_totals = _entity_lifecycle_presentation_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in ENTITY_LIFECYCLE_PRESENTATION_MACRO_NAMES:
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if (
+            sum(row["macroCounts"][macro] for row in program_totals)
+            != source_counts[macro]
+        ):
+            raise ValueError(f"entity-lifecycle program total drift: {macro}")
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"]
+            != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"]
+            != max(row["streamOffset"] + row["widthBytes"] for row in annotations)
+            or contract["operandLayout"]
+            != [
+                {
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "expression": f"\\{row['parameterOrdinal']}",
+                    "parameterOrdinals": [row["parameterOrdinal"]],
+                    "encoding": "direct",
+                }
+                for row in annotations
+            ]
+        ):
+            raise ValueError(f"entity-lifecycle macro ABI drift: {macro}")
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    for macro in ENTITY_LIFECYCLE_PRESENTATION_MACRO_NAMES:
+        handler_name = ENTITY_LIFECYCLE_PRESENTATION_HANDLER_BY_MACRO[macro]
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"entity-lifecycle dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"] != contract["encodedBytes"]
+        ):
+            raise ValueError(f"entity-lifecycle handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _entity_lifecycle_presentation_section_guard(
+            macro, statements, equates
+        )
+        if sum(
+            row["cursorAdvanceByteCount"]
+            for row in section_guard["scriptCursorReadUseSites"]
+        ) != contract["operandBytes"]:
+            raise ValueError(f"entity-lifecycle script cursor width drift: {macro}")
+        section_source = _map_camera_control_named_section_source(
+            disasm, handler_path, handler_name
+        )
+        for branch in section_guard["branchRecords"]:
+            branch["branchTarget"] = _entity_lifecycle_presentation_branch_target_record(
+                section_source,
+                branch["branchInstruction"],
+                branch.pop("expectedTargetInstruction"),
+                section_guard["orderedInstructions"],
+            )
+        direct_calls = _force_state_direct_calls(statements)
+        expected_calls = _force_state_direct_calls(section_guard["directCallOrder"])
+        if direct_calls != expected_calls:
+            raise ValueError(f"entity-lifecycle direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations_by_macro[macro],
+                "statementCount": len(statements),
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": ENTITY_LIFECYCLE_PRESENTATION_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in ENTITY_LIFECYCLE_PRESENTATION_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_entity_lifecycle_presentation_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": _entity_lifecycle_presentation_caller_breakdown(
+            disasm, direct_call_rows, addresses, rom
+        ),
+        "sourceIdentityJoins": _entity_lifecycle_presentation_source_identity_joins(
+            disasm, addresses
+        ),
+        "runtimeQuestions": ENTITY_LIFECYCLE_PRESENTATION_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -8576,6 +9301,18 @@ def build_map_script_engine_contract(
         program_corpus,
         addresses,
         rom,
+    )
+    entity_lifecycle_presentation_command_facts = (
+        _entity_lifecycle_presentation_command_facts(
+            disasm,
+            source_equates,
+            macros,
+            targets,
+            handlers,
+            program_corpus,
+            addresses,
+            rom,
+        )
     )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
@@ -8730,6 +9467,7 @@ def build_map_script_engine_contract(
         "mapCameraControlCommandFacts": map_camera_control_command_facts,
         "entityPlacementCommandFacts": entity_placement_command_facts,
         "entityActionBridgeCommandFacts": entity_action_bridge_command_facts,
+        "entityLifecyclePresentationCommandFacts": entity_lifecycle_presentation_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -8744,6 +9482,7 @@ def build_map_script_engine_contract(
             *MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS,
             *ENTITY_PLACEMENT_RUNTIME_QUESTIONS,
             *ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS,
+            *ENTITY_LIFECYCLE_PRESENTATION_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -8799,6 +9538,9 @@ def verify_map_script_engine_contract(
         "mapCameraControlCommandFacts": output["mapCameraControlCommandFacts"],
         "entityPlacementCommandFacts": output["entityPlacementCommandFacts"],
         "entityActionBridgeCommandFacts": output["entityActionBridgeCommandFacts"],
+        "entityLifecyclePresentationCommandFacts": output[
+            "entityLifecyclePresentationCommandFacts"
+        ],
     }
     for field in (
         "summary",
@@ -8829,6 +9571,7 @@ def verify_map_script_engine_contract(
         "mapCameraControlCommandFacts",
         "entityPlacementCommandFacts",
         "entityActionBridgeCommandFacts",
+        "entityLifecyclePresentationCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
@@ -8842,6 +9585,11 @@ def verify_map_script_engine_contract(
         if field == "entityActionBridgeCommandFacts":
             actual = {
                 key: output["entityActionBridgeCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "entityLifecyclePresentationCommandFacts":
+            actual = {
+                key: output["entityLifecyclePresentationCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "dispatcherFacts":

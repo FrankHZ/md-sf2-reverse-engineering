@@ -25,6 +25,10 @@ from sf2tool.h2.map_script_engine import (
     _entity_action_bridge_payload_invocation,
     _entity_action_bridge_section_guard,
     _entity_dialogue_consumer_facts,
+    _entity_lifecycle_presentation_branch_target_record,
+    _entity_lifecycle_presentation_cursor_read_use_site,
+    _entity_lifecycle_presentation_macro_annotations,
+    _entity_lifecycle_presentation_section_guard,
     _entity_placement_branch_target_record,
     _entity_placement_cursor_read_use_site,
     _entity_placement_macro_annotations,
@@ -5617,3 +5621,356 @@ def test_map_entity_action_bridge_schema_exact_blocks_keep_large_corpora_compact
         for name, definition in schema["definitions"].items():
             if name.startswith("entityActionBridge"):
                 assert_closed_objects(definition)
+
+
+def test_map_entity_lifecycle_presentation_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityLifecyclePresentationCommandFacts"]
+    assert fixture["expected"]["entityLifecyclePresentationCommandFacts"] == {
+        key: actual[key]
+        for key in fixture["expected"]["entityLifecyclePresentationCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+            row["handler"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("hide", 46, 4, 2, 141, "csc2E_hideEntity"),
+        ("startEntity", 27, 4, 2, 70, "csc1B_startEntityAnim"),
+        ("stopEntity", 28, 4, 2, 107, "csc1C_stopEntityAnim"),
+        ("waitIdle", 22, 4, 2, 30, "csc16_waitUntilEntityIdle"),
+        ("setSprite", 26, 6, 4, 56, "csc1A_setEntitySprite"),
+        ("setPriority", 83, 6, 4, 51, "csc53_setPriority"),
+        ("removeShadow", 48, 4, 2, 5, "csc30_removeEntityShadow"),
+        ("setSize", 80, 6, 4, 4, "csc50_setEntitySize"),
+    ]
+    assert sum(row["sourceCommandCount"] for row in actual["macros"]) == 464
+    assert len(actual["sourceSites"]) == 105
+    assert len(actual["sourceSiteOrderKeys"]) == 464
+    assert actual["sourceSitesSha256"] == (
+        "152416D18046AC324FCF0EBA3F148B82D723FAF03705698B58565F17935E88AD"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "0ADCBF8A1207FD628CBC63B8BCD028F9426D585E97F29271FB0A23904F05EA3C"
+    )
+    assert [
+        (
+            row["macro"],
+            row["handler"],
+            row["address"],
+            row["opcode"],
+            row["sourceCommandCount"],
+            row["statementCount"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        ("hide", "csc2E_hideEntity", 290458, 46, 141, 4),
+        ("startEntity", "csc1B_startEntityAnim", 289388, 27, 70, 7),
+        ("stopEntity", "csc1C_stopEntityAnim", 289410, 28, 107, 7),
+        ("waitIdle", "csc16_waitUntilEntityIdle", 289178, 22, 30, 5),
+        ("setSprite", "csc1A_setEntitySprite", 289352, 26, 56, 11),
+        ("setPriority", "csc53_setPriority", 290750, 83, 51, 10),
+        ("removeShadow", "csc30_removeEntityShadow", 290496, 48, 5, 8),
+        ("setSize", "csc50_setEntitySize", 290528, 80, 4, 9),
+    ]
+    assert actual["handlers"][1]["sectionGuard"]["aliveStatusPointerAdjustment"] == {
+        "selectorPreReadUseSite": {
+            "sourceRegister": "a6",
+            "destinationOperand": "d0",
+            "transferredByteCount": 2,
+            "cursorAdvanceByteCount": 0,
+            "instruction": "move.w (a6),d0",
+        },
+        "adjustmentLiteralInstruction": "moveq #2,d7",
+        "adjustmentLiteralText": "2",
+        "adjustmentLiteralValue": 2,
+        "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+    }
+    assert actual["handlers"][7]["sectionGuard"]["bitMutationUseSites"] == [
+        {
+            "sourceOperand": "ENTITYDEF_OFFSET_FLAGS_B(a5)",
+            "operation": "or-immediate",
+            "immediateText": "%1000",
+            "immediateValue": 8,
+            "bitIndices": [3],
+            "instruction": "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+        }
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "GetEntityAddressFromCharacter": 8,
+        "HideEntity": 1,
+        "AdjustScriptPointerByCharacterAliveStatus": 2,
+        "GetAllyMapsprite": 1,
+        "WaitForVInt": 3,
+        "UpdateEntitySprite_0": 2,
+        "LoadMapsprite": 1,
+        "sub_45A8C": 1,
+        "DmaMapsprite": 1,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["instructionTargetTotals"]
+    for field in ("internalInstructionTargetTotals", "internalEffectiveTargetTotals"):
+        assert actual["callerBreakdown"][field] == {
+            target: 0 for target in actual["callerBreakdown"]["instructionTargetTotals"]
+        }
+    assert actual["sourceIdentityJoins"]["entityActionStaticContract"] == {
+        "fixturePath": "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+        "fixtureId": "sf2-entity-action-scripts-static-v1",
+        "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+        "independentlyParsedFunctions": [
+            {"symbol": "UpdateEntityData", "address": 23916},
+            {"symbol": "ChangeEntityMapsprite", "address": 24744},
+        ],
+        "wrapperInstruction": "jsr (ChangeEntityMapsprite).w",
+    }
+    assert actual["sourceIdentityJoins"]["mapSpriteAssignmentStaticContract"]["fixtureId"] == (
+        "sf2-map-sprite-assignments-static-v1"
+    )
+    assert actual["sourceIdentityJoins"]["spriteDialogueStaticContract"]["fixtureId"] == (
+        "sf2-sprite-dialogue-static-v1"
+    )
+    assert actual["runtimeQuestions"] == [
+        "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix"
+    ]
+
+
+def test_map_entity_lifecycle_presentation_source_guards_reject_local_drift(
+    map_script_engine_output: dict, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    facts = map_script_engine_output["entityLifecyclePresentationCommandFacts"]
+    annotations = _entity_lifecycle_presentation_macro_annotations(disasm)
+    assert annotations["setSize"] == facts["macros"][-1]["sourceOperandAnnotations"]
+    source_handlers = {
+        row["name"]: row for row in map_script_engine_output["handlers"]
+    }
+    guarded_handlers = {row["macro"]: row for row in facts["handlers"]}
+    for macro, handler in guarded_handlers.items():
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        guard = _entity_lifecycle_presentation_section_guard(macro, statements, equates)
+        assert guard["orderedInstructions"] == handler["sectionGuard"]["orderedInstructions"]
+        assert guard["directCallOrder"] == handler["sectionGuard"]["directCallOrder"]
+        assert sum(
+            row["cursorAdvanceByteCount"] for row in guard["scriptCursorReadUseSites"]
+        ) == next(row["operandBytes"] for row in facts["macros"] if row["name"] == macro)
+    mutations = (
+        ("hide", "jsr HideEntity", "jsr UpdateEntityData"),
+        ("startEntity", "moveq #2,d7", "moveq #3,d7"),
+        ("stopEntity", "move.b #-1", "move.b #0"),
+        ("waitIdle", "bne.s loc_469A0", "beq.s loc_469A0"),
+        (
+            "setSprite",
+            "cmpi.w #COMBATANT_ALLIES_NUMBER,d0",
+            "cmpi.w #COMBATANT_ENEMIES_NUMBER,d0",
+        ),
+        ("setPriority", "bne.s loc_46FD4", "beq.s loc_46FD4"),
+        ("removeShadow", "bsr.w DmaMapsprite", "bsr.w LoadMapsprite"),
+        ("setSize", "ori.b #%1000", "ori.b #%0100"),
+    )
+    for macro, original, replacement in mutations:
+        handler = guarded_handlers[macro]
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        with pytest.raises(ValueError, match="statement is missing"):
+            _entity_lifecycle_presentation_section_guard(
+                macro,
+                [statement.replace(original, replacement) for statement in statements],
+                equates,
+            )
+    reordered = map_script_engine._stable_handler_statements(
+        disasm, source_handlers["csc1B_startEntityAnim"]
+    )
+    reordered[0], reordered[1] = reordered[1], reordered[0]
+    with pytest.raises(ValueError, match="statement is missing"):
+        _entity_lifecycle_presentation_section_guard("startEntity", reordered, equates)
+    section_source = map_script_engine._map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "csc1A_setEntitySprite",
+    )
+    set_sprite = guarded_handlers["setSprite"]
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _entity_lifecycle_presentation_branch_target_record(
+            section_source.replace("@NotAlly:", "@NotAllies:"),
+            "bcc.s @NotAlly",
+            "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+            set_sprite["sectionGuard"]["orderedInstructions"],
+        )
+    original_reader = map_script_engine.read_upstream_text
+
+    def annotation_altered_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            return source.replace("dc.w \\1 ; entity to act", "dc.w \\1", 1)
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", annotation_altered_reader)
+    with pytest.raises(ValueError, match="operand annotation drift"):
+        _entity_lifecycle_presentation_macro_annotations(disasm)
+
+
+def test_map_entity_lifecycle_presentation_cursor_parser_handles_comments_sizes_and_near_misses(
+) -> None:
+    assert _entity_lifecycle_presentation_cursor_read_use_site(
+        "move.b (a6),d0 ; selector"
+    ) == {
+        "sourceRegister": "a6",
+        "destinationOperand": "d0",
+        "transferredByteCount": 1,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "move.b (a6),d0",
+    }
+    assert _entity_lifecycle_presentation_cursor_read_use_site("move.w (a6)+,d2")[
+        "cursorAdvanceByteCount"
+    ] == 2
+    assert _entity_lifecycle_presentation_cursor_read_use_site("move.l (a6)+,d7")[
+        "transferredByteCount"
+    ] == 4
+    for near_miss in (
+        "label: move.w (a6)+,d2",
+        "; move.w (a6)+,d2",
+        "move.q (a6)+,d2",
+        "move.w d2,(a6)+",
+        "move.w target(a6),d2",
+    ):
+        with pytest.raises(ValueError, match="cursor-read use-site drift"):
+            _entity_lifecycle_presentation_cursor_read_use_site(near_miss)
+
+
+def test_map_entity_lifecycle_presentation_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="entity-lifecycle presentation baseline")
+        target_path = (
+            ("entityLifecyclePresentationCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "entityLifecyclePresentationCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["macros"][0]["sourceOperandAnnotations"][0][
+            "sourceComment"
+        ]
+        with pytest.raises(ValueError, match="sourceComment"):
+            validate_json(missing, schema_path, owner="entity-lifecycle missing nested field")
+
+        renamed = deepcopy(source)
+        operand = target_for(renamed)["handlers"][4]["sectionGuard"]["stateWrites"][0]
+        operand["target"] = operand.pop("sourceOperand")
+        with pytest.raises(ValueError, match="sourceOperand"):
+            validate_json(renamed, schema_path, owner="entity-lifecycle renamed nested field")
+
+        extra = deepcopy(source)
+        target_for(extra)["handlers"][7]["sectionGuard"]["bitMutationUseSites"][0][
+            "extra"
+        ] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="entity-lifecycle extra nested field")
+
+        reordered = deepcopy(source)
+        order = target_for(reordered)["sourceSiteOrderKeys"]
+        order[0], order[1] = order[1], order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema_path, owner="entity-lifecycle exact source order")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["handlers"][1]["sectionGuard"][
+            "aliveStatusPointerAdjustment"
+        ]["adjustmentLiteralValue"] = 3
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema_path, owner="entity-lifecycle exact boundary")
+
+
+def test_map_entity_lifecycle_presentation_schema_compacts_raw_corpora_and_closes_shapes() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("entityLifecyclePresentationCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "entityLifecyclePresentationCommandFacts"
+            ]
+        exact_block = contract["allOf"][1]
+        exact = (
+            exact_block["const"]
+            if "const" in exact_block
+            else exact_block["properties"]
+        )
+        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
+        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
+        definition_name = (
+            "entityLifecyclePresentationCommandFacts"
+            if "entityLifecyclePresentationCommandFacts" in schema["definitions"]
+            else "entityLifecyclePresentationFixtureCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if definition_name == "entityLifecyclePresentationCommandFacts":
+            assert {"sourceSites", "programTotals"} <= set(facts["required"])
+            source_sites = facts["properties"]["sourceSites"]
+            program_totals = facts["properties"]["programTotals"]
+            assert source_sites == {
+                "type": "array",
+                "minItems": 105,
+                "maxItems": 105,
+                "items": {"$ref": "#/definitions/entityLifecyclePresentationSourceSite"},
+            }
+            assert program_totals == {
+                "type": "array",
+                "minItems": 304,
+                "maxItems": 304,
+                "items": {"$ref": "#/definitions/entityLifecyclePresentationProgramTotal"},
+            }
+            for name in (
+                "entityLifecyclePresentationCommand",
+                "entityLifecyclePresentationSourceSite",
+                "entityLifecyclePresentationProgramTotal",
+            ):
+                item = schema["definitions"][name]
+                assert item["additionalProperties"] is False
+                assert "prefixItems" not in item
+                assert "const" not in item
+        else:
+            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        assert_closed_objects(facts)

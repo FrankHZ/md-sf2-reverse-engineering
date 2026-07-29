@@ -358,6 +358,66 @@ Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.entityActionBridgeCommandFacts`.
 
+## Confirmed Map-Script Entity Lifecycle/Presentation Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.entityLifecyclePresentationCommandFacts` retains eight source-named macro forms in source
+order: `hide` `$2E` (141 commands, 4 encoded bytes, 2 operand bytes), `startEntity` `$1B` (70, 4,
+2), `stopEntity` `$1C` (107, 4, 2), `waitIdle` `$16` (30, 4, 2), `setSprite` `$1A` (56, 6, 4),
+`setPriority` `$53` (51, 6, 4), `removeShadow` `$30` (5, 4, 2), and `setSize` `$50` (4, 6, 4).
+The raw macro comments and byte/word widths remain source facts: first operand labels are exactly
+`entity to act`, `entity`, or `target entity`, while `setSprite`, `setPriority`, and `setSize` retain
+their second source labels. These spellings and physical fields do not establish visibility,
+animation, priority, shadow, size, or any other runtime effect.
+
+**Confirmed:** the complete source corpus contains 464 ordered command occurrences in 105 non-empty
+source-site rows, and all 304 declared programs remain as zero-inclusive `programTotals` rows. The
+extractor separately records command/program order and exact raw operand records; the source-site and
+program-total order hashes are respectively
+`152416D18046AC324FCF0EBA3F148B82D723FAF03705698B58565F17935E88AD` and
+`0ADCBF8A1207FD628CBC63B8BCD028F9426D585E97F29271FB0A23904F05EA3C`.
+
+**Confirmed:** the eight bounded H1/ROM handler sections are `csc2E_hideEntity` `$46E9A` (4
+statements), `csc1B_startEntityAnim` `$46A6C` (7), `csc1C_stopEntityAnim` `$46A82` (7),
+`csc16_waitUntilEntityIdle` `$4699A` (5), `csc1A_setEntitySprite` `$46A48` (11),
+`csc53_setPriority` `$46FBE` (10), `csc30_removeEntityShadow` `$46EC0` (8), and
+`csc50_setEntitySize` `$46EE0` (9). Their guards retain complete statement order, A6 transfer versus
+non-advancing selector reads, literal use sites, source-shaped read/write operands, branch polarity and
+resolved target-first-instruction pairs, direct call order, and return boundaries. In particular,
+`setSprite` retains the parsed `COMBATANT_ALLIES_NUMBER` comparison use site, and `setSize` retains
+the parsed `%1000` immediate as value 8 and bit index 3; neither record assigns a gameplay meaning to
+the source field or bit.
+
+**Confirmed:** comment-stripping instruction parsing retains nine direct instruction targets with
+zero-inclusive per-handler, direct/effective, internal/external maps. External totals are
+`GetEntityAddressFromCharacter` 8, `HideEntity` 1,
+`AdjustScriptPointerByCharacterAliveStatus` 2, `GetAllyMapsprite` 1, `WaitForVInt` 3,
+`UpdateEntitySprite_0` 2, `LoadMapsprite` 1, `sub_45A8C` 1, and `DmaMapsprite` 1; every internal
+total is zero and no call currently resolves through a jump-interface alias. The provenance-only joins
+retain fixture IDs `sf2-entity-action-scripts-static-v1`, `sf2-map-sprite-assignments-static-v1`, and
+`sf2-sprite-dialogue-static-v1`; they do not claim that their associated data or code has a particular
+runtime effect here.
+
+### Runtime questions — entity lifecycle/presentation
+
+**Unknown:** `map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix` is the
+sole grouped H3 queue. One shared launch must establish normal-story reachability; operand and
+state-field meaning; selector handling; resulting entity, animation, visibility, shadow, sprite,
+priority, and size outcomes; VInt/wait timing; collision/pathfinding; persistence; and presentation.
+No source macro, callee, field, or literal name promotes those runtime behaviors from this static
+contract.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `hide`,
+`startEntity`, `stopEntity`, `waitIdle`, `setSprite`, `setPriority`, `removeShadow`, and `setSize`;
+`code/common/scripting/map/mapscriptengine_1.asm` named sections above; H1 listing symbols/addresses;
+and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityLifecyclePresentationCommandFacts`.
+
 ## Confirmed Map-Script Roster/Death Command Family
 
 **Confirmed:** `sf2-map-script-engine-static-v1` separately retains the source-named primary forms

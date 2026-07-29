@@ -416,6 +416,16 @@ transfer target.
 `map-script-entity-action-bridge/runtime-effects-reachability-matrix` is its sole H3 follow-up;
 reachability, control-byte/payload meaning, entity effects, timing, persistence, collision, and
 presentation remain outside this static credit.
+The adjacent entity lifecycle/presentation slice is exact for eight source-named forms: 141 `hide`
+`$2E`, 70 `startEntity` `$1B`, 107 `stopEntity` `$1C`, 30 `waitIdle` `$16`, 56 `setSprite` `$1A`,
+51 `setPriority` `$53`, five `removeShadow` `$30`, and four `setSize` `$50` commands (464 total).
+It retains 105 ordered source-site rows, the complete 304-row zero-inclusive program domain, raw
+macro operand comments/widths, eight complete named handler guards, parsed constant/literal use sites,
+branch target identity, and nine-target zero-inclusive direct/effective caller maps. Its three joined
+fixtures are provenance-only identities.
+`map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix` is the sole grouped H3
+follow-up; source names do not credit visibility, animation, sprite, priority, shadow, size, timing,
+collision, persistence, or presentation behavior as static coverage.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

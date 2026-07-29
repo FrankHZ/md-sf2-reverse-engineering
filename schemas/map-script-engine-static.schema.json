@@ -30,7 +30,8 @@
     "mapInteractionTriggerCommandFacts",
     "mapCameraControlCommandFacts",
     "entityPlacementCommandFacts",
-    "entityActionBridgeCommandFacts"
+    "entityActionBridgeCommandFacts",
+    "entityLifecyclePresentationCommandFacts"
   ],
   "properties": {
     "schemaVersion": {
@@ -318,8 +319,8 @@
     },
     "runtimeQuestions": {
       "type": "array",
-      "minItems": 13,
-      "maxItems": 13,
+      "minItems": 14,
+      "maxItems": 14,
       "items": {
         "type": "string"
       },
@@ -336,7 +337,8 @@
         "map-interaction-trigger/runtime-effects-matrix",
         "map-script-camera-control/runtime-effects-matrix",
         "map-script-entity-placement/runtime-effects-reachability-matrix",
-        "map-script-entity-action-bridge/runtime-effects-reachability-matrix"
+        "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
+        "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix"
       ]
     },
     "dialogueCommandFacts": {
@@ -40078,6 +40080,2163 @@
           }
         }
       ]
+    },
+    "entityLifecyclePresentationCommandFacts": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/entityLifecyclePresentationCommandFacts"
+        },
+        {
+          "properties": {
+            "macros": {
+              "const": [
+                {
+                  "name": "hide",
+                  "opcode": 46,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc2E_hideEntity",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 141
+                },
+                {
+                  "name": "startEntity",
+                  "opcode": 27,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc1B_startEntityAnim",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 70
+                },
+                {
+                  "name": "stopEntity",
+                  "opcode": 28,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc1C_stopEntityAnim",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 107
+                },
+                {
+                  "name": "waitIdle",
+                  "opcode": 22,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc16_waitUntilEntityIdle",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 30
+                },
+                {
+                  "name": "setSprite",
+                  "opcode": 26,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc1A_setEntitySprite",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "new mapsprite",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 56
+                },
+                {
+                  "name": "setPriority",
+                  "opcode": 83,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc53_setPriority",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "priority layer ($0 - bottom layer, $FF-top layer)",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 51
+                },
+                {
+                  "name": "removeShadow",
+                  "opcode": 48,
+                  "encodedBytes": 4,
+                  "operandBytes": 2,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "handler": "csc30_removeEntityShadow",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "target entity",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 5
+                },
+                {
+                  "name": "setSize",
+                  "opcode": 80,
+                  "encodedBytes": 6,
+                  "operandBytes": 4,
+                  "operandLayout": [
+                    {
+                      "streamOffset": 2,
+                      "widthBytes": 2,
+                      "expression": "\\1",
+                      "parameterOrdinals": [
+                        1
+                      ],
+                      "encoding": "direct"
+                    },
+                    {
+                      "streamOffset": 4,
+                      "widthBytes": 2,
+                      "expression": "\\2",
+                      "parameterOrdinals": [
+                        2
+                      ],
+                      "encoding": "direct"
+                    }
+                  ],
+                  "parameterOrdinals": [
+                    1,
+                    2
+                  ],
+                  "handler": "csc50_setEntitySize",
+                  "sourceOperandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "size in pixels",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "sourceCommandCount": 4
+                }
+              ]
+            },
+            "sourceSiteOrderKeys": {
+              "const": [
+                "cs_45348:1:setSprite",
+                "cs_45470:1:setSprite",
+                "abcs_battle01:30:setSprite",
+                "abcs_battle01:32:setSprite",
+                "abcs_battle01:49:setSprite",
+                "abcs_battle01:51:setSprite",
+                "abcs_battle01:60:hide",
+                "abcs_battle01:65:hide",
+                "edcs_battle5:1:stopEntity",
+                "abcs_battle07:7:stopEntity",
+                "abcs_battle07:8:stopEntity",
+                "abcs_battle07:26:startEntity",
+                "abcs_battle07:31:waitIdle",
+                "abcs_battle07:76:stopEntity",
+                "abcs_battle07:77:stopEntity",
+                "abcs_battle07:83:startEntity",
+                "abcs_battle07:84:startEntity",
+                "abcs_battle07:92:startEntity",
+                "abcs_battle07:137:setSprite",
+                "abcs_battle07:140:setSprite",
+                "abcs_battle07:183:waitIdle",
+                "abcs_battle07:188:stopEntity",
+                "abcs_battle07:221:setSprite",
+                "abcs_battle07:233:stopEntity",
+                "abcs_battle07:241:stopEntity",
+                "abcs_battle07:252:stopEntity",
+                "abcs_battle07:273:setSprite",
+                "abcs_battle07:294:setSprite",
+                "abcs_battle07:300:stopEntity",
+                "abcs_battle07:307:waitIdle",
+                "abcs_battle07:328:setSprite",
+                "abcs_battle07:330:startEntity",
+                "abcs_battle07:370:stopEntity",
+                "bbcs_07:69:stopEntity",
+                "bbcs_07:70:stopEntity",
+                "bbcs_07:84:waitIdle",
+                "bbcs_07:94:stopEntity",
+                "abcs_battle08:4:stopEntity",
+                "abcs_battle08:17:setSprite",
+                "abcs_battle08:20:setSprite",
+                "abcs_battle08:28:startEntity",
+                "bbcs_08:4:stopEntity",
+                "abcs_battle15:45:waitIdle",
+                "abcs_battle15:51:hide",
+                "abcs_battle18:10:stopEntity",
+                "abcs_battle18:47:startEntity",
+                "abcs_battle18:49:stopEntity",
+                "abcs_battle18:51:startEntity",
+                "abcs_battle18:131:stopEntity",
+                "abcs_battle18:132:stopEntity",
+                "abcs_battle18:136:stopEntity",
+                "abcs_battle18:148:startEntity",
+                "abcs_battle18:149:startEntity",
+                "abcs_battle18:195:startEntity",
+                "bbcs_18:10:stopEntity",
+                "abcs_battle26:10:setPriority",
+                "abcs_battle26:11:setPriority",
+                "abcs_battle26:68:startEntity",
+                "bbcs_26:31:waitIdle",
+                "bbcs_26:97:stopEntity",
+                "bbcs_26:100:stopEntity",
+                "abcs_battle28:8:stopEntity",
+                "abcs_battle28:9:stopEntity",
+                "abcs_battle28:10:setPriority",
+                "abcs_battle28:11:setPriority",
+                "abcs_battle28:12:setPriority",
+                "abcs_battle28:23:waitIdle",
+                "abcs_battle28:31:setSprite",
+                "abcs_battle28:58:setSprite",
+                "abcs_battle28:65:setSprite",
+                "abcs_battle28:67:startEntity",
+                "abcs_battle28:105:hide",
+                "bbcs_28:8:stopEntity",
+                "bbcs_28:45:stopEntity",
+                "bbcs_28:52:waitIdle",
+                "bbcs_28:68:startEntity",
+                "bbcs_29:40:waitIdle",
+                "bbcs_29:42:waitIdle",
+                "bbcs_29:63:stopEntity",
+                "bbcs_29:64:setSprite",
+                "bbcs_29:71:setSprite",
+                "bbcs_29:72:startEntity",
+                "abcs_battle30:8:stopEntity",
+                "abcs_battle30:10:stopEntity",
+                "abcs_battle30:11:setPriority",
+                "abcs_battle30:12:setPriority",
+                "bbcs_31:56:stopEntity",
+                "bbcs_31:63:startEntity",
+                "abcs_battle33:9:stopEntity",
+                "abcs_battle34:11:stopEntity",
+                "abcs_battle34:13:stopEntity",
+                "abcs_battle34:29:setSprite",
+                "abcs_battle34:30:startEntity",
+                "abcs_battle34:40:setSprite",
+                "abcs_battle34:75:hide",
+                "bbcs_34:40:waitIdle",
+                "abcs_battle37:13:stopEntity",
+                "abcs_battle37:15:setPriority",
+                "abcs_battle37:16:setPriority",
+                "abcs_battle37:39:stopEntity",
+                "abcs_battle37:48:startEntity",
+                "abcs_battle38:10:stopEntity",
+                "abcs_battle38:23:setPriority",
+                "abcs_battle38:24:setPriority",
+                "abcs_battle38:31:startEntity",
+                "abcs_battle38:40:stopEntity",
+                "abcs_battle38:59:startEntity",
+                "abcs_battle38:115:setPriority",
+                "abcs_battle38:149:setSprite",
+                "abcs_battle38:155:hide",
+                "abcs_battle38:159:hide",
+                "abcs_battle38:163:hide",
+                "abcs_battle38:167:hide",
+                "abcs_battle38:171:hide",
+                "abcs_battle38:175:hide",
+                "abcs_battle38:179:hide",
+                "abcs_battle38:181:hide",
+                "abcs_battle38:185:setSprite",
+                "abcs_battle40:16:stopEntity",
+                "abcs_battle40:72:hide",
+                "abcs_battle40:74:hide",
+                "abcs_battle40:76:hide",
+                "abcs_battle40:78:hide",
+                "bbcs_40:90:hide",
+                "abcs_battle42:13:stopEntity",
+                "abcs_battle42:16:stopEntity",
+                "abcs_battle42:18:setPriority",
+                "abcs_battle42:19:setPriority",
+                "abcs_battle42:20:setPriority",
+                "abcs_battle42:50:setSprite",
+                "abcs_battle42:70:setSprite",
+                "abcs_battle42:72:startEntity",
+                "abcs_battle42:116:waitIdle",
+                "abcs_battle42:158:setSprite",
+                "abcs_battle42:160:startEntity",
+                "abcs_battle42:170:stopEntity",
+                "bbcs_42:13:stopEntity",
+                "abcs_battle43:15:hide",
+                "cs_5E3C2:61:waitIdle",
+                "cs_5E3C2:67:waitIdle",
+                "cs_5E772:11:stopEntity",
+                "cs_5E772:21:startEntity",
+                "cs_513BA:0:hide",
+                "cs_51374:0:hide",
+                "cs_513CE:0:hide",
+                "cs_5149A:46:hide",
+                "cs_5149A:47:hide",
+                "cs_607DE:59:startEntity",
+                "cs_6093A:1:setPriority",
+                "cs_6093A:2:setPriority",
+                "cs_6093A:18:setPriority",
+                "cs_6093A:19:setPriority",
+                "cs_6093A:30:hide",
+                "cs_6093A:42:setPriority",
+                "cs_6093A:43:setPriority",
+                "cs_6093A:52:setPriority",
+                "cs_54E86:33:hide",
+                "cs_54F26:142:hide",
+                "cs_54F26:143:hide",
+                "cs_54F26:144:hide",
+                "cs_54F26:145:hide",
+                "cs_55242:10:hide",
+                "cs_55832:9:stopEntity",
+                "cs_55832:28:startEntity",
+                "cs_55832:32:stopEntity",
+                "cs_55BEE:21:stopEntity",
+                "cs_55BEE:22:stopEntity",
+                "cs_55BEE:23:stopEntity",
+                "cs_55BEE:32:startEntity",
+                "cs_55BEE:33:startEntity",
+                "cs_55BEE:34:startEntity",
+                "cs_55BEE:81:waitIdle",
+                "cs_569BC:37:setPriority",
+                "cs_569BC:38:setPriority",
+                "cs_569BC:42:setPriority",
+                "cs_56AE6:7:setPriority",
+                "cs_56AE6:8:setPriority",
+                "cs_56AE6:32:setPriority",
+                "cs_573EC:24:hide",
+                "cs_573EC:25:hide",
+                "cs_573EC:26:hide",
+                "cs_573EC:27:hide",
+                "cs_573EC:28:hide",
+                "cs_573EC:29:hide",
+                "cs_573EC:30:hide",
+                "cs_5766C:8:setSprite",
+                "cs_5766C:15:setSprite",
+                "cs_5766C:28:setSprite",
+                "cs_5766C:37:startEntity",
+                "cs_5766C:43:setSprite",
+                "cs_5779C:28:setPriority",
+                "cs_5779C:29:setPriority",
+                "cs_5779C:35:setPriority",
+                "cs_5779C:36:setPriority",
+                "cs_5779C:40:waitIdle",
+                "cs_5779C:67:hide",
+                "cs_5779C:75:setPriority",
+                "cs_5797A:11:hide",
+                "cs_58310:2:startEntity",
+                "cs_58856:94:hide",
+                "cs_58B7A:45:removeShadow",
+                "cs_58B7A:98:removeShadow",
+                "cs_58FA4:5:setPriority",
+                "cs_58FA4:6:setPriority",
+                "cs_58FA4:7:setPriority",
+                "cs_58FA4:38:hide",
+                "cs_58FA4:39:hide",
+                "cs_58FA4:40:hide",
+                "cs_58FA4:41:hide",
+                "cs_58FA4:54:stopEntity",
+                "cs_58FA4:58:startEntity",
+                "cs_51F88:95:hide",
+                "cs_51F88:96:hide",
+                "cs_51F88:97:hide",
+                "cs_51F88:98:hide",
+                "cs_51F88:99:hide",
+                "cs_51F88:100:hide",
+                "cs_51F88:101:hide",
+                "cs_51F88:102:hide",
+                "cs_51F88:103:hide",
+                "cs_51F88:104:hide",
+                "cs_51F88:105:hide",
+                "cs_51F88:106:hide",
+                "cs_51F88:107:hide",
+                "cs_51F88:108:hide",
+                "cs_51F88:109:hide",
+                "cs_51F88:110:hide",
+                "cs_51F88:111:hide",
+                "cs_51F88:112:hide",
+                "cs_52530:8:startEntity",
+                "cs_52530:38:stopEntity",
+                "cs_52530:58:setSprite",
+                "cs_52530:79:startEntity",
+                "cs_52530:80:setSprite",
+                "cs_52530:145:stopEntity",
+                "cs_52530:147:setSprite",
+                "cs_528D4:5:startEntity",
+                "cs_528D4:6:setSprite",
+                "cs_52938:20:hide",
+                "cs_52938:21:hide",
+                "cs_52938:22:hide",
+                "cs_52938:23:hide",
+                "cs_52938:26:stopEntity",
+                "cs_52938:27:stopEntity",
+                "cs_52938:37:startEntity",
+                "cs_52938:38:startEntity",
+                "cs_612BE:13:setSize",
+                "cs_612BE:38:setPriority",
+                "cs_612BE:39:setPriority",
+                "cs_612BE:46:hide",
+                "cs_6143C:16:hide",
+                "cs_62D06:0:setSprite",
+                "cs_62D0E:179:hide",
+                "cs_62D0E:181:startEntity",
+                "cs_62D0E:203:hide",
+                "cs_53176:61:hide",
+                "cs_53176:62:hide",
+                "cs_53176:63:hide",
+                "cs_53176:64:hide",
+                "cs_53176:65:hide",
+                "cs_53176:66:hide",
+                "cs_53176:67:hide",
+                "cs_53176:122:stopEntity",
+                "cs_53176:123:stopEntity",
+                "cs_53176:126:startEntity",
+                "cs_53176:129:startEntity",
+                "cs_534D2:56:hide",
+                "cs_534D2:57:hide",
+                "cs_534D2:58:hide",
+                "cs_534D2:59:hide",
+                "cs_53996:19:setPriority",
+                "cs_53996:20:setPriority",
+                "cs_53996:85:hide",
+                "cs_53B66:64:hide",
+                "cs_53B66:78:stopEntity",
+                "cs_53B66:86:hide",
+                "cs_53B66:89:startEntity",
+                "cs_EndingKiss:13:stopEntity",
+                "cs_59656:5:stopEntity",
+                "cs_59656:6:stopEntity",
+                "cs_59656:7:stopEntity",
+                "cs_59656:17:removeShadow",
+                "cs_59656:18:removeShadow",
+                "cs_59656:19:removeShadow",
+                "cs_59656:27:hide",
+                "cs_59656:28:hide",
+                "cs_59656:29:hide",
+                "cs_59656:34:startEntity",
+                "cs_59656:35:startEntity",
+                "cs_59656:36:startEntity",
+                "cs_599B2:12:stopEntity",
+                "cs_599B2:13:stopEntity",
+                "cs_599B2:14:stopEntity",
+                "cs_59E04:6:stopEntity",
+                "cs_59E04:7:stopEntity",
+                "cs_59E04:8:stopEntity",
+                "cs_59E04:29:startEntity",
+                "cs_59E04:30:startEntity",
+                "cs_59E04:31:startEntity",
+                "cs_59E04:33:hide",
+                "cs_59E04:34:hide",
+                "cs_59E04:35:hide",
+                "cs_59F20:6:hide",
+                "cs_59FB8:30:startEntity",
+                "cs_59FB8:31:startEntity",
+                "cs_59FB8:32:startEntity",
+                "cs_5A31E:1:stopEntity",
+                "cs_5A33A:48:startEntity",
+                "cs_5A33A:85:hide",
+                "cs_5AC58:32:stopEntity",
+                "cs_5AC58:38:startEntity",
+                "cs_5AC58:89:waitIdle",
+                "cs_5AF36:32:stopEntity",
+                "cs_5AF36:35:startEntity",
+                "cs_5B016:203:hide",
+                "cs_5B016:208:hide",
+                "cs_5B466:20:hide",
+                "cs_5B466:21:hide",
+                "cs_5B466:22:hide",
+                "cs_5B466:23:hide",
+                "cs_5B466:60:hide",
+                "cs_5B6C0:114:stopEntity",
+                "cs_5B6C0:117:startEntity",
+                "cs_5B6C0:325:hide",
+                "cs_5B6C0:361:hide",
+                "cs_5B6C0:362:hide",
+                "cs_5B6C0:363:hide",
+                "cs_5B6C0:364:hide",
+                "cs_5B6C0:365:hide",
+                "cs_5B6C0:366:hide",
+                "cs_5B6C0:367:hide",
+                "cs_5B6C0:368:hide",
+                "cs_5B6C0:370:hide",
+                "cs_5B6C0:371:hide",
+                "cs_5B6C0:372:hide",
+                "cs_5B6C0:373:hide",
+                "cs_5B6C0:374:hide",
+                "cs_5B6C0:375:hide",
+                "cs_5B6C0:376:hide",
+                "cs_5B6C0:377:hide",
+                "cs_5B6C0:396:hide",
+                "cs_5B6C0:405:hide",
+                "cs_5FABC:6:stopEntity",
+                "cs_5FB30:10:hide",
+                "cs_5DE2E:1:stopEntity",
+                "cs_53FE0:6:stopEntity",
+                "cs_5FF06:7:hide",
+                "cs_540C0:7:stopEntity",
+                "cs_540C0:60:hide",
+                "cs_540C0:61:hide",
+                "cs_540C0:76:stopEntity",
+                "cs_540C0:85:stopEntity",
+                "cs_540C0:90:stopEntity",
+                "cs_540C0:96:stopEntity",
+                "cs_540C0:100:stopEntity",
+                "cs_540C0:105:startEntity",
+                "cs_54578:54:setSprite",
+                "cs_600B2:1:setSprite",
+                "cs_600CE:31:waitIdle",
+                "cs_600CE:98:startEntity",
+                "cs_600CE:101:hide",
+                "cs_600CE:103:setSprite",
+                "cs_600CE:111:startEntity",
+                "cs_5EBFC:4:stopEntity",
+                "cs_5EBFC:5:stopEntity",
+                "cs_5EBFC:6:stopEntity",
+                "cs_5EBFC:7:stopEntity",
+                "cs_5ED06:16:stopEntity",
+                "cs_5ED06:17:stopEntity",
+                "cs_5ED06:18:stopEntity",
+                "cs_5ED06:19:stopEntity",
+                "cs_5EDB8:13:stopEntity",
+                "cs_5EDB8:14:stopEntity",
+                "cs_5EDB8:15:stopEntity",
+                "cs_5EDB8:16:stopEntity",
+                "cs_5EF60:98:waitIdle",
+                "cs_615E6:4:setPriority",
+                "cs_615E6:5:setPriority",
+                "cs_615E6:27:setSprite",
+                "cs_615E6:46:stopEntity",
+                "cs_615E6:47:setSprite",
+                "cs_615E6:52:startEntity",
+                "cs_615E6:53:startEntity",
+                "cs_615E6:54:setSprite",
+                "cs_615E6:69:setSprite",
+                "cs_615E6:95:setSprite",
+                "cs_615E6:238:stopEntity",
+                "cs_615E6:245:hide",
+                "cs_615E6:295:waitIdle",
+                "cs_615E6:325:waitIdle",
+                "cs_615E6:338:stopEntity",
+                "cs_615E6:342:startEntity",
+                "cs_615E6:365:startEntity",
+                "cs_615E6:403:waitIdle",
+                "cs_615E6:457:waitIdle",
+                "cs_615E6:463:setPriority",
+                "cs_615E6:464:setPriority",
+                "cs_615E6:476:waitIdle",
+                "cs_615E6:501:startEntity",
+                "cs_615E6:512:startEntity",
+                "cs_615E6:533:startEntity",
+                "cs_615E6:551:setPriority",
+                "cs_615E6:552:setPriority",
+                "cs_615E6:691:hide",
+                "cs_615E6:727:hide",
+                "cs_615E6:746:setPriority",
+                "cs_615E6:747:setPriority",
+                "cs_615E6:755:hide",
+                "cs_615E6:757:setSprite",
+                "cs_615E6:773:setPriority",
+                "cs_5CA5E:0:setSprite",
+                "cs_5CA5E:2:stopEntity",
+                "cs_5CBB4:2:setSprite",
+                "cs_5CBB4:3:startEntity",
+                "cs_5CC26:41:startEntity",
+                "cs_5CCF6:41:startEntity",
+                "cs_5CCF6:43:setSprite",
+                "cs_5CCF6:45:stopEntity",
+                "cs_4FC32:28:hide",
+                "cs_4FF5A:26:hide",
+                "cs_4FFDA:7:stopEntity",
+                "cs_4FFDA:8:stopEntity",
+                "cs_4FFDA:49:setSprite",
+                "cs_4FFDA:50:startEntity",
+                "cs_4FFDA:55:hide",
+                "cs_4FFDA:99:hide",
+                "cs_4FFDA:100:hide",
+                "cs_5023E:9:waitIdle",
+                "cs_5023E:10:waitIdle",
+                "cs_5023E:11:waitIdle",
+                "cs_5023E:24:stopEntity",
+                "cs_5023E:25:setSize",
+                "cs_5023E:27:setSize",
+                "cs_5023E:29:setSize",
+                "cs_5023E:35:startEntity",
+                "cs_503A6:50:waitIdle",
+                "cs_503A6:52:stopEntity",
+                "cs_503A6:126:stopEntity",
+                "cs_503A6:127:stopEntity",
+                "cs_503A6:128:stopEntity",
+                "cs_503A6:130:hide",
+                "cs_503A6:142:setSprite",
+                "cs_503A6:154:hide",
+                "cs_503A6:166:setPriority",
+                "cs_503A6:167:setPriority",
+                "EndCutscene:8:setSprite",
+                "IntroCutscene2:43:hide",
+                "IntroCutscene3:54:setSprite",
+                "IntroCutscene3:78:setSprite",
+                "IntroCutscene3:102:setSprite",
+                "IntroCutscene3:111:hide",
+                "IntroCutscene3:113:setSprite",
+                "IntroCutscene3:145:setSprite",
+                "IntroCutscene3:149:setSprite",
+                "IntroCutscene4:114:hide",
+                "IntroCutscene4:115:hide",
+                "IntroCutscene4:199:stopEntity",
+                "IntroCutscene4:202:startEntity",
+                "IntroCutscene4:222:waitIdle",
+                "IntroCutscene4:226:hide",
+                "data/scripting/map/debugscripts.asm#L26:0:stopEntity",
+                "data/scripting/map/debugscripts.asm#L26:2:waitIdle",
+                "data/scripting/map/debugscripts.asm#L26:5:startEntity",
+                "data/scripting/map/debugscripts.asm#L86:2:hide"
+              ]
+            },
+            "sourceSitesSha256": {
+              "const": "152416D18046AC324FCF0EBA3F148B82D723FAF03705698B58565F17935E88AD"
+            },
+            "programTotalOrderKeys": {
+              "const": [
+                "cs_45284",
+                "cs_45348",
+                "cs_453F2",
+                "cs_45470",
+                "ms_BowieShrinkIn",
+                "ms_BowieGrowOut",
+                "abcs_battle00",
+                "abcs_battle01",
+                "bbcs_01",
+                "rbcs_battle01",
+                "bbcs_03",
+                "abcs_battle04",
+                "bbcs_04",
+                "abcs_battle05",
+                "edcs_battle5",
+                "bbcs_06",
+                "abcs_battle07",
+                "bbcs_07",
+                "abcs_battle08",
+                "bbcs_08",
+                "bbcs_11",
+                "abcs_battle12",
+                "edcs_battle12",
+                "abcs_battle13",
+                "abcs_battle15",
+                "bbcs_15",
+                "abcs_battle16",
+                "bbcs_16",
+                "abcs_battle18",
+                "bbcs_18",
+                "abcs_battle20",
+                "abcs_battle21",
+                "bbcs_21",
+                "abcs_battle26",
+                "bbcs_26",
+                "bscs_battle27",
+                "abcs_battle28",
+                "bbcs_28",
+                "bbcs_29",
+                "abcs_battle30",
+                "bbcs_30",
+                "bbcs_31",
+                "abcs_battle32",
+                "bbcs_32",
+                "rbcs_battle32",
+                "abcs_battle33",
+                "bbcs_33",
+                "abcs_battle34",
+                "bbcs_34",
+                "bbcs_35",
+                "abcs_battle36",
+                "bbcs_36",
+                "abcs_battle37",
+                "bbcs_37",
+                "abcs_battle38",
+                "bbcs_38",
+                "bbcs_39",
+                "abcs_battle40",
+                "bbcs_40",
+                "rbcs_battle40_1",
+                "rbcs_battle40_2",
+                "bbcs_41",
+                "abcs_battle42",
+                "bbcs_42",
+                "abcs_battle43",
+                "edcs_battle43",
+                "cs_5E3C2",
+                "cs_5E772",
+                "cs_512BA",
+                "cs_6283E",
+                "cs_513A0",
+                "cs_513BA",
+                "cs_51374",
+                "cs_5137A",
+                "cs_513CE",
+                "cs_513D6",
+                "cs_513E2",
+                "cs_51444",
+                "cs_5144C",
+                "cs_51454",
+                "cs_5145C",
+                "cs_5148C",
+                "cs_5149A",
+                "cs_51652",
+                "cs_516A8",
+                "cs_628C8",
+                "cs_6290C",
+                "cs_51742",
+                "cs_51750",
+                "cs_51B14",
+                "cs_60656",
+                "cs_606AC",
+                "cs_606E0",
+                "cs_606EA",
+                "cs_60708",
+                "cs_607DE",
+                "cs_6093A",
+                "cs_60B10",
+                "cs_60BA6",
+                "cs_60C42",
+                "cs_60CA4",
+                "cs_60EB2",
+                "cs_60F18",
+                "cs_60F64",
+                "cs_60FA4",
+                "cs_6060E",
+                "cs_54CC6",
+                "cs_54E70",
+                "cs_54E78",
+                "cs_54E86",
+                "cs_54F26",
+                "cs_55242",
+                "cs_55288",
+                "cs_55832",
+                "cs_55A36",
+                "cs_55BEE",
+                "cs_56146",
+                "cs_56172",
+                "cs_56314",
+                "cs_563B2",
+                "cs_56422",
+                "cs_568F6",
+                "cs_569BC",
+                "cs_56AE6",
+                "cs_570B0",
+                "cs_573EC",
+                "cs_574A6",
+                "cs_5766C",
+                "cs_5779C",
+                "cs_5797A",
+                "cs_57AAA",
+                "cs_57D22",
+                "cs_58116",
+                "cs_58310",
+                "cs_58330",
+                "cs_58512",
+                "cs_585FE",
+                "cs_58856",
+                "cs_58AE2",
+                "cs_58B7A",
+                "cs_58E5C",
+                "cs_58F5C",
+                "cs_58F7E",
+                "cs_58FA4",
+                "cs_5D04E",
+                "cs_51F88",
+                "cs_521BA",
+                "cs_5247C",
+                "cs_5249E",
+                "cs_52530",
+                "cs_528CA",
+                "cs_528D4",
+                "cs_52938",
+                "cs_52A3C",
+                "cs_612BE",
+                "cs_6143C",
+                "cs_52F0C",
+                "cs_52F24",
+                "cs_52F40",
+                "cs_53104",
+                "cs_62D06",
+                "cs_62D0E",
+                "cs_53176",
+                "cs_534D2",
+                "cs_535FA",
+                "cs_53620",
+                "cs_5362A",
+                "cs_53816",
+                "cs_632EA",
+                "cs_6335E",
+                "cs_53996",
+                "cs_633B2",
+                "cs_53B66",
+                "cs_EndingKiss",
+                "cs_53EF4",
+                "cs_53F2A",
+                "cs_59656",
+                "cs_5994E",
+                "cs_5996E",
+                "cs_599A4",
+                "cs_599B2",
+                "cs_StartSpecialBattle",
+                "cs_LeaveSpecialBattle",
+                "cs_5D3AA",
+                "cs_5D3B8",
+                "cs_59E04",
+                "cs_59F20",
+                "cs_59FB8",
+                "cs_5F3A2",
+                "cs_5F3C4",
+                "cs_5A256",
+                "cs_5A30C",
+                "cs_5A31E",
+                "cs_5A33A",
+                "cs_5A4FE",
+                "cs_5D63C",
+                "cs_5D644",
+                "cs_5D652",
+                "cs_5D712",
+                "cs_5D724",
+                "cs_5D732",
+                "cs_5A828",
+                "cs_5A8CA",
+                "cs_5A8E6",
+                "cs_5A90E",
+                "cs_5A92A",
+                "cs_5A93A",
+                "cs_5A956",
+                "cs_5A97E",
+                "cs_5A99A",
+                "cs_5A9AA",
+                "cs_5A9C6",
+                "cs_5A9EE",
+                "cs_5AA0A",
+                "cs_5AA1A",
+                "cs_5AA36",
+                "cs_5AA5E",
+                "cs_5AA7A",
+                "cs_5ABA8",
+                "cs_5ABCC",
+                "cs_5ABE6",
+                "cs_5AC04",
+                "cs_5AC1C",
+                "cs_5AC34",
+                "cs_5AC4C",
+                "cs_5AC58",
+                "cs_5AF36",
+                "cs_5B016",
+                "cs_5B466",
+                "cs_5B6C0",
+                "cs_5DA28",
+                "cs_5DA7A",
+                "cs_5FA9C",
+                "cs_5FABC",
+                "cs_5FB30",
+                "cs_5FB6A",
+                "cs_5DD8E",
+                "cs_5DD9C",
+                "cs_5DE22",
+                "cs_5DE2E",
+                "cs_5DE76",
+                "cs_5E0EE",
+                "cs_5E0F8",
+                "cs_5E20A",
+                "cs_53FD8",
+                "cs_53FE0",
+                "cs_5F4AE",
+                "cs_5F4B8",
+                "cs_5F594",
+                "cs_5FE9A",
+                "cs_5FF06",
+                "cs_540C0",
+                "cs_54570",
+                "cs_54578",
+                "cs_600B2",
+                "cs_600CE",
+                "cs_5C312",
+                "cs_5C3AA",
+                "cs_5C3D8",
+                "cs_5C4EE",
+                "cs_5C622",
+                "cs_5E27C",
+                "cs_5E320",
+                "cs_5E346",
+                "cs_6150A",
+                "cs_5EB26",
+                "cs_5EB44",
+                "cs_5EBFC",
+                "cs_5ED06",
+                "cs_5EDB8",
+                "cs_5EF60",
+                "cs_615E6",
+                "cs_5C6CA",
+                "cs_5C876",
+                "cs_5C8D4",
+                "cs_5C8FE",
+                "cs_5C914",
+                "cs_5CA5E",
+                "cs_5CA6E",
+                "cs_5CB34",
+                "cs_5CBB4",
+                "cs_5CC26",
+                "cs_5CCF6",
+                "cs_4FB64",
+                "cs_4FC32",
+                "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+                "cs_4FF5A",
+                "cs_4FFDA",
+                "cs_5023E",
+                "cs_503A6",
+                "cs_50806",
+                "cs_50ABE",
+                "EndCutscene",
+                "IntroCutscene1",
+                "IntroCutscene2",
+                "IntroCutscene3",
+                "IntroCutscene4",
+                "dms_01",
+                "data/scripting/map/debugscripts.asm#L11",
+                "data/scripting/map/debugscripts.asm#L16",
+                "data/scripting/map/debugscripts.asm#L24",
+                "data/scripting/map/debugscripts.asm#L26",
+                "data/scripting/map/debugscripts.asm#L76",
+                "data/scripting/map/debugscripts.asm#L86"
+              ]
+            },
+            "programTotalsSha256": {
+              "const": "0ADCBF8A1207FD628CBC63B8BCD028F9426D585E97F29271FB0A23904F05EA3C"
+            },
+            "handlers": {
+              "const": [
+                {
+                  "macro": "hide",
+                  "handler": "csc2E_hideEntity",
+                  "address": 290458,
+                  "opcode": 46,
+                  "sourceCommandCount": 141,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 4,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "jsr HideEntity",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": null,
+                    "stateReads": [],
+                    "stateWrites": [],
+                    "addressSetupUseSites": [],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [],
+                    "branchRecords": [],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "jsr HideEntity"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "HideEntity"
+                    }
+                  ]
+                },
+                {
+                  "macro": "startEntity",
+                  "handler": "csc1B_startEntityAnim",
+                  "address": 289388,
+                  "opcode": 27,
+                  "sourceCommandCount": 70,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 7,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6),d0",
+                      "moveq #2,d7",
+                      "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 0,
+                        "instruction": "move.w (a6),d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": {
+                      "selectorPreReadUseSite": {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 0,
+                        "instruction": "move.w (a6),d0"
+                      },
+                      "adjustmentLiteralInstruction": "moveq #2,d7",
+                      "adjustmentLiteralText": "2",
+                      "adjustmentLiteralValue": 2,
+                      "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus"
+                    },
+                    "stateReads": [],
+                    "stateWrites": [
+                      {
+                        "sourceOperand": "ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                        "instruction": "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                      }
+                    ],
+                    "addressSetupUseSites": [],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [
+                      {
+                        "literalText": "0",
+                        "value": 0,
+                        "instruction": "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                      }
+                    ],
+                    "branchRecords": [],
+                    "directCallOrder": [
+                      "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                      "bsr.w GetEntityAddressFromCharacter"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    }
+                  ]
+                },
+                {
+                  "macro": "stopEntity",
+                  "handler": "csc1C_stopEntityAnim",
+                  "address": 289410,
+                  "opcode": 28,
+                  "sourceCommandCount": 107,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 7,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6),d0",
+                      "moveq #2,d7",
+                      "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 0,
+                        "instruction": "move.w (a6),d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": {
+                      "selectorPreReadUseSite": {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 0,
+                        "instruction": "move.w (a6),d0"
+                      },
+                      "adjustmentLiteralInstruction": "moveq #2,d7",
+                      "adjustmentLiteralText": "2",
+                      "adjustmentLiteralValue": 2,
+                      "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus"
+                    },
+                    "stateReads": [],
+                    "stateWrites": [
+                      {
+                        "sourceOperand": "ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                        "instruction": "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                      }
+                    ],
+                    "addressSetupUseSites": [],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [
+                      {
+                        "literalText": "-1",
+                        "value": -1,
+                        "instruction": "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                      }
+                    ],
+                    "branchRecords": [],
+                    "directCallOrder": [
+                      "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                      "bsr.w GetEntityAddressFromCharacter"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    }
+                  ]
+                },
+                {
+                  "macro": "waitIdle",
+                  "handler": "csc16_waitUntilEntityIdle",
+                  "address": 289178,
+                  "opcode": 22,
+                  "sourceCommandCount": 30,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 5,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                      "bne.s loc_469A0",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": null,
+                    "stateReads": [
+                      {
+                        "sourceOperand": "ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                        "instruction": "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)"
+                      }
+                    ],
+                    "stateWrites": [],
+                    "addressSetupUseSites": [],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [],
+                    "branchRecords": [
+                      {
+                        "branchInstruction": "bne.s loc_469A0",
+                        "branchTarget": {
+                          "targetLabel": "loc_469A0",
+                          "targetInstruction": "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                          "targetStatementIndex": 2
+                        }
+                      }
+                    ],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    }
+                  ]
+                },
+                {
+                  "macro": "setSprite",
+                  "handler": "csc1A_setEntitySprite",
+                  "address": 289352,
+                  "opcode": 26,
+                  "sourceCommandCount": 56,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "new mapsprite",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 11,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "move.w (a6)+,d0",
+                      "cmpi.w #COMBATANT_ALLIES_NUMBER,d0",
+                      "bcc.s @NotAlly",
+                      "jsr GetAllyMapsprite",
+                      "move.w d4,d0",
+                      "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": null,
+                    "stateReads": [],
+                    "stateWrites": [
+                      {
+                        "sourceOperand": "ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                        "instruction": "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)"
+                      }
+                    ],
+                    "addressSetupUseSites": [],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [
+                      {
+                        "symbol": "COMBATANT_ALLIES_NUMBER",
+                        "value": 30,
+                        "instruction": "cmpi.w #COMBATANT_ALLIES_NUMBER,d0"
+                      }
+                    ],
+                    "literalUseSites": [],
+                    "branchRecords": [
+                      {
+                        "branchInstruction": "bcc.s @NotAlly",
+                        "branchTarget": {
+                          "targetLabel": "@NotAlly",
+                          "targetInstruction": "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                          "targetStatementIndex": 7
+                        }
+                      }
+                    ],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "jsr GetAllyMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "bsr.w UpdateEntitySprite_0"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "GetAllyMapsprite"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "UpdateEntitySprite_0"
+                    }
+                  ]
+                },
+                {
+                  "macro": "setPriority",
+                  "handler": "csc53_setPriority",
+                  "address": 290750,
+                  "opcode": 83,
+                  "sourceCommandCount": 51,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "priority layer ($0 - bottom layer, $FF-top layer)",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 10,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "lea ((byte_FFAFB0-$1000000)).w,a0",
+                      "nop",
+                      "move.w (a6)+,d1",
+                      "bne.s loc_46FD4",
+                      "clr.b (a0,d0.w)",
+                      "bra.s return_46FDA",
+                      "move.b #1,(a0,d0.w)",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d1",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d1"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": null,
+                    "stateReads": [],
+                    "stateWrites": [
+                      {
+                        "sourceOperand": "(a0,d0.w)",
+                        "instruction": "clr.b (a0,d0.w)"
+                      },
+                      {
+                        "sourceOperand": "(a0,d0.w)",
+                        "instruction": "move.b #1,(a0,d0.w)"
+                      }
+                    ],
+                    "addressSetupUseSites": [
+                      {
+                        "sourceOperand": "((byte_FFAFB0-$1000000)).w",
+                        "instruction": "lea ((byte_FFAFB0-$1000000)).w,a0"
+                      }
+                    ],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [
+                      {
+                        "literalText": "1",
+                        "value": 1,
+                        "instruction": "move.b #1,(a0,d0.w)"
+                      }
+                    ],
+                    "branchRecords": [
+                      {
+                        "branchInstruction": "bne.s loc_46FD4",
+                        "branchTarget": {
+                          "targetLabel": "loc_46FD4",
+                          "targetInstruction": "move.b #1,(a0,d0.w)",
+                          "targetStatementIndex": 8
+                        }
+                      },
+                      {
+                        "branchInstruction": "bra.s return_46FDA",
+                        "branchTarget": {
+                          "targetLabel": "return_46FDA",
+                          "targetInstruction": "rts",
+                          "targetStatementIndex": 9
+                        }
+                      }
+                    ],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    }
+                  ]
+                },
+                {
+                  "macro": "removeShadow",
+                  "handler": "csc30_removeEntityShadow",
+                  "address": 290496,
+                  "opcode": 48,
+                  "sourceCommandCount": 5,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "target entity",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 8,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "lea (FF6802_LOADING_SPACE).l,a0",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45A8C",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": null,
+                    "stateReads": [],
+                    "stateWrites": [],
+                    "addressSetupUseSites": [
+                      {
+                        "sourceOperand": "(FF6802_LOADING_SPACE).l",
+                        "instruction": "lea (FF6802_LOADING_SPACE).l,a0"
+                      }
+                    ],
+                    "bitMutationUseSites": [],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [],
+                    "branchRecords": [],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "bsr.w LoadMapsprite",
+                      "jsr sub_45A8C",
+                      "bsr.w DmaMapsprite",
+                      "jsr (WaitForVInt).w"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "LoadMapsprite"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "sub_45A8C"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "DmaMapsprite"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt"
+                    }
+                  ]
+                },
+                {
+                  "macro": "setSize",
+                  "handler": "csc50_setEntitySize",
+                  "address": 290528,
+                  "opcode": 80,
+                  "sourceCommandCount": 4,
+                  "operandAnnotations": [
+                    {
+                      "parameterOrdinal": 1,
+                      "sourceComment": "entity to act",
+                      "streamOffset": 2,
+                      "widthBytes": 2
+                    },
+                    {
+                      "parameterOrdinal": 2,
+                      "sourceComment": "size in pixels",
+                      "streamOffset": 4,
+                      "widthBytes": 2
+                    }
+                  ],
+                  "statementCount": 9,
+                  "sectionGuard": {
+                    "orderedInstructions": [
+                      "move.w (a6)+,d0",
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "move.w ((SPRITE_SIZE-$1000000)).w,d6",
+                      "move.w (a6)+,((SPRITE_SIZE-$1000000)).w",
+                      "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w",
+                      "move.w d6,((SPRITE_SIZE-$1000000)).w",
+                      "rts"
+                    ],
+                    "scriptCursorReadUseSites": [
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "d0",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,d0"
+                      },
+                      {
+                        "sourceRegister": "a6",
+                        "destinationOperand": "((SPRITE_SIZE-$1000000)).w",
+                        "transferredByteCount": 2,
+                        "cursorAdvanceByteCount": 2,
+                        "instruction": "move.w (a6)+,((SPRITE_SIZE-$1000000)).w"
+                      }
+                    ],
+                    "aliveStatusPointerAdjustment": null,
+                    "stateReads": [
+                      {
+                        "sourceOperand": "((SPRITE_SIZE-$1000000)).w",
+                        "instruction": "move.w ((SPRITE_SIZE-$1000000)).w,d6"
+                      }
+                    ],
+                    "stateWrites": [
+                      {
+                        "sourceOperand": "((SPRITE_SIZE-$1000000)).w",
+                        "instruction": "move.w (a6)+,((SPRITE_SIZE-$1000000)).w"
+                      },
+                      {
+                        "sourceOperand": "((SPRITE_SIZE-$1000000)).w",
+                        "instruction": "move.w d6,((SPRITE_SIZE-$1000000)).w"
+                      }
+                    ],
+                    "addressSetupUseSites": [],
+                    "bitMutationUseSites": [
+                      {
+                        "sourceOperand": "ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                        "operation": "or-immediate",
+                        "immediateText": "%1000",
+                        "immediateValue": 8,
+                        "bitIndices": [
+                          3
+                        ],
+                        "instruction": "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)"
+                      }
+                    ],
+                    "sourceConstantUseSites": [],
+                    "literalUseSites": [],
+                    "branchRecords": [],
+                    "directCallOrder": [
+                      "bsr.w GetEntityAddressFromCharacter",
+                      "bsr.w UpdateEntitySprite_0",
+                      "jsr (WaitForVInt).w"
+                    ],
+                    "fallthroughInstruction": null,
+                    "returnInstruction": "rts"
+                  },
+                  "directCalls": [
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "GetEntityAddressFromCharacter"
+                    },
+                    {
+                      "opcode": "bsr",
+                      "instructionTarget": "UpdateEntitySprite_0"
+                    },
+                    {
+                      "opcode": "jsr",
+                      "instructionTarget": "WaitForVInt"
+                    }
+                  ]
+                }
+              ]
+            },
+            "callerBreakdown": {
+              "const": {
+                "callerHandlers": [
+                  {
+                    "handler": "csc2E_hideEntity",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 1,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 1,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  },
+                  {
+                    "handler": "csc1B_startEntityAnim",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 1,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 1,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  },
+                  {
+                    "handler": "csc1C_stopEntityAnim",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 1,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 1,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  },
+                  {
+                    "handler": "csc16_waitUntilEntityIdle",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  },
+                  {
+                    "handler": "csc1A_setEntitySprite",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 1,
+                      "WaitForVInt": 1,
+                      "UpdateEntitySprite_0": 1,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 1,
+                      "WaitForVInt": 1,
+                      "UpdateEntitySprite_0": 1,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  },
+                  {
+                    "handler": "csc53_setPriority",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 0,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  },
+                  {
+                    "handler": "csc30_removeEntityShadow",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 1,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 1,
+                      "sub_45A8C": 1,
+                      "DmaMapsprite": 1
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 1,
+                      "UpdateEntitySprite_0": 0,
+                      "LoadMapsprite": 1,
+                      "sub_45A8C": 1,
+                      "DmaMapsprite": 1
+                    }
+                  },
+                  {
+                    "handler": "csc50_setEntitySize",
+                    "instructionTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 1,
+                      "UpdateEntitySprite_0": 1,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    },
+                    "effectiveTargetSiteCounts": {
+                      "GetEntityAddressFromCharacter": 1,
+                      "HideEntity": 0,
+                      "AdjustScriptPointerByCharacterAliveStatus": 0,
+                      "GetAllyMapsprite": 0,
+                      "WaitForVInt": 1,
+                      "UpdateEntitySprite_0": 1,
+                      "LoadMapsprite": 0,
+                      "sub_45A8C": 0,
+                      "DmaMapsprite": 0
+                    }
+                  }
+                ],
+                "targetResolutions": [
+                  {
+                    "instructionTarget": "GetEntityAddressFromCharacter",
+                    "effectiveTarget": "GetEntityAddressFromCharacter",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "HideEntity",
+                    "effectiveTarget": "HideEntity",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                    "effectiveTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "GetAllyMapsprite",
+                    "effectiveTarget": "GetAllyMapsprite",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "WaitForVInt",
+                    "effectiveTarget": "WaitForVInt",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "UpdateEntitySprite_0",
+                    "effectiveTarget": "UpdateEntitySprite_0",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "LoadMapsprite",
+                    "effectiveTarget": "LoadMapsprite",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "sub_45A8C",
+                    "effectiveTarget": "sub_45A8C",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  },
+                  {
+                    "instructionTarget": "DmaMapsprite",
+                    "effectiveTarget": "DmaMapsprite",
+                    "aliasSourcePath": null,
+                    "effectiveTargetScope": "external"
+                  }
+                ],
+                "instructionTargetTotals": {
+                  "GetEntityAddressFromCharacter": 8,
+                  "HideEntity": 1,
+                  "AdjustScriptPointerByCharacterAliveStatus": 2,
+                  "GetAllyMapsprite": 1,
+                  "WaitForVInt": 3,
+                  "UpdateEntitySprite_0": 2,
+                  "LoadMapsprite": 1,
+                  "sub_45A8C": 1,
+                  "DmaMapsprite": 1
+                },
+                "effectiveTargetTotals": {
+                  "GetEntityAddressFromCharacter": 8,
+                  "HideEntity": 1,
+                  "AdjustScriptPointerByCharacterAliveStatus": 2,
+                  "GetAllyMapsprite": 1,
+                  "WaitForVInt": 3,
+                  "UpdateEntitySprite_0": 2,
+                  "LoadMapsprite": 1,
+                  "sub_45A8C": 1,
+                  "DmaMapsprite": 1
+                },
+                "internalInstructionTargetTotals": {
+                  "GetEntityAddressFromCharacter": 0,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "externalInstructionTargetTotals": {
+                  "GetEntityAddressFromCharacter": 8,
+                  "HideEntity": 1,
+                  "AdjustScriptPointerByCharacterAliveStatus": 2,
+                  "GetAllyMapsprite": 1,
+                  "WaitForVInt": 3,
+                  "UpdateEntitySprite_0": 2,
+                  "LoadMapsprite": 1,
+                  "sub_45A8C": 1,
+                  "DmaMapsprite": 1
+                },
+                "internalEffectiveTargetTotals": {
+                  "GetEntityAddressFromCharacter": 0,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "externalEffectiveTargetTotals": {
+                  "GetEntityAddressFromCharacter": 8,
+                  "HideEntity": 1,
+                  "AdjustScriptPointerByCharacterAliveStatus": 2,
+                  "GetAllyMapsprite": 1,
+                  "WaitForVInt": 3,
+                  "UpdateEntitySprite_0": 2,
+                  "LoadMapsprite": 1,
+                  "sub_45A8C": 1,
+                  "DmaMapsprite": 1
+                }
+              }
+            },
+            "sourceIdentityJoins": {
+              "const": {
+                "entityActionStaticContract": {
+                  "fixturePath": "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+                  "fixtureId": "sf2-entity-action-scripts-static-v1",
+                  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+                  "independentlyParsedFunctions": [
+                    {
+                      "symbol": "UpdateEntityData",
+                      "address": 23916
+                    },
+                    {
+                      "symbol": "ChangeEntityMapsprite",
+                      "address": 24744
+                    }
+                  ],
+                  "wrapperInstruction": "jsr (ChangeEntityMapsprite).w"
+                },
+                "mapSpriteAssignmentStaticContract": {
+                  "fixturePath": "tests/fixtures/h2/map-sprite-assignments-static-v1.json",
+                  "fixtureId": "sf2-map-sprite-assignments-static-v1",
+                  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+                },
+                "spriteDialogueStaticContract": {
+                  "fixturePath": "tests/fixtures/h2/sprite-dialogue-static-v1.json",
+                  "fixtureId": "sf2-sprite-dialogue-static-v1",
+                  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+                }
+              }
+            },
+            "runtimeQuestions": {
+              "const": [
+                "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix"
+              ]
+            }
+          }
+        }
+      ]
     }
   },
   "definitions": {
@@ -53287,6 +55446,1235 @@
           "maxItems": 1,
           "items": {
             "type": "string"
+          }
+        }
+      }
+    },
+    "entityLifecyclePresentationCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "minItems": 105,
+          "maxItems": 105,
+          "items": {
+            "$ref": "#/definitions/entityLifecyclePresentationSourceSite"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "minItems": 464,
+          "maxItems": 464,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "minItems": 304,
+          "maxItems": 304,
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "minItems": 304,
+          "maxItems": 304,
+          "items": {
+            "$ref": "#/definitions/entityLifecyclePresentationProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "aliveStatusPointerAdjustment",
+                  "stateReads",
+                  "stateWrites",
+                  "addressSetupUseSites",
+                  "bitMutationUseSites",
+                  "sourceConstantUseSites",
+                  "literalUseSites",
+                  "branchRecords",
+                  "directCallOrder",
+                  "fallthroughInstruction",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "aliveStatusPointerAdjustment": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "selectorPreReadUseSite",
+                          "adjustmentLiteralInstruction",
+                          "adjustmentLiteralText",
+                          "adjustmentLiteralValue",
+                          "callInstruction"
+                        ],
+                        "properties": {
+                          "selectorPreReadUseSite": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "sourceRegister",
+                              "destinationOperand",
+                              "transferredByteCount",
+                              "cursorAdvanceByteCount",
+                              "instruction"
+                            ],
+                            "properties": {
+                              "sourceRegister": {
+                                "type": "string"
+                              },
+                              "destinationOperand": {
+                                "type": "string"
+                              },
+                              "transferredByteCount": {
+                                "type": "integer"
+                              },
+                              "cursorAdvanceByteCount": {
+                                "type": "integer"
+                              },
+                              "instruction": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "adjustmentLiteralInstruction": {
+                            "type": "string"
+                          },
+                          "adjustmentLiteralText": {
+                            "type": "string"
+                          },
+                          "adjustmentLiteralValue": {
+                            "type": "integer"
+                          },
+                          "callInstruction": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "stateReads": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceOperand",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceOperand": {
+                          "type": "string"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "stateWrites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceOperand",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceOperand": {
+                          "type": "string"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "addressSetupUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceOperand",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceOperand": {
+                          "type": "string"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "bitMutationUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceOperand",
+                        "operation",
+                        "immediateText",
+                        "immediateValue",
+                        "bitIndices",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceOperand": {
+                          "type": "string"
+                        },
+                        "operation": {
+                          "type": "string"
+                        },
+                        "immediateText": {
+                          "type": "string"
+                        },
+                        "immediateValue": {
+                          "type": "integer"
+                        },
+                        "bitIndices": {
+                          "type": "array",
+                          "minItems": 1,
+                          "maxItems": 1,
+                          "items": {
+                            "type": "integer"
+                          }
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceConstantUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "symbol",
+                        "value",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "symbol": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "literalUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "literalText",
+                        "value",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "literalText": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "fallthroughInstruction": {
+                    "type": "null"
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "minItems": 8,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "HideEntity",
+                      "AdjustScriptPointerByCharacterAliveStatus",
+                      "GetAllyMapsprite",
+                      "WaitForVInt",
+                      "UpdateEntitySprite_0",
+                      "LoadMapsprite",
+                      "sub_45A8C",
+                      "DmaMapsprite"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "HideEntity": {
+                        "type": "integer"
+                      },
+                      "AdjustScriptPointerByCharacterAliveStatus": {
+                        "type": "integer"
+                      },
+                      "GetAllyMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "sub_45A8C": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "HideEntity",
+                      "AdjustScriptPointerByCharacterAliveStatus",
+                      "GetAllyMapsprite",
+                      "WaitForVInt",
+                      "UpdateEntitySprite_0",
+                      "LoadMapsprite",
+                      "sub_45A8C",
+                      "DmaMapsprite"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "HideEntity": {
+                        "type": "integer"
+                      },
+                      "AdjustScriptPointerByCharacterAliveStatus": {
+                        "type": "integer"
+                      },
+                      "GetAllyMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "sub_45A8C": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "minItems": 9,
+              "maxItems": 9,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": "null"
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity",
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "HideEntity": {
+                  "type": "integer"
+                },
+                "AdjustScriptPointerByCharacterAliveStatus": {
+                  "type": "integer"
+                },
+                "GetAllyMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "sub_45A8C": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity",
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "HideEntity": {
+                  "type": "integer"
+                },
+                "AdjustScriptPointerByCharacterAliveStatus": {
+                  "type": "integer"
+                },
+                "GetAllyMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "sub_45A8C": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity",
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "HideEntity": {
+                  "type": "integer"
+                },
+                "AdjustScriptPointerByCharacterAliveStatus": {
+                  "type": "integer"
+                },
+                "GetAllyMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "sub_45A8C": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity",
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "HideEntity": {
+                  "type": "integer"
+                },
+                "AdjustScriptPointerByCharacterAliveStatus": {
+                  "type": "integer"
+                },
+                "GetAllyMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "sub_45A8C": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity",
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "HideEntity": {
+                  "type": "integer"
+                },
+                "AdjustScriptPointerByCharacterAliveStatus": {
+                  "type": "integer"
+                },
+                "GetAllyMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "sub_45A8C": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity",
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "HideEntity": {
+                  "type": "integer"
+                },
+                "AdjustScriptPointerByCharacterAliveStatus": {
+                  "type": "integer"
+                },
+                "GetAllyMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "sub_45A8C": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "sourceIdentityJoins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entityActionStaticContract",
+            "mapSpriteAssignmentStaticContract",
+            "spriteDialogueStaticContract"
+          ],
+          "properties": {
+            "entityActionStaticContract": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fixturePath",
+                "fixtureId",
+                "upstreamCommit",
+                "independentlyParsedFunctions",
+                "wrapperInstruction"
+              ],
+              "properties": {
+                "fixturePath": {
+                  "type": "string"
+                },
+                "fixtureId": {
+                  "type": "string"
+                },
+                "upstreamCommit": {
+                  "type": "string"
+                },
+                "independentlyParsedFunctions": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "symbol",
+                      "address"
+                    ],
+                    "properties": {
+                      "symbol": {
+                        "type": "string"
+                      },
+                      "address": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "wrapperInstruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "mapSpriteAssignmentStaticContract": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fixturePath",
+                "fixtureId",
+                "upstreamCommit"
+              ],
+              "properties": {
+                "fixturePath": {
+                  "type": "string"
+                },
+                "fixtureId": {
+                  "type": "string"
+                },
+                "upstreamCommit": {
+                  "type": "string"
+                }
+              }
+            },
+            "spriteDialogueStaticContract": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fixturePath",
+                "fixtureId",
+                "upstreamCommit"
+              ],
+              "properties": {
+                "fixturePath": {
+                  "type": "string"
+                },
+                "fixtureId": {
+                  "type": "string"
+                },
+                "upstreamCommit": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entityLifecyclePresentationCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes",
+              "rawValue",
+              "resolvedValue",
+              "resolution"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": "string"
+              },
+              "streamOffset": {
+                "type": "integer"
+              },
+              "widthBytes": {
+                "type": "integer"
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "resolvedValue": {
+                "type": "integer"
+              },
+              "resolution": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "entityLifecyclePresentationSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityLifecyclePresentationCommand"
+          }
+        }
+      }
+    },
+    "entityLifecyclePresentationProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hide",
+            "startEntity",
+            "stopEntity",
+            "waitIdle",
+            "setSprite",
+            "setPriority",
+            "removeShadow",
+            "setSize"
+          ],
+          "properties": {
+            "hide": {
+              "type": "integer"
+            },
+            "startEntity": {
+              "type": "integer"
+            },
+            "stopEntity": {
+              "type": "integer"
+            },
+            "waitIdle": {
+              "type": "integer"
+            },
+            "setSprite": {
+              "type": "integer"
+            },
+            "setPriority": {
+              "type": "integer"
+            },
+            "removeShadow": {
+              "type": "integer"
+            },
+            "setSize": {
+              "type": "integer"
+            }
           }
         }
       }

@@ -83,7 +83,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   ordered program-site/handler/caller 合同、两个 source-named map-script trigger command 的 8 条
   ordered program-site/handler/caller/table-boundary 合同、四个 source-named map-script entity-placement
   command 的 2,288 条 ordered program-site/handler/caller 合同、六个 map-script 到 entity-action bridge
-  command 的 3,256 条 ordered program-site/payload/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
+  command 的 3,256 条 ordered program-site/payload/handler/caller 合同、八个 source-named entity lifecycle/presentation
+  command 的 464 条 ordered program-site/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
   movement H3。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
@@ -230,7 +231,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
   entity population/reload form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
-  trigger form、四个 source-named entity-placement form、六个 source-named entity-action bridge form 与现代 renderer 的
+  trigger form、四个 source-named entity-placement form、六个 source-named entity-action bridge form、八个 source-named
+  entity lifecycle/presentation form 与现代 renderer 的
   原版事实/未知/可现代化边界。
 - [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
   投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT

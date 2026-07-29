@@ -145,6 +145,18 @@ entity-action fixtures are provenance records only. A remake MAY define its own 
 but this contract establishes neither the control-byte meaning, payload interpretation, entity effect,
 reachability, timing, persistence, collision, nor presentation; those remain in
 `map-script-entity-action-bridge/runtime-effects-reachability-matrix`.
+Map-script imports MUST separately retain the eight source-named forms `hide`, `startEntity`,
+`stopEntity`, `waitIdle`, `setSprite`, `setPriority`, `removeShadow`, and `setSize` in
+`sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityLifecyclePresentationCommandFacts`. Each record MUST preserve opcode and physical
+operand widths, raw macro comments, complete program/command order, and the zero-inclusive program
+domain. The import boundary MUST retain the exact named handler instruction order: advancing versus
+non-advancing A6 reads, alive-status pointer-adjustment literals/calls, source-shaped field operands,
+parsed `COMBATANT_ALLIES_NUMBER` and `%1000` use sites, branch polarity/target identity, direct
+instruction/effective-target caller maps, and return boundaries. These are source-layout and
+control-flow records. A remake MUST NOT normalize them into a visibility, animation, sprite, priority,
+shadow, size, collision, persistence, timing, or presentation model; all original runtime consequences
+remain in `map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix`.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,
