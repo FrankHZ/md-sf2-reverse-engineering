@@ -4,11 +4,13 @@
   groups, eighteen resource routes, title/logo input structure, the four-row witch save-menu
   dispatcher, page selectors, action call/branch order, suspend/reset flow, ending-effect ownership,
   the complete nine-resource Stack-compressed tile corpus, and the complete witch choice-palette/
-  bubble-animation data path, plus all twelve uncompressed palette/layout presentation resources
+  bubble-animation data path, plus all twelve uncompressed palette/layout presentation resources;
+  one BizHawk launch additionally confirms the bounded in-process witch Save/Load/Copy/Delete and
+  flag-88 Load target matrix below
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
 - Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
   transfer tails
-- Evidence date: 2026-07-27
+- Evidence date: 2026-07-29
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -123,11 +125,50 @@ pinned source path, source line, normalized instruction, opcode, and operand; ev
 referenced by an ordered semantic-summary list. The focused parser and mutation rail reject an
 altered source operand, opcode, branch polarity, table order, or call order before fixture comparison.
 
+### Save actions (Confirmed, one in-process H3 launch)
+
+The runtime fixture `sf2-witch-save-actions-runtime-v1` runs all nine direct service cases and both
+`witchMenuAction_Load` flag-88 cases in one BizHawk 2.11.1 / Genesis Plus GX launch. It enters the
+original `CheckSram`, replaces only that call's post-return continuation with a work-RAM thunk, and
+then executes the original `SaveGame`, `LoadGame`, `CopySave`, and `ClearSaveSlotFlag` entries. This
+is a bounded service/control-flow observation, not a complete player-driven witch-menu session.
+
+**Confirmed:** source payload seed 19 saved to slot 1 stores and recomputes checksum byte 71; seed 20
+saved to slot 2 stores and recomputes checksum byte 247. After poisoning the observed combatant-data
+samples, `LoadGame` for each selector restores its four stored sample bytes. `CopySave` selector 0
+records source slot 1, destination slot 2, destination selector 1, and checksum 71; after slot 2 is
+restored from seed 20, selector 1 records source slot 2, destination slot 1, destination selector 0,
+and checksum 247. Both `ClearSaveSlotFlag` calls only change the observed occupied-flag byte (3→2→0);
+the selected slot's observed stored sample bytes and checksum 247 remain unchanged. These checksum
+bytes are separate from the 4,016 stored physical bytes per slot and the 8,032-byte physical address
+interval per slot.
+
+**Confirmed:** with flag 88 clear, the Load branch reaches instruction/effective target
+`GetSavepointForMap` at 30188 (`0x75EC`). With flag 88 set, it reaches instruction target
+`j_BattleLoop` at 131124 (`0x20034`) and its jump-interface effective target `BattleLoop` at 146052
+(`0x23A94`). The fixture preserves both identities; it does not infer a player-facing meaning for
+source flag 88.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; sources
+`code/common/tech/sram/sramfunctions.asm`,
+`code/specialscreens/witch/witchstart.asm`,
+`code/common/tech/jumpinterfaces/s05_jumpinterface.asm`, and
+`code/common/maps/egressinit.asm`; H1 listing `build/sf2build-h1.lst`; command
+`uv run sf2 h3 witch-save-actions`; observed fixture
+`tests/fixtures/h3/witch-save-actions-v1.json`. The Python source guard parses the relevant named
+sections and rejects a changed opcode, operand, branch polarity, call order, or jump-interface alias
+before comparison with the golden fixture.
+
 ### Grouped H3 runtime-question queue
 
-- `witch-save-menu-and-suspend-presentation`: observe durable SRAM outcomes, button timing, prompt
-  presentation, rendered file/name contents, and audio/window/VDP behavior in one shared launch. None
-  of those outcomes is established by this static source contract.
+- `witch-save-actions/cross-process-persistence-and-recovery`: **Unknown** whether these in-process
+  SRAM writes survive a new emulator process or physical medium cycle, and how interruption, partial
+  writes, or power loss affect recovery.
+- `witch-save-menu/new-game-outer-lifecycle`: **Unknown** complete New-game UI and outer-loop results;
+  the service thunk deliberately bypasses that player-driven route.
+- `witch-save-menu-suspend/presentation-and-input-timing`: **Unknown** prompt/file rendering,
+  pixels, audio, input cadence, blink/bubble timing, and suspend presentation/reset timing.
 
 The witch rendering helpers own screen construction, layout-zone DMA, head updates, blink VInt, and
 speech-bubble/menu presentation. The suspend path sleeps 60 frames before presenting its resources.
@@ -156,13 +197,11 @@ establishes ownership and routing, not visual parity.
 
 ## Concentrated Runtime Queue
 
-No emulator was launched for this inventory. Presentation questions are retained as three shared
-matrices:
+The witch service/control-flow matrix is now observed above. The remaining non-witch presentation
+questions are retained as two shared matrices:
 
 1. Sega logo, title, cheat sequences, and Start timing;
-2. `witch-save-menu-and-suspend-presentation`: witch save menu, blink/bubble presentation, and
-   suspend/reset timing;
-3. ending kiss pixel fill, falling jewels, and ending-witch presentation.
+2. ending kiss pixel fill, falling jewels, and ending-witch presentation.
 
 The same launches should sample the five fixed-transfer tails before DMA so their contents and
 stability are answered together with rendered parity.
@@ -177,6 +216,7 @@ uv run sf2 h2 special-screens
 uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 special-screen-presentation
 uv run sf2 h2 witch-menu-graphics
+uv run sf2 h3 witch-save-actions
 uv run sf2 research-index test
 ```
 

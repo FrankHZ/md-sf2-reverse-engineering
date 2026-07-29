@@ -126,6 +126,7 @@ CONTRACTS = {
     },
     "docs/design/save-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
+        "tests/fixtures/h3/witch-save-actions-v1.json": "sf2-witch-save-actions-runtime-v1",
     },
     "docs/design/input-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",

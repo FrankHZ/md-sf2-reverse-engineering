@@ -121,7 +121,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
   map event、交互和物品 handoff。
 - [`special-screens.md`](./research/special-screens.md)：logo/title、witch save（四行 New/Load/Delete/Copy
-  dispatcher、page selector、118 条 source-use provenance 与 SRAM action routing）、suspend/reset、ending 等 19 文件特殊画面边界，以及
+  dispatcher、page selector、118 条 source-use provenance、SRAM action routing 与单启动 9 service/2 Load-branch
+  runtime matrix）、suspend/reset、ending 等 19 文件特殊画面边界，以及
   全部 9 条压缩 tile stream、DMA transfer/tail、choice palette 与 4×3 bubble-animation、7 套 palette/5 个
   layout 合同。
 - [`remaining-core.md`](./research/remaining-core.md)：ROM header/vector、window engine、battle test、
@@ -267,7 +268,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`service-interactions.md`](./design/service-interactions.md)：shop、church、caravan/depot 与
   blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
 - [`save-system.md`](./design/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
-  save/load/copy/delete 静态合同，以及留给 H3 的持久化和断电边界。
+  save/load/copy/delete 静态合同、单启动 in-process service matrix，以及仍留给 H3 的跨进程持久化和断电边界。
 - [`input-system.md`](./design/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
   helper 与控制器/时序未知边界。
 - [`window-system.md`](./design/window-system.md)：八槽 window entry、layout 分配/回收、packed

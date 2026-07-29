@@ -1,0 +1,1304 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h3-witch-save-actions-fixture.schema.json",
+  "title": "H3 Witch Save Actions Runtime Fixture",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-witch-save-actions-runtime-v1"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "emulator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/emulator"
+        },
+        {
+          "const": {
+            "name": "BizHawk",
+            "version": "2.11.1",
+            "core": "Genesis Plus GX"
+          }
+        }
+      ]
+    },
+    "evidenceDate": {
+      "const": "2026-07-29"
+    },
+    "provenance": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/provenance"
+        },
+        {
+          "const": {
+            "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+            "upstreamBranch": "master",
+            "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+            "sourcePaths": [
+              "code/common/tech/sram/sramfunctions.asm",
+              "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+              "code/common/maps/egressinit.asm",
+              "code/specialscreens/witch/witchstart.asm",
+              "sf2const.asm",
+              "sf2enums.asm"
+            ],
+            "listingPath": "build/sf2build-h1.lst"
+          }
+        }
+      ]
+    },
+    "observationBoundary": {
+      "const": "One BizHawk launch enters the original CheckSram call, redirects only its post-return continuation through a work-RAM thunk, and executes the original SaveGame, LoadGame, CopySave, ClearSaveSlotFlag, flag-88 branch, j_BattleLoop alias, and BattleLoop effective target. The observer writes and poisons only in-process COMBATANT_DATA and GAME_FLAGS control state, then reads the emulator SRAM domain through the distinct parsed physical-window base. It does not assert cross-process persistence, power-loss/partial writes, pixels, audio, or input cadence."
+    },
+    "function": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/function"
+        },
+        {
+          "const": {
+            "checkSramAddress": 28326,
+            "saveGameAddress": 28522,
+            "loadGameAddress": 28588,
+            "copySaveAddress": 28634,
+            "clearSaveSlotFlagAddress": 28652,
+            "loadFlagTrapAddress": 29994,
+            "normalInstructionTarget": "GetSavepointForMap",
+            "normalInstructionTargetAddress": 30188,
+            "normalEffectiveTarget": "GetSavepointForMap",
+            "normalEffectiveTargetAddress": 30188,
+            "suspendInstructionTarget": "j_BattleLoop",
+            "suspendInstructionTargetAddress": 131124,
+            "suspendEffectiveTarget": "BattleLoop",
+            "suspendEffectiveTargetAddress": 146052
+          }
+        }
+      ]
+    },
+    "ram": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ram"
+        },
+        {
+          "const": {
+            "combatantDataAddress": 16771072,
+            "gameFlagsAddress": 16774790,
+            "workRamScratchAddress": 16738306
+          }
+        }
+      ]
+    },
+    "storage": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/storage"
+        },
+        {
+          "const": {
+            "logicalSlotCount": 2,
+            "logicalPayloadByteCountPerSlot": 4016,
+            "storedPhysicalByteCountPerSlot": 4016,
+            "physicalAddressIntervalPerSlot": 8032,
+            "physicalAddressStepPerLogicalByte": 2,
+            "physicalWindowBaseAddress": 2097152,
+            "firstStoredPhysicalByteAddress": 2097153,
+            "slot1DataAddress": 2097329,
+            "slot2DataAddress": 2105403,
+            "slot1ChecksumAddress": 2105399,
+            "slot2ChecksumAddress": 2105401,
+            "saveFlagsAddress": 2105397
+          }
+        }
+      ]
+    },
+    "cases": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/cases"
+        },
+        {
+          "const": {
+            "sampleOffsets": [
+              0,
+              1,
+              2007,
+              4015
+            ],
+            "directService": [
+              {
+                "id": "save-slot1-source",
+                "operation": "save",
+                "selector": 0,
+                "patternSeed": 19
+              },
+              {
+                "id": "save-slot2-source",
+                "operation": "save",
+                "selector": 1,
+                "patternSeed": 20
+              },
+              {
+                "id": "load-slot1",
+                "operation": "load",
+                "selector": 0
+              },
+              {
+                "id": "load-slot2",
+                "operation": "load",
+                "selector": 1
+              },
+              {
+                "id": "copy-slot1-to-slot2",
+                "operation": "copy",
+                "selector": 0
+              },
+              {
+                "id": "restore-slot2-source",
+                "operation": "save",
+                "selector": 1,
+                "patternSeed": 20
+              },
+              {
+                "id": "copy-slot2-to-slot1",
+                "operation": "copy",
+                "selector": 1
+              },
+              {
+                "id": "delete-slot1",
+                "operation": "delete",
+                "selector": 0
+              },
+              {
+                "id": "delete-slot2",
+                "operation": "delete",
+                "selector": 1
+              }
+            ],
+            "loadControlFlow": [
+              {
+                "id": "normal",
+                "flag88Set": false
+              },
+              {
+                "id": "suspend",
+                "flag88Set": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "expectedObservation": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/observation"
+        },
+        {
+          "const": {
+            "system": "GEN",
+            "core": "Genesis Plus GX",
+            "id": "sf2-witch-save-actions-runtime-v1",
+            "directServiceResults": [
+              {
+                "id": "save-slot1-source",
+                "operation": "save",
+                "selector": 0,
+                "selectedSlot": "slot1",
+                "saveFlagsByte": 1,
+                "storedChecksumByte": 71,
+                "computedChecksumByte": 71,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2097329,
+                    "storedPhysicalByte": 19
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2097331,
+                    "storedPhysicalByte": 32
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2101343,
+                    "storedPhysicalByte": 100
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2105359,
+                    "storedPhysicalByte": 223
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 19
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 32
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 100
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 223
+                  }
+                ]
+              },
+              {
+                "id": "save-slot2-source",
+                "operation": "save",
+                "selector": 1,
+                "selectedSlot": "slot2",
+                "saveFlagsByte": 3,
+                "storedChecksumByte": 247,
+                "computedChecksumByte": 247,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2105403,
+                    "storedPhysicalByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2105405,
+                    "storedPhysicalByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2109417,
+                    "storedPhysicalByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2113433,
+                    "storedPhysicalByte": 224
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 224
+                  }
+                ]
+              },
+              {
+                "id": "load-slot1",
+                "operation": "load",
+                "selector": 0,
+                "selectedSlot": "slot1",
+                "saveFlagsByte": 3,
+                "storedChecksumByte": 71,
+                "computedChecksumByte": 71,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2097329,
+                    "storedPhysicalByte": 19
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2097331,
+                    "storedPhysicalByte": 32
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2101343,
+                    "storedPhysicalByte": 100
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2105359,
+                    "storedPhysicalByte": 223
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 19
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 32
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 100
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 223
+                  }
+                ]
+              },
+              {
+                "id": "load-slot2",
+                "operation": "load",
+                "selector": 1,
+                "selectedSlot": "slot2",
+                "saveFlagsByte": 3,
+                "storedChecksumByte": 247,
+                "computedChecksumByte": 247,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2105403,
+                    "storedPhysicalByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2105405,
+                    "storedPhysicalByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2109417,
+                    "storedPhysicalByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2113433,
+                    "storedPhysicalByte": 224
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 224
+                  }
+                ]
+              },
+              {
+                "id": "copy-slot1-to-slot2",
+                "operation": "copy",
+                "selector": 0,
+                "selectedSlot": "slot2",
+                "sourceSlot": "slot1",
+                "destinationSlot": "slot2",
+                "observedDestinationSelector": 1,
+                "saveFlagsByte": 3,
+                "storedChecksumByte": 71,
+                "computedChecksumByte": 71,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2105403,
+                    "storedPhysicalByte": 19
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2105405,
+                    "storedPhysicalByte": 32
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2109417,
+                    "storedPhysicalByte": 100
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2113433,
+                    "storedPhysicalByte": 223
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 19
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 32
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 100
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 223
+                  }
+                ]
+              },
+              {
+                "id": "restore-slot2-source",
+                "operation": "save",
+                "selector": 1,
+                "selectedSlot": "slot2",
+                "saveFlagsByte": 3,
+                "storedChecksumByte": 247,
+                "computedChecksumByte": 247,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2105403,
+                    "storedPhysicalByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2105405,
+                    "storedPhysicalByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2109417,
+                    "storedPhysicalByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2113433,
+                    "storedPhysicalByte": 224
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 224
+                  }
+                ]
+              },
+              {
+                "id": "copy-slot2-to-slot1",
+                "operation": "copy",
+                "selector": 1,
+                "selectedSlot": "slot1",
+                "sourceSlot": "slot2",
+                "destinationSlot": "slot1",
+                "observedDestinationSelector": 0,
+                "saveFlagsByte": 3,
+                "storedChecksumByte": 247,
+                "computedChecksumByte": 247,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2097329,
+                    "storedPhysicalByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2097331,
+                    "storedPhysicalByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2101343,
+                    "storedPhysicalByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2105359,
+                    "storedPhysicalByte": 224
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 224
+                  }
+                ]
+              },
+              {
+                "id": "delete-slot1",
+                "operation": "delete",
+                "selector": 0,
+                "selectedSlot": "slot1",
+                "saveFlagsByte": 2,
+                "storedChecksumByte": 247,
+                "computedChecksumByte": 247,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2097329,
+                    "storedPhysicalByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2097331,
+                    "storedPhysicalByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2101343,
+                    "storedPhysicalByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2105359,
+                    "storedPhysicalByte": 224
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 224
+                  }
+                ]
+              },
+              {
+                "id": "delete-slot2",
+                "operation": "delete",
+                "selector": 1,
+                "selectedSlot": "slot2",
+                "saveFlagsByte": 0,
+                "storedChecksumByte": 247,
+                "computedChecksumByte": 247,
+                "storedPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "physicalAddress": 2105403,
+                    "storedPhysicalByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "physicalAddress": 2105405,
+                    "storedPhysicalByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "physicalAddress": 2109417,
+                    "storedPhysicalByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "physicalAddress": 2113433,
+                    "storedPhysicalByte": 224
+                  }
+                ],
+                "restoredPayloadSamples": [
+                  {
+                    "logicalOffset": 0,
+                    "logicalPayloadByte": 20
+                  },
+                  {
+                    "logicalOffset": 1,
+                    "logicalPayloadByte": 33
+                  },
+                  {
+                    "logicalOffset": 2007,
+                    "logicalPayloadByte": 101
+                  },
+                  {
+                    "logicalOffset": 4015,
+                    "logicalPayloadByte": 224
+                  }
+                ]
+              }
+            ],
+            "loadControlFlowResults": [
+              {
+                "id": "normal",
+                "flag88Set": false,
+                "instructionTarget": "GetSavepointForMap",
+                "instructionTargetAddress": 30188,
+                "effectiveTarget": "GetSavepointForMap",
+                "effectiveTargetAddress": 30188
+              },
+              {
+                "id": "suspend",
+                "flag88Set": true,
+                "instructionTarget": "j_BattleLoop",
+                "instructionTargetAddress": 131124,
+                "effectiveTarget": "BattleLoop",
+                "effectiveTargetAddress": 146052
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "runtimeQuestions": {
+      "allOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        {
+          "const": [
+            "witch-save-actions/cross-process-persistence-and-recovery",
+            "witch-save-menu/new-game-outer-lifecycle",
+            "witch-save-menu-suspend/presentation-and-input-timing"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "emulator",
+    "evidenceDate",
+    "provenance",
+    "observationBoundary",
+    "function",
+    "ram",
+    "storage",
+    "cases",
+    "expectedObservation",
+    "runtimeQuestions"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "sample": {
+      "type": "object",
+      "properties": {
+        "logicalOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4015
+        },
+        "physicalAddress": {
+          "type": "integer"
+        },
+        "storedPhysicalByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      },
+      "required": [
+        "logicalOffset",
+        "physicalAddress",
+        "storedPhysicalByte"
+      ],
+      "additionalProperties": false
+    },
+    "restoredSample": {
+      "type": "object",
+      "properties": {
+        "logicalOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4015
+        },
+        "logicalPayloadByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      },
+      "required": [
+        "logicalOffset",
+        "logicalPayloadByte"
+      ],
+      "additionalProperties": false
+    },
+    "emulator": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "core": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "upstreamRepository": {
+          "type": "string"
+        },
+        "upstreamBranch": {
+          "type": "string"
+        },
+        "upstreamCommit": {
+          "type": "string"
+        },
+        "sourcePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "listingPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "upstreamRepository",
+        "upstreamBranch",
+        "upstreamCommit",
+        "sourcePaths",
+        "listingPath"
+      ],
+      "additionalProperties": false
+    },
+    "function": {
+      "type": "object",
+      "properties": {
+        "checkSramAddress": {
+          "type": "integer"
+        },
+        "saveGameAddress": {
+          "type": "integer"
+        },
+        "loadGameAddress": {
+          "type": "integer"
+        },
+        "copySaveAddress": {
+          "type": "integer"
+        },
+        "clearSaveSlotFlagAddress": {
+          "type": "integer"
+        },
+        "loadFlagTrapAddress": {
+          "type": "integer"
+        },
+        "normalInstructionTarget": {
+          "type": "string"
+        },
+        "normalInstructionTargetAddress": {
+          "type": "integer"
+        },
+        "normalEffectiveTarget": {
+          "type": "string"
+        },
+        "normalEffectiveTargetAddress": {
+          "type": "integer"
+        },
+        "suspendInstructionTarget": {
+          "type": "string"
+        },
+        "suspendInstructionTargetAddress": {
+          "type": "integer"
+        },
+        "suspendEffectiveTarget": {
+          "type": "string"
+        },
+        "suspendEffectiveTargetAddress": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "checkSramAddress",
+        "saveGameAddress",
+        "loadGameAddress",
+        "copySaveAddress",
+        "clearSaveSlotFlagAddress",
+        "loadFlagTrapAddress",
+        "normalInstructionTarget",
+        "normalInstructionTargetAddress",
+        "normalEffectiveTarget",
+        "normalEffectiveTargetAddress",
+        "suspendInstructionTarget",
+        "suspendInstructionTargetAddress",
+        "suspendEffectiveTarget",
+        "suspendEffectiveTargetAddress"
+      ],
+      "additionalProperties": false
+    },
+    "ram": {
+      "type": "object",
+      "properties": {
+        "combatantDataAddress": {
+          "type": "integer"
+        },
+        "gameFlagsAddress": {
+          "type": "integer"
+        },
+        "workRamScratchAddress": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "combatantDataAddress",
+        "gameFlagsAddress",
+        "workRamScratchAddress"
+      ],
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "logicalSlotCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "logicalPayloadByteCountPerSlot": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "storedPhysicalByteCountPerSlot": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "physicalAddressIntervalPerSlot": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "physicalAddressStepPerLogicalByte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "physicalWindowBaseAddress": {
+          "type": "integer"
+        },
+        "firstStoredPhysicalByteAddress": {
+          "type": "integer"
+        },
+        "slot1DataAddress": {
+          "type": "integer"
+        },
+        "slot2DataAddress": {
+          "type": "integer"
+        },
+        "slot1ChecksumAddress": {
+          "type": "integer"
+        },
+        "slot2ChecksumAddress": {
+          "type": "integer"
+        },
+        "saveFlagsAddress": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "logicalSlotCount",
+        "logicalPayloadByteCountPerSlot",
+        "storedPhysicalByteCountPerSlot",
+        "physicalAddressIntervalPerSlot",
+        "physicalAddressStepPerLogicalByte",
+        "physicalWindowBaseAddress",
+        "firstStoredPhysicalByteAddress",
+        "slot1DataAddress",
+        "slot2DataAddress",
+        "slot1ChecksumAddress",
+        "slot2ChecksumAddress",
+        "saveFlagsAddress"
+      ],
+      "additionalProperties": false
+    },
+    "saveCase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "operation": {
+          "const": "save"
+        },
+        "selector": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "patternSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "selector",
+        "patternSeed"
+      ],
+      "additionalProperties": false
+    },
+    "serviceCase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "load",
+            "copy",
+            "delete"
+          ]
+        },
+        "selector": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "selector"
+      ],
+      "additionalProperties": false
+    },
+    "controlCase": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "flag88Set": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "flag88Set"
+      ],
+      "additionalProperties": false
+    },
+    "cases": {
+      "type": "object",
+      "properties": {
+        "sampleOffsets": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4015
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "directService": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/saveCase"
+              },
+              {
+                "$ref": "#/definitions/serviceCase"
+              }
+            ]
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "loadControlFlow": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/controlCase"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "sampleOffsets",
+        "directService",
+        "loadControlFlow"
+      ],
+      "additionalProperties": false
+    },
+    "plainDirectRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "save",
+            "load",
+            "delete"
+          ]
+        },
+        "selector": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "selectedSlot": {
+          "enum": [
+            "slot1",
+            "slot2"
+          ]
+        },
+        "saveFlagsByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "storedChecksumByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "computedChecksumByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "storedPayloadSamples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/sample"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "restoredPayloadSamples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restoredSample"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "selector",
+        "selectedSlot",
+        "saveFlagsByte",
+        "storedChecksumByte",
+        "computedChecksumByte",
+        "storedPayloadSamples",
+        "restoredPayloadSamples"
+      ],
+      "additionalProperties": false
+    },
+    "copyDirectRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "operation": {
+          "const": "copy"
+        },
+        "selector": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "selectedSlot": {
+          "enum": [
+            "slot1",
+            "slot2"
+          ]
+        },
+        "sourceSlot": {
+          "enum": [
+            "slot1",
+            "slot2"
+          ]
+        },
+        "destinationSlot": {
+          "enum": [
+            "slot1",
+            "slot2"
+          ]
+        },
+        "observedDestinationSelector": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "saveFlagsByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "storedChecksumByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "computedChecksumByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "storedPayloadSamples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/sample"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "restoredPayloadSamples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restoredSample"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "selector",
+        "selectedSlot",
+        "sourceSlot",
+        "destinationSlot",
+        "observedDestinationSelector",
+        "saveFlagsByte",
+        "storedChecksumByte",
+        "computedChecksumByte",
+        "storedPayloadSamples",
+        "restoredPayloadSamples"
+      ],
+      "additionalProperties": false
+    },
+    "controlResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "flag88Set": {
+          "type": "boolean"
+        },
+        "instructionTarget": {
+          "type": "string"
+        },
+        "instructionTargetAddress": {
+          "type": "integer"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "effectiveTargetAddress": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "flag88Set",
+        "instructionTarget",
+        "instructionTargetAddress",
+        "effectiveTarget",
+        "effectiveTargetAddress"
+      ],
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "core": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "directServiceResults": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/plainDirectRecord"
+              },
+              {
+                "$ref": "#/definitions/copyDirectRecord"
+              }
+            ]
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "loadControlFlowResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/controlResult"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "system",
+        "core",
+        "id",
+        "directServiceResults",
+        "loadControlFlowResults"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

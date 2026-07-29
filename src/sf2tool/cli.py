@@ -117,6 +117,7 @@ from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
 from sf2tool.h3.stat_clamps import verify_stat_clamp_boundaries
+from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
@@ -658,6 +659,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_entity_movement)
     h3_entity_movement.add_argument("--timeout-seconds", type=int, default=120)
+    h3_witch_save_actions = h3_commands.add_parser(
+        "witch-save-actions",
+        help="verify one-launch in-process Save/Load/Copy/Delete and flag-88 routing",
+    )
+    _add_local_paths(h3_witch_save_actions)
+    h3_witch_save_actions.add_argument("--timeout-seconds", type=int, default=120)
     h3_map_setup_selection = h3_commands.add_parser(
         "map-setup-selection",
         help="verify map setup default, flag, alias, and missing-map selection",
@@ -1455,6 +1462,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "entity-movement":
         print_record(
             verify_entity_movement_matrix(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "witch-save-actions":
+        print_record(
+            verify_witch_save_actions(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
