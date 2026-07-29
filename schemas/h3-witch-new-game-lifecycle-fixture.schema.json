@@ -1,0 +1,1162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h3-witch-new-game-lifecycle-fixture.schema.json",
+  "title": "H3 Witch New-game Lifecycle Runtime Fixture",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-witch-new-game-lifecycle-runtime-v1"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "emulator": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "core": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "version",
+            "core"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "name": "BizHawk",
+            "version": "2.11.1",
+            "core": "Genesis Plus GX"
+          }
+        }
+      ]
+    },
+    "evidenceDate": {
+      "const": "2026-07-29"
+    },
+    "provenance": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "upstreamRepository": {
+              "type": "string"
+            },
+            "upstreamBranch": {
+              "type": "string"
+            },
+            "upstreamCommit": {
+              "type": "string"
+            },
+            "sourcePaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "listingPath": {
+              "type": "string"
+            },
+            "runtimeCommand": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "upstreamRepository",
+            "upstreamBranch",
+            "upstreamCommit",
+            "sourcePaths",
+            "listingPath",
+            "runtimeCommand"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+            "upstreamBranch": "master",
+            "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+            "sourcePaths": [
+              "code/common/stats/newgame.asm",
+              "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+              "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+              "code/common/tech/jumpinterfaces/s03_jumpinterface_2.asm",
+              "code/gameflow/special/configurationmode.asm",
+              "code/specialscreens/witch/witchstart.asm",
+              "sf2const.asm",
+              "sf2enums.asm"
+            ],
+            "listingPath": "build/sf2build-h1.lst",
+            "runtimeCommand": "uv run sf2 h3 witch-new-game-lifecycle"
+          }
+        }
+      ]
+    },
+    "observationBoundary": {
+      "const": "One BizHawk 2.11.1 / Genesis Plus GX launch enters the original CheckSram call, redirects only its post-return continuation through a work-RAM checkpoint, saves one core state outside input/memory callbacks, and replays four SRAM-flag/menu-result cases. The observer uses session-only MD CART patches after recording M68K BUS and MD CART readback for each patched word; it bypasses both ExecuteWitchMainMenu calls, j_NameAlly, and DisplayText, pulses C only to release text-macro waits after witchMenuAction_New entry, and clears PLAYER_1_INPUT before the original CheatModeConfiguration early-return check. It executes the original witchMenuAction_New, j_NewGame/NewGame, difficulty flag code, SaveGame, and MainLoop handoff. It does not establish player-driven menu or naming input, pixels, audio, text cadence, cross-process SRAM persistence, or power-loss behavior."
+    },
+    "function": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "checkSramAddress": {
+              "type": "integer"
+            },
+            "newActionAddress": {
+              "type": "integer"
+            },
+            "menuInstructionTargetAddress": {
+              "type": "integer"
+            },
+            "menuEffectiveTargetAddress": {
+              "type": "integer"
+            },
+            "newGameInstructionTargetAddress": {
+              "type": "integer"
+            },
+            "newGameEffectiveTargetAddress": {
+              "type": "integer"
+            },
+            "nameAllyInstructionTargetAddress": {
+              "type": "integer"
+            },
+            "nameAllyEffectiveTargetAddress": {
+              "type": "integer"
+            },
+            "cheatModeConfigurationAddress": {
+              "type": "integer"
+            },
+            "displayTextAddress": {
+              "type": "integer"
+            },
+            "saveGameAddress": {
+              "type": "integer"
+            },
+            "mainLoopAddress": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "checkSramAddress",
+            "newActionAddress",
+            "menuInstructionTargetAddress",
+            "menuEffectiveTargetAddress",
+            "newGameInstructionTargetAddress",
+            "newGameEffectiveTargetAddress",
+            "nameAllyInstructionTargetAddress",
+            "nameAllyEffectiveTargetAddress",
+            "cheatModeConfigurationAddress",
+            "displayTextAddress",
+            "saveGameAddress",
+            "mainLoopAddress"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "checkSramAddress": 28326,
+            "newActionAddress": 29702,
+            "menuInstructionTargetAddress": 65704,
+            "menuEffectiveTargetAddress": 91736,
+            "newGameInstructionTargetAddress": 33276,
+            "newGameEffectiveTargetAddress": 38710,
+            "nameAllyInstructionTargetAddress": 65660,
+            "nameAllyEffectiveTargetAddress": 89008,
+            "cheatModeConfigurationAddress": 32314,
+            "displayTextAddress": 25184,
+            "saveGameAddress": 28522,
+            "mainLoopAddress": 30148
+          }
+        }
+      ]
+    },
+    "ram": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "currentSaveSlotAddress": {
+              "type": "integer"
+            },
+            "gameFlagsAddress": {
+              "type": "integer"
+            },
+            "currentMapAddress": {
+              "type": "integer"
+            },
+            "egressMapAddress": {
+              "type": "integer"
+            },
+            "combatantDataAddress": {
+              "type": "integer"
+            },
+            "player1InputAddress": {
+              "type": "integer"
+            },
+            "workRamScratchAddress": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "currentSaveSlotAddress",
+            "gameFlagsAddress",
+            "currentMapAddress",
+            "egressMapAddress",
+            "combatantDataAddress",
+            "player1InputAddress",
+            "workRamScratchAddress"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "currentSaveSlotAddress": 16756890,
+            "gameFlagsAddress": 16774790,
+            "currentMapAddress": 16774929,
+            "egressMapAddress": 16774937,
+            "combatantDataAddress": 16771072,
+            "player1InputAddress": 16768663,
+            "workRamScratchAddress": 16738306
+          }
+        }
+      ]
+    },
+    "storage": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "saveFlagsAddress": {
+              "type": "integer"
+            },
+            "logicalPayloadByteCountPerSlot": {
+              "type": "integer"
+            },
+            "storedPhysicalByteCountPerSlot": {
+              "type": "integer"
+            },
+            "physicalAddressIntervalPerSlot": {
+              "type": "integer"
+            },
+            "physicalAddressStepPerLogicalByte": {
+              "type": "integer"
+            },
+            "physicalWindowBaseAddress": {
+              "type": "integer"
+            },
+            "firstStoredPhysicalByteAddress": {
+              "type": "integer"
+            },
+            "slot1DataAddress": {
+              "type": "integer"
+            },
+            "slot2DataAddress": {
+              "type": "integer"
+            },
+            "slot1ChecksumAddress": {
+              "type": "integer"
+            },
+            "slot2ChecksumAddress": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "saveFlagsAddress",
+            "logicalPayloadByteCountPerSlot",
+            "storedPhysicalByteCountPerSlot",
+            "physicalAddressIntervalPerSlot",
+            "physicalAddressStepPerLogicalByte",
+            "physicalWindowBaseAddress",
+            "firstStoredPhysicalByteAddress",
+            "slot1DataAddress",
+            "slot2DataAddress",
+            "slot1ChecksumAddress",
+            "slot2ChecksumAddress"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "saveFlagsAddress": 2105397,
+            "logicalPayloadByteCountPerSlot": 4016,
+            "storedPhysicalByteCountPerSlot": 4016,
+            "physicalAddressIntervalPerSlot": 8032,
+            "physicalAddressStepPerLogicalByte": 2,
+            "physicalWindowBaseAddress": 2097152,
+            "firstStoredPhysicalByteAddress": 2097153,
+            "slot1DataAddress": 2097329,
+            "slot2DataAddress": 2105403,
+            "slot1ChecksumAddress": 2105399,
+            "slot2ChecksumAddress": 2105401
+          }
+        }
+      ]
+    },
+    "newAction": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "saveFlagsMask": {
+              "type": "integer"
+            },
+            "availabilityXorMask": {
+              "type": "integer"
+            },
+            "selectorScale": {
+              "type": "integer"
+            },
+            "menuReturnSubtract": {
+              "type": "integer"
+            },
+            "initialMenuPage": {
+              "type": "integer"
+            },
+            "difficultyMenuPage": {
+              "type": "integer"
+            },
+            "difficultyAvailabilityMask": {
+              "type": "integer"
+            },
+            "sourceFlag78": {
+              "type": "integer"
+            },
+            "sourceFlag79": {
+              "type": "integer"
+            },
+            "gameStartMap": {
+              "type": "integer"
+            },
+            "gameStartSavepointX": {
+              "type": "integer"
+            },
+            "gameStartSavepointY": {
+              "type": "integer"
+            },
+            "gameStartFacing": {
+              "type": "integer"
+            },
+            "mainLoopD4": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "saveFlagsMask",
+            "availabilityXorMask",
+            "selectorScale",
+            "menuReturnSubtract",
+            "initialMenuPage",
+            "difficultyMenuPage",
+            "difficultyAvailabilityMask",
+            "sourceFlag78",
+            "sourceFlag79",
+            "gameStartMap",
+            "gameStartSavepointX",
+            "gameStartSavepointY",
+            "gameStartFacing",
+            "mainLoopD4"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "saveFlagsMask": 3,
+            "availabilityXorMask": 3,
+            "selectorScale": 2,
+            "menuReturnSubtract": 1,
+            "initialMenuPage": 1,
+            "difficultyMenuPage": 3,
+            "difficultyAvailabilityMask": 15,
+            "sourceFlag78": 78,
+            "sourceFlag79": 79,
+            "gameStartMap": 3,
+            "gameStartSavepointX": 56,
+            "gameStartSavepointY": 3,
+            "gameStartFacing": 3,
+            "mainLoopD4": 1
+          }
+        }
+      ]
+    },
+    "harness": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "maxFrames": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "maxFrames"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "maxFrames": 4800
+          }
+        }
+      ]
+    },
+    "cases": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "sampleOffsets": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "matrix": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "preconditionSaveFlags": {
+                    "type": "integer"
+                  },
+                  "injectedInitialMenuReturn": {
+                    "type": "integer"
+                  },
+                  "injectedDifficultyMenuReturn": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "preconditionSaveFlags",
+                  "injectedInitialMenuReturn",
+                  "injectedDifficultyMenuReturn"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "sampleOffsets",
+            "matrix"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "sampleOffsets": [
+              0,
+              1,
+              2007,
+              4015
+            ],
+            "matrix": [
+              {
+                "id": "save-flags-0-slot1-difficulty-0",
+                "preconditionSaveFlags": 0,
+                "injectedInitialMenuReturn": 1,
+                "injectedDifficultyMenuReturn": 0
+              },
+              {
+                "id": "save-flags-1-slot2-difficulty-1",
+                "preconditionSaveFlags": 1,
+                "injectedInitialMenuReturn": 2,
+                "injectedDifficultyMenuReturn": 1
+              },
+              {
+                "id": "save-flags-2-slot1-difficulty-2",
+                "preconditionSaveFlags": 2,
+                "injectedInitialMenuReturn": 1,
+                "injectedDifficultyMenuReturn": 2
+              },
+              {
+                "id": "save-flags-0-slot1-difficulty-3",
+                "preconditionSaveFlags": 0,
+                "injectedInitialMenuReturn": 1,
+                "injectedDifficultyMenuReturn": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "expectedObservation": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "system": {
+              "type": "string"
+            },
+            "core": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "harness": {
+              "type": "object",
+              "properties": {
+                "checkSramReturnTrampoline": {
+                  "type": "boolean"
+                },
+                "maxFrames": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "romPatchDomain": {
+                  "type": "string"
+                },
+                "textWaitHarnessControl": {
+                  "type": "string"
+                },
+                "romPatchReadbacks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string"
+                      },
+                      "busAfterBusWrite": {
+                        "type": "integer"
+                      },
+                      "cartAfterBusWrite": {
+                        "type": "integer"
+                      },
+                      "busAfterCartWrite": {
+                        "type": "integer"
+                      },
+                      "cartAfterCartWrite": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "busAfterBusWrite",
+                      "cartAfterBusWrite",
+                      "busAfterCartWrite",
+                      "cartAfterCartWrite"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "checkSramReturnTrampoline",
+                "maxFrames",
+                "romPatchDomain",
+                "textWaitHarnessControl",
+                "romPatchReadbacks"
+              ],
+              "additionalProperties": false
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "preconditionSaveFlags": {
+                    "type": "integer"
+                  },
+                  "initialMenu": {
+                    "type": "object",
+                    "properties": {
+                      "observedInitialSelector": {
+                        "type": "integer"
+                      },
+                      "observedPage": {
+                        "type": "integer"
+                      },
+                      "observedAvailability": {
+                        "type": "integer"
+                      },
+                      "injectedReturn": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "observedInitialSelector",
+                      "observedPage",
+                      "observedAvailability",
+                      "injectedReturn"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "difficultyMenu": {
+                    "type": "object",
+                    "properties": {
+                      "observedSelector": {
+                        "type": "integer"
+                      },
+                      "observedPage": {
+                        "type": "integer"
+                      },
+                      "observedAvailability": {
+                        "type": "integer"
+                      },
+                      "injectedReturn": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "observedSelector",
+                      "observedPage",
+                      "observedAvailability",
+                      "injectedReturn"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "seams": {
+                    "type": "object",
+                    "properties": {
+                      "initialMenuAliasBypassed": {
+                        "type": "boolean"
+                      },
+                      "difficultyMenuAliasBypassed": {
+                        "type": "boolean"
+                      },
+                      "nameAllyAliasBypassed": {
+                        "type": "boolean"
+                      },
+                      "cheatModeConfigurationExecuted": {
+                        "type": "boolean"
+                      },
+                      "displayTextBypassCalls": {
+                        "type": "integer"
+                      },
+                      "newGameAliasExecuted": {
+                        "type": "boolean"
+                      },
+                      "newGameEffectiveTargetExecuted": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "initialMenuAliasBypassed",
+                      "difficultyMenuAliasBypassed",
+                      "nameAllyAliasBypassed",
+                      "cheatModeConfigurationExecuted",
+                      "displayTextBypassCalls",
+                      "newGameAliasExecuted",
+                      "newGameEffectiveTargetExecuted"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "handoff": {
+                    "type": "object",
+                    "properties": {
+                      "currentSaveSlot": {
+                        "type": "integer"
+                      },
+                      "currentMap": {
+                        "type": "integer"
+                      },
+                      "egressMap": {
+                        "type": "integer"
+                      },
+                      "d0": {
+                        "type": "integer"
+                      },
+                      "d1": {
+                        "type": "integer"
+                      },
+                      "d2": {
+                        "type": "integer"
+                      },
+                      "d3": {
+                        "type": "integer"
+                      },
+                      "d4": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "currentSaveSlot",
+                      "currentMap",
+                      "egressMap",
+                      "d0",
+                      "d1",
+                      "d2",
+                      "d3",
+                      "d4"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "difficultyFlags": {
+                    "type": "object",
+                    "properties": {
+                      "flag78Set": {
+                        "type": "boolean"
+                      },
+                      "flag79Set": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "flag78Set",
+                      "flag79Set"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "savedSlot": {
+                    "type": "object",
+                    "properties": {
+                      "selector": {
+                        "type": "integer"
+                      },
+                      "saveFlagsByte": {
+                        "type": "integer"
+                      },
+                      "storedChecksumByte": {
+                        "type": "integer"
+                      },
+                      "computedChecksumByte": {
+                        "type": "integer"
+                      },
+                      "storedPayloadSamples": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "logicalOffset": {
+                              "type": "integer"
+                            },
+                            "physicalAddress": {
+                              "type": "integer"
+                            },
+                            "storedPhysicalByte": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "logicalOffset",
+                            "physicalAddress",
+                            "storedPhysicalByte"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "selector",
+                      "saveFlagsByte",
+                      "storedChecksumByte",
+                      "computedChecksumByte",
+                      "storedPayloadSamples"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "preconditionSaveFlags",
+                  "initialMenu",
+                  "difficultyMenu",
+                  "seams",
+                  "handoff",
+                  "difficultyFlags",
+                  "savedSlot"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "system",
+            "core",
+            "id",
+            "harness",
+            "records"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "const": {
+            "system": "GEN",
+            "core": "Genesis Plus GX",
+            "id": "sf2-witch-new-game-lifecycle-runtime-v1",
+            "harness": {
+              "checkSramReturnTrampoline": true,
+              "maxFrames": 4800,
+              "romPatchDomain": "MD CART",
+              "textWaitHarnessControl": "C-pulse-after-new-action-entry",
+              "romPatchReadbacks": [
+                {
+                  "label": "menu-alias-opcode",
+                  "busAfterBusWrite": 20218,
+                  "cartAfterBusWrite": 20218,
+                  "busAfterCartWrite": 20217,
+                  "cartAfterCartWrite": 20217
+                },
+                {
+                  "label": "menu-alias-target-high",
+                  "busAfterBusWrite": 26030,
+                  "cartAfterBusWrite": 26030,
+                  "busAfterCartWrite": 255,
+                  "cartAfterCartWrite": 255
+                },
+                {
+                  "label": "menu-alias-target-low",
+                  "busAfterBusWrite": 20218,
+                  "cartAfterBusWrite": 20218,
+                  "busAfterCartWrite": 26658,
+                  "cartAfterCartWrite": 26658
+                },
+                {
+                  "label": "name-ally-alias",
+                  "busAfterBusWrite": 20218,
+                  "cartAfterBusWrite": 20218,
+                  "busAfterCartWrite": 20085,
+                  "cartAfterCartWrite": 20085
+                },
+                {
+                  "label": "display-text",
+                  "busAfterBusWrite": 18663,
+                  "cartAfterBusWrite": 18663,
+                  "busAfterCartWrite": 20085,
+                  "cartAfterCartWrite": 20085
+                },
+                {
+                  "label": "main-loop-opcode",
+                  "busAfterBusWrite": 16952,
+                  "cartAfterBusWrite": 16952,
+                  "busAfterCartWrite": 20217,
+                  "cartAfterCartWrite": 20217
+                },
+                {
+                  "label": "main-loop-target-high",
+                  "busAfterBusWrite": 45465,
+                  "cartAfterBusWrite": 45465,
+                  "busAfterCartWrite": 255,
+                  "cartAfterCartWrite": 255
+                },
+                {
+                  "label": "main-loop-target-low",
+                  "busAfterBusWrite": 24832,
+                  "cartAfterBusWrite": 24832,
+                  "busAfterCartWrite": 26690,
+                  "cartAfterCartWrite": 26690
+                }
+              ]
+            },
+            "records": [
+              {
+                "id": "save-flags-0-slot1-difficulty-0",
+                "preconditionSaveFlags": 0,
+                "initialMenu": {
+                  "observedInitialSelector": 1,
+                  "observedPage": 1,
+                  "observedAvailability": 6,
+                  "injectedReturn": 1
+                },
+                "difficultyMenu": {
+                  "observedSelector": 0,
+                  "observedPage": 3,
+                  "observedAvailability": 15,
+                  "injectedReturn": 0
+                },
+                "seams": {
+                  "initialMenuAliasBypassed": true,
+                  "difficultyMenuAliasBypassed": true,
+                  "nameAllyAliasBypassed": true,
+                  "cheatModeConfigurationExecuted": true,
+                  "displayTextBypassCalls": 5,
+                  "newGameAliasExecuted": true,
+                  "newGameEffectiveTargetExecuted": true
+                },
+                "handoff": {
+                  "currentSaveSlot": 0,
+                  "currentMap": 3,
+                  "egressMap": 3,
+                  "d0": 3,
+                  "d1": 56,
+                  "d2": 3,
+                  "d3": 3,
+                  "d4": 1
+                },
+                "difficultyFlags": {
+                  "flag78Set": false,
+                  "flag79Set": false
+                },
+                "savedSlot": {
+                  "selector": 0,
+                  "saveFlagsByte": 1,
+                  "storedChecksumByte": 89,
+                  "computedChecksumByte": 89,
+                  "storedPayloadSamples": [
+                    {
+                      "logicalOffset": 0,
+                      "physicalAddress": 2097329,
+                      "storedPhysicalByte": 66
+                    },
+                    {
+                      "logicalOffset": 1,
+                      "physicalAddress": 2097331,
+                      "storedPhysicalByte": 79
+                    },
+                    {
+                      "logicalOffset": 2007,
+                      "physicalAddress": 2101343,
+                      "storedPhysicalByte": 0
+                    },
+                    {
+                      "logicalOffset": 4015,
+                      "physicalAddress": 2105359,
+                      "storedPhysicalByte": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "save-flags-1-slot2-difficulty-1",
+                "preconditionSaveFlags": 1,
+                "initialMenu": {
+                  "observedInitialSelector": 2,
+                  "observedPage": 1,
+                  "observedAvailability": 4,
+                  "injectedReturn": 2
+                },
+                "difficultyMenu": {
+                  "observedSelector": 0,
+                  "observedPage": 3,
+                  "observedAvailability": 15,
+                  "injectedReturn": 1
+                },
+                "seams": {
+                  "initialMenuAliasBypassed": true,
+                  "difficultyMenuAliasBypassed": true,
+                  "nameAllyAliasBypassed": true,
+                  "cheatModeConfigurationExecuted": true,
+                  "displayTextBypassCalls": 5,
+                  "newGameAliasExecuted": true,
+                  "newGameEffectiveTargetExecuted": true
+                },
+                "handoff": {
+                  "currentSaveSlot": 1,
+                  "currentMap": 3,
+                  "egressMap": 3,
+                  "d0": 3,
+                  "d1": 56,
+                  "d2": 3,
+                  "d3": 3,
+                  "d4": 1
+                },
+                "difficultyFlags": {
+                  "flag78Set": true,
+                  "flag79Set": false
+                },
+                "savedSlot": {
+                  "selector": 1,
+                  "saveFlagsByte": 3,
+                  "storedChecksumByte": 91,
+                  "computedChecksumByte": 91,
+                  "storedPayloadSamples": [
+                    {
+                      "logicalOffset": 0,
+                      "physicalAddress": 2105403,
+                      "storedPhysicalByte": 66
+                    },
+                    {
+                      "logicalOffset": 1,
+                      "physicalAddress": 2105405,
+                      "storedPhysicalByte": 79
+                    },
+                    {
+                      "logicalOffset": 2007,
+                      "physicalAddress": 2109417,
+                      "storedPhysicalByte": 0
+                    },
+                    {
+                      "logicalOffset": 4015,
+                      "physicalAddress": 2113433,
+                      "storedPhysicalByte": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "save-flags-2-slot1-difficulty-2",
+                "preconditionSaveFlags": 2,
+                "initialMenu": {
+                  "observedInitialSelector": 1,
+                  "observedPage": 1,
+                  "observedAvailability": 2,
+                  "injectedReturn": 1
+                },
+                "difficultyMenu": {
+                  "observedSelector": 0,
+                  "observedPage": 3,
+                  "observedAvailability": 15,
+                  "injectedReturn": 2
+                },
+                "seams": {
+                  "initialMenuAliasBypassed": true,
+                  "difficultyMenuAliasBypassed": true,
+                  "nameAllyAliasBypassed": true,
+                  "cheatModeConfigurationExecuted": true,
+                  "displayTextBypassCalls": 5,
+                  "newGameAliasExecuted": true,
+                  "newGameEffectiveTargetExecuted": true
+                },
+                "handoff": {
+                  "currentSaveSlot": 0,
+                  "currentMap": 3,
+                  "egressMap": 3,
+                  "d0": 3,
+                  "d1": 56,
+                  "d2": 3,
+                  "d3": 3,
+                  "d4": 1
+                },
+                "difficultyFlags": {
+                  "flag78Set": false,
+                  "flag79Set": true
+                },
+                "savedSlot": {
+                  "selector": 0,
+                  "saveFlagsByte": 3,
+                  "storedChecksumByte": 90,
+                  "computedChecksumByte": 90,
+                  "storedPayloadSamples": [
+                    {
+                      "logicalOffset": 0,
+                      "physicalAddress": 2097329,
+                      "storedPhysicalByte": 66
+                    },
+                    {
+                      "logicalOffset": 1,
+                      "physicalAddress": 2097331,
+                      "storedPhysicalByte": 79
+                    },
+                    {
+                      "logicalOffset": 2007,
+                      "physicalAddress": 2101343,
+                      "storedPhysicalByte": 0
+                    },
+                    {
+                      "logicalOffset": 4015,
+                      "physicalAddress": 2105359,
+                      "storedPhysicalByte": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "save-flags-0-slot1-difficulty-3",
+                "preconditionSaveFlags": 0,
+                "initialMenu": {
+                  "observedInitialSelector": 1,
+                  "observedPage": 1,
+                  "observedAvailability": 6,
+                  "injectedReturn": 1
+                },
+                "difficultyMenu": {
+                  "observedSelector": 0,
+                  "observedPage": 3,
+                  "observedAvailability": 15,
+                  "injectedReturn": 3
+                },
+                "seams": {
+                  "initialMenuAliasBypassed": true,
+                  "difficultyMenuAliasBypassed": true,
+                  "nameAllyAliasBypassed": true,
+                  "cheatModeConfigurationExecuted": true,
+                  "displayTextBypassCalls": 5,
+                  "newGameAliasExecuted": true,
+                  "newGameEffectiveTargetExecuted": true
+                },
+                "handoff": {
+                  "currentSaveSlot": 0,
+                  "currentMap": 3,
+                  "egressMap": 3,
+                  "d0": 3,
+                  "d1": 56,
+                  "d2": 3,
+                  "d3": 3,
+                  "d4": 1
+                },
+                "difficultyFlags": {
+                  "flag78Set": true,
+                  "flag79Set": true
+                },
+                "savedSlot": {
+                  "selector": 0,
+                  "saveFlagsByte": 1,
+                  "storedChecksumByte": 92,
+                  "computedChecksumByte": 92,
+                  "storedPayloadSamples": [
+                    {
+                      "logicalOffset": 0,
+                      "physicalAddress": 2097329,
+                      "storedPhysicalByte": 66
+                    },
+                    {
+                      "logicalOffset": 1,
+                      "physicalAddress": 2097331,
+                      "storedPhysicalByte": 79
+                    },
+                    {
+                      "logicalOffset": 2007,
+                      "physicalAddress": 2101343,
+                      "storedPhysicalByte": 0
+                    },
+                    {
+                      "logicalOffset": 4015,
+                      "physicalAddress": 2105359,
+                      "storedPhysicalByte": 0
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "runtimeQuestions": {
+      "const": [
+        "witch-save-menu/player-driven-name-entry-and-editing",
+        "witch-save-menu/player-driven-menu-presentation-and-input-cadence"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "emulator",
+    "evidenceDate",
+    "provenance",
+    "observationBoundary",
+    "function",
+    "ram",
+    "storage",
+    "newAction",
+    "harness",
+    "cases",
+    "expectedObservation",
+    "runtimeQuestions"
+  ],
+  "additionalProperties": false
+}

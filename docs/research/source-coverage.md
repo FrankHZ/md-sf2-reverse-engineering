@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,536 | 1,499 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,537 | 1,500 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 61 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,122 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 62 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,141 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -243,11 +243,14 @@ The current evidence is deep but narrow:
   page identities, save-flag selector masks, New/Load/Copy/Delete branch and call order, initial-loop
   constants, and five SRAM service callers with zero-inclusive internal/external target totals. Its 118
   source-line/operand provenance records are all referenced by exact ordered semantic summaries.
-  One nine-direct-case/two-Load-branch BizHawk launch now confirms in-process service writes, distinct
+  One nine-direct-case/two-Load-branch BizHawk launch confirms in-process service writes, distinct
   source checksums 71/247, both Copy directions, delete's occupied-bit-only effect, sampled Load
-  restoration, and flag-88 direct/effective target identities. Cross-process persistence/recovery,
-  complete New-game outer lifecycle, and witch/suspend presentation/input timing remain three grouped
-  H3 questions rather than being inferred from the service thunk.
+  restoration, and flag-88 direct/effective target identities. A second one-launch/four-core-replay
+  New matrix now confirms free-slot selector boundaries for save flags 0/1/2, all four difficulty
+  flag outcomes, selected-slot checksums/samples, and the 3/56/3/3/1 MainLoop handoff while retaining
+  the MD CART session-patch readback boundary. Cross-process persistence/recovery plus player-driven
+  naming/menu presentation/input cadence and witch/suspend presentation timing remain grouped H3
+  questions rather than being inferred from the harness controls.
   The ROM header, window engine, battle test, configuration mode, and debug battle actions close the
   final five primary layout sources. The window contract now records all 16 stable entries, 32
   instruction-scoped external direct-caller files, six separate VInt pointer references, the 16-byte
@@ -317,9 +320,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,536 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 61 H3 fixtures, and
-2,122 bindings. Of the records, 1,499 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,537 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 62 H3 fixtures, and
+2,141 bindings. Of the records, 1,500 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 

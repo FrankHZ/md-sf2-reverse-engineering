@@ -32,13 +32,13 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1536
+    assert result["Records"] == 1537
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 61
-    assert result["AddressBindings"] == 2122
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 62
+    assert result["AddressBindings"] == 2141
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1499
+    assert result["H1ListingRecords"] == 1500
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
@@ -508,6 +508,13 @@ def test_map_event_dispatch_has_one_batched_runtime_command() -> None:
 def test_witch_save_actions_has_one_batched_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "witch-save-actions"])
     assert args.h3_command == "witch-save-actions"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 120
+
+
+def test_witch_new_game_lifecycle_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "witch-new-game-lifecycle"])
+    assert args.h3_command == "witch-new-game-lifecycle"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 120
 

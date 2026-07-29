@@ -1,0 +1,640 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h3-witch-new-game-lifecycle-observation.schema.json",
+  "title": "H3 Witch New-game Lifecycle Runtime Observation",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "core": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "harness": {
+          "type": "object",
+          "properties": {
+            "checkSramReturnTrampoline": {
+              "type": "boolean"
+            },
+            "maxFrames": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "romPatchDomain": {
+              "type": "string"
+            },
+            "textWaitHarnessControl": {
+              "type": "string"
+            },
+            "romPatchReadbacks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "busAfterBusWrite": {
+                    "type": "integer"
+                  },
+                  "cartAfterBusWrite": {
+                    "type": "integer"
+                  },
+                  "busAfterCartWrite": {
+                    "type": "integer"
+                  },
+                  "cartAfterCartWrite": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "label",
+                  "busAfterBusWrite",
+                  "cartAfterBusWrite",
+                  "busAfterCartWrite",
+                  "cartAfterCartWrite"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "checkSramReturnTrampoline",
+            "maxFrames",
+            "romPatchDomain",
+            "textWaitHarnessControl",
+            "romPatchReadbacks"
+          ],
+          "additionalProperties": false
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "preconditionSaveFlags": {
+                "type": "integer"
+              },
+              "initialMenu": {
+                "type": "object",
+                "properties": {
+                  "observedInitialSelector": {
+                    "type": "integer"
+                  },
+                  "observedPage": {
+                    "type": "integer"
+                  },
+                  "observedAvailability": {
+                    "type": "integer"
+                  },
+                  "injectedReturn": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "observedInitialSelector",
+                  "observedPage",
+                  "observedAvailability",
+                  "injectedReturn"
+                ],
+                "additionalProperties": false
+              },
+              "difficultyMenu": {
+                "type": "object",
+                "properties": {
+                  "observedSelector": {
+                    "type": "integer"
+                  },
+                  "observedPage": {
+                    "type": "integer"
+                  },
+                  "observedAvailability": {
+                    "type": "integer"
+                  },
+                  "injectedReturn": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "observedSelector",
+                  "observedPage",
+                  "observedAvailability",
+                  "injectedReturn"
+                ],
+                "additionalProperties": false
+              },
+              "seams": {
+                "type": "object",
+                "properties": {
+                  "initialMenuAliasBypassed": {
+                    "type": "boolean"
+                  },
+                  "difficultyMenuAliasBypassed": {
+                    "type": "boolean"
+                  },
+                  "nameAllyAliasBypassed": {
+                    "type": "boolean"
+                  },
+                  "cheatModeConfigurationExecuted": {
+                    "type": "boolean"
+                  },
+                  "displayTextBypassCalls": {
+                    "type": "integer"
+                  },
+                  "newGameAliasExecuted": {
+                    "type": "boolean"
+                  },
+                  "newGameEffectiveTargetExecuted": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "initialMenuAliasBypassed",
+                  "difficultyMenuAliasBypassed",
+                  "nameAllyAliasBypassed",
+                  "cheatModeConfigurationExecuted",
+                  "displayTextBypassCalls",
+                  "newGameAliasExecuted",
+                  "newGameEffectiveTargetExecuted"
+                ],
+                "additionalProperties": false
+              },
+              "handoff": {
+                "type": "object",
+                "properties": {
+                  "currentSaveSlot": {
+                    "type": "integer"
+                  },
+                  "currentMap": {
+                    "type": "integer"
+                  },
+                  "egressMap": {
+                    "type": "integer"
+                  },
+                  "d0": {
+                    "type": "integer"
+                  },
+                  "d1": {
+                    "type": "integer"
+                  },
+                  "d2": {
+                    "type": "integer"
+                  },
+                  "d3": {
+                    "type": "integer"
+                  },
+                  "d4": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "currentSaveSlot",
+                  "currentMap",
+                  "egressMap",
+                  "d0",
+                  "d1",
+                  "d2",
+                  "d3",
+                  "d4"
+                ],
+                "additionalProperties": false
+              },
+              "difficultyFlags": {
+                "type": "object",
+                "properties": {
+                  "flag78Set": {
+                    "type": "boolean"
+                  },
+                  "flag79Set": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "flag78Set",
+                  "flag79Set"
+                ],
+                "additionalProperties": false
+              },
+              "savedSlot": {
+                "type": "object",
+                "properties": {
+                  "selector": {
+                    "type": "integer"
+                  },
+                  "saveFlagsByte": {
+                    "type": "integer"
+                  },
+                  "storedChecksumByte": {
+                    "type": "integer"
+                  },
+                  "computedChecksumByte": {
+                    "type": "integer"
+                  },
+                  "storedPayloadSamples": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "logicalOffset": {
+                          "type": "integer"
+                        },
+                        "physicalAddress": {
+                          "type": "integer"
+                        },
+                        "storedPhysicalByte": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "logicalOffset",
+                        "physicalAddress",
+                        "storedPhysicalByte"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "selector",
+                  "saveFlagsByte",
+                  "storedChecksumByte",
+                  "computedChecksumByte",
+                  "storedPayloadSamples"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "preconditionSaveFlags",
+              "initialMenu",
+              "difficultyMenu",
+              "seams",
+              "handoff",
+              "difficultyFlags",
+              "savedSlot"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "system",
+        "core",
+        "id",
+        "harness",
+        "records"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "const": {
+        "system": "GEN",
+        "core": "Genesis Plus GX",
+        "id": "sf2-witch-new-game-lifecycle-runtime-v1",
+        "harness": {
+          "checkSramReturnTrampoline": true,
+          "maxFrames": 4800,
+          "romPatchDomain": "MD CART",
+          "textWaitHarnessControl": "C-pulse-after-new-action-entry",
+          "romPatchReadbacks": [
+            {
+              "label": "menu-alias-opcode",
+              "busAfterBusWrite": 20218,
+              "cartAfterBusWrite": 20218,
+              "busAfterCartWrite": 20217,
+              "cartAfterCartWrite": 20217
+            },
+            {
+              "label": "menu-alias-target-high",
+              "busAfterBusWrite": 26030,
+              "cartAfterBusWrite": 26030,
+              "busAfterCartWrite": 255,
+              "cartAfterCartWrite": 255
+            },
+            {
+              "label": "menu-alias-target-low",
+              "busAfterBusWrite": 20218,
+              "cartAfterBusWrite": 20218,
+              "busAfterCartWrite": 26658,
+              "cartAfterCartWrite": 26658
+            },
+            {
+              "label": "name-ally-alias",
+              "busAfterBusWrite": 20218,
+              "cartAfterBusWrite": 20218,
+              "busAfterCartWrite": 20085,
+              "cartAfterCartWrite": 20085
+            },
+            {
+              "label": "display-text",
+              "busAfterBusWrite": 18663,
+              "cartAfterBusWrite": 18663,
+              "busAfterCartWrite": 20085,
+              "cartAfterCartWrite": 20085
+            },
+            {
+              "label": "main-loop-opcode",
+              "busAfterBusWrite": 16952,
+              "cartAfterBusWrite": 16952,
+              "busAfterCartWrite": 20217,
+              "cartAfterCartWrite": 20217
+            },
+            {
+              "label": "main-loop-target-high",
+              "busAfterBusWrite": 45465,
+              "cartAfterBusWrite": 45465,
+              "busAfterCartWrite": 255,
+              "cartAfterCartWrite": 255
+            },
+            {
+              "label": "main-loop-target-low",
+              "busAfterBusWrite": 24832,
+              "cartAfterBusWrite": 24832,
+              "busAfterCartWrite": 26690,
+              "cartAfterCartWrite": 26690
+            }
+          ]
+        },
+        "records": [
+          {
+            "id": "save-flags-0-slot1-difficulty-0",
+            "preconditionSaveFlags": 0,
+            "initialMenu": {
+              "observedInitialSelector": 1,
+              "observedPage": 1,
+              "observedAvailability": 6,
+              "injectedReturn": 1
+            },
+            "difficultyMenu": {
+              "observedSelector": 0,
+              "observedPage": 3,
+              "observedAvailability": 15,
+              "injectedReturn": 0
+            },
+            "seams": {
+              "initialMenuAliasBypassed": true,
+              "difficultyMenuAliasBypassed": true,
+              "nameAllyAliasBypassed": true,
+              "cheatModeConfigurationExecuted": true,
+              "displayTextBypassCalls": 5,
+              "newGameAliasExecuted": true,
+              "newGameEffectiveTargetExecuted": true
+            },
+            "handoff": {
+              "currentSaveSlot": 0,
+              "currentMap": 3,
+              "egressMap": 3,
+              "d0": 3,
+              "d1": 56,
+              "d2": 3,
+              "d3": 3,
+              "d4": 1
+            },
+            "difficultyFlags": {
+              "flag78Set": false,
+              "flag79Set": false
+            },
+            "savedSlot": {
+              "selector": 0,
+              "saveFlagsByte": 1,
+              "storedChecksumByte": 89,
+              "computedChecksumByte": 89,
+              "storedPayloadSamples": [
+                {
+                  "logicalOffset": 0,
+                  "physicalAddress": 2097329,
+                  "storedPhysicalByte": 66
+                },
+                {
+                  "logicalOffset": 1,
+                  "physicalAddress": 2097331,
+                  "storedPhysicalByte": 79
+                },
+                {
+                  "logicalOffset": 2007,
+                  "physicalAddress": 2101343,
+                  "storedPhysicalByte": 0
+                },
+                {
+                  "logicalOffset": 4015,
+                  "physicalAddress": 2105359,
+                  "storedPhysicalByte": 0
+                }
+              ]
+            }
+          },
+          {
+            "id": "save-flags-1-slot2-difficulty-1",
+            "preconditionSaveFlags": 1,
+            "initialMenu": {
+              "observedInitialSelector": 2,
+              "observedPage": 1,
+              "observedAvailability": 4,
+              "injectedReturn": 2
+            },
+            "difficultyMenu": {
+              "observedSelector": 0,
+              "observedPage": 3,
+              "observedAvailability": 15,
+              "injectedReturn": 1
+            },
+            "seams": {
+              "initialMenuAliasBypassed": true,
+              "difficultyMenuAliasBypassed": true,
+              "nameAllyAliasBypassed": true,
+              "cheatModeConfigurationExecuted": true,
+              "displayTextBypassCalls": 5,
+              "newGameAliasExecuted": true,
+              "newGameEffectiveTargetExecuted": true
+            },
+            "handoff": {
+              "currentSaveSlot": 1,
+              "currentMap": 3,
+              "egressMap": 3,
+              "d0": 3,
+              "d1": 56,
+              "d2": 3,
+              "d3": 3,
+              "d4": 1
+            },
+            "difficultyFlags": {
+              "flag78Set": true,
+              "flag79Set": false
+            },
+            "savedSlot": {
+              "selector": 1,
+              "saveFlagsByte": 3,
+              "storedChecksumByte": 91,
+              "computedChecksumByte": 91,
+              "storedPayloadSamples": [
+                {
+                  "logicalOffset": 0,
+                  "physicalAddress": 2105403,
+                  "storedPhysicalByte": 66
+                },
+                {
+                  "logicalOffset": 1,
+                  "physicalAddress": 2105405,
+                  "storedPhysicalByte": 79
+                },
+                {
+                  "logicalOffset": 2007,
+                  "physicalAddress": 2109417,
+                  "storedPhysicalByte": 0
+                },
+                {
+                  "logicalOffset": 4015,
+                  "physicalAddress": 2113433,
+                  "storedPhysicalByte": 0
+                }
+              ]
+            }
+          },
+          {
+            "id": "save-flags-2-slot1-difficulty-2",
+            "preconditionSaveFlags": 2,
+            "initialMenu": {
+              "observedInitialSelector": 1,
+              "observedPage": 1,
+              "observedAvailability": 2,
+              "injectedReturn": 1
+            },
+            "difficultyMenu": {
+              "observedSelector": 0,
+              "observedPage": 3,
+              "observedAvailability": 15,
+              "injectedReturn": 2
+            },
+            "seams": {
+              "initialMenuAliasBypassed": true,
+              "difficultyMenuAliasBypassed": true,
+              "nameAllyAliasBypassed": true,
+              "cheatModeConfigurationExecuted": true,
+              "displayTextBypassCalls": 5,
+              "newGameAliasExecuted": true,
+              "newGameEffectiveTargetExecuted": true
+            },
+            "handoff": {
+              "currentSaveSlot": 0,
+              "currentMap": 3,
+              "egressMap": 3,
+              "d0": 3,
+              "d1": 56,
+              "d2": 3,
+              "d3": 3,
+              "d4": 1
+            },
+            "difficultyFlags": {
+              "flag78Set": false,
+              "flag79Set": true
+            },
+            "savedSlot": {
+              "selector": 0,
+              "saveFlagsByte": 3,
+              "storedChecksumByte": 90,
+              "computedChecksumByte": 90,
+              "storedPayloadSamples": [
+                {
+                  "logicalOffset": 0,
+                  "physicalAddress": 2097329,
+                  "storedPhysicalByte": 66
+                },
+                {
+                  "logicalOffset": 1,
+                  "physicalAddress": 2097331,
+                  "storedPhysicalByte": 79
+                },
+                {
+                  "logicalOffset": 2007,
+                  "physicalAddress": 2101343,
+                  "storedPhysicalByte": 0
+                },
+                {
+                  "logicalOffset": 4015,
+                  "physicalAddress": 2105359,
+                  "storedPhysicalByte": 0
+                }
+              ]
+            }
+          },
+          {
+            "id": "save-flags-0-slot1-difficulty-3",
+            "preconditionSaveFlags": 0,
+            "initialMenu": {
+              "observedInitialSelector": 1,
+              "observedPage": 1,
+              "observedAvailability": 6,
+              "injectedReturn": 1
+            },
+            "difficultyMenu": {
+              "observedSelector": 0,
+              "observedPage": 3,
+              "observedAvailability": 15,
+              "injectedReturn": 3
+            },
+            "seams": {
+              "initialMenuAliasBypassed": true,
+              "difficultyMenuAliasBypassed": true,
+              "nameAllyAliasBypassed": true,
+              "cheatModeConfigurationExecuted": true,
+              "displayTextBypassCalls": 5,
+              "newGameAliasExecuted": true,
+              "newGameEffectiveTargetExecuted": true
+            },
+            "handoff": {
+              "currentSaveSlot": 0,
+              "currentMap": 3,
+              "egressMap": 3,
+              "d0": 3,
+              "d1": 56,
+              "d2": 3,
+              "d3": 3,
+              "d4": 1
+            },
+            "difficultyFlags": {
+              "flag78Set": true,
+              "flag79Set": true
+            },
+            "savedSlot": {
+              "selector": 0,
+              "saveFlagsByte": 1,
+              "storedChecksumByte": 92,
+              "computedChecksumByte": 92,
+              "storedPayloadSamples": [
+                {
+                  "logicalOffset": 0,
+                  "physicalAddress": 2097329,
+                  "storedPhysicalByte": 66
+                },
+                {
+                  "logicalOffset": 1,
+                  "physicalAddress": 2097331,
+                  "storedPhysicalByte": 79
+                },
+                {
+                  "logicalOffset": 2007,
+                  "physicalAddress": 2101343,
+                  "storedPhysicalByte": 0
+                },
+                {
+                  "logicalOffset": 4015,
+                  "physicalAddress": 2105359,
+                  "storedPhysicalByte": 0
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

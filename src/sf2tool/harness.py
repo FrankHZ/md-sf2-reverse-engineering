@@ -16,6 +16,7 @@ from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.rng import verify_rng
+from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
 from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_record
@@ -212,6 +213,8 @@ def verify(
         print_record(verify_enemy_item_drop_behavior(rom_path, upstream_path))
         _heading("H3: one-launch witch Save/Load/Copy/Delete and flag-88 routing")
         print_record(verify_witch_save_actions(rom_path, upstream_path))
+        _heading("H3: one-launch witch New slot, difficulty, save, and MainLoop handoff")
+        print_record(verify_witch_new_game_lifecycle(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
     _heading("Repository verification: PASS")

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 from copy import deepcopy
+from hashlib import sha256
+from json import dumps
 
 import pytest
 
@@ -79,6 +81,11 @@ def _fixture() -> dict[str, object]:
     return load_json(FIXTURE)
 
 
+def _canonical_digest(value: object) -> str:
+    encoded = dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    return sha256(encoded.encode("utf-8")).hexdigest()
+
+
 def _lua_function(source: str, name: str) -> str:
     match = re.search(
         rf"^local function {re.escape(name)}\([^)]*\)\n(?P<body>.*?)^end$",
@@ -103,7 +110,6 @@ def test_witch_save_fixture_schema_locks_complete_ordered_semantic_object() -> N
     assert fixture["runtimeQuestions"] == properties["runtimeQuestions"]["allOf"][1]["const"]
     assert fixture["runtimeQuestions"] == [
         "witch-save-actions/cross-process-persistence-and-recovery",
-        "witch-save-menu/new-game-outer-lifecycle",
         "witch-save-menu-suspend/presentation-and-input-timing",
     ]
     assert [case["id"] for case in fixture["cases"]["directService"]] == [
@@ -123,6 +129,28 @@ def test_witch_save_fixture_schema_locks_complete_ordered_semantic_object() -> N
     ]
     for definition in schema["definitions"].values():
         assert definition["additionalProperties"] is False
+
+
+def test_witch_save_handoff_removes_only_the_promoted_question() -> None:
+    fixture_siblings = deepcopy(_fixture())
+    removed_questions = fixture_siblings.pop("runtimeQuestions")
+    assert removed_questions == [
+        "witch-save-actions/cross-process-persistence-and-recovery",
+        "witch-save-menu-suspend/presentation-and-input-timing",
+    ]
+    assert _canonical_digest(fixture_siblings) == (
+        "6a26e60c0aa7b3bc4460485473a963f39a90296e085bbd315bd11170a3d50a56"
+    )
+
+    schema_siblings = deepcopy(load_json(SCHEMA))
+    del schema_siblings["properties"]["runtimeQuestions"]
+    schema_siblings["required"].remove("runtimeQuestions")
+    assert _canonical_digest(schema_siblings) == (
+        "5988cc076ff5a81cfb09e5130cfaa30289bcc3a869d963313348c0863865a3c6"
+    )
+    assert _canonical_digest(schema_siblings["definitions"]) == (
+        "417db7d440dd77ec479b49ffba6d79827d74ff798e3e03e735c25672ce908903"
+    )
 
 
 @pytest.mark.parametrize(

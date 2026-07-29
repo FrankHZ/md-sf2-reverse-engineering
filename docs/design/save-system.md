@@ -4,8 +4,8 @@
   direction, additive checksum/check order, occupied-flag operations, save/load/copy/delete helper
   sequence, witch-menu selector/action routing, and the bounded in-process H3 matrix described below.
 - **Unknown original behavior:** cross-process physical persistence, power-loss/partial-write
-  outcomes, corruption behavior outside the checked byte checksum, complete New-game outer lifecycle,
-  and caller-visible pixels/audio/input/suspend timing.
+  outcomes, corruption behavior outside the checked byte checksum, player-driven New-game naming/menu
+  presentation or input cadence, and caller-visible pixels/audio/suspend timing.
 - Remake status: implementation-neutral contract; in-process service effects are observed, while
   durable-medium behavior remains unobserved.
 - Evidence date: 2026-07-29
@@ -19,7 +19,10 @@
   `docs/research/special-screens.md`. The in-process runtime contract is
   `sf2-witch-save-actions-runtime-v1` in
   `tests/fixtures/h3/witch-save-actions-v1.json`; `src/sf2tool/h3/witch_save_actions.py`; and
-  `docs/research/special-screens.md`.
+  `docs/research/special-screens.md`. The bounded New-game runtime contract is
+  `sf2-witch-new-game-lifecycle-runtime-v1` in
+  `tests/fixtures/h3/witch-new-game-lifecycle-v1.json`;
+  `src/sf2tool/h3/witch_new_game_lifecycle.py`; and `docs/research/special-screens.md`.
 
 ## Confirmed Static Contract
 
@@ -59,9 +62,26 @@ and jump-interface effective target `BattleLoop` at 146052. The source label `fl
 its player-facing lifecycle meaning is not inferred.
 
 **Unknown:** the one-process service fixture does not establish cross-process SRAM survival, physical
-power-cycle behavior, partial/interrupted-write recovery, full New-game UI outer results, pixels,
-audio, input cadence, or suspend presentation. Those remain the grouped H3 questions named in
+power-cycle behavior, partial/interrupted-write recovery, player-driven New-game naming/menu results,
+pixels, audio, input cadence, or suspend presentation. Those remain the grouped H3 questions named in
 `docs/research/special-screens.md`.
+
+## Confirmed New-game Runtime Matrix
+
+**Confirmed:** one BizHawk 2.11.1 / Genesis Plus GX launch saves a core-state checkpoint after the
+original `CheckSram` return and replays four independent New-action cases. Flag preconditions 0, 1,
+2, and 0 enter the page-1 menu with observed selector/page/availability `1/1/6`, `2/1/4`, `1/1/2`,
+and `1/1/6`; injected page-1 results select slot 1, slot 2, slot 1, and slot 1. Page-3 injected
+difficulty results 0/1/2/3 produce flags 78/79 clear/clear, set/clear, clear/set, and set/set. Every
+case calls the original `SaveGame` and transfers to `MainLoop` with `CURRENT_MAP`/`EGRESS_MAP` 3 and
+D0–D4 `3/56/3/3/1`.
+
+**Confirmed harness boundary:** this observation uses session-only `MD CART` patches after exact
+readback proves the same writes through `M68K BUS` did not alter ROM instruction bytes. It injects
+both menu returns, bypasses NameAlly and DisplayText, clears player-1 input for the original
+configuration helper's Start-clear branch, and pulses C for text waits. It therefore does not establish
+what a player sees or chooses while naming or navigating menus. A fixture-owned 4,800-frame deadline
+logs a timeout milestone and exits BizHawk with failure before the 120-second Python observer timeout.
 
 ## Remake Boundary
 

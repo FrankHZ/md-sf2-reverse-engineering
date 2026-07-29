@@ -122,7 +122,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   map event、交互和物品 handoff。
 - [`special-screens.md`](./research/special-screens.md)：logo/title、witch save（四行 New/Load/Delete/Copy
   dispatcher、page selector、118 条 source-use provenance、SRAM action routing 与单启动 9 service/2 Load-branch
-  runtime matrix）、suspend/reset、ending 等 19 文件特殊画面边界，以及
+  及 4-case New/core-replay runtime matrix）、suspend/reset、ending 等 19 文件特殊画面边界，以及
   全部 9 条压缩 tile stream、DMA transfer/tail、choice palette 与 4×3 bubble-animation、7 套 palette/5 个
   layout 合同。
 - [`remaining-core.md`](./research/remaining-core.md)：ROM header/vector、window engine、battle test、

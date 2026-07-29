@@ -600,7 +600,6 @@
   },
   "runtimeQuestions": [
     "witch-save-actions/cross-process-persistence-and-recovery",
-    "witch-save-menu/new-game-outer-lifecycle",
     "witch-save-menu-suspend/presentation-and-input-timing"
   ]
 }

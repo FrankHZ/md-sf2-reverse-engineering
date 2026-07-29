@@ -683,13 +683,12 @@
           "items": {
             "type": "string"
           },
-          "minItems": 3,
-          "maxItems": 3
+          "minItems": 2,
+          "maxItems": 2
         },
         {
           "const": [
             "witch-save-actions/cross-process-persistence-and-recovery",
-            "witch-save-menu/new-game-outer-lifecycle",
             "witch-save-menu-suspend/presentation-and-input-timing"
           ]
         }

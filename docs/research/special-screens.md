@@ -6,7 +6,7 @@
   the complete nine-resource Stack-compressed tile corpus, and the complete witch choice-palette/
   bubble-animation data path, plus all twelve uncompressed palette/layout presentation resources;
   one BizHawk launch additionally confirms the bounded in-process witch Save/Load/Copy/Delete and
-  flag-88 Load target matrix below
+  flag-88 Load target matrix, plus a four-case New action slot/difficulty/save/MainLoop matrix below
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
 - Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
   transfer tails
@@ -160,13 +160,59 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
 sections and rejects a changed opcode, operand, branch polarity, call order, or jump-interface alias
 before comparison with the golden fixture.
 
+### New-game lifecycle (Confirmed, one in-process H3 launch)
+
+**Confirmed:** `sf2-witch-new-game-lifecycle-runtime-v1` runs four cases from one core-state
+checkpoint at the original `CheckSram` return. The static source guard binds `witchMenuAction_New`,
+the `j_ExecuteWitchMainMenu`/`ExecuteWitchMainMenu`, `j_NewGame`/`NewGame`, and
+`j_NameAlly` jump-interface identities, the `CheatModeConfiguration` Start-clear branch, `SaveGame`,
+and the `MainLoop` branch. It derives the flag mask/XOR mask (3), selector scale (2), page 1/page 3,
+difficulty availability (15), source flags 78/79, and the map/X/Y/facing/`d4` handoff values from
+their ordered parsed operands rather than a second literal table.
+
+**Confirmed:** the observed page-1 entry registers distinguish source-selected slot from the injected
+menu result. `SAVE_FLAGS` 0 reaches selector/page/availability `1/1/6`; flags 1 reaches `2/1/4` and
+the injected result 2 saves selector 1 (slot 2); flags 2 reaches `1/1/2` and injected result 1 saves
+selector 0 (slot 1). The page-3 entry is `0/3/15` in all four records. Difficulty results 0, 1, 2,
+and 3 produce source flags 78/79 respectively clear/clear, set/clear, clear/set, and set/set. Each
+case reaches the original `SaveGame` and `MainLoop` handoff with map/egress 3 and D0–D4
+`3/56/3/3/1`. The selected slot stores and recomputes checksum bytes 89, 91, 90, and 92 respectively;
+the four sampled bytes are `66,79,0,0`. Stored byte count (4,016), physical address interval (8,032),
+and sampled physical addresses remain separate contract fields.
+
+**Confirmed harness boundary:** Genesis Plus GX ignores the observer's attempted `M68K BUS` ROM writes.
+The fixture therefore records eight per-word readbacks and uses session-only `MD CART` patches for
+both menu calls, NameAlly, DisplayText, and MainLoop redirection; no ROM file is modified. The
+observer saves/replays core state outside BizHawk input/memory callbacks, bypasses both menu aliases,
+NameAlly, and DisplayText, clears `PLAYER_1_INPUT` before the original configuration helper, and
+pulses C only to release text-macro waits after original New-action entry. It records that original
+`j_NewGame` and `NewGame`, the configuration entry, difficulty code, `SaveGame`, and the MainLoop
+handoff execute. The fixture-owned 4,800-frame deadline logs a timeout milestone and exits BizHawk
+with failure before the Python-level 120-second observer timeout.
+
+**Unknown:** this harness-controlled observation does not establish player-driven name editing, menu
+selection/presentation, controller debounce or input cadence, pixels, audio, text timing,
+cross-process SRAM persistence, or power-loss behavior.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; sources
+`code/specialscreens/witch/witchstart.asm`, `code/common/stats/newgame.asm`,
+`code/gameflow/special/configurationmode.asm`, and the three jump-interface source files named in
+the fixture; H1 listing `build/sf2build-h1.lst`; command `uv run sf2 h3 witch-new-game-lifecycle`;
+fixture `tests/fixtures/h3/witch-new-game-lifecycle-v1.json`; schemas
+`schemas/h3-witch-new-game-lifecycle-observation.schema.json` and
+`schemas/h3-witch-new-game-lifecycle-fixture.schema.json`.
+
 ### Grouped H3 runtime-question queue
 
 - `witch-save-actions/cross-process-persistence-and-recovery`: **Unknown** whether these in-process
   SRAM writes survive a new emulator process or physical medium cycle, and how interruption, partial
   writes, or power loss affect recovery.
-- `witch-save-menu/new-game-outer-lifecycle`: **Unknown** complete New-game UI and outer-loop results;
-  the service thunk deliberately bypasses that player-driven route.
+- `witch-save-menu/player-driven-name-entry-and-editing`: **Unknown** player-driven name-entry/editing
+  behavior; the New lifecycle matrix returns immediately from the NameAlly alias.
+- `witch-save-menu/player-driven-menu-presentation-and-input-cadence`: **Unknown** player-driven menu
+  presentation, pixels, audio, controller cadence, and debounce; the matrix injects menu results and
+  only pulses C to release text waits.
 - `witch-save-menu-suspend/presentation-and-input-timing`: **Unknown** prompt/file rendering,
   pixels, audio, input cadence, blink/bubble timing, and suspend presentation/reset timing.
 
