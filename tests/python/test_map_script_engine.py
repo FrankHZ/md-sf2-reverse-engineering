@@ -18,6 +18,12 @@ from sf2tool.h2.map_script_engine import (
     _dialogue_handler_facts,
     _direct_call_sites,
     _emission_rows,
+    _entity_action_bridge_branch_target_record,
+    _entity_action_bridge_cursor_use_site,
+    _entity_action_bridge_inline_payload,
+    _entity_action_bridge_macro_facts,
+    _entity_action_bridge_payload_invocation,
+    _entity_action_bridge_section_guard,
     _entity_dialogue_consumer_facts,
     _entity_placement_branch_target_record,
     _entity_placement_cursor_read_use_site,
@@ -215,6 +221,29 @@ cameraSpeed: macro
     ):
         with pytest.raises(ValueError, match="cursor-read"):
             _map_camera_control_cursor_read_use_site(near_miss)
+
+
+def test_map_entity_action_bridge_payload_invocation_rejects_non_instructions() -> None:
+    payload_macros = {"ac_setSpeed", "ac_end", "moveDown", "endActions"}
+    assert _entity_action_bridge_payload_invocation(
+        " ac_setSpeed 48,48 ; source payload", payload_macros
+    ) == ("ac_setSpeed", ["48", "48"])
+    assert _entity_action_bridge_payload_invocation("endActions", payload_macros) == (
+        "endActions",
+        [],
+    )
+    for near_miss in (
+        "label_ac_setSpeed:",
+        "; ac_setSpeed 48,48",
+        "dc.w ac_setSpeed",
+        "not_ac_setSpeed 48,48",
+        "ac_setSpeed 48,,48",
+    ):
+        if near_miss == "ac_setSpeed 48,,48":
+            with pytest.raises(ValueError, match="operand is empty"):
+                _entity_action_bridge_payload_invocation(near_miss, payload_macros)
+        else:
+            assert _entity_action_bridge_payload_invocation(near_miss, payload_macros) is None
 
 
 def test_map_entity_placement_cursor_read_parser_preserves_advance_and_sizes() -> None:
@@ -5158,4 +5187,433 @@ def test_map_entity_placement_schema_exact_blocks_keep_large_corpora_compact() -
 
         for name, definition in schema["definitions"].items():
             if name.startswith("entityPlacement"):
+                assert_closed_objects(definition)
+
+
+def test_map_entity_action_bridge_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityActionBridgeCommandFacts"]
+    assert fixture["expected"]["entityActionBridgeCommandFacts"] == {
+        key: actual[key] for key in fixture["expected"]["entityActionBridgeCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["primaryEncodedCommandByteCount"],
+            row["primaryOperandByteCount"],
+            row["sourceControlField"]["value"],
+            row["sourceCommandCount"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("setActscriptWait", 21, 8, 6, 255, 1015),
+        ("setActscript", 21, 8, 6, 0, 436),
+        ("customActscriptWait", 20, 4, 2, 255, 359),
+        ("customActscript", 20, 4, 2, 0, 2),
+        ("entityActionsWait", 45, 4, 2, 255, 957),
+        ("entityActions", 45, 4, 2, 0, 487),
+    ]
+    assert len(actual["sourceSites"]) == 196
+    assert len(actual["sourceSiteOrderKeys"]) == 3256
+    assert actual["sourceSitesSha256"] == (
+        "3FCEFC418031DE5457EE1F47972A3EC2CA95645E45779BB41979D287EAF92BED"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "C22323C27AFC8BD2F6DFAFA721F26F152582A7AF0D9A23B11CDCBCE2DF5D648F"
+    )
+    assert [
+        (
+            row["handler"],
+            row["address"],
+            row["opcode"],
+            row["macros"],
+            row["sourceCommandCounts"],
+            row["statementCount"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        (
+            "csc15_setEntityActscript",
+            289144,
+            21,
+            ["setActscriptWait", "setActscript"],
+            {"setActscriptWait": 1015, "setActscript": 436},
+            10,
+        ),
+        (
+            "csc14_setEntityActscriptManual",
+            289104,
+            20,
+            ["customActscriptWait", "customActscript"],
+            {"customActscriptWait": 359, "customActscript": 2},
+            12,
+        ),
+        (
+            "csc2D_entityActionSequence",
+            288738,
+            45,
+            ["entityActionsWait", "entityActions"],
+            {"entityActionsWait": 957, "entityActions": 487},
+            18,
+        ),
+    ]
+    source_commands = [
+        command for site in actual["sourceSites"] for command in site["commands"]
+    ]
+    assert {
+        kind: sum(command["payloadKind"] == kind for command in source_commands)
+        for kind in ("none", "ac-macro-stream", "entity-action-byte-stream")
+    } == {"none": 1451, "ac-macro-stream": 361, "entity-action-byte-stream": 1444}
+    assert sum(
+        command["payload"]["commandEncodedByteCount"] for command in source_commands
+    ) == 8048
+    assert all(
+        command["payloadScanTransferByteCount"] == 2
+        and command["payloadScanIterationCount"]
+        * command["payloadScanTransferByteCount"]
+        == command["payload"]["commandEncodedByteCount"]
+        and command["payloadCommandCursorAdvanceByteCount"]
+        == command["payload"]["commandEncodedByteCount"]
+        and command["terminatorCursorAdvanceByteCount"] == 2
+        and command["scriptCursorAdvanceByteCount"]
+        == command["primaryOperandCursorAdvanceByteCount"]
+        + command["payloadCommandCursorAdvanceByteCount"]
+        + command["terminatorCursorAdvanceByteCount"]
+        for command in source_commands
+        if command["payloadKind"] == "ac-macro-stream"
+    )
+    assert all(
+        command["payloadScanTransferByteCount"] == 0
+        and command["payloadScanIterationCount"] == 0
+        and command["payloadCommandCursorAdvanceByteCount"]
+        == command["payload"]["commandEncodedByteCount"]
+        and command["terminatorCursorAdvanceByteCount"] == 2
+        for command in source_commands
+        if command["payloadKind"] == "entity-action-byte-stream"
+    )
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "GetEntityAddressFromCharacter": 3,
+        "rjt_EntityMoveCommands": 1,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["instructionTargetTotals"]
+    assert actual["handlers"][2]["sectionGuard"]["tailTransferTarget"] == {
+        "targetLabel": "loc_467FC",
+        "targetInstruction": "move.b (a6)+,d1",
+    }
+    for field in ("internalInstructionTargetTotals", "internalEffectiveTargetTotals"):
+        assert actual["callerBreakdown"][field] == {
+            "GetEntityAddressFromCharacter": 0,
+            "rjt_EntityMoveCommands": 0,
+        }
+    assert actual["sourceIdentityJoins"]["entityActionStaticContract"] == {
+        "fixturePath": "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+        "fixtureId": "sf2-entity-action-scripts-static-v1",
+        "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+        "inlineTerminatorMacro": "ac_end",
+        "inlineTerminatorWord": 32896,
+    }
+    assert actual["runtimeQuestions"] == [
+        "map-script-entity-action-bridge/runtime-effects-reachability-matrix"
+    ]
+
+
+def test_map_entity_action_bridge_source_guards_reject_local_drift(
+    map_script_engine_output: dict, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    handlers = {
+        row["name"]: row
+        for row in map_script_engine_output["handlers"]
+        if row["name"]
+        in {
+            "csc14_setEntityActscriptManual",
+            "csc15_setEntityActscript",
+            "csc2D_entityActionSequence",
+        }
+    }
+    csc14 = map_script_engine._stable_handler_statements(
+        disasm, handlers["csc14_setEntityActscriptManual"]
+    )
+    csc15 = map_script_engine._stable_handler_statements(
+        disasm, handlers["csc15_setEntityActscript"]
+    )
+    csc2d = map_script_engine._stable_handler_statements(
+        disasm, handlers["csc2D_entityActionSequence"]
+    )
+    terminal = _statements(map_script_engine._entity_action_bridge_csc2d_terminal_source(disasm))
+    assert _entity_action_bridge_section_guard(
+        "csc14_setEntityActscriptManual", csc14, equates
+    )["cursorAdvanceProfile"] == {
+        "primaryOperandCursorAdvanceByteCount": 2,
+        "payloadCommandReadByteCount": 0,
+        "payloadScanTransferByteCount": 2,
+        "terminatorCursorAdvanceByteCount": 2,
+    }
+    assert _entity_action_bridge_section_guard(
+        "csc15_setEntityActscript", csc15, equates
+    )["cursorAdvanceProfile"]["primaryOperandCursorAdvanceByteCount"] == 6
+    assert _entity_action_bridge_section_guard(
+        "csc2D_entityActionSequence", csc2d, equates, terminal
+    )["cursorAdvanceProfile"]["payloadCommandReadByteCount"] == 2
+    mutations = (
+        ("csc14_setEntityActscriptManual", csc14, None, "cmpi.w #$8080", "cmpi.w #$8081"),
+        ("csc14_setEntityActscriptManual", csc14, None, "cmpi.w #$8080", "cmpi.b #$80"),
+        ("csc14_setEntityActscriptManual", csc14, None, "beq.w loc_46970", "bne.w loc_46970"),
+        ("csc15_setEntityActscript", csc15, None, "move.l (a6)+", "move.w (a6)+"),
+        (
+            "csc15_setEntityActscript",
+            csc15,
+            None,
+            "bsr.w GetEntityAddressFromCharacter",
+            "bsr.w UpdateEntitySprite_0",
+        ),
+        ("csc2D_entityActionSequence", csc2d, terminal, "bmi.w loc_46928", "bpl.w loc_46928"),
+        (
+            "csc2D_entityActionSequence",
+            csc2d,
+            terminal,
+            "rjt_EntityMoveCommands",
+            "rjt_EntityMoveCommandsDrift",
+        ),
+        ("csc2D_entityActionSequence", csc2d, terminal, "bra.s loc_467FC", "bne.s loc_467FC"),
+    )
+    for handler_name, statements, terminal_statements, original, replacement in mutations:
+        with pytest.raises(ValueError, match="statement is missing"):
+            _entity_action_bridge_section_guard(
+                handler_name,
+                [statement.replace(original, replacement) for statement in statements],
+                equates,
+                terminal_statements,
+            )
+    reordered = csc15.copy()
+    reordered[0], reordered[1] = reordered[1], reordered[0]
+    with pytest.raises(ValueError, match="statement is missing"):
+        _entity_action_bridge_section_guard(
+            "csc15_setEntityActscript", reordered, equates
+        )
+    with pytest.raises(ValueError, match="terminal chunk statement is missing"):
+        _entity_action_bridge_section_guard(
+            "csc2D_entityActionSequence",
+            csc2d,
+            equates,
+            [statement.replace("addq.l #1,a6", "addq.l #2,a6") for statement in terminal],
+        )
+    source = map_script_engine.read_upstream_text(
+        disasm / "code/common/scripting/map/mapscriptengine_1.asm"
+    )
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _entity_action_bridge_branch_target_record(
+            source.replace("loc_46928:", "loc_46929:"),
+            "bmi.w loc_46928",
+            "move.w #$34,(a0)+",
+        )
+    assert _entity_action_bridge_branch_target_record(
+        source,
+        "bra.s loc_467FC",
+        "move.b (a6)+,d1",
+    ) == {"targetLabel": "loc_467FC", "targetInstruction": "move.b (a6)+,d1"}
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _entity_action_bridge_branch_target_record(
+            source.replace("loc_467FC:", "loc_467FD:"),
+            "bra.s loc_467FC",
+            "move.b (a6)+,d1",
+        )
+    with pytest.raises(ValueError, match="branch target instruction drift"):
+        _entity_action_bridge_branch_target_record(
+            source.replace("move.b  (a6)+,d1", "move.b  (a6)+,d3", 1),
+            "bra.s loc_467FC",
+            "move.b (a6)+,d1",
+        )
+    catalog, command_names, _ = map_script_engine._entity_action_bridge_payload_macro_catalog(
+        disasm
+    )
+    payload_lines = [(1, "customActscriptWait 128"), (2, "ac_setSpeed 48,48"), (3, "ac_end")]
+    assert _entity_action_bridge_inline_payload(
+        payload_lines,
+        opener_line=1,
+        payload_macro_names=command_names,
+        terminator="ac_end",
+        catalog=catalog,
+    )["terminatorWord"] == 0x8080
+    with pytest.raises(ValueError, match="inline payload instruction is missing"):
+        _entity_action_bridge_inline_payload(
+            payload_lines[:-1] + [(3, "ac_stop")],
+            opener_line=1,
+            payload_macro_names=command_names,
+            terminator="ac_end",
+            catalog=catalog,
+        )
+    original_reader = map_script_engine.read_upstream_text
+
+    def altered_reader(path: Path) -> str:
+        source_text = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            return source_text.replace("csc15 \\1,$FF,\\2", "csc15 \\1,1,\\2", 1)
+        return source_text
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", altered_reader)
+    with pytest.raises(ValueError, match="primary emission ABI drift"):
+        _entity_action_bridge_macro_facts(disasm, map_script_engine_output["macroContracts"])
+
+    def opcode_altered_reader(path: Path) -> str:
+        source_text = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            return source_text.replace("dc.w $15", "dc.w $16", 1)
+        return source_text
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", opcode_altered_reader)
+    with pytest.raises(ValueError, match="primary emission ABI drift"):
+        _entity_action_bridge_macro_facts(disasm, map_script_engine_output["macroContracts"])
+
+    def misaligned_payload_reader(path: Path) -> str:
+        source_text = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            return source_text.replace("dc.b \\1 ; X speed", "dc.w \\1 ; X speed", 1)
+        return source_text
+
+    bridge_macros = {
+        row["name"]: row
+        for row in map_script_engine_output["entityActionBridgeCommandFacts"]["macros"]
+    }
+    cursor_profiles = {
+        row["handler"]: row["sectionGuard"]["cursorAdvanceProfile"]
+        for row in map_script_engine_output["entityActionBridgeCommandFacts"]["handlers"]
+    }
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", misaligned_payload_reader)
+    with pytest.raises(ValueError, match="source payload drift"):
+        map_script_engine._entity_action_bridge_program_facts(
+            disasm,
+            map_script_engine_output["programCorpus"],
+            bridge_macros,
+            cursor_profiles,
+            equates,
+        )
+
+
+def test_map_entity_action_bridge_cursor_parser_handles_sizes_and_near_misses() -> None:
+    assert _entity_action_bridge_cursor_use_site("move.b (a6)+,d0")[
+        "cursorAdvanceByteCount"
+    ] == 1
+    assert _entity_action_bridge_cursor_use_site("move.w (a6)+,d2")[
+        "transferredByteCount"
+    ] == 2
+    assert _entity_action_bridge_cursor_use_site(
+        "move.l (a6)+,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)"
+    )["cursorAdvanceByteCount"] == 4
+    assert _entity_action_bridge_cursor_use_site("cmpi.w #$8080,(a6)+")[
+        "cursorAdvanceByteCount"
+    ] == 2
+    assert _entity_action_bridge_cursor_use_site("addq.l #1,a6")["cursorAdvanceByteCount"] == 1
+    for near_miss in (
+        "label: move.b (a6)+,d0",
+        "; move.b (a6)+,d0",
+        "move.b (a6),d0",
+        "move.q (a6)+,d0",
+    ):
+        with pytest.raises(ValueError, match="cursor use is not recognized"):
+            _entity_action_bridge_cursor_use_site(near_miss)
+
+
+def test_map_entity_action_bridge_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="entity-action bridge baseline")
+        target_path = (
+            ("entityActionBridgeCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "entityActionBridgeCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["macros"][0]["sourceSelectorField"]["streamOffset"]
+        with pytest.raises(ValueError, match="streamOffset"):
+            validate_json(missing, schema_path, owner="entity-action bridge missing nested field")
+
+        renamed = deepcopy(source)
+        field = target_for(renamed)["handlers"][0]["directCalls"][0]
+        field["target"] = field.pop("instructionTarget")
+        with pytest.raises(ValueError, match="instructionTarget"):
+            validate_json(renamed, schema_path, owner="entity-action bridge renamed nested field")
+
+        extra = deepcopy(source)
+        target_for(extra)["handlers"][2]["sectionGuard"]["cursorAdvanceProfile"]["extra"] = 1
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="entity-action bridge extra nested field")
+
+        reordered = deepcopy(source)
+        order = target_for(reordered)["sourceSiteOrderKeys"]
+        order[0], order[1] = order[1], order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema_path, owner="entity-action bridge exact source order")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["macros"][0]["sourceControlField"]["value"] = 1
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema_path, owner="entity-action bridge exact boundary")
+
+
+def test_map_entity_action_bridge_schema_exact_blocks_keep_large_corpora_compact() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("entityActionBridgeCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "entityActionBridgeCommandFacts"
+            ]
+        exact = contract["allOf"][1]
+        exact_value = exact.get("const", exact.get("properties", {}))
+        assert "sourceSites" not in exact_value
+        assert "programTotals" not in exact_value
+        definition_name = (
+            "entityActionBridgeCommandFacts"
+            if "entityActionBridgeCommandFacts" in schema["definitions"]
+            else "entityActionBridgeFixtureCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if definition_name == "entityActionBridgeCommandFacts":
+            assert {"sourceSites", "programTotals"} <= set(facts["required"])
+            assert schema["definitions"]["entityActionBridgeSourceSite"][
+                "additionalProperties"
+            ] is False
+            assert schema["definitions"]["entityActionBridgeProgramTotal"][
+                "additionalProperties"
+            ] is False
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        for name, definition in schema["definitions"].items():
+            if name.startswith("entityActionBridge"):
                 assert_closed_objects(definition)

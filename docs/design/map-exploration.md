@@ -127,6 +127,24 @@ caller maps. These source records MUST NOT be normalized into a placement, facin
 visibility, animation, coordinate-unit, collision, persistence, timing, or rendering model. A remake
 MAY define its own entity-state interface independently; all original runtime consequences remain in
 `map-script-entity-placement/runtime-effects-reachability-matrix`.
+Map-script imports MUST separately retain the six source-named bridge forms `setActscriptWait`,
+`setActscript`, `customActscriptWait`, `customActscript`, `entityActionsWait`, and `entityActions` in
+`sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityActionBridgeCommandFacts`. Each record MUST preserve its source opcode, encoded and
+operand byte widths, first source selector field, exact `$FF` or zero source control field, program/
+command ordering, and compact full-corpus order/hash boundary. Inline payloads MUST retain their
+source-form class, ordered command bytes, source terminator spelling, terminator byte count, and each
+separately named primary/payload/terminator cursor advance; an importer MUST NOT collapse these physical
+quantities or replace them with a semantic action sequence. `customActscript*` records MUST retain the
+separate csc14 two-byte scan transfer and encoded-byte-derived, word-aligned scan iteration count;
+those source facts are distinct from csc2D's two-byte interpreted-command read. The exact csc14/csc15/
+csc2D handler guards, including the csc2D terminal chunk, resolved tail-transfer target, branch/call
+order, source constant use site, and zero-inclusive
+direct/effective caller identities, remain part of the import boundary. The joins to the map-event and
+entity-action fixtures are provenance records only. A remake MAY define its own scripting/action IR,
+but this contract establishes neither the control-byte meaning, payload interpretation, entity effect,
+reachability, timing, persistence, collision, nor presentation; those remain in
+`map-script-entity-action-bridge/runtime-effects-reachability-matrix`.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

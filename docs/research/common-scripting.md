@@ -297,6 +297,67 @@ ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. 
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.entityPlacementCommandFacts`.
 
+## Confirmed Map-Script to Entity-Action Bridge Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.entityActionBridgeCommandFacts` retains six source-named forms in macro source order:
+`setActscriptWait` and `setActscript` emit `$15` with 8 encoded bytes (1,015 and 436 sites);
+`customActscriptWait` and `customActscript` emit `$14` with 4 encoded bytes (359 and 2); and
+`entityActionsWait` and `entityActions` emit `$2D` with 4 encoded bytes (957 and 487). In each
+pair, the source control byte is exactly `$FF` for the `Wait` spelling and `0` for the other spelling;
+the selector byte remains a separately named first operand. These physical layouts and source names do
+not establish a wait result, an entity lifecycle, or any other runtime effect.
+
+**Confirmed:** the complete ordered corpus has 3,256 command occurrences in 196 non-empty source-site
+rows and retains all 304 declared programs as zero-inclusive total rows. The compact exact-order
+constraints hash those rows as
+`7C4BC190E467C5DBEE90092D2443A333AA69F52296352C550BF8A263B4D542F8` and the total rows as
+`C22323C27AFC8BD2F6DFAFA721F26F152582A7AF0D9A23B11CDCBCE2DF5D648F`. The raw corpus separates 1,451
+no-inline-payload sites, 361 `ac_*`-macro stream sites, and 1,444 entity-action byte-stream sites;
+the latter two retain their source terminator spelling and physical cursor advances instead of treating
+a terminator word, a payload byte count, and an A6 cursor advance as one quantity. For every
+`customActscript*` source site, the guarded `csc14` word compare supplies a two-byte scan transfer;
+the extractor derives its exact scan iteration count from the encoded payload bytes, requires word
+alignment, records the same payload-byte cursor advance, and records the separate two-byte terminator
+advance. This is distinct from csc2D's two-byte interpreted-command read.
+
+**Confirmed:** the bounded named sections are H1/ROM `csc14_setEntityActscriptManual` `$46950` (12
+statements), `csc15_setEntityActscript` `$46978` (10), and `csc2D_entityActionSequence` `$467E2`
+(18 plus its guarded terminal chunk). The guards retain instruction order, A6 read/capture/skip widths,
+branch polarities and resolved target-first-instruction pairs, and direct-call order. `csc14` checks
+the exact `$8080` word before the two-byte cursor advance; `csc15` takes a four-byte primary operand
+read; and `csc2D` retains the parsed `BYTE_LOWER_NIBBLE_MASK` value 15, its indexed-PC
+`rjt_EntityMoveCommands` call, terminal `$34`/`eas_Idle` records, and tail transfer. These are static
+source records, not a decoded instruction or behavior claim. The csc2D tail transfer is separately
+resolved as `bra.s loc_467FC` to that label's first `move.b (a6)+,d1` instruction.
+
+**Confirmed:** comment-stripping instruction parsing records three direct
+`GetEntityAddressFromCharacter` sites and one indexed-PC `rjt_EntityMoveCommands` site. The complete
+declared direct/effective-target maps are zero-inclusive: their internal totals are zero, while the
+external totals are respectively 3 and 1; no current bridge call is a jump-interface alias. The
+source-identity joins preserve the independent `sf2-entity-action-scripts-static-v1` `ac_end` `$8080`
+terminator fact and four `sf2-map-events-static-v1` map-44 opener/terminator context pairs. They do not
+claim that the map-event or entity-action code runs in a particular runtime context.
+
+### Runtime questions — map-script entity-action bridge
+
+**Unknown:** `map-script-entity-action-bridge/runtime-effects-reachability-matrix` is the sole grouped
+H3 queue. One shared launch must determine normal-story reachability; the meaning of the source control
+byte; payload interpretation and termination; resulting entity/action state; timing; persistence;
+map/collision interaction; and visible presentation. This static contract does not promote any of those
+outcomes from macro, state-field, handler, or callee names.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `csc14`, `csc15`,
+`csc2D`, the six aliases, and `ac_end`/`endActions`; `code/common/scripting/map/mapscriptengine_1.asm`
+named sections above and `rjt_EntityMoveCommands`; the joined fixture source locations; H1 listing
+addresses; and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityActionBridgeCommandFacts`.
+
 ## Confirmed Map-Script Roster/Death Command Family
 
 **Confirmed:** `sf2-map-script-engine-static-v1` separately retains the source-named primary forms

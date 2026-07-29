@@ -253,6 +253,32 @@ ENTITY_PLACEMENT_RUNTIME_QUESTIONS = [
     "map-script-entity-placement/runtime-effects-reachability-matrix"
 ]
 
+# These source macro names bridge map-script command streams to adjacent
+# source-defined payload forms.  The names and byte layouts are static facts;
+# no runtime effect is assigned here.
+ENTITY_ACTION_BRIDGE_MACRO_NAMES = (
+    "setActscriptWait",
+    "setActscript",
+    "customActscriptWait",
+    "customActscript",
+    "entityActionsWait",
+    "entityActions",
+)
+ENTITY_ACTION_BRIDGE_HANDLER_BY_MACRO = {
+    "setActscriptWait": "csc15_setEntityActscript",
+    "setActscript": "csc15_setEntityActscript",
+    "customActscriptWait": "csc14_setEntityActscriptManual",
+    "customActscript": "csc14_setEntityActscriptManual",
+    "entityActionsWait": "csc2D_entityActionSequence",
+    "entityActions": "csc2D_entityActionSequence",
+}
+ENTITY_ACTION_BRIDGE_HANDLER_NAMES = tuple(
+    dict.fromkeys(ENTITY_ACTION_BRIDGE_HANDLER_BY_MACRO.values())
+)
+ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS = [
+    "map-script-entity-action-bridge/runtime-effects-reachability-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -643,6 +669,23 @@ def _invocation(
         else []
     )
     return match.group(1), arguments
+
+
+def _entity_action_bridge_payload_invocation(
+    statement: str, payload_macro_names: set[str]
+) -> tuple[str, list[str]] | None:
+    """Parse one inline payload macro while rejecting labels, comments, and near misses."""
+    code = statement.split(";", 1)[0].strip()
+    if not code or re.match(r"^[A-Za-z_][A-Za-z0-9_]*:\s*$", code):
+        return None
+    match = re.fullmatch(r"(?P<macro>[A-Za-z_][A-Za-z0-9_]*)(?:\s+(?P<args>.*))?", code)
+    if match is None or match.group("macro") not in payload_macro_names:
+        return None
+    argument_text = (match.group("args") or "").strip()
+    arguments = [argument.strip() for argument in argument_text.split(",")] if argument_text else []
+    if any(not argument for argument in arguments):
+        raise ValueError("entity-action bridge inline payload operand is empty")
+    return match.group("macro"), arguments
 
 
 def _target_symbol(expression: str, known_symbols: set[str]) -> str:
@@ -7467,6 +7510,925 @@ def _map_interaction_trigger_command_facts(
     }
 
 
+def _entity_action_bridge_macro_facts(
+    disasm: Path, macros: dict[str, dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Parse each bridge alias and its primary command emission from source once."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    facts: dict[str, dict[str, Any]] = {}
+    for macro in ENTITY_ACTION_BRIDGE_MACRO_NAMES:
+        body = blocks.get(macro)
+        contract = macros.get(macro)
+        if body is None or contract is None or contract["aliasOf"] is None:
+            raise ValueError(f"entity-action bridge alias macro drift: {macro}")
+        invocation = _entity_action_bridge_payload_invocation(
+            next((line for line in body.splitlines() if line.strip()), ""),
+            {contract["aliasOf"]},
+        )
+        if invocation is None:
+            raise ValueError(f"entity-action bridge alias emission is missing: {macro}")
+        primary_macro, expressions = invocation
+        primary_body = blocks.get(primary_macro)
+        if primary_body is None:
+            raise ValueError(f"entity-action bridge primary macro is missing: {primary_macro}")
+        primary_rows = _emission_rows(primary_body)
+        if (
+            not primary_rows
+            or primary_rows[0]["streamOffset"] != 0
+            or primary_rows[0]["widthBytes"] != 2
+            or _literal(primary_rows[0]["expression"]) != contract["opcode"]
+            or len(expressions) != len(contract["operandLayout"])
+            or expressions != [row["expression"] for row in contract["operandLayout"]]
+        ):
+            raise ValueError(f"entity-action bridge primary emission ABI drift: {macro}")
+        selector = contract["operandLayout"][0]
+        control = contract["operandLayout"][1]
+        if (
+            selector["parameterOrdinals"] != [1]
+            or control["parameterOrdinals"]
+            or selector["widthBytes"] != 1
+            or control["widthBytes"] != 1
+        ):
+            raise ValueError(f"entity-action bridge selector/control field drift: {macro}")
+        facts[macro] = {
+            "name": macro,
+            "primaryMacro": primary_macro,
+            "handler": ENTITY_ACTION_BRIDGE_HANDLER_BY_MACRO[macro],
+            "opcode": contract["opcode"],
+            "primaryCommandByteCount": primary_rows[0]["widthBytes"],
+            "primaryEncodedCommandByteCount": contract["encodedBytes"],
+            "primaryOperandByteCount": contract["operandBytes"],
+            "primaryOperandLayout": contract["operandLayout"],
+            "parameterOrdinals": contract["parameterOrdinals"],
+            "aliasInvocationExpressions": expressions,
+            "sourceSelectorField": {
+                "streamOffset": selector["streamOffset"],
+                "widthBytes": selector["widthBytes"],
+                "sourceExpression": selector["expression"],
+            },
+            "sourceControlField": {
+                "streamOffset": control["streamOffset"],
+                "widthBytes": control["widthBytes"],
+                "sourceExpression": control["expression"],
+                "value": _literal(control["expression"]),
+            },
+        }
+    return facts
+
+
+def _entity_action_bridge_payload_macro_catalog(
+    disasm: Path,
+) -> tuple[dict[str, dict[str, Any]], set[str], set[str]]:
+    """Derive the two inline payload vocabularies and byte widths from macro source."""
+    source = read_upstream_text(disasm / MACRO_PATH)
+    blocks = _macro_blocks(source)
+    definition_rows = [
+        (match.group("name"), match.start())
+        for match in re.finditer(
+            r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*):\s+macro\b", source, re.MULTILINE
+        )
+    ]
+    definition_index = {name: index for index, (name, _) in enumerate(definition_rows)}
+    if "moveRight" not in definition_index or "endActions" not in definition_index:
+        raise ValueError("entity-action bridge action payload macro boundary is missing")
+    sequence_names = {
+        name
+        for name, _ in definition_rows[
+            definition_index["moveRight"] : definition_index["endActions"] + 1
+        ]
+    }
+    command_names = {name for name, _ in definition_rows if name.startswith("ac_")}
+    if "ac_end" not in command_names or "endActions" not in sequence_names:
+        raise ValueError("entity-action bridge payload terminator macro is missing")
+    catalog: dict[str, dict[str, Any]] = {}
+    for macro in command_names | sequence_names:
+        rows = _emission_rows(blocks[macro])
+        parameter_ordinals = sorted(
+            {
+                ordinal
+                for row in rows
+                for ordinal in row["parameterOrdinals"]
+            }
+        )
+        catalog[macro] = {
+            "encodedByteCount": sum(row["widthBytes"] for row in rows),
+            "parameterOrdinals": parameter_ordinals,
+            "emissionRows": rows,
+        }
+    for terminator in ("ac_end", "endActions"):
+        rows = catalog[terminator]["emissionRows"]
+        if (
+            len(rows) != 1
+            or rows[0]["widthBytes"] != 2
+            or _literal(rows[0]["expression"]) != 0x8080
+        ):
+            raise ValueError(f"entity-action bridge terminator emission drift: {terminator}")
+    return catalog, command_names, sequence_names
+
+
+def _entity_action_bridge_strip_label(statement: str) -> str:
+    """Remove only a leading source label before parsing the instruction that follows it."""
+    match = re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*:\s*(?P<body>.*)", statement)
+    return match.group("body") if match is not None else statement
+
+
+def _entity_action_bridge_inline_payload(
+    logical_lines: list[tuple[int, str]],
+    *,
+    opener_line: int,
+    payload_macro_names: set[str],
+    terminator: str,
+    catalog: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Parse one source-adjacent payload through its source-defined terminator."""
+    start = next(
+        (
+            index
+            for index, (line_number, _) in enumerate(logical_lines)
+            if line_number == opener_line
+        ),
+        None,
+    )
+    if start is None:
+        raise ValueError(f"entity-action bridge opener source line is missing: {opener_line}")
+    commands = []
+    for line_number, raw_statement in logical_lines[start + 1 :]:
+        statement = _entity_action_bridge_strip_label(raw_statement)
+        if not statement.strip():
+            continue
+        invocation = _entity_action_bridge_payload_invocation(
+            statement, payload_macro_names
+        )
+        if invocation is None:
+            raise ValueError(
+                f"entity-action bridge inline payload instruction is missing: {line_number}"
+            )
+        macro, arguments = invocation
+        definition = catalog[macro]
+        if len(arguments) != len(definition["parameterOrdinals"]):
+            raise ValueError(
+                f"entity-action bridge inline payload operand count drift: {line_number}:{macro}"
+            )
+        if macro == terminator:
+            if arguments:
+                raise ValueError(f"entity-action bridge terminator operand drift: {terminator}")
+            return {
+                "commands": commands,
+                "commandEncodedByteCount": sum(
+                    row["encodedByteCount"] for row in commands
+                ),
+                "terminatorMnemonic": macro,
+                "terminatorEncodedByteCount": definition["encodedByteCount"],
+                "terminatorWord": _literal(definition["emissionRows"][0]["expression"]),
+            }
+        commands.append(
+            {
+                "sourceLine": line_number,
+                "macro": macro,
+                "arguments": arguments,
+                "encodedByteCount": definition["encodedByteCount"],
+            }
+        )
+    raise ValueError(f"entity-action bridge inline payload terminator is missing: {terminator}")
+
+
+def _entity_action_bridge_program_facts(
+    disasm: Path,
+    program_corpus: dict[str, Any],
+    macro_facts: dict[str, dict[str, Any]],
+    cursor_profiles: dict[str, dict[str, int]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach source-adjacent payload bytes and handler-derived cursor advances."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=ENTITY_ACTION_BRIDGE_MACRO_NAMES
+    )
+    catalog, command_names, sequence_names = _entity_action_bridge_payload_macro_catalog(disasm)
+    logical_lines_by_path = {
+        program["sourcePath"]: _logical_source_lines(
+            read_upstream_text(disasm / program["sourcePath"])
+        )
+        for program in program_corpus["programs"]
+    }
+    annotated_sites = []
+    for site in source_sites:
+        program = next(
+            row for row in program_corpus["programs"] if row["id"] == site["programId"]
+        )
+        commands = []
+        for command in site["commands"]:
+            macro = command["macro"]
+            macro_fact = macro_facts[macro]
+            if len(command["arguments"]) != len(macro_fact["parameterOrdinals"]):
+                raise ValueError(
+                    f"entity-action bridge source operand count drift: {site['programId']}"
+                )
+            handler = macro_fact["handler"]
+            profile = cursor_profiles[handler]
+            try:
+                if macro.startswith("customActscript"):
+                    payload = _entity_action_bridge_inline_payload(
+                        logical_lines_by_path[program["sourcePath"]],
+                        opener_line=command["sourceLine"],
+                        payload_macro_names=command_names,
+                        terminator="ac_end",
+                        catalog=catalog,
+                    )
+                    payload_kind = "ac-macro-stream"
+                    scan_transfer = profile["payloadScanTransferByteCount"]
+                    payload_advance = payload["commandEncodedByteCount"]
+                    if scan_transfer <= 0:
+                        raise ValueError("entity-action bridge payload scan width drift")
+                    if payload_advance % scan_transfer:
+                        raise ValueError("entity-action bridge payload scan alignment drift")
+                    scan_iterations = payload_advance // scan_transfer
+                    if scan_iterations * scan_transfer != payload_advance:
+                        raise ValueError("entity-action bridge payload scan advance drift")
+                elif macro.startswith("entityActions"):
+                    payload = _entity_action_bridge_inline_payload(
+                        logical_lines_by_path[program["sourcePath"]],
+                        opener_line=command["sourceLine"],
+                        payload_macro_names=sequence_names,
+                        terminator="endActions",
+                        catalog=catalog,
+                    )
+                    payload_kind = "entity-action-byte-stream"
+                    payload_advance = payload["commandEncodedByteCount"]
+                    scan_transfer = 0
+                    scan_iterations = 0
+                    entry_width = profile["payloadCommandReadByteCount"]
+                    if any(
+                        row["encodedByteCount"] != entry_width
+                        for row in payload["commands"]
+                    ):
+                        raise ValueError("entity-action bridge payload command width drift")
+                else:
+                    payload = {
+                        "commands": [],
+                        "commandEncodedByteCount": 0,
+                        "terminatorMnemonic": None,
+                        "terminatorEncodedByteCount": 0,
+                        "terminatorWord": None,
+                    }
+                    payload_kind = "none"
+                    payload_advance = 0
+                    scan_transfer = 0
+                    scan_iterations = 0
+            except ValueError as error:
+                raise ValueError(
+                    "entity-action bridge source payload drift: "
+                    f"{program['sourcePath']}:{command['sourceLine']}:{macro}"
+                ) from error
+            terminator_advance = (
+                profile["terminatorCursorAdvanceByteCount"]
+                if payload["terminatorMnemonic"] is not None
+                else 0
+            )
+            primary_advance = profile["primaryOperandCursorAdvanceByteCount"]
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), macro)
+                    ),
+                    "sourceParameterValues": [
+                        _entity_placement_resolve_operand(argument, equates)
+                        for argument in command["arguments"]
+                    ],
+                    "payloadKind": payload_kind,
+                    "payload": payload,
+                    "primaryOperandCursorAdvanceByteCount": primary_advance,
+                    "payloadScanTransferByteCount": scan_transfer,
+                    "payloadScanIterationCount": scan_iterations,
+                    "payloadCommandCursorAdvanceByteCount": payload_advance,
+                    "terminatorCursorAdvanceByteCount": terminator_advance,
+                    "scriptCursorAdvanceByteCount": (
+                        primary_advance + payload_advance + terminator_advance
+                    ),
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _entity_action_bridge_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Pin the complete bridge occurrence and zero-inclusive program order compactly."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("entity-action bridge source order keys are not unique")
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("entity-action bridge program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _entity_action_bridge_cursor_use_site(statement: str) -> dict[str, Any]:
+    """Parse bounded cursor reads, pointer capture, and explicit cursor skips."""
+    statement = statement.split(";", 1)[0].strip()
+    read = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \(a6\)\+,(?P<destination>[^\s]+)", statement
+    )
+    if read is not None:
+        width = {"b": 1, "w": 2, "l": 4}[read.group("size")]
+        return {
+            "instruction": statement,
+            "operation": "cursor-read",
+            "destinationOperand": read.group("destination"),
+            "transferredByteCount": width,
+            "cursorAdvanceByteCount": width,
+        }
+    if re.fullmatch(r"move\.l a6,[^\s]+", statement):
+        return {
+            "instruction": statement,
+            "operation": "cursor-pointer-capture",
+            "destinationOperand": statement.split(",", 1)[1],
+            "transferredByteCount": 4,
+            "cursorAdvanceByteCount": 0,
+        }
+    compare = re.fullmatch(r"cmpi\.w #\$8080,\(a6\)\+", statement)
+    if compare is not None:
+        return {
+            "instruction": statement,
+            "operation": "cursor-word-compare-read",
+            "destinationOperand": "(a6)+",
+            "transferredByteCount": 2,
+            "cursorAdvanceByteCount": 2,
+        }
+    if statement == "addq.l #1,a6":
+        return {
+            "instruction": statement,
+            "operation": "cursor-skip",
+            "destinationOperand": "a6",
+            "transferredByteCount": 0,
+            "cursorAdvanceByteCount": 1,
+        }
+    raise ValueError(f"entity-action bridge cursor use is not recognized: {statement}")
+
+
+def _entity_action_bridge_branch_target_record(
+    source: str, branch_instruction: str, expected_target_instruction: str
+) -> dict[str, str]:
+    """Resolve one guarded branch to the first instruction at its local label."""
+    branch = re.fullmatch(
+        r"(?:b(?:eq|ne|mi)|bra)\.[bwls] (?P<label>@?[A-Za-z_][A-Za-z0-9_]*)",
+        branch_instruction,
+    )
+    if branch is None:
+        raise ValueError("entity-action bridge branch instruction drift")
+    label = branch.group("label")
+    label_match = re.search(rf"^{re.escape(label)}:\s*$", source, re.MULTILINE)
+    if label_match is None:
+        raise ValueError("entity-action bridge branch target label is missing")
+    target_statements = _statements(source[label_match.end() :])
+    if not target_statements or target_statements[0] != expected_target_instruction:
+        raise ValueError("entity-action bridge branch target instruction drift")
+    return {"targetLabel": label, "targetInstruction": target_statements[0]}
+
+
+def _entity_action_bridge_csc2d_terminal_source(disasm: Path) -> str:
+    """Read the named csc2D terminal chunk kept after its local helper routines."""
+    source = read_upstream_text(
+        disasm / "code/common/scripting/map/mapscriptengine_1.asm"
+    )
+    match = re.search(
+        r"^loc_46928:\s*\n(?P<body>.*?)^\s*; END OF FUNCTION CHUNK FOR "
+        r"csc2D_entityActionSequence\s*$",
+        source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if match is None:
+        raise ValueError("entity-action bridge csc2D terminal chunk is missing")
+    return match.group("body")
+
+
+def _entity_action_bridge_section_guard(
+    handler_name: str,
+    statements: list[str],
+    equates: dict[str, int],
+    terminal_statements: list[str] | None = None,
+) -> dict[str, Any]:
+    """Guard all primary csc14/csc15/csc2D instruction order before fixture checks."""
+    if handler_name == "csc14_setEntityActscriptManual":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b \(a6\)\+,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"move\.b d0,ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER\(a5\)",
+                r"move\.b \(a6\)\+,d0",
+                r"move\.l a6,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+                r"tst\.b d0",
+                r"beq\.w loc_46970",
+                r"cmpi\.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+                r"bne\.s loc_46966",
+                r"cmpi\.w #\$8080,\(a6\)\+",
+                r"bne\.s loc_46970",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        cursor_uses = [
+            _entity_action_bridge_cursor_use_site(ordered[index])
+            for index in (0, 3, 4, 9)
+        ]
+        profile = {
+            "primaryOperandCursorAdvanceByteCount": sum(
+                row["cursorAdvanceByteCount"] for row in cursor_uses[:2]
+            ),
+            "payloadCommandReadByteCount": 0,
+            "payloadScanTransferByteCount": cursor_uses[-1]["transferredByteCount"],
+            "terminatorCursorAdvanceByteCount": cursor_uses[-1]["cursorAdvanceByteCount"],
+        }
+        branches = [
+            (ordered[6], ordered[9]),
+            (ordered[8], ordered[7]),
+            (ordered[10], ordered[9]),
+        ]
+        constant_use_sites: list[dict[str, Any]] = []
+        terminal_chunk = None
+        tail_transfer_instruction = None
+    elif handler_name == "csc15_setEntityActscript":
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b \(a6\)\+,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"move\.b d0,ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER\(a5\)",
+                r"move\.b \(a6\)\+,d0",
+                r"move\.l \(a6\)\+,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+                r"tst\.b d0",
+                r"beq\.w return_46998",
+                r"cmpi\.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+                r"bne\.s loc_4698E",
+                r"rts",
+            ],
+            owner=handler_name,
+        )
+        cursor_uses = [
+            _entity_action_bridge_cursor_use_site(ordered[index]) for index in (0, 3, 4)
+        ]
+        profile = {
+            "primaryOperandCursorAdvanceByteCount": sum(
+                row["cursorAdvanceByteCount"] for row in cursor_uses
+            ),
+            "payloadCommandReadByteCount": 0,
+            "payloadScanTransferByteCount": 0,
+            "terminatorCursorAdvanceByteCount": 0,
+        }
+        branches = [(ordered[6], ordered[9]), (ordered[8], ordered[7])]
+        constant_use_sites = []
+        terminal_chunk = None
+        tail_transfer_instruction = None
+    elif handler_name == "csc2D_entityActionSequence":
+        if "BYTE_LOWER_NIBBLE_MASK" not in equates:
+            raise ValueError("entity-action bridge source constant is missing")
+        ordered = _force_state_ordered_statements(
+            statements,
+            [
+                r"move\.b \(a6\)\+,d0",
+                r"bsr\.w GetEntityAddressFromCharacter",
+                r"move\.b d0,ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER\(a5\)",
+                r"andi\.b #\$9F,ENTITYDEF_OFFSET_FLAGS_A\(a5\)",
+                r"move\.b \(a6\)\+,d4",
+                r"move\.l \(dword_FFB1A4\)\.l,d0",
+                r"movea\.l d0,a0",
+                r"move\.b \(a6\)\+,d1",
+                r"bmi\.w loc_46928",
+                r"move\.b \(a6\)\+,d2",
+                r"ext\.w d2",
+                r"move\.w d2,d3",
+                r"neg\.w d3",
+                r"andi\.w #BYTE_LOWER_NIBBLE_MASK,d1",
+                r"add\.w d1,d1",
+                r"move\.w rjt_EntityMoveCommands\(pc,d1\.w\),d1",
+                r"jsr rjt_EntityMoveCommands\(pc,d1\.w\)",
+                r"bra\.s loc_467FC",
+            ],
+            owner=handler_name,
+        )
+        if terminal_statements is None:
+            raise ValueError("entity-action bridge csc2D terminal statements are missing")
+        terminal_ordered = _force_state_ordered_statements(
+            terminal_statements,
+            [
+                r"move\.w #\$34,\(a0\)\+",
+                r"move\.l #eas_Idle,\(a0\)\+",
+                r"addq\.l #1,a6",
+                r"move\.l a0,\(dword_FFB1A4\)\.l",
+                r"move\.l d0,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+                r"tst\.b d4",
+                r"beq\.w return_4694E",
+                r"cmpi\.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR\(a5\)",
+                r"bne\.s loc_46944",
+                r"rts",
+            ],
+            owner="csc2D_entityActionSequence terminal chunk",
+        )
+        cursor_uses = [
+            _entity_action_bridge_cursor_use_site(ordered[index]) for index in (0, 4, 7, 9)
+        ] + [_entity_action_bridge_cursor_use_site(terminal_ordered[2])]
+        profile = {
+            "primaryOperandCursorAdvanceByteCount": sum(
+                row["cursorAdvanceByteCount"] for row in cursor_uses[:2]
+            ),
+            "payloadCommandReadByteCount": sum(
+                row["cursorAdvanceByteCount"] for row in cursor_uses[2:4]
+            ),
+            "payloadScanTransferByteCount": 0,
+            "terminatorCursorAdvanceByteCount": (
+                cursor_uses[2]["cursorAdvanceByteCount"]
+                + cursor_uses[-1]["cursorAdvanceByteCount"]
+            ),
+        }
+        branches = [(ordered[8], terminal_ordered[0])]
+        constant_use_sites = [
+            {
+                "symbol": "BYTE_LOWER_NIBBLE_MASK",
+                "value": equates["BYTE_LOWER_NIBBLE_MASK"],
+                "instruction": ordered[13],
+            }
+        ]
+        terminal_chunk = {
+            "guardedStatements": terminal_ordered,
+            "cursorUseSites": [cursor_uses[-1]],
+            "branchRecords": [
+                {
+                    "branchInstruction": terminal_ordered[6],
+                    "expectedTargetInstruction": terminal_ordered[9],
+                },
+                {
+                    "branchInstruction": terminal_ordered[8],
+                    "expectedTargetInstruction": terminal_ordered[7],
+                },
+            ],
+            "returnInstruction": terminal_ordered[-1],
+        }
+        tail_transfer_instruction = ordered[-1]
+    else:
+        raise ValueError(f"entity-action bridge handler profile is missing: {handler_name}")
+    if len(statements) != len(ordered):
+        raise ValueError(f"entity-action bridge handler statement coverage drift: {handler_name}")
+    return {
+        "guardedStatements": ordered,
+        "cursorUseSites": cursor_uses,
+        "cursorAdvanceProfile": profile,
+        "sourceConstantUseSites": constant_use_sites,
+        "branchRecords": [
+            {
+                "branchInstruction": instruction,
+                "expectedTargetInstruction": target_instruction,
+            }
+            for instruction, target_instruction in branches
+        ],
+        "directCallOrder": [
+            instruction
+            for instruction in ordered
+            if instruction.startswith(("bsr", "jsr"))
+        ],
+        "returnInstruction": None if tail_transfer_instruction is not None else ordered[-1],
+        "tailTransferInstruction": tail_transfer_instruction,
+        "tailTransferExpectedTargetInstruction": (
+            ordered[7] if tail_transfer_instruction is not None else None
+        ),
+        "terminalChunk": terminal_chunk,
+    }
+
+
+def _entity_action_bridge_call_sites(statements: list[str]) -> list[dict[str, str]]:
+    """Keep symbolic direct and indexed-PC call targets distinct from comments or operands."""
+    calls = []
+    for statement in statements:
+        direct = re.fullmatch(
+            r"(?P<opcode>bsr|jsr)(?:\.[bwls])? (?P<target>[A-Za-z_][A-Za-z0-9_]*)",
+            statement,
+        )
+        indexed = re.fullmatch(
+            r"(?P<opcode>jsr)(?:\.[bwls])? (?P<target>[A-Za-z_][A-Za-z0-9_]*)"
+            r"\(pc,d[0-7]\.w\)",
+            statement,
+        )
+        if direct is not None:
+            calls.append(
+                {
+                    "opcode": direct.group("opcode"),
+                    "instructionTarget": direct.group("target"),
+                    "addressingMode": "direct-symbol",
+                }
+            )
+        elif indexed is not None:
+            calls.append(
+                {
+                    "opcode": indexed.group("opcode"),
+                    "instructionTarget": indexed.group("target"),
+                    "addressingMode": "indexed-program-counter",
+                }
+            )
+    return calls
+
+
+def _entity_action_bridge_caller_breakdown(
+    disasm: Path,
+    calls_by_handler: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Count parsed instruction and alias-resolved targets for every bounded handler."""
+    instruction_targets = list(
+        dict.fromkeys(
+            call["instructionTarget"]
+            for handler in ENTITY_ACTION_BRIDGE_HANDLER_NAMES
+            for call in calls_by_handler[handler]
+        )
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": aliases.get(target, {}).get("effectiveTarget", target),
+            "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+            "effectiveTargetScope": (
+                "internal"
+                if aliases.get(target, {}).get("effectiveTarget", target)
+                in ENTITY_ACTION_BRIDGE_HANDLER_NAMES
+                else "external"
+            ),
+        }
+        for target in instruction_targets
+    ]
+    effective_targets = list(dict.fromkeys(row["effectiveTarget"] for row in resolutions))
+    effective_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in resolutions
+    }
+    callers = []
+    for handler in ENTITY_ACTION_BRIDGE_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in calls_by_handler[handler]:
+            target = call["instructionTarget"]
+            instruction_counts[target] += 1
+            effective_counts[effective_by_instruction[target]] += 1
+        callers.append(
+            {
+                "handler": handler,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in callers)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in callers)
+        for target in effective_targets
+    }
+    scope_by_instruction = {
+        row["instructionTarget"]: row["effectiveTargetScope"] for row in resolutions
+    }
+    scope_by_effective = {
+        row["effectiveTarget"]: row["effectiveTargetScope"] for row in resolutions
+    }
+    return {
+        "callerHandlers": callers,
+        "targetResolutions": resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalInstructionTargetTotals": {
+            target: instruction_totals[target]
+            if scope_by_instruction[target] == "internal"
+            else 0
+            for target in instruction_targets
+        },
+        "externalInstructionTargetTotals": {
+            target: instruction_totals[target]
+            if scope_by_instruction[target] == "external"
+            else 0
+            for target in instruction_targets
+        },
+        "internalEffectiveTargetTotals": {
+            target: effective_totals[target]
+            if scope_by_effective[target] == "internal"
+            else 0
+            for target in effective_targets
+        },
+        "externalEffectiveTargetTotals": {
+            target: effective_totals[target]
+            if scope_by_effective[target] == "external"
+            else 0
+            for target in effective_targets
+        },
+    }
+
+
+def _entity_action_bridge_source_identity_joins(
+    macro_facts: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Join maintained static contracts by IDs and source-defined terminator identities."""
+    entity_action = load_json(repo_path("tests/fixtures/h2/entity-action-scripts-static-v1.json"))
+    handler_facts = entity_action.get("handlerFacts")
+    if (
+        entity_action.get("id") != "sf2-entity-action-scripts-static-v1"
+        or not isinstance(handler_facts, dict)
+        or handler_facts.get("inlineTerminatorMacro") != "ac_end"
+        or handler_facts.get("inlineTerminatorWord") != 0x8080
+    ):
+        raise ValueError("entity-action bridge entity-action static contract join drift")
+    map_events = load_json(repo_path("tests/fixtures/h2/map-events-static-v1.json"))
+    expected = map_events.get("expected")
+    if map_events.get("id") != "sf2-map-events-static-v1" or not isinstance(expected, dict):
+        raise ValueError("entity-action bridge map-event static contract join drift")
+    contexts = [
+        context
+        for context in expected.get("operationPayloadContexts", [])
+        if context.get("openerSourceMnemonic") in macro_facts
+    ]
+    context_pairs = []
+    for context in contexts:
+        macro = context["openerSourceMnemonic"]
+        expected_terminator = (
+            "ac_end" if macro.startswith("customActscript") else "endActions"
+        )
+        if context.get("terminatorMnemonic") != expected_terminator:
+            raise ValueError("entity-action bridge map-event payload terminator drift")
+        if not isinstance(context.get("contextId"), str):
+            raise ValueError("entity-action bridge map-event payload context identity drift")
+        context_pairs.append(
+            {
+                "contextId": context["contextId"],
+                "openerSourceMnemonic": macro,
+                "contextFamily": context["contextFamily"],
+                "terminatorMnemonic": context["terminatorMnemonic"],
+            }
+        )
+    if not context_pairs:
+        raise ValueError("entity-action bridge map-event payload contexts are absent")
+    return {
+        "entityActionStaticContract": {
+            "fixturePath": "tests/fixtures/h2/entity-action-scripts-static-v1.json",
+            "fixtureId": entity_action["id"],
+            "upstreamCommit": entity_action["upstreamCommit"],
+            "inlineTerminatorMacro": handler_facts["inlineTerminatorMacro"],
+            "inlineTerminatorWord": handler_facts["inlineTerminatorWord"],
+        },
+        "mapEventStaticContract": {
+            "fixturePath": "tests/fixtures/h2/map-events-static-v1.json",
+            "fixtureId": map_events["id"],
+            "upstreamCommit": map_events["upstreamCommit"],
+            "payloadContextPairs": sorted(
+                context_pairs,
+                key=lambda row: (
+                    row["contextId"],
+                    row["openerSourceMnemonic"],
+                    row["contextFamily"],
+                    row["terminatorMnemonic"],
+                ),
+            ),
+        },
+    }
+
+
+def _entity_action_bridge_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the six-form static bridge without assigning a runtime interpretation."""
+    macro_facts = _entity_action_bridge_macro_facts(disasm, macros)
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    full_handler_source = read_upstream_text(disasm / handler_path)
+    guards: dict[str, dict[str, Any]] = {}
+    statements_by_handler: dict[str, list[str]] = {}
+    for handler_name in ENTITY_ACTION_BRIDGE_HANDLER_NAMES:
+        handler = _handler_by_name(handlers, handler_name)
+        statements = _stable_handler_statements(disasm, handler)
+        terminal_statements = (
+            _statements(_entity_action_bridge_csc2d_terminal_source(disasm))
+            if handler_name == "csc2D_entityActionSequence"
+            else None
+        )
+        guard = _entity_action_bridge_section_guard(
+            handler_name, statements, equates, terminal_statements
+        )
+        for branch in guard["branchRecords"]:
+            branch["branchTarget"] = _entity_action_bridge_branch_target_record(
+                full_handler_source,
+                branch["branchInstruction"],
+                branch.pop("expectedTargetInstruction"),
+            )
+        if guard["terminalChunk"] is not None:
+            for branch in guard["terminalChunk"]["branchRecords"]:
+                branch["branchTarget"] = _entity_action_bridge_branch_target_record(
+                    full_handler_source,
+                    branch["branchInstruction"],
+                    branch.pop("expectedTargetInstruction"),
+                )
+        tail_expected_target = guard.pop("tailTransferExpectedTargetInstruction")
+        if guard["tailTransferInstruction"] is None:
+            guard["tailTransferTarget"] = None
+        else:
+            if tail_expected_target is None:
+                raise ValueError(
+                    f"entity-action bridge tail-transfer target drift: {handler_name}"
+                )
+            guard["tailTransferTarget"] = _entity_action_bridge_branch_target_record(
+                full_handler_source,
+                guard["tailTransferInstruction"],
+                tail_expected_target,
+            )
+        guards[handler_name] = guard
+        statements_by_handler[handler_name] = statements
+    cursor_profiles = {
+        handler: guard["cursorAdvanceProfile"] for handler, guard in guards.items()
+    }
+    source_sites, program_totals = _entity_action_bridge_program_facts(
+        disasm, program_corpus, macro_facts, cursor_profiles, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    for macro in ENTITY_ACTION_BRIDGE_MACRO_NAMES:
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"entity-action bridge program total drift: {macro}")
+        macro_fact = macro_facts[macro]
+        opcode = macro_fact["opcode"]
+        handler_name = macro_fact["handler"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"entity-action bridge dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if (
+            handler["opcodes"] != [opcode]
+            or handler["encodedCommandBytes"]
+            != macro_fact["primaryEncodedCommandByteCount"]
+        ):
+            raise ValueError(f"entity-action bridge handler ABI drift: {handler_name}")
+    calls_by_handler = {
+        handler: _entity_action_bridge_call_sites(statements)
+        for handler, statements in statements_by_handler.items()
+    }
+    for handler, calls in calls_by_handler.items():
+        expected_calls = _entity_action_bridge_call_sites(guards[handler]["directCallOrder"])
+        if calls != expected_calls:
+            raise ValueError(f"entity-action bridge direct call order drift: {handler}")
+    handler_rows = []
+    for handler_name in ENTITY_ACTION_BRIDGE_HANDLER_NAMES:
+        handler = _handler_by_name(handlers, handler_name)
+        handler_macros = [
+            macro
+            for macro in ENTITY_ACTION_BRIDGE_MACRO_NAMES
+            if macro_facts[macro]["handler"] == handler_name
+        ]
+        if set(handler_macros) - set(handler["macroNames"]):
+            raise ValueError(f"entity-action bridge handler macro identity drift: {handler_name}")
+        handler_rows.append(
+            {
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": handler["opcodes"][0],
+                "macros": handler_macros,
+                "sourceCommandCounts": {
+                    macro: source_counts[macro] for macro in handler_macros
+                },
+                "statementCount": len(statements_by_handler[handler_name]),
+                "sectionGuard": guards[handler_name],
+                "directCalls": calls_by_handler[handler_name],
+            }
+        )
+    caller_breakdown = _entity_action_bridge_caller_breakdown(
+        disasm, calls_by_handler, addresses, rom
+    )
+    return {
+        "macros": [
+            {**macro_facts[macro], "sourceCommandCount": source_counts[macro]}
+            for macro in ENTITY_ACTION_BRIDGE_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_entity_action_bridge_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": caller_breakdown,
+        "sourceIdentityJoins": _entity_action_bridge_source_identity_joins(macro_facts),
+        "runtimeQuestions": ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS,
+    }
+
+
 def build_map_script_engine_contract(
     rom_path: Path, upstream_path: Path
 ) -> dict[str, Any]:
@@ -7596,6 +8558,16 @@ def build_map_script_engine_contract(
         rom,
     )
     entity_placement_command_facts = _entity_placement_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
+    entity_action_bridge_command_facts = _entity_action_bridge_command_facts(
         disasm,
         source_equates,
         macros,
@@ -7757,6 +8729,7 @@ def build_map_script_engine_contract(
         "mapInteractionTriggerCommandFacts": map_interaction_trigger_command_facts,
         "mapCameraControlCommandFacts": map_camera_control_command_facts,
         "entityPlacementCommandFacts": entity_placement_command_facts,
+        "entityActionBridgeCommandFacts": entity_action_bridge_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -7770,6 +8743,7 @@ def build_map_script_engine_contract(
             *MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS,
             *MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS,
             *ENTITY_PLACEMENT_RUNTIME_QUESTIONS,
+            *ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -7824,6 +8798,7 @@ def verify_map_script_engine_contract(
         ],
         "mapCameraControlCommandFacts": output["mapCameraControlCommandFacts"],
         "entityPlacementCommandFacts": output["entityPlacementCommandFacts"],
+        "entityActionBridgeCommandFacts": output["entityActionBridgeCommandFacts"],
     }
     for field in (
         "summary",
@@ -7853,6 +8828,7 @@ def verify_map_script_engine_contract(
         "mapInteractionTriggerCommandFacts",
         "mapCameraControlCommandFacts",
         "entityPlacementCommandFacts",
+        "entityActionBridgeCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
@@ -7861,6 +8837,11 @@ def verify_map_script_engine_contract(
         if field == "entityPlacementCommandFacts":
             actual = {
                 key: output["entityPlacementCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "entityActionBridgeCommandFacts":
+            actual = {
+                key: output["entityActionBridgeCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "dispatcherFacts":

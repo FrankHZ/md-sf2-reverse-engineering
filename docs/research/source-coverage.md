@@ -403,6 +403,19 @@ independently parsed entity-action static fixture does not promote a runtime mov
 `map-script-entity-placement/runtime-effects-reachability-matrix` is its sole grouped H3 follow-up;
 reachability, operand/state meaning, units, timing, persistence, collision, and presentation remain
 outside this static credit.
+The adjacent map-script to entity-action bridge slice is exact for six source-named forms: 1,015
+`setActscriptWait` and 436 `setActscript` `$15` commands, 359 `customActscriptWait` and two
+`customActscript` `$14` commands, and 957 `entityActionsWait` and 487 `entityActions` `$2D` commands
+(3,256 total). It retains 196 ordered source-site rows and the same 304-row zero-inclusive program
+domain, exact `$FF`/zero control-byte aliases, compact source/total order hashes, the three named
+handler/cursor/branch/call sections, exact inline terminator and payload boundaries, zero-inclusive
+direct/effective caller maps, and provenance-only joins to the map-event and entity-action fixtures.
+Its csc14 records derive two-byte scan transfers and exact iteration counts from each word-aligned
+custom payload, separately from csc2D's two-byte interpreted-command reads and its resolved local tail
+transfer target.
+`map-script-entity-action-bridge/runtime-effects-reachability-matrix` is its sole H3 follow-up;
+reachability, control-byte/payload meaning, entity effects, timing, persistence, collision, and
+presentation remain outside this static credit.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.
