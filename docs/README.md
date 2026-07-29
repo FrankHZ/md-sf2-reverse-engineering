@@ -85,7 +85,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   command 的 2,288 条 ordered program-site/handler/caller 合同、六个 map-script 到 entity-action bridge
   command 的 3,256 条 ordered program-site/payload/handler/caller 合同、八个 source-named entity lifecycle/presentation
   command 的 464 条 ordered program-site/handler/caller 合同、七个 source-named entity gesture/relationship/motion
-  command 的 545 条 ordered program-site/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
+  command 的 545 条 ordered program-site/handler/caller 合同、十二个 source-named screen/map-presentation
+  command 的 459 条 ordered program-site/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
   movement H3。
 - [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
   trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
@@ -218,6 +219,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   sites）、七个 named handler 的 A6 cursor、source operand/literal、branch/loop/call/return guards，
   以及 ten-target zero-inclusive caller map；唯一 H3 queue 为
   `map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix`。
+  同一 304-row 零计数 corpus 还固定十二个 source-named screen/map-presentation form（459 sites）、
+  十二个 named handler 的 A6 cursor、immediate/operand、branch/loop/call/return guards，以及保留
+  seven PC-relative `LaunchFading` target 的 five-target zero-inclusive caller map；唯一 H3 queue 为
+  `map-script-screen-presentation/runtime-effects-matrix`。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
   39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot
@@ -237,7 +242,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
   entity population/reload form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
   trigger form、四个 source-named entity-placement form、六个 source-named entity-action bridge form、八个 source-named
-  entity lifecycle/presentation form、七个 source-named entity gesture/relationship/motion form 与现代 renderer 的
+  entity lifecycle/presentation form、七个 source-named entity gesture/relationship/motion form、十二个 source-named
+  screen/map-presentation form 与现代 renderer 的
   原版事实/未知/可现代化边界。
 - [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
   投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT

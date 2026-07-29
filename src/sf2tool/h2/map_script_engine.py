@@ -334,6 +334,39 @@ ENTITY_GESTURE_RELATIONSHIP_MOTION_RUNTIME_QUESTIONS = [
     "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix"
 ]
 
+SCREEN_PRESENTATION_MACRO_NAMES = (
+    "setQuake",
+    "fadeInB",
+    "fadeOutB",
+    "slowFadeInB",
+    "slowFadeOutB",
+    "tintMap",
+    "flickerOnce",
+    "mapFadeOutToWhite",
+    "mapFadeInFromWhite",
+    "flashScreenWhite",
+    "fadeInFromBlackHalf",
+    "fadeOutToBlackHalf",
+)
+SCREEN_PRESENTATION_HANDLER_BY_MACRO = {
+    "setQuake": "csc33_setQuakeAmount",
+    "fadeInB": "csc39_fadeInFromBlack",
+    "fadeOutB": "csc3A_fadeOutToBlack",
+    "slowFadeInB": "csc3B_slowFadeInFromBlack",
+    "slowFadeOutB": "csc3C_slowFadeOutToBlack",
+    "tintMap": "csc3D_tintMap",
+    "flickerOnce": "csc3E_FlickerOnce",
+    "mapFadeOutToWhite": "csc3F_fadeMapOutToWhite",
+    "mapFadeInFromWhite": "csc40_fadeMapInFromWhite",
+    "flashScreenWhite": "csc41_flashScreenWhite",
+    "fadeInFromBlackHalf": "csc4A_fadeInFromBlackHalf",
+    "fadeOutToBlackHalf": "csc4B_fadeOutToBlackHalf",
+}
+SCREEN_PRESENTATION_HANDLER_NAMES = tuple(SCREEN_PRESENTATION_HANDLER_BY_MACRO.values())
+SCREEN_PRESENTATION_RUNTIME_QUESTIONS = [
+    "map-script-screen-presentation/runtime-effects-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -8531,6 +8564,612 @@ def _entity_gesture_relationship_motion_macro_annotations(
     return annotations_by_macro
 
 
+def _screen_presentation_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse the physical operands and raw comments of the bounded presentation forms."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in SCREEN_PRESENTATION_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"screen-presentation macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            match = re.fullmatch(
+                r"\s*dc\.[bwl]\s+\\(?P<ordinal>\d+)"
+                r"(?:\s*;\s*(?P<comment>.*))?\s*",
+                raw_line,
+            )
+            if match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"screen-presentation operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"screen-presentation operand ordinal drift: {macro}")
+            comment = match.group("comment")
+            if comment is None:
+                raise ValueError(f"screen-presentation operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment,
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"screen-presentation operand comment coverage drift: {macro}")
+        if [row["parameterOrdinal"] for row in annotations] != list(
+            range(1, len(annotations) + 1)
+        ):
+            raise ValueError(f"screen-presentation operand ordinal sequence drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
+def _screen_presentation_resolve_operand(
+    value: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Resolve an operand through the parsed equate map or literal grammar only."""
+    token = value.strip()
+    if token in equates:
+        return {"rawValue": value, "resolvedValue": equates[token], "resolution": "equate"}
+    try:
+        resolved = int(token[1:], 2) if token.startswith("%") else _literal(token)
+    except ValueError:
+        return {"rawValue": value, "resolvedValue": None, "resolution": "symbol"}
+    return {"rawValue": value, "resolvedValue": resolved, "resolution": "literal"}
+
+
+def _screen_presentation_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach physical source operands to every scoped command occurrence."""
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=SCREEN_PRESENTATION_MACRO_NAMES
+    )
+    annotated_sites = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "screen-presentation source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        {
+                            "parameterOrdinal": annotation["parameterOrdinal"],
+                            "sourceComment": annotation["sourceComment"],
+                            "streamOffset": annotation["streamOffset"],
+                            "widthBytes": annotation["widthBytes"],
+                            **_screen_presentation_resolve_operand(argument, equates),
+                        }
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _screen_presentation_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind complete raw corpora with compact scalar exact-order records."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("screen-presentation source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("screen-presentation program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _screen_presentation_cursor_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one bounded A6 read and retain transfer and advance separately."""
+    instruction = instruction.split(";", 1)[0].strip()
+    match = re.fullmatch(
+        r"move\.(?P<size>[bwl]) \(a6\)(?P<advance>\+)?,(?P<destination>.+)",
+        instruction,
+    )
+    if match is None:
+        raise ValueError("screen-presentation cursor-read use-site drift")
+    transferred = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": "a6",
+        "destinationOperand": match.group("destination"),
+        "transferredByteCount": transferred,
+        "cursorAdvanceByteCount": transferred if match.group("advance") else 0,
+        "instruction": instruction,
+    }
+
+
+def _screen_presentation_direct_calls(statements: list[str]) -> list[dict[str, str]]:
+    """Parse bounded call instructions, including the source's PC-relative call spelling."""
+    calls: list[dict[str, str]] = []
+    pattern = re.compile(
+        r"^(?P<opcode>bsr|jsr)(?:\.[bwls])?\s+\(?(?P<target>[A-Za-z_][A-Za-z0-9_]*)\)?"
+        r"(?P<pc_relative>\(pc\))?(?:\.[bwls])?$"
+    )
+    for raw_statement in statements:
+        statement = raw_statement.split(";", 1)[0].strip()
+        match = pattern.fullmatch(statement)
+        if match is not None and not re.fullmatch(r"[ad][0-7]", match.group("target")):
+            calls.append(
+                {
+                    "opcode": match.group("opcode"),
+                    "instructionTarget": match.group("target"),
+                    "addressingForm": (
+                        "pc-relative" if match.group("pc_relative") else "direct"
+                    ),
+                }
+            )
+    return calls
+
+
+def _screen_presentation_immediate_use_sites(
+    ordered_instructions: list[str], equates: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Parse each immediate from its instruction use site without a duplicate value table."""
+    use_sites = []
+    for instruction in ordered_instructions:
+        match = re.fullmatch(r"[A-Za-z]+(?:\.[bwl])? #(?P<token>[^,\s]+).+", instruction)
+        if match is None:
+            continue
+        token = match.group("token")
+        resolved = _screen_presentation_resolve_operand(token, equates)
+        if resolved["resolvedValue"] is None:
+            raise ValueError(f"screen-presentation immediate resolution drift: {instruction}")
+        use_sites.append({"instruction": instruction, **resolved})
+    return use_sites
+
+
+def _screen_presentation_branch_target_record(
+    section_source: str,
+    branch_instruction: str,
+    expected_target_instruction: str,
+    ordered_instructions: list[str],
+) -> dict[str, Any]:
+    """Resolve one guarded local branch to its first target instruction."""
+    branch = re.fullmatch(
+        r"(?:b(?:cc|cs|eq|ge|ne|pl)|bra)\.[bwls] (?P<label>@?[A-Za-z_][A-Za-z0-9_]*)",
+        branch_instruction,
+    )
+    if branch is None:
+        raise ValueError("screen-presentation branch instruction drift")
+    label = branch.group("label")
+    label_match = re.search(rf"^{re.escape(label)}:\s*$", section_source, re.MULTILINE)
+    if label_match is None:
+        raise ValueError("screen-presentation branch target label is missing")
+    target_statements = _statements(section_source[label_match.end() :])
+    if not target_statements:
+        raise ValueError("screen-presentation branch target is empty")
+    target_instruction = target_statements[0]
+    target_index = len(_statements(section_source[: label_match.start()]))
+    if (
+        target_instruction != expected_target_instruction
+        or target_index >= len(ordered_instructions)
+        or ordered_instructions[target_index] != target_instruction
+    ):
+        raise ValueError("screen-presentation branch target instruction drift")
+    return {
+        "targetLabel": label,
+        "targetInstruction": target_instruction,
+        "targetStatementIndex": target_index,
+    }
+
+
+def _screen_presentation_loop_target_record(
+    section_source: str,
+    loop_instruction: str,
+    expected_target_instruction: str,
+    ordered_instructions: list[str],
+) -> dict[str, Any]:
+    """Resolve one bounded DBF target while retaining the counter register spelling."""
+    loop = re.fullmatch(r"dbf d7,(?P<label>@?[A-Za-z_][A-Za-z0-9_]*)", loop_instruction)
+    if loop is None:
+        raise ValueError("screen-presentation loop instruction drift")
+    return {
+        "counterRegister": "d7",
+        "loopInstruction": loop_instruction,
+        **_screen_presentation_branch_target_record(
+            section_source,
+            f"bra.s {loop.group('label')}",
+            expected_target_instruction,
+            ordered_instructions,
+        ),
+    }
+
+
+def _screen_presentation_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard complete bounded handler order without assigning screen behavior semantics."""
+    expected_by_macro = {
+        "setQuake": """
+move.w (a6)+,d0
+move.w d0,d3
+andi.w #$3FFF,d0
+move.w d0,d7
+subq.w #1,d7
+btst #$F,d3
+beq.s loc_46538
+moveq #0,d1
+move.w #1,d2
+bra.s loc_46550
+btst #$E,d3
+beq.s loc_46546
+move.w d0,d1
+move.w #-1,d2
+bra.s loc_46550
+move.w d0,(QUAKE_AMPLITUDE).l
+bra.w return_46564
+move.w #$28,d0
+add.w d2,d1
+move.w d1,(QUAKE_AMPLITUDE).l
+jsr (Sleep).w
+dbf d7,loc_46554
+rts
+""".strip().splitlines(),
+        "fadeInB": """
+jsr (FadeInFromBlack).w
+rts
+""".strip().splitlines(),
+        "fadeOutB": """
+jsr (FadeOutToBlack).w
+rts
+""".strip().splitlines(),
+        "slowFadeInB": """
+move.b ((FADING_COUNTER_MAX-$1000000)).w,d0
+move.b #6,((FADING_COUNTER_MAX-$1000000)).w
+jsr (FadeInFromBlack).w
+move.b d0,((FADING_COUNTER_MAX-$1000000)).w
+rts
+""".strip().splitlines(),
+        "slowFadeOutB": """
+move.b ((FADING_COUNTER_MAX-$1000000)).w,d0
+move.b #6,((FADING_COUNTER_MAX-$1000000)).w
+jsr (FadeOutToBlack).w
+move.b d0,((FADING_COUNTER_MAX-$1000000)).w
+rts
+""".strip().splitlines(),
+        "tintMap": """
+moveq #1,d0
+moveq #6,d1
+moveq #HALF_OUT_TO_BLACK,d2
+jsr LaunchFading(pc)
+nop
+rts
+""".strip().splitlines(),
+        "flickerOnce": """
+moveq #1,d0
+moveq #6,d1
+moveq #FLICKER_ONCE,d2
+jsr LaunchFading(pc)
+nop
+rts
+""".strip().splitlines(),
+        "mapFadeOutToWhite": """
+moveq #1,d0
+moveq #1,d1
+moveq #OUT_TO_WHITE,d2
+jsr LaunchFading(pc)
+nop
+rts
+""".strip().splitlines(),
+        "mapFadeInFromWhite": """
+moveq #1,d0
+moveq #1,d1
+moveq #IN_FROM_WHITE,d2
+jsr LaunchFading(pc)
+nop
+rts
+""".strip().splitlines(),
+        "flashScreenWhite": """
+move.w (a6)+,d7
+lsr.w #3,d7
+moveq #$F,d0
+moveq #1,d1
+moveq #FLASH_QUICKLY_2,d2
+jsr LaunchFading(pc)
+nop
+dbf d7,loc_4667A
+jsr (DuplicatePalettes).w
+rts
+""".strip().splitlines(),
+        "fadeInFromBlackHalf": """
+moveq #%1111,d0
+moveq #6,d1
+moveq #HALF_IN_FROM_BLACK,d2
+jsr LaunchFading(pc)
+nop
+rts
+""".strip().splitlines(),
+        "fadeOutToBlackHalf": """
+moveq #%1111,d0
+moveq #6,d1
+moveq #OUT_TO_BLACK_2,d2
+jsr LaunchFading(pc)
+nop
+rts
+""".strip().splitlines(),
+    }
+    if macro not in expected_by_macro:
+        raise ValueError(f"screen-presentation handler profile is missing: {macro}")
+    ordered = _force_state_ordered_statements(
+        statements,
+        [re.escape(instruction) for instruction in expected_by_macro[macro]],
+        owner=SCREEN_PRESENTATION_HANDLER_BY_MACRO[macro],
+    )
+    if len(statements) != len(ordered):
+        raise ValueError(f"screen-presentation handler statement coverage drift: {macro}")
+    cursor_indexes = {"setQuake": (0,), "flashScreenWhite": (0,)}.get(macro, ())
+    branch_pairs = {
+        "setQuake": ((6, 10), (9, 17), (11, 15), (14, 17), (16, 22)),
+    }.get(macro, ())
+    loop_pairs = {"setQuake": (21, 18), "flashScreenWhite": (7, 5)}
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _screen_presentation_cursor_read_use_site(ordered[index])
+            for index in cursor_indexes
+        ],
+        "sourceImmediateUseSites": _screen_presentation_immediate_use_sites(
+            ordered, equates
+        ),
+        "sourceOperandInstructions": [
+            instruction
+            for instruction in ordered
+            if "QUAKE_AMPLITUDE" in instruction or "FADING_COUNTER_MAX" in instruction
+        ],
+        "branchRecords": [
+            {"branchInstruction": ordered[branch], "expectedTargetInstruction": ordered[target]}
+            for branch, target in branch_pairs
+        ],
+        "loopRecords": [
+            {"loopInstruction": ordered[branch], "expectedTargetInstruction": ordered[target]}
+            for branch, target in (() if macro not in loop_pairs else (loop_pairs[macro],))
+        ],
+        "directCallOrder": [
+            instruction for instruction in ordered if instruction.startswith(("bsr", "jsr"))
+        ],
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _screen_presentation_caller_breakdown(
+    disasm: Path,
+    direct_call_rows: dict[str, list[dict[str, str]]],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Retain zero-inclusive direct/effective service identities for each named section."""
+    instruction_targets = list(
+        dict.fromkeys(
+            call["instructionTarget"]
+            for handler in SCREEN_PRESENTATION_HANDLER_NAMES
+            for call in direct_call_rows[handler]
+        )
+    )
+    aliases = _force_state_aliases(disasm, set(instruction_targets), addresses, rom)
+    resolutions = [
+        {
+            "instructionTarget": target,
+            "effectiveTarget": aliases.get(target, {}).get("effectiveTarget", target),
+            "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+            "effectiveTargetScope": (
+                "internal"
+                if aliases.get(target, {}).get("effectiveTarget", target)
+                in SCREEN_PRESENTATION_HANDLER_NAMES
+                else "external"
+            ),
+        }
+        for target in instruction_targets
+    ]
+    effective_targets = list(dict.fromkeys(row["effectiveTarget"] for row in resolutions))
+    effective_by_instruction = {
+        row["instructionTarget"]: row["effectiveTarget"] for row in resolutions
+    }
+    scope_by_instruction = {
+        row["instructionTarget"]: row["effectiveTargetScope"] for row in resolutions
+    }
+    scope_by_effective = {
+        row["effectiveTarget"]: row["effectiveTargetScope"] for row in resolutions
+    }
+    caller_handlers = []
+    for handler in SCREEN_PRESENTATION_HANDLER_NAMES:
+        instruction_counts = {target: 0 for target in instruction_targets}
+        effective_counts = {target: 0 for target in effective_targets}
+        for call in direct_call_rows[handler]:
+            target = call["instructionTarget"]
+            instruction_counts[target] += 1
+            effective_counts[effective_by_instruction[target]] += 1
+        caller_handlers.append(
+            {
+                "handler": handler,
+                "instructionTargetSiteCounts": instruction_counts,
+                "effectiveTargetSiteCounts": effective_counts,
+            }
+        )
+    instruction_totals = {
+        target: sum(row["instructionTargetSiteCounts"][target] for row in caller_handlers)
+        for target in instruction_targets
+    }
+    effective_totals = {
+        target: sum(row["effectiveTargetSiteCounts"][target] for row in caller_handlers)
+        for target in effective_targets
+    }
+    return {
+        "callerHandlers": caller_handlers,
+        "targetResolutions": resolutions,
+        "instructionTargetTotals": instruction_totals,
+        "effectiveTargetTotals": effective_totals,
+        "internalInstructionTargetTotals": {
+            target: instruction_totals[target]
+            if scope_by_instruction[target] == "internal"
+            else 0
+            for target in instruction_targets
+        },
+        "externalInstructionTargetTotals": {
+            target: instruction_totals[target]
+            if scope_by_instruction[target] == "external"
+            else 0
+            for target in instruction_targets
+        },
+        "internalEffectiveTargetTotals": {
+            target: effective_totals[target]
+            if scope_by_effective[target] == "internal"
+            else 0
+            for target in effective_targets
+        },
+        "externalEffectiveTargetTotals": {
+            target: effective_totals[target]
+            if scope_by_effective[target] == "external"
+            else 0
+            for target in effective_targets
+        },
+    }
+
+
+def _screen_presentation_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Build the bounded twelve-form static presentation contract."""
+    annotations_by_macro = _screen_presentation_macro_annotations(disasm)
+    source_sites, program_totals = _screen_presentation_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    handler_path = "code/common/scripting/map/mapscriptengine_1.asm"
+    for macro in SCREEN_PRESENTATION_MACRO_NAMES:
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"screen-presentation program total drift: {macro}")
+        if (
+            contract["kind"] != "command"
+            or contract["opcode"] is None
+            or contract["operandBytes"]
+            != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"] != 2 + contract["operandBytes"]
+            or contract["parameterOrdinals"]
+            != [row["parameterOrdinal"] for row in annotations]
+        ):
+            raise ValueError(f"screen-presentation macro ABI drift: {macro}")
+        handler_name = SCREEN_PRESENTATION_HANDLER_BY_MACRO[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"screen-presentation dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if opcode not in handler["opcodes"] or handler["encodedCommandBytes"] != contract[
+            "encodedBytes"
+        ]:
+            raise ValueError(f"screen-presentation handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _screen_presentation_section_guard(macro, statements, equates)
+        if sum(
+            row["cursorAdvanceByteCount"]
+            for row in section_guard["scriptCursorReadUseSites"]
+        ) != contract["operandBytes"]:
+            raise ValueError(f"screen-presentation script cursor width drift: {macro}")
+        section_source = _map_camera_control_named_section_source(
+            disasm, handler_path, handler_name
+        )
+        for branch in section_guard["branchRecords"]:
+            branch["branchTarget"] = _screen_presentation_branch_target_record(
+                section_source,
+                branch["branchInstruction"],
+                branch.pop("expectedTargetInstruction"),
+                section_guard["orderedInstructions"],
+            )
+        for loop in section_guard["loopRecords"]:
+            loop["loopTarget"] = _screen_presentation_loop_target_record(
+                section_source,
+                loop["loopInstruction"],
+                loop.pop("expectedTargetInstruction"),
+                section_guard["orderedInstructions"],
+            )
+        direct_calls = _screen_presentation_direct_calls(statements)
+        if direct_calls != _screen_presentation_direct_calls(section_guard["directCallOrder"]):
+            raise ValueError(f"screen-presentation direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations,
+                "statementCount": len(statements),
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": SCREEN_PRESENTATION_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in SCREEN_PRESENTATION_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_screen_presentation_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "callerBreakdown": _screen_presentation_caller_breakdown(
+            disasm, direct_call_rows, addresses, rom
+        ),
+        "runtimeQuestions": SCREEN_PRESENTATION_RUNTIME_QUESTIONS,
+    }
+
+
 def _entity_gesture_relationship_motion_resolve_operand(
     value: str, equates: dict[str, int]
 ) -> dict[str, Any]:
@@ -10097,6 +10736,16 @@ def build_map_script_engine_contract(
             rom,
         )
     )
+    screen_presentation_command_facts = _screen_presentation_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+    )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
     expected_words = b"".join(
@@ -10254,6 +10903,7 @@ def build_map_script_engine_contract(
         "entityGestureRelationshipMotionCommandFacts": (
             entity_gesture_relationship_motion_command_facts
         ),
+        "screenPresentationCommandFacts": screen_presentation_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -10270,6 +10920,7 @@ def build_map_script_engine_contract(
             *ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS,
             *ENTITY_LIFECYCLE_PRESENTATION_RUNTIME_QUESTIONS,
             *ENTITY_GESTURE_RELATIONSHIP_MOTION_RUNTIME_QUESTIONS,
+            *SCREEN_PRESENTATION_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -10331,6 +10982,7 @@ def verify_map_script_engine_contract(
         "entityGestureRelationshipMotionCommandFacts": output[
             "entityGestureRelationshipMotionCommandFacts"
         ],
+        "screenPresentationCommandFacts": output["screenPresentationCommandFacts"],
     }
     for field in (
         "summary",
@@ -10363,6 +11015,7 @@ def verify_map_script_engine_contract(
         "entityActionBridgeCommandFacts",
         "entityLifecyclePresentationCommandFacts",
         "entityGestureRelationshipMotionCommandFacts",
+        "screenPresentationCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
@@ -10386,6 +11039,11 @@ def verify_map_script_engine_contract(
         if field == "entityGestureRelationshipMotionCommandFacts":
             actual = {
                 key: output["entityGestureRelationshipMotionCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "screenPresentationCommandFacts":
+            actual = {
+                key: output["screenPresentationCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "dispatcherFacts":

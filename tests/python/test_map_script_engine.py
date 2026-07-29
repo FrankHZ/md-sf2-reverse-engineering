@@ -58,6 +58,11 @@ from sf2tool.h2.map_script_engine import (
     _map_lifecycle_section_guard,
     _modifier_source_labels,
     _program_corpus,
+    _screen_presentation_branch_target_record,
+    _screen_presentation_cursor_read_use_site,
+    _screen_presentation_direct_calls,
+    _screen_presentation_macro_annotations,
+    _screen_presentation_section_guard,
     _statements,
     _story_state_corpus_order_facts,
     _story_state_facts,
@@ -6375,6 +6380,454 @@ def test_map_entity_gesture_relationship_motion_schema_compacts_raw_corpora_and_
                 "entityGestureRelationshipMotionCommand",
                 "entityGestureRelationshipMotionSourceSite",
                 "entityGestureRelationshipMotionProgramTotal",
+            ):
+                item = schema["definitions"][name]
+                assert item["additionalProperties"] is False
+                assert "prefixItems" not in item
+                assert "const" not in item
+        else:
+            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        assert_closed_objects(facts)
+
+
+def test_map_screen_presentation_macro_annotations_preserve_only_source_operands(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    annotations = _screen_presentation_macro_annotations(disasm)
+    assert annotations["setQuake"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "? ($4000-, $8000-",
+            "streamOffset": 2,
+            "widthBytes": 2,
+        }
+    ]
+    assert annotations["flashScreenWhite"] == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "duration",
+            "streamOffset": 2,
+            "widthBytes": 2,
+        }
+    ]
+    assert all(
+        annotations[macro] == []
+        for macro in (
+            "fadeInB",
+            "fadeOutB",
+            "slowFadeInB",
+            "slowFadeOutB",
+            "tintMap",
+            "flickerOnce",
+            "mapFadeOutToWhite",
+            "mapFadeInFromWhite",
+            "fadeInFromBlackHalf",
+            "fadeOutToBlackHalf",
+        )
+    )
+    original_reader = map_script_engine.read_upstream_text
+
+    def annotation_altered_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            prefix, marker, quake_and_after = source.partition("setQuake: macro")
+            return prefix + marker + quake_and_after.replace(
+                "dc.w \\1 ; ? ($4000-, $8000-", "dc.w \\1", 1
+            )
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", annotation_altered_reader)
+    with pytest.raises(ValueError, match="operand comment is missing"):
+        _screen_presentation_macro_annotations(disasm)
+
+
+def test_map_screen_presentation_direct_call_parser_preserves_pc_relative_form() -> None:
+    assert _screen_presentation_direct_calls(
+        [
+            "jsr LaunchFading(pc) ; service boundary",
+            "jsr (Sleep).w",
+            "bsr.l NamedService",
+        ]
+    ) == [
+        {
+            "opcode": "jsr",
+            "instructionTarget": "LaunchFading",
+            "addressingForm": "pc-relative",
+        },
+        {
+            "opcode": "jsr",
+            "instructionTarget": "Sleep",
+            "addressingForm": "direct",
+        },
+        {
+            "opcode": "bsr",
+            "instructionTarget": "NamedService",
+            "addressingForm": "direct",
+        },
+    ]
+    assert _screen_presentation_direct_calls(
+        [
+            "label: jsr LaunchFading(pc)",
+            "; jsr LaunchFading(pc)",
+            "move.w LaunchFading(pc),d0",
+            "jsr a0",
+            "jsr LaunchFading(pc),d0",
+        ]
+    ) == []
+
+
+def test_map_screen_presentation_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["screenPresentationCommandFacts"]
+    assert fixture["expected"]["screenPresentationCommandFacts"] == {
+        key: actual[key]
+        for key in fixture["expected"]["screenPresentationCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+            row["handler"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("setQuake", 51, 4, 2, 194, "csc33_setQuakeAmount"),
+        ("fadeInB", 57, 2, 0, 98, "csc39_fadeInFromBlack"),
+        ("fadeOutB", 58, 2, 0, 10, "csc3A_fadeOutToBlack"),
+        ("slowFadeInB", 59, 2, 0, 1, "csc3B_slowFadeInFromBlack"),
+        ("slowFadeOutB", 60, 2, 0, 0, "csc3C_slowFadeOutToBlack"),
+        ("tintMap", 61, 2, 0, 11, "csc3D_tintMap"),
+        ("flickerOnce", 62, 2, 0, 5, "csc3E_FlickerOnce"),
+        ("mapFadeOutToWhite", 63, 2, 0, 15, "csc3F_fadeMapOutToWhite"),
+        ("mapFadeInFromWhite", 64, 2, 0, 15, "csc40_fadeMapInFromWhite"),
+        ("flashScreenWhite", 65, 4, 2, 96, "csc41_flashScreenWhite"),
+        ("fadeInFromBlackHalf", 74, 2, 0, 8, "csc4A_fadeInFromBlackHalf"),
+        ("fadeOutToBlackHalf", 75, 2, 0, 6, "csc4B_fadeOutToBlackHalf"),
+    ]
+    assert sum(row["sourceCommandCount"] for row in actual["macros"]) == 459
+    assert len(actual["sourceSites"]) == 115
+    assert len(actual["sourceSiteOrderKeys"]) == 459
+    assert actual["sourceSitesSha256"] == (
+        "EE24CB393511FD9640AC96E427815CBC1851B2A6384A9D045FE74CC7E28F0948"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "DB8AFFDF9AE1FE4B119CF916EB1F9792A383F5BD7FE6B7F95B7FD7CBE8F3107F"
+    )
+    assert [
+        (
+            row["macro"],
+            row["handler"],
+            row["address"],
+            row["statementCount"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        ("setQuake", "csc33_setQuakeAmount", 288030, 23),
+        ("fadeInB", "csc39_fadeInFromBlack", 288260, 2),
+        ("fadeOutB", "csc3A_fadeOutToBlack", 288266, 2),
+        ("slowFadeInB", "csc3B_slowFadeInFromBlack", 288272, 5),
+        ("slowFadeOutB", "csc3C_slowFadeOutToBlack", 288292, 5),
+        ("tintMap", "csc3D_tintMap", 288312, 6),
+        ("flickerOnce", "csc3E_FlickerOnce", 288326, 6),
+        ("mapFadeOutToWhite", "csc3F_fadeMapOutToWhite", 288340, 6),
+        ("mapFadeInFromWhite", "csc40_fadeMapInFromWhite", 288354, 6),
+        ("flashScreenWhite", "csc41_flashScreenWhite", 288368, 10),
+        ("fadeInFromBlackHalf", "csc4A_fadeInFromBlackHalf", 288648, 6),
+        ("fadeOutToBlackHalf", "csc4B_fadeOutToBlackHalf", 288662, 6),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["sourceImmediateUseSites"] == [
+        {
+            "instruction": instruction,
+            "rawValue": raw_value,
+            "resolvedValue": value,
+            "resolution": "literal",
+        }
+        for instruction, raw_value, value in (
+            ("andi.w #$3FFF,d0", "$3FFF", 16383),
+            ("subq.w #1,d7", "1", 1),
+            ("btst #$F,d3", "$F", 15),
+            ("moveq #0,d1", "0", 0),
+            ("move.w #1,d2", "1", 1),
+            ("btst #$E,d3", "$E", 14),
+            ("move.w #-1,d2", "-1", -1),
+            ("move.w #$28,d0", "$28", 40),
+        )
+    ]
+    assert actual["handlers"][9]["sectionGuard"]["loopRecords"] == [
+        {
+            "loopInstruction": "dbf d7,loc_4667A",
+            "loopTarget": {
+                "counterRegister": "d7",
+                "loopInstruction": "dbf d7,loc_4667A",
+                "targetLabel": "loc_4667A",
+                "targetInstruction": "jsr LaunchFading(pc)",
+                "targetStatementIndex": 5,
+            },
+        }
+    ]
+    assert actual["handlers"][5]["directCalls"] == [
+        {
+            "opcode": "jsr",
+            "instructionTarget": "LaunchFading",
+            "addressingForm": "pc-relative",
+        }
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "Sleep": 1,
+        "FadeInFromBlack": 2,
+        "FadeOutToBlack": 2,
+        "LaunchFading": 7,
+        "DuplicatePalettes": 1,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["instructionTargetTotals"]
+    for field in ("internalInstructionTargetTotals", "internalEffectiveTargetTotals"):
+        assert actual["callerBreakdown"][field] == {
+            target: 0 for target in actual["callerBreakdown"]["instructionTargetTotals"]
+        }
+    assert actual["runtimeQuestions"] == [
+        "map-script-screen-presentation/runtime-effects-matrix"
+    ]
+
+
+def test_map_screen_presentation_source_guards_reject_local_drift(
+    map_script_engine_output: dict,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    facts = map_script_engine_output["screenPresentationCommandFacts"]
+    source_handlers = {row["name"]: row for row in map_script_engine_output["handlers"]}
+    guarded_handlers = {row["macro"]: row for row in facts["handlers"]}
+    for macro, handler in guarded_handlers.items():
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        guard = _screen_presentation_section_guard(macro, statements, equates)
+        assert guard["orderedInstructions"] == handler["sectionGuard"]["orderedInstructions"]
+        for field in (
+            "scriptCursorReadUseSites",
+            "sourceImmediateUseSites",
+            "sourceOperandInstructions",
+            "directCallOrder",
+            "returnInstruction",
+        ):
+            assert guard[field] == handler["sectionGuard"][field]
+        section_source = map_script_engine._map_camera_control_named_section_source(
+            disasm,
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            handler["handler"],
+        )
+        assert [
+            {
+                "branchInstruction": row["branchInstruction"],
+                "branchTarget": _screen_presentation_branch_target_record(
+                    section_source,
+                    row["branchInstruction"],
+                    row["expectedTargetInstruction"],
+                    guard["orderedInstructions"],
+                ),
+            }
+            for row in guard["branchRecords"]
+        ] == handler["sectionGuard"]["branchRecords"]
+        assert [
+            {
+                "loopInstruction": row["loopInstruction"],
+                "loopTarget": {
+                    "counterRegister": "d7",
+                    "loopInstruction": row["loopInstruction"],
+                    **_screen_presentation_branch_target_record(
+                        section_source,
+                        f"bra.s {row['loopInstruction'].split(',', 1)[1]}",
+                        row["expectedTargetInstruction"],
+                        guard["orderedInstructions"],
+                    ),
+                },
+            }
+            for row in guard["loopRecords"]
+        ] == handler["sectionGuard"]["loopRecords"]
+    mutations = (
+        ("setQuake", "andi.w #$3FFF,d0", "andi.w #$7FFF,d0"),
+        ("fadeInB", "jsr (FadeInFromBlack).w", "jsr (FadeOutToBlack).w"),
+        ("fadeOutB", "jsr (FadeOutToBlack).w", "jsr (FadeInFromBlack).w"),
+        ("slowFadeInB", "move.b #6", "move.b #5"),
+        ("slowFadeOutB", "move.b #6", "move.b #5"),
+        ("tintMap", "#HALF_OUT_TO_BLACK", "#FLICKER_ONCE"),
+        ("flickerOnce", "#FLICKER_ONCE", "#HALF_OUT_TO_BLACK"),
+        ("mapFadeOutToWhite", "#OUT_TO_WHITE", "#IN_FROM_WHITE"),
+        ("mapFadeInFromWhite", "#IN_FROM_WHITE", "#OUT_TO_WHITE"),
+        ("flashScreenWhite", "lsr.w #3,d7", "lsr.w #2,d7"),
+        ("fadeInFromBlackHalf", "#HALF_IN_FROM_BLACK", "#OUT_TO_BLACK_2"),
+        ("fadeOutToBlackHalf", "#OUT_TO_BLACK_2", "#HALF_IN_FROM_BLACK"),
+    )
+    for macro, original, replacement in mutations:
+        handler = guarded_handlers[macro]
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        with pytest.raises(ValueError, match="statement is missing"):
+            _screen_presentation_section_guard(
+                macro,
+                [statement.replace(original, replacement) for statement in statements],
+                equates,
+            )
+    section_source = map_script_engine._map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "csc33_setQuakeAmount",
+    )
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _screen_presentation_branch_target_record(
+            section_source.replace("loc_46546:", "loc_46547:"),
+            "beq.s loc_46546",
+            "move.w d0,(QUAKE_AMPLITUDE).l",
+            guarded_handlers["setQuake"]["sectionGuard"]["orderedInstructions"],
+        )
+
+
+def test_map_screen_presentation_cursor_parser_handles_comments_sizes_and_near_misses() -> None:
+    assert _screen_presentation_cursor_read_use_site("move.b (a6),d0 ; selector") == {
+        "sourceRegister": "a6",
+        "destinationOperand": "d0",
+        "transferredByteCount": 1,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "move.b (a6),d0",
+    }
+    assert _screen_presentation_cursor_read_use_site("move.w (a6)+,d2")[
+        "cursorAdvanceByteCount"
+    ] == 2
+    assert _screen_presentation_cursor_read_use_site("move.l (a6)+,d7")[
+        "transferredByteCount"
+    ] == 4
+    for near_miss in (
+        "label: move.w (a6)+,d2",
+        "; move.w (a6)+,d2",
+        "move.q (a6)+,d2",
+        "move.w d2,(a6)+",
+        "move.w target(a6),d2",
+    ):
+        with pytest.raises(ValueError, match="cursor-read use-site drift"):
+            _screen_presentation_cursor_read_use_site(near_miss)
+
+
+def test_map_screen_presentation_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="screen presentation baseline")
+        target_path = (
+            ("screenPresentationCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "screenPresentationCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["macros"][0]["sourceOperandAnnotations"][0][
+            "sourceComment"
+        ]
+        with pytest.raises(ValueError, match="sourceComment"):
+            validate_json(missing, schema_path, owner="screen presentation missing nested")
+
+        renamed = deepcopy(source)
+        direct_call = target_for(renamed)["handlers"][5]["directCalls"][0]
+        direct_call["addressing"] = direct_call.pop("addressingForm")
+        with pytest.raises(ValueError, match="addressingForm"):
+            validate_json(renamed, schema_path, owner="screen presentation renamed nested")
+
+        extra = deepcopy(source)
+        target_for(extra)["handlers"][0]["sectionGuard"]["sourceImmediateUseSites"][0][
+            "extra"
+        ] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="screen presentation extra nested")
+
+        reordered = deepcopy(source)
+        order = target_for(reordered)["sourceSiteOrderKeys"]
+        order[0], order[1] = order[1], order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema_path, owner="screen presentation exact source order")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["macros"][0]["sourceCommandCount"] = 195
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema_path, owner="screen presentation exact boundary")
+
+
+def test_map_screen_presentation_schema_compacts_raw_corpora_and_closes_shapes() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("screenPresentationCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "screenPresentationCommandFacts"
+            ]
+        exact_block = contract["allOf"][1]
+        exact = (
+            exact_block["const"]
+            if "const" in exact_block
+            else exact_block["properties"]
+        )
+        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
+        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
+        definition_name = (
+            "screenPresentationCommandFacts"
+            if "screenPresentationCommandFacts" in schema["definitions"]
+            else "screenPresentationFixtureCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if definition_name == "screenPresentationCommandFacts":
+            assert {"sourceSites", "programTotals"} <= set(facts["required"])
+            assert facts["properties"]["sourceSites"] == {
+                "type": "array",
+                "minItems": 115,
+                "maxItems": 115,
+                "items": {"$ref": "#/definitions/screenPresentationSourceSite"},
+            }
+            assert facts["properties"]["programTotals"] == {
+                "type": "array",
+                "minItems": 304,
+                "maxItems": 304,
+                "items": {"$ref": "#/definitions/screenPresentationProgramTotal"},
+            }
+            for name in (
+                "screenPresentationCommand",
+                "screenPresentationSourceSite",
+                "screenPresentationProgramTotal",
             ):
                 item = schema["definitions"][name]
                 assert item["additionalProperties"] is False

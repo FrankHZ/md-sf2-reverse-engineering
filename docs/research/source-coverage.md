@@ -435,6 +435,16 @@ branch and loop target identity, and ten-target zero-inclusive direct/effective 
 `map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix` is the sole grouped
 H3 follow-up; source spelling does not credit entity action, relationship, movement, timing, collision,
 persistence, or presentation behavior as static coverage.
+The adjacent screen/map-presentation slice is exact for twelve source-named forms: 194 `setQuake`
+`$33`, 98 `fadeInB` `$39`, ten `fadeOutB` `$3A`, one `slowFadeInB` `$3B`, zero `slowFadeOutB` `$3C`,
+11 `tintMap` `$3D`, five `flickerOnce` `$3E`, 15 `mapFadeOutToWhite` `$3F`, 15
+`mapFadeInFromWhite` `$40`, 96 `flashScreenWhite` `$41`, eight `fadeInFromBlackHalf` `$4A`, and six
+`fadeOutToBlackHalf` `$4B` commands (459 total). It retains 115 ordered source-site rows, the complete
+304-row zero-inclusive program domain, raw macro comments/widths, twelve complete named handler guards,
+source immediate/operand records, branch/loop target identity, and five-target zero-inclusive
+direct/effective caller maps that preserve seven PC-relative `LaunchFading` sites.
+`map-script-screen-presentation/runtime-effects-matrix` is the sole grouped H3 follow-up; source names
+do not credit visual, timing, palette, VDP, persistence, or reachability behavior as static coverage.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

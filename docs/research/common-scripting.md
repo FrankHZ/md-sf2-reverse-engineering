@@ -13,7 +13,8 @@
   block-copy family/program-site/handler/caller contract, the complete four-command map-script entity
   population/reload family/program-site/handler/caller contract, the complete four-command map-script
   entity-placement source/handler/caller contract, the complete seven-command source-named map-script
-  entity gesture/relationship/motion source/handler/caller contract, the complete 119-row sprite-dialogue
+  entity gesture/relationship/motion source/handler/caller contract, the complete twelve-command
+  source-named map-script screen/map-presentation source/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -471,6 +472,61 @@ and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD
 Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.entityGestureRelationshipMotionCommandFacts`.
+
+## Confirmed Map-Script Screen/Map Presentation Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.screenPresentationCommandFacts` retains twelve source-named macro forms in source order:
+`setQuake` `$33` (194 commands, 4 encoded bytes, 2 operand bytes), `fadeInB` `$39` (98, 2, 0),
+`fadeOutB` `$3A` (10, 2, 0), `slowFadeInB` `$3B` (1, 2, 0), `slowFadeOutB` `$3C` (0, 2, 0),
+`tintMap` `$3D` (11, 2, 0), `flickerOnce` `$3E` (5, 2, 0), `mapFadeOutToWhite` `$3F` (15, 2, 0),
+`mapFadeInFromWhite` `$40` (15, 2, 0), `flashScreenWhite` `$41` (96, 4, 2),
+`fadeInFromBlackHalf` `$4A` (8, 2, 0), and `fadeOutToBlackHalf` `$4B` (6, 2, 0). The only raw
+macro comments are `setQuake`'s exact `? ($4000-, $8000-` and `flashScreenWhite`'s `duration`; source
+names, comments, and physical layout do not establish a visual, timing, palette, VDP, or reachability
+result.
+
+**Confirmed:** the complete source corpus contains 459 ordered command occurrences in 115 non-empty
+source-site rows, and all 304 declared programs remain as zero-inclusive `programTotals` rows. The
+extractor retains compact scalar source-site/program order keys, complete raw rows, and exact order
+hashes: `EE24CB393511FD9640AC96E427815CBC1851B2A6384A9D045FE74CC7E28F0948` for source sites and
+`DB8AFFDF9AE1FE4B119CF916EB1F9792A383F5BD7FE6B7F95B7FD7CBE8F3107F` for program totals.
+
+**Confirmed:** the twelve bounded H1/ROM handler sections are `csc33_setQuakeAmount` `$4651E` (23
+statements), `csc39_fadeInFromBlack` `$46604` (2), `csc3A_fadeOutToBlack` `$4660A` (2),
+`csc3B_slowFadeInFromBlack` `$46610` (5), `csc3C_slowFadeOutToBlack` `$46624` (5),
+`csc3D_tintMap` `$46638` (6), `csc3E_FlickerOnce` `$46646` (6), `csc3F_fadeMapOutToWhite` `$46654`
+(6), `csc40_fadeMapInFromWhite` `$46662` (6), `csc41_flashScreenWhite` `$46670` (10),
+`csc4A_fadeInFromBlackHalf` `$46788` (6), and `csc4B_fadeOutToBlackHalf` `$46796` (6). Their guards
+retain complete statement/direct-call order, A6 transfers, source immediate use sites, raw stored-operand
+instructions, branch polarity/target identity, loop targets, and return boundaries. The parsed `$3FFF`,
+`$F`, `$E`, `$28`, `FLASH_QUICKLY_2`, and other immediate records remain source instruction facts, not
+interpreted masks, durations, or visual settings.
+
+**Confirmed:** instruction-scoped caller parsing retains five direct/effective service identities and
+their zero-inclusive per-handler maps: `Sleep` 1, `FadeInFromBlack` 2, `FadeOutToBlack` 2,
+`LaunchFading` 7, and `DuplicatePalettes` 1. All internal totals are zero. The seven
+`LaunchFading` sites retain both instruction target identity and the source `pc-relative` addressing
+form; no call currently resolves through a jump-interface alias. This is a service boundary only: the
+called implementation is outside this slice.
+
+### Runtime questions — screen/map presentation
+
+**Unknown:** `map-script-screen-presentation/runtime-effects-matrix` is the sole grouped H3 queue. One
+shared launch must establish normal-story reachability; operand/selector meaning; visual/palette/VDP
+results; frame timing; completion and repeat behavior; persistence; and interaction with map/entity
+state. No source macro, comment, handler, literal, field, or callee name promotes those runtime outcomes
+from this static contract.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros named above;
+`code/common/scripting/map/mapscriptengine_1.asm` named sections above; H1 listing symbols/addresses;
+and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.screenPresentationCommandFacts`.
 
 ## Confirmed Map-Script Roster/Death Command Family
 
