@@ -60,6 +60,9 @@ from sf2tool.h2.map_script_engine import (
     _map_lifecycle_macro_annotations,
     _map_lifecycle_read_use_site,
     _map_lifecycle_section_guard,
+    _map_script_ui_primary_macro_annotations,
+    _map_script_ui_primary_portrait_helper_join,
+    _map_script_ui_primary_section_guard,
     _modifier_source_labels,
     _program_corpus,
     _screen_presentation_branch_target_record,
@@ -5973,6 +5976,307 @@ def test_map_entity_lifecycle_presentation_schema_compacts_raw_corpora_and_close
                 assert item["additionalProperties"] is False
                 assert "prefixItems" not in item
                 assert "const" not in item
+        else:
+            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        assert_closed_objects(facts)
+
+
+def test_map_ui_command_macro_annotations_preserve_byte_operands_and_empty_comment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    annotations = _map_script_ui_primary_macro_annotations(disasm)
+    assert annotations == {
+        "showPortrait": [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": (
+                    "portrait modifier ($0-none, $40-mirrored, $80-display on right, "
+                    "$FF-undisplayed)"
+                ),
+                "streamOffset": 2,
+                "widthBytes": 1,
+                "encoding": "direct",
+            },
+            {
+                "parameterOrdinal": 2,
+                "sourceComment": "entity",
+                "streamOffset": 3,
+                "widthBytes": 1,
+                "encoding": "direct",
+            },
+        ],
+        "hidePortrait": [],
+        "menu": [
+            {
+                "parameterOrdinal": 1,
+                "sourceComment": "",
+                "streamOffset": 2,
+                "widthBytes": 2,
+                "encoding": "direct",
+            }
+        ],
+    }
+    original_reader = map_script_engine.read_upstream_text
+
+    def annotation_altered_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            prefix, marker, show_and_after = source.partition("showPortrait: macro")
+            return prefix + marker + show_and_after.replace("dc.b \\2 ; entity", "dc.b \\2", 1)
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", annotation_altered_reader)
+    with pytest.raises(ValueError, match="operand comment is missing"):
+        _map_script_ui_primary_macro_annotations(disasm)
+
+
+def test_map_ui_command_boundary_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["mapScriptUiPrimaryCommandFacts"]
+    assert fixture["expected"]["mapScriptUiPrimaryCommandFacts"] == {
+        key: actual[key]
+        for key in fixture["expected"]["mapScriptUiPrimaryCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+            row["handler"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("showPortrait", 29, 4, 2, 4, "csc1D_showPortrait"),
+        ("hidePortrait", 30, 2, 0, 1, "csc1E_hidePortrait"),
+        ("menu", 18, 4, 2, 0, "csc12_executeContextMenu"),
+    ]
+    assert (len(actual["sourceSites"]), len(actual["sourceSiteOrderKeys"])) == (4, 5)
+    assert actual["sourceSitesSha256"] == (
+        "FDF32E72E55D28E7EBC57BB5963658F6A4B10DE7C1920A2A69F75D1A90D4CC4A"
+    )
+    assert (len(actual["programTotals"]), len(actual["programTotalOrderKeys"])) == (304, 304)
+    assert actual["programTotalsSha256"] == (
+        "63EBE7909405F52FAD4D9C4E24050213E107CD9ABCBF7A709A4A7AA9F4F5EA1D"
+    )
+    assert [
+        (row["macro"], row["handler"], row["sourcePath"], row["address"], row["statementCount"])
+        for row in actual["handlers"]
+    ] == [
+        (
+            "showPortrait",
+            "csc1D_showPortrait",
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            289432,
+            20,
+        ),
+        (
+            "hidePortrait",
+            "csc1E_hidePortrait",
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            289490,
+            3,
+        ),
+        (
+            "menu",
+            "csc12_executeContextMenu",
+            "code/common/scripting/map/mapscriptengine_2.asm",
+            292022,
+            13,
+        ),
+    ]
+    assert actual["handlers"][2]["sectionGuard"]["stackPointerTransferInstructions"] == [
+        "move.l a6,-(sp)",
+        "movea.l (sp)+,a6",
+    ]
+    assert actual["portraitHelperJoin"] == {
+        "sourceFactPath": "dialogueCommandFacts.portraitHelper",
+        "macro": "showPortrait",
+        "handler": "csc1D_showPortrait",
+        "handlerAddress": 289432,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "macroOperandWidths": [1, 1],
+        "macroOperandByteCount": 2,
+        "handlerModifierEntityWordRead": "move.w (a6)+,d0",
+        "handlerTestedModifierByteMask": 192,
+        "modifierBitTests": [
+            {"bit": 15, "destination": "d3"},
+            {"bit": 14, "destination": "d4"},
+        ],
+    }
+    instruction_totals = {
+        "WaitForViewScrollEnd": 2,
+        "GetEntityPortaitAndSpeechSfx": 1,
+        "j_OpenPortraitWindow": 1,
+        "j_ClosePortraitWindow": 1,
+        "j_ChurchMenu": 1,
+        "j_ShopMenu": 1,
+        "j_BlacksmithMenu": 1,
+    }
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == instruction_totals
+    assert actual["callerBreakdown"]["externalInstructionTargetTotals"] == instruction_totals
+    assert actual["callerBreakdown"]["internalInstructionTargetTotals"] == {
+        target: 0 for target in instruction_totals
+    }
+    assert actual["runtimeQuestions"] == ["map-script-ui-command/runtime-effects-matrix"]
+
+
+def test_map_ui_command_boundary_source_guards_and_portrait_join_reject_drift(
+    map_script_engine_output: dict,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    facts = map_script_engine_output["mapScriptUiPrimaryCommandFacts"]
+    source_handlers = {row["name"]: row for row in map_script_engine_output["handlers"]}
+    for handler in facts["handlers"]:
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        guard = _map_script_ui_primary_section_guard(
+            handler["macro"], statements, equates
+        )
+        for field in (
+            "orderedInstructions",
+            "scriptCursorReadUseSites",
+            "sourceImmediateUseSites",
+            "sourceOperandInstructions",
+            "stackPointerTransferInstructions",
+            "directCallOrder",
+            "returnInstruction",
+        ):
+            assert guard[field] == handler["sectionGuard"][field]
+    guarded_handlers = {row["macro"]: row for row in facts["handlers"]}
+    for macro, original, replacement in (
+        ("showPortrait", "btst #$F,d0", "btst #$D,d0"),
+        ("hidePortrait", "jsr j_ClosePortraitWindow", "jsr j_OpenPortraitWindow"),
+        ("menu", "cmpi.w #2,d0", "cmpi.w #3,d0"),
+    ):
+        handler = guarded_handlers[macro]
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        with pytest.raises(ValueError, match="statement is missing"):
+            _map_script_ui_primary_section_guard(
+                macro,
+                [statement.replace(original, replacement) for statement in statements],
+                equates,
+            )
+    portrait_helper = deepcopy(map_script_engine_output["dialogueCommandFacts"]["portraitHelper"])
+    portrait_helper["modifierEntityWordRead"] = "move.b (a6)+,d0"
+    with pytest.raises(ValueError, match="portrait-helper provenance join drift"):
+        _map_script_ui_primary_portrait_helper_join(
+            map_script_engine_output["macroContracts"]["showPortrait"], portrait_helper
+        )
+
+
+def test_map_ui_command_boundary_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="map UI command boundary baseline")
+        target_path = (
+            ("mapScriptUiPrimaryCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "mapScriptUiPrimaryCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["macros"][0]["sourceOperandAnnotations"][0]["encoding"]
+        with pytest.raises(ValueError, match="encoding"):
+            validate_json(missing, schema_path, owner="map UI missing nested")
+
+        renamed = deepcopy(source)
+        handler = target_for(renamed)["handlers"][2]
+        handler["path"] = handler.pop("sourcePath")
+        with pytest.raises(ValueError, match="sourcePath"):
+            validate_json(renamed, schema_path, owner="map UI renamed nested")
+
+        extra = deepcopy(source)
+        target_for(extra)["portraitHelperJoin"]["modifierBitTests"][0]["extra"] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="map UI extra nested")
+
+        reordered = deepcopy(source)
+        order = target_for(reordered)["sourceSiteOrderKeys"]
+        order[0], order[1] = order[1], order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema_path, owner="map UI exact source order")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["macros"][2]["sourceCommandCount"] = 1
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema_path, owner="map UI zero-use boundary")
+
+
+def test_map_ui_command_boundary_schema_compacts_raw_corpora_and_closes_shapes() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("mapScriptUiPrimaryCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "mapScriptUiPrimaryCommandFacts"
+            ]
+        exact = contract["allOf"][1]["properties"]
+        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
+        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
+        definition_name = (
+            "mapScriptUiPrimaryCommandFacts"
+            if "mapScriptUiPrimaryCommandFacts" in schema["definitions"]
+            else "mapScriptUiPrimaryFixtureCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if definition_name == "mapScriptUiPrimaryCommandFacts":
+            assert facts["properties"]["sourceSites"] == {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {"$ref": "#/definitions/mapScriptUiPrimarySourceSite"},
+            }
+            assert facts["properties"]["programTotals"] == {
+                "type": "array",
+                "minItems": 304,
+                "maxItems": 304,
+                "items": {"$ref": "#/definitions/mapScriptUiPrimaryProgramTotal"},
+            }
+            command = schema["definitions"]["mapScriptUiPrimaryCommand"]
+            operand_value = command["properties"]["operandValues"]["items"]
+            assert operand_value["additionalProperties"] is False
+            assert set(operand_value["required"]) >= {"encoding", "resolution", "resolvedValue"}
+            assert operand_value["properties"]["resolvedValue"] == {
+                "type": ["integer", "null"]
+            }
         else:
             assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
 

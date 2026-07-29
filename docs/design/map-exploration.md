@@ -192,6 +192,18 @@ chunk target, loop-target records, instruction/effective target caller maps, and
 These are source-layout and control-flow records. A remake MUST NOT normalize them into an entity effect,
 head motion, color change, transition meaning, visual, timing, persistence, or reachability model; all
 original runtime consequences remain in `map-script-entity-presentation-fx/runtime-effects-matrix`.
+Map-script imports MUST separately retain the three source-named primary forms `showPortrait`,
+`hidePortrait`, and `menu` in `sf2-map-script-engine-static-v1` at
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.mapScriptUiPrimaryCommandFacts`. Each record MUST preserve opcode, physical operand widths,
+raw macro comments including `menu`'s empty comment, complete command/program order, and the
+zero-inclusive program domain. The import boundary MUST retain named handler instruction order: A6
+transfer widths, source immediate/operand records, branch targets, source stack-pointer transfer records,
+instruction/effective target caller maps with aliases, return boundaries, and the provenance join to
+`dialogueCommandFacts.portraitHelper`. These are source-layout and control-flow records. A remake MUST
+NOT normalize them into portrait drawing, menu/input handling, a selection result, timing, persistence,
+save behavior, or reachability model; all original runtime consequences remain in
+`map-script-ui-command/runtime-effects-matrix`.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

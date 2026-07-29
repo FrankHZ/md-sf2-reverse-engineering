@@ -227,6 +227,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   三个 named handler 的 A6 cursor、immediate/operand、branch/function-chunk/loop/call/return guards，
   以及 nine-target zero-inclusive caller map；唯一 H3 queue 为
   `map-script-entity-presentation-fx/runtime-effects-matrix`。
+  同一 304-row 零计数 corpus 还固定三个 source-named UI primary form（5 sites，含零使用 `menu`）、
+  三个 named handler 的 A6 cursor、immediate/operand、branch/stack/call/return guards，及
+  provenance join 的 portrait-helper 与 seven-target alias-aware caller map；唯一 H3 queue 为
+  `map-script-ui-command/runtime-effects-matrix`。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
   39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot

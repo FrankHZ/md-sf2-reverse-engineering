@@ -454,6 +454,14 @@ the two matching branches, and nine-target zero-inclusive direct/effective calle
 H3 follow-up is `map-script-entity-presentation-fx/runtime-effects-matrix`; source names, fields,
 literals, tables, and callee names do not credit an entity effect, selector meaning, visual, timing,
 persistence, or reachability behavior as static coverage.
+**Confirmed:** the adjacent UI-primary-command boundary is exact for four `showPortrait` `$1D`, one
+`hidePortrait` `$1E`, and zero `menu` `$12` occurrences (five commands in four source-site rows). It
+retains all 304 zero-inclusive program rows, the source byte/word operand annotations, three complete
+named handler guards, a provenance join to the already parsed dialogue portrait-helper record, and
+seven-target alias-aware direct/effective caller maps. The sole grouped H3 follow-up is
+`map-script-ui-command/runtime-effects-matrix`; source names, packed fields, aliases, literals, and
+callee names do not credit UI output, input/choice, timing, persistence, save behavior, or reachability
+as static coverage.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.

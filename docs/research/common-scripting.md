@@ -580,6 +580,60 @@ H1 listing symbols/addresses; and local US ROM SHA-256
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.entityPresentationFxCommandFacts`.
 
+## Confirmed Map-Script UI Primary Command Boundary
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.mapScriptUiPrimaryCommandFacts` retains three source-named primary forms in source order:
+`showPortrait` `$1D` (4 commands, 4 encoded bytes, 2 operand bytes), `hidePortrait` `$1E` (1, 2,
+0), and `menu` `$12` (0, 4, 2). `showPortrait` emits two direct byte operands with its exact source
+comments; `menu` emits one direct word whose source comment is exactly empty. These names and comments do
+not establish drawing, input, choice, window timing, reachability, or save behavior.
+
+**Confirmed:** the complete corpus contains five ordered command occurrences in four non-empty source-site
+rows: four `showPortrait` and one `hidePortrait`; `menu` has no source occurrence. All 304 declared
+programs remain zero-inclusive `programTotals` rows, including an exact zero `menu` count. Exact compact
+source-site/program order hashes are `FDF32E72E55D28E7EBC57BB5963658F6A4B10DE7C1920A2A69F75D1A90D4CC4A`
+and `63EBE7909405F52FAD4D9C4E24050213E107CD9ABCBF7A709A4A7AA9F4F5EA1D`.
+
+**Confirmed:** the bounded H1/ROM handler sections are `csc1D_showPortrait` `$46A98` (20 statements) and
+`csc1E_hidePortrait` `$46AD2` (3) in `mapscriptengine_1.asm`, plus
+`csc12_executeContextMenu` `$474B6` (13) in `mapscriptengine_2.asm`. Their complete guards retain A6
+transfer and advance widths, source immediates/operand instructions, branch polarity/target identity,
+direct-call order and return boundaries. The third handler also records its exact source stack-pointer
+transfer instructions separately from its 2-byte A6 command read. These are source-control-flow records,
+not a model of any callee's behavior.
+
+**Confirmed:** `portraitHelperJoin` is a provenance join to the existing
+`dialogueCommandFacts.portraitHelper`, not a second parser for the same handler. It cross-validates
+`showPortrait`'s two one-byte operands against that fact's `move.w (a6)+,d0`, address, source path,
+tested modifier-byte mask `192`, and two bit-test records. The join does not interpret either packed byte.
+
+**Confirmed:** instruction-scoped caller parsing retains seven direct targets and alias-aware effective
+targets with zero-inclusive per-handler maps. Direct totals are `WaitForViewScrollEnd` 2,
+`GetEntityPortaitAndSpeechSfx` 1, `j_OpenPortraitWindow` 1, `j_ClosePortraitWindow` 1,
+`j_ChurchMenu` 1, `j_ShopMenu` 1, and `j_BlacksmithMenu` 1. Jump-interface aliases resolve to
+`OpenPortraitWindow`, `ClosePortraitWindow`, `ChurchMenu`, `ShopMenu`, and `BlacksmithMenu` respectively;
+all internal totals are zero. This preserves call identity and alias provenance only.
+
+### Runtime questions — UI primary commands
+
+**Unknown:** `map-script-ui-command/runtime-effects-matrix` is the sole grouped H3 queue. One shared
+launch must establish normal-story reachability; operand meaning; UI output; input/choice result; timing
+and completion; repeat behavior; persistence; and interaction with map/entity state. No source macro,
+comment, handler, literal, field, jump alias, or callee name promotes those runtime outcomes from this
+static contract.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros named above;
+`code/common/scripting/map/mapscriptengine_1.asm` and `mapscriptengine_2.asm` sections above; H1 listing
+symbols/addresses; and local US ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.mapScriptUiPrimaryCommandFacts`.
+
 ## Confirmed Map-Script Roster/Death Command Family
 
 **Confirmed:** `sf2-map-script-engine-static-v1` separately retains the source-named primary forms

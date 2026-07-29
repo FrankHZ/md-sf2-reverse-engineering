@@ -408,7 +408,8 @@
       "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
       "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
       "map-script-screen-presentation/runtime-effects-matrix",
-      "map-script-entity-presentation-fx/runtime-effects-matrix"
+      "map-script-entity-presentation-fx/runtime-effects-matrix",
+      "map-script-ui-command/runtime-effects-matrix"
     ],
     "dialogueCommandFacts": {
       "macros": [
@@ -98039,6 +98040,926 @@
       },
       "runtimeQuestions": [
         "map-script-entity-presentation-fx/runtime-effects-matrix"
+      ]
+    },
+    "mapScriptUiPrimaryCommandFacts": {
+      "macros": [
+        {
+          "name": "showPortrait",
+          "opcode": 29,
+          "encodedBytes": 4,
+          "operandBytes": 2,
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "expression": "\\2",
+              "parameterOrdinals": [
+                2
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1,
+            2
+          ],
+          "handler": "csc1D_showPortrait",
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct"
+            }
+          ],
+          "sourceCommandCount": 4
+        },
+        {
+          "name": "hidePortrait",
+          "opcode": 30,
+          "encodedBytes": 2,
+          "operandBytes": 0,
+          "operandLayout": [],
+          "parameterOrdinals": [],
+          "handler": "csc1E_hidePortrait",
+          "sourceOperandAnnotations": [],
+          "sourceCommandCount": 1
+        },
+        {
+          "name": "menu",
+          "opcode": 18,
+          "encodedBytes": 4,
+          "operandBytes": 2,
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1
+          ],
+          "handler": "csc12_executeContextMenu",
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "",
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "encoding": "direct"
+            }
+          ],
+          "sourceCommandCount": 0
+        }
+      ],
+      "sourceSiteOrderKeys": [
+        "cs_615E6:558:showPortrait",
+        "data/scripting/map/debugscripts.asm#L16:2:showPortrait",
+        "data/scripting/map/debugscripts.asm#L26:3:showPortrait",
+        "data/scripting/map/debugscripts.asm#L26:6:hidePortrait",
+        "data/scripting/map/debugscripts.asm#L76:8:showPortrait"
+      ],
+      "sourceSitesSha256": "FDF32E72E55D28E7EBC57BB5963658F6A4B10DE7C1920A2A69F75D1A90D4CC4A",
+      "programTotalOrderKeys": [
+        "cs_45284",
+        "cs_45348",
+        "cs_453F2",
+        "cs_45470",
+        "ms_BowieShrinkIn",
+        "ms_BowieGrowOut",
+        "abcs_battle00",
+        "abcs_battle01",
+        "bbcs_01",
+        "rbcs_battle01",
+        "bbcs_03",
+        "abcs_battle04",
+        "bbcs_04",
+        "abcs_battle05",
+        "edcs_battle5",
+        "bbcs_06",
+        "abcs_battle07",
+        "bbcs_07",
+        "abcs_battle08",
+        "bbcs_08",
+        "bbcs_11",
+        "abcs_battle12",
+        "edcs_battle12",
+        "abcs_battle13",
+        "abcs_battle15",
+        "bbcs_15",
+        "abcs_battle16",
+        "bbcs_16",
+        "abcs_battle18",
+        "bbcs_18",
+        "abcs_battle20",
+        "abcs_battle21",
+        "bbcs_21",
+        "abcs_battle26",
+        "bbcs_26",
+        "bscs_battle27",
+        "abcs_battle28",
+        "bbcs_28",
+        "bbcs_29",
+        "abcs_battle30",
+        "bbcs_30",
+        "bbcs_31",
+        "abcs_battle32",
+        "bbcs_32",
+        "rbcs_battle32",
+        "abcs_battle33",
+        "bbcs_33",
+        "abcs_battle34",
+        "bbcs_34",
+        "bbcs_35",
+        "abcs_battle36",
+        "bbcs_36",
+        "abcs_battle37",
+        "bbcs_37",
+        "abcs_battle38",
+        "bbcs_38",
+        "bbcs_39",
+        "abcs_battle40",
+        "bbcs_40",
+        "rbcs_battle40_1",
+        "rbcs_battle40_2",
+        "bbcs_41",
+        "abcs_battle42",
+        "bbcs_42",
+        "abcs_battle43",
+        "edcs_battle43",
+        "cs_5E3C2",
+        "cs_5E772",
+        "cs_512BA",
+        "cs_6283E",
+        "cs_513A0",
+        "cs_513BA",
+        "cs_51374",
+        "cs_5137A",
+        "cs_513CE",
+        "cs_513D6",
+        "cs_513E2",
+        "cs_51444",
+        "cs_5144C",
+        "cs_51454",
+        "cs_5145C",
+        "cs_5148C",
+        "cs_5149A",
+        "cs_51652",
+        "cs_516A8",
+        "cs_628C8",
+        "cs_6290C",
+        "cs_51742",
+        "cs_51750",
+        "cs_51B14",
+        "cs_60656",
+        "cs_606AC",
+        "cs_606E0",
+        "cs_606EA",
+        "cs_60708",
+        "cs_607DE",
+        "cs_6093A",
+        "cs_60B10",
+        "cs_60BA6",
+        "cs_60C42",
+        "cs_60CA4",
+        "cs_60EB2",
+        "cs_60F18",
+        "cs_60F64",
+        "cs_60FA4",
+        "cs_6060E",
+        "cs_54CC6",
+        "cs_54E70",
+        "cs_54E78",
+        "cs_54E86",
+        "cs_54F26",
+        "cs_55242",
+        "cs_55288",
+        "cs_55832",
+        "cs_55A36",
+        "cs_55BEE",
+        "cs_56146",
+        "cs_56172",
+        "cs_56314",
+        "cs_563B2",
+        "cs_56422",
+        "cs_568F6",
+        "cs_569BC",
+        "cs_56AE6",
+        "cs_570B0",
+        "cs_573EC",
+        "cs_574A6",
+        "cs_5766C",
+        "cs_5779C",
+        "cs_5797A",
+        "cs_57AAA",
+        "cs_57D22",
+        "cs_58116",
+        "cs_58310",
+        "cs_58330",
+        "cs_58512",
+        "cs_585FE",
+        "cs_58856",
+        "cs_58AE2",
+        "cs_58B7A",
+        "cs_58E5C",
+        "cs_58F5C",
+        "cs_58F7E",
+        "cs_58FA4",
+        "cs_5D04E",
+        "cs_51F88",
+        "cs_521BA",
+        "cs_5247C",
+        "cs_5249E",
+        "cs_52530",
+        "cs_528CA",
+        "cs_528D4",
+        "cs_52938",
+        "cs_52A3C",
+        "cs_612BE",
+        "cs_6143C",
+        "cs_52F0C",
+        "cs_52F24",
+        "cs_52F40",
+        "cs_53104",
+        "cs_62D06",
+        "cs_62D0E",
+        "cs_53176",
+        "cs_534D2",
+        "cs_535FA",
+        "cs_53620",
+        "cs_5362A",
+        "cs_53816",
+        "cs_632EA",
+        "cs_6335E",
+        "cs_53996",
+        "cs_633B2",
+        "cs_53B66",
+        "cs_EndingKiss",
+        "cs_53EF4",
+        "cs_53F2A",
+        "cs_59656",
+        "cs_5994E",
+        "cs_5996E",
+        "cs_599A4",
+        "cs_599B2",
+        "cs_StartSpecialBattle",
+        "cs_LeaveSpecialBattle",
+        "cs_5D3AA",
+        "cs_5D3B8",
+        "cs_59E04",
+        "cs_59F20",
+        "cs_59FB8",
+        "cs_5F3A2",
+        "cs_5F3C4",
+        "cs_5A256",
+        "cs_5A30C",
+        "cs_5A31E",
+        "cs_5A33A",
+        "cs_5A4FE",
+        "cs_5D63C",
+        "cs_5D644",
+        "cs_5D652",
+        "cs_5D712",
+        "cs_5D724",
+        "cs_5D732",
+        "cs_5A828",
+        "cs_5A8CA",
+        "cs_5A8E6",
+        "cs_5A90E",
+        "cs_5A92A",
+        "cs_5A93A",
+        "cs_5A956",
+        "cs_5A97E",
+        "cs_5A99A",
+        "cs_5A9AA",
+        "cs_5A9C6",
+        "cs_5A9EE",
+        "cs_5AA0A",
+        "cs_5AA1A",
+        "cs_5AA36",
+        "cs_5AA5E",
+        "cs_5AA7A",
+        "cs_5ABA8",
+        "cs_5ABCC",
+        "cs_5ABE6",
+        "cs_5AC04",
+        "cs_5AC1C",
+        "cs_5AC34",
+        "cs_5AC4C",
+        "cs_5AC58",
+        "cs_5AF36",
+        "cs_5B016",
+        "cs_5B466",
+        "cs_5B6C0",
+        "cs_5DA28",
+        "cs_5DA7A",
+        "cs_5FA9C",
+        "cs_5FABC",
+        "cs_5FB30",
+        "cs_5FB6A",
+        "cs_5DD8E",
+        "cs_5DD9C",
+        "cs_5DE22",
+        "cs_5DE2E",
+        "cs_5DE76",
+        "cs_5E0EE",
+        "cs_5E0F8",
+        "cs_5E20A",
+        "cs_53FD8",
+        "cs_53FE0",
+        "cs_5F4AE",
+        "cs_5F4B8",
+        "cs_5F594",
+        "cs_5FE9A",
+        "cs_5FF06",
+        "cs_540C0",
+        "cs_54570",
+        "cs_54578",
+        "cs_600B2",
+        "cs_600CE",
+        "cs_5C312",
+        "cs_5C3AA",
+        "cs_5C3D8",
+        "cs_5C4EE",
+        "cs_5C622",
+        "cs_5E27C",
+        "cs_5E320",
+        "cs_5E346",
+        "cs_6150A",
+        "cs_5EB26",
+        "cs_5EB44",
+        "cs_5EBFC",
+        "cs_5ED06",
+        "cs_5EDB8",
+        "cs_5EF60",
+        "cs_615E6",
+        "cs_5C6CA",
+        "cs_5C876",
+        "cs_5C8D4",
+        "cs_5C8FE",
+        "cs_5C914",
+        "cs_5CA5E",
+        "cs_5CA6E",
+        "cs_5CB34",
+        "cs_5CBB4",
+        "cs_5CC26",
+        "cs_5CCF6",
+        "cs_4FB64",
+        "cs_4FC32",
+        "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23",
+        "cs_4FF5A",
+        "cs_4FFDA",
+        "cs_5023E",
+        "cs_503A6",
+        "cs_50806",
+        "cs_50ABE",
+        "EndCutscene",
+        "IntroCutscene1",
+        "IntroCutscene2",
+        "IntroCutscene3",
+        "IntroCutscene4",
+        "dms_01",
+        "data/scripting/map/debugscripts.asm#L11",
+        "data/scripting/map/debugscripts.asm#L16",
+        "data/scripting/map/debugscripts.asm#L24",
+        "data/scripting/map/debugscripts.asm#L26",
+        "data/scripting/map/debugscripts.asm#L76",
+        "data/scripting/map/debugscripts.asm#L86"
+      ],
+      "programTotalsSha256": "63EBE7909405F52FAD4D9C4E24050213E107CD9ABCBF7A709A4A7AA9F4F5EA1D",
+      "handlers": [
+        {
+          "macro": "showPortrait",
+          "handler": "csc1D_showPortrait",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+          "address": 289432,
+          "opcode": 29,
+          "sourceCommandCount": 4,
+          "operandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct"
+            }
+          ],
+          "statementCount": 20,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "move.w (a6)+,d0",
+              "tst.w ((PORTRAIT_WINDOW_INDEX-$1000000)).w",
+              "bne.w @Return",
+              "moveq #0,d3",
+              "btst #$F,d0",
+              "beq.s @loc_1",
+              "moveq #-1,d3",
+              "moveq #0,d4",
+              "btst #$E,d0",
+              "beq.s @loc_2",
+              "moveq #-1,d4",
+              "jsr (WaitForViewScrollEnd).w",
+              "bsr.w GetEntityPortaitAndSpeechSfx",
+              "cmpi.w #-1,d1",
+              "beq.s @Return",
+              "move.w d1,d0",
+              "move.w d3,d1",
+              "move.w d4,d2",
+              "jsr j_OpenPortraitWindow",
+              "rts"
+            ],
+            "scriptCursorReadUseSites": [
+              {
+                "sourceRegister": "a6",
+                "destinationOperand": "d0",
+                "transferredByteCount": 2,
+                "cursorAdvanceByteCount": 2,
+                "instruction": "move.w (a6)+,d0"
+              }
+            ],
+            "sourceImmediateUseSites": [
+              {
+                "instruction": "moveq #0,d3",
+                "rawValue": "0",
+                "resolvedValue": 0,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "btst #$F,d0",
+                "rawValue": "$F",
+                "resolvedValue": 15,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "moveq #-1,d3",
+                "rawValue": "-1",
+                "resolvedValue": -1,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "moveq #0,d4",
+                "rawValue": "0",
+                "resolvedValue": 0,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "btst #$E,d0",
+                "rawValue": "$E",
+                "resolvedValue": 14,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "moveq #-1,d4",
+                "rawValue": "-1",
+                "resolvedValue": -1,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "cmpi.w #-1,d1",
+                "rawValue": "-1",
+                "resolvedValue": -1,
+                "resolution": "literal"
+              }
+            ],
+            "sourceOperandInstructions": [
+              "tst.w ((PORTRAIT_WINDOW_INDEX-$1000000)).w"
+            ],
+            "stackPointerTransferInstructions": [],
+            "branchRecords": [
+              {
+                "branchInstruction": "bne.w @Return",
+                "branchTarget": {
+                  "targetLabel": "@Return",
+                  "targetInstruction": "rts",
+                  "targetStatementIndex": 19
+                }
+              },
+              {
+                "branchInstruction": "beq.s @loc_1",
+                "branchTarget": {
+                  "targetLabel": "@loc_1",
+                  "targetInstruction": "moveq #0,d4",
+                  "targetStatementIndex": 7
+                }
+              },
+              {
+                "branchInstruction": "beq.s @loc_2",
+                "branchTarget": {
+                  "targetLabel": "@loc_2",
+                  "targetInstruction": "jsr (WaitForViewScrollEnd).w",
+                  "targetStatementIndex": 11
+                }
+              },
+              {
+                "branchInstruction": "beq.s @Return",
+                "branchTarget": {
+                  "targetLabel": "@Return",
+                  "targetInstruction": "rts",
+                  "targetStatementIndex": 19
+                }
+              }
+            ],
+            "loopRecords": [],
+            "directCallOrder": [
+              "jsr (WaitForViewScrollEnd).w",
+              "bsr.w GetEntityPortaitAndSpeechSfx",
+              "jsr j_OpenPortraitWindow"
+            ],
+            "returnInstruction": "rts"
+          },
+          "directCalls": [
+            {
+              "opcode": "jsr",
+              "instructionTarget": "WaitForViewScrollEnd",
+              "addressingForm": "direct"
+            },
+            {
+              "opcode": "bsr",
+              "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+              "addressingForm": "direct"
+            },
+            {
+              "opcode": "jsr",
+              "instructionTarget": "j_OpenPortraitWindow",
+              "addressingForm": "direct"
+            }
+          ]
+        },
+        {
+          "macro": "hidePortrait",
+          "handler": "csc1E_hidePortrait",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+          "address": 289490,
+          "opcode": 30,
+          "sourceCommandCount": 1,
+          "operandAnnotations": [],
+          "statementCount": 3,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "jsr (WaitForViewScrollEnd).w",
+              "jsr j_ClosePortraitWindow",
+              "rts"
+            ],
+            "scriptCursorReadUseSites": [],
+            "sourceImmediateUseSites": [],
+            "sourceOperandInstructions": [],
+            "stackPointerTransferInstructions": [],
+            "branchRecords": [],
+            "loopRecords": [],
+            "directCallOrder": [
+              "jsr (WaitForViewScrollEnd).w",
+              "jsr j_ClosePortraitWindow"
+            ],
+            "returnInstruction": "rts"
+          },
+          "directCalls": [
+            {
+              "opcode": "jsr",
+              "instructionTarget": "WaitForViewScrollEnd",
+              "addressingForm": "direct"
+            },
+            {
+              "opcode": "jsr",
+              "instructionTarget": "j_ClosePortraitWindow",
+              "addressingForm": "direct"
+            }
+          ]
+        },
+        {
+          "macro": "menu",
+          "handler": "csc12_executeContextMenu",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+          "address": 292022,
+          "opcode": 18,
+          "sourceCommandCount": 0,
+          "operandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "",
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "encoding": "direct"
+            }
+          ],
+          "statementCount": 13,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "move.w (a6)+,d0",
+              "move.l a6,-(sp)",
+              "tst.w d0",
+              "bne.s loc_474C4",
+              "jsr j_ChurchMenu",
+              "cmpi.w #1,d0",
+              "bne.s loc_474D0",
+              "jsr j_ShopMenu",
+              "cmpi.w #2,d0",
+              "bne.s loc_474DC",
+              "jsr j_BlacksmithMenu",
+              "movea.l (sp)+,a6",
+              "rts"
+            ],
+            "scriptCursorReadUseSites": [
+              {
+                "sourceRegister": "a6",
+                "destinationOperand": "d0",
+                "transferredByteCount": 2,
+                "cursorAdvanceByteCount": 2,
+                "instruction": "move.w (a6)+,d0"
+              }
+            ],
+            "sourceImmediateUseSites": [
+              {
+                "instruction": "cmpi.w #1,d0",
+                "rawValue": "1",
+                "resolvedValue": 1,
+                "resolution": "literal"
+              },
+              {
+                "instruction": "cmpi.w #2,d0",
+                "rawValue": "2",
+                "resolvedValue": 2,
+                "resolution": "literal"
+              }
+            ],
+            "sourceOperandInstructions": [],
+            "stackPointerTransferInstructions": [
+              "move.l a6,-(sp)",
+              "movea.l (sp)+,a6"
+            ],
+            "branchRecords": [
+              {
+                "branchInstruction": "bne.s loc_474C4",
+                "branchTarget": {
+                  "targetLabel": "loc_474C4",
+                  "targetInstruction": "cmpi.w #1,d0",
+                  "targetStatementIndex": 5
+                }
+              },
+              {
+                "branchInstruction": "bne.s loc_474D0",
+                "branchTarget": {
+                  "targetLabel": "loc_474D0",
+                  "targetInstruction": "cmpi.w #2,d0",
+                  "targetStatementIndex": 8
+                }
+              },
+              {
+                "branchInstruction": "bne.s loc_474DC",
+                "branchTarget": {
+                  "targetLabel": "loc_474DC",
+                  "targetInstruction": "movea.l (sp)+,a6",
+                  "targetStatementIndex": 11
+                }
+              }
+            ],
+            "loopRecords": [],
+            "directCallOrder": [
+              "jsr j_ChurchMenu",
+              "jsr j_ShopMenu",
+              "jsr j_BlacksmithMenu"
+            ],
+            "returnInstruction": "rts"
+          },
+          "directCalls": [
+            {
+              "opcode": "jsr",
+              "instructionTarget": "j_ChurchMenu",
+              "addressingForm": "direct"
+            },
+            {
+              "opcode": "jsr",
+              "instructionTarget": "j_ShopMenu",
+              "addressingForm": "direct"
+            },
+            {
+              "opcode": "jsr",
+              "instructionTarget": "j_BlacksmithMenu",
+              "addressingForm": "direct"
+            }
+          ]
+        }
+      ],
+      "portraitHelperJoin": {
+        "sourceFactPath": "dialogueCommandFacts.portraitHelper",
+        "macro": "showPortrait",
+        "handler": "csc1D_showPortrait",
+        "handlerAddress": 289432,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "macroOperandWidths": [
+          1,
+          1
+        ],
+        "macroOperandByteCount": 2,
+        "handlerModifierEntityWordRead": "move.w (a6)+,d0",
+        "handlerTestedModifierByteMask": 192,
+        "modifierBitTests": [
+          {
+            "bit": 15,
+            "destination": "d3"
+          },
+          {
+            "bit": 14,
+            "destination": "d4"
+          }
+        ]
+      },
+      "callerBreakdown": {
+        "callerHandlers": [
+          {
+            "handler": "csc1D_showPortrait",
+            "instructionTargetSiteCounts": {
+              "WaitForViewScrollEnd": 1,
+              "GetEntityPortaitAndSpeechSfx": 1,
+              "j_OpenPortraitWindow": 1,
+              "j_ClosePortraitWindow": 0,
+              "j_ChurchMenu": 0,
+              "j_ShopMenu": 0,
+              "j_BlacksmithMenu": 0
+            },
+            "effectiveTargetSiteCounts": {
+              "WaitForViewScrollEnd": 1,
+              "GetEntityPortaitAndSpeechSfx": 1,
+              "OpenPortraitWindow": 1,
+              "ClosePortraitWindow": 0,
+              "ChurchMenu": 0,
+              "ShopMenu": 0,
+              "BlacksmithMenu": 0
+            }
+          },
+          {
+            "handler": "csc1E_hidePortrait",
+            "instructionTargetSiteCounts": {
+              "WaitForViewScrollEnd": 1,
+              "GetEntityPortaitAndSpeechSfx": 0,
+              "j_OpenPortraitWindow": 0,
+              "j_ClosePortraitWindow": 1,
+              "j_ChurchMenu": 0,
+              "j_ShopMenu": 0,
+              "j_BlacksmithMenu": 0
+            },
+            "effectiveTargetSiteCounts": {
+              "WaitForViewScrollEnd": 1,
+              "GetEntityPortaitAndSpeechSfx": 0,
+              "OpenPortraitWindow": 0,
+              "ClosePortraitWindow": 1,
+              "ChurchMenu": 0,
+              "ShopMenu": 0,
+              "BlacksmithMenu": 0
+            }
+          },
+          {
+            "handler": "csc12_executeContextMenu",
+            "instructionTargetSiteCounts": {
+              "WaitForViewScrollEnd": 0,
+              "GetEntityPortaitAndSpeechSfx": 0,
+              "j_OpenPortraitWindow": 0,
+              "j_ClosePortraitWindow": 0,
+              "j_ChurchMenu": 1,
+              "j_ShopMenu": 1,
+              "j_BlacksmithMenu": 1
+            },
+            "effectiveTargetSiteCounts": {
+              "WaitForViewScrollEnd": 0,
+              "GetEntityPortaitAndSpeechSfx": 0,
+              "OpenPortraitWindow": 0,
+              "ClosePortraitWindow": 0,
+              "ChurchMenu": 1,
+              "ShopMenu": 1,
+              "BlacksmithMenu": 1
+            }
+          }
+        ],
+        "targetResolutions": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "aliasSourcePath": null,
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "aliasSourcePath": null,
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "j_ClosePortraitWindow",
+            "effectiveTarget": "ClosePortraitWindow",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "j_ChurchMenu",
+            "effectiveTarget": "ChurchMenu",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "j_ShopMenu",
+            "effectiveTarget": "ShopMenu",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+            "effectiveTargetScope": "external"
+          },
+          {
+            "instructionTarget": "j_BlacksmithMenu",
+            "effectiveTarget": "BlacksmithMenu",
+            "aliasSourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+            "effectiveTargetScope": "external"
+          }
+        ],
+        "instructionTargetTotals": {
+          "WaitForViewScrollEnd": 2,
+          "GetEntityPortaitAndSpeechSfx": 1,
+          "j_OpenPortraitWindow": 1,
+          "j_ClosePortraitWindow": 1,
+          "j_ChurchMenu": 1,
+          "j_ShopMenu": 1,
+          "j_BlacksmithMenu": 1
+        },
+        "effectiveTargetTotals": {
+          "WaitForViewScrollEnd": 2,
+          "GetEntityPortaitAndSpeechSfx": 1,
+          "OpenPortraitWindow": 1,
+          "ClosePortraitWindow": 1,
+          "ChurchMenu": 1,
+          "ShopMenu": 1,
+          "BlacksmithMenu": 1
+        },
+        "internalInstructionTargetTotals": {
+          "WaitForViewScrollEnd": 0,
+          "GetEntityPortaitAndSpeechSfx": 0,
+          "j_OpenPortraitWindow": 0,
+          "j_ClosePortraitWindow": 0,
+          "j_ChurchMenu": 0,
+          "j_ShopMenu": 0,
+          "j_BlacksmithMenu": 0
+        },
+        "externalInstructionTargetTotals": {
+          "WaitForViewScrollEnd": 2,
+          "GetEntityPortaitAndSpeechSfx": 1,
+          "j_OpenPortraitWindow": 1,
+          "j_ClosePortraitWindow": 1,
+          "j_ChurchMenu": 1,
+          "j_ShopMenu": 1,
+          "j_BlacksmithMenu": 1
+        },
+        "internalEffectiveTargetTotals": {
+          "WaitForViewScrollEnd": 0,
+          "GetEntityPortaitAndSpeechSfx": 0,
+          "OpenPortraitWindow": 0,
+          "ClosePortraitWindow": 0,
+          "ChurchMenu": 0,
+          "ShopMenu": 0,
+          "BlacksmithMenu": 0
+        },
+        "externalEffectiveTargetTotals": {
+          "WaitForViewScrollEnd": 2,
+          "GetEntityPortaitAndSpeechSfx": 1,
+          "OpenPortraitWindow": 1,
+          "ClosePortraitWindow": 1,
+          "ChurchMenu": 1,
+          "ShopMenu": 1,
+          "BlacksmithMenu": 1
+        }
+      },
+      "runtimeQuestions": [
+        "map-script-ui-command/runtime-effects-matrix"
       ]
     }
   }

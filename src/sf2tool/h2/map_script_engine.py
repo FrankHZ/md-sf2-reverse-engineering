@@ -382,6 +382,23 @@ ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS = [
     "map-script-entity-presentation-fx/runtime-effects-matrix"
 ]
 
+MAP_SCRIPT_UI_PRIMARY_MACRO_NAMES = (
+    "showPortrait",
+    "hidePortrait",
+    "menu",
+)
+MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO = {
+    "showPortrait": "csc1D_showPortrait",
+    "hidePortrait": "csc1E_hidePortrait",
+    "menu": "csc12_executeContextMenu",
+}
+MAP_SCRIPT_UI_PRIMARY_HANDLER_NAMES = tuple(
+    MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO.values()
+)
+MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS = [
+    "map-script-ui-command/runtime-effects-matrix"
+]
+
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode()
@@ -8669,6 +8686,49 @@ def _entity_presentation_fx_macro_annotations(
     return annotations_by_macro
 
 
+def _map_script_ui_primary_macro_annotations(
+    disasm: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    """Parse source operand widths, comments, and encodings for the bounded primary forms."""
+    blocks = _macro_blocks(read_upstream_text(disasm / MACRO_PATH))
+    annotations_by_macro: dict[str, list[dict[str, Any]]] = {}
+    for macro in MAP_SCRIPT_UI_PRIMARY_MACRO_NAMES:
+        body = blocks.get(macro)
+        if body is None:
+            raise ValueError(f"map-script-ui primary macro is missing: {macro}")
+        parameter_rows = [row for row in _emission_rows(body) if row["parameterOrdinals"]]
+        annotations: list[dict[str, Any]] = []
+        for raw_line in body.splitlines():
+            stripped = raw_line.strip()
+            if not stripped.startswith("dc."):
+                continue
+            ordinal_match = re.search(r"\\(?P<ordinal>\d+)", stripped)
+            if ordinal_match is None:
+                continue
+            if len(annotations) >= len(parameter_rows):
+                raise ValueError(f"map-script-ui primary operand emission drift: {macro}")
+            row = parameter_rows[len(annotations)]
+            ordinal = int(ordinal_match.group("ordinal"))
+            if row["parameterOrdinals"] != [ordinal]:
+                raise ValueError(f"map-script-ui primary operand ordinal drift: {macro}")
+            comment_match = re.search(r";\s*(?P<comment>.*)$", raw_line)
+            if comment_match is None:
+                raise ValueError(f"map-script-ui primary operand comment is missing: {macro}")
+            annotations.append(
+                {
+                    "parameterOrdinal": ordinal,
+                    "sourceComment": comment_match.group("comment"),
+                    "streamOffset": row["streamOffset"],
+                    "widthBytes": row["widthBytes"],
+                    "encoding": row["encoding"],
+                }
+            )
+        if len(annotations) != len(parameter_rows):
+            raise ValueError(f"map-script-ui primary operand comment coverage drift: {macro}")
+        annotations_by_macro[macro] = annotations
+    return annotations_by_macro
+
+
 def _screen_presentation_resolve_operand(
     value: str, equates: dict[str, int]
 ) -> dict[str, Any]:
@@ -9628,6 +9688,316 @@ def _entity_presentation_fx_command_facts(
             handler_names=ENTITY_PRESENTATION_FX_HANDLER_NAMES,
         ),
         "runtimeQuestions": ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS,
+    }
+
+
+def _map_script_ui_primary_program_facts(
+    program_corpus: dict[str, Any],
+    annotations_by_macro: dict[str, list[dict[str, Any]]],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Attach physical source operands to every scoped UI-primary command occurrence."""
+
+    def operand_value(annotation: dict[str, Any], argument: str) -> dict[str, Any]:
+        resolved = _screen_presentation_resolve_operand(argument, equates)
+        if (resolved["resolution"] == "symbol") != (resolved["resolvedValue"] is None):
+            raise ValueError("map-script-ui primary operand resolution/value drift")
+        return {
+            "parameterOrdinal": annotation["parameterOrdinal"],
+            "sourceComment": annotation["sourceComment"],
+            "streamOffset": annotation["streamOffset"],
+            "widthBytes": annotation["widthBytes"],
+            "encoding": annotation["encoding"],
+            **resolved,
+        }
+
+    source_sites, program_totals = _force_state_program_facts(
+        program_corpus, macro_names=MAP_SCRIPT_UI_PRIMARY_MACRO_NAMES
+    )
+    annotated_sites = []
+    for site in source_sites:
+        commands = []
+        for command in site["commands"]:
+            annotations = annotations_by_macro[command["macro"]]
+            if len(command["arguments"]) != len(annotations):
+                raise ValueError(
+                    "map-script-ui primary source operand count drift: "
+                    f"{site['programId']}:{command['commandIndex']}"
+                )
+            commands.append(
+                {
+                    **command,
+                    "sourceOrderKey": ":".join(
+                        (site["programId"], str(command["commandIndex"]), command["macro"])
+                    ),
+                    "operandValues": [
+                        operand_value(annotation, argument)
+                        for annotation, argument in zip(
+                            annotations, command["arguments"], strict=True
+                        )
+                    ],
+                }
+            )
+        annotated_sites.append({"programId": site["programId"], "commands": commands})
+    return annotated_sites, program_totals
+
+
+def _map_script_ui_primary_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Bind the complete bounded source corpus with compact exact-order records."""
+    source_order_keys = [
+        command["sourceOrderKey"] for site in source_sites for command in site["commands"]
+    ]
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("map-script-ui primary source order keys are not unique")
+    program_order_keys = [row["programId"] for row in program_totals]
+    if len(program_order_keys) != len(set(program_order_keys)):
+        raise ValueError("map-script-ui primary program-total order keys are not unique")
+    return {
+        "sourceSiteOrderKeys": source_order_keys,
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalOrderKeys": program_order_keys,
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _map_script_ui_primary_portrait_helper_join(
+    macro_contract: dict[str, Any], portrait_helper: dict[str, Any]
+) -> dict[str, Any]:
+    """Join the existing dialogue portrait-helper fact to showPortrait's physical layout."""
+    expected_widths = [row["widthBytes"] for row in macro_contract["operandLayout"]]
+    if (
+        expected_widths != [1, 1]
+        or macro_contract["operandBytes"] != sum(expected_widths)
+        or portrait_helper["handler"] != MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO["showPortrait"]
+        or portrait_helper["modifierEntityWordRead"] != "move.w (a6)+,d0"
+        or portrait_helper["sourcePath"]
+        != "code/common/scripting/map/mapscriptengine_1.asm"
+    ):
+        raise ValueError("map-script-ui portrait-helper provenance join drift")
+    return {
+        "sourceFactPath": "dialogueCommandFacts.portraitHelper",
+        "macro": "showPortrait",
+        "handler": portrait_helper["handler"],
+        "handlerAddress": portrait_helper["address"],
+        "sourcePath": portrait_helper["sourcePath"],
+        "macroOperandWidths": expected_widths,
+        "macroOperandByteCount": macro_contract["operandBytes"],
+        "handlerModifierEntityWordRead": portrait_helper["modifierEntityWordRead"],
+        "handlerTestedModifierByteMask": portrait_helper["handlerTestedModifierByteMask"],
+        "modifierBitTests": portrait_helper["modifierBitTests"],
+    }
+
+
+def _map_script_ui_primary_section_guard(
+    macro: str, statements: list[str], equates: dict[str, int]
+) -> dict[str, Any]:
+    """Guard complete primary-handler statement and source-use order without UI semantics."""
+    expected_by_macro = {
+        "showPortrait": """
+move.w (a6)+,d0
+tst.w ((PORTRAIT_WINDOW_INDEX-$1000000)).w
+bne.w @Return
+moveq #0,d3
+btst #$F,d0
+beq.s @loc_1
+moveq #-1,d3
+moveq #0,d4
+btst #$E,d0
+beq.s @loc_2
+moveq #-1,d4
+jsr (WaitForViewScrollEnd).w
+bsr.w GetEntityPortaitAndSpeechSfx
+cmpi.w #-1,d1
+beq.s @Return
+move.w d1,d0
+move.w d3,d1
+move.w d4,d2
+jsr j_OpenPortraitWindow
+rts
+""".strip().splitlines(),
+        "hidePortrait": """
+jsr (WaitForViewScrollEnd).w
+jsr j_ClosePortraitWindow
+rts
+""".strip().splitlines(),
+        "menu": """
+move.w (a6)+,d0
+move.l a6,-(sp)
+tst.w d0
+bne.s loc_474C4
+jsr j_ChurchMenu
+cmpi.w #1,d0
+bne.s loc_474D0
+jsr j_ShopMenu
+cmpi.w #2,d0
+bne.s loc_474DC
+jsr j_BlacksmithMenu
+movea.l (sp)+,a6
+rts
+""".strip().splitlines(),
+    }
+    if macro not in expected_by_macro:
+        raise ValueError(f"map-script-ui primary handler profile is missing: {macro}")
+    ordered = _force_state_ordered_statements(
+        statements,
+        [re.escape(instruction) for instruction in expected_by_macro[macro]],
+        owner=MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO[macro],
+    )
+    if len(statements) != len(ordered):
+        raise ValueError(f"map-script-ui primary handler statement coverage drift: {macro}")
+    cursor_indexes = {"showPortrait": (0,), "hidePortrait": (), "menu": (0,)}[macro]
+    branch_pairs = {
+        "showPortrait": ((2, 19), (5, 7), (9, 11), (14, 19)),
+        "menu": ((3, 5), (6, 8), (9, 11)),
+    }.get(macro, ())
+    return {
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSites": [
+            _screen_presentation_cursor_read_use_site(ordered[index])
+            for index in cursor_indexes
+        ],
+        "sourceImmediateUseSites": _screen_presentation_immediate_use_sites(
+            ordered, equates
+        ),
+        "sourceOperandInstructions": [
+            instruction for instruction in ordered if "PORTRAIT_WINDOW_INDEX" in instruction
+        ],
+        "stackPointerTransferInstructions": [
+            instruction
+            for instruction in ordered
+            if instruction in {"move.l a6,-(sp)", "movea.l (sp)+,a6"}
+        ],
+        "branchRecords": [
+            {"branchInstruction": ordered[branch], "expectedTargetInstruction": ordered[target]}
+            for branch, target in branch_pairs
+        ],
+        "loopRecords": [],
+        "directCallOrder": [
+            instruction for instruction in ordered if instruction.startswith(("bsr", "jsr"))
+        ],
+        "returnInstruction": ordered[-1],
+    }
+
+
+def _map_script_ui_primary_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    portrait_helper: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the bounded show/hide/menu primary-command static contract."""
+    annotations_by_macro = _map_script_ui_primary_macro_annotations(disasm)
+    source_sites, program_totals = _map_script_ui_primary_program_facts(
+        program_corpus, annotations_by_macro, equates
+    )
+    source_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    handler_rows = []
+    direct_call_rows: dict[str, list[dict[str, str]]] = {}
+    for macro in MAP_SCRIPT_UI_PRIMARY_MACRO_NAMES:
+        contract = macros[macro]
+        annotations = annotations_by_macro[macro]
+        if sum(row["macroCounts"][macro] for row in program_totals) != source_counts[macro]:
+            raise ValueError(f"map-script-ui primary program total drift: {macro}")
+        if (
+            contract["kind"] != "command"
+            or contract["aliasOf"] is not None
+            or contract["opcode"] is None
+            or contract["operandBytes"]
+            != sum(row["widthBytes"] for row in annotations)
+            or contract["encodedBytes"] != 2 + contract["operandBytes"]
+            or contract["parameterOrdinals"]
+            != [row["parameterOrdinal"] for row in annotations]
+            or [row["encoding"] for row in contract["operandLayout"]]
+            != [row["encoding"] for row in annotations]
+        ):
+            raise ValueError(f"map-script-ui primary macro ABI drift: {macro}")
+        handler_name = MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"map-script-ui primary dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        if opcode not in handler["opcodes"] or handler["encodedCommandBytes"] != contract[
+            "encodedBytes"
+        ]:
+            raise ValueError(f"map-script-ui primary handler ABI drift: {handler_name}")
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _map_script_ui_primary_section_guard(macro, statements, equates)
+        if sum(
+            row["cursorAdvanceByteCount"]
+            for row in section_guard["scriptCursorReadUseSites"]
+        ) != contract["operandBytes"]:
+            raise ValueError(f"map-script-ui primary script cursor width drift: {macro}")
+        section_source = _map_camera_control_named_section_source(
+            disasm, handler["sourcePath"], handler_name
+        )
+        for branch in section_guard["branchRecords"]:
+            branch["branchTarget"] = _screen_presentation_branch_target_record(
+                section_source,
+                branch["branchInstruction"],
+                branch.pop("expectedTargetInstruction"),
+                section_guard["orderedInstructions"],
+            )
+        direct_calls = _entity_presentation_fx_direct_calls(statements)
+        if direct_calls != _entity_presentation_fx_direct_calls(section_guard["directCallOrder"]):
+            raise ValueError(f"map-script-ui primary direct-call order drift: {macro}")
+        direct_call_rows[handler_name] = direct_calls
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "sourcePath": handler["sourcePath"],
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": source_counts[macro],
+                "operandAnnotations": annotations,
+                "statementCount": len(statements),
+                "sectionGuard": section_guard,
+                "directCalls": direct_calls,
+            }
+        )
+    return {
+        "macros": [
+            {
+                "name": macro,
+                "opcode": macros[macro]["opcode"],
+                "encodedBytes": macros[macro]["encodedBytes"],
+                "operandBytes": macros[macro]["operandBytes"],
+                "operandLayout": macros[macro]["operandLayout"],
+                "parameterOrdinals": macros[macro]["parameterOrdinals"],
+                "handler": MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO[macro],
+                "sourceOperandAnnotations": annotations_by_macro[macro],
+                "sourceCommandCount": source_counts[macro],
+            }
+            for macro in MAP_SCRIPT_UI_PRIMARY_MACRO_NAMES
+        ],
+        "sourceSites": source_sites,
+        **_map_script_ui_primary_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "handlers": handler_rows,
+        "portraitHelperJoin": _map_script_ui_primary_portrait_helper_join(
+            macros["showPortrait"], portrait_helper
+        ),
+        "callerBreakdown": _entity_gesture_relationship_motion_caller_breakdown(
+            disasm,
+            direct_call_rows,
+            addresses,
+            rom,
+            handler_names=MAP_SCRIPT_UI_PRIMARY_HANDLER_NAMES,
+        ),
+        "runtimeQuestions": MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS,
     }
 
 
@@ -11057,6 +11427,17 @@ def build_map_script_engine_contract(
         rom_path,
         upstream_path,
     )
+    map_script_ui_primary_command_facts = _map_script_ui_primary_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+        dialogue_command_facts["portraitHelper"],
+    )
     transition_command_facts = _transition_command_facts(
         disasm,
         source_equates,
@@ -11361,6 +11742,7 @@ def build_map_script_engine_contract(
         "handlers": handlers,
         "programCorpus": program_corpus,
         "dialogueCommandFacts": dialogue_command_facts,
+        "mapScriptUiPrimaryCommandFacts": map_script_ui_primary_command_facts,
         "transitionCommandFacts": transition_command_facts,
         "forceStateCommandFacts": force_state_command_facts,
         "storyStateCommandFacts": story_state_command_facts,
@@ -11395,6 +11777,7 @@ def build_map_script_engine_contract(
             *ENTITY_GESTURE_RELATIONSHIP_MOTION_RUNTIME_QUESTIONS,
             *SCREEN_PRESENTATION_RUNTIME_QUESTIONS,
             *ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS,
+            *MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -11438,6 +11821,7 @@ def verify_map_script_engine_contract(
             "battleUnlockFlags"
         ],
         "dialogueCommandFacts": output["dialogueCommandFacts"],
+        "mapScriptUiPrimaryCommandFacts": output["mapScriptUiPrimaryCommandFacts"],
         "transitionCommandFacts": output["transitionCommandFacts"],
         "forceStateCommandFacts": output["forceStateCommandFacts"],
         "storyStateCommandFacts": output["storyStateCommandFacts"],
@@ -11478,6 +11862,7 @@ def verify_map_script_engine_contract(
         "storyDirectClearFlags",
         "storyBattleUnlockFlags",
         "dialogueCommandFacts",
+        "mapScriptUiPrimaryCommandFacts",
         "transitionCommandFacts",
         "forceStateCommandFacts",
         "storyStateCommandFacts",
@@ -11500,6 +11885,11 @@ def verify_map_script_engine_contract(
         if field == "entityPlacementCommandFacts":
             actual = {
                 key: output["entityPlacementCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "mapScriptUiPrimaryCommandFacts":
+            actual = {
+                key: output["mapScriptUiPrimaryCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "entityActionBridgeCommandFacts":
