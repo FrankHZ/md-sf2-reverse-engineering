@@ -81,7 +81,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   96 条 ordered program-site/handler/caller 合同、单个 source-named `cloneEntity` command 的 9 条
   ordered program-site/handler/caller 合同、三个 map-script camera-control command 的 415 条
   ordered program-site/handler/caller/service 合同、四个 map-script map lifecycle command 的 108 条
-  ordered program-site/handler/caller 合同、两个 source-named map-script trigger command 的 8 条
+  ordered program-site/handler/caller 合同，以及单启动五 case 的 handler return、direct-H1-JSR-site
+  order、map/camera word 和双 marker H3 合同、两个 source-named map-script trigger command 的 8 条
   ordered program-site/handler/caller/table-boundary 合同、四个 source-named map-script entity-placement
   command 的 2,288 条 ordered program-site/handler/caller 合同、六个 map-script 到 entity-action bridge
   command 的 3,256 条 ordered program-site/payload/handler/caller 合同、八个 source-named entity lifecycle/presentation
@@ -212,7 +213,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   `entity-population-reload/runtime-effects-matrix`。
   同一 304-row 零计数 corpus 还固定四个 map lifecycle form（108 sites）、四个 named handler 的
   cursor/probe、VInt、branch、call/fall-through guards，以及 five-target zero-inclusive caller map；
-  唯一 H3 queue 为 `map-lifecycle/runtime-effects-matrix`。
+  H3 以一个五 case/单启动 fixture 固定 handler return、direct-H1-JSR-site order、post-handler
+  map/camera word 与双 nonasset marker，而剩余 queue 为 layout/collision/pathfinding、entity reload/
+  player placement、presentation/fade/hardware timing 与 story reachability/persistence。
   同一 304-row 零计数 corpus 还固定两个 source-named trigger form（8 sites）、两段 named handler 的
   A6 word-read、`MAP_TILE_SIZE` use-site、call/return guards、two-target zero-inclusive caller map，
   以及独立解析的 94-step/114-roof table boundary；唯一 H3 queue 为

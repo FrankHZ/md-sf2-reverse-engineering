@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,537 | 1,500 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,538 | 1,501 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 62 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,141 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 63 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,149 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -320,9 +320,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,537 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 62 H3 fixtures, and
-2,141 bindings. Of the records, 1,500 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,538 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 63 H3 fixtures, and
+2,149 bindings. Of the records, 1,501 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -529,10 +529,16 @@ The adjacent map lifecycle slice is exact for four source-faithful forms: seven 
 further complete 304-row zero-inclusive corpus. It preserves macro operand comments, four named
 handler guards, the `csc37` physical continuation into `csc48`, exact A6 transfer/probe widths,
 the `csc48` `bne.s loc_465C4` target-to-first-`WaitForVInt` identity, VInt records, packed-operand
-use sites, and zero-inclusive direct/effective caller maps for `ResetCurrentMap`, `LoadMapTilesets`, `LoadMap`, `EnableDisplayAndInterrupts`, and
-`WaitForVInt`. `map-lifecycle/runtime-effects-matrix` is its sole H3 queue; map persistence,
-working-layout replacement, entity reload, placement, collision/pathfinding, presentation, fade,
-hardware, and normal-story behavior remain uncredited static questions.
+use sites, and zero-inclusive direct/effective caller maps for `ResetCurrentMap`, `LoadMapTilesets`,
+`LoadMap`, `EnableDisplayAndInterrupts`, and `WaitForVInt`. Its H3 fixture adds one five-case/
+one-launch handler observation: exact direct-H1-JSR-site order, handler return, `CURRENT_MAP`,
+`VIEW_PLANE_A_PIXEL_X/Y`, and two nonasset first/final layout-clear markers. The marker observations
+do not establish whole-layout or asset content; direct-call-site hits do not establish service effects;
+and the fade case deliberately releases `FADING_SETTING` at its first observed wait. The remaining
+grouped H3 queue is `map-lifecycle/layout-collision-pathfinding-effects`,
+`map-lifecycle/entity-reload-player-placement`,
+`map-lifecycle/presentation-fade-hardware-timing`, and
+`map-lifecycle/story-reachability-persistence`.
 The adjacent source-named trigger slice is exact for two forms: two `roofEvent` `$43` and six
 `stepEvent` `$47` sites across a further complete 304-row zero-inclusive corpus. It preserves both
 two-word physical layouts and `trigger X`/`trigger Y` source comments, six-statement named-section

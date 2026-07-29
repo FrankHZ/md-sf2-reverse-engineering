@@ -948,7 +948,7 @@ US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9
 
 ## Confirmed Map-Script Map Load/Reload/Reset Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-29.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field `mapLifecycleCommandFacts` keeps four
 source-faithful forms in macro source order: `resetMap` opcode `$36` (7 sites, 2 encoded bytes),
@@ -994,22 +994,69 @@ equal the effective totals. No direct jump-interface alias occurs here. The sour
 `code/common/tech/interrupts/vintengine_1.asm`, each with the pinned file SHA-256 in the fixture.
 Labels, comments, near-miss mnemonics, and operands do not count as calls.
 
-**Unknown:** `map-lifecycle/runtime-effects-matrix` is the sole grouped H3 queue. One shared runtime
-matrix must determine map persistence, working-layout replacement, entity reload effects,
-camera/player placement, collision/pathfinding refresh, presentation timing, fade visuals, hardware
-effects, and normal-story reachability. This static slice does not promote macro names, state-symbol
-names, VInt records, or service calls into any of those outcomes.
+**Confirmed (H3):** `sf2-map-lifecycle-runtime-v1` replays five bounded handler cases in one BizHawk
+2.11.1 / Genesis Plus GX launch: `reset-current-map`, `fade-then-map-load`,
+`reload-current-map`, `map-load-same-current-map-index`, and
+`map-load-changed-map-index`. The observer records return from the invoked handler and chronological
+callbacks at the exact H1 `jsr` instruction sites, rather than at service entries. The observed direct
+call-site target orders are respectively `ResetCurrentMap`; `LoadMapTilesets`, `WaitForVInt`,
+`LoadMap`, `EnableDisplayAndInterrupts`, `WaitForVInt`; `LoadMap`,
+`EnableDisplayAndInterrupts`, `WaitForVInt`; and that five-call `csc48` order for each of the two
+`mapLoad` operands. The reset follow-up is guarded separately as the source `bra.w LoadMap` tail at
+H1 `$3E3C`, with D0 `$0000` and D1 `$FFFF` before that transfer. A callback proves that direct JSR
+site executed; it does not prove the called service's externally visible effect.
+
+**Confirmed (H3):** every record has `handlerReturned` `true`. In case order, the exact runtime
+field vector `(loadMapD0WordAtCall, loadMapD1WordAtCall, tilesetD1WordAtCall,
+resetTailLoadMapD0WordAtTransfer, resetTailLoadMapD1WordAtTransfer, viewTargetEntityAfter)` is
+`(null, null, null, 0, 65535, 90)`,
+`(774, 4, 4, null, null, 255)`, `(2319, 65535, null, null, null, 255)`,
+`(4629, 3, 3, null, null, 255)`, and `(4629, 4, 4, null, null, 255)`. These are
+post-handler word/state observation fields, not assertions about the called services' effects.
+
+**Confirmed (H3):** with initial `CURRENT_MAP` 3 and `VIEW_TARGET_ENTITY` seed 90, the five cases
+respectively leave current-map values 3, 4, 3, 3, and 4. Their post-handler
+`VIEW_PLANE_A_PIXEL_X/Y` words are `(0, 12288)`, `(384, 13056)`, `(1152, 14208)`,
+`(2304, 14976)`, and `(2304, 14976)`. The observer writes two nonasset 16-bit sentinel words at the
+source-derived `ResetCurrentMap` clear-span boundaries. The exact per-case tuples
+`(start clear/replace; end clear/replace)` are reset `(true/true; true/true)`, fade
+`(true/true; true/true)`, reload `(false/false; false/false)`, same-valued `mapLoad`
+`(false/true; true/true)`, and changed-valued `mapLoad` `(true/true; true/true)`. The source guard
+parses `MAP_LAYOUT_LONGS_COUNTER` 2047, `clr.l`, and `dbf` as an 8,192-byte physical clear span, but
+the H3 sentinels check only its first and final words: they do not establish complete span contents,
+decoded layout contents, or asset bytes. The two `mapLoad` cases are distinct tested map operands (3
+and 4), not an equality branch: `csc48` has no current-map equality test. Its static
+`FADING_SETTING` branch remains separately source-confirmed; for the bounded fade case the harness
+releases it by clearing that setting at the first observed `WaitForVInt`, so this result does not prove
+ordinary fade duration or presentation.
+
+**Unknown:** the remaining grouped H3 queue is:
+
+- `map-lifecycle/layout-collision-pathfinding-effects`: complete working-layout content and any
+  collision/pathfinding consequence;
+- `map-lifecycle/entity-reload-player-placement`: entity reload and player-placement consequences;
+- `map-lifecycle/presentation-fade-hardware-timing`: VDP-visible presentation, fade, and hardware
+  timing beyond the bounded release;
+- `map-lifecycle/story-reachability-persistence`: normal-story reachability and persistence.
+
+The H3 fixture does not promote macro names, state-symbol names, VInt records, direct call-site hits,
+or two-word marker results into any of those unobserved outcomes.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `resetMap`,
 `loadMapFadeIn`, `reloadMap`, and `mapLoad`; `code/common/scripting/map/mapscriptengine_1.asm`
 symbols `csc36_resetMap`, `csc37_loadMapAndFadeIn`, `csc46_reloadMap`, and `csc48_loadMap`;
 `sf2enums.asm` constants `OUT_TO_BLACK`, `BYTE_SHIFT_COUNT`, `BYTE_MASK`, `VINTS_DEACTIVATE`, and
-`VINTS_ACTIVATE`; H1 addresses above; and local US-ROM SHA-256
+`VINTS_ACTIVATE`; `code/gameflow/exploration/exploration.asm::ResetCurrentMap` and its H1 `$3E3C`
+tail; H1 direct-call instruction sites `$46590`, `$465C0`, `$465C4`, `$465EC`, `$465F2`, `$465FE`,
+`$4672E`, `$46734`, and `$46740`; and local US-ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is
-`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
-`expected.mapLifecycleCommandFacts`.
+`uv run sf2 h2 map-script-engine` for the static contract and
+`uv run sf2 h3 map-lifecycle --timeout-seconds 120` for the one-launch runtime contract; observed
+results are `tests/fixtures/h2/map-script-engine-static-v1.json`, ID
+`sf2-map-script-engine-static-v1`, field `expected.mapLifecycleCommandFacts`, and
+`tests/fixtures/h3/map-lifecycle-v1.json`, ID `sf2-map-lifecycle-runtime-v1`. The latter uses a
+session-only copy and re-hashes the original on-disk ROM unchanged before launch.
 
 ## Confirmed Map-Script Source-Named Trigger Command Family
 

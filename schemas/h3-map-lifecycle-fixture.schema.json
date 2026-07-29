@@ -1,0 +1,572 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "emulator",
+    "mapTestIndex",
+    "observationBoundary",
+    "runtimeQuestions",
+    "sharedHarnessFixture",
+    "staticContractFixture",
+    "maxFrames",
+    "function",
+    "ram",
+    "layoutMarkers",
+    "instrumentation",
+    "cases"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-lifecycle-runtime-v1"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "const": "2.11.1"
+        },
+        "core": {
+          "const": "Genesis Plus GX"
+        }
+      }
+    },
+    "mapTestIndex": {
+      "const": 0
+    },
+    "observationBoundary": {
+      "const": "Five cases replay the debug Map Test 0 prompt from one shared in-memory core state. A deterministic session-only copy of the verified ROM replaces the existing RunMapSetupInitFunction indirect call with a 16-byte FF-padding trampoline. The trampoline sets A6 to a RAM-owned word stream and JSRs one unmodified lifecycle handler; the original disk ROM is re-hashed unchanged before the launch. Lua writes only the input word stream, CURRENT_MAP, VIEW_TARGET_ENTITY, FADING_SETTING for the bounded fade release, and two 16-bit nonasset markers at the source-derived ResetCurrentMap layout-clear boundaries. It observes handler entry/return boundaries, chronological direct H1 JSR call-site callbacks, post-handler VIEW_PLANE_A_PIXEL_X/Y, and marker comparisons; it does not observe service effects. The original handlers and unmodified direct service bodies execute in one BizHawk launch."
+    },
+    "runtimeQuestions": {
+      "const": [
+        "map-lifecycle/layout-collision-pathfinding-effects",
+        "map-lifecycle/entity-reload-player-placement",
+        "map-lifecycle/presentation-fade-hardware-timing",
+        "map-lifecycle/story-reachability-persistence"
+      ]
+    },
+    "sharedHarnessFixture": {
+      "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+    },
+    "staticContractFixture": {
+      "const": "tests/fixtures/h2/map-script-engine-static-v1.json"
+    },
+    "maxFrames": {
+      "const": 7200
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryAddress"
+      ],
+      "properties": {
+        "entryAddress": {
+          "const": 292092
+        }
+      }
+    },
+    "ram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currentMapAddress",
+        "viewTargetEntityAddress",
+        "fadingSettingAddress",
+        "viewPlaneAPixelXAddress",
+        "viewPlaneAPixelYAddress",
+        "layoutClearStartMarkerAddress",
+        "layoutClearEndMarkerAddress"
+      ],
+      "properties": {
+        "currentMapAddress": {
+          "const": 16774929
+        },
+        "viewTargetEntityAddress": {
+          "const": 16754732
+        },
+        "fadingSettingAddress": {
+          "const": 16768752
+        },
+        "viewPlaneAPixelXAddress": {
+          "const": 16754704
+        },
+        "viewPlaneAPixelYAddress": {
+          "const": 16754706
+        },
+        "layoutClearStartMarkerAddress": {
+          "const": 16711680
+        },
+        "layoutClearEndMarkerAddress": {
+          "const": 16719870
+        }
+      }
+    },
+    "instrumentation": {
+      "allOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callSiteAddress",
+            "callSiteOriginalHex",
+            "callSitePatchedHex",
+            "stubAddress",
+            "stubOriginalHex",
+            "stubHex",
+            "postHandlerAddress",
+            "ramInputAddress"
+          ],
+          "properties": {
+            "callSiteAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "callSiteOriginalHex": {
+              "type": "string",
+              "pattern": "^[0-9A-F]+$"
+            },
+            "callSitePatchedHex": {
+              "type": "string",
+              "pattern": "^[0-9A-F]+$"
+            },
+            "stubAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "stubOriginalHex": {
+              "type": "string",
+              "pattern": "^[0-9A-F]+$"
+            },
+            "stubHex": {
+              "type": "string",
+              "pattern": "^[0-9A-F]+$"
+            },
+            "postHandlerAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ramInputAddress": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "const": {
+            "callSiteAddress": 292114,
+            "callSiteOriginalHex": "4E904CDF03FF",
+            "callSitePatchedHex": "4EB90000FF88",
+            "stubAddress": 65416,
+            "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+            "stubHex": "4DF900FF4004207900FF40004E904E75",
+            "postHandlerAddress": 65430,
+            "ramInputAddress": 16728064
+          }
+        }
+      ]
+    },
+    "cases": {
+      "allOf": [
+        {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "macro",
+              "initialCurrentMap",
+              "viewTargetSeed",
+              "clearFadeAtFirstWait",
+              "operandWords",
+              "currentMapAfter",
+              "expected",
+              "runtimeGolden"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "macro": {
+                "enum": [
+                  "resetMap",
+                  "loadMapFadeIn",
+                  "reloadMap",
+                  "mapLoad"
+                ]
+              },
+              "initialCurrentMap": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 78
+              },
+              "viewTargetSeed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "clearFadeAtFirstWait": {
+                "type": "boolean"
+              },
+              "operandWords": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                }
+              },
+              "currentMapAfter": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 78
+              },
+              "expected": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "handlerAddress",
+                  "directCallSiteOrder",
+                  "loadMapD0WordAtCall",
+                  "loadMapD1WordAtCall",
+                  "tilesetD1WordAtCall",
+                  "viewTargetEntityAfter",
+                  "resetTailLoadMapD0WordAtTransfer",
+                  "resetTailLoadMapD1WordAtTransfer"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "handlerAddress": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "loadMapD0WordAtCall": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "loadMapD1WordAtCall": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "tilesetD1WordAtCall": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "viewTargetEntityAfter": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "directCallSiteOrder": {
+                    "type": "array",
+                    "items": {
+                      "enum": [
+                        "ResetCurrentMap",
+                        "LoadMapTilesets",
+                        "LoadMap",
+                        "EnableDisplayAndInterrupts",
+                        "WaitForVInt"
+                      ]
+                    }
+                  },
+                  "resetTailLoadMapD0WordAtTransfer": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "resetTailLoadMapD1WordAtTransfer": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 65535
+                  }
+                }
+              },
+              "runtimeGolden": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "viewPlaneAPixelX",
+                  "viewPlaneAPixelY",
+                  "layoutClearStartMarkerCleared",
+                  "layoutClearStartMarkerReplaced",
+                  "layoutClearEndMarkerCleared",
+                  "layoutClearEndMarkerReplaced"
+                ],
+                "properties": {
+                  "viewPlaneAPixelX": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "viewPlaneAPixelY": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "layoutClearStartMarkerCleared": {
+                    "type": "boolean"
+                  },
+                  "layoutClearStartMarkerReplaced": {
+                    "type": "boolean"
+                  },
+                  "layoutClearEndMarkerCleared": {
+                    "type": "boolean"
+                  },
+                  "layoutClearEndMarkerReplaced": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "const": [
+            {
+              "id": "reset-current-map",
+              "macro": "resetMap",
+              "initialCurrentMap": 3,
+              "viewTargetSeed": 90,
+              "clearFadeAtFirstWait": false,
+              "operandWords": [],
+              "currentMapAfter": 3,
+              "expected": {
+                "id": "reset-current-map",
+                "handlerAddress": 288142,
+                "loadMapD0WordAtCall": null,
+                "loadMapD1WordAtCall": null,
+                "tilesetD1WordAtCall": null,
+                "viewTargetEntityAfter": 90,
+                "directCallSiteOrder": [
+                  "ResetCurrentMap"
+                ],
+                "resetTailLoadMapD0WordAtTransfer": 0,
+                "resetTailLoadMapD1WordAtTransfer": 65535
+              },
+              "runtimeGolden": {
+                "viewPlaneAPixelX": 0,
+                "viewPlaneAPixelY": 12288,
+                "layoutClearStartMarkerCleared": true,
+                "layoutClearStartMarkerReplaced": true,
+                "layoutClearEndMarkerCleared": true,
+                "layoutClearEndMarkerReplaced": true
+              }
+            },
+            {
+              "id": "fade-then-map-load",
+              "macro": "loadMapFadeIn",
+              "initialCurrentMap": 3,
+              "viewTargetSeed": 90,
+              "clearFadeAtFirstWait": true,
+              "operandWords": [
+                4,
+                1,
+                2
+              ],
+              "currentMapAfter": 4,
+              "expected": {
+                "id": "fade-then-map-load",
+                "handlerAddress": 288154,
+                "loadMapD0WordAtCall": 774,
+                "loadMapD1WordAtCall": 4,
+                "tilesetD1WordAtCall": 4,
+                "viewTargetEntityAfter": 255,
+                "directCallSiteOrder": [
+                  "LoadMapTilesets",
+                  "WaitForVInt",
+                  "LoadMap",
+                  "EnableDisplayAndInterrupts",
+                  "WaitForVInt"
+                ],
+                "resetTailLoadMapD0WordAtTransfer": null,
+                "resetTailLoadMapD1WordAtTransfer": null
+              },
+              "runtimeGolden": {
+                "viewPlaneAPixelX": 384,
+                "viewPlaneAPixelY": 13056,
+                "layoutClearStartMarkerCleared": true,
+                "layoutClearStartMarkerReplaced": true,
+                "layoutClearEndMarkerCleared": true,
+                "layoutClearEndMarkerReplaced": true
+              }
+            },
+            {
+              "id": "reload-current-map",
+              "macro": "reloadMap",
+              "initialCurrentMap": 3,
+              "viewTargetSeed": 90,
+              "clearFadeAtFirstWait": false,
+              "operandWords": [
+                3,
+                5
+              ],
+              "currentMapAfter": 3,
+              "expected": {
+                "id": "reload-current-map",
+                "handlerAddress": 288520,
+                "loadMapD0WordAtCall": 2319,
+                "loadMapD1WordAtCall": 65535,
+                "tilesetD1WordAtCall": null,
+                "viewTargetEntityAfter": 255,
+                "directCallSiteOrder": [
+                  "LoadMap",
+                  "EnableDisplayAndInterrupts",
+                  "WaitForVInt"
+                ],
+                "resetTailLoadMapD0WordAtTransfer": null,
+                "resetTailLoadMapD1WordAtTransfer": null
+              },
+              "runtimeGolden": {
+                "viewPlaneAPixelX": 1152,
+                "viewPlaneAPixelY": 14208,
+                "layoutClearStartMarkerCleared": false,
+                "layoutClearStartMarkerReplaced": false,
+                "layoutClearEndMarkerCleared": false,
+                "layoutClearEndMarkerReplaced": false
+              }
+            },
+            {
+              "id": "map-load-same-current-map-index",
+              "macro": "mapLoad",
+              "initialCurrentMap": 3,
+              "viewTargetSeed": 90,
+              "clearFadeAtFirstWait": false,
+              "operandWords": [
+                3,
+                6,
+                7
+              ],
+              "currentMapAfter": 3,
+              "expected": {
+                "id": "map-load-same-current-map-index",
+                "handlerAddress": 288182,
+                "loadMapD0WordAtCall": 4629,
+                "loadMapD1WordAtCall": 3,
+                "tilesetD1WordAtCall": 3,
+                "viewTargetEntityAfter": 255,
+                "directCallSiteOrder": [
+                  "LoadMapTilesets",
+                  "WaitForVInt",
+                  "LoadMap",
+                  "EnableDisplayAndInterrupts",
+                  "WaitForVInt"
+                ],
+                "resetTailLoadMapD0WordAtTransfer": null,
+                "resetTailLoadMapD1WordAtTransfer": null
+              },
+              "runtimeGolden": {
+                "viewPlaneAPixelX": 2304,
+                "viewPlaneAPixelY": 14976,
+                "layoutClearStartMarkerCleared": false,
+                "layoutClearStartMarkerReplaced": true,
+                "layoutClearEndMarkerCleared": true,
+                "layoutClearEndMarkerReplaced": true
+              }
+            },
+            {
+              "id": "map-load-changed-map-index",
+              "macro": "mapLoad",
+              "initialCurrentMap": 3,
+              "viewTargetSeed": 90,
+              "clearFadeAtFirstWait": false,
+              "operandWords": [
+                4,
+                6,
+                7
+              ],
+              "currentMapAfter": 4,
+              "expected": {
+                "id": "map-load-changed-map-index",
+                "handlerAddress": 288182,
+                "loadMapD0WordAtCall": 4629,
+                "loadMapD1WordAtCall": 4,
+                "tilesetD1WordAtCall": 4,
+                "viewTargetEntityAfter": 255,
+                "directCallSiteOrder": [
+                  "LoadMapTilesets",
+                  "WaitForVInt",
+                  "LoadMap",
+                  "EnableDisplayAndInterrupts",
+                  "WaitForVInt"
+                ],
+                "resetTailLoadMapD0WordAtTransfer": null,
+                "resetTailLoadMapD1WordAtTransfer": null
+              },
+              "runtimeGolden": {
+                "viewPlaneAPixelX": 2304,
+                "viewPlaneAPixelY": 14976,
+                "layoutClearStartMarkerCleared": true,
+                "layoutClearStartMarkerReplaced": true,
+                "layoutClearEndMarkerCleared": true,
+                "layoutClearEndMarkerReplaced": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "layoutMarkers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layoutClearStartMarkerSeed",
+        "layoutClearEndMarkerSeed",
+        "layoutClearSpanByteCount"
+      ],
+      "properties": {
+        "layoutClearStartMarkerSeed": {
+          "const": 42330
+        },
+        "layoutClearEndMarkerSeed": {
+          "const": 23130
+        },
+        "layoutClearSpanByteCount": {
+          "const": 8192
+        }
+      }
+    }
+  }
+}

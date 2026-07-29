@@ -194,7 +194,12 @@ MAP_LIFECYCLE_HANDLER_BY_MACRO = {
     "mapLoad": "csc48_loadMap",
 }
 MAP_LIFECYCLE_HANDLER_NAMES = tuple(MAP_LIFECYCLE_HANDLER_BY_MACRO.values())
-MAP_LIFECYCLE_RUNTIME_QUESTIONS = ["map-lifecycle/runtime-effects-matrix"]
+MAP_LIFECYCLE_RUNTIME_QUESTIONS = [
+    "map-lifecycle/layout-collision-pathfinding-effects",
+    "map-lifecycle/entity-reload-player-placement",
+    "map-lifecycle/presentation-fade-hardware-timing",
+    "map-lifecycle/story-reachability-persistence",
+]
 
 # The source macro labels and operand comments delimit this static slice.  They
 # do not establish player-visible interaction, door, roof, collision, or map

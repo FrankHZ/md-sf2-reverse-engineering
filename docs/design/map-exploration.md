@@ -53,7 +53,9 @@ Evidence is executable through:
 - `sf2-map-animation-vdp-runtime-v1` in
   `tests/fixtures/h3/map-animation-vdp-v1.json`;
 - `sf2-entity-movement-runtime-v1` in
-  `tests/fixtures/h3/entity-movement-matrix-v1.json`.
+  `tests/fixtures/h3/entity-movement-matrix-v1.json`;
+- `sf2-map-lifecycle-runtime-v1` in
+  `tests/fixtures/h3/map-lifecycle-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -277,13 +279,27 @@ Map-script imports MUST separately retain the source-faithful map lifecycle reco
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field `expected.mapLifecycleCommandFacts`.
 The four forms MUST remain distinct, preserving opcode/operand widths, source comments, complete
 program ordering, and the exact named handler facts: cursor transfer versus non-advancing probe,
-VInt operation records, branch polarity/target identity, direct instruction/effective target identity, call order,
-and the physical `csc37_loadMapAndFadeIn` continuation into `csc48_loadMap`. A remake MAY introduce
-its own lifecycle interface only after defining that interface independently. The original static
-contract does not establish map persistence, working-layout replacement, entity reload effects,
-camera/player placement, collision/pathfinding refresh, presentation timing, fade visuals, hardware
-effects, or normal-story reachability; those remain in
-`map-lifecycle/runtime-effects-matrix`.
+VInt operation records, branch polarity/target identity, direct instruction/effective target identity,
+call order, and the physical `csc37_loadMapAndFadeIn` continuation into `csc48_loadMap`.
+
+**Confirmed runtime boundary:** `sf2-map-lifecycle-runtime-v1` at
+`tests/fixtures/h3/map-lifecycle-v1.json` records five bounded handler replays in one launch. A
+consumer MUST retain every exact per-case fixture field: `id`, `handlerAddress`, `handlerReturned`,
+`currentMapAfter`, `directCallSiteOrder`, `loadMapD0WordAtCall`, `loadMapD1WordAtCall`,
+`tilesetD1WordAtCall`, `resetTailLoadMapD0WordAtTransfer`,
+`resetTailLoadMapD1WordAtTransfer`, `viewTargetEntityAfter`, `viewPlaneAPixelX`,
+`viewPlaneAPixelY`, `layoutClearStartMarkerCleared`, `layoutClearStartMarkerReplaced`,
+`layoutClearEndMarkerCleared`, and `layoutClearEndMarkerReplaced`. The two `mapLoad` rows are distinct
+input operands, not an equality-branch model. The marker rows are not a complete-layout or
+asset-content contract, and direct JSR-site hits are not service-effect records. The bounded fade row
+clears `FADING_SETTING` at its first observed `WaitForVInt`; it is not a timing or visible-fade rule.
+
+A remake MAY introduce its own lifecycle interface only after defining that interface independently.
+The following original behaviors remain unknown rather than inferred from these checkpoints:
+`map-lifecycle/layout-collision-pathfinding-effects`,
+`map-lifecycle/entity-reload-player-placement`,
+`map-lifecycle/presentation-fade-hardware-timing`, and
+`map-lifecycle/story-reachability-persistence`.
 The 201 non-setup labels embedded in init sources use the same representation, so all 75 targets of
 an init `script` command resolve across the two resource families.
 

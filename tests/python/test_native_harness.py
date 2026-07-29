@@ -32,13 +32,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1537
+    assert result["Records"] == 1538
+    assert result["Confirmed"] == 1538
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 62
-    assert result["AddressBindings"] == 2141
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 63
+    assert result["AddressBindings"] == 2149
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1500
+    assert result["H1ListingRecords"] == 1501
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
@@ -501,6 +502,13 @@ def test_map_setup_selection_uses_the_last_set_flag_in_source_order() -> None:
 def test_map_event_dispatch_has_one_batched_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "map-event-dispatch"])
     assert args.h3_command == "map-event-dispatch"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 120
+
+
+def test_map_lifecycle_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "map-lifecycle"])
+    assert args.h3_command == "map-lifecycle"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 120
 

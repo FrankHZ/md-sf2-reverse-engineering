@@ -150,7 +150,10 @@
             "story-state/branch-prompt-persistence-matrix",
             "map-block-mutation/runtime-effects-matrix",
             "entity-population-reload/runtime-effects-matrix",
-            "map-lifecycle/runtime-effects-matrix",
+            "map-lifecycle/layout-collision-pathfinding-effects",
+            "map-lifecycle/entity-reload-player-placement",
+            "map-lifecycle/presentation-fade-hardware-timing",
+            "map-lifecycle/story-reachability-persistence",
             "map-interaction-trigger/runtime-effects-matrix",
             "map-script-camera-control/runtime-effects-matrix",
             "map-script-entity-placement/runtime-effects-reachability-matrix",
@@ -29669,7 +29672,10 @@
                 },
                 "runtimeQuestions": {
                   "const": [
-                    "map-lifecycle/runtime-effects-matrix"
+                    "map-lifecycle/layout-collision-pathfinding-effects",
+                    "map-lifecycle/entity-reload-player-placement",
+                    "map-lifecycle/presentation-fade-hardware-timing",
+                    "map-lifecycle/story-reachability-persistence"
                   ]
                 }
               }

@@ -1,0 +1,285 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "system",
+    "core",
+    "id",
+    "mapTest",
+    "recordOrder",
+    "records"
+  ],
+  "properties": {
+    "system": {
+      "const": "GEN"
+    },
+    "core": {
+      "const": "Genesis Plus GX"
+    },
+    "id": {
+      "const": "sf2-map-lifecycle-runtime-v1"
+    },
+    "mapTest": {
+      "const": 0
+    },
+    "recordOrder": {
+      "const": [
+        "reset-current-map",
+        "fade-then-map-load",
+        "reload-current-map",
+        "map-load-same-current-map-index",
+        "map-load-changed-map-index"
+      ]
+    },
+    "records": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "handlerAddress",
+          "handlerReturned",
+          "directCallSiteOrder",
+          "loadMapD0WordAtCall",
+          "loadMapD1WordAtCall",
+          "tilesetD1WordAtCall",
+          "viewTargetEntityAfter",
+          "currentMapAfter",
+          "resetTailLoadMapD0WordAtTransfer",
+          "resetTailLoadMapD1WordAtTransfer",
+          "viewPlaneAPixelX",
+          "viewPlaneAPixelY",
+          "layoutClearStartMarkerCleared",
+          "layoutClearStartMarkerReplaced",
+          "layoutClearEndMarkerCleared",
+          "layoutClearEndMarkerReplaced"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "handlerAddress": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "loadMapD0WordAtCall": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "loadMapD1WordAtCall": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "tilesetD1WordAtCall": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "viewTargetEntityAfter": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "handlerReturned": {
+            "const": true
+          },
+          "currentMapAfter": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 78
+          },
+          "directCallSiteOrder": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "ResetCurrentMap",
+                "LoadMapTilesets",
+                "LoadMap",
+                "EnableDisplayAndInterrupts",
+                "WaitForVInt"
+              ]
+            }
+          },
+          "resetTailLoadMapD0WordAtTransfer": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "resetTailLoadMapD1WordAtTransfer": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "viewPlaneAPixelX": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "viewPlaneAPixelY": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "layoutClearStartMarkerCleared": {
+            "type": "boolean"
+          },
+          "layoutClearStartMarkerReplaced": {
+            "type": "boolean"
+          },
+          "layoutClearEndMarkerCleared": {
+            "type": "boolean"
+          },
+          "layoutClearEndMarkerReplaced": {
+            "type": "boolean"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "const": [
+            {
+              "id": "reset-current-map",
+              "handlerAddress": 288142,
+              "loadMapD0WordAtCall": null,
+              "loadMapD1WordAtCall": null,
+              "tilesetD1WordAtCall": null,
+              "viewTargetEntityAfter": 90,
+              "directCallSiteOrder": [
+                "ResetCurrentMap"
+              ],
+              "resetTailLoadMapD0WordAtTransfer": 0,
+              "resetTailLoadMapD1WordAtTransfer": 65535,
+              "handlerReturned": true,
+              "currentMapAfter": 3,
+              "viewPlaneAPixelX": 0,
+              "viewPlaneAPixelY": 12288,
+              "layoutClearStartMarkerCleared": true,
+              "layoutClearStartMarkerReplaced": true,
+              "layoutClearEndMarkerCleared": true,
+              "layoutClearEndMarkerReplaced": true
+            },
+            {
+              "id": "fade-then-map-load",
+              "handlerAddress": 288154,
+              "loadMapD0WordAtCall": 774,
+              "loadMapD1WordAtCall": 4,
+              "tilesetD1WordAtCall": 4,
+              "viewTargetEntityAfter": 255,
+              "directCallSiteOrder": [
+                "LoadMapTilesets",
+                "WaitForVInt",
+                "LoadMap",
+                "EnableDisplayAndInterrupts",
+                "WaitForVInt"
+              ],
+              "resetTailLoadMapD0WordAtTransfer": null,
+              "resetTailLoadMapD1WordAtTransfer": null,
+              "handlerReturned": true,
+              "currentMapAfter": 4,
+              "viewPlaneAPixelX": 384,
+              "viewPlaneAPixelY": 13056,
+              "layoutClearStartMarkerCleared": true,
+              "layoutClearStartMarkerReplaced": true,
+              "layoutClearEndMarkerCleared": true,
+              "layoutClearEndMarkerReplaced": true
+            },
+            {
+              "id": "reload-current-map",
+              "handlerAddress": 288520,
+              "loadMapD0WordAtCall": 2319,
+              "loadMapD1WordAtCall": 65535,
+              "tilesetD1WordAtCall": null,
+              "viewTargetEntityAfter": 255,
+              "directCallSiteOrder": [
+                "LoadMap",
+                "EnableDisplayAndInterrupts",
+                "WaitForVInt"
+              ],
+              "resetTailLoadMapD0WordAtTransfer": null,
+              "resetTailLoadMapD1WordAtTransfer": null,
+              "handlerReturned": true,
+              "currentMapAfter": 3,
+              "viewPlaneAPixelX": 1152,
+              "viewPlaneAPixelY": 14208,
+              "layoutClearStartMarkerCleared": false,
+              "layoutClearStartMarkerReplaced": false,
+              "layoutClearEndMarkerCleared": false,
+              "layoutClearEndMarkerReplaced": false
+            },
+            {
+              "id": "map-load-same-current-map-index",
+              "handlerAddress": 288182,
+              "loadMapD0WordAtCall": 4629,
+              "loadMapD1WordAtCall": 3,
+              "tilesetD1WordAtCall": 3,
+              "viewTargetEntityAfter": 255,
+              "directCallSiteOrder": [
+                "LoadMapTilesets",
+                "WaitForVInt",
+                "LoadMap",
+                "EnableDisplayAndInterrupts",
+                "WaitForVInt"
+              ],
+              "resetTailLoadMapD0WordAtTransfer": null,
+              "resetTailLoadMapD1WordAtTransfer": null,
+              "handlerReturned": true,
+              "currentMapAfter": 3,
+              "viewPlaneAPixelX": 2304,
+              "viewPlaneAPixelY": 14976,
+              "layoutClearStartMarkerCleared": false,
+              "layoutClearStartMarkerReplaced": true,
+              "layoutClearEndMarkerCleared": true,
+              "layoutClearEndMarkerReplaced": true
+            },
+            {
+              "id": "map-load-changed-map-index",
+              "handlerAddress": 288182,
+              "loadMapD0WordAtCall": 4629,
+              "loadMapD1WordAtCall": 4,
+              "tilesetD1WordAtCall": 4,
+              "viewTargetEntityAfter": 255,
+              "directCallSiteOrder": [
+                "LoadMapTilesets",
+                "WaitForVInt",
+                "LoadMap",
+                "EnableDisplayAndInterrupts",
+                "WaitForVInt"
+              ],
+              "resetTailLoadMapD0WordAtTransfer": null,
+              "resetTailLoadMapD1WordAtTransfer": null,
+              "handlerReturned": true,
+              "currentMapAfter": 4,
+              "viewPlaneAPixelX": 2304,
+              "viewPlaneAPixelY": 14976,
+              "layoutClearStartMarkerCleared": true,
+              "layoutClearStartMarkerReplaced": true,
+              "layoutClearEndMarkerCleared": true,
+              "layoutClearEndMarkerReplaced": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

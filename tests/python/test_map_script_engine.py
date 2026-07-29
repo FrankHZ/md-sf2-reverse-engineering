@@ -1,5 +1,7 @@
 from collections import Counter
 from copy import deepcopy
+from hashlib import sha256
+from json import dumps
 from pathlib import Path
 
 import pytest
@@ -4540,7 +4542,75 @@ def test_map_lifecycle_contract_matches_complete_golden_fixture(
             "csc48_loadMap",
         ],
     }
-    assert actual["runtimeQuestions"] == ["map-lifecycle/runtime-effects-matrix"]
+    assert actual["runtimeQuestions"] == [
+        "map-lifecycle/layout-collision-pathfinding-effects",
+        "map-lifecycle/entity-reload-player-placement",
+        "map-lifecycle/presentation-fade-hardware-timing",
+        "map-lifecycle/story-reachability-persistence",
+    ]
+
+
+def _canonical_digest(value: object) -> str:
+    encoded = dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    return sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def test_map_lifecycle_h3_handoff_changes_only_runtime_question_queues() -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    expected = deepcopy(fixture["expected"])
+    assert expected.pop("runtimeQuestions") == [
+        "caller-dependent-story-branch-reachability-and-persistence",
+        "entity-camera-text-wait-and-transition-frame-timing",
+        "palette-fade-and-vdp-visible-presentation",
+        "force-state/roster-death-persistence-visible-outcomes",
+        "force-state/active-party-ai-follower-runtime-matrix",
+        "story-state/branch-prompt-persistence-matrix",
+        "map-block-mutation/runtime-effects-matrix",
+        "entity-population-reload/runtime-effects-matrix",
+        "map-lifecycle/layout-collision-pathfinding-effects",
+        "map-lifecycle/entity-reload-player-placement",
+        "map-lifecycle/presentation-fade-hardware-timing",
+        "map-lifecycle/story-reachability-persistence",
+        "map-interaction-trigger/runtime-effects-matrix",
+        "map-script-camera-control/runtime-effects-matrix",
+        "map-script-entity-placement/runtime-effects-reachability-matrix",
+        "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
+        "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
+        "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
+        "map-script-screen-presentation/runtime-effects-matrix",
+        "map-script-entity-presentation-fx/runtime-effects-matrix",
+        "map-script-ui-command/runtime-effects-matrix",
+        "map-script-entity-clone/runtime-effects-matrix",
+    ]
+    assert expected["mapLifecycleCommandFacts"].pop("runtimeQuestions") == [
+        "map-lifecycle/layout-collision-pathfinding-effects",
+        "map-lifecycle/entity-reload-player-placement",
+        "map-lifecycle/presentation-fade-hardware-timing",
+        "map-lifecycle/story-reachability-persistence",
+    ]
+    assert _canonical_digest(expected) == (
+        "e181191adc90801667612e2817cafa593cb8b8a43009de84c0c305d410966456"
+    )
+
+    output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
+    del output_schema["properties"]["runtimeQuestions"]
+    del output_schema["properties"]["mapLifecycleCommandFacts"]["allOf"][1]["properties"][
+        "runtimeQuestions"
+    ]
+    assert _canonical_digest(output_schema) == (
+        "adc52132736ddb14e81e69ea7c84b642d49519738bfb0a05a94d2e0ad227676b"
+    )
+
+    fixture_schema = deepcopy(
+        load_json(repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"))
+    )
+    del fixture_schema["properties"]["expected"]["properties"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"]["mapLifecycleCommandFacts"][
+        "allOf"
+    ][1]["properties"]["runtimeQuestions"]
+    assert _canonical_digest(fixture_schema) == (
+        "30b984f86b32d34544d59adfc36b43d29fd1757cf9580dc8a08857e7a8764f3a"
+    )
 
 
 def test_map_lifecycle_opcode_operand_order_and_polarity_guards_fail_before_fixture(
