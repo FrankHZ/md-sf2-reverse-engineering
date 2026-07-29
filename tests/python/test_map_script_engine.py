@@ -25,6 +25,10 @@ from sf2tool.h2.map_script_engine import (
     _entity_action_bridge_payload_invocation,
     _entity_action_bridge_section_guard,
     _entity_dialogue_consumer_facts,
+    _entity_gesture_relationship_motion_branch_target_record,
+    _entity_gesture_relationship_motion_cursor_read_use_site,
+    _entity_gesture_relationship_motion_macro_annotations,
+    _entity_gesture_relationship_motion_section_guard,
     _entity_lifecycle_presentation_branch_target_record,
     _entity_lifecycle_presentation_cursor_read_use_site,
     _entity_lifecycle_presentation_macro_annotations,
@@ -5955,6 +5959,422 @@ def test_map_entity_lifecycle_presentation_schema_compacts_raw_corpora_and_close
                 "entityLifecyclePresentationCommand",
                 "entityLifecyclePresentationSourceSite",
                 "entityLifecyclePresentationProgramTotal",
+            ):
+                item = schema["definitions"][name]
+                assert item["additionalProperties"] is False
+                assert "prefixItems" not in item
+                assert "const" not in item
+        else:
+            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+
+        def assert_closed_objects(value):
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        assert_closed_objects(facts)
+
+
+def test_map_entity_gesture_relationship_motion_contract_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["entityGestureRelationshipMotionCommandFacts"]
+    assert fixture["expected"]["entityGestureRelationshipMotionCommandFacts"] == {
+        key: actual[key]
+        for key in fixture["expected"]["entityGestureRelationshipMotionCommandFacts"]
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+            row["handler"],
+        )
+        for row in actual["macros"]
+    ] == [
+        ("shiver", 42, 4, 2, 191, "csc2A_entityShiver"),
+        ("nod", 38, 4, 2, 169, "csc26_entityNodHead"),
+        ("followEntity", 44, 8, 6, 160, "csc2C_followEntity"),
+        ("faceEntity", 82, 6, 4, 15, "csc52_faceEntity"),
+        ("moveNextToPlayer", 40, 6, 4, 7, "csc28_moveEntityNextToPlayer"),
+        ("fly", 47, 6, 4, 2, "csc2F_fly"),
+        ("moveEntityAboveAnother", 49, 6, 4, 1, "csc31_moveEntityAboveEntity"),
+    ]
+    assert sum(row["sourceCommandCount"] for row in actual["macros"]) == 545
+    assert len(actual["sourceSites"]) == 133
+    assert len(actual["sourceSiteOrderKeys"]) == 545
+    assert actual["sourceSitesSha256"] == (
+        "A8EAB146BD07272B5D63DD1ADE4FF4BCF941B0D169E9FEDB92B0F70DE55DE022"
+    )
+    assert len(actual["programTotals"]) == 304
+    assert actual["programTotalsSha256"] == (
+        "62D7A6F5A4A7FF8ABA021555F3FF3BAD8B96F6F5A67910FEF257FC7E76CDAFB8"
+    )
+    assert [
+        (
+            row["macro"],
+            row["handler"],
+            row["address"],
+            row["opcode"],
+            row["sourceCommandCount"],
+            row["statementCount"],
+        )
+        for row in actual["handlers"]
+    ] == [
+        ("shiver", "csc2A_entityShiver", 290286, 42, 191, 19),
+        ("nod", "csc26_entityNodHead", 289904, 38, 169, 18),
+        ("followEntity", "csc2C_followEntity", 290392, 44, 160, 19),
+        ("faceEntity", "csc52_faceEntity", 290648, 82, 15, 33),
+        ("moveNextToPlayer", "csc28_moveEntityNextToPlayer", 290064, 40, 7, 44),
+        ("fly", "csc2F_fly", 290472, 47, 2, 8),
+        (
+            "moveEntityAboveAnother",
+            "csc31_moveEntityAboveEntity",
+            290864,
+            49,
+            1,
+            9,
+        ),
+    ]
+    assert actual["handlers"][0]["sectionGuard"]["bitMutationUseSites"] == [
+        {
+            "operation": "or-immediate",
+            "immediateText": "%1000",
+            "immediateValue": 8,
+            "instruction": "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+        },
+        {
+            "operation": "and-immediate",
+            "immediateText": "%11110111",
+            "immediateValue": 247,
+            "instruction": "andi.b #%11110111,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+        },
+    ]
+    assert actual["handlers"][2]["sectionGuard"]["aliveStatusPointerAdjustment"] == {
+        "selectorPreReadUseSite": {
+            "sourceRegister": "a6",
+            "destinationOperand": "d0",
+            "transferredByteCount": 1,
+            "cursorAdvanceByteCount": 0,
+            "instruction": "move.b (a6),d0",
+        },
+        "adjustmentLiteralInstruction": "moveq #6,d7",
+        "adjustmentLiteralText": "6",
+        "adjustmentLiteralValue": 6,
+        "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+    }
+    assert actual["handlers"][4]["sectionGuard"]["sourceConstantUseSites"] == [
+        {
+            "symbol": "MAP_TILE_SIZE",
+            "value": 384,
+            "instruction": instruction,
+        }
+        for instruction in (
+            "addi.w #MAP_TILE_SIZE,d1",
+            "subi.w #MAP_TILE_SIZE,d2",
+            "subi.w #MAP_TILE_SIZE,d1",
+            "addi.w #MAP_TILE_SIZE,d2",
+        )
+    ] + [
+        {"symbol": "UP", "value": 1, "instruction": "cmpi.b #UP,d3"},
+        {"symbol": "LEFT", "value": 2, "instruction": "cmpi.b #LEFT,d3"},
+        {
+            "symbol": "DIRECTION_MASK",
+            "value": 3,
+            "instruction": "andi.b #DIRECTION_MASK,d3",
+        },
+    ]
+    assert actual["callerBreakdown"]["instructionTargetTotals"] == {
+        "GetEntityAddressFromCharacter": 11,
+        "UpdateEntitySprite_0": 5,
+        "Sleep": 5,
+        "LoadMapsprite": 1,
+        "sub_45D70": 1,
+        "DmaMapsprite": 1,
+        "AdjustScriptPointerByCharacterAliveStatus": 1,
+        "AddFollower": 2,
+        "WaitForVInt": 1,
+        "WaitForEntityToStopMoving": 2,
+    }
+    assert actual["callerBreakdown"]["effectiveTargetTotals"] == actual[
+        "callerBreakdown"
+    ]["instructionTargetTotals"]
+    for field in (
+        "internalInstructionTargetTotals",
+        "internalEffectiveTargetTotals",
+    ):
+        assert actual["callerBreakdown"][field] == {
+            target: 0 for target in actual["callerBreakdown"]["instructionTargetTotals"]
+        }
+    assert actual["runtimeQuestions"] == [
+        "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix"
+    ]
+
+
+def test_map_entity_gesture_relationship_motion_source_guards_reject_local_drift(
+    map_script_engine_output: dict, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    equates = map_script_engine._source_equates(disasm)
+    facts = map_script_engine_output["entityGestureRelationshipMotionCommandFacts"]
+    annotations = _entity_gesture_relationship_motion_macro_annotations(disasm)
+    assert annotations["moveEntityAboveAnother"] == facts["macros"][-1][
+        "sourceOperandAnnotations"
+    ]
+    source_handlers = {row["name"]: row for row in map_script_engine_output["handlers"]}
+    guarded_handlers = {row["macro"]: row for row in facts["handlers"]}
+    for macro, handler in guarded_handlers.items():
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        guard = _entity_gesture_relationship_motion_section_guard(
+            macro, statements, equates
+        )
+        assert guard["orderedInstructions"] == handler["sectionGuard"][
+            "orderedInstructions"
+        ]
+        for field in (
+            "scriptCursorReadUseSites",
+            "aliveStatusPointerAdjustment",
+            "sourceConstantUseSites",
+            "sourceOperandInstructions",
+            "sourceImmediateInstructions",
+            "bitMutationUseSites",
+            "directCallOrder",
+            "returnInstruction",
+        ):
+            assert guard[field] == handler["sectionGuard"][field]
+        section_source = map_script_engine._map_camera_control_named_section_source(
+            disasm,
+            "code/common/scripting/map/mapscriptengine_1.asm",
+            handler["handler"],
+        )
+        assert [
+            {
+                "branchInstruction": row["branchInstruction"],
+                "branchTarget": _entity_gesture_relationship_motion_branch_target_record(
+                    section_source,
+                    row["branchInstruction"],
+                    row["expectedTargetInstruction"],
+                    guard["orderedInstructions"],
+                ),
+            }
+            for row in guard["branchRecords"]
+        ] == handler["sectionGuard"]["branchRecords"]
+        assert [
+            {
+                "loopInstruction": row["loopInstruction"],
+                "loopTarget": {
+                    "counterRegister": "d7",
+                    "loopInstruction": row["loopInstruction"],
+                    **_entity_gesture_relationship_motion_branch_target_record(
+                        section_source,
+                        f"bra.s {row['loopInstruction'].split(',', 1)[1]}",
+                        row["expectedTargetInstruction"],
+                        guard["orderedInstructions"],
+                    ),
+                },
+            }
+            for row in guard["loopRecords"]
+        ] == handler["sectionGuard"]["loopRecords"]
+        assert sum(
+            row["cursorAdvanceByteCount"] for row in guard["scriptCursorReadUseSites"]
+        ) == next(row["operandBytes"] for row in facts["macros"] if row["name"] == macro)
+    mutations = (
+        ("shiver", "ori.b #%1000", "ori.b #%0100"),
+        ("nod", "dbf d7,loc_46C8A", "dbf d7,loc_46C8C"),
+        ("followEntity", "moveq #6,d7", "moveq #5,d7"),
+        ("faceEntity", "bcs.s @Face_Up", "bcc.s @Face_Up"),
+        ("moveNextToPlayer", "addi.w #MAP_TILE_SIZE,d1", "addi.w #MAP_TILE_SIZE,d2"),
+        ("fly", "bne.s loc_46EB8", "beq.s loc_46EB8"),
+        ("moveEntityAboveAnother", "jsr AddFollower", "jsr Sleep"),
+    )
+    for macro, original, replacement in mutations:
+        handler = guarded_handlers[macro]
+        statements = map_script_engine._stable_handler_statements(
+            disasm, source_handlers[handler["handler"]]
+        )
+        with pytest.raises(ValueError, match="statement is missing"):
+            _entity_gesture_relationship_motion_section_guard(
+                macro,
+                [statement.replace(original, replacement) for statement in statements],
+                equates,
+            )
+    reordered = map_script_engine._stable_handler_statements(
+        disasm, source_handlers["csc2A_entityShiver"]
+    )
+    reordered[7], reordered[8] = reordered[8], reordered[7]
+    with pytest.raises(ValueError, match="statement is missing"):
+        _entity_gesture_relationship_motion_section_guard("shiver", reordered, equates)
+    section_source = map_script_engine._map_camera_control_named_section_source(
+        disasm,
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "csc52_faceEntity",
+    )
+    with pytest.raises(ValueError, match="branch target label is missing"):
+        _entity_gesture_relationship_motion_branch_target_record(
+            section_source.replace("@Face_Up:", "@FaceUp:"),
+            "bcs.s @Face_Up",
+            "move.b #UP,ENTITYDEF_OFFSET_FACING(a5)",
+            guarded_handlers["faceEntity"]["sectionGuard"]["orderedInstructions"],
+        )
+    original_reader = map_script_engine.read_upstream_text
+
+    def annotation_altered_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.name == "sf2cutscenemacros.asm":
+            prefix, marker, shiver_and_after = source.partition("shiver: macro")
+            return prefix + marker + shiver_and_after.replace(
+                "dc.w \\1 ; entity to act", "dc.w \\1", 1
+            )
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", annotation_altered_reader)
+    with pytest.raises(ValueError, match="operand comment is missing"):
+        _entity_gesture_relationship_motion_macro_annotations(disasm)
+
+
+def test_map_entity_gesture_cursor_parser_handles_comments_sizes_and_near_misses(
+) -> None:
+    assert _entity_gesture_relationship_motion_cursor_read_use_site(
+        "move.b (a6),d0 ; selector"
+    ) == {
+        "sourceRegister": "a6",
+        "destinationOperand": "d0",
+        "transferredByteCount": 1,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "move.b (a6),d0",
+    }
+    assert _entity_gesture_relationship_motion_cursor_read_use_site("move.w (a6)+,d2")[
+        "cursorAdvanceByteCount"
+    ] == 2
+    assert _entity_gesture_relationship_motion_cursor_read_use_site("move.l (a6)+,d7")[
+        "transferredByteCount"
+    ] == 4
+    for near_miss in (
+        "label: move.w (a6)+,d2",
+        "; move.w (a6)+,d2",
+        "move.q (a6)+,d2",
+        "move.w d2,(a6)+",
+        "move.w target(a6),d2",
+    ):
+        with pytest.raises(ValueError, match="cursor-read use-site drift"):
+            _entity_gesture_relationship_motion_cursor_read_use_site(near_miss)
+
+
+def test_map_entity_gesture_relationship_motion_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="entity gesture relationship motion baseline")
+        target_path = (
+            ("entityGestureRelationshipMotionCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "entityGestureRelationshipMotionCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["macros"][0]["sourceOperandAnnotations"][0][
+            "sourceComment"
+        ]
+        with pytest.raises(ValueError, match="sourceComment"):
+            validate_json(missing, schema_path, owner="gesture missing nested field")
+
+        renamed = deepcopy(source)
+        direct_call = target_for(renamed)["handlers"][0]["directCalls"][0]
+        direct_call["target"] = direct_call.pop("instructionTarget")
+        with pytest.raises(ValueError, match="instructionTarget"):
+            validate_json(renamed, schema_path, owner="gesture renamed nested field")
+
+        extra = deepcopy(source)
+        target_for(extra)["handlers"][0]["sectionGuard"]["bitMutationUseSites"][0][
+            "extra"
+        ] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="gesture extra nested field")
+
+        reordered = deepcopy(source)
+        order = target_for(reordered)["sourceSiteOrderKeys"]
+        order[0], order[1] = order[1], order[0]
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(reordered, schema_path, owner="gesture exact source order")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["macros"][0]["sourceCommandCount"] = 192
+        with pytest.raises(ValueError, match="was expected"):
+            validate_json(boundary, schema_path, owner="gesture exact boundary")
+
+
+def test_map_entity_gesture_relationship_motion_schema_compacts_raw_corpora_and_closes_shapes(
+) -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        contract = schema["properties"].get("entityGestureRelationshipMotionCommandFacts")
+        if contract is None:
+            contract = schema["properties"]["expected"]["properties"][
+                "entityGestureRelationshipMotionCommandFacts"
+            ]
+        exact_block = contract["allOf"][1]
+        exact = (
+            exact_block["const"]
+            if "const" in exact_block
+            else exact_block["properties"]
+        )
+        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
+        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
+        definition_name = (
+            "entityGestureRelationshipMotionCommandFacts"
+            if "entityGestureRelationshipMotionCommandFacts" in schema["definitions"]
+            else "entityGestureRelationshipMotionFixtureCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if definition_name == "entityGestureRelationshipMotionCommandFacts":
+            assert {"sourceSites", "programTotals"} <= set(facts["required"])
+            assert facts["properties"]["sourceSites"] == {
+                "type": "array",
+                "minItems": 133,
+                "maxItems": 133,
+                "items": {
+                    "$ref": "#/definitions/entityGestureRelationshipMotionSourceSite"
+                },
+            }
+            assert facts["properties"]["programTotals"] == {
+                "type": "array",
+                "minItems": 304,
+                "maxItems": 304,
+                "items": {
+                    "$ref": "#/definitions/entityGestureRelationshipMotionProgramTotal"
+                },
+            }
+            for name in (
+                "entityGestureRelationshipMotionCommand",
+                "entityGestureRelationshipMotionSourceSite",
+                "entityGestureRelationshipMotionProgramTotal",
             ):
                 item = schema["definitions"][name]
                 assert item["additionalProperties"] is False

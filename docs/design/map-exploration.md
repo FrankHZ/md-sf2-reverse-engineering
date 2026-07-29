@@ -157,6 +157,18 @@ instruction/effective-target caller maps, and return boundaries. These are sourc
 control-flow records. A remake MUST NOT normalize them into a visibility, animation, sprite, priority,
 shadow, size, collision, persistence, timing, or presentation model; all original runtime consequences
 remain in `map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix`.
+Map-script imports MUST separately retain the seven source-named forms `shiver`, `nod`,
+`followEntity`, `faceEntity`, `moveNextToPlayer`, `fly`, and `moveEntityAboveAnother` in
+`sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityGestureRelationshipMotionCommandFacts`. Each record MUST preserve opcode and physical
+operand widths, raw macro comments (including the two empty `moveEntityAboveAnother` comments), complete
+command/program order, and the zero-inclusive program domain. The import boundary MUST retain named
+handler instruction order: A6 transfer versus non-advancing probe widths, source operand/literal use
+sites, branch polarity and target identity, loop target records, direct instruction/effective target
+caller maps, and return boundaries. These are source-layout and control-flow records. A remake MUST NOT
+normalize them into a gesture, relationship, position, following, movement, layer, facing, animation,
+timing, collision, persistence, or presentation model; all original runtime consequences remain in
+`map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix`.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

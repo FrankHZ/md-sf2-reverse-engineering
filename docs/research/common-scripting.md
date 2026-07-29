@@ -12,7 +12,8 @@
   camera-control family/program-site/handler/caller/service contract, the complete two-command map-script
   block-copy family/program-site/handler/caller contract, the complete four-command map-script entity
   population/reload family/program-site/handler/caller contract, the complete four-command map-script
-  entity-placement source/handler/caller contract, the complete 119-row sprite-dialogue
+  entity-placement source/handler/caller contract, the complete seven-command source-named map-script
+  entity gesture/relationship/motion source/handler/caller contract, the complete 119-row sprite-dialogue
   property table and its lookup/default rules, plus the complete variable-width font, ASCII
   conversion, pointer, and glyph-loader data path, and the complete three-shared/75-distributed
   entity-action source corpus, and the 13-case/20-tick entity movement runtime matrix
@@ -417,6 +418,59 @@ and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD
 Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.entityLifecyclePresentationCommandFacts`.
+
+## Confirmed Map-Script Entity Gesture/Relationship/Motion Command Family
+
+Evidence date: 2026-07-28.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.entityGestureRelationshipMotionCommandFacts` retains seven source-named macro forms in source
+order: `shiver` `$2A` (191 commands, 4 encoded bytes, 2 operand bytes), `nod` `$26` (169, 4, 2),
+`followEntity` `$2C` (160, 8, 6), `faceEntity` `$52` (15, 6, 4), `moveNextToPlayer` `$28` (7, 6,
+4), `fly` `$2F` (2, 6, 4), and `moveEntityAboveAnother` `$31` (1, 6, 4). The raw macro comments
+and byte/word widths remain source facts, including the empty first and second comments of
+`moveEntityAboveAnother`; source spelling and physical layout do not establish an entity action,
+relationship, movement, layer, facing, or presentation effect.
+
+**Confirmed:** the complete source corpus contains 545 ordered command occurrences in 133 non-empty
+source-site rows, and all 304 declared programs remain as zero-inclusive `programTotals` rows. The
+extractor separately retains compact scalar source-site/program order keys, complete raw rows, and their
+exact order hashes: `A8EAB146BD07272B5D63DD1ADE4FF4BCF941B0D169E9FEDB92B0F70DE55DE022` for source sites and
+`62D7A6F5A4A7FF8ABA021555F3FF3BAD8B96F6F5A67910FEF257FC7E76CDAFB8` for program totals.
+
+**Confirmed:** the seven bounded H1/ROM handler sections are `csc2A_entityShiver` `$46DEE` (19
+statements), `csc26_entityNodHead` `$46C70` (18), `csc2C_followEntity` `$46E58` (19),
+`csc52_faceEntity` `$46F58` (33), `csc28_moveEntityNextToPlayer` `$46D10` (44), `csc2F_fly`
+`$46EA8` (8), and `csc31_moveEntityAboveEntity` `$47030` (9). Their guards retain complete statement
+and direct-call order, A6 transfer versus non-advancing probe widths, branch polarity and resolved
+target-first-instruction pairs, loop targets, literal source instructions, and return boundaries.
+Parsed constant use-site records retain the four `MAP_TILE_SIZE` operands (value 384), `UP` (1),
+`LEFT` (2), `DIRECTION_MASK` (3), and the four `faceEntity` direction-symbol operands; these are
+source operand facts, not behavior labels.
+
+**Confirmed:** comment-stripping instruction parsing retains ten direct instruction targets with
+zero-inclusive per-handler, direct/effective, internal/external maps. External totals are
+`GetEntityAddressFromCharacter` 11, `UpdateEntitySprite_0` 5, `Sleep` 5, `LoadMapsprite` 1,
+`sub_45D70` 1, `DmaMapsprite` 1, `AdjustScriptPointerByCharacterAliveStatus` 1, `AddFollower` 2,
+`WaitForVInt` 1, and `WaitForEntityToStopMoving` 2; every internal total is zero and no current call
+resolves through a jump-interface alias.
+
+### Runtime questions — entity gesture/relationship/motion
+
+**Unknown:** `map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix` is the
+sole grouped H3 queue. One shared launch must establish normal-story reachability; raw operand/selector
+meaning; entity, position, following, layer, facing, animation, and presentation results; timing;
+collision/pathfinding; and persistence. No macro, handler, callee, field, or literal name promotes
+those runtime outcomes from this static contract.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `shiver`, `nod`,
+`followEntity`, `faceEntity`, `moveNextToPlayer`, `fly`, and `moveEntityAboveAnother`;
+`code/common/scripting/map/mapscriptengine_1.asm` named sections above; H1 listing symbols/addresses;
+and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityGestureRelationshipMotionCommandFacts`.
 
 ## Confirmed Map-Script Roster/Death Command Family
 

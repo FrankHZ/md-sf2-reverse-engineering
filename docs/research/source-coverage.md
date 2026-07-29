@@ -426,6 +426,15 @@ fixtures are provenance-only identities.
 `map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix` is the sole grouped H3
 follow-up; source names do not credit visibility, animation, sprite, priority, shadow, size, timing,
 collision, persistence, or presentation behavior as static coverage.
+The adjacent entity gesture/relationship/motion slice is exact for seven source-named forms: 191
+`shiver` `$2A`, 169 `nod` `$26`, 160 `followEntity` `$2C`, 15 `faceEntity` `$52`, seven
+`moveNextToPlayer` `$28`, two `fly` `$2F`, and one `moveEntityAboveAnother` `$31` command (545 total).
+It retains 133 ordered source-site rows, the complete 304-row zero-inclusive program domain, raw macro
+operand comments/widths, seven complete named handler guards, parsed source constant/literal use sites,
+branch and loop target identity, and ten-target zero-inclusive direct/effective caller maps.
+`map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix` is the sole grouped
+H3 follow-up; source spelling does not credit entity action, relationship, movement, timing, collision,
+persistence, or presentation behavior as static coverage.
 The adjacent roster/death family is likewise exact for six primary source forms: 34 `join`, zero
 `jumpIfDefeatedByLastAttack`, zero `jumpIfDead`, five `allyDefeated`, one
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.
