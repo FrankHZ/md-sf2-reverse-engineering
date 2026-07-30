@@ -318,7 +318,9 @@ ENTITY_LIFECYCLE_PRESENTATION_HANDLER_NAMES = tuple(
     ENTITY_LIFECYCLE_PRESENTATION_HANDLER_BY_MACRO.values()
 )
 ENTITY_LIFECYCLE_PRESENTATION_RUNTIME_QUESTIONS = [
-    "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix"
+    "map-script-entity-lifecycle-presentation/normal-story-reachability",
+    "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
+    "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
 ]
 
 ENTITY_GESTURE_RELATIONSHIP_MOTION_MACRO_NAMES = (

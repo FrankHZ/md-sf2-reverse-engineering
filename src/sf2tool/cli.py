@@ -94,6 +94,9 @@ from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
 from sf2tool.h3.map_camera_control import verify_map_camera_control
 from sf2tool.h3.map_entity_action_bridge import verify_map_entity_action_bridge
+from sf2tool.h3.map_entity_lifecycle_presentation import (
+    verify_map_entity_lifecycle_presentation,
+)
 from sf2tool.h3.map_entity_placement import verify_map_entity_placement
 from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
@@ -719,6 +722,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_entity_placement)
     h3_map_entity_placement.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_entity_lifecycle_presentation = h3_commands.add_parser(
+        "map-entity-lifecycle-presentation",
+        help="verify one-launch entity lifecycle/presentation handler boundaries",
+    )
+    _add_local_paths(h3_map_entity_lifecycle_presentation)
+    h3_map_entity_lifecycle_presentation.add_argument("--timeout-seconds", type=int, default=120)
     h3_map_entity_action_bridge = h3_commands.add_parser(
         "map-entity-action-bridge",
         help="verify six map-script entity-action bridge alias/control paths in one launch",
@@ -1576,6 +1585,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-entity-placement":
         print_record(
             verify_map_entity_placement(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-entity-lifecycle-presentation":
+        print_record(
+            verify_map_entity_lifecycle_presentation(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

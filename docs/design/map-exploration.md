@@ -58,6 +58,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-lifecycle-v1.json`;
 - `sf2-map-interaction-trigger-runtime-v1` in
   `tests/fixtures/h3/map-interaction-trigger-v1.json`.
+- `sf2-map-entity-lifecycle-presentation-runtime-v1` in
+  `tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -178,8 +180,16 @@ non-advancing A6 reads, alive-status pointer-adjustment literals/calls, source-s
 parsed `COMBATANT_ALLIES_NUMBER` and `%1000` use sites, branch polarity/target identity, direct
 instruction/effective-target caller maps, and return boundaries. These are source-layout and
 control-flow records. A remake MUST NOT normalize them into a visibility, animation, sprite, priority,
-shadow, size, collision, persistence, timing, or presentation model; all original runtime consequences
-remain in `map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix`.
+shadow, size, collision, persistence, timing, or presentation model. The bounded H3 fixture
+`sf2-map-entity-lifecycle-presentation-runtime-v1` at
+`tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json` additionally preserves 11 exact Map
+Test 0 records: callback order, live versus zero-current-HP start/stop cursor boundary, controlled
+second-compare idle seam, the two sprite selector sides, priority bytes, remove-shadow callback chain,
+and source-backed temporary/restored size words plus flags-B state. An adapter MUST retain that
+observation boundary without treating it as a player-visible or persistent model. The remaining
+original questions are exactly `map-script-entity-lifecycle-presentation/normal-story-reachability`,
+`map-script-entity-lifecycle-presentation/full-entity-state-callback-effects`, and
+`map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence`.
 Map-script imports MUST separately retain the seven source-named forms `shiver`, `nod`,
 `followEntity`, `faceEntity`, `moveNextToPlayer`, `fly`, and `moveEntityAboveAnother` in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field

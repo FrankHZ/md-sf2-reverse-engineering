@@ -1,0 +1,5843 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Closed recursive definitions validate every object shape; the full const below pins exact evidence values and array order.",
+  "allOf": [
+    {
+      "$ref": "#/$defs/8374f88813557615"
+    },
+    {
+      "const": {
+        "schemaVersion": 1,
+        "id": "sf2-map-entity-lifecycle-presentation-runtime-v1",
+        "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+        "emulator": {
+          "name": "BizHawk",
+          "version": "2.11.1",
+          "core": "Genesis Plus GX"
+        },
+        "mapTestIndex": 0,
+        "observationBoundary": "Eleven fixed Map Test 0 replay cases invoke all eight source-named entity lifecycle/presentation handlers through one session-only trampoline. The observer writes only bounded script words, selected entity-index and combatant-current-HP storage, selected ENTITY_DATA fields, one priority byte, and the temporary SPRITE_SIZE word. It records handler-local branches, callback order, selected state writes, and the controlled idle-loop seam. Normal-story reachability, player-visible presentation, collision, persistence, and hardware timing remain Unknown.",
+        "runtimeQuestions": [
+          "map-script-entity-lifecycle-presentation/normal-story-reachability",
+          "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
+          "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence"
+        ],
+        "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+        "staticContractFixture": "tests/fixtures/h2/map-script-engine-static-v1.json",
+        "maxFrames": 9600,
+        "instrumentation": {
+          "callSiteAddress": 292114,
+          "callSiteOriginalHex": "4E904CDF03FF",
+          "callSitePatchedHex": "4EB90000FF88",
+          "stubAddress": 65416,
+          "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+          "stubHex": "4DF900FF4004207900FF40004E904E75",
+          "postHandlerAddress": 65430,
+          "ramInputAddress": 16728064,
+          "scriptInputRamOffset": 4
+        },
+        "provenance": {
+          "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+          "upstreamBranch": "master",
+          "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+          "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+          "h2FixtureId": "sf2-map-script-engine-static-v1",
+          "h2FieldPath": "expected.entityLifecyclePresentationCommandFacts"
+        },
+        "function": {
+          "runMapSetupInitFunctionAddress": 292092,
+          "csc2E_hideEntityAddress": 290458,
+          "csc1B_startEntityAnimAddress": 289388,
+          "csc1C_stopEntityAnimAddress": 289410,
+          "csc16_waitUntilEntityIdleAddress": 289178,
+          "csc1A_setEntitySpriteAddress": 289352,
+          "csc53_setPriorityAddress": 290750,
+          "csc30_removeEntityShadowAddress": 290496,
+          "csc50_setEntitySizeAddress": 290528,
+          "easIdleAddress": 283132,
+          "hideGetEntityCallSiteAddress": 290460,
+          "hideCallbackCallSiteAddress": 290464,
+          "startAdjustCallSiteAddress": 289392,
+          "startGetEntityCallSiteAddress": 289398,
+          "startAnimCounterWriteAddress": 289402,
+          "stopAdjustCallSiteAddress": 289414,
+          "stopGetEntityCallSiteAddress": 289420,
+          "stopAnimCounterWriteAddress": 289424,
+          "waitIdleGetEntityCallSiteAddress": 289180,
+          "waitIdleCompareAddress": 289184,
+          "waitIdleBackEdgeAddress": 289192,
+          "setSpriteGetEntityCallSiteAddress": 289354,
+          "setSpriteAllyCallbackCallSiteAddress": 289366,
+          "setSpriteWaitForVIntCallSiteAddress": 289378,
+          "setSpriteUpdateCallSiteAddress": 289382,
+          "setSpriteAllyBranchAddress": 289364,
+          "setPriorityGetEntityCallSiteAddress": 290752,
+          "setPriorityNonzeroBranchAddress": 290764,
+          "setPriorityZeroReturnBranchAddress": 290770,
+          "setPriorityNonzeroWriteAddress": 290772,
+          "setPriorityZeroClearAddress": 290766,
+          "removeShadowGetEntityCallSiteAddress": 290498,
+          "removeShadowLoadMapspriteCallSiteAddress": 290508,
+          "removeShadowHelperCallSiteAddress": 290512,
+          "removeShadowDmaCallSiteAddress": 290518,
+          "removeShadowWaitForVIntCallSiteAddress": 290522,
+          "setSizeGetEntityCallSiteAddress": 290530,
+          "setSizeUpdateCallSiteAddress": 290548,
+          "setSizeWaitForVIntCallSiteAddress": 290552,
+          "aliveStatusCursorAdjustmentAddress": 290966,
+          "aliveStatusZeroCurrentHpBranchAddress": 290964,
+          "aliveStatusHelperAddress": 290944
+        },
+        "ram": {
+          "entityDataAddress": 16754946,
+          "entityIndexListAddress": 16757056,
+          "priorityByteBaseAddress": 16756656,
+          "spriteSizeWordAddress": 16756548,
+          "combatantDataAddress": 16771072
+        },
+        "constants": {
+          "entityRecordByteCount": 32,
+          "combatantAlliesNumber": 30,
+          "animCounter": {
+            "byteOffset": 30,
+            "transferByteCount": 1
+          },
+          "actscriptPointer": {
+            "byteOffset": 20,
+            "transferByteCount": 4
+          },
+          "mapsprite": {
+            "byteOffset": 19,
+            "transferByteCount": 1
+          },
+          "flagsB": {
+            "byteOffset": 29,
+            "transferByteCount": 1
+          },
+          "sizeBitMutation": {
+            "immediateValue": 8,
+            "bitIndex": 3,
+            "transferByteCount": 1,
+            "sourceUseSite": {
+              "instruction": "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+              "sourceLine": 1623
+            }
+          },
+          "spriteSizeRuntimeWrites": {
+            "initializeMapEntities": {
+              "sourceFile": "disasm/code/common/scripting/map/mapfunctions.asm",
+              "section": "InitializeMapEntities",
+              "sourceLine": 109,
+              "instruction": "move.w #16,((SPRITE_SIZE-$1000000)).w",
+              "value": 16
+            },
+            "csc2AEntityShiver": {
+              "sourceFile": "disasm/code/common/scripting/map/mapscriptengine_1.asm",
+              "section": "csc2A_entityShiver",
+              "sourceLine": 1472,
+              "instruction": "move.w #21,((SPRITE_SIZE-$1000000)).w",
+              "value": 21
+            }
+          },
+          "currentHpByteOffset": 14,
+          "combatantEntryByteCount": 56,
+          "combatantMaskAll": 255,
+          "currentHpStorageTransferByteCount": 2,
+          "currentHpStatusTestTransferByteCount": 2,
+          "startStopAliveStatusCursorAdjustmentByteCount": 2
+        },
+        "sourceFacts": {
+          "macroForms": [
+            {
+              "name": "hide",
+              "opcode": 46,
+              "encodedBytes": 4,
+              "operandBytes": 2,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1
+              ],
+              "handler": "csc2E_hideEntity",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity to act",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 141
+            },
+            {
+              "name": "startEntity",
+              "opcode": 27,
+              "encodedBytes": 4,
+              "operandBytes": 2,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1
+              ],
+              "handler": "csc1B_startEntityAnim",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity to act",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 70
+            },
+            {
+              "name": "stopEntity",
+              "opcode": 28,
+              "encodedBytes": 4,
+              "operandBytes": 2,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1
+              ],
+              "handler": "csc1C_stopEntityAnim",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity to act",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 107
+            },
+            {
+              "name": "waitIdle",
+              "opcode": 22,
+              "encodedBytes": 4,
+              "operandBytes": 2,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1
+              ],
+              "handler": "csc16_waitUntilEntityIdle",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity to act",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 30
+            },
+            {
+              "name": "setSprite",
+              "opcode": 26,
+              "encodedBytes": 6,
+              "operandBytes": 4,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                },
+                {
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "expression": "\\2",
+                  "parameterOrdinals": [
+                    2
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1,
+                2
+              ],
+              "handler": "csc1A_setEntitySprite",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity to act",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "new mapsprite",
+                  "streamOffset": 4,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 56
+            },
+            {
+              "name": "setPriority",
+              "opcode": 83,
+              "encodedBytes": 6,
+              "operandBytes": 4,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                },
+                {
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "expression": "\\2",
+                  "parameterOrdinals": [
+                    2
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1,
+                2
+              ],
+              "handler": "csc53_setPriority",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "priority layer ($0 - bottom layer, $FF-top layer)",
+                  "streamOffset": 4,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 51
+            },
+            {
+              "name": "removeShadow",
+              "opcode": 48,
+              "encodedBytes": 4,
+              "operandBytes": 2,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1
+              ],
+              "handler": "csc30_removeEntityShadow",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "target entity",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 5
+            },
+            {
+              "name": "setSize",
+              "opcode": 80,
+              "encodedBytes": 6,
+              "operandBytes": 4,
+              "operandLayout": [
+                {
+                  "streamOffset": 2,
+                  "widthBytes": 2,
+                  "expression": "\\1",
+                  "parameterOrdinals": [
+                    1
+                  ],
+                  "encoding": "direct"
+                },
+                {
+                  "streamOffset": 4,
+                  "widthBytes": 2,
+                  "expression": "\\2",
+                  "parameterOrdinals": [
+                    2
+                  ],
+                  "encoding": "direct"
+                }
+              ],
+              "parameterOrdinals": [
+                1,
+                2
+              ],
+              "handler": "csc50_setEntitySize",
+              "sourceOperandAnnotations": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "entity to act",
+                  "streamOffset": 2,
+                  "widthBytes": 2
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "size in pixels",
+                  "streamOffset": 4,
+                  "widthBytes": 2
+                }
+              ],
+              "sourceCommandCount": 4
+            }
+          ],
+          "handlers": [
+            {
+              "macro": "hide",
+              "handler": "csc2E_hideEntity",
+              "handlerAddress": 290458,
+              "opcode": 46,
+              "sourceCommandCount": 141,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                }
+              ],
+              "aliveStatusPointerAdjustment": null,
+              "stateReads": [],
+              "stateWrites": [],
+              "addressSetupUseSites": [],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [],
+              "branchRecords": [],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290460,
+                  "targetAddress": 290890
+                },
+                {
+                  "instruction": "jsr HideEntity",
+                  "instructionTarget": "HideEntity",
+                  "callSiteAddress": 290464,
+                  "targetAddress": 281732
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 1566
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 1567
+                },
+                {
+                  "instruction": "jsr HideEntity",
+                  "sourceLine": 1568
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 1569
+                }
+              ]
+            },
+            {
+              "macro": "startEntity",
+              "handler": "csc1B_startEntityAnim",
+              "handlerAddress": 289388,
+              "opcode": 27,
+              "sourceCommandCount": 70,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 0,
+                  "instruction": "move.w (a6),d0"
+                },
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                }
+              ],
+              "aliveStatusPointerAdjustment": {
+                "selectorPreReadUseSite": {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 0,
+                  "instruction": "move.w (a6),d0"
+                },
+                "adjustmentLiteralInstruction": "moveq #2,d7",
+                "adjustmentLiteralText": "2",
+                "adjustmentLiteralValue": 2,
+                "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus"
+              },
+              "stateReads": [],
+              "stateWrites": [
+                {
+                  "sourceOperand": "ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                  "instruction": "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                  "transferByteCount": 1,
+                  "entityFieldLayout": {
+                    "byteOffset": 30,
+                    "transferByteCount": 1
+                  }
+                }
+              ],
+              "addressSetupUseSites": [],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [
+                {
+                  "literalText": "0",
+                  "value": 0,
+                  "instruction": "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                }
+              ],
+              "branchRecords": [],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289392,
+                  "targetAddress": 290944
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289398,
+                  "targetAddress": 290890
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6),d0",
+                  "sourceLine": 953
+                },
+                {
+                  "instruction": "moveq #2,d7",
+                  "sourceLine": 954
+                },
+                {
+                  "instruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                  "sourceLine": 955
+                },
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 956
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 957
+                },
+                {
+                  "instruction": "move.b #0,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                  "sourceLine": 958
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 959
+                }
+              ]
+            },
+            {
+              "macro": "stopEntity",
+              "handler": "csc1C_stopEntityAnim",
+              "handlerAddress": 289410,
+              "opcode": 28,
+              "sourceCommandCount": 107,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 0,
+                  "instruction": "move.w (a6),d0"
+                },
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                }
+              ],
+              "aliveStatusPointerAdjustment": {
+                "selectorPreReadUseSite": {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 0,
+                  "instruction": "move.w (a6),d0"
+                },
+                "adjustmentLiteralInstruction": "moveq #2,d7",
+                "adjustmentLiteralText": "2",
+                "adjustmentLiteralValue": 2,
+                "callInstruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus"
+              },
+              "stateReads": [],
+              "stateWrites": [
+                {
+                  "sourceOperand": "ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                  "instruction": "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                  "transferByteCount": 1,
+                  "entityFieldLayout": {
+                    "byteOffset": 30,
+                    "transferByteCount": 1
+                  }
+                }
+              ],
+              "addressSetupUseSites": [],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [
+                {
+                  "literalText": "-1",
+                  "value": -1,
+                  "instruction": "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)"
+                }
+              ],
+              "branchRecords": [],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289414,
+                  "targetAddress": 290944
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289420,
+                  "targetAddress": 290890
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6),d0",
+                  "sourceLine": 969
+                },
+                {
+                  "instruction": "moveq #2,d7",
+                  "sourceLine": 970
+                },
+                {
+                  "instruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+                  "sourceLine": 971
+                },
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 972
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 973
+                },
+                {
+                  "instruction": "move.b #-1,ENTITYDEF_OFFSET_ANIMCOUNTER(a5)",
+                  "sourceLine": 974
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 975
+                }
+              ]
+            },
+            {
+              "macro": "waitIdle",
+              "handler": "csc16_waitUntilEntityIdle",
+              "handlerAddress": 289178,
+              "opcode": 22,
+              "sourceCommandCount": 30,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                }
+              ],
+              "aliveStatusPointerAdjustment": null,
+              "stateReads": [
+                {
+                  "sourceOperand": "ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                  "instruction": "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                  "transferByteCount": 4,
+                  "entityFieldLayout": {
+                    "byteOffset": 20,
+                    "transferByteCount": 4
+                  }
+                }
+              ],
+              "stateWrites": [],
+              "addressSetupUseSites": [],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [],
+              "branchRecords": [
+                {
+                  "branchInstruction": "bne.s loc_469A0",
+                  "branchTarget": {
+                    "targetLabel": "loc_469A0",
+                    "targetInstruction": "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                    "targetStatementIndex": 2
+                  },
+                  "branchSiteAddress": 289192,
+                  "targetInstructionAddress": 289184
+                }
+              ],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289180,
+                  "targetAddress": 290890
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 828
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 829
+                },
+                {
+                  "instruction": "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+                  "sourceLine": 832
+                },
+                {
+                  "instruction": "bne.s loc_469A0",
+                  "sourceLine": 833
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 834
+                }
+              ]
+            },
+            {
+              "macro": "setSprite",
+              "handler": "csc1A_setEntitySprite",
+              "handlerAddress": 289352,
+              "opcode": 26,
+              "sourceCommandCount": 56,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                },
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                }
+              ],
+              "aliveStatusPointerAdjustment": null,
+              "stateReads": [],
+              "stateWrites": [
+                {
+                  "sourceOperand": "ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                  "instruction": "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                  "transferByteCount": 1,
+                  "entityFieldLayout": {
+                    "byteOffset": 19,
+                    "transferByteCount": 1
+                  }
+                }
+              ],
+              "addressSetupUseSites": [],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [
+                {
+                  "symbol": "COMBATANT_ALLIES_NUMBER",
+                  "value": 30,
+                  "instruction": "cmpi.w #COMBATANT_ALLIES_NUMBER,d0"
+                }
+              ],
+              "literalUseSites": [],
+              "branchRecords": [
+                {
+                  "branchInstruction": "bcc.s @NotAlly",
+                  "branchTarget": {
+                    "targetLabel": "@NotAlly",
+                    "targetInstruction": "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                    "targetStatementIndex": 7
+                  },
+                  "branchSiteAddress": 289364,
+                  "targetInstructionAddress": 289374
+                }
+              ],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289354,
+                  "targetAddress": 290890
+                },
+                {
+                  "instruction": "jsr GetAllyMapsprite",
+                  "instructionTarget": "GetAllyMapsprite",
+                  "callSiteAddress": 289366,
+                  "targetAddress": 281030
+                },
+                {
+                  "instruction": "jsr (WaitForVInt).w",
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 289378,
+                  "targetAddress": 3822
+                },
+                {
+                  "instruction": "bsr.w UpdateEntitySprite_0",
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 289382,
+                  "targetAddress": 290924
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 931
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 932
+                },
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 933
+                },
+                {
+                  "instruction": "cmpi.w #COMBATANT_ALLIES_NUMBER,d0",
+                  "sourceLine": 934
+                },
+                {
+                  "instruction": "bcc.s @NotAlly",
+                  "sourceLine": 935
+                },
+                {
+                  "instruction": "jsr GetAllyMapsprite",
+                  "sourceLine": 936
+                },
+                {
+                  "instruction": "move.w d4,d0",
+                  "sourceLine": 937
+                },
+                {
+                  "instruction": "move.b d0,ENTITYDEF_OFFSET_MAPSPRITE(a5)",
+                  "sourceLine": 940
+                },
+                {
+                  "instruction": "jsr (WaitForVInt).w",
+                  "sourceLine": 941
+                },
+                {
+                  "instruction": "bsr.w UpdateEntitySprite_0",
+                  "sourceLine": 942
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 943
+                }
+              ]
+            },
+            {
+              "macro": "setPriority",
+              "handler": "csc53_setPriority",
+              "handlerAddress": 290750,
+              "opcode": 83,
+              "sourceCommandCount": 51,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                },
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d1",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d1"
+                }
+              ],
+              "aliveStatusPointerAdjustment": null,
+              "stateReads": [],
+              "stateWrites": [
+                {
+                  "sourceOperand": "(a0,d0.w)",
+                  "instruction": "clr.b (a0,d0.w)",
+                  "transferByteCount": 1,
+                  "entityFieldLayout": null
+                },
+                {
+                  "sourceOperand": "(a0,d0.w)",
+                  "instruction": "move.b #1,(a0,d0.w)",
+                  "transferByteCount": 1,
+                  "entityFieldLayout": null
+                }
+              ],
+              "addressSetupUseSites": [
+                {
+                  "sourceOperand": "((byte_FFAFB0-$1000000)).w",
+                  "instruction": "lea ((byte_FFAFB0-$1000000)).w,a0"
+                }
+              ],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [
+                {
+                  "literalText": "1",
+                  "value": 1,
+                  "instruction": "move.b #1,(a0,d0.w)"
+                }
+              ],
+              "branchRecords": [
+                {
+                  "branchInstruction": "bne.s loc_46FD4",
+                  "branchTarget": {
+                    "targetLabel": "loc_46FD4",
+                    "targetInstruction": "move.b #1,(a0,d0.w)",
+                    "targetStatementIndex": 8
+                  },
+                  "branchSiteAddress": 290764,
+                  "targetInstructionAddress": 290772
+                },
+                {
+                  "branchInstruction": "bra.s return_46FDA",
+                  "branchTarget": {
+                    "targetLabel": "return_46FDA",
+                    "targetInstruction": "rts",
+                    "targetStatementIndex": 9
+                  },
+                  "branchSiteAddress": 290770,
+                  "targetInstructionAddress": 290778
+                }
+              ],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290752,
+                  "targetAddress": 290890
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 1737
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 1738
+                },
+                {
+                  "instruction": "lea ((byte_FFAFB0-$1000000)).w,a0",
+                  "sourceLine": 1739
+                },
+                {
+                  "instruction": "nop",
+                  "sourceLine": 1740
+                },
+                {
+                  "instruction": "move.w (a6)+,d1",
+                  "sourceLine": 1741
+                },
+                {
+                  "instruction": "bne.s loc_46FD4",
+                  "sourceLine": 1742
+                },
+                {
+                  "instruction": "clr.b (a0,d0.w)",
+                  "sourceLine": 1743
+                },
+                {
+                  "instruction": "bra.s return_46FDA",
+                  "sourceLine": 1744
+                },
+                {
+                  "instruction": "move.b #1,(a0,d0.w)",
+                  "sourceLine": 1747
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 1750
+                }
+              ]
+            },
+            {
+              "macro": "removeShadow",
+              "handler": "csc30_removeEntityShadow",
+              "handlerAddress": 290496,
+              "opcode": 48,
+              "sourceCommandCount": 5,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                }
+              ],
+              "aliveStatusPointerAdjustment": null,
+              "stateReads": [],
+              "stateWrites": [],
+              "addressSetupUseSites": [
+                {
+                  "sourceOperand": "(FF6802_LOADING_SPACE).l",
+                  "instruction": "lea (FF6802_LOADING_SPACE).l,a0"
+                }
+              ],
+              "bitMutationUseSites": [],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [],
+              "branchRecords": [],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290498,
+                  "targetAddress": 290890
+                },
+                {
+                  "instruction": "bsr.w LoadMapsprite",
+                  "instructionTarget": "LoadMapsprite",
+                  "callSiteAddress": 290508,
+                  "targetAddress": 291018
+                },
+                {
+                  "instruction": "jsr sub_45A8C",
+                  "instructionTarget": "sub_45A8C",
+                  "callSiteAddress": 290512,
+                  "targetAddress": 285324
+                },
+                {
+                  "instruction": "bsr.w DmaMapsprite",
+                  "instructionTarget": "DmaMapsprite",
+                  "callSiteAddress": 290518,
+                  "targetAddress": 290974
+                },
+                {
+                  "instruction": "jsr (WaitForVInt).w",
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 290522,
+                  "targetAddress": 3822
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 1602
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 1603
+                },
+                {
+                  "instruction": "lea (FF6802_LOADING_SPACE).l,a0",
+                  "sourceLine": 1604
+                },
+                {
+                  "instruction": "bsr.w LoadMapsprite",
+                  "sourceLine": 1605
+                },
+                {
+                  "instruction": "jsr sub_45A8C",
+                  "sourceLine": 1606
+                },
+                {
+                  "instruction": "bsr.w DmaMapsprite",
+                  "sourceLine": 1607
+                },
+                {
+                  "instruction": "jsr (WaitForVInt).w",
+                  "sourceLine": 1608
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 1609
+                }
+              ]
+            },
+            {
+              "macro": "setSize",
+              "handler": "csc50_setEntitySize",
+              "handlerAddress": 290528,
+              "opcode": 80,
+              "sourceCommandCount": 4,
+              "cursorUseSites": [
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "d0",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,d0"
+                },
+                {
+                  "sourceRegister": "a6",
+                  "destinationOperand": "((SPRITE_SIZE-$1000000)).w",
+                  "transferredByteCount": 2,
+                  "cursorAdvanceByteCount": 2,
+                  "instruction": "move.w (a6)+,((SPRITE_SIZE-$1000000)).w"
+                }
+              ],
+              "aliveStatusPointerAdjustment": null,
+              "stateReads": [
+                {
+                  "sourceOperand": "((SPRITE_SIZE-$1000000)).w",
+                  "instruction": "move.w ((SPRITE_SIZE-$1000000)).w,d6",
+                  "transferByteCount": 2,
+                  "entityFieldLayout": null
+                }
+              ],
+              "stateWrites": [
+                {
+                  "sourceOperand": "((SPRITE_SIZE-$1000000)).w",
+                  "instruction": "move.w (a6)+,((SPRITE_SIZE-$1000000)).w",
+                  "transferByteCount": 2,
+                  "entityFieldLayout": null
+                },
+                {
+                  "sourceOperand": "((SPRITE_SIZE-$1000000)).w",
+                  "instruction": "move.w d6,((SPRITE_SIZE-$1000000)).w",
+                  "transferByteCount": 2,
+                  "entityFieldLayout": null
+                }
+              ],
+              "addressSetupUseSites": [],
+              "bitMutationUseSites": [
+                {
+                  "sourceOperand": "ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                  "operation": "or-immediate",
+                  "immediateText": "%1000",
+                  "immediateValue": 8,
+                  "bitIndices": [
+                    3
+                  ],
+                  "instruction": "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)"
+                }
+              ],
+              "sourceConstantUseSites": [],
+              "literalUseSites": [],
+              "branchRecords": [],
+              "callbacks": [
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290530,
+                  "targetAddress": 290890
+                },
+                {
+                  "instruction": "bsr.w UpdateEntitySprite_0",
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 290548,
+                  "targetAddress": 290924
+                },
+                {
+                  "instruction": "jsr (WaitForVInt).w",
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 290552,
+                  "targetAddress": 3822
+                }
+              ],
+              "returnInstruction": "rts",
+              "sourceUseSites": [
+                {
+                  "instruction": "move.w (a6)+,d0",
+                  "sourceLine": 1619
+                },
+                {
+                  "instruction": "bsr.w GetEntityAddressFromCharacter",
+                  "sourceLine": 1620
+                },
+                {
+                  "instruction": "move.w ((SPRITE_SIZE-$1000000)).w,d6",
+                  "sourceLine": 1621
+                },
+                {
+                  "instruction": "move.w (a6)+,((SPRITE_SIZE-$1000000)).w",
+                  "sourceLine": 1622
+                },
+                {
+                  "instruction": "ori.b #%1000,ENTITYDEF_OFFSET_FLAGS_B(a5)",
+                  "sourceLine": 1623
+                },
+                {
+                  "instruction": "bsr.w UpdateEntitySprite_0",
+                  "sourceLine": 1624
+                },
+                {
+                  "instruction": "jsr (WaitForVInt).w",
+                  "sourceLine": 1625
+                },
+                {
+                  "instruction": "move.w d6,((SPRITE_SIZE-$1000000)).w",
+                  "sourceLine": 1626
+                },
+                {
+                  "instruction": "rts",
+                  "sourceLine": 1627
+                }
+              ]
+            }
+          ],
+          "callerBreakdown": {
+            "callerHandlers": [
+              {
+                "handler": "csc2E_hideEntity",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 1,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 1,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              },
+              {
+                "handler": "csc1B_startEntityAnim",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 1,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 1,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              },
+              {
+                "handler": "csc1C_stopEntityAnim",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 1,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 1,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              },
+              {
+                "handler": "csc16_waitUntilEntityIdle",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              },
+              {
+                "handler": "csc1A_setEntitySprite",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 1,
+                  "WaitForVInt": 1,
+                  "UpdateEntitySprite_0": 1,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 1,
+                  "WaitForVInt": 1,
+                  "UpdateEntitySprite_0": 1,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              },
+              {
+                "handler": "csc53_setPriority",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 0,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              },
+              {
+                "handler": "csc30_removeEntityShadow",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 1,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 1,
+                  "sub_45A8C": 1,
+                  "DmaMapsprite": 1
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 1,
+                  "UpdateEntitySprite_0": 0,
+                  "LoadMapsprite": 1,
+                  "sub_45A8C": 1,
+                  "DmaMapsprite": 1
+                }
+              },
+              {
+                "handler": "csc50_setEntitySize",
+                "instructionTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 1,
+                  "UpdateEntitySprite_0": 1,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                },
+                "effectiveTargetSiteCounts": {
+                  "GetEntityAddressFromCharacter": 1,
+                  "HideEntity": 0,
+                  "AdjustScriptPointerByCharacterAliveStatus": 0,
+                  "GetAllyMapsprite": 0,
+                  "WaitForVInt": 1,
+                  "UpdateEntitySprite_0": 1,
+                  "LoadMapsprite": 0,
+                  "sub_45A8C": 0,
+                  "DmaMapsprite": 0
+                }
+              }
+            ],
+            "targetResolutions": [
+              {
+                "instructionTarget": "GetEntityAddressFromCharacter",
+                "effectiveTarget": "GetEntityAddressFromCharacter",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "HideEntity",
+                "effectiveTarget": "HideEntity",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                "effectiveTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "GetAllyMapsprite",
+                "effectiveTarget": "GetAllyMapsprite",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "WaitForVInt",
+                "effectiveTarget": "WaitForVInt",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "UpdateEntitySprite_0",
+                "effectiveTarget": "UpdateEntitySprite_0",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "LoadMapsprite",
+                "effectiveTarget": "LoadMapsprite",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "sub_45A8C",
+                "effectiveTarget": "sub_45A8C",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              },
+              {
+                "instructionTarget": "DmaMapsprite",
+                "effectiveTarget": "DmaMapsprite",
+                "aliasSourcePath": null,
+                "effectiveTargetScope": "external"
+              }
+            ],
+            "instructionTargetTotals": {
+              "GetEntityAddressFromCharacter": 8,
+              "HideEntity": 1,
+              "AdjustScriptPointerByCharacterAliveStatus": 2,
+              "GetAllyMapsprite": 1,
+              "WaitForVInt": 3,
+              "UpdateEntitySprite_0": 2,
+              "LoadMapsprite": 1,
+              "sub_45A8C": 1,
+              "DmaMapsprite": 1
+            },
+            "effectiveTargetTotals": {
+              "GetEntityAddressFromCharacter": 8,
+              "HideEntity": 1,
+              "AdjustScriptPointerByCharacterAliveStatus": 2,
+              "GetAllyMapsprite": 1,
+              "WaitForVInt": 3,
+              "UpdateEntitySprite_0": 2,
+              "LoadMapsprite": 1,
+              "sub_45A8C": 1,
+              "DmaMapsprite": 1
+            },
+            "internalInstructionTargetTotals": {
+              "GetEntityAddressFromCharacter": 0,
+              "HideEntity": 0,
+              "AdjustScriptPointerByCharacterAliveStatus": 0,
+              "GetAllyMapsprite": 0,
+              "WaitForVInt": 0,
+              "UpdateEntitySprite_0": 0,
+              "LoadMapsprite": 0,
+              "sub_45A8C": 0,
+              "DmaMapsprite": 0
+            },
+            "externalInstructionTargetTotals": {
+              "GetEntityAddressFromCharacter": 8,
+              "HideEntity": 1,
+              "AdjustScriptPointerByCharacterAliveStatus": 2,
+              "GetAllyMapsprite": 1,
+              "WaitForVInt": 3,
+              "UpdateEntitySprite_0": 2,
+              "LoadMapsprite": 1,
+              "sub_45A8C": 1,
+              "DmaMapsprite": 1
+            },
+            "internalEffectiveTargetTotals": {
+              "GetEntityAddressFromCharacter": 0,
+              "HideEntity": 0,
+              "AdjustScriptPointerByCharacterAliveStatus": 0,
+              "GetAllyMapsprite": 0,
+              "WaitForVInt": 0,
+              "UpdateEntitySprite_0": 0,
+              "LoadMapsprite": 0,
+              "sub_45A8C": 0,
+              "DmaMapsprite": 0
+            },
+            "externalEffectiveTargetTotals": {
+              "GetEntityAddressFromCharacter": 8,
+              "HideEntity": 1,
+              "AdjustScriptPointerByCharacterAliveStatus": 2,
+              "GetAllyMapsprite": 1,
+              "WaitForVInt": 3,
+              "UpdateEntitySprite_0": 2,
+              "LoadMapsprite": 1,
+              "sub_45A8C": 1,
+              "DmaMapsprite": 1
+            }
+          },
+          "evidenceLabels": {
+            "staticFindings": "Confirmed",
+            "runtimeObservations": "Unknown"
+          },
+          "runtimeSourceUseSites": {
+            "aliveStatusHelper": [
+              {
+                "instruction": "cmpi.b #COMBATANT_ALLIES_NUMBER,d0",
+                "sourceLine": 1885
+              },
+              {
+                "instruction": "tst.w d1",
+                "sourceLine": 1889
+              },
+              {
+                "instruction": "bne.s @Return",
+                "sourceLine": 1890
+              },
+              {
+                "instruction": "adda.w d7,a6",
+                "sourceLine": 1891
+              },
+              {
+                "instruction": "movem.l (sp)+,d7",
+                "sourceLine": 1892
+              },
+              {
+                "instruction": "rts",
+                "sourceLine": 1895
+              }
+            ],
+            "currentHpStorage": {
+              "offsetLoad": {
+                "instruction": "moveq #COMBATANT_OFFSET_HP_CURRENT,d7",
+                "sourceLine": 98
+              },
+              "read": {
+                "instruction": "move.w (a0,d7.w),d1",
+                "sourceLine": 122
+              }
+            },
+            "startStopCursorAdjustmentLoads": [
+              {
+                "instruction": "moveq #2,d7",
+                "sourceLine": 954
+              },
+              {
+                "instruction": "moveq #2,d7",
+                "sourceLine": 970
+              }
+            ],
+            "idleWaitCompare": {
+              "instruction": "cmpi.l #eas_Idle,ENTITYDEF_OFFSET_ACTSCRIPTADDR(a5)",
+              "sourceLine": 832
+            },
+            "idleWaitBackEdge": {
+              "instruction": "bne.s loc_469A0",
+              "sourceLine": 833
+            },
+            "setSpriteAllyBranch": {
+              "instruction": "bcc.s @NotAlly",
+              "sourceLine": 935
+            },
+            "setPriorityBranches": [
+              {
+                "instruction": "bne.s loc_46FD4",
+                "sourceLine": 1742
+              },
+              {
+                "instruction": "bra.s return_46FDA",
+                "sourceLine": 1744
+              }
+            ]
+          }
+        },
+        "cases": [
+          {
+            "id": "hide-basic",
+            "macro": "hide",
+            "scriptWords": [
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "hide-basic",
+              "macro": "hide",
+              "handlerAddress": 290458,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 6,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290460,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "HideEntity",
+                  "callSiteAddress": 290464,
+                  "targetAddress": 281732
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290460,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "HideEntity",
+                  "callSiteAddress": 290464,
+                  "targetAddress": 281732
+                }
+              ]
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter",
+                "HideEntity"
+              ],
+              "hideCallbackObserved": true
+            }
+          },
+          {
+            "id": "start-entity-nonzero-current-hp",
+            "macro": "startEntity",
+            "scriptWords": [
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "start-entity-nonzero-current-hp",
+              "macro": "startEntity",
+              "handlerAddress": 289388,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 6,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289392,
+                  "targetAddress": 290944
+                },
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289398,
+                  "targetAddress": 290890
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289392,
+                  "targetAddress": 290944
+                },
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289398,
+                  "targetAddress": 290890
+                }
+              ],
+              "currentHpWordSeed": 1,
+              "aliveStatusCursorAdjustmentByteCount": 0,
+              "animCounterByteAfter": 0,
+              "animCounterTransferByteCount": 1
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetEntityAddressFromCharacter"
+              ],
+              "aliveStatusCursorAdjustmentObserved": false,
+              "animCounterWriteObserved": true
+            }
+          },
+          {
+            "id": "stop-entity-nonzero-current-hp",
+            "macro": "stopEntity",
+            "scriptWords": [
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "stop-entity-nonzero-current-hp",
+              "macro": "stopEntity",
+              "handlerAddress": 289410,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 6,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289414,
+                  "targetAddress": 290944
+                },
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289420,
+                  "targetAddress": 290890
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289414,
+                  "targetAddress": 290944
+                },
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289420,
+                  "targetAddress": 290890
+                }
+              ],
+              "currentHpWordSeed": 1,
+              "aliveStatusCursorAdjustmentByteCount": 0,
+              "animCounterByteAfter": 255,
+              "animCounterTransferByteCount": 1
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "AdjustScriptPointerByCharacterAliveStatus",
+                "GetEntityAddressFromCharacter"
+              ],
+              "aliveStatusCursorAdjustmentObserved": false,
+              "animCounterWriteObserved": true
+            }
+          },
+          {
+            "id": "stop-entity-zero-current-hp",
+            "macro": "stopEntity",
+            "scriptWords": [
+              0,
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 0,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "stop-entity-zero-current-hp",
+              "macro": "stopEntity",
+              "handlerAddress": 289410,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 6,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289414,
+                  "targetAddress": 290944
+                },
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289420,
+                  "targetAddress": 290890
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+                  "callSiteAddress": 289414,
+                  "targetAddress": 290944
+                }
+              ],
+              "currentHpWordSeed": 0,
+              "aliveStatusCursorAdjustmentByteCount": 2,
+              "animCounterByteAfter": 127,
+              "animCounterTransferByteCount": 1
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "AdjustScriptPointerByCharacterAliveStatus"
+              ],
+              "aliveStatusCursorAdjustmentObserved": true,
+              "animCounterWriteObserved": false
+            }
+          },
+          {
+            "id": "wait-idle-controlled-second-compare",
+            "macro": "waitIdle",
+            "scriptWords": [
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "waitExitAtCompareEntryCount": 2,
+            "expected": {
+              "id": "wait-idle-controlled-second-compare",
+              "macro": "waitIdle",
+              "handlerAddress": 289178,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 6,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289180,
+                  "targetAddress": 290890
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289180,
+                  "targetAddress": 290890
+                }
+              ],
+              "actscriptPointerTransferByteCount": 4,
+              "waitLoopExitInjection": {
+                "compareAddress": 289184,
+                "backEdgeAddress": 289192,
+                "field": "actscriptPointer",
+                "value": 283132,
+                "atCompareEntryCount": 2
+              }
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "waitCompareEntryCountObserved": 2,
+              "waitBackEdgeInstructionEntryCountObserved": 2,
+              "harnessForcedWaitExitObserved": true,
+              "actscriptPointerLongAfter": 283132
+            }
+          },
+          {
+            "id": "set-sprite-below-threshold",
+            "macro": "setSprite",
+            "scriptWords": [
+              0,
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "set-sprite-below-threshold",
+              "macro": "setSprite",
+              "handlerAddress": 289352,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 8,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289354,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "GetAllyMapsprite",
+                  "callSiteAddress": 289366,
+                  "targetAddress": 281030
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 289378,
+                  "targetAddress": 3822
+                },
+                {
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 289382,
+                  "targetAddress": 290924
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289354,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "GetAllyMapsprite",
+                  "callSiteAddress": 289366,
+                  "targetAddress": 281030
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 289378,
+                  "targetAddress": 3822
+                },
+                {
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 289382,
+                  "targetAddress": 290924
+                }
+              ],
+              "mapspriteInputWord": 0,
+              "allySplit": "below-threshold",
+              "mapspriteTransferByteCount": 1
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter",
+                "GetAllyMapsprite",
+                "WaitForVInt",
+                "UpdateEntitySprite_0"
+              ],
+              "allyCallbackObserved": true,
+              "waitForVIntCallObserved": true,
+              "updateEntitySpriteCallObserved": true,
+              "mapspriteByteAfter": 0
+            }
+          },
+          {
+            "id": "set-sprite-at-threshold",
+            "macro": "setSprite",
+            "scriptWords": [
+              0,
+              30
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "set-sprite-at-threshold",
+              "macro": "setSprite",
+              "handlerAddress": 289352,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 8,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289354,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "GetAllyMapsprite",
+                  "callSiteAddress": 289366,
+                  "targetAddress": 281030
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 289378,
+                  "targetAddress": 3822
+                },
+                {
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 289382,
+                  "targetAddress": 290924
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 289354,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 289378,
+                  "targetAddress": 3822
+                },
+                {
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 289382,
+                  "targetAddress": 290924
+                }
+              ],
+              "mapspriteInputWord": 30,
+              "allySplit": "at-or-above-threshold",
+              "mapspriteTransferByteCount": 1
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter",
+                "WaitForVInt",
+                "UpdateEntitySprite_0"
+              ],
+              "allyCallbackObserved": false,
+              "waitForVIntCallObserved": true,
+              "updateEntitySpriteCallObserved": true,
+              "mapspriteByteAfter": 30
+            }
+          },
+          {
+            "id": "set-priority-zero",
+            "macro": "setPriority",
+            "scriptWords": [
+              0,
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "priorityByteSeed": 127,
+            "expected": {
+              "id": "set-priority-zero",
+              "macro": "setPriority",
+              "handlerAddress": 290750,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 8,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290752,
+                  "targetAddress": 290890
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290752,
+                  "targetAddress": 290890
+                }
+              ],
+              "priorityArgumentWord": 0,
+              "priorityByteAfter": 0
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "priorityNonzeroBranchObserved": false,
+              "priorityByteWriteObserved": true
+            }
+          },
+          {
+            "id": "set-priority-nonzero",
+            "macro": "setPriority",
+            "scriptWords": [
+              0,
+              65535
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "priorityByteSeed": 127,
+            "expected": {
+              "id": "set-priority-nonzero",
+              "macro": "setPriority",
+              "handlerAddress": 290750,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 8,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290752,
+                  "targetAddress": 290890
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290752,
+                  "targetAddress": 290890
+                }
+              ],
+              "priorityArgumentWord": 65535,
+              "priorityByteAfter": 1
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter"
+              ],
+              "priorityNonzeroBranchObserved": true,
+              "priorityByteWriteObserved": true
+            }
+          },
+          {
+            "id": "remove-shadow-callback-chain",
+            "macro": "removeShadow",
+            "scriptWords": [
+              0
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 85,
+              "flagsBByte": 16
+            },
+            "expected": {
+              "id": "remove-shadow-callback-chain",
+              "macro": "removeShadow",
+              "handlerAddress": 290496,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 6,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290498,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "LoadMapsprite",
+                  "callSiteAddress": 290508,
+                  "targetAddress": 291018
+                },
+                {
+                  "instructionTarget": "sub_45A8C",
+                  "callSiteAddress": 290512,
+                  "targetAddress": 285324
+                },
+                {
+                  "instructionTarget": "DmaMapsprite",
+                  "callSiteAddress": 290518,
+                  "targetAddress": 290974
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 290522,
+                  "targetAddress": 3822
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290498,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "LoadMapsprite",
+                  "callSiteAddress": 290508,
+                  "targetAddress": 291018
+                },
+                {
+                  "instructionTarget": "sub_45A8C",
+                  "callSiteAddress": 290512,
+                  "targetAddress": 285324
+                },
+                {
+                  "instructionTarget": "DmaMapsprite",
+                  "callSiteAddress": 290518,
+                  "targetAddress": 290974
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 290522,
+                  "targetAddress": 3822
+                }
+              ]
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "sub_45A8C",
+                "DmaMapsprite",
+                "WaitForVInt"
+              ],
+              "loadMapspriteCallObserved": true,
+              "helperCallObserved": true,
+              "dmaMapspriteCallObserved": true,
+              "waitForVIntCallObserved": true
+            }
+          },
+          {
+            "id": "set-size-temporary-word-and-flag",
+            "macro": "setSize",
+            "scriptWords": [
+              0,
+              16
+            ],
+            "entityIndexByteSeed": 0,
+            "currentHpWordSeed": 1,
+            "entityStateSeed": {
+              "animCounterByte": 127,
+              "actscriptPointerLong": 0,
+              "mapspriteByte": 0,
+              "flagsBByte": 16
+            },
+            "spriteSizeWordSeed": 21,
+            "expected": {
+              "id": "set-size-temporary-word-and-flag",
+              "macro": "setSize",
+              "handlerAddress": 290528,
+              "entityAddress": 16754946,
+              "scriptCursorRamOffsetAfter": 8,
+              "declaredCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290530,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 290548,
+                  "targetAddress": 290924
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 290552,
+                  "targetAddress": 3822
+                }
+              ],
+              "effectiveCallbackPlan": [
+                {
+                  "instructionTarget": "GetEntityAddressFromCharacter",
+                  "callSiteAddress": 290530,
+                  "targetAddress": 290890
+                },
+                {
+                  "instructionTarget": "UpdateEntitySprite_0",
+                  "callSiteAddress": 290548,
+                  "targetAddress": 290924
+                },
+                {
+                  "instructionTarget": "WaitForVInt",
+                  "callSiteAddress": 290552,
+                  "targetAddress": 3822
+                }
+              ],
+              "spriteSizeWordInput": 16,
+              "spriteSizeWordAfter": 21,
+              "flagsBByteAfter": 24,
+              "sizeBitIndex": 3
+            },
+            "runtimeGolden": {
+              "handlerReturned": true,
+              "callbackTargetOrderObserved": [
+                "GetEntityAddressFromCharacter",
+                "UpdateEntitySprite_0",
+                "WaitForVInt"
+              ],
+              "temporarySpriteSizeWordObserved": 16,
+              "updateEntitySpriteCallObserved": true,
+              "waitForVIntCallObserved": true,
+              "sizeBitMutationObserved": true
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "5beca0c8863b0bff": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "core": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "640285f2c936ae95": {
+      "type": "object",
+      "required": [
+        "callSiteAddress",
+        "callSiteOriginalHex",
+        "callSitePatchedHex",
+        "stubAddress",
+        "stubOriginalHex",
+        "stubHex",
+        "postHandlerAddress",
+        "ramInputAddress",
+        "scriptInputRamOffset"
+      ],
+      "properties": {
+        "callSiteAddress": {
+          "type": "integer"
+        },
+        "callSiteOriginalHex": {
+          "type": "string"
+        },
+        "callSitePatchedHex": {
+          "type": "string"
+        },
+        "stubAddress": {
+          "type": "integer"
+        },
+        "stubOriginalHex": {
+          "type": "string"
+        },
+        "stubHex": {
+          "type": "string"
+        },
+        "postHandlerAddress": {
+          "type": "integer"
+        },
+        "ramInputAddress": {
+          "type": "integer"
+        },
+        "scriptInputRamOffset": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "9219bc943eb8d920": {
+      "type": "object",
+      "required": [
+        "upstreamRepository",
+        "upstreamBranch",
+        "upstreamCommit",
+        "h2FixturePath",
+        "h2FixtureId",
+        "h2FieldPath"
+      ],
+      "properties": {
+        "upstreamRepository": {
+          "type": "string"
+        },
+        "upstreamBranch": {
+          "type": "string"
+        },
+        "upstreamCommit": {
+          "type": "string"
+        },
+        "h2FixturePath": {
+          "type": "string"
+        },
+        "h2FixtureId": {
+          "type": "string"
+        },
+        "h2FieldPath": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "faf252dc2078140b": {
+      "type": "object",
+      "required": [
+        "runMapSetupInitFunctionAddress",
+        "csc2E_hideEntityAddress",
+        "csc1B_startEntityAnimAddress",
+        "csc1C_stopEntityAnimAddress",
+        "csc16_waitUntilEntityIdleAddress",
+        "csc1A_setEntitySpriteAddress",
+        "csc53_setPriorityAddress",
+        "csc30_removeEntityShadowAddress",
+        "csc50_setEntitySizeAddress",
+        "easIdleAddress",
+        "hideGetEntityCallSiteAddress",
+        "hideCallbackCallSiteAddress",
+        "startAdjustCallSiteAddress",
+        "startGetEntityCallSiteAddress",
+        "startAnimCounterWriteAddress",
+        "stopAdjustCallSiteAddress",
+        "stopGetEntityCallSiteAddress",
+        "stopAnimCounterWriteAddress",
+        "waitIdleGetEntityCallSiteAddress",
+        "waitIdleCompareAddress",
+        "waitIdleBackEdgeAddress",
+        "setSpriteGetEntityCallSiteAddress",
+        "setSpriteAllyCallbackCallSiteAddress",
+        "setSpriteWaitForVIntCallSiteAddress",
+        "setSpriteUpdateCallSiteAddress",
+        "setSpriteAllyBranchAddress",
+        "setPriorityGetEntityCallSiteAddress",
+        "setPriorityNonzeroBranchAddress",
+        "setPriorityZeroReturnBranchAddress",
+        "setPriorityNonzeroWriteAddress",
+        "setPriorityZeroClearAddress",
+        "removeShadowGetEntityCallSiteAddress",
+        "removeShadowLoadMapspriteCallSiteAddress",
+        "removeShadowHelperCallSiteAddress",
+        "removeShadowDmaCallSiteAddress",
+        "removeShadowWaitForVIntCallSiteAddress",
+        "setSizeGetEntityCallSiteAddress",
+        "setSizeUpdateCallSiteAddress",
+        "setSizeWaitForVIntCallSiteAddress",
+        "aliveStatusCursorAdjustmentAddress",
+        "aliveStatusZeroCurrentHpBranchAddress",
+        "aliveStatusHelperAddress"
+      ],
+      "properties": {
+        "runMapSetupInitFunctionAddress": {
+          "type": "integer"
+        },
+        "csc2E_hideEntityAddress": {
+          "type": "integer"
+        },
+        "csc1B_startEntityAnimAddress": {
+          "type": "integer"
+        },
+        "csc1C_stopEntityAnimAddress": {
+          "type": "integer"
+        },
+        "csc16_waitUntilEntityIdleAddress": {
+          "type": "integer"
+        },
+        "csc1A_setEntitySpriteAddress": {
+          "type": "integer"
+        },
+        "csc53_setPriorityAddress": {
+          "type": "integer"
+        },
+        "csc30_removeEntityShadowAddress": {
+          "type": "integer"
+        },
+        "csc50_setEntitySizeAddress": {
+          "type": "integer"
+        },
+        "easIdleAddress": {
+          "type": "integer"
+        },
+        "hideGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "hideCallbackCallSiteAddress": {
+          "type": "integer"
+        },
+        "startAdjustCallSiteAddress": {
+          "type": "integer"
+        },
+        "startGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "startAnimCounterWriteAddress": {
+          "type": "integer"
+        },
+        "stopAdjustCallSiteAddress": {
+          "type": "integer"
+        },
+        "stopGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "stopAnimCounterWriteAddress": {
+          "type": "integer"
+        },
+        "waitIdleGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "waitIdleCompareAddress": {
+          "type": "integer"
+        },
+        "waitIdleBackEdgeAddress": {
+          "type": "integer"
+        },
+        "setSpriteGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSpriteAllyCallbackCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSpriteWaitForVIntCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSpriteUpdateCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSpriteAllyBranchAddress": {
+          "type": "integer"
+        },
+        "setPriorityGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "setPriorityNonzeroBranchAddress": {
+          "type": "integer"
+        },
+        "setPriorityZeroReturnBranchAddress": {
+          "type": "integer"
+        },
+        "setPriorityNonzeroWriteAddress": {
+          "type": "integer"
+        },
+        "setPriorityZeroClearAddress": {
+          "type": "integer"
+        },
+        "removeShadowGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "removeShadowLoadMapspriteCallSiteAddress": {
+          "type": "integer"
+        },
+        "removeShadowHelperCallSiteAddress": {
+          "type": "integer"
+        },
+        "removeShadowDmaCallSiteAddress": {
+          "type": "integer"
+        },
+        "removeShadowWaitForVIntCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSizeGetEntityCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSizeUpdateCallSiteAddress": {
+          "type": "integer"
+        },
+        "setSizeWaitForVIntCallSiteAddress": {
+          "type": "integer"
+        },
+        "aliveStatusCursorAdjustmentAddress": {
+          "type": "integer"
+        },
+        "aliveStatusZeroCurrentHpBranchAddress": {
+          "type": "integer"
+        },
+        "aliveStatusHelperAddress": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bf766954e4db1167": {
+      "type": "object",
+      "required": [
+        "entityDataAddress",
+        "entityIndexListAddress",
+        "priorityByteBaseAddress",
+        "spriteSizeWordAddress",
+        "combatantDataAddress"
+      ],
+      "properties": {
+        "entityDataAddress": {
+          "type": "integer"
+        },
+        "entityIndexListAddress": {
+          "type": "integer"
+        },
+        "priorityByteBaseAddress": {
+          "type": "integer"
+        },
+        "spriteSizeWordAddress": {
+          "type": "integer"
+        },
+        "combatantDataAddress": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "e7357cb2f352f0fe": {
+      "type": "object",
+      "required": [
+        "byteOffset",
+        "transferByteCount"
+      ],
+      "properties": {
+        "byteOffset": {
+          "type": "integer"
+        },
+        "transferByteCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "aa98efc2c7ec8f18": {
+      "type": "object",
+      "required": [
+        "instruction",
+        "sourceLine"
+      ],
+      "properties": {
+        "instruction": {
+          "type": "string"
+        },
+        "sourceLine": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "e217e93d0bfc69bb": {
+      "type": "object",
+      "required": [
+        "immediateValue",
+        "bitIndex",
+        "transferByteCount",
+        "sourceUseSite"
+      ],
+      "properties": {
+        "immediateValue": {
+          "type": "integer"
+        },
+        "bitIndex": {
+          "type": "integer"
+        },
+        "transferByteCount": {
+          "type": "integer"
+        },
+        "sourceUseSite": {
+          "$ref": "#/$defs/aa98efc2c7ec8f18"
+        }
+      },
+      "additionalProperties": false
+    },
+    "c95d7eb971ccc9d0": {
+      "type": "object",
+      "required": [
+        "sourceFile",
+        "section",
+        "sourceLine",
+        "instruction",
+        "value"
+      ],
+      "properties": {
+        "sourceFile": {
+          "type": "string"
+        },
+        "section": {
+          "type": "string"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "08dca0933bde1d19": {
+      "type": "object",
+      "required": [
+        "initializeMapEntities",
+        "csc2AEntityShiver"
+      ],
+      "properties": {
+        "initializeMapEntities": {
+          "$ref": "#/$defs/c95d7eb971ccc9d0"
+        },
+        "csc2AEntityShiver": {
+          "$ref": "#/$defs/c95d7eb971ccc9d0"
+        }
+      },
+      "additionalProperties": false
+    },
+    "7d234c3509981a5e": {
+      "type": "object",
+      "required": [
+        "entityRecordByteCount",
+        "combatantAlliesNumber",
+        "animCounter",
+        "actscriptPointer",
+        "mapsprite",
+        "flagsB",
+        "sizeBitMutation",
+        "spriteSizeRuntimeWrites",
+        "currentHpByteOffset",
+        "combatantEntryByteCount",
+        "combatantMaskAll",
+        "currentHpStorageTransferByteCount",
+        "currentHpStatusTestTransferByteCount",
+        "startStopAliveStatusCursorAdjustmentByteCount"
+      ],
+      "properties": {
+        "entityRecordByteCount": {
+          "type": "integer"
+        },
+        "combatantAlliesNumber": {
+          "type": "integer"
+        },
+        "animCounter": {
+          "$ref": "#/$defs/e7357cb2f352f0fe"
+        },
+        "actscriptPointer": {
+          "$ref": "#/$defs/e7357cb2f352f0fe"
+        },
+        "mapsprite": {
+          "$ref": "#/$defs/e7357cb2f352f0fe"
+        },
+        "flagsB": {
+          "$ref": "#/$defs/e7357cb2f352f0fe"
+        },
+        "sizeBitMutation": {
+          "$ref": "#/$defs/e217e93d0bfc69bb"
+        },
+        "spriteSizeRuntimeWrites": {
+          "$ref": "#/$defs/08dca0933bde1d19"
+        },
+        "currentHpByteOffset": {
+          "type": "integer"
+        },
+        "combatantEntryByteCount": {
+          "type": "integer"
+        },
+        "combatantMaskAll": {
+          "type": "integer"
+        },
+        "currentHpStorageTransferByteCount": {
+          "type": "integer"
+        },
+        "currentHpStatusTestTransferByteCount": {
+          "type": "integer"
+        },
+        "startStopAliveStatusCursorAdjustmentByteCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "759df83dc652c143": {
+      "type": "object",
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "encoding": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "8955dc2dddcdd690": {
+      "type": "object",
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "68c01a05eed1db55": {
+      "type": "object",
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "encodedBytes": {
+          "type": "integer"
+        },
+        "operandBytes": {
+          "type": "integer"
+        },
+        "operandLayout": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/759df83dc652c143"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/8955dc2dddcdd690"
+          }
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "d63ed6424e2ceeca": {
+      "type": "object",
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "encodedBytes": {
+          "type": "integer"
+        },
+        "operandBytes": {
+          "type": "integer"
+        },
+        "operandLayout": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/759df83dc652c143"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/8955dc2dddcdd690"
+          }
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fbe299721eb5beb2": {
+      "type": "object",
+      "required": [
+        "sourceRegister",
+        "destinationOperand",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationOperand": {
+          "type": "string"
+        },
+        "transferredByteCount": {
+          "type": "integer"
+        },
+        "cursorAdvanceByteCount": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "937bcb7d38af4177": {
+      "type": "object",
+      "required": [
+        "instruction",
+        "instructionTarget",
+        "callSiteAddress",
+        "targetAddress"
+      ],
+      "properties": {
+        "instruction": {
+          "type": "string"
+        },
+        "instructionTarget": {
+          "type": "string"
+        },
+        "callSiteAddress": {
+          "type": "integer"
+        },
+        "targetAddress": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "abac3e8ecadd454f": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "type": "null"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "894ec539ba65dd5f": {
+      "type": "object",
+      "required": [
+        "selectorPreReadUseSite",
+        "adjustmentLiteralInstruction",
+        "adjustmentLiteralText",
+        "adjustmentLiteralValue",
+        "callInstruction"
+      ],
+      "properties": {
+        "selectorPreReadUseSite": {
+          "$ref": "#/$defs/fbe299721eb5beb2"
+        },
+        "adjustmentLiteralInstruction": {
+          "type": "string"
+        },
+        "adjustmentLiteralText": {
+          "type": "string"
+        },
+        "adjustmentLiteralValue": {
+          "type": "integer"
+        },
+        "callInstruction": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "898e741f0b8ff17e": {
+      "type": "object",
+      "required": [
+        "sourceOperand",
+        "instruction",
+        "transferByteCount",
+        "entityFieldLayout"
+      ],
+      "properties": {
+        "sourceOperand": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "string"
+        },
+        "transferByteCount": {
+          "type": "integer"
+        },
+        "entityFieldLayout": {
+          "$ref": "#/$defs/e7357cb2f352f0fe"
+        }
+      },
+      "additionalProperties": false
+    },
+    "4499b40029c3beb3": {
+      "type": "object",
+      "required": [
+        "literalText",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "literalText": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "e2396ee52d1272e8": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "$ref": "#/$defs/894ec539ba65dd5f"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/898e741f0b8ff17e"
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/4499b40029c3beb3"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "f7d0bfef04110409": {
+      "type": "object",
+      "required": [
+        "targetLabel",
+        "targetInstruction",
+        "targetStatementIndex"
+      ],
+      "properties": {
+        "targetLabel": {
+          "type": "string"
+        },
+        "targetInstruction": {
+          "type": "string"
+        },
+        "targetStatementIndex": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "81aafc62cef19409": {
+      "type": "object",
+      "required": [
+        "branchInstruction",
+        "branchTarget",
+        "branchSiteAddress",
+        "targetInstructionAddress"
+      ],
+      "properties": {
+        "branchInstruction": {
+          "type": "string"
+        },
+        "branchTarget": {
+          "$ref": "#/$defs/f7d0bfef04110409"
+        },
+        "branchSiteAddress": {
+          "type": "integer"
+        },
+        "targetInstructionAddress": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "c43d1cd0e2eecda6": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "type": "null"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/898e741f0b8ff17e"
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/81aafc62cef19409"
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "2cdcee900bc91949": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "55787fba32324557": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "type": "null"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/898e741f0b8ff17e"
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/2cdcee900bc91949"
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/81aafc62cef19409"
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 11,
+          "maxItems": 11,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "0af4318b62bc01bf": {
+      "type": "object",
+      "required": [
+        "sourceOperand",
+        "instruction",
+        "transferByteCount",
+        "entityFieldLayout"
+      ],
+      "properties": {
+        "sourceOperand": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "string"
+        },
+        "transferByteCount": {
+          "type": "integer"
+        },
+        "entityFieldLayout": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false
+    },
+    "a27f6e1584f70971": {
+      "type": "object",
+      "required": [
+        "sourceOperand",
+        "instruction"
+      ],
+      "properties": {
+        "sourceOperand": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "c31d1ac79462fd82": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "type": "null"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/0af4318b62bc01bf"
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/a27f6e1584f70971"
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/4499b40029c3beb3"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/81aafc62cef19409"
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "7d97cd5f38d27a75": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "type": "null"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/a27f6e1584f70971"
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "bd5f9e0fbbdd1ace": {
+      "type": "object",
+      "required": [
+        "sourceOperand",
+        "operation",
+        "immediateText",
+        "immediateValue",
+        "bitIndices",
+        "instruction"
+      ],
+      "properties": {
+        "sourceOperand": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "immediateText": {
+          "type": "string"
+        },
+        "immediateValue": {
+          "type": "integer"
+        },
+        "bitIndices": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "instruction": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "82d71bba71f9bdb7": {
+      "type": "object",
+      "required": [
+        "macro",
+        "handler",
+        "handlerAddress",
+        "opcode",
+        "sourceCommandCount",
+        "cursorUseSites",
+        "aliveStatusPointerAdjustment",
+        "stateReads",
+        "stateWrites",
+        "addressSetupUseSites",
+        "bitMutationUseSites",
+        "sourceConstantUseSites",
+        "literalUseSites",
+        "branchRecords",
+        "callbacks",
+        "returnInstruction",
+        "sourceUseSites"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "cursorUseSites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/fbe299721eb5beb2"
+          }
+        },
+        "aliveStatusPointerAdjustment": {
+          "type": "null"
+        },
+        "stateReads": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/0af4318b62bc01bf"
+          }
+        },
+        "stateWrites": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/0af4318b62bc01bf"
+          }
+        },
+        "addressSetupUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "bitMutationUseSites": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/bd5f9e0fbbdd1ace"
+          }
+        },
+        "sourceConstantUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "literalUseSites": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": {
+            "anyOf": []
+          }
+        },
+        "callbacks": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/937bcb7d38af4177"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        },
+        "sourceUseSites": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "e629c19de8457919": {
+      "type": "object",
+      "required": [
+        "GetEntityAddressFromCharacter",
+        "HideEntity",
+        "AdjustScriptPointerByCharacterAliveStatus",
+        "GetAllyMapsprite",
+        "WaitForVInt",
+        "UpdateEntitySprite_0",
+        "LoadMapsprite",
+        "sub_45A8C",
+        "DmaMapsprite"
+      ],
+      "properties": {
+        "GetEntityAddressFromCharacter": {
+          "type": "integer"
+        },
+        "HideEntity": {
+          "type": "integer"
+        },
+        "AdjustScriptPointerByCharacterAliveStatus": {
+          "type": "integer"
+        },
+        "GetAllyMapsprite": {
+          "type": "integer"
+        },
+        "WaitForVInt": {
+          "type": "integer"
+        },
+        "UpdateEntitySprite_0": {
+          "type": "integer"
+        },
+        "LoadMapsprite": {
+          "type": "integer"
+        },
+        "sub_45A8C": {
+          "type": "integer"
+        },
+        "DmaMapsprite": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "1d9ede8b5707a7e1": {
+      "type": "object",
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/$defs/e629c19de8457919"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/$defs/e629c19de8457919"
+        }
+      },
+      "additionalProperties": false
+    },
+    "a083e04356fc7cae": {
+      "type": "object",
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": "null"
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "4487aab3b451403d": {
+      "type": "object",
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalInstructionTargetTotals",
+        "externalInstructionTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/1d9ede8b5707a7e1"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {
+            "$ref": "#/$defs/a083e04356fc7cae"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/$defs/e629c19de8457919"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/$defs/e629c19de8457919"
+        },
+        "internalInstructionTargetTotals": {
+          "$ref": "#/$defs/e629c19de8457919"
+        },
+        "externalInstructionTargetTotals": {
+          "$ref": "#/$defs/e629c19de8457919"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/$defs/e629c19de8457919"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/$defs/e629c19de8457919"
+        }
+      },
+      "additionalProperties": false
+    },
+    "6bdbfe343227becb": {
+      "type": "object",
+      "required": [
+        "staticFindings",
+        "runtimeObservations"
+      ],
+      "properties": {
+        "staticFindings": {
+          "type": "string"
+        },
+        "runtimeObservations": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "2633df6cc0783652": {
+      "type": "object",
+      "required": [
+        "offsetLoad",
+        "read"
+      ],
+      "properties": {
+        "offsetLoad": {
+          "$ref": "#/$defs/aa98efc2c7ec8f18"
+        },
+        "read": {
+          "$ref": "#/$defs/aa98efc2c7ec8f18"
+        }
+      },
+      "additionalProperties": false
+    },
+    "3aca578579534cdf": {
+      "type": "object",
+      "required": [
+        "aliveStatusHelper",
+        "currentHpStorage",
+        "startStopCursorAdjustmentLoads",
+        "idleWaitCompare",
+        "idleWaitBackEdge",
+        "setSpriteAllyBranch",
+        "setPriorityBranches"
+      ],
+      "properties": {
+        "aliveStatusHelper": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        },
+        "currentHpStorage": {
+          "$ref": "#/$defs/2633df6cc0783652"
+        },
+        "startStopCursorAdjustmentLoads": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        },
+        "idleWaitCompare": {
+          "$ref": "#/$defs/aa98efc2c7ec8f18"
+        },
+        "idleWaitBackEdge": {
+          "$ref": "#/$defs/aa98efc2c7ec8f18"
+        },
+        "setSpriteAllyBranch": {
+          "$ref": "#/$defs/aa98efc2c7ec8f18"
+        },
+        "setPriorityBranches": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/aa98efc2c7ec8f18"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "2cadb3fba14467c6": {
+      "type": "object",
+      "required": [
+        "macroForms",
+        "handlers",
+        "callerBreakdown",
+        "evidenceLabels",
+        "runtimeSourceUseSites"
+      ],
+      "properties": {
+        "macroForms": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/68c01a05eed1db55"
+              },
+              {
+                "$ref": "#/$defs/d63ed6424e2ceeca"
+              }
+            ]
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/abac3e8ecadd454f"
+              },
+              {
+                "$ref": "#/$defs/e2396ee52d1272e8"
+              },
+              {
+                "$ref": "#/$defs/c43d1cd0e2eecda6"
+              },
+              {
+                "$ref": "#/$defs/55787fba32324557"
+              },
+              {
+                "$ref": "#/$defs/c31d1ac79462fd82"
+              },
+              {
+                "$ref": "#/$defs/7d97cd5f38d27a75"
+              },
+              {
+                "$ref": "#/$defs/82d71bba71f9bdb7"
+              }
+            ]
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/$defs/4487aab3b451403d"
+        },
+        "evidenceLabels": {
+          "$ref": "#/$defs/6bdbfe343227becb"
+        },
+        "runtimeSourceUseSites": {
+          "$ref": "#/$defs/3aca578579534cdf"
+        }
+      },
+      "additionalProperties": false
+    },
+    "60afe1de46e43900": {
+      "type": "object",
+      "required": [
+        "animCounterByte",
+        "actscriptPointerLong",
+        "mapspriteByte",
+        "flagsBByte"
+      ],
+      "properties": {
+        "animCounterByte": {
+          "type": "integer"
+        },
+        "actscriptPointerLong": {
+          "type": "integer"
+        },
+        "mapspriteByte": {
+          "type": "integer"
+        },
+        "flagsBByte": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "831462bab93189dd": {
+      "type": "object",
+      "required": [
+        "instructionTarget",
+        "callSiteAddress",
+        "targetAddress"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "callSiteAddress": {
+          "type": "integer"
+        },
+        "targetAddress": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "4845765878b74668": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "1275e15282e669df": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "hideCallbackObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "hideCallbackObserved": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "331cbccf8cab9dc5": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "expected": {
+          "$ref": "#/$defs/4845765878b74668"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/1275e15282e669df"
+        }
+      },
+      "additionalProperties": false
+    },
+    "48e07f086887aedf": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "currentHpWordSeed",
+        "aliveStatusCursorAdjustmentByteCount",
+        "animCounterByteAfter",
+        "animCounterTransferByteCount"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "aliveStatusCursorAdjustmentByteCount": {
+          "type": "integer"
+        },
+        "animCounterByteAfter": {
+          "type": "integer"
+        },
+        "animCounterTransferByteCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "778fbdd9928a0e03": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "aliveStatusCursorAdjustmentObserved",
+        "animCounterWriteObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "aliveStatusCursorAdjustmentObserved": {
+          "type": "boolean"
+        },
+        "animCounterWriteObserved": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "9f7156b91994f16f": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "expected": {
+          "$ref": "#/$defs/48e07f086887aedf"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/778fbdd9928a0e03"
+        }
+      },
+      "additionalProperties": false
+    },
+    "8a29d9e2a7aa047a": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "currentHpWordSeed",
+        "aliveStatusCursorAdjustmentByteCount",
+        "animCounterByteAfter",
+        "animCounterTransferByteCount"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "aliveStatusCursorAdjustmentByteCount": {
+          "type": "integer"
+        },
+        "animCounterByteAfter": {
+          "type": "integer"
+        },
+        "animCounterTransferByteCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "c4471d55c21f911e": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "aliveStatusCursorAdjustmentObserved",
+        "animCounterWriteObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "aliveStatusCursorAdjustmentObserved": {
+          "type": "boolean"
+        },
+        "animCounterWriteObserved": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "6470fda88aafe75f": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "expected": {
+          "$ref": "#/$defs/8a29d9e2a7aa047a"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/c4471d55c21f911e"
+        }
+      },
+      "additionalProperties": false
+    },
+    "adb08b7035cd6af5": {
+      "type": "object",
+      "required": [
+        "compareAddress",
+        "backEdgeAddress",
+        "field",
+        "value",
+        "atCompareEntryCount"
+      ],
+      "properties": {
+        "compareAddress": {
+          "type": "integer"
+        },
+        "backEdgeAddress": {
+          "type": "integer"
+        },
+        "field": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "atCompareEntryCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "d9a486c58cfd9b42": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "actscriptPointerTransferByteCount",
+        "waitLoopExitInjection"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "actscriptPointerTransferByteCount": {
+          "type": "integer"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/adb08b7035cd6af5"
+        }
+      },
+      "additionalProperties": false
+    },
+    "8afb17eb085a8cf9": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "waitCompareEntryCountObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "harnessForcedWaitExitObserved",
+        "actscriptPointerLongAfter"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "waitCompareEntryCountObserved": {
+          "type": "integer"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "type": "integer"
+        },
+        "harnessForcedWaitExitObserved": {
+          "type": "boolean"
+        },
+        "actscriptPointerLongAfter": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "72e3a9e1bc585642": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "waitExitAtCompareEntryCount",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "waitExitAtCompareEntryCount": {
+          "type": "integer"
+        },
+        "expected": {
+          "$ref": "#/$defs/d9a486c58cfd9b42"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/8afb17eb085a8cf9"
+        }
+      },
+      "additionalProperties": false
+    },
+    "9d59c73fad7099b4": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "mapspriteInputWord",
+        "allySplit",
+        "mapspriteTransferByteCount"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "mapspriteInputWord": {
+          "type": "integer"
+        },
+        "allySplit": {
+          "type": "string"
+        },
+        "mapspriteTransferByteCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "51606c268de81fc0": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "allyCallbackObserved",
+        "waitForVIntCallObserved",
+        "updateEntitySpriteCallObserved",
+        "mapspriteByteAfter"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "string"
+          }
+        },
+        "allyCallbackObserved": {
+          "type": "boolean"
+        },
+        "waitForVIntCallObserved": {
+          "type": "boolean"
+        },
+        "updateEntitySpriteCallObserved": {
+          "type": "boolean"
+        },
+        "mapspriteByteAfter": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "8c04683bf535e199": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "expected": {
+          "$ref": "#/$defs/9d59c73fad7099b4"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/51606c268de81fc0"
+        }
+      },
+      "additionalProperties": false
+    },
+    "4ecc8957c2c93493": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "mapspriteInputWord",
+        "allySplit",
+        "mapspriteTransferByteCount"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "mapspriteInputWord": {
+          "type": "integer"
+        },
+        "allySplit": {
+          "type": "string"
+        },
+        "mapspriteTransferByteCount": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "2e201cf208208d78": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "allyCallbackObserved",
+        "waitForVIntCallObserved",
+        "updateEntitySpriteCallObserved",
+        "mapspriteByteAfter"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        },
+        "allyCallbackObserved": {
+          "type": "boolean"
+        },
+        "waitForVIntCallObserved": {
+          "type": "boolean"
+        },
+        "updateEntitySpriteCallObserved": {
+          "type": "boolean"
+        },
+        "mapspriteByteAfter": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ad6ecc334c2473be": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "expected": {
+          "$ref": "#/$defs/4ecc8957c2c93493"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/2e201cf208208d78"
+        }
+      },
+      "additionalProperties": false
+    },
+    "f472ebbd0ca18dcf": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "priorityArgumentWord",
+        "priorityByteAfter"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "priorityArgumentWord": {
+          "type": "integer"
+        },
+        "priorityByteAfter": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "57665e237f4586dd": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "priorityNonzeroBranchObserved",
+        "priorityByteWriteObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "priorityNonzeroBranchObserved": {
+          "type": "boolean"
+        },
+        "priorityByteWriteObserved": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "1ad86a64369dcba5": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "priorityByteSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "priorityByteSeed": {
+          "type": "integer"
+        },
+        "expected": {
+          "$ref": "#/$defs/f472ebbd0ca18dcf"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/57665e237f4586dd"
+        }
+      },
+      "additionalProperties": false
+    },
+    "523a1796f7dac7e3": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "be65530b8577530d": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "loadMapspriteCallObserved",
+        "helperCallObserved",
+        "dmaMapspriteCallObserved",
+        "waitForVIntCallObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
+        },
+        "loadMapspriteCallObserved": {
+          "type": "boolean"
+        },
+        "helperCallObserved": {
+          "type": "boolean"
+        },
+        "dmaMapspriteCallObserved": {
+          "type": "boolean"
+        },
+        "waitForVIntCallObserved": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "81dd3a7cff9d98c0": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "expected": {
+          "$ref": "#/$defs/523a1796f7dac7e3"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/be65530b8577530d"
+        }
+      },
+      "additionalProperties": false
+    },
+    "7cb125f336a087f5": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "entityAddress",
+        "scriptCursorRamOffsetAfter",
+        "declaredCallbackPlan",
+        "effectiveCallbackPlan",
+        "spriteSizeWordInput",
+        "spriteSizeWordAfter",
+        "flagsBByteAfter",
+        "sizeBitIndex"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "entityAddress": {
+          "type": "integer"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "declaredCallbackPlan": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "effectiveCallbackPlan": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/831462bab93189dd"
+          }
+        },
+        "spriteSizeWordInput": {
+          "type": "integer"
+        },
+        "spriteSizeWordAfter": {
+          "type": "integer"
+        },
+        "flagsBByteAfter": {
+          "type": "integer"
+        },
+        "sizeBitIndex": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "e60762f3788a45aa": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackTargetOrderObserved",
+        "temporarySpriteSizeWordObserved",
+        "updateEntitySpriteCallObserved",
+        "waitForVIntCallObserved",
+        "sizeBitMutationObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackTargetOrderObserved": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        },
+        "temporarySpriteSizeWordObserved": {
+          "type": "integer"
+        },
+        "updateEntitySpriteCallObserved": {
+          "type": "boolean"
+        },
+        "waitForVIntCallObserved": {
+          "type": "boolean"
+        },
+        "sizeBitMutationObserved": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "c3c7cca737c87593": {
+      "type": "object",
+      "required": [
+        "id",
+        "macro",
+        "scriptWords",
+        "entityIndexByteSeed",
+        "currentHpWordSeed",
+        "entityStateSeed",
+        "spriteSizeWordSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "scriptWords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "entityIndexByteSeed": {
+          "type": "integer"
+        },
+        "currentHpWordSeed": {
+          "type": "integer"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/60afe1de46e43900"
+        },
+        "spriteSizeWordSeed": {
+          "type": "integer"
+        },
+        "expected": {
+          "$ref": "#/$defs/7cb125f336a087f5"
+        },
+        "runtimeGolden": {
+          "$ref": "#/$defs/e60762f3788a45aa"
+        }
+      },
+      "additionalProperties": false
+    },
+    "8374f88813557615": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "id",
+        "romSha256",
+        "emulator",
+        "mapTestIndex",
+        "observationBoundary",
+        "runtimeQuestions",
+        "sharedHarnessFixture",
+        "staticContractFixture",
+        "maxFrames",
+        "instrumentation",
+        "provenance",
+        "function",
+        "ram",
+        "constants",
+        "sourceFacts",
+        "cases"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "romSha256": {
+          "type": "string"
+        },
+        "emulator": {
+          "$ref": "#/$defs/5beca0c8863b0bff"
+        },
+        "mapTestIndex": {
+          "type": "integer"
+        },
+        "observationBoundary": {
+          "type": "string"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sharedHarnessFixture": {
+          "type": "string"
+        },
+        "staticContractFixture": {
+          "type": "string"
+        },
+        "maxFrames": {
+          "type": "integer"
+        },
+        "instrumentation": {
+          "$ref": "#/$defs/640285f2c936ae95"
+        },
+        "provenance": {
+          "$ref": "#/$defs/9219bc943eb8d920"
+        },
+        "function": {
+          "$ref": "#/$defs/faf252dc2078140b"
+        },
+        "ram": {
+          "$ref": "#/$defs/bf766954e4db1167"
+        },
+        "constants": {
+          "$ref": "#/$defs/7d234c3509981a5e"
+        },
+        "sourceFacts": {
+          "$ref": "#/$defs/2cadb3fba14467c6"
+        },
+        "cases": {
+          "type": "array",
+          "minItems": 11,
+          "maxItems": 11,
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/331cbccf8cab9dc5"
+              },
+              {
+                "$ref": "#/$defs/9f7156b91994f16f"
+              },
+              {
+                "$ref": "#/$defs/6470fda88aafe75f"
+              },
+              {
+                "$ref": "#/$defs/72e3a9e1bc585642"
+              },
+              {
+                "$ref": "#/$defs/8c04683bf535e199"
+              },
+              {
+                "$ref": "#/$defs/ad6ecc334c2473be"
+              },
+              {
+                "$ref": "#/$defs/1ad86a64369dcba5"
+              },
+              {
+                "$ref": "#/$defs/81dd3a7cff9d98c0"
+              },
+              {
+                "$ref": "#/$defs/c3c7cca737c87593"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

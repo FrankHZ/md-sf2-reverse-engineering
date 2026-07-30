@@ -4583,7 +4583,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-action-bridge/normal-story-reachability",
         "map-script-entity-action-bridge/full-action-motion-collision-effects",
         "map-script-entity-action-bridge/presentation-timing-persistence",
-        "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
+        "map-script-entity-lifecycle-presentation/normal-story-reachability",
+        "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
+        "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
         "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
         "map-script-screen-presentation/runtime-effects-matrix",
         "map-script-entity-presentation-fx/runtime-effects-matrix",
@@ -4606,10 +4608,14 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-action-bridge/full-action-motion-collision-effects",
         "map-script-entity-action-bridge/presentation-timing-persistence",
     ]
-    # The prior digest retained this accepted one-question bridge queue; it is now
-    # explicitly excluded with the other H3 handoff queues.
+    assert expected["entityLifecyclePresentationCommandFacts"].pop("runtimeQuestions") == [
+        "map-script-entity-lifecycle-presentation/normal-story-reachability",
+        "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
+        "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
+    ]
+    # H3 queues are explicitly excluded so the canonical static digest remains stable.
     assert _canonical_digest(expected) == (
-        "c4244b01cf747dfde88845132aca2c37bf16470d45da51523bf3123e09325f15"
+        "d928aebbf0aebe52f924cdfa734f182f39cd655c8b4a9ca9e5b0809482b9e3f7"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4623,8 +4629,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del output_schema["properties"]["entityActionBridgeCommandFacts"]["allOf"][1][
         "properties"
     ]["runtimeQuestions"]
+    del output_schema["properties"]["entityLifecyclePresentationCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"]
     assert _canonical_digest(output_schema) == (
-        "6c061eca031cc11972733ca07817110b92be1074df5aa56d9b123ac5fa2fd393"
+        "8ba4be2c2e647535c7efaae535883b93e7efc4713dfe9563ad2e6035ce783a30"
     )
 
     fixture_schema = deepcopy(
@@ -4640,8 +4649,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del fixture_schema["properties"]["expected"]["properties"][
         "entityActionBridgeCommandFacts"
     ]["allOf"][1]["const"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"][
+        "entityLifecyclePresentationCommandFacts"
+    ]["allOf"][1]["const"]["runtimeQuestions"]
     assert _canonical_digest(fixture_schema) == (
-        "9626cc95e961011e4ce57865ade474022e3439cf09599914acb5b1b8956d1165"
+        "86b2d375c6886d12278b514687b3b2d28e92ff6d9d7119b36276680fbec23a58"
     )
 
 
@@ -6323,7 +6335,9 @@ def test_map_entity_lifecycle_presentation_contract_matches_complete_golden_fixt
         "sf2-sprite-dialogue-static-v1"
     )
     assert actual["runtimeQuestions"] == [
-        "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix"
+        "map-script-entity-lifecycle-presentation/normal-story-reachability",
+        "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
+        "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
     ]
 
 

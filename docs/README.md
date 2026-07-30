@@ -224,6 +224,13 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   record-0 hit、terminator miss、busy/battle gate、direct-H1-JSR-site、D0/D1 word、hash/table
   boundary、post-handler word 与双 marker。剩余 queue 为 full layout/collision/pathfinding、
   presentation/audio/timing/hardware 与 persistence/story reachability。
+  同一 304-row 零计数 corpus 还固定八个 source-named entity lifecycle/presentation form（464
+  sites）、八个 named handler 的 cursor/branch/callback/return guards，以及 nine-target
+  zero-inclusive caller map。H3 以 11 case/单启动 fixture 固定所有八个 handler entry、live/zero-HP
+  start/stop boundary、受控第二次 `waitIdle` compare、两侧 sprite selector、priority byte、完整
+  remove-shadow callback chain，以及 source-backed temporary/restored sprite-size word 与 flags-B
+  record；剩余 queue 为 normal-story reachability、full entity-state/callback effects 与
+  player-visible presentation/timing/collision/persistence。
   同一 304-row 零计数 corpus 还固定七个 source-named entity gesture/relationship/motion form（545
   sites）、七个 named handler 的 A6 cursor、source operand/literal、branch/loop/call/return guards，
   以及 ten-target zero-inclusive caller map；唯一 H3 queue 为

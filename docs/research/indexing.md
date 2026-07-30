@@ -1,7 +1,7 @@
 # Reverse-Engineering Research Index
 
 - Status: **Confirmed machine-readable index for the current H2/H3 evidence surface**
-- Evidence date: 2026-07-18
+- Evidence date: 2026-07-30
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -81,10 +81,10 @@ index verifier proves every copy still agrees.
 
 ## Current Boundary
 
-As of 2026-07-19, the index contains 1,535 confirmed findings and 2,109 checked address bindings. It
-connects all 60 H3 fixture files plus 74 H2 fixtures needed by the completed code and data
+As of 2026-07-30, the index contains 1,565 confirmed findings and 2,267 checked address bindings. It
+connects all 68 H3 fixture files plus 74 H2 fixtures needed by the completed code and data
 inventories. This produces 381/387 code-file reach and 1,017/1,690 domain-aware data-file reach.
-The verifier reports the provenance split independently: 1,498 H1 records and 37 Z80 music-bank
+The verifier reports the provenance split independently: 1,528 H1 records and 37 Z80 music-bank
 records.
 
 Every indexed record still requires a named symbol in the claimed source file and an executable

@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-29
+- Evidence date: 2026-07-30
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,554 | 1,517 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,565 | 1,528 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 67 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,220 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 68 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,267 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -320,9 +320,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,554 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 67 H3 fixtures, and
-2,220 bindings. Of the records, 1,517 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,565 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 68 H3 fixtures, and
+2,267 bindings. Of the records, 1,528 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -437,10 +437,13 @@ The adjacent entity lifecycle/presentation slice is exact for eight source-named
 It retains 105 ordered source-site rows, the complete 304-row zero-inclusive program domain, raw
 macro operand comments/widths, eight complete named handler guards, parsed constant/literal use sites,
 branch target identity, and nine-target zero-inclusive direct/effective caller maps. Its three joined
-fixtures are provenance-only identities.
-`map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix` is the sole grouped H3
-follow-up; source names do not credit visibility, animation, sprite, priority, shadow, size, timing,
-collision, persistence, or presentation behavior as static coverage.
+fixtures are provenance-only identities. The 11-case, one-launch H3 matrix now covers all eight handler
+entries, live and zero-current-HP start/stop boundaries, the controlled second `waitIdle` compare,
+both `setSprite` selector sides, zero/nonzero priority, the complete remove-shadow callback chain, and
+source-backed set-size temporary/restore words. It confirms only those bounded callback/state records.
+The remaining grouped H3 queues are normal-story reachability, full entity-state/callback effects, and
+player-visible presentation/timing/collision/persistence; source names do not credit those outcomes as
+static coverage.
 The adjacent entity gesture/relationship/motion slice is exact for seven source-named forms: 191
 `shiver` `$2A`, 169 `nod` `$26`, 160 `followEntity` `$2C`, 15 `faceEntity` `$52`, seven
 `moveNextToPlayer` `$28`, two `fly` `$2F`, and one `moveEntityAboveAnother` `$31` command (545 total).

@@ -461,7 +461,7 @@ contract with `uv run sf2 h2 map-script-engine` (fixture
 
 ## Confirmed Map-Script Entity Lifecycle/Presentation Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-30.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.entityLifecyclePresentationCommandFacts` retains eight source-named macro forms in source
@@ -501,23 +501,54 @@ retain fixture IDs `sf2-entity-action-scripts-static-v1`, `sf2-map-sprite-assign
 `sf2-sprite-dialogue-static-v1`; they do not claim that their associated data or code has a particular
 runtime effect here.
 
+**Confirmed (bounded H3 observer):** one session-only Map Test 0 replay of 11 fixed cases executed
+all eight named handler entries and compared the complete record object in
+`sf2-map-entity-lifecycle-presentation-runtime-v1`. `hide` reached its two direct callback targets.
+The live `startEntity` and `stopEntity` rows reached `AdjustScriptPointerByCharacterAliveStatus` then
+`GetEntityAddressFromCharacter`, with guarded animation-counter writes of 0 and `$FF`. The
+zero-current-HP `stopEntity` row reached only the adjust helper: its source-local return path left the
+seeded counter `$7F` unchanged and left A6 at input offset 6. This confirms a bounded helper-return
+boundary, not an alive/dead gameplay lifecycle interpretation.
+
+**Confirmed (bounded H3 observer):** the controlled `waitIdle` row entered both its compare and its
+`bne` instruction twice, injecting `eas_Idle` at compare entry 2; this establishes neither natural
+wait duration nor a count of taken backedges. `setSprite` input 0 reached `GetAllyMapsprite`,
+`WaitForVInt`, and `UpdateEntitySprite_0`, while threshold input 30 skipped only the first callback.
+The zero/nonzero `setPriority` rows produced bytes 0 and 1. `removeShadow` reached `LoadMapsprite`,
+`sub_45A8C`, `DmaMapsprite`, and `WaitForVInt` after its entity-address callback. The `setSize` row
+used source-backed words 16 (`InitializeMapEntities`) and 21 (`csc2A_entityShiver`): its guarded
+update saw 16, post-handler storage was 21, and flags-B changed from `$10` to `$18`. These are bounded
+state/callback observations; they do not establish sprite dimensions, rendered appearance, or
+persistence.
+
 ### Runtime questions — entity lifecycle/presentation
 
-**Unknown:** `map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix` is the
-sole grouped H3 queue. One shared launch must establish normal-story reachability; operand and
-state-field meaning; selector handling; resulting entity, animation, visibility, shadow, sprite,
-priority, and size outcomes; VInt/wait timing; collision/pathfinding; persistence; and presentation.
-No source macro, callee, field, or literal name promotes those runtime behaviors from this static
-contract.
+**Unknown:** the remaining grouped H3 queue is exactly:
+
+- `map-script-entity-lifecycle-presentation/normal-story-reachability` for ordinary map-script
+  admission and story contexts.
+- `map-script-entity-lifecycle-presentation/full-entity-state-callback-effects` for unobserved
+  selector/state combinations and callback consequences outside this bounded harness.
+- `map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence`
+  for visible output, natural timing, collision/pathfinding, and persistence.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `hide`,
 `startEntity`, `stopEntity`, `waitIdle`, `setSprite`, `setPriority`, `removeShadow`, and `setSize`;
-`code/common/scripting/map/mapscriptengine_1.asm` named sections above; H1 listing symbols/addresses;
-and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
-Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
-`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.entityLifecyclePresentationCommandFacts`.
+`code/common/scripting/map/mapscriptengine_1.asm` named sections,
+`code/common/scripting/map/mapfunctions.asm` `InitializeMapEntities`,
+`code/common/stats/combatantstats_1.asm` `GetCurrentHp`,
+`code/common/stats/combatantstats_3.asm` `GetCombatantWord`, H1 listing symbols/addresses; and local
+US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce the static
+contract with `uv run sf2 h2 map-script-engine`; reproduce the bounded runtime observation with
+`uv run sf2 h3 map-entity-lifecycle-presentation --timeout-seconds 120`. Observed results are fixture
+ID `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.entityLifecyclePresentationCommandFacts`, and H3 fixture ID
+`sf2-map-entity-lifecycle-presentation-runtime-v1` in
+`tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`, with recursively closed schemas
+`schemas/h3-map-entity-lifecycle-presentation-fixture.schema.json` and
+`schemas/h3-map-entity-lifecycle-presentation-observation.schema.json`; the H3 command reported 11
+cases, 8 handlers, 1 session-only launch, PASS.
 
 ## Confirmed Map-Script Entity Gesture/Relationship/Motion Command Family
 
