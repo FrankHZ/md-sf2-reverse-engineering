@@ -359,7 +359,7 @@ ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. 
 
 ## Confirmed Map-Script to Entity-Action Bridge Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-29.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.entityActionBridgeCommandFacts` retains six source-named forms in macro source order:
@@ -401,22 +401,63 @@ source-identity joins preserve the independent `sf2-entity-action-scripts-static
 terminator fact and four `sf2-map-events-static-v1` map-44 opener/terminator context pairs. They do not
 claim that the map-event or entity-action code runs in a particular runtime context.
 
+**Confirmed (H3):** `sf2-map-entity-action-bridge-runtime-v1` runs all six source aliases once in
+one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 session through the bounded
+`RunMapSetupInitFunction` trampoline. Every case reaches its exact handler and
+`GetEntityAddressFromCharacter` call site, returns to the trampoline, resolves selector byte 1 through
+`ENTITY_INDEX_LIST` to the seeded entity index 0, and leaves the one-byte `ACTSCRIPTWAITTIMER` field
+at 0. The `$FF` rows enter their exact guarded compare PC twice and execute the exact back-edge branch
+PC twice; only at the second compare does the session harness write `eas_Idle` to the parsed four-byte
+`ACTSCRIPTADDR` field. That bounded release is an observation-control action, not a natural wait or
+timing result. The zero-control rows do not enter either wait hook.
+
+**Confirmed (H3):** the csc15 rows retain their input pointer on the zero-control path and the injected
+`eas_Idle` pointer on the bounded wait path. The csc14 rows reach the exact `$8080` compare, finish at
+the source-derived cursor offsets 8, and retain either its captured input pointer (zero control) or the
+injected `eas_Idle` pointer (wait). The two csc2D rows reach the indexed call and its exact selected
+target `csc2D_8_faceRight` `$468AA`, then the terminal entry `$46928`; their `FLAGS_A` seed `$FF`
+becomes `$9F`, their post-handler action-buffer pointer is `$FF4110`, and their separately observed
+entity pointer is the input action-buffer base for zero control or injected `eas_Idle` for wait.
+
+**Confirmed (H3):** at the parsed H1 PC `$46932`, immediately after the terminal
+`move.l #eas_Idle,(a0)+` write, each csc2D row captures exactly one complete write-time buffer snapshot:
+the selected indexed words `[34, 0, 10, 0, 7]`, terminal record word `52`, and the four-byte
+`eas_Idle` payload pointer `$451FC`. The indexed words use their independently parsed two-byte write
+width; the terminal-record two-byte width and idle-payload four-byte width remain separate fields.
+This is intentionally not a stable post-handler buffer-content claim: the ordinary action consumer can
+change that RAM after the source write, while the global buffer pointer and entity pointer are checked
+after the handler returns.
+
 ### Runtime questions — map-script entity-action bridge
 
-**Unknown:** `map-script-entity-action-bridge/runtime-effects-reachability-matrix` is the sole grouped
-H3 queue. One shared launch must determine normal-story reachability; the meaning of the source control
-byte; payload interpretation and termination; resulting entity/action state; timing; persistence;
-map/collision interaction; and visible presentation. This static contract does not promote any of those
-outcomes from macro, state-field, handler, or callee names.
+**Unknown:** remaining grouped H3 questions are:
+
+- `map-script-entity-action-bridge/normal-story-reachability`: which ordinary map scripts and caller
+  states reach these aliases;
+- `map-script-entity-action-bridge/full-action-motion-collision-effects`: action payload meaning and
+  resulting motion, collision, entity, and action effects outside the bounded buffer write;
+- `map-script-entity-action-bridge/presentation-timing-persistence`: natural wait duration, frame/VDP
+  presentation, and persistence.
+
+The fixture does not promote macro names, source labels, the injected wait release, callback hits, or
+the write-time buffer snapshot into any of those outcomes.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `csc14`, `csc15`,
 `csc2D`, the six aliases, and `ac_end`/`endActions`; `code/common/scripting/map/mapscriptengine_1.asm`
 named sections above and `rjt_EntityMoveCommands`; the joined fixture source locations; H1 listing
-addresses; and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
-Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
-`sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.entityActionBridgeCommandFacts`.
+addresses `$467E2`, `$46814`, `$468AA`, `$46928`, `$46932`, `$46944`, `$4694C`, `$46956`, `$4695E`,
+`$46966`, `$4696E`, and `$46976`; and local US ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce the static source
+contract with `uv run sf2 h2 map-script-engine` (fixture
+`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
+`expected.entityActionBridgeCommandFacts`) and the runtime matrix with
+`uv run sf2 h3 map-entity-action-bridge --timeout-seconds 120` (fixture
+`tests/fixtures/h3/map-entity-action-bridge-v1.json`, ID
+`sf2-map-entity-action-bridge-runtime-v1`; verifier
+`src/sf2tool/h3/map_entity_action_bridge.py`; observer
+`tools/bizhawk/map_entity_action_bridge_observer.lua`). Observed runtime result: 6 cases, 3 handlers,
+1 session-only BizHawk launch, PASS.
 
 ## Confirmed Map-Script Entity Lifecycle/Presentation Command Family
 

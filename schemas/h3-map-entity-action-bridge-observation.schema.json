@@ -1,0 +1,1282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Closed recursive definitions validate every object shape; the full const below pins exact evidence values and array order.",
+  "allOf": [
+    {
+      "$ref": "#/$defs/8bd7daa16eebcfeb"
+    },
+    {
+      "const": {
+        "system": "GEN",
+        "core": "Genesis Plus GX",
+        "id": "sf2-map-entity-action-bridge-runtime-v1",
+        "mapTest": 0,
+        "recordOrder": [
+          "set-actscript-wait-loop",
+          "set-actscript-control-zero",
+          "custom-actscript-wait-loop",
+          "custom-actscript-control-zero",
+          "entity-actions-wait-loop",
+          "entity-actions-control-zero"
+        ],
+        "records": [
+          {
+            "id": "set-actscript-wait-loop",
+            "macro": "setActscriptWait",
+            "handlerAddress": 289144,
+            "selectorByte": 1,
+            "controlByte": 255,
+            "actscriptWaitTimerByteAfter": 0,
+            "actscriptWaitTimerTransferByteCount": 1,
+            "actscriptPointerTransferByteCount": 4,
+            "getEntityCallSiteAddress": 289146,
+            "waitCompareEntryCount": 2,
+            "waitLoopExitInjection": {
+              "programCounterAddress": 289166,
+              "backEdgeInstructionAddress": 289174,
+              "field": "actscriptPointer",
+              "value": 283132,
+              "afterCompareEntryCount": 2
+            },
+            "scriptCursorRamOffsetAfter": 10,
+            "actscriptPointerLongAfter": 283132,
+            "inlineTerminatorObserved": false,
+            "indexedCallbackObserved": false,
+            "terminalObserved": false,
+            "flagsAByteAfter": 255,
+            "actionBufferWords": [],
+            "actionBufferPointerLongAfter": 16728320,
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "indexedTargetObserved": false,
+            "waitBackEdgeInstructionEntryCountObserved": 2,
+            "waitCompareEntryCountObserved": 2,
+            "callbackOrder": [
+              "getEntityAddress",
+              "waitCompareEntry",
+              "waitBackEdgeInstructionEntry",
+              "waitCompareEntry",
+              "harnessForcedWaitExit",
+              "waitBackEdgeInstructionEntry"
+            ],
+            "terminalBufferSnapshotCountObserved": 0
+          },
+          {
+            "id": "set-actscript-control-zero",
+            "macro": "setActscript",
+            "handlerAddress": 289144,
+            "selectorByte": 1,
+            "controlByte": 0,
+            "actscriptWaitTimerByteAfter": 0,
+            "actscriptWaitTimerTransferByteCount": 1,
+            "actscriptPointerTransferByteCount": 4,
+            "getEntityCallSiteAddress": 289146,
+            "waitCompareEntryCount": 0,
+            "waitLoopExitInjection": null,
+            "scriptCursorRamOffsetAfter": 10,
+            "actscriptPointerLongAfter": 283132,
+            "inlineTerminatorObserved": false,
+            "indexedCallbackObserved": false,
+            "terminalObserved": false,
+            "flagsAByteAfter": 255,
+            "actionBufferWords": [],
+            "actionBufferPointerLongAfter": 16728320,
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "indexedTargetObserved": false,
+            "waitBackEdgeInstructionEntryCountObserved": 0,
+            "waitCompareEntryCountObserved": 0,
+            "callbackOrder": [
+              "getEntityAddress"
+            ],
+            "terminalBufferSnapshotCountObserved": 0
+          },
+          {
+            "id": "custom-actscript-wait-loop",
+            "macro": "customActscriptWait",
+            "handlerAddress": 289104,
+            "selectorByte": 1,
+            "controlByte": 255,
+            "actscriptWaitTimerByteAfter": 0,
+            "actscriptWaitTimerTransferByteCount": 1,
+            "actscriptPointerTransferByteCount": 4,
+            "getEntityCallSiteAddress": 289106,
+            "waitCompareEntryCount": 2,
+            "waitLoopExitInjection": {
+              "programCounterAddress": 289126,
+              "backEdgeInstructionAddress": 289134,
+              "field": "actscriptPointer",
+              "value": 283132,
+              "afterCompareEntryCount": 2
+            },
+            "scriptCursorRamOffsetAfter": 8,
+            "actscriptPointerLongAfter": 283132,
+            "inlineTerminatorObserved": true,
+            "indexedCallbackObserved": false,
+            "terminalObserved": false,
+            "flagsAByteAfter": 255,
+            "actionBufferWords": [],
+            "actionBufferPointerLongAfter": 16728320,
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "indexedTargetObserved": false,
+            "waitBackEdgeInstructionEntryCountObserved": 2,
+            "waitCompareEntryCountObserved": 2,
+            "callbackOrder": [
+              "getEntityAddress",
+              "waitCompareEntry",
+              "waitBackEdgeInstructionEntry",
+              "waitCompareEntry",
+              "harnessForcedWaitExit",
+              "waitBackEdgeInstructionEntry",
+              "inlineTerminator"
+            ],
+            "terminalBufferSnapshotCountObserved": 0
+          },
+          {
+            "id": "custom-actscript-control-zero",
+            "macro": "customActscript",
+            "handlerAddress": 289104,
+            "selectorByte": 1,
+            "controlByte": 0,
+            "actscriptWaitTimerByteAfter": 0,
+            "actscriptWaitTimerTransferByteCount": 1,
+            "actscriptPointerTransferByteCount": 4,
+            "getEntityCallSiteAddress": 289106,
+            "waitCompareEntryCount": 0,
+            "waitLoopExitInjection": null,
+            "scriptCursorRamOffsetAfter": 8,
+            "actscriptPointerLongAfter": 16728070,
+            "inlineTerminatorObserved": true,
+            "indexedCallbackObserved": false,
+            "terminalObserved": false,
+            "flagsAByteAfter": 255,
+            "actionBufferWords": [],
+            "actionBufferPointerLongAfter": 16728320,
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "indexedTargetObserved": false,
+            "waitBackEdgeInstructionEntryCountObserved": 0,
+            "waitCompareEntryCountObserved": 0,
+            "callbackOrder": [
+              "getEntityAddress",
+              "inlineTerminator"
+            ],
+            "terminalBufferSnapshotCountObserved": 0
+          },
+          {
+            "id": "entity-actions-wait-loop",
+            "macro": "entityActionsWait",
+            "handlerAddress": 288738,
+            "selectorByte": 1,
+            "controlByte": 255,
+            "actscriptWaitTimerByteAfter": 0,
+            "actscriptWaitTimerTransferByteCount": 1,
+            "actscriptPointerTransferByteCount": 4,
+            "getEntityCallSiteAddress": 288740,
+            "waitCompareEntryCount": 2,
+            "waitLoopExitInjection": {
+              "programCounterAddress": 289092,
+              "backEdgeInstructionAddress": 289100,
+              "field": "actscriptPointer",
+              "value": 283132,
+              "afterCompareEntryCount": 2
+            },
+            "scriptCursorRamOffsetAfter": 10,
+            "actscriptPointerLongAfter": 283132,
+            "inlineTerminatorObserved": false,
+            "indexedCallbackObserved": true,
+            "terminalObserved": true,
+            "flagsAByteAfter": 159,
+            "actionBufferWords": [
+              34,
+              0,
+              10,
+              0,
+              7,
+              52
+            ],
+            "indexedActionBufferByteCount": 10,
+            "indexedActionBufferWordTransferByteCount": 2,
+            "terminalActionBufferIdlePayloadLong": 283132,
+            "terminalActionBufferIdlePayloadTransferByteCount": 4,
+            "actionBufferPointerLongAfter": 16728336,
+            "indexedActionTarget": "csc2D_8_faceRight",
+            "indexedActionTargetAddress": 288938,
+            "terminalCommandByte": 128,
+            "terminalSkippedByte": 0,
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "indexedTargetObserved": true,
+            "waitBackEdgeInstructionEntryCountObserved": 2,
+            "waitCompareEntryCountObserved": 2,
+            "callbackOrder": [
+              "getEntityAddress",
+              "indexedCallback",
+              "indexedTargetEntry",
+              "terminalEntry",
+              "waitCompareEntry",
+              "waitBackEdgeInstructionEntry",
+              "waitCompareEntry",
+              "harnessForcedWaitExit",
+              "waitBackEdgeInstructionEntry"
+            ],
+            "terminalBufferSnapshotCountObserved": 1
+          },
+          {
+            "id": "entity-actions-control-zero",
+            "macro": "entityActions",
+            "handlerAddress": 288738,
+            "selectorByte": 1,
+            "controlByte": 0,
+            "actscriptWaitTimerByteAfter": 0,
+            "actscriptWaitTimerTransferByteCount": 1,
+            "actscriptPointerTransferByteCount": 4,
+            "getEntityCallSiteAddress": 288740,
+            "waitCompareEntryCount": 0,
+            "waitLoopExitInjection": null,
+            "scriptCursorRamOffsetAfter": 10,
+            "actscriptPointerLongAfter": 16728320,
+            "inlineTerminatorObserved": false,
+            "indexedCallbackObserved": true,
+            "terminalObserved": true,
+            "flagsAByteAfter": 159,
+            "actionBufferWords": [
+              34,
+              0,
+              10,
+              0,
+              7,
+              52
+            ],
+            "indexedActionBufferByteCount": 10,
+            "indexedActionBufferWordTransferByteCount": 2,
+            "terminalActionBufferIdlePayloadLong": 283132,
+            "terminalActionBufferIdlePayloadTransferByteCount": 4,
+            "actionBufferPointerLongAfter": 16728336,
+            "indexedActionTarget": "csc2D_8_faceRight",
+            "indexedActionTargetAddress": 288938,
+            "terminalCommandByte": 128,
+            "terminalSkippedByte": 0,
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "indexedTargetObserved": true,
+            "waitBackEdgeInstructionEntryCountObserved": 0,
+            "waitCompareEntryCountObserved": 0,
+            "callbackOrder": [
+              "getEntityAddress",
+              "indexedCallback",
+              "indexedTargetEntry",
+              "terminalEntry"
+            ],
+            "terminalBufferSnapshotCountObserved": 1
+          }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "00404e686415370f": {
+      "type": "string"
+    },
+    "f0765dbf409c74f0": {
+      "type": "integer"
+    },
+    "7a33d6964f9f1ffb": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": [
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        }
+      ],
+      "additionalItems": false
+    },
+    "b06ef41586b782c4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programCounterAddress",
+        "backEdgeInstructionAddress",
+        "field",
+        "value",
+        "afterCompareEntryCount"
+      ],
+      "properties": {
+        "programCounterAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "backEdgeInstructionAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "field": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "value": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "afterCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "7cb541e84f226754": {
+      "type": "boolean"
+    },
+    "13b5075aa8be72bc": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 0,
+      "items": [],
+      "additionalItems": false
+    },
+    "5207ce4b0fbe859f": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "selectorByte",
+        "controlByte",
+        "actscriptWaitTimerByteAfter",
+        "actscriptWaitTimerTransferByteCount",
+        "actscriptPointerTransferByteCount",
+        "getEntityCallSiteAddress",
+        "waitCompareEntryCount",
+        "waitLoopExitInjection",
+        "scriptCursorRamOffsetAfter",
+        "actscriptPointerLongAfter",
+        "inlineTerminatorObserved",
+        "indexedCallbackObserved",
+        "terminalObserved",
+        "flagsAByteAfter",
+        "actionBufferWords",
+        "actionBufferPointerLongAfter",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "indexedTargetObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "waitCompareEntryCountObserved",
+        "callbackOrder",
+        "terminalBufferSnapshotCountObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "macro": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "controlByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "getEntityCallSiteAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/b06ef41586b782c4"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "inlineTerminatorObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedCallbackObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "terminalObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "flagsAByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferWords": {
+          "$ref": "#/$defs/13b5075aa8be72bc"
+        },
+        "actionBufferPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedTargetObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/7a33d6964f9f1ffb"
+        },
+        "terminalBufferSnapshotCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "bcde375ebd4cbacf": {
+      "type": "null"
+    },
+    "768c38e00ff75c05": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": [
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        }
+      ],
+      "additionalItems": false
+    },
+    "7cbce4a8428902f1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "selectorByte",
+        "controlByte",
+        "actscriptWaitTimerByteAfter",
+        "actscriptWaitTimerTransferByteCount",
+        "actscriptPointerTransferByteCount",
+        "getEntityCallSiteAddress",
+        "waitCompareEntryCount",
+        "waitLoopExitInjection",
+        "scriptCursorRamOffsetAfter",
+        "actscriptPointerLongAfter",
+        "inlineTerminatorObserved",
+        "indexedCallbackObserved",
+        "terminalObserved",
+        "flagsAByteAfter",
+        "actionBufferWords",
+        "actionBufferPointerLongAfter",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "indexedTargetObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "waitCompareEntryCountObserved",
+        "callbackOrder",
+        "terminalBufferSnapshotCountObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "macro": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "controlByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "getEntityCallSiteAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/bcde375ebd4cbacf"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "inlineTerminatorObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedCallbackObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "terminalObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "flagsAByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferWords": {
+          "$ref": "#/$defs/13b5075aa8be72bc"
+        },
+        "actionBufferPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedTargetObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/768c38e00ff75c05"
+        },
+        "terminalBufferSnapshotCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "690d9fc654326f18": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": [
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        }
+      ],
+      "additionalItems": false
+    },
+    "4899d9aeb4db101a": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "selectorByte",
+        "controlByte",
+        "actscriptWaitTimerByteAfter",
+        "actscriptWaitTimerTransferByteCount",
+        "actscriptPointerTransferByteCount",
+        "getEntityCallSiteAddress",
+        "waitCompareEntryCount",
+        "waitLoopExitInjection",
+        "scriptCursorRamOffsetAfter",
+        "actscriptPointerLongAfter",
+        "inlineTerminatorObserved",
+        "indexedCallbackObserved",
+        "terminalObserved",
+        "flagsAByteAfter",
+        "actionBufferWords",
+        "actionBufferPointerLongAfter",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "indexedTargetObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "waitCompareEntryCountObserved",
+        "callbackOrder",
+        "terminalBufferSnapshotCountObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "macro": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "controlByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "getEntityCallSiteAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/b06ef41586b782c4"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "inlineTerminatorObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedCallbackObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "terminalObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "flagsAByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferWords": {
+          "$ref": "#/$defs/13b5075aa8be72bc"
+        },
+        "actionBufferPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedTargetObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/690d9fc654326f18"
+        },
+        "terminalBufferSnapshotCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "282b0f87c83b06cc": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        }
+      ],
+      "additionalItems": false
+    },
+    "2fdc10378e63361d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "selectorByte",
+        "controlByte",
+        "actscriptWaitTimerByteAfter",
+        "actscriptWaitTimerTransferByteCount",
+        "actscriptPointerTransferByteCount",
+        "getEntityCallSiteAddress",
+        "waitCompareEntryCount",
+        "waitLoopExitInjection",
+        "scriptCursorRamOffsetAfter",
+        "actscriptPointerLongAfter",
+        "inlineTerminatorObserved",
+        "indexedCallbackObserved",
+        "terminalObserved",
+        "flagsAByteAfter",
+        "actionBufferWords",
+        "actionBufferPointerLongAfter",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "indexedTargetObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "waitCompareEntryCountObserved",
+        "callbackOrder",
+        "terminalBufferSnapshotCountObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "macro": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "controlByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "getEntityCallSiteAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/bcde375ebd4cbacf"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "inlineTerminatorObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedCallbackObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "terminalObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "flagsAByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferWords": {
+          "$ref": "#/$defs/13b5075aa8be72bc"
+        },
+        "actionBufferPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedTargetObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/282b0f87c83b06cc"
+        },
+        "terminalBufferSnapshotCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "1bbb82c81aa4649a": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": [
+        {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      ],
+      "additionalItems": false
+    },
+    "9ce41079237d6709": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": [
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        }
+      ],
+      "additionalItems": false
+    },
+    "5441449dc31d1dbe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "selectorByte",
+        "controlByte",
+        "actscriptWaitTimerByteAfter",
+        "actscriptWaitTimerTransferByteCount",
+        "actscriptPointerTransferByteCount",
+        "getEntityCallSiteAddress",
+        "waitCompareEntryCount",
+        "waitLoopExitInjection",
+        "scriptCursorRamOffsetAfter",
+        "actscriptPointerLongAfter",
+        "inlineTerminatorObserved",
+        "indexedCallbackObserved",
+        "terminalObserved",
+        "flagsAByteAfter",
+        "actionBufferWords",
+        "indexedActionBufferByteCount",
+        "indexedActionBufferWordTransferByteCount",
+        "terminalActionBufferIdlePayloadLong",
+        "terminalActionBufferIdlePayloadTransferByteCount",
+        "actionBufferPointerLongAfter",
+        "indexedActionTarget",
+        "indexedActionTargetAddress",
+        "terminalCommandByte",
+        "terminalSkippedByte",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "indexedTargetObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "waitCompareEntryCountObserved",
+        "callbackOrder",
+        "terminalBufferSnapshotCountObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "macro": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "controlByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "getEntityCallSiteAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/b06ef41586b782c4"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "inlineTerminatorObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedCallbackObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "terminalObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "flagsAByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferWords": {
+          "$ref": "#/$defs/1bbb82c81aa4649a"
+        },
+        "indexedActionBufferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "indexedActionBufferWordTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalActionBufferIdlePayloadLong": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalActionBufferIdlePayloadTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "indexedActionTarget": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "indexedActionTargetAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalCommandByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalSkippedByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedTargetObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/9ce41079237d6709"
+        },
+        "terminalBufferSnapshotCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "549c7aeb8b9158db": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": [
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        {
+          "$ref": "#/$defs/00404e686415370f"
+        }
+      ],
+      "additionalItems": false
+    },
+    "8bc51cbd26bebce9": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddress",
+        "selectorByte",
+        "controlByte",
+        "actscriptWaitTimerByteAfter",
+        "actscriptWaitTimerTransferByteCount",
+        "actscriptPointerTransferByteCount",
+        "getEntityCallSiteAddress",
+        "waitCompareEntryCount",
+        "waitLoopExitInjection",
+        "scriptCursorRamOffsetAfter",
+        "actscriptPointerLongAfter",
+        "inlineTerminatorObserved",
+        "indexedCallbackObserved",
+        "terminalObserved",
+        "flagsAByteAfter",
+        "actionBufferWords",
+        "indexedActionBufferByteCount",
+        "indexedActionBufferWordTransferByteCount",
+        "terminalActionBufferIdlePayloadLong",
+        "terminalActionBufferIdlePayloadTransferByteCount",
+        "actionBufferPointerLongAfter",
+        "indexedActionTarget",
+        "indexedActionTargetAddress",
+        "terminalCommandByte",
+        "terminalSkippedByte",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "indexedTargetObserved",
+        "waitBackEdgeInstructionEntryCountObserved",
+        "waitCompareEntryCountObserved",
+        "callbackOrder",
+        "terminalBufferSnapshotCountObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "macro": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "controlByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptWaitTimerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "getEntityCallSiteAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitLoopExitInjection": {
+          "$ref": "#/$defs/bcde375ebd4cbacf"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actscriptPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "inlineTerminatorObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedCallbackObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "terminalObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "flagsAByteAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferWords": {
+          "$ref": "#/$defs/1bbb82c81aa4649a"
+        },
+        "indexedActionBufferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "indexedActionBufferWordTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalActionBufferIdlePayloadLong": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalActionBufferIdlePayloadTransferByteCount": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "actionBufferPointerLongAfter": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "indexedActionTarget": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "indexedActionTargetAddress": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalCommandByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "terminalSkippedByte": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "indexedTargetObserved": {
+          "$ref": "#/$defs/7cb541e84f226754"
+        },
+        "waitBackEdgeInstructionEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "waitCompareEntryCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/549c7aeb8b9158db"
+        },
+        "terminalBufferSnapshotCountObserved": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        }
+      }
+    },
+    "0c6dd1883d45b6e5": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": [
+        {
+          "$ref": "#/$defs/5207ce4b0fbe859f"
+        },
+        {
+          "$ref": "#/$defs/7cbce4a8428902f1"
+        },
+        {
+          "$ref": "#/$defs/4899d9aeb4db101a"
+        },
+        {
+          "$ref": "#/$defs/2fdc10378e63361d"
+        },
+        {
+          "$ref": "#/$defs/5441449dc31d1dbe"
+        },
+        {
+          "$ref": "#/$defs/8bc51cbd26bebce9"
+        }
+      ],
+      "additionalItems": false
+    },
+    "8bd7daa16eebcfeb": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system",
+        "core",
+        "id",
+        "mapTest",
+        "recordOrder",
+        "records"
+      ],
+      "properties": {
+        "system": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "core": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "id": {
+          "$ref": "#/$defs/00404e686415370f"
+        },
+        "mapTest": {
+          "$ref": "#/$defs/f0765dbf409c74f0"
+        },
+        "recordOrder": {
+          "$ref": "#/$defs/7a33d6964f9f1ffb"
+        },
+        "records": {
+          "$ref": "#/$defs/0c6dd1883d45b6e5"
+        }
+      }
+    }
+  }
+}

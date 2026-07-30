@@ -4580,7 +4580,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-placement/normal-story-reachability",
         "map-script-entity-placement/full-animation-visibility-presentation",
         "map-script-entity-placement/collision-pathfinding-persistence",
-        "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
+        "map-script-entity-action-bridge/normal-story-reachability",
+        "map-script-entity-action-bridge/full-action-motion-collision-effects",
+        "map-script-entity-action-bridge/presentation-timing-persistence",
         "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
         "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
         "map-script-screen-presentation/runtime-effects-matrix",
@@ -4599,8 +4601,15 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-placement/full-animation-visibility-presentation",
         "map-script-entity-placement/collision-pathfinding-persistence",
     ]
+    assert expected["entityActionBridgeCommandFacts"].pop("runtimeQuestions") == [
+        "map-script-entity-action-bridge/normal-story-reachability",
+        "map-script-entity-action-bridge/full-action-motion-collision-effects",
+        "map-script-entity-action-bridge/presentation-timing-persistence",
+    ]
+    # The prior digest retained this accepted one-question bridge queue; it is now
+    # explicitly excluded with the other H3 handoff queues.
     assert _canonical_digest(expected) == (
-        "b102e5518839cdee9822b925c2582033bea84245d301e16e4673485b69d2f897"
+        "c4244b01cf747dfde88845132aca2c37bf16470d45da51523bf3123e09325f15"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4611,8 +4620,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del output_schema["properties"]["entityPlacementCommandFacts"]["allOf"][1]["properties"][
         "runtimeQuestions"
     ]
+    del output_schema["properties"]["entityActionBridgeCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"]
     assert _canonical_digest(output_schema) == (
-        "b621d7e980e214073f2fdd6215f9907c9c1a42762fed2e9472fa00ca1206d3b0"
+        "6c061eca031cc11972733ca07817110b92be1074df5aa56d9b123ac5fa2fd393"
     )
 
     fixture_schema = deepcopy(
@@ -4625,8 +4637,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del fixture_schema["properties"]["expected"]["properties"]["entityPlacementCommandFacts"][
         "allOf"
     ][1]["properties"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"][
+        "entityActionBridgeCommandFacts"
+    ]["allOf"][1]["const"]["runtimeQuestions"]
     assert _canonical_digest(fixture_schema) == (
-        "1844d0522cec9d59fc71f80f8fdef9fd295ba41b7e985495e4d2887d3e4d7538"
+        "9626cc95e961011e4ce57865ade474022e3439cf09599914acb5b1b8956d1165"
     )
 
 
@@ -5889,7 +5904,9 @@ def test_map_entity_action_bridge_contract_matches_complete_golden_fixture(
         "inlineTerminatorWord": 32896,
     }
     assert actual["runtimeQuestions"] == [
-        "map-script-entity-action-bridge/runtime-effects-reachability-matrix"
+        "map-script-entity-action-bridge/normal-story-reachability",
+        "map-script-entity-action-bridge/full-action-motion-collision-effects",
+        "map-script-entity-action-bridge/presentation-timing-persistence",
     ]
 
 

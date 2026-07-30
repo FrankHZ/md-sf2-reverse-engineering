@@ -286,7 +286,9 @@ ENTITY_ACTION_BRIDGE_HANDLER_NAMES = tuple(
     dict.fromkeys(ENTITY_ACTION_BRIDGE_HANDLER_BY_MACRO.values())
 )
 ENTITY_ACTION_BRIDGE_RUNTIME_QUESTIONS = [
-    "map-script-entity-action-bridge/runtime-effects-reachability-matrix"
+    "map-script-entity-action-bridge/normal-story-reachability",
+    "map-script-entity-action-bridge/full-action-motion-collision-effects",
+    "map-script-entity-action-bridge/presentation-timing-persistence",
 ]
 
 # These source labels delimit command forms whose handlers access entity fields,

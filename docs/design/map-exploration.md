@@ -158,10 +158,16 @@ those source facts are distinct from csc2D's two-byte interpreted-command read. 
 csc2D handler guards, including the csc2D terminal chunk, resolved tail-transfer target, branch/call
 order, source constant use site, and zero-inclusive
 direct/effective caller identities, remain part of the import boundary. The joins to the map-event and
-entity-action fixtures are provenance records only. A remake MAY define its own scripting/action IR,
-but this contract establishes neither the control-byte meaning, payload interpretation, entity effect,
-reachability, timing, persistence, collision, nor presentation; those remain in
-`map-script-entity-action-bridge/runtime-effects-reachability-matrix`.
+entity-action fixtures are provenance records only. The bounded H3 contract
+`sf2-map-entity-action-bridge-runtime-v1` at
+`tests/fixtures/h3/map-entity-action-bridge-v1.json` records all six aliases in one session: exact
+handler/callback PCs, source-shaped entity field and cursor results, the csc14 inline-terminator hook,
+the csc2D indexed target and terminal entry, and the exact csc2D buffer record at the parsed PC
+immediately after its idle-payload write. That snapshot is a write-time record, while its global
+buffer-pointer and entity-pointer fields are post-handler observations; an original-fidelity adapter
+MUST preserve that observation boundary rather than treating the snapshot as persistent action state.
+A remake MAY define its own scripting/action IR, but normal-story reachability, full action/motion/
+collision effects, natural timing, persistence, and presentation remain Unknown.
 Map-script imports MUST separately retain the eight source-named forms `hide`, `startEntity`,
 `stopEntity`, `waitIdle`, `setSprite`, `setPriority`, `removeShadow`, and `setSize` in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
