@@ -860,7 +860,7 @@ normal-story reachability, save persistence, roster capacity, list capacity, or 
 
 ## Confirmed Map-Script Active-Party/AI/Follower Command Family
 
-Evidence date: 2026-07-27.
+Evidence date: 2026-07-30.
 
 **Confirmed:** the same `sf2-map-script-engine-static-v1` field
 `forceStateCommandFacts.activePartyCommandFacts` retains the adjacent source-named primary forms
@@ -1338,10 +1338,24 @@ totals. The source-identity joins are only `code/common/stats/gameflags.asm` (`C
 `CF54DD1628DB83CA94F4AACA9E854A8356BB2658A5396A32950F5F31219518CA`); no sibling fixture payload is
 copied.
 
-**Unknown:** `story-state/branch-prompt-persistence-matrix` is the one grouped H3 queue. A shared
-runtime launch must observe the branch target/cursor result, prompt return/value handling, and resulting
-flag persistence across representative caller states. This static slice does not claim normal-story
-reachability, save persistence, flag lifecycle, UI presentation, or a hardware effect.
+**Confirmed (H3):** `sf2-story-state-runtime-v1` runs ten exact handler-local cases in one Map Test 0
+BizHawk launch through a session-only `RunMapSetupInitFunction` trampoline. The two
+`jumpIfFlagSet` and two `jumpIfFlagClear` records retain both flag-result polarities and their target
+replacement versus four-byte cursor-skip outcomes. `setF` and `clearF` write the observed GAME_FLAGS
+bit, both `yesNo` return sides write/clear flag 89 then call `Sleep` with D0 word 10, and
+`setStoryFlag` observes both base `400` and the word-wrap boundary to flag 0. Every record retains the
+chronological parsed A6 use/call trace and checks the final bit from the parsed GAME_FLAGS base, span,
+and mask plan. This is bounded handler-local mutation evidence, not a normal-story path or save/load
+claim.
+
+**Unknown:** `story-state/normal-story-reachability` — which original caller/save combinations reach
+these source forms during normal progression.
+
+**Unknown:** `story-state/save-load-lifecycle-persistence` — persistence order across the original
+save/load lifecycle, beyond the session-local state replay used to share the ten cases.
+
+**Unknown:** `story-state/player-visible-yes-no-presentation-timing` — the original prompt's visible
+choice presentation and timing; the controlled prompt-return seam is not UI evidence.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` forms
@@ -1351,7 +1365,10 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 listing addresses above; and the US-ROM-backed extractor. Reproduce with
 `uv run sf2 h2 map-script-engine`; observed result is
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
-`expected.storyStateCommandFacts`.
+`expected.storyStateCommandFacts`. Reproduce the bounded runtime matrix with
+`uv run sf2 h3 story-state --timeout-seconds 180`; its fixture is
+`tests/fixtures/h3/story-state-v1.json`, ID `sf2-story-state-runtime-v1`, observed by
+`tools/bizhawk/story_state_observer.lua` and checked by `src/sf2tool/h3/story_state.py`.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm`,

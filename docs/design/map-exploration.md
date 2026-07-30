@@ -265,9 +265,11 @@ Story-state imports MUST preserve the seven source forms `jumpIfFlagSet`, `jumpI
 aliases do not erase the primary form merely because its current source-site count is zero. An importer
 MUST preserve conditional flag polarity, direct set/clear operations, the yes/no result-to-flag-89
 mapping, battle-unlock translation `flag = 400 + battleIndex`, branch target/cursor shape, and direct
-versus resolved service target identity. These are command-graph facts; global story ordering, save
-persistence, flag lifecycle, prompt presentation, and hardware effect remain outside the importer
-contract.
+versus resolved service target identity. The bounded ten-case H3 fixture additionally preserves each
+handler-local A6/call chronology and the final GAME_FLAGS bit for both conditional polarities, both
+aliases, both yes/no outcomes, and battle-unlock base/wrap inputs. These are command-graph and
+session-local mutation facts; global story ordering, save-load persistence, and player-visible prompt
+presentation/timing remain outside the importer contract.
 Map-script imports MUST retain `setBlocks` and `setBlocksVar` as two distinct source command forms,
 not substitute a guessed map-edit operation. Each record MUST retain its two-byte opcode, six
 source-labeled one-byte fields (`source x`, `source y`, `width`, `height`, `destination x`,

@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-30，研究索引有 1,574 条 confirmed finding、74 个 H2 fixture、69 个 H3 fixture
-和 2,295 个地址绑定；其中 1,537 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
+截至 2026-07-30，研究索引有 1,575 条 confirmed finding、74 个 H2 fixture、70 个 H3 fixture
+和 2,296 个地址绑定；其中 1,538 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
 地址域校验。music rail 还静态闭合 29 个 byte-emitting macro、39 个 song entry、321 个 channel
 label 和 39,290 次 macro invocation，并将 `F8`–`FF`/`F0`/`70` 接到五个 YM/PSG parser 与共享
 loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro 调用的声道角色兼容性为
@@ -85,7 +85,8 @@ slot 包含 82 个有效 opcode 和 8 个 filler，归并为 83 个唯一 handle
 剧情状态面也已结构化：51 条条件读取只涉及 flag 6/8/29/71/76/89；53 条直接写入、22 条
 yes/no 结果写入和 20 条 battle-unlock 写入覆盖 56 个 flag、89 个 program，读写域仅在
 71/76/89 相交。`yesNo` 的返回 0=set/非零=clear 与 `setStoryFlag n` 写 `400+n` 都由 handler
-源码绑定；实际存档路径和持久化顺序仍不从静态图推断。
+源码绑定；单启动十案例 H3 进一步确认 handler-local 分支/cursor、flag bit 写入、yes/no 两侧及
+battle-unlock base/wrap 边界；正常剧情可达性、save/load 持久化与可见 yes/no 时序仍保持 Unknown。
 因此 **1,690/1,690 data ASM 已全部进入 H2 inventory**。domain-aware indexed
 data-file reach 为 1,017/1,690（60.18%）：980 个文件由 68000 H1 符号绑定，另 37 个 song source
 由 Z80 pointer table、bank-relative 地址和 ROM 物理偏移双重绑定。H2 的 25 个 ROM

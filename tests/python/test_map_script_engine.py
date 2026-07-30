@@ -2934,7 +2934,9 @@ def test_story_state_contract_matches_complete_golden_and_caller_identities(
         },
     }
     assert actual["runtimeQuestions"] == [
-        "story-state/branch-prompt-persistence-matrix"
+        "story-state/normal-story-reachability",
+        "story-state/save-load-lifecycle-persistence",
+        "story-state/player-visible-yes-no-presentation-timing",
     ]
 
 
@@ -4565,7 +4567,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "palette-fade-and-vdp-visible-presentation",
         "force-state/roster-death-persistence-visible-outcomes",
         "force-state/active-party-ai-follower-runtime-matrix",
-        "story-state/branch-prompt-persistence-matrix",
+        "story-state/normal-story-reachability",
+        "story-state/save-load-lifecycle-persistence",
+        "story-state/player-visible-yes-no-presentation-timing",
         "map-block-mutation/runtime-effects-matrix",
         "entity-population-reload/runtime-effects-matrix",
         "map-lifecycle/layout-collision-pathfinding-effects",
@@ -4605,6 +4609,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-placement/full-animation-visibility-presentation",
         "map-script-entity-placement/collision-pathfinding-persistence",
     ]
+    assert expected["storyStateCommandFacts"].pop("runtimeQuestions") == [
+        "story-state/normal-story-reachability",
+        "story-state/save-load-lifecycle-persistence",
+        "story-state/player-visible-yes-no-presentation-timing",
+    ]
     assert expected["entityActionBridgeCommandFacts"].pop("runtimeQuestions") == [
         "map-script-entity-action-bridge/normal-story-reachability",
         "map-script-entity-action-bridge/full-action-motion-collision-effects",
@@ -4624,11 +4633,14 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     ]
     # H3 queues are explicitly excluded so the canonical static digest remains stable.
     assert _canonical_digest(expected) == (
-        "5b10957b26fb21f0bc5722fd5f010a3f561cecb00268e73fc37940f9568e1142"
+        "c9f38636a418c1662971f2bb9a28bc7dda2af63bfb1f3ab69f72b6c75559b9c2"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
     del output_schema["properties"]["runtimeQuestions"]
+    del output_schema["properties"]["storyStateCommandFacts"]["allOf"][1]["properties"][
+        "runtimeQuestions"
+    ]
     del output_schema["properties"]["mapLifecycleCommandFacts"]["allOf"][1]["properties"][
         "runtimeQuestions"
     ]
@@ -4650,14 +4662,23 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
         "required"
     ].remove("runtimeQuestions")
+    del output_schema["definitions"]["storyStateCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    output_schema["definitions"]["storyStateCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
     assert _canonical_digest(output_schema) == (
-        "0656244f672bdbaceae9cdccf65e2431cde64335f1f2b9b63a297760ae4a7ad7"
+        "c8672aaaa7995a1ed0040dfc2fe08ff7489e22c08ac0da1aba0d14031d3a457b"
     )
 
     fixture_schema = deepcopy(
         load_json(repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"))
     )
     del fixture_schema["properties"]["expected"]["properties"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"][
+        "storyStateCommandFacts"
+    ]["allOf"][1]["properties"]["runtimeQuestions"]
     del fixture_schema["properties"]["expected"]["properties"]["mapLifecycleCommandFacts"][
         "allOf"
     ][1]["properties"]["runtimeQuestions"]
@@ -4679,8 +4700,14 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
         "required"
     ].remove("runtimeQuestions")
+    del fixture_schema["definitions"]["storyStateCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    fixture_schema["definitions"]["storyStateCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
     assert _canonical_digest(fixture_schema) == (
-        "583c8b51021b070f50739e246c758b7072c5e847e99e1755d20ebde11b2d6739"
+        "8714f143cb63a358c04d947e55f46c1f3e0ec1a993120f79a219e76ff6e74e04"
     )
 
 

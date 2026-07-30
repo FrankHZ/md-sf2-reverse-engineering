@@ -128,6 +128,7 @@ from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
 from sf2tool.h3.stat_clamps import verify_stat_clamp_boundaries
+from sf2tool.h3.story_state import verify_story_state
 from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
 from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.harness import verify
@@ -757,6 +758,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_sound_timing)
     h3_sound_timing.add_argument("--timeout-seconds", type=int, default=120)
+    h3_story_state = h3_commands.add_parser(
+        "story-state", help="verify bounded map-script story-state flag behavior"
+    )
+    _add_local_paths(h3_story_state)
+    h3_story_state.add_argument("--timeout-seconds", type=int, default=180)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -1636,6 +1642,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "sound-timing":
         print_record(
             verify_sound_timing(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "story-state":
+        print_record(
+            verify_story_state(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

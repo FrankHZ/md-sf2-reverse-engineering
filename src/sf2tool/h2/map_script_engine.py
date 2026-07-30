@@ -147,7 +147,11 @@ STORY_STATE_HANDLER_NAMES = (
     "csc11_promptYesNoForStoryFlow",
     "csc13_setStoryFlag",
 )
-STORY_STATE_RUNTIME_QUESTIONS = ["story-state/branch-prompt-persistence-matrix"]
+STORY_STATE_RUNTIME_QUESTIONS = [
+    "story-state/normal-story-reachability",
+    "story-state/save-load-lifecycle-persistence",
+    "story-state/player-visible-yes-no-presentation-timing",
+]
 
 # Source labels describe the emitted six-byte block-copy operand payload without
 # assigning persistence, collision, or visible presentation semantics.
