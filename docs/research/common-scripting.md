@@ -180,7 +180,7 @@ is fixture ID `sf2-map-script-engine-static-v1`, transition field `transitionCom
 
 ## Confirmed Map-Script Camera-Control Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-29.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.mapCameraControlCommandFacts` retains the three source-named macro forms in source order:
@@ -216,10 +216,32 @@ maps hold the one calls. The effective `SetCameraDestination` named section has 
 constants map to 384 before its `SetViewDestination` call. The parsed multiplication records a
 source relationship only; it does not establish a coordinate unit or display result.
 
-**Unknown:** `map-script-camera-control/runtime-effects-matrix` is the sole grouped H3 queue. One
-shared launch must determine target-selection meaning, destination interpretation and units, speed
-effect, scroll/wait timing, normal-story reachability, and VDP-visible presentation. This static slice
-does not promote macro or state-symbol names into any of those runtime outcomes.
+**Confirmed (H3):** `sf2-map-camera-control-runtime-v1` runs seven cases from one BizHawk launch
+through the `RunMapSetupInitFunction` session-only seam. The `$FF80` word case takes the guarded
+negative direct-write branch and leaves `VIEW_TARGET_ENTITY` byte `$80` without reaching the
+`ENTITY_INDEX_LIST` lookup. The word `$0002` takes the nonnegative nonnegative-byte lookup branch at
+H1 `$46C4E` and copies its seeded index-2 byte `$2A`; `$00E1` takes the nonnegative negative-byte
+path, applies the source `ENTITY_ENEMY_INDEX_DIFFERENCE` use, reaches index 129, and copies seeded
+byte `$2B`. These are bounded instruction/state observations; source labels do not establish a
+player-facing target-selection interpretation.
+
+**Confirmed (H3):** the destination cases feed source words `(1, 2)` and `(257, 2)` to
+`csc32_setCameraDestInTiles`. In source call order they observe its H1 `$46512` direct alias call,
+the resolved `SetCameraDestination` entry, its H1 `$2349E` `SetViewDestination` call/entry, then H1
+`$46518` `WaitForViewScrollEnd` call/entry before the handler return. The observed transferred D0/D1
+words are `(384, 768)` and `(33152, 768)`, respectively, and the handler leaves
+`VIEW_TARGET_ENTITY` byte `$FF`. The two source-given speed words 8 and 64 each reach
+`VIEW_SCROLLING_SPEED` unchanged before return. These observations confirm the guarded branch,
+word-transfer, call-order, and bounded wait-completion facts, not coordinate units, motion, or VDP
+presentation.
+
+### Runtime questions — map-script camera control
+
+**Unknown:** normal-story reachability of these seven session-only inputs, including which original
+script contexts select the observed branch/data combinations.
+
+**Unknown:** VDP and player-visible camera behavior, including scroll trajectory, composition, timing,
+and the visible meaning of the source-named target/destination/speed state.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` macro definitions;
@@ -230,9 +252,14 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `WaitForViewScrollEnd`/`SetViewDestination` owner files recorded in the fixture source-identity joins.
 The input identity is the local US ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is
+`uv run sf2 h2 map-script-engine`; observed static result is
 `tests/fixtures/h2/map-script-engine-static-v1.json`, fixture ID
-`sf2-map-script-engine-static-v1`, field `expected.mapCameraControlCommandFacts`.
+`sf2-map-script-engine-static-v1`, field `expected.mapCameraControlCommandFacts`. Reproduce the H3
+matrix with `uv run sf2 h3 map-camera-control`; its source-derived fixture is
+`tests/fixtures/h3/map-camera-control-v1.json`, fixture ID
+`sf2-map-camera-control-runtime-v1`, observed by
+`tools/bizhawk/map_camera_control_observer.lua` and checked by
+`src/sf2tool/h3/map_camera_control.py`.
 
 ## Confirmed Map-Script Entity-Placement Command Family
 

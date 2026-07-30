@@ -157,7 +157,8 @@
             "map-interaction-trigger/full-layout-collision-pathfinding-effects",
             "map-interaction-trigger/presentation-audio-timing-hardware-effects",
             "map-interaction-trigger/persistence-story-reachability",
-            "map-script-camera-control/runtime-effects-matrix",
+            "map-script-camera-control/normal-story-reachability",
+            "map-script-camera-control/vdp-player-visible-behavior",
             "map-script-entity-placement/runtime-effects-reachability-matrix",
             "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
             "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
@@ -31664,8 +31665,11 @@
                 },
                 "runtimeQuestions": {
                   "const": [
-                    "map-script-camera-control/runtime-effects-matrix"
-                  ]
+                    "map-script-camera-control/normal-story-reachability",
+                    "map-script-camera-control/vdp-player-visible-behavior"
+                  ],
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               }
             }
@@ -60435,8 +60439,8 @@
           "items": {
             "type": "string"
           },
-          "minItems": 1,
-          "maxItems": 1
+          "minItems": 2,
+          "maxItems": 2
         }
       }
     },

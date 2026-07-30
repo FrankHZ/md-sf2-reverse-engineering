@@ -241,7 +241,8 @@ MAP_CAMERA_CONTROL_DIRECT_TARGETS = (
     "WaitForViewScrollEnd",
 )
 MAP_CAMERA_CONTROL_RUNTIME_QUESTIONS = [
-    "map-script-camera-control/runtime-effects-matrix"
+    "map-script-camera-control/normal-story-reachability",
+    "map-script-camera-control/vdp-player-visible-behavior",
 ]
 
 # These source labels identify four adjacent command forms whose handlers read

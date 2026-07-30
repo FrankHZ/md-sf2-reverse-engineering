@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-camera-control-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "mapTestIndex": 0,
+  "observationBoundary": "Seven cases replay the debug Map Test 0 prompt from one shared in-memory core state. A deterministic session-only copy of the verified ROM replaces the existing RunMapSetupInitFunction indirect call with the verified 16-byte FF-padding trampoline. The trampoline sets A6 to a RAM-owned word stream and JSRs one unmodified camera handler; the original disk ROM is re-hashed unchanged before launch. Lua writes only handler operands, ENTITY_INDEX_LIST test bytes, VIEW_TARGET_ENTITY, and VIEW_SCROLLING_SPEED. It observes exact target-lookup, destination-service, SetViewDestination, wait, and post-handler callbacks plus post-handler state. The matrix confirms bounded control-flow/state results only; it does not establish normal-story reachability or VDP/player-visible camera behavior.",
+  "runtimeQuestions": [
+    "map-script-camera-control/normal-story-reachability",
+    "map-script-camera-control/vdp-player-visible-behavior"
+  ],
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "staticContractFixture": "tests/fixtures/h2/map-script-engine-static-v1.json",
+  "maxFrames": 7200,
+  "function": {
+    "entryAddress": 292092,
+    "setCameraEntityHandlerAddress": 289848,
+    "setCameraDestinationHandlerAddress": 288006,
+    "cameraSpeedHandlerAddress": 288512,
+    "targetEntityLookupAddress": 289870,
+    "setCameraDestinationCallSiteAddress": 288018,
+    "waitForViewScrollEndCallSiteAddress": 288024,
+    "setCameraDestinationServiceAddress": 144526,
+    "setViewDestinationAddress": 13994,
+    "setViewDestinationCallSiteAddress": 144542,
+    "waitForViewScrollEndAddress": 18184
+  },
+  "ram": {
+    "entityIndexListAddress": 16757056,
+    "viewTargetEntityAddress": 16754732,
+    "viewScrollingSpeedAddress": 16757140
+  },
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4DF900FF4004207900FF40004E904E75",
+    "postHandlerAddress": 65430,
+    "ramInputAddress": 16728064
+  },
+  "cases": [
+    {
+      "id": "target-negative-direct",
+      "kind": "target",
+      "targetMode": "negative-direct",
+      "operandWord": 65408,
+      "entityIndexListByteSeed": null,
+      "viewTargetEntityByteSeed": 90,
+      "expected": {
+        "id": "target-negative-direct",
+        "kind": "target",
+        "targetMode": "negative-direct",
+        "handlerAddress": 289848,
+        "operandWord": 65408,
+        "targetEntityLookupAddress": null,
+        "entityIndexListLookupIndex": null,
+        "viewTargetEntityByteAfter": 128
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "entityIndexListLookupExecuted": false,
+        "callbackOrder": []
+      }
+    },
+    {
+      "id": "target-ally-index",
+      "kind": "target",
+      "targetMode": "ally-index",
+      "operandWord": 2,
+      "entityIndexListByteSeed": 42,
+      "viewTargetEntityByteSeed": 90,
+      "expected": {
+        "id": "target-ally-index",
+        "kind": "target",
+        "targetMode": "ally-index",
+        "handlerAddress": 289848,
+        "operandWord": 2,
+        "targetEntityLookupAddress": 289870,
+        "entityIndexListLookupIndex": 2,
+        "viewTargetEntityByteAfter": 42
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "entityIndexListLookupExecuted": true,
+        "callbackOrder": [
+          "entityIndexListLookup"
+        ]
+      }
+    },
+    {
+      "id": "target-enemy-index",
+      "kind": "target",
+      "targetMode": "enemy-index",
+      "operandWord": 225,
+      "entityIndexListByteSeed": 43,
+      "viewTargetEntityByteSeed": 90,
+      "expected": {
+        "id": "target-enemy-index",
+        "kind": "target",
+        "targetMode": "enemy-index",
+        "handlerAddress": 289848,
+        "operandWord": 225,
+        "targetEntityLookupAddress": 289870,
+        "entityIndexListLookupIndex": 129,
+        "viewTargetEntityByteAfter": 43
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "entityIndexListLookupExecuted": true,
+        "callbackOrder": [
+          "entityIndexListLookup"
+        ]
+      }
+    },
+    {
+      "id": "destination-one-two",
+      "kind": "destination",
+      "inputWords": [
+        1,
+        2
+      ],
+      "viewTargetEntityByteSeed": 90,
+      "expected": {
+        "id": "destination-one-two",
+        "kind": "destination",
+        "handlerAddress": 288006,
+        "setCameraDestinationCallSiteAddress": 288018,
+        "waitForViewScrollEndCallSiteAddress": 288024,
+        "setCameraDestinationServiceAddress": 144526,
+        "setViewDestinationAddress": 13994,
+        "setViewDestinationCallSiteAddress": 144542,
+        "inputWords": [
+          1,
+          2
+        ],
+        "setViewDestinationD0Word": 384,
+        "setViewDestinationD1Word": 768,
+        "viewTargetEntityByteAfter": 255
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "setCameraDestinationCallObserved": true,
+        "setViewDestinationCallObserved": true,
+        "waitForViewScrollEndCallObserved": true,
+        "waitCompletedBeforeHandlerReturn": true,
+        "callbackOrder": [
+          "setCameraDestinationCall",
+          "setCameraDestinationService",
+          "setViewDestinationCall",
+          "setViewDestination",
+          "waitForViewScrollEndCall",
+          "waitForViewScrollEnd"
+        ]
+      }
+    },
+    {
+      "id": "destination-word-wrap",
+      "kind": "destination",
+      "inputWords": [
+        257,
+        2
+      ],
+      "viewTargetEntityByteSeed": 90,
+      "expected": {
+        "id": "destination-word-wrap",
+        "kind": "destination",
+        "handlerAddress": 288006,
+        "setCameraDestinationCallSiteAddress": 288018,
+        "waitForViewScrollEndCallSiteAddress": 288024,
+        "setCameraDestinationServiceAddress": 144526,
+        "setViewDestinationAddress": 13994,
+        "setViewDestinationCallSiteAddress": 144542,
+        "inputWords": [
+          257,
+          2
+        ],
+        "setViewDestinationD0Word": 33152,
+        "setViewDestinationD1Word": 768,
+        "viewTargetEntityByteAfter": 255
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "setCameraDestinationCallObserved": true,
+        "setViewDestinationCallObserved": true,
+        "waitForViewScrollEndCallObserved": true,
+        "waitCompletedBeforeHandlerReturn": true,
+        "callbackOrder": [
+          "setCameraDestinationCall",
+          "setCameraDestinationService",
+          "setViewDestinationCall",
+          "setViewDestination",
+          "waitForViewScrollEndCall",
+          "waitForViewScrollEnd"
+        ]
+      }
+    },
+    {
+      "id": "speed-eight",
+      "kind": "speed",
+      "operandWord": 8,
+      "viewScrollingSpeedWordSeed": 0,
+      "expected": {
+        "id": "speed-eight",
+        "kind": "speed",
+        "handlerAddress": 288512,
+        "operandWord": 8,
+        "viewScrollingSpeedWordAfter": 8
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackOrder": []
+      }
+    },
+    {
+      "id": "speed-sixty-four",
+      "kind": "speed",
+      "operandWord": 64,
+      "viewScrollingSpeedWordSeed": 0,
+      "expected": {
+        "id": "speed-sixty-four",
+        "kind": "speed",
+        "handlerAddress": 288512,
+        "operandWord": 64,
+        "viewScrollingSpeedWordAfter": 64
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackOrder": []
+      }
+    }
+  ]
+}

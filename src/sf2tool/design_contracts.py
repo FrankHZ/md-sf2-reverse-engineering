@@ -22,6 +22,9 @@ CONTRACTS = {
         "tests/fixtures/h3/map-interaction-trigger-v1.json": (
             "sf2-map-interaction-trigger-runtime-v1"
         ),
+        "tests/fixtures/h3/map-camera-control-v1.json": (
+            "sf2-map-camera-control-runtime-v1"
+        ),
     },
     "docs/design/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (

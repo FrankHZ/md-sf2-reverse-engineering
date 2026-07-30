@@ -1,0 +1,771 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "emulator",
+    "mapTestIndex",
+    "observationBoundary",
+    "runtimeQuestions",
+    "sharedHarnessFixture",
+    "staticContractFixture",
+    "maxFrames",
+    "function",
+    "ram",
+    "instrumentation",
+    "cases"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-camera-control-runtime-v1"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "const": "2.11.1"
+        },
+        "core": {
+          "const": "Genesis Plus GX"
+        }
+      }
+    },
+    "mapTestIndex": {
+      "const": 0
+    },
+    "observationBoundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "const": [
+        "map-script-camera-control/normal-story-reachability",
+        "map-script-camera-control/vdp-player-visible-behavior"
+      ]
+    },
+    "sharedHarnessFixture": {
+      "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+    },
+    "staticContractFixture": {
+      "const": "tests/fixtures/h2/map-script-engine-static-v1.json"
+    },
+    "maxFrames": {
+      "const": 7200
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryAddress",
+        "setCameraEntityHandlerAddress",
+        "setCameraDestinationHandlerAddress",
+        "cameraSpeedHandlerAddress",
+        "targetEntityLookupAddress",
+        "setCameraDestinationCallSiteAddress",
+        "waitForViewScrollEndCallSiteAddress",
+        "setCameraDestinationServiceAddress",
+        "setViewDestinationAddress",
+        "setViewDestinationCallSiteAddress",
+        "waitForViewScrollEndAddress"
+      ],
+      "properties": {
+        "entryAddress": {
+          "const": 292092
+        },
+        "setCameraEntityHandlerAddress": {
+          "const": 289848
+        },
+        "setCameraDestinationHandlerAddress": {
+          "const": 288006
+        },
+        "cameraSpeedHandlerAddress": {
+          "const": 288512
+        },
+        "targetEntityLookupAddress": {
+          "const": 289870
+        },
+        "setCameraDestinationCallSiteAddress": {
+          "const": 288018
+        },
+        "waitForViewScrollEndCallSiteAddress": {
+          "const": 288024
+        },
+        "setCameraDestinationServiceAddress": {
+          "const": 144526
+        },
+        "setViewDestinationAddress": {
+          "const": 13994
+        },
+        "setViewDestinationCallSiteAddress": {
+          "const": 144542
+        },
+        "waitForViewScrollEndAddress": {
+          "const": 18184
+        }
+      }
+    },
+    "ram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityIndexListAddress",
+        "viewTargetEntityAddress",
+        "viewScrollingSpeedAddress"
+      ],
+      "properties": {
+        "entityIndexListAddress": {
+          "const": 16757056
+        },
+        "viewTargetEntityAddress": {
+          "const": 16754732
+        },
+        "viewScrollingSpeedAddress": {
+          "const": 16757140
+        }
+      }
+    },
+    "instrumentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callSiteAddress",
+        "callSiteOriginalHex",
+        "callSitePatchedHex",
+        "stubAddress",
+        "stubOriginalHex",
+        "stubHex",
+        "postHandlerAddress",
+        "ramInputAddress"
+      ],
+      "properties": {
+        "callSiteAddress": {
+          "const": 292114
+        },
+        "callSiteOriginalHex": {
+          "const": "4E904CDF03FF"
+        },
+        "callSitePatchedHex": {
+          "const": "4EB90000FF88"
+        },
+        "stubAddress": {
+          "const": 65416
+        },
+        "stubOriginalHex": {
+          "const": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+        },
+        "stubHex": {
+          "const": "4DF900FF4004207900FF40004E904E75"
+        },
+        "postHandlerAddress": {
+          "const": 65430
+        },
+        "ramInputAddress": {
+          "const": 16728064
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "$ref": "#/$defs/case"
+      },
+      "const": [
+        {
+          "id": "target-negative-direct",
+          "kind": "target",
+          "targetMode": "negative-direct",
+          "operandWord": 65408,
+          "entityIndexListByteSeed": null,
+          "viewTargetEntityByteSeed": 90,
+          "expected": {
+            "id": "target-negative-direct",
+            "kind": "target",
+            "targetMode": "negative-direct",
+            "handlerAddress": 289848,
+            "operandWord": 65408,
+            "targetEntityLookupAddress": null,
+            "entityIndexListLookupIndex": null,
+            "viewTargetEntityByteAfter": 128
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "entityIndexListLookupExecuted": false,
+            "callbackOrder": []
+          }
+        },
+        {
+          "id": "target-ally-index",
+          "kind": "target",
+          "targetMode": "ally-index",
+          "operandWord": 2,
+          "entityIndexListByteSeed": 42,
+          "viewTargetEntityByteSeed": 90,
+          "expected": {
+            "id": "target-ally-index",
+            "kind": "target",
+            "targetMode": "ally-index",
+            "handlerAddress": 289848,
+            "operandWord": 2,
+            "targetEntityLookupAddress": 289870,
+            "entityIndexListLookupIndex": 2,
+            "viewTargetEntityByteAfter": 42
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "entityIndexListLookupExecuted": true,
+            "callbackOrder": [
+              "entityIndexListLookup"
+            ]
+          }
+        },
+        {
+          "id": "target-enemy-index",
+          "kind": "target",
+          "targetMode": "enemy-index",
+          "operandWord": 225,
+          "entityIndexListByteSeed": 43,
+          "viewTargetEntityByteSeed": 90,
+          "expected": {
+            "id": "target-enemy-index",
+            "kind": "target",
+            "targetMode": "enemy-index",
+            "handlerAddress": 289848,
+            "operandWord": 225,
+            "targetEntityLookupAddress": 289870,
+            "entityIndexListLookupIndex": 129,
+            "viewTargetEntityByteAfter": 43
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "entityIndexListLookupExecuted": true,
+            "callbackOrder": [
+              "entityIndexListLookup"
+            ]
+          }
+        },
+        {
+          "id": "destination-one-two",
+          "kind": "destination",
+          "inputWords": [
+            1,
+            2
+          ],
+          "viewTargetEntityByteSeed": 90,
+          "expected": {
+            "id": "destination-one-two",
+            "kind": "destination",
+            "handlerAddress": 288006,
+            "setCameraDestinationCallSiteAddress": 288018,
+            "waitForViewScrollEndCallSiteAddress": 288024,
+            "setCameraDestinationServiceAddress": 144526,
+            "setViewDestinationAddress": 13994,
+            "setViewDestinationCallSiteAddress": 144542,
+            "inputWords": [
+              1,
+              2
+            ],
+            "setViewDestinationD0Word": 384,
+            "setViewDestinationD1Word": 768,
+            "viewTargetEntityByteAfter": 255
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "setCameraDestinationCallObserved": true,
+            "setViewDestinationCallObserved": true,
+            "waitForViewScrollEndCallObserved": true,
+            "waitCompletedBeforeHandlerReturn": true,
+            "callbackOrder": [
+              "setCameraDestinationCall",
+              "setCameraDestinationService",
+              "setViewDestinationCall",
+              "setViewDestination",
+              "waitForViewScrollEndCall",
+              "waitForViewScrollEnd"
+            ]
+          }
+        },
+        {
+          "id": "destination-word-wrap",
+          "kind": "destination",
+          "inputWords": [
+            257,
+            2
+          ],
+          "viewTargetEntityByteSeed": 90,
+          "expected": {
+            "id": "destination-word-wrap",
+            "kind": "destination",
+            "handlerAddress": 288006,
+            "setCameraDestinationCallSiteAddress": 288018,
+            "waitForViewScrollEndCallSiteAddress": 288024,
+            "setCameraDestinationServiceAddress": 144526,
+            "setViewDestinationAddress": 13994,
+            "setViewDestinationCallSiteAddress": 144542,
+            "inputWords": [
+              257,
+              2
+            ],
+            "setViewDestinationD0Word": 33152,
+            "setViewDestinationD1Word": 768,
+            "viewTargetEntityByteAfter": 255
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "setCameraDestinationCallObserved": true,
+            "setViewDestinationCallObserved": true,
+            "waitForViewScrollEndCallObserved": true,
+            "waitCompletedBeforeHandlerReturn": true,
+            "callbackOrder": [
+              "setCameraDestinationCall",
+              "setCameraDestinationService",
+              "setViewDestinationCall",
+              "setViewDestination",
+              "waitForViewScrollEndCall",
+              "waitForViewScrollEnd"
+            ]
+          }
+        },
+        {
+          "id": "speed-eight",
+          "kind": "speed",
+          "operandWord": 8,
+          "viewScrollingSpeedWordSeed": 0,
+          "expected": {
+            "id": "speed-eight",
+            "kind": "speed",
+            "handlerAddress": 288512,
+            "operandWord": 8,
+            "viewScrollingSpeedWordAfter": 8
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "callbackOrder": []
+          }
+        },
+        {
+          "id": "speed-sixty-four",
+          "kind": "speed",
+          "operandWord": 64,
+          "viewScrollingSpeedWordSeed": 0,
+          "expected": {
+            "id": "speed-sixty-four",
+            "kind": "speed",
+            "handlerAddress": 288512,
+            "operandWord": 64,
+            "viewScrollingSpeedWordAfter": 64
+          },
+          "runtimeGolden": {
+            "handlerReturned": true,
+            "callbackOrder": []
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "case": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/targetCase"
+        },
+        {
+          "$ref": "#/$defs/destinationCase"
+        },
+        {
+          "$ref": "#/$defs/speedCase"
+        }
+      ]
+    },
+    "targetCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "targetMode",
+        "operandWord",
+        "entityIndexListByteSeed",
+        "viewTargetEntityByteSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "const": "target"
+        },
+        "targetMode": {
+          "enum": [
+            "negative-direct",
+            "ally-index",
+            "enemy-index"
+          ]
+        },
+        "operandWord": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "entityIndexListByteSeed": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "viewTargetEntityByteSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "targetMode",
+            "handlerAddress",
+            "operandWord",
+            "targetEntityLookupAddress",
+            "entityIndexListLookupIndex",
+            "viewTargetEntityByteAfter"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "const": "target"
+            },
+            "targetMode": {
+              "enum": [
+                "negative-direct",
+                "ally-index",
+                "enemy-index"
+              ]
+            },
+            "handlerAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "operandWord": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "targetEntityLookupAddress": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "entityIndexListLookupIndex": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 255
+            },
+            "viewTargetEntityByteAfter": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          }
+        },
+        "runtimeGolden": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handlerReturned",
+            "entityIndexListLookupExecuted",
+            "callbackOrder"
+          ],
+          "properties": {
+            "handlerReturned": {
+              "const": true
+            },
+            "entityIndexListLookupExecuted": {
+              "type": "boolean"
+            },
+            "callbackOrder": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "destinationCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "inputWords",
+        "viewTargetEntityByteSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "const": "destination"
+        },
+        "inputWords": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          }
+        },
+        "viewTargetEntityByteSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "handlerAddress",
+            "setCameraDestinationCallSiteAddress",
+            "waitForViewScrollEndCallSiteAddress",
+            "setCameraDestinationServiceAddress",
+            "setViewDestinationAddress",
+            "setViewDestinationCallSiteAddress",
+            "inputWords",
+            "setViewDestinationD0Word",
+            "setViewDestinationD1Word",
+            "viewTargetEntityByteAfter"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "const": "destination"
+            },
+            "handlerAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setCameraDestinationCallSiteAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "waitForViewScrollEndCallSiteAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setCameraDestinationServiceAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setViewDestinationAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setViewDestinationCallSiteAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inputWords": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              }
+            },
+            "setViewDestinationD0Word": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "setViewDestinationD1Word": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "viewTargetEntityByteAfter": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          }
+        },
+        "runtimeGolden": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handlerReturned",
+            "setCameraDestinationCallObserved",
+            "setViewDestinationCallObserved",
+            "waitForViewScrollEndCallObserved",
+            "waitCompletedBeforeHandlerReturn",
+            "callbackOrder"
+          ],
+          "properties": {
+            "handlerReturned": {
+              "const": true
+            },
+            "setCameraDestinationCallObserved": {
+              "const": true
+            },
+            "setViewDestinationCallObserved": {
+              "const": true
+            },
+            "waitForViewScrollEndCallObserved": {
+              "const": true
+            },
+            "waitCompletedBeforeHandlerReturn": {
+              "const": true
+            },
+            "callbackOrder": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "speedCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "operandWord",
+        "viewScrollingSpeedWordSeed",
+        "expected",
+        "runtimeGolden"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "const": "speed"
+        },
+        "operandWord": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "viewScrollingSpeedWordSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "handlerAddress",
+            "operandWord",
+            "viewScrollingSpeedWordAfter"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "const": "speed"
+            },
+            "handlerAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "operandWord": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "viewScrollingSpeedWordAfter": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            }
+          }
+        },
+        "runtimeGolden": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handlerReturned",
+            "callbackOrder"
+          ],
+          "properties": {
+            "handlerReturned": {
+              "const": true
+            },
+            "callbackOrder": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -92,6 +92,7 @@ from sf2tool.h3.growth import (
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
+from sf2tool.h3.map_camera_control import verify_map_camera_control
 from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
 from sf2tool.h3.map_interaction_trigger import verify_map_interaction_trigger
@@ -704,6 +705,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_interaction_trigger)
     h3_map_interaction_trigger.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_camera_control = h3_commands.add_parser(
+        "map-camera-control",
+        help="verify one-launch camera target, destination, speed, and wait boundaries",
+    )
+    _add_local_paths(h3_map_camera_control)
+    h3_map_camera_control.add_argument("--timeout-seconds", type=int, default=120)
     h3_map_animation_vdp = h3_commands.add_parser(
         "map-animation-vdp",
         help="verify batched map-animation counter, wrap, DMA queue, and VRAM behavior",
@@ -1539,6 +1546,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-interaction-trigger":
         print_record(
             verify_map_interaction_trigger(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-camera-control":
+        print_record(
+            verify_map_camera_control(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

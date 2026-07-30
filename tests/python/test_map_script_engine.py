@@ -1914,7 +1914,8 @@ def test_map_camera_control_contract_matches_complete_golden_fixture(
         "symbols": ["SetViewDestination"],
     }
     assert actual["runtimeQuestions"] == [
-        "map-script-camera-control/runtime-effects-matrix"
+        "map-script-camera-control/normal-story-reachability",
+        "map-script-camera-control/vdp-player-visible-behavior",
     ]
 
 
@@ -4574,7 +4575,8 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-interaction-trigger/full-layout-collision-pathfinding-effects",
         "map-interaction-trigger/presentation-audio-timing-hardware-effects",
         "map-interaction-trigger/persistence-story-reachability",
-        "map-script-camera-control/runtime-effects-matrix",
+        "map-script-camera-control/normal-story-reachability",
+        "map-script-camera-control/vdp-player-visible-behavior",
         "map-script-entity-placement/runtime-effects-reachability-matrix",
         "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
         "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
@@ -4591,7 +4593,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-lifecycle/story-reachability-persistence",
     ]
     assert _canonical_digest(expected) == (
-        "b40787d3669f4a1bfb8ba9d28635e3b7924a6b3c109875654caf757a20a15ada"
+        "170a2cc7dbc0182fc810d811701da392b87628a601d739c0867b7739662944c3"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4600,7 +4602,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     ]
     assert _canonical_digest(output_schema) == (
-        "360b93b505578b67f11fa50b220f9dc3ac03b2c53184667f1bc94a9d2fcfc2d2"
+        "e18a83b9f165afab41508d91c3d8d83bc49556d43896649d36b4fe35ef62e929"
     )
 
     fixture_schema = deepcopy(
@@ -4611,7 +4613,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "allOf"
     ][1]["properties"]["runtimeQuestions"]
     assert _canonical_digest(fixture_schema) == (
-        "ddc98e61baf23d4a168c2d18dc70e0e0b3aa3d693ca3f6c17642283beb30b4da"
+        "aabe60f08bdcddbc4732e45a565775c9e76e059279bd55bbce818cfbcaa98a1d"
     )
 
 

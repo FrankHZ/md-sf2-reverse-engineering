@@ -118,6 +118,13 @@ remain distinct identities, including zero-count per-handler rows, and the two p
 `MAP_TILE_SIZE` use sites in `SetCameraDestination` MUST remain independent source records. A remake
 MAY define an engine-specific camera interface independently; this static contract establishes neither
 target/destination meaning, coordinate units, speed effect, timing, reachability, nor presentation.
+The bounded H3 record `sf2-map-camera-control-runtime-v1` at
+`tests/fixtures/h3/map-camera-control-v1.json` adds seven one-launch command observations without
+turning source labels into a presentation design: it preserves the negative/ally/enemy target branch
+records, destination input-word to transferred-word values, two speed-word values, direct/service/wait
+callback order, and handler-return boundary. An original-fidelity adapter MUST keep those measured
+state and call-order facts distinct from normal-story reachability and VDP/player-visible behavior,
+which remain Unknown.
 Map-script imports MUST separately retain the source-named `setPos`, `setPosFlash`, `setFacing`, and
 `setDest` records in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field
