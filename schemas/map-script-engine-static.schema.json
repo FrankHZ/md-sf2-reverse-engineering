@@ -341,7 +341,9 @@
         "map-interaction-trigger/persistence-story-reachability",
         "map-script-camera-control/normal-story-reachability",
         "map-script-camera-control/vdp-player-visible-behavior",
-        "map-script-entity-placement/runtime-effects-reachability-matrix",
+        "map-script-entity-placement/normal-story-reachability",
+        "map-script-entity-placement/full-animation-visibility-presentation",
+        "map-script-entity-placement/collision-pathfinding-persistence",
         "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
         "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
         "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
@@ -35730,7 +35732,9 @@
             },
             "runtimeQuestions": {
               "const": [
-                "map-script-entity-placement/runtime-effects-reachability-matrix"
+                "map-script-entity-placement/normal-story-reachability",
+                "map-script-entity-placement/full-animation-visibility-presentation",
+                "map-script-entity-placement/collision-pathfinding-persistence"
               ]
             }
           }

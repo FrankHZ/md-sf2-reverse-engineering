@@ -4577,7 +4577,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-interaction-trigger/persistence-story-reachability",
         "map-script-camera-control/normal-story-reachability",
         "map-script-camera-control/vdp-player-visible-behavior",
-        "map-script-entity-placement/runtime-effects-reachability-matrix",
+        "map-script-entity-placement/normal-story-reachability",
+        "map-script-entity-placement/full-animation-visibility-presentation",
+        "map-script-entity-placement/collision-pathfinding-persistence",
         "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
         "map-script-entity-lifecycle-presentation/runtime-effects-reachability-matrix",
         "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
@@ -4592,8 +4594,13 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-lifecycle/presentation-fade-hardware-timing",
         "map-lifecycle/story-reachability-persistence",
     ]
+    assert expected["entityPlacementCommandFacts"].pop("runtimeQuestions") == [
+        "map-script-entity-placement/normal-story-reachability",
+        "map-script-entity-placement/full-animation-visibility-presentation",
+        "map-script-entity-placement/collision-pathfinding-persistence",
+    ]
     assert _canonical_digest(expected) == (
-        "170a2cc7dbc0182fc810d811701da392b87628a601d739c0867b7739662944c3"
+        "b102e5518839cdee9822b925c2582033bea84245d301e16e4673485b69d2f897"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4601,8 +4608,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del output_schema["properties"]["mapLifecycleCommandFacts"]["allOf"][1]["properties"][
         "runtimeQuestions"
     ]
+    del output_schema["properties"]["entityPlacementCommandFacts"]["allOf"][1]["properties"][
+        "runtimeQuestions"
+    ]
     assert _canonical_digest(output_schema) == (
-        "e18a83b9f165afab41508d91c3d8d83bc49556d43896649d36b4fe35ef62e929"
+        "b621d7e980e214073f2fdd6215f9907c9c1a42762fed2e9472fa00ca1206d3b0"
     )
 
     fixture_schema = deepcopy(
@@ -4612,8 +4622,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del fixture_schema["properties"]["expected"]["properties"]["mapLifecycleCommandFacts"][
         "allOf"
     ][1]["properties"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"]["entityPlacementCommandFacts"][
+        "allOf"
+    ][1]["properties"]["runtimeQuestions"]
     assert _canonical_digest(fixture_schema) == (
-        "aabe60f08bdcddbc4732e45a565775c9e76e059279bd55bbce818cfbcaa98a1d"
+        "1844d0522cec9d59fc71f80f8fdef9fd295ba41b7e985495e4d2887d3e4d7538"
     )
 
 
@@ -5498,7 +5511,9 @@ def test_map_entity_placement_contract_matches_complete_golden_fixture(
         "wrapperInstruction": "jsr (ChangeEntityMapsprite).w",
     }
     assert actual["runtimeQuestions"] == [
-        "map-script-entity-placement/runtime-effects-reachability-matrix"
+        "map-script-entity-placement/normal-story-reachability",
+        "map-script-entity-placement/full-animation-visibility-presentation",
+        "map-script-entity-placement/collision-pathfinding-persistence",
     ]
 
 

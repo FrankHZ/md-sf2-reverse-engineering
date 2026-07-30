@@ -1,0 +1,1235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "The closed recursive definitions validate every output shape; the full const below is the compact exact-order, exact-value contract.",
+  "allOf": [
+    {
+      "$ref": "#/$defs/00f85bdda0fba368"
+    },
+    {
+      "const": {
+        "system": "GEN",
+        "core": "Genesis Plus GX",
+        "id": "sf2-map-script-entity-placement-runtime-v1",
+        "mapTest": 0,
+        "recordOrder": [
+          "set-position-alive",
+          "set-position-dead",
+          "set-facing-alive",
+          "set-facing-dead",
+          "set-position-flash-alive",
+          "set-destination-positive-x-negative-y-wait",
+          "set-destination-negative-x-positive-y-bypass"
+        ],
+        "records": [
+          {
+            "id": "set-position-alive",
+            "kind": "position",
+            "lifeState": "alive",
+            "handlerAddress": 289298,
+            "adjustCallSiteAddress": 289302,
+            "cursorAdjustmentByteCount": 0,
+            "scriptCursorRamOffsetAfter": 8,
+            "selectorByte": 0,
+            "xWordAfter": 768,
+            "xDestWordAfter": 768,
+            "yWordAfter": 1152,
+            "yDestWordAfter": 1152,
+            "facingByteAfter": 1,
+            "updateSpriteCallSiteAddress": 289346,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "flashLoopIterationCount": null,
+            "handlerReturned": true,
+            "aliveStatusCursorAdjustmentExecuted": false,
+            "getEntityCallObserved": true,
+            "updateSpriteCallObserved": true,
+            "flashWaitForVIntCallCount": 0,
+            "flashSleepCallCount": 0,
+            "sharedTailObserved": false,
+            "callbackOrder": [
+              "adjustScriptPointer",
+              "getEntityAddress",
+              "updateEntitySprite"
+            ],
+            "flashInitialGetEntityCallObserved": false,
+            "sharedTailGetEntityCallObserved": false,
+            "sharedTailUpdateSpriteCallObserved": false
+          },
+          {
+            "id": "set-position-dead",
+            "kind": "position",
+            "lifeState": "dead",
+            "handlerAddress": 289298,
+            "adjustCallSiteAddress": 289302,
+            "cursorAdjustmentByteCount": 4,
+            "scriptCursorRamOffsetAfter": 8,
+            "selectorByte": 0,
+            "xWordAfter": 768,
+            "xDestWordAfter": 768,
+            "yWordAfter": 768,
+            "yDestWordAfter": 768,
+            "facingByteAfter": 3,
+            "updateSpriteCallSiteAddress": null,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "flashLoopIterationCount": null,
+            "handlerReturned": true,
+            "aliveStatusCursorAdjustmentExecuted": true,
+            "getEntityCallObserved": false,
+            "updateSpriteCallObserved": false,
+            "flashWaitForVIntCallCount": 0,
+            "flashSleepCallCount": 0,
+            "sharedTailObserved": false,
+            "callbackOrder": [
+              "adjustScriptPointer",
+              "aliveStatusCursorAdjustment"
+            ],
+            "flashInitialGetEntityCallObserved": false,
+            "sharedTailGetEntityCallObserved": false,
+            "sharedTailUpdateSpriteCallObserved": false
+          },
+          {
+            "id": "set-facing-alive",
+            "kind": "facing",
+            "lifeState": "alive",
+            "handlerAddress": 289824,
+            "adjustCallSiteAddress": 289828,
+            "cursorAdjustmentByteCount": 0,
+            "scriptCursorRamOffsetAfter": 6,
+            "selectorByte": 0,
+            "facingByteAfter": 1,
+            "updateSpriteCallSiteAddress": 289842,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "handlerReturned": true,
+            "aliveStatusCursorAdjustmentExecuted": false,
+            "getEntityCallObserved": true,
+            "updateSpriteCallObserved": true,
+            "callbackOrder": [
+              "adjustScriptPointer",
+              "getEntityAddress",
+              "updateEntitySprite"
+            ]
+          },
+          {
+            "id": "set-facing-dead",
+            "kind": "facing",
+            "lifeState": "dead",
+            "handlerAddress": 289824,
+            "adjustCallSiteAddress": 289828,
+            "cursorAdjustmentByteCount": 2,
+            "scriptCursorRamOffsetAfter": 6,
+            "selectorByte": 0,
+            "facingByteAfter": 3,
+            "updateSpriteCallSiteAddress": null,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "handlerReturned": true,
+            "aliveStatusCursorAdjustmentExecuted": true,
+            "getEntityCallObserved": false,
+            "updateSpriteCallObserved": false,
+            "callbackOrder": [
+              "adjustScriptPointer",
+              "aliveStatusCursorAdjustment"
+            ]
+          },
+          {
+            "id": "set-position-flash-alive",
+            "kind": "flash",
+            "lifeState": "alive",
+            "handlerAddress": 289196,
+            "adjustCallSiteAddress": 289302,
+            "cursorAdjustmentByteCount": 0,
+            "scriptCursorRamOffsetAfter": 8,
+            "selectorByte": 0,
+            "xWordAfter": 768,
+            "xDestWordAfter": 768,
+            "yWordAfter": 1152,
+            "yDestWordAfter": 1152,
+            "facingByteAfter": 1,
+            "updateSpriteCallSiteAddress": 289346,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "flashLoopIterationCount": 31,
+            "handlerReturned": true,
+            "aliveStatusCursorAdjustmentExecuted": false,
+            "getEntityCallObserved": false,
+            "updateSpriteCallObserved": false,
+            "flashWaitForVIntCallCount": 62,
+            "flashSleepCallCount": 31,
+            "sharedTailObserved": true,
+            "callbackOrder": [
+              "getEntityAddressForFlash",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "waitForVInt",
+              "waitForVInt",
+              "sleep",
+              "sharedTail",
+              "adjustScriptPointer",
+              "getEntityAddressFromSharedTail",
+              "updateEntitySpriteFromSharedTail"
+            ],
+            "flashInitialGetEntityCallObserved": true,
+            "sharedTailGetEntityCallObserved": true,
+            "sharedTailUpdateSpriteCallObserved": true
+          },
+          {
+            "id": "set-destination-positive-x-negative-y-wait",
+            "kind": "destination",
+            "handlerAddress": 290200,
+            "selectorWord": 0,
+            "xInputWord": 3,
+            "yInputWord": 1,
+            "scriptCursorRamOffsetAfter": 10,
+            "xDestWordAfter": 1152,
+            "yDestWordAfter": 384,
+            "xTravelWordAfter": 384,
+            "yTravelWordAfter": 384,
+            "xVelocityWordAfter": 32,
+            "yVelocityWordAfter": 65504,
+            "negativeXInstructionAddress": null,
+            "negativeYInstructionAddress": 290262,
+            "waitBypassed": false,
+            "waitCallSiteAddress": 290280,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "negativeXObserved": false,
+            "negativeYObserved": true,
+            "waitForEntityToStopMovingObserved": true,
+            "callbackOrder": [
+              "getEntityAddress",
+              "negativeYDelta",
+              "waitForEntityToStopMoving"
+            ]
+          },
+          {
+            "id": "set-destination-negative-x-positive-y-bypass",
+            "kind": "destination",
+            "handlerAddress": 290200,
+            "selectorWord": 32768,
+            "xInputWord": 1,
+            "yInputWord": 3,
+            "scriptCursorRamOffsetAfter": 10,
+            "xDestWordAfter": 384,
+            "yDestWordAfter": 1152,
+            "xTravelWordAfter": 384,
+            "yTravelWordAfter": 384,
+            "xVelocityWordAfter": 65504,
+            "yVelocityWordAfter": 32,
+            "negativeXInstructionAddress": 290240,
+            "negativeYInstructionAddress": null,
+            "waitBypassed": true,
+            "waitCallSiteAddress": null,
+            "entityStateSeed": {
+              "xWord": 768,
+              "yWord": 768,
+              "xDestWord": 768,
+              "yDestWord": 768,
+              "xTravelWord": 0,
+              "yTravelWord": 0,
+              "xVelocityWord": 0,
+              "yVelocityWord": 0,
+              "facingByte": 3
+            },
+            "handlerReturned": true,
+            "getEntityCallObserved": true,
+            "negativeXObserved": true,
+            "negativeYObserved": false,
+            "waitForEntityToStopMovingObserved": false,
+            "callbackOrder": [
+              "getEntityAddress",
+              "negativeXDelta"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "4a1b3ceb20a7674b": {
+      "type": "string"
+    },
+    "87cb28f6125d112f": {
+      "type": "integer"
+    },
+    "b2006a056ee0a21d": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/4a1b3ceb20a7674b"
+      }
+    },
+    "1d47016900e32389": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/8d8aafc1f9b7ce6e"
+          },
+          {
+            "$ref": "#/$defs/3e55d2ab0964847e"
+          },
+          {
+            "$ref": "#/$defs/68f50d1524dffec2"
+          },
+          {
+            "$ref": "#/$defs/e96cca568237bd81"
+          },
+          {
+            "$ref": "#/$defs/acf3c4cce8129f49"
+          },
+          {
+            "$ref": "#/$defs/9d0ae38601a01de9"
+          },
+          {
+            "$ref": "#/$defs/237c52c794872dcc"
+          }
+        ]
+      }
+    },
+    "8daacc4e9d327483": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "xWord",
+        "yWord",
+        "xDestWord",
+        "yDestWord",
+        "xTravelWord",
+        "yTravelWord",
+        "xVelocityWord",
+        "yVelocityWord",
+        "facingByte"
+      ],
+      "properties": {
+        "xWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xDestWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yDestWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xTravelWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yTravelWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xVelocityWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yVelocityWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "facingByte": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        }
+      }
+    },
+    "c6f017186d9afebf": {
+      "type": "null"
+    },
+    "346336a79113b821": {
+      "type": "boolean"
+    },
+    "3171579b494f5b25": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/4a1b3ceb20a7674b"
+      }
+    },
+    "8d8aafc1f9b7ce6e": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "lifeState",
+        "handlerAddress",
+        "adjustCallSiteAddress",
+        "cursorAdjustmentByteCount",
+        "scriptCursorRamOffsetAfter",
+        "selectorByte",
+        "xWordAfter",
+        "xDestWordAfter",
+        "yWordAfter",
+        "yDestWordAfter",
+        "facingByteAfter",
+        "updateSpriteCallSiteAddress",
+        "entityStateSeed",
+        "flashLoopIterationCount",
+        "handlerReturned",
+        "aliveStatusCursorAdjustmentExecuted",
+        "getEntityCallObserved",
+        "updateSpriteCallObserved",
+        "flashWaitForVIntCallCount",
+        "flashSleepCallCount",
+        "sharedTailObserved",
+        "callbackOrder",
+        "flashInitialGetEntityCallObserved",
+        "sharedTailGetEntityCallObserved",
+        "sharedTailUpdateSpriteCallObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "lifeState": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "adjustCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "cursorAdjustmentByteCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "facingByteAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "updateSpriteCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "flashLoopIterationCount": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "aliveStatusCursorAdjustmentExecuted": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "updateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "flashWaitForVIntCallCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "flashSleepCallCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "sharedTailObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/3171579b494f5b25"
+        },
+        "flashInitialGetEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "sharedTailGetEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "sharedTailUpdateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        }
+      }
+    },
+    "c21d1283f1dddafc": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/4a1b3ceb20a7674b"
+      }
+    },
+    "3e55d2ab0964847e": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "lifeState",
+        "handlerAddress",
+        "adjustCallSiteAddress",
+        "cursorAdjustmentByteCount",
+        "scriptCursorRamOffsetAfter",
+        "selectorByte",
+        "xWordAfter",
+        "xDestWordAfter",
+        "yWordAfter",
+        "yDestWordAfter",
+        "facingByteAfter",
+        "updateSpriteCallSiteAddress",
+        "entityStateSeed",
+        "flashLoopIterationCount",
+        "handlerReturned",
+        "aliveStatusCursorAdjustmentExecuted",
+        "getEntityCallObserved",
+        "updateSpriteCallObserved",
+        "flashWaitForVIntCallCount",
+        "flashSleepCallCount",
+        "sharedTailObserved",
+        "callbackOrder",
+        "flashInitialGetEntityCallObserved",
+        "sharedTailGetEntityCallObserved",
+        "sharedTailUpdateSpriteCallObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "lifeState": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "adjustCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "cursorAdjustmentByteCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "facingByteAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "updateSpriteCallSiteAddress": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "flashLoopIterationCount": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "aliveStatusCursorAdjustmentExecuted": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "updateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "flashWaitForVIntCallCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "flashSleepCallCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "sharedTailObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/c21d1283f1dddafc"
+        },
+        "flashInitialGetEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "sharedTailGetEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "sharedTailUpdateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        }
+      }
+    },
+    "68f50d1524dffec2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "lifeState",
+        "handlerAddress",
+        "adjustCallSiteAddress",
+        "cursorAdjustmentByteCount",
+        "scriptCursorRamOffsetAfter",
+        "selectorByte",
+        "facingByteAfter",
+        "updateSpriteCallSiteAddress",
+        "entityStateSeed",
+        "handlerReturned",
+        "aliveStatusCursorAdjustmentExecuted",
+        "getEntityCallObserved",
+        "updateSpriteCallObserved",
+        "callbackOrder"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "lifeState": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "adjustCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "cursorAdjustmentByteCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "facingByteAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "updateSpriteCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "aliveStatusCursorAdjustmentExecuted": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "updateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/3171579b494f5b25"
+        }
+      }
+    },
+    "e96cca568237bd81": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "lifeState",
+        "handlerAddress",
+        "adjustCallSiteAddress",
+        "cursorAdjustmentByteCount",
+        "scriptCursorRamOffsetAfter",
+        "selectorByte",
+        "facingByteAfter",
+        "updateSpriteCallSiteAddress",
+        "entityStateSeed",
+        "handlerReturned",
+        "aliveStatusCursorAdjustmentExecuted",
+        "getEntityCallObserved",
+        "updateSpriteCallObserved",
+        "callbackOrder"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "lifeState": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "adjustCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "cursorAdjustmentByteCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "facingByteAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "updateSpriteCallSiteAddress": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "aliveStatusCursorAdjustmentExecuted": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "updateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/c21d1283f1dddafc"
+        }
+      }
+    },
+    "7f8c40fb13b04abc": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/4a1b3ceb20a7674b"
+      }
+    },
+    "acf3c4cce8129f49": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "lifeState",
+        "handlerAddress",
+        "adjustCallSiteAddress",
+        "cursorAdjustmentByteCount",
+        "scriptCursorRamOffsetAfter",
+        "selectorByte",
+        "xWordAfter",
+        "xDestWordAfter",
+        "yWordAfter",
+        "yDestWordAfter",
+        "facingByteAfter",
+        "updateSpriteCallSiteAddress",
+        "entityStateSeed",
+        "flashLoopIterationCount",
+        "handlerReturned",
+        "aliveStatusCursorAdjustmentExecuted",
+        "getEntityCallObserved",
+        "updateSpriteCallObserved",
+        "flashWaitForVIntCallCount",
+        "flashSleepCallCount",
+        "sharedTailObserved",
+        "callbackOrder",
+        "flashInitialGetEntityCallObserved",
+        "sharedTailGetEntityCallObserved",
+        "sharedTailUpdateSpriteCallObserved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "lifeState": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "adjustCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "cursorAdjustmentByteCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorByte": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "facingByteAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "updateSpriteCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "flashLoopIterationCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "aliveStatusCursorAdjustmentExecuted": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "updateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "flashWaitForVIntCallCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "flashSleepCallCount": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "sharedTailObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/7f8c40fb13b04abc"
+        },
+        "flashInitialGetEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "sharedTailGetEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "sharedTailUpdateSpriteCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        }
+      }
+    },
+    "9d0ae38601a01de9": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "handlerAddress",
+        "selectorWord",
+        "xInputWord",
+        "yInputWord",
+        "scriptCursorRamOffsetAfter",
+        "xDestWordAfter",
+        "yDestWordAfter",
+        "xTravelWordAfter",
+        "yTravelWordAfter",
+        "xVelocityWordAfter",
+        "yVelocityWordAfter",
+        "negativeXInstructionAddress",
+        "negativeYInstructionAddress",
+        "waitBypassed",
+        "waitCallSiteAddress",
+        "entityStateSeed",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "negativeXObserved",
+        "negativeYObserved",
+        "waitForEntityToStopMovingObserved",
+        "callbackOrder"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xInputWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yInputWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xTravelWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yTravelWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xVelocityWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yVelocityWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "negativeXInstructionAddress": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "negativeYInstructionAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "waitBypassed": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "waitCallSiteAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "negativeXObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "negativeYObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "waitForEntityToStopMovingObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/3171579b494f5b25"
+        }
+      }
+    },
+    "237c52c794872dcc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "handlerAddress",
+        "selectorWord",
+        "xInputWord",
+        "yInputWord",
+        "scriptCursorRamOffsetAfter",
+        "xDestWordAfter",
+        "yDestWordAfter",
+        "xTravelWordAfter",
+        "yTravelWordAfter",
+        "xVelocityWordAfter",
+        "yVelocityWordAfter",
+        "negativeXInstructionAddress",
+        "negativeYInstructionAddress",
+        "waitBypassed",
+        "waitCallSiteAddress",
+        "entityStateSeed",
+        "handlerReturned",
+        "getEntityCallObserved",
+        "negativeXObserved",
+        "negativeYObserved",
+        "waitForEntityToStopMovingObserved",
+        "callbackOrder"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "kind": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "handlerAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "selectorWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xInputWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yInputWord": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "scriptCursorRamOffsetAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yDestWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xTravelWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yTravelWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "xVelocityWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "yVelocityWordAfter": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "negativeXInstructionAddress": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "negativeYInstructionAddress": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "waitBypassed": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "waitCallSiteAddress": {
+          "$ref": "#/$defs/c6f017186d9afebf"
+        },
+        "entityStateSeed": {
+          "$ref": "#/$defs/8daacc4e9d327483"
+        },
+        "handlerReturned": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "getEntityCallObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "negativeXObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "negativeYObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "waitForEntityToStopMovingObserved": {
+          "$ref": "#/$defs/346336a79113b821"
+        },
+        "callbackOrder": {
+          "$ref": "#/$defs/c21d1283f1dddafc"
+        }
+      }
+    },
+    "00f85bdda0fba368": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system",
+        "core",
+        "id",
+        "mapTest",
+        "recordOrder",
+        "records"
+      ],
+      "properties": {
+        "system": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "core": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "id": {
+          "$ref": "#/$defs/4a1b3ceb20a7674b"
+        },
+        "mapTest": {
+          "$ref": "#/$defs/87cb28f6125d112f"
+        },
+        "recordOrder": {
+          "$ref": "#/$defs/b2006a056ee0a21d"
+        },
+        "records": {
+          "$ref": "#/$defs/1d47016900e32389"
+        }
+      }
+    }
+  }
+}

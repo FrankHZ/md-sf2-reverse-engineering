@@ -258,7 +258,9 @@ ENTITY_PLACEMENT_HANDLER_BY_MACRO = {
 }
 ENTITY_PLACEMENT_HANDLER_NAMES = tuple(ENTITY_PLACEMENT_HANDLER_BY_MACRO.values())
 ENTITY_PLACEMENT_RUNTIME_QUESTIONS = [
-    "map-script-entity-placement/runtime-effects-reachability-matrix"
+    "map-script-entity-placement/normal-story-reachability",
+    "map-script-entity-placement/full-animation-visibility-presentation",
+    "map-script-entity-placement/collision-pathfinding-persistence",
 ]
 
 # These source macro names bridge map-script command streams to adjacent

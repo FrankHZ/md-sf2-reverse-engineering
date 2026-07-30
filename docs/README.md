@@ -83,7 +83,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   ordered program-site/handler/caller/service 合同、四个 map-script map lifecycle command 的 108 条
   ordered program-site/handler/caller 合同，以及单启动五 case 的 handler return、direct-H1-JSR-site
   order、map/camera word 和双 marker H3 合同、三个 map-script camera-control command 的单启动七 case
-  target branch/destination word-transfer/speed/wait H3 合同、两个 source-named map-script trigger command 的 8 条
+  target branch/destination word-transfer/speed/wait H3 合同、四个 map-script entity-placement command 的单启动七 case
+  alive/dead cursor、record-word/facing、31 次 flash loop/shared-tail 与 destination wait/bypass H3 合同、两个 source-named map-script trigger command 的 8 条
   ordered program-site/handler/caller/table-boundary 合同、四个 source-named map-script entity-placement
   command 的 2,288 条 ordered program-site/handler/caller 合同、六个 map-script 到 entity-action bridge
   command 的 3,256 条 ordered program-site/payload/handler/caller 合同、八个 source-named entity lifecycle/presentation

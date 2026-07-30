@@ -263,7 +263,7 @@ matrix with `uv run sf2 h3 map-camera-control`; its source-derived fixture is
 
 ## Confirmed Map-Script Entity-Placement Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-29.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field `entityPlacementCommandFacts` retains four
 source-named macro forms in macro source order: `setPos` `$19` (608 sites, 6 encoded bytes, 4 operand
@@ -280,9 +280,9 @@ source/program order separately and pins the ordered source-site and program-tot
 `5AE7802BB7D93463304AE491B89F136C763AF0E3BAF1EC85877F68E24867B388`. The tracked fixture uses these
 compact order/hash constraints rather than copying the large source-site or program-total records.
 
-**Confirmed:** the four named handler sections are H1/ROM `csc19_setEntityPosAndFacing` `$46A32`
-(18 statements), `csc17_setEntityPosAndFacingWithFlash` `$469CC` (17), `csc23_setEntityFacing`
-`$46C60` (8), and `csc29_setEntityDest` `$46DB8` (29). `csc19` and `csc23` each preserve their
+**Confirmed:** the four named handler sections are H1/ROM `csc19_setEntityPosAndFacing` `$46A12`
+(18 statements), `csc17_setEntityPosAndFacingWithFlash` `$469AC` (17), `csc23_setEntityFacing`
+`$46C20` (8), and `csc29_setEntityDest` `$46D98` (29). `csc19` and `csc23` each preserve their
 non-advancing A6 selector read, parsed `moveq #4,d7` or `moveq #2,d7`, and ordered
 `AdjustScriptPointerByCharacterAliveStatus` call before their advancing operand reads. `csc17` has no
 local return: its guarded `bra.w csc19_setEntityPosAndFacing` shared-tail edge retains the target
@@ -309,13 +309,39 @@ near-miss mnemonics, and operands do not count as calls. The provenance join ind
 `sf2-entity-action-scripts-static-v1` fixture, which separately records `UpdateEntityData` and
 `ChangeEntityMapsprite`; it does not assert a runtime call edge to `UpdateEntityData`.
 
+**Confirmed (H3):** `sf2-map-script-entity-placement-runtime-v1` runs seven fixed cases from one
+BizHawk launch through the session-only `RunMapSetupInitFunction` trampoline. With selected ally
+current-HP seed 1, `setPos` writes the seeded entity record's X/XDEST and Y/YDEST words to
+`2*384=768` and `3*384=1152`, writes facing byte 1, and reaches its H1 adjust/get/update call sites.
+With current-HP seed 0, it reaches the H1 `$47096` `adda.w d7,a6` use site, advances the RAM script
+cursor from `$FF4004` to `$FF4008`, returns before the get/update sites, and leaves the seeded entity
+fields unchanged. The corresponding `setFacing` cases establish the same bounded alive/dead split:
+alive writes facing 1 and calls the sprite wrapper, while dead advances `$FF4004` to `$FF4006` and
+leaves facing unchanged. These results establish only the guarded current-HP/cursor/record effects.
+
+**Confirmed (H3):** the one `setPosFlash` case reaches its own get-entity call, exactly 31 repetitions
+of local `WaitForVInt`, `WaitForVInt`, `Sleep`, then the H1 `$469DA` shared-tail branch. The unmodified
+`csc19` tail then reaches its distinct adjust/get/update sites and leaves the same `(768, 1152, 1)`
+record values. The observer retains both get-entity identities and the shared-tail sprite-wrapper
+identity separately; it does not interpret the local timing calls as presentation behavior.
+
+**Confirmed (H3):** two `setDest` cases seed `(X,Y)=(768,768)` and observe the source-scaled
+destinations and signed travel/velocity writes before the optional wait call. Selector `$0000` with
+input words `(3,1)` produces destination words `(1152,384)`, positive-X/negative-Y branches, and the
+H1 `$46DE8` wait call. Selector `$8000` with `(1,3)` produces `(384,1152)`, negative-X/positive-Y
+branches, and bypasses that wait through the guarded bit-15 branch. These are stored/transferred word
+facts and branch/call observations, not coordinate-unit, pathfinding, or motion semantics.
+
 ### Runtime questions — entity placement
 
-**Unknown:** `map-script-entity-placement/runtime-effects-reachability-matrix` is the sole grouped H3
-queue. One shared launch must determine normal-story reachability; alive-status cursor consequences;
-the meaning and units of all operands; resulting entity state; animation/visibility/presentation;
-wait/sleep/VInt timing; map/collision/pathfinding interaction; and persistence. This static contract
-does not promote any of those outcomes from macro, field, or callee names.
+**Unknown:** `map-script-entity-placement/normal-story-reachability` — which normal scripts and save
+states reach these session-only selector/HP/input combinations.
+
+**Unknown:** `map-script-entity-placement/full-animation-visibility-presentation` — the player-visible
+meaning, VInt/Sleep cadence, sprite animation, and visibility of these bounded calls.
+
+**Unknown:** `map-script-entity-placement/collision-pathfinding-persistence` — interactions with map
+collision/pathfinding and state persistence beyond the observed handler-local record writes.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `setPos`,
@@ -324,7 +350,12 @@ sections and helper symbols above; `sf2enums.asm::MAP_TILE_SIZE`; H1 listing add
 ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
 `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.entityPlacementCommandFacts`.
+`expected.entityPlacementCommandFacts`. Reproduce the bounded runtime matrix with
+`uv run sf2 h3 map-entity-placement`; its fixture is
+`tests/fixtures/h3/map-script-entity-placement-v1.json`, fixture ID
+`sf2-map-script-entity-placement-runtime-v1`, observed by
+`tools/bizhawk/map_entity_placement_observer.lua` and checked by
+`src/sf2tool/h3/map_entity_placement.py`.
 
 ## Confirmed Map-Script to Entity-Action Bridge Command Family
 

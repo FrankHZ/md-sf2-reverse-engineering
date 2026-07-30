@@ -32,14 +32,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1545
-    assert result["Confirmed"] == 1545
+    assert result["Records"] == 1550
+    assert result["Confirmed"] == 1550
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 65
-    assert result["AddressBindings"] == 2175
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 66
+    assert result["AddressBindings"] == 2199
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1508
+    assert result["H1ListingRecords"] == 1513
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
@@ -523,6 +523,13 @@ def test_map_interaction_trigger_has_one_batched_runtime_command() -> None:
 def test_map_camera_control_has_one_batched_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "map-camera-control"])
     assert args.h3_command == "map-camera-control"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 120
+
+
+def test_map_entity_placement_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "map-entity-placement"])
+    assert args.h3_command == "map-entity-placement"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 120
 

@@ -135,9 +135,15 @@ selector read plus alive-status cursor-adjustment call and advancing reads; `csc
 targets and `csc19` shared-tail edge; `csc29`'s three local branch targets; parsed `MAP_TILE_SIZE`
 multiplier use sites; source-shaped state read/write operands; and zero-inclusive direct/effective
 caller maps. These source records MUST NOT be normalized into a placement, facing, movement,
-visibility, animation, coordinate-unit, collision, persistence, timing, or rendering model. A remake
-MAY define its own entity-state interface independently; all original runtime consequences remain in
-`map-script-entity-placement/runtime-effects-reachability-matrix`.
+visibility, animation, coordinate-unit, collision, persistence, timing, or rendering model. The bounded
+H3 contract `sf2-map-script-entity-placement-runtime-v1` at
+`tests/fixtures/h3/map-script-entity-placement-v1.json` records seven one-launch cases: alive/dead
+current-HP cursor outcomes for `setPos` and `setFacing`, source-scaled entity-record words/facing,
+the complete 31-iteration local flash callback sequence plus its distinct shared-tail callbacks, and
+both signed destination delta polarities with bit-15 wait/bypass. An original-fidelity adapter MUST
+retain those measured RAM/cursor/callback facts without promoting them to a presentation or map-motion
+design. Normal-story reachability, full animation/visibility/presentation, and collision/pathfinding/
+persistence remain Unknown. A remake MAY define its own entity-state interface independently.
 Map-script imports MUST separately retain the six source-named bridge forms `setActscriptWait`,
 `setActscript`, `customActscriptWait`, `customActscript`, `entityActionsWait`, and `entityActions` in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field

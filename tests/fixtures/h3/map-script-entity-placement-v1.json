@@ -1,0 +1,1071 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-script-entity-placement-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "mapTestIndex": 0,
+  "observationBoundary": "Seven fixed Map Test 0 cases replay one shared in-memory state through a session-only trampoline. Lua writes only bounded script bytes, entity-index bytes, selected combatant current-HP words, and the selected ENTITY_DATA record fields. It observes exact H1 direct-call/internal instruction callbacks, final entity fields, and cursor position. The matrix confirms handler-local control flow and RAM effects; normal-story reachability, full presentation, collision/pathfinding, and persistence remain Unknown.",
+  "runtimeQuestions": [
+    "map-script-entity-placement/normal-story-reachability",
+    "map-script-entity-placement/full-animation-visibility-presentation",
+    "map-script-entity-placement/collision-pathfinding-persistence"
+  ],
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "staticContractFixture": "tests/fixtures/h2/map-script-engine-static-v1.json",
+  "maxFrames": 7200,
+  "function": {
+    "entryAddress": 292092,
+    "setPositionHandlerAddress": 289298,
+    "setPositionFlashHandlerAddress": 289196,
+    "setFacingHandlerAddress": 289824,
+    "setDestinationHandlerAddress": 290200,
+    "setPositionAdjustCallSiteAddress": 289302,
+    "setFacingAdjustCallSiteAddress": 289828,
+    "aliveStatusCursorAdjustmentAddress": 290966,
+    "setPositionGetEntityCallSiteAddress": 289308,
+    "setPositionUpdateSpriteCallSiteAddress": 289346,
+    "setFacingGetEntityCallSiteAddress": 289834,
+    "setFacingUpdateSpriteCallSiteAddress": 289842,
+    "setPositionFlashGetEntityCallSiteAddress": 289198,
+    "setPositionFlashWaitForVIntCallOneAddress": 289212,
+    "setPositionFlashWaitForVIntCallTwoAddress": 289216,
+    "setPositionFlashSleepCallSiteAddress": 289234,
+    "setPositionFlashSharedTailBranchAddress": 289242,
+    "setDestinationGetEntityCallSiteAddress": 290204,
+    "setDestinationNegativeXAddress": 290240,
+    "setDestinationNegativeYAddress": 290262,
+    "setDestinationWaitCallSiteAddress": 290280
+  },
+  "ram": {
+    "entityDataAddress": 16754946,
+    "entityIndexListAddress": 16757056,
+    "combatantDataAddress": 16771072
+  },
+  "constants": {
+    "mapTileSize": 384,
+    "entityRecordByteCount": 32,
+    "currentHpByteOffset": 14,
+    "combatantEntryByteCount": 56,
+    "combatantMaskAll": 255,
+    "setPositionDeadCursorAdjustmentByteCount": 4,
+    "setFacingDeadCursorAdjustmentByteCount": 2,
+    "setPositionFlashLoopIterationCount": 31,
+    "waitBypassMask": 32768,
+    "destinationVelocityMagnitude": 32,
+    "destinationVelocityNegativeWord": 65504,
+    "destinationVelocityTransferByteCount": 2,
+    "destinationDeltaTransferByteCount": 2,
+    "destinationDeltaSignBit": 32768,
+    "destinationDeltaMask": 65535,
+    "currentHpSeedTransferByteCount": 2,
+    "storedCoordinateTransferByteCount": 2,
+    "handlerOperandAdvanceByteCounts": {
+      "setPosition": 4,
+      "setPositionFlash": 4,
+      "setFacing": 2,
+      "setDestination": 6
+    },
+    "entityFieldLayouts": {
+      "xWord": {
+        "byteOffset": 0,
+        "transferByteCount": 2
+      },
+      "yWord": {
+        "byteOffset": 2,
+        "transferByteCount": 2
+      },
+      "xVelocityWord": {
+        "byteOffset": 4,
+        "transferByteCount": 2
+      },
+      "yVelocityWord": {
+        "byteOffset": 6,
+        "transferByteCount": 2
+      },
+      "xTravelWord": {
+        "byteOffset": 8,
+        "transferByteCount": 2
+      },
+      "yTravelWord": {
+        "byteOffset": 10,
+        "transferByteCount": 2
+      },
+      "xDestWord": {
+        "byteOffset": 12,
+        "transferByteCount": 2
+      },
+      "yDestWord": {
+        "byteOffset": 14,
+        "transferByteCount": 2
+      },
+      "facingByte": {
+        "byteOffset": 16,
+        "transferByteCount": 1
+      }
+    },
+    "destinationInputCursorUseSites": [
+      {
+        "destinationOperand": "d0",
+        "scriptInputByteOffset": 0,
+        "transferredByteCount": 2
+      },
+      {
+        "destinationOperand": "d1",
+        "scriptInputByteOffset": 2,
+        "transferredByteCount": 2
+      },
+      {
+        "destinationOperand": "d2",
+        "scriptInputByteOffset": 4,
+        "transferredByteCount": 2
+      }
+    ]
+  },
+  "sourceUseSites": {
+    "setPosition": [
+      {
+        "instruction": "moveq #4,d7",
+        "sourceLine": 905
+      },
+      {
+        "instruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+        "sourceLine": 906
+      },
+      {
+        "instruction": "mulu.w #MAP_TILE_SIZE,d0",
+        "sourceLine": 911
+      },
+      {
+        "instruction": "move.w d0,(a5)",
+        "sourceLine": 912
+      },
+      {
+        "instruction": "move.w d0,ENTITYDEF_OFFSET_XDEST(a5)",
+        "sourceLine": 913
+      },
+      {
+        "instruction": "mulu.w #MAP_TILE_SIZE,d0",
+        "sourceLine": 916
+      },
+      {
+        "instruction": "move.w d0,ENTITYDEF_OFFSET_Y(a5)",
+        "sourceLine": 917
+      },
+      {
+        "instruction": "move.w d0,ENTITYDEF_OFFSET_YDEST(a5)",
+        "sourceLine": 918
+      },
+      {
+        "instruction": "move.b (a6)+,ENTITYDEF_OFFSET_FACING(a5)",
+        "sourceLine": 919
+      },
+      {
+        "instruction": "bsr.w UpdateEntitySprite_0",
+        "sourceLine": 920
+      }
+    ],
+    "setFacing": [
+      {
+        "instruction": "moveq #2,d7",
+        "sourceLine": 1234
+      },
+      {
+        "instruction": "bsr.w AdjustScriptPointerByCharacterAliveStatus",
+        "sourceLine": 1235
+      },
+      {
+        "instruction": "move.b (a6)+,ENTITYDEF_OFFSET_FACING(a5)",
+        "sourceLine": 1238
+      },
+      {
+        "instruction": "bsr.w UpdateEntitySprite_0",
+        "sourceLine": 1239
+      }
+    ],
+    "setDestination": [
+      {
+        "instruction": "mulu.w #MAP_TILE_SIZE,d1",
+        "sourceLine": 1432
+      },
+      {
+        "instruction": "mulu.w #MAP_TILE_SIZE,d2",
+        "sourceLine": 1433
+      },
+      {
+        "instruction": "sub.w (a5),d1",
+        "sourceLine": 1437
+      },
+      {
+        "instruction": "bpl.s loc_46DC4",
+        "sourceLine": 1438
+      },
+      {
+        "instruction": "neg.w d1",
+        "sourceLine": 1439
+      },
+      {
+        "instruction": "sub.w ENTITYDEF_OFFSET_Y(a5),d2",
+        "sourceLine": 1446
+      },
+      {
+        "instruction": "bpl.s loc_46DDA",
+        "sourceLine": 1447
+      },
+      {
+        "instruction": "neg.w d2",
+        "sourceLine": 1448
+      },
+      {
+        "instruction": "btst #$F,d6",
+        "sourceLine": 1454
+      },
+      {
+        "instruction": "bne.s return_46DEC",
+        "sourceLine": 1455
+      },
+      {
+        "instruction": "bsr.w WaitForEntityToStopMoving",
+        "sourceLine": 1456
+      }
+    ],
+    "destinationVelocity": [
+      {
+        "instruction": "move.w #32,d3",
+        "sourceLine": 1436
+      },
+      {
+        "instruction": "neg.w d3",
+        "sourceLine": 1440
+      },
+      {
+        "instruction": "move.w #32,d3",
+        "sourceLine": 1445
+      },
+      {
+        "instruction": "neg.w d3",
+        "sourceLine": 1449
+      }
+    ],
+    "aliveStatusAdjustment": [
+      {
+        "instruction": "jsr j_GetCurrentHp",
+        "sourceLine": 1888
+      },
+      {
+        "instruction": "tst.w d1",
+        "sourceLine": 1889
+      },
+      {
+        "instruction": "bne.s @Return",
+        "sourceLine": 1890
+      },
+      {
+        "instruction": "adda.w d7,a6",
+        "sourceLine": 1891
+      }
+    ],
+    "setPositionFlash": [
+      {
+        "instruction": "jsr (WaitForVInt).w",
+        "sourceLine": 854
+      },
+      {
+        "instruction": "jsr (WaitForVInt).w",
+        "sourceLine": 855
+      },
+      {
+        "instruction": "jsr (Sleep).w",
+        "sourceLine": 864
+      },
+      {
+        "instruction": "dbf d7,loc_469BA",
+        "sourceLine": 865
+      },
+      {
+        "instruction": "bra.w csc19_setEntityPosAndFacing",
+        "sourceLine": 867
+      }
+    ]
+  },
+  "sourceFacts": {
+    "provenance": {
+      "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+      "upstreamBranch": "master",
+      "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+      "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+      "h2FixtureId": "sf2-map-script-engine-static-v1",
+      "h2FieldPath": "expected.entityPlacementCommandFacts"
+    },
+    "handlers": [
+      {
+        "macro": "setPos",
+        "handler": "csc19_setEntityPosAndFacing",
+        "handlerAddress": 289298,
+        "opcode": 25,
+        "sourceCommandCount": 608,
+        "operandByteCount": 4
+      },
+      {
+        "macro": "setPosFlash",
+        "handler": "csc17_setEntityPosAndFacingWithFlash",
+        "handlerAddress": 289196,
+        "opcode": 23,
+        "sourceCommandCount": 2,
+        "operandByteCount": 4
+      },
+      {
+        "macro": "setFacing",
+        "handler": "csc23_setEntityFacing",
+        "handlerAddress": 289824,
+        "opcode": 35,
+        "sourceCommandCount": 1579,
+        "operandByteCount": 2
+      },
+      {
+        "macro": "setDest",
+        "handler": "csc29_setEntityDest",
+        "handlerAddress": 290200,
+        "opcode": 41,
+        "sourceCommandCount": 99,
+        "operandByteCount": 6
+      }
+    ],
+    "callerBreakdown": {
+      "callerHandlers": [
+        {
+          "handler": "csc19_setEntityPosAndFacing",
+          "instructionTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 1,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 1,
+            "WaitForVInt": 0,
+            "Sleep": 0,
+            "WaitForEntityToStopMoving": 0
+          },
+          "effectiveTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 1,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 1,
+            "WaitForVInt": 0,
+            "Sleep": 0,
+            "WaitForEntityToStopMoving": 0
+          }
+        },
+        {
+          "handler": "csc17_setEntityPosAndFacingWithFlash",
+          "instructionTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 0,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 0,
+            "WaitForVInt": 2,
+            "Sleep": 1,
+            "WaitForEntityToStopMoving": 0
+          },
+          "effectiveTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 0,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 0,
+            "WaitForVInt": 2,
+            "Sleep": 1,
+            "WaitForEntityToStopMoving": 0
+          }
+        },
+        {
+          "handler": "csc23_setEntityFacing",
+          "instructionTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 1,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 1,
+            "WaitForVInt": 0,
+            "Sleep": 0,
+            "WaitForEntityToStopMoving": 0
+          },
+          "effectiveTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 1,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 1,
+            "WaitForVInt": 0,
+            "Sleep": 0,
+            "WaitForEntityToStopMoving": 0
+          }
+        },
+        {
+          "handler": "csc29_setEntityDest",
+          "instructionTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 0,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 0,
+            "WaitForVInt": 0,
+            "Sleep": 0,
+            "WaitForEntityToStopMoving": 1
+          },
+          "effectiveTargetSiteCounts": {
+            "AdjustScriptPointerByCharacterAliveStatus": 0,
+            "GetEntityAddressFromCharacter": 1,
+            "UpdateEntitySprite_0": 0,
+            "WaitForVInt": 0,
+            "Sleep": 0,
+            "WaitForEntityToStopMoving": 1
+          }
+        }
+      ],
+      "targetResolutions": [
+        {
+          "instructionTarget": "AdjustScriptPointerByCharacterAliveStatus",
+          "effectiveTarget": "AdjustScriptPointerByCharacterAliveStatus",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "GetEntityAddressFromCharacter",
+          "effectiveTarget": "GetEntityAddressFromCharacter",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "UpdateEntitySprite_0",
+          "effectiveTarget": "UpdateEntitySprite_0",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "WaitForVInt",
+          "effectiveTarget": "WaitForVInt",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "Sleep",
+          "effectiveTarget": "Sleep",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "WaitForEntityToStopMoving",
+          "effectiveTarget": "WaitForEntityToStopMoving",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        }
+      ],
+      "instructionTargetTotals": {
+        "AdjustScriptPointerByCharacterAliveStatus": 2,
+        "GetEntityAddressFromCharacter": 4,
+        "UpdateEntitySprite_0": 2,
+        "WaitForVInt": 2,
+        "Sleep": 1,
+        "WaitForEntityToStopMoving": 1
+      },
+      "effectiveTargetTotals": {
+        "AdjustScriptPointerByCharacterAliveStatus": 2,
+        "GetEntityAddressFromCharacter": 4,
+        "UpdateEntitySprite_0": 2,
+        "WaitForVInt": 2,
+        "Sleep": 1,
+        "WaitForEntityToStopMoving": 1
+      },
+      "internalInstructionTargetTotals": {
+        "AdjustScriptPointerByCharacterAliveStatus": 0,
+        "GetEntityAddressFromCharacter": 0,
+        "UpdateEntitySprite_0": 0,
+        "WaitForVInt": 0,
+        "Sleep": 0,
+        "WaitForEntityToStopMoving": 0
+      },
+      "externalInstructionTargetTotals": {
+        "AdjustScriptPointerByCharacterAliveStatus": 2,
+        "GetEntityAddressFromCharacter": 4,
+        "UpdateEntitySprite_0": 2,
+        "WaitForVInt": 2,
+        "Sleep": 1,
+        "WaitForEntityToStopMoving": 1
+      },
+      "internalEffectiveTargetTotals": {
+        "AdjustScriptPointerByCharacterAliveStatus": 0,
+        "GetEntityAddressFromCharacter": 0,
+        "UpdateEntitySprite_0": 0,
+        "WaitForVInt": 0,
+        "Sleep": 0,
+        "WaitForEntityToStopMoving": 0
+      },
+      "externalEffectiveTargetTotals": {
+        "AdjustScriptPointerByCharacterAliveStatus": 2,
+        "GetEntityAddressFromCharacter": 4,
+        "UpdateEntitySprite_0": 2,
+        "WaitForVInt": 2,
+        "Sleep": 1,
+        "WaitForEntityToStopMoving": 1
+      }
+    },
+    "evidenceLabels": {
+      "staticFindings": "Confirmed",
+      "runtimeObservations": "Confirmed"
+    }
+  },
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4DF900FF4004207900FF40004E904E75",
+    "postHandlerAddress": 65430,
+    "ramInputAddress": 16728064,
+    "scriptInputRamOffset": 4
+  },
+  "cases": [
+    {
+      "id": "set-position-alive",
+      "kind": "position",
+      "lifeState": "alive",
+      "selectorByte": 0,
+      "entityIndexByteSeed": 1,
+      "currentHpWordSeed": 1,
+      "scriptBytes": [
+        0,
+        2,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-position-alive",
+        "kind": "position",
+        "lifeState": "alive",
+        "handlerAddress": 289298,
+        "adjustCallSiteAddress": 289302,
+        "cursorAdjustmentByteCount": 0,
+        "scriptCursorRamOffsetAfter": 8,
+        "selectorByte": 0,
+        "xWordAfter": 768,
+        "xDestWordAfter": 768,
+        "yWordAfter": 1152,
+        "yDestWordAfter": 1152,
+        "facingByteAfter": 1,
+        "updateSpriteCallSiteAddress": 289346,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        },
+        "flashLoopIterationCount": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "aliveStatusCursorAdjustmentExecuted": false,
+        "getEntityCallObserved": true,
+        "updateSpriteCallObserved": true,
+        "flashWaitForVIntCallCount": 0,
+        "flashSleepCallCount": 0,
+        "sharedTailObserved": false,
+        "callbackOrder": [
+          "adjustScriptPointer",
+          "getEntityAddress",
+          "updateEntitySprite"
+        ],
+        "flashInitialGetEntityCallObserved": false,
+        "sharedTailGetEntityCallObserved": false,
+        "sharedTailUpdateSpriteCallObserved": false
+      }
+    },
+    {
+      "id": "set-position-dead",
+      "kind": "position",
+      "lifeState": "dead",
+      "selectorByte": 0,
+      "entityIndexByteSeed": 1,
+      "currentHpWordSeed": 0,
+      "scriptBytes": [
+        0,
+        2,
+        3,
+        1,
+        0,
+        4,
+        5,
+        2
+      ],
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-position-dead",
+        "kind": "position",
+        "lifeState": "dead",
+        "handlerAddress": 289298,
+        "adjustCallSiteAddress": 289302,
+        "cursorAdjustmentByteCount": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "selectorByte": 0,
+        "xWordAfter": 768,
+        "xDestWordAfter": 768,
+        "yWordAfter": 768,
+        "yDestWordAfter": 768,
+        "facingByteAfter": 3,
+        "updateSpriteCallSiteAddress": null,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        },
+        "flashLoopIterationCount": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "aliveStatusCursorAdjustmentExecuted": true,
+        "getEntityCallObserved": false,
+        "updateSpriteCallObserved": false,
+        "flashWaitForVIntCallCount": 0,
+        "flashSleepCallCount": 0,
+        "sharedTailObserved": false,
+        "callbackOrder": [
+          "adjustScriptPointer",
+          "aliveStatusCursorAdjustment"
+        ],
+        "flashInitialGetEntityCallObserved": false,
+        "sharedTailGetEntityCallObserved": false,
+        "sharedTailUpdateSpriteCallObserved": false
+      }
+    },
+    {
+      "id": "set-facing-alive",
+      "kind": "facing",
+      "lifeState": "alive",
+      "selectorByte": 0,
+      "entityIndexByteSeed": 1,
+      "currentHpWordSeed": 1,
+      "scriptBytes": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-facing-alive",
+        "kind": "facing",
+        "lifeState": "alive",
+        "handlerAddress": 289824,
+        "adjustCallSiteAddress": 289828,
+        "cursorAdjustmentByteCount": 0,
+        "scriptCursorRamOffsetAfter": 6,
+        "selectorByte": 0,
+        "facingByteAfter": 1,
+        "updateSpriteCallSiteAddress": 289842,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "aliveStatusCursorAdjustmentExecuted": false,
+        "getEntityCallObserved": true,
+        "updateSpriteCallObserved": true,
+        "callbackOrder": [
+          "adjustScriptPointer",
+          "getEntityAddress",
+          "updateEntitySprite"
+        ]
+      }
+    },
+    {
+      "id": "set-facing-dead",
+      "kind": "facing",
+      "lifeState": "dead",
+      "selectorByte": 0,
+      "entityIndexByteSeed": 1,
+      "currentHpWordSeed": 0,
+      "scriptBytes": [
+        0,
+        1,
+        0,
+        2
+      ],
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-facing-dead",
+        "kind": "facing",
+        "lifeState": "dead",
+        "handlerAddress": 289824,
+        "adjustCallSiteAddress": 289828,
+        "cursorAdjustmentByteCount": 2,
+        "scriptCursorRamOffsetAfter": 6,
+        "selectorByte": 0,
+        "facingByteAfter": 3,
+        "updateSpriteCallSiteAddress": null,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "aliveStatusCursorAdjustmentExecuted": true,
+        "getEntityCallObserved": false,
+        "updateSpriteCallObserved": false,
+        "callbackOrder": [
+          "adjustScriptPointer",
+          "aliveStatusCursorAdjustment"
+        ]
+      }
+    },
+    {
+      "id": "set-position-flash-alive",
+      "kind": "flash",
+      "lifeState": "alive",
+      "selectorByte": 0,
+      "entityIndexByteSeed": 1,
+      "currentHpWordSeed": 1,
+      "scriptBytes": [
+        0,
+        2,
+        3,
+        1
+      ],
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-position-flash-alive",
+        "kind": "flash",
+        "lifeState": "alive",
+        "handlerAddress": 289196,
+        "adjustCallSiteAddress": 289302,
+        "cursorAdjustmentByteCount": 0,
+        "scriptCursorRamOffsetAfter": 8,
+        "selectorByte": 0,
+        "xWordAfter": 768,
+        "xDestWordAfter": 768,
+        "yWordAfter": 1152,
+        "yDestWordAfter": 1152,
+        "facingByteAfter": 1,
+        "updateSpriteCallSiteAddress": 289346,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        },
+        "flashLoopIterationCount": 31
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "aliveStatusCursorAdjustmentExecuted": false,
+        "getEntityCallObserved": false,
+        "updateSpriteCallObserved": false,
+        "flashWaitForVIntCallCount": 62,
+        "flashSleepCallCount": 31,
+        "sharedTailObserved": true,
+        "callbackOrder": [
+          "getEntityAddressForFlash",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "waitForVInt",
+          "waitForVInt",
+          "sleep",
+          "sharedTail",
+          "adjustScriptPointer",
+          "getEntityAddressFromSharedTail",
+          "updateEntitySpriteFromSharedTail"
+        ],
+        "flashInitialGetEntityCallObserved": true,
+        "sharedTailGetEntityCallObserved": true,
+        "sharedTailUpdateSpriteCallObserved": true
+      }
+    },
+    {
+      "id": "set-destination-positive-x-negative-y-wait",
+      "kind": "destination",
+      "selectorWord": 0,
+      "entityIndexByteSeed": 1,
+      "xInputWord": 3,
+      "yInputWord": 1,
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-destination-positive-x-negative-y-wait",
+        "kind": "destination",
+        "handlerAddress": 290200,
+        "selectorWord": 0,
+        "xInputWord": 3,
+        "yInputWord": 1,
+        "scriptCursorRamOffsetAfter": 10,
+        "xDestWordAfter": 1152,
+        "yDestWordAfter": 384,
+        "xTravelWordAfter": 384,
+        "yTravelWordAfter": 384,
+        "xVelocityWordAfter": 32,
+        "yVelocityWordAfter": 65504,
+        "negativeXInstructionAddress": null,
+        "negativeYInstructionAddress": 290262,
+        "waitBypassed": false,
+        "waitCallSiteAddress": 290280,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "getEntityCallObserved": true,
+        "negativeXObserved": false,
+        "negativeYObserved": true,
+        "waitForEntityToStopMovingObserved": true,
+        "callbackOrder": [
+          "getEntityAddress",
+          "negativeYDelta",
+          "waitForEntityToStopMoving"
+        ]
+      }
+    },
+    {
+      "id": "set-destination-negative-x-positive-y-bypass",
+      "kind": "destination",
+      "selectorWord": 32768,
+      "entityIndexByteSeed": 1,
+      "xInputWord": 1,
+      "yInputWord": 3,
+      "entityStateSeed": {
+        "xWord": 768,
+        "yWord": 768,
+        "xDestWord": 768,
+        "yDestWord": 768,
+        "xTravelWord": 0,
+        "yTravelWord": 0,
+        "xVelocityWord": 0,
+        "yVelocityWord": 0,
+        "facingByte": 3
+      },
+      "expected": {
+        "id": "set-destination-negative-x-positive-y-bypass",
+        "kind": "destination",
+        "handlerAddress": 290200,
+        "selectorWord": 32768,
+        "xInputWord": 1,
+        "yInputWord": 3,
+        "scriptCursorRamOffsetAfter": 10,
+        "xDestWordAfter": 384,
+        "yDestWordAfter": 1152,
+        "xTravelWordAfter": 384,
+        "yTravelWordAfter": 384,
+        "xVelocityWordAfter": 65504,
+        "yVelocityWordAfter": 32,
+        "negativeXInstructionAddress": 290240,
+        "negativeYInstructionAddress": null,
+        "waitBypassed": true,
+        "waitCallSiteAddress": null,
+        "entityStateSeed": {
+          "xWord": 768,
+          "yWord": 768,
+          "xDestWord": 768,
+          "yDestWord": 768,
+          "xTravelWord": 0,
+          "yTravelWord": 0,
+          "xVelocityWord": 0,
+          "yVelocityWord": 0,
+          "facingByte": 3
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "getEntityCallObserved": true,
+        "negativeXObserved": true,
+        "negativeYObserved": false,
+        "waitForEntityToStopMovingObserved": false,
+        "callbackOrder": [
+          "getEntityAddress",
+          "negativeXDelta"
+        ]
+      }
+    }
+  ]
+}

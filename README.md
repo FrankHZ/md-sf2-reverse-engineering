@@ -17,8 +17,8 @@ BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-coun
 重制实现。实现无关的物理战斗、法术伤害与升级成长合同已经落地，并直接绑定现有 H3 fixture，供未来
 H4 复用。
 
-截至 2026-07-19，研究索引有 1,535 条 confirmed finding、74 个 H2 fixture、60 个 H3 fixture
-和 2,109 个地址绑定；其中 1,498 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
+截至 2026-07-29，研究索引有 1,550 条 confirmed finding、74 个 H2 fixture、66 个 H3 fixture
+和 2,199 个地址绑定；其中 1,513 条由 68000 H1 listing 校验，37 条由独立 Z80 music-bank
 地址域校验。music rail 还静态闭合 29 个 byte-emitting macro、39 个 song entry、321 个 channel
 label 和 39,290 次 macro invocation，并将 `F8`–`FF`/`F0`/`70` 接到五个 YM/PSG parser 与共享
 loop state machine；十槽声道顺序与 `UpdateSound` 一致，全部 macro 调用的声道角色兼容性为
