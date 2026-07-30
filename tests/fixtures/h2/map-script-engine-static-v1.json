@@ -405,7 +405,10 @@
       "map-block-mutation/collision-pathfinding-consumer-effects",
       "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
       "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
-      "entity-population-reload/runtime-effects-matrix",
+      "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+      "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+      "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+      "entity-population-reload/collision-pathfinding-consumer-effects",
       "map-lifecycle/layout-collision-pathfinding-effects",
       "map-lifecycle/entity-reload-player-placement",
       "map-lifecycle/presentation-fade-hardware-timing",
@@ -54020,7 +54023,10 @@
         }
       },
       "runtimeQuestions": [
-        "entity-population-reload/runtime-effects-matrix"
+        "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+        "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+        "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+        "entity-population-reload/collision-pathfinding-consumer-effects"
       ]
     },
     "mapLifecycleCommandFacts": {

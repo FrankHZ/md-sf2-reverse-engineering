@@ -1,0 +1,2024 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-entity-population-reload-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "mapTestIndex": 0,
+  "observationBoundary": "Twelve bounded cases replay the debug Map Test 0 prompt from one shared in-memory core state. A deterministic session-only copy of the verified ROM replaces the existing RunMapSetupInitFunction indirect call with a 16-byte FF-padding trampoline. The trampoline sets A6 to RAM-owned source-shaped input and JSRs one unmodified entity-population handler; the original disk ROM is re-hashed unchanged before launch. Lua writes only bounded ENTITY_INDEX_LIST records, selected ENTITY_DATA fields, CURRENT_MAP, GAME_FLAGS when the case requests it, and the input stream. It observes handler entry and return, every guarded direct callback in order, the script-cursor offset, selected identity-list and entity records, and the non-empty count over ClearEntities' 49-record span. It does not observe capacity beyond the 49-slot high-water case, normal-story/save/map-reload persistence, visible rendering/animation/VDP timing, collision, or pathfinding effects. All original handlers and callees execute in one BizHawk launch.",
+  "runtimeQuestions": [
+    "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+    "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+    "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+    "entity-population-reload/collision-pathfinding-consumer-effects"
+  ],
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "staticContractFixture": "tests/fixtures/h2/map-script-engine-static-v1.json",
+  "maxFrames": 12000,
+  "function": {
+    "runMapSetupInitFunctionAddress": 292092,
+    "newEntityHandlerAddress": 290360,
+    "loadMapEntitiesHandlerAddress": 288394,
+    "reloadEntitiesHandlerAddress": 288456,
+    "loadEntitiesFromMapSetupHandlerAddress": 288600,
+    "initializeNewEntityAddress": 279920,
+    "initializeMapEntitiesAddress": 278732,
+    "getEntityAddressFromCharacterAddress": 290890,
+    "getMapSetupEntityListAddress": 292752,
+    "loadEntityMapspritesAddress": 24612
+  },
+  "ram": {
+    "entityDataAddress": 16754946,
+    "entityIndexListAddress": 16757056,
+    "currentMapAddress": 16774929,
+    "gameFlagsAddress": 16774790
+  },
+  "constants": {
+    "entityRecordByteCount": 32,
+    "mapTileSize": 384,
+    "mapTacticalBase": 46,
+    "identitySignedByteBranchInstruction": "bpl.s @Ally",
+    "entityEnemyIndexDifference": 96,
+    "combatantMaskAll": 255,
+    "allocationScanCounter": 62,
+    "allocationScanItemCount": 63,
+    "allocationIncrementInstruction": "addq.w #1,d0",
+    "coordinateScaleSymbol": "MAP_TILE_SIZE",
+    "coordinateScaleValue": 384,
+    "clearRecordCounter": 48,
+    "clearRecordCount": 49,
+    "emptyCoordinateWord": 28672,
+    "entityFieldOffsets": {
+      "xWord": 0,
+      "yWord": 2,
+      "xDestWord": 12,
+      "facingByte": 16,
+      "entityNumberByte": 18,
+      "mapspriteByte": 19
+    }
+  },
+  "sourceFacts": {
+    "provenance": {
+      "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+      "h2FixtureId": "sf2-map-script-engine-static-v1",
+      "h2FieldPath": "expected.entityPopulationCommandFacts"
+    },
+    "handlers": [
+      {
+        "macro": "newEntity",
+        "handler": "csc2B_initializeNewEntity",
+        "handlerAddress": 290360,
+        "opcode": 43,
+        "operandByteCount": 6,
+        "scriptCursorUseSites": [
+          {
+            "destinationRegister": "d0",
+            "scriptInputByteOffset": 0,
+            "transferredByteCount": 2,
+            "instruction": "move.w (a6)+,d0"
+          },
+          {
+            "destinationRegister": "d1",
+            "scriptInputByteOffset": 2,
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d1"
+          },
+          {
+            "destinationRegister": "d2",
+            "scriptInputByteOffset": 3,
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d2"
+          },
+          {
+            "destinationRegister": "d3",
+            "scriptInputByteOffset": 4,
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d3"
+          },
+          {
+            "destinationRegister": "d4",
+            "scriptInputByteOffset": 5,
+            "transferredByteCount": 1,
+            "instruction": "move.b (a6)+,d4"
+          }
+        ],
+        "callbacks": [
+          {
+            "opcode": "jsr",
+            "instructionTarget": "InitializeNewEntity",
+            "instruction": "jsr InitializeNewEntity",
+            "callSiteAddress": 290384,
+            "targetAddress": 279920
+          }
+        ],
+        "vintControlRecords": []
+      },
+      {
+        "macro": "loadMapEntities",
+        "handler": "csc42_loadMapEntities",
+        "handlerAddress": 288394,
+        "opcode": 66,
+        "operandByteCount": 4,
+        "scriptCursorUseSites": [
+          {
+            "destinationRegister": "a0",
+            "scriptInputByteOffset": 0,
+            "transferredByteCount": 4,
+            "instruction": "movea.l (a6)+,a0"
+          }
+        ],
+        "callbacks": [
+          {
+            "opcode": "jsr",
+            "instructionTarget": "DisableDisplayAndInterrupts",
+            "instruction": "jsr (DisableDisplayAndInterrupts).w",
+            "callSiteAddress": 288402,
+            "targetAddress": 3146
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "InitializeMapEntities",
+            "instruction": "jsr InitializeMapEntities",
+            "callSiteAddress": 288414,
+            "targetAddress": 278732
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "LoadEntityMapsprites",
+            "instruction": "jsr (LoadEntityMapsprites).w",
+            "callSiteAddress": 288420,
+            "targetAddress": 24612
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "EnableDisplayAndInterrupts",
+            "instruction": "jsr (EnableDisplayAndInterrupts).w",
+            "callSiteAddress": 288424,
+            "targetAddress": 3142
+          }
+        ],
+        "vintControlRecords": [
+          {
+            "phase": "deactivate",
+            "operationSymbol": "VINTS_DEACTIVATE",
+            "operationValue": 3,
+            "trapInstruction": "trap #VINT_FUNCTIONS",
+            "operationInstruction": "dc.w VINTS_DEACTIVATE",
+            "argumentInstruction": "dc.l 0"
+          },
+          {
+            "phase": "activate",
+            "operationSymbol": "VINTS_ACTIVATE",
+            "operationValue": 4,
+            "trapInstruction": "trap #VINT_FUNCTIONS",
+            "operationInstruction": "dc.w VINTS_ACTIVATE",
+            "argumentInstruction": "dc.l 0"
+          }
+        ]
+      },
+      {
+        "macro": "reloadEntities",
+        "handler": "csc44_reloadEntities",
+        "handlerAddress": 288456,
+        "opcode": 68,
+        "operandByteCount": 4,
+        "scriptCursorUseSites": [
+          {
+            "destinationRegister": "a0",
+            "scriptInputByteOffset": 0,
+            "transferredByteCount": 4,
+            "instruction": "movea.l (a6)+,a0"
+          }
+        ],
+        "callbacks": [
+          {
+            "opcode": "bsr",
+            "instructionTarget": "GetEntityAddressFromCharacter",
+            "instruction": "bsr.w GetEntityAddressFromCharacter",
+            "callSiteAddress": 288466,
+            "targetAddress": 290890
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "InitializeMapEntities",
+            "instruction": "jsr InitializeMapEntities",
+            "callSiteAddress": 288496,
+            "targetAddress": 278732
+          }
+        ],
+        "vintControlRecords": [
+          {
+            "phase": "deactivate",
+            "operationSymbol": "VINTS_DEACTIVATE",
+            "operationValue": 3,
+            "trapInstruction": "trap #VINT_FUNCTIONS",
+            "operationInstruction": "dc.w VINTS_DEACTIVATE",
+            "argumentInstruction": "dc.l 0"
+          },
+          {
+            "phase": "activate",
+            "operationSymbol": "VINTS_ACTIVATE",
+            "operationValue": 4,
+            "trapInstruction": "trap #VINT_FUNCTIONS",
+            "operationInstruction": "dc.w VINTS_ACTIVATE",
+            "argumentInstruction": "dc.l 0"
+          }
+        ]
+      },
+      {
+        "macro": "loadEntitiesFromMapSetup",
+        "handler": "csc49_loadEntitiesFromMapSetup",
+        "handlerAddress": 288600,
+        "opcode": 73,
+        "operandByteCount": 6,
+        "scriptCursorUseSites": [
+          {
+            "destinationRegister": "d1",
+            "scriptInputByteOffset": 0,
+            "transferredByteCount": 2,
+            "instruction": "move.w (a6)+,d1"
+          },
+          {
+            "destinationRegister": "d2",
+            "scriptInputByteOffset": 2,
+            "transferredByteCount": 2,
+            "instruction": "move.w (a6)+,d2"
+          },
+          {
+            "destinationRegister": "d3",
+            "scriptInputByteOffset": 4,
+            "transferredByteCount": 2,
+            "instruction": "move.w (a6)+,d3"
+          }
+        ],
+        "callbacks": [
+          {
+            "opcode": "jsr",
+            "instructionTarget": "DisableDisplayAndInterrupts",
+            "instruction": "jsr (DisableDisplayAndInterrupts).w",
+            "callSiteAddress": 288608,
+            "targetAddress": 3146
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "GetMapSetupEntityList",
+            "instruction": "jsr GetMapSetupEntityList",
+            "callSiteAddress": 288612,
+            "targetAddress": 292752
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "j_InitializeMapEntities",
+            "instruction": "jsr j_InitializeMapEntities",
+            "callSiteAddress": 288624,
+            "targetAddress": 278532
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "LoadEntityMapsprites",
+            "instruction": "jsr (LoadEntityMapsprites).w",
+            "callSiteAddress": 288630,
+            "targetAddress": 24612
+          },
+          {
+            "opcode": "jsr",
+            "instructionTarget": "EnableDisplayAndInterrupts",
+            "instruction": "jsr (EnableDisplayAndInterrupts).w",
+            "callSiteAddress": 288634,
+            "targetAddress": 3142
+          }
+        ],
+        "vintControlRecords": [
+          {
+            "phase": "deactivate",
+            "operationSymbol": "VINTS_DEACTIVATE",
+            "operationValue": 3,
+            "trapInstruction": "trap #VINT_FUNCTIONS",
+            "operationInstruction": "dc.w VINTS_DEACTIVATE",
+            "argumentInstruction": "dc.l 0"
+          },
+          {
+            "phase": "activate",
+            "operationSymbol": "VINTS_ACTIVATE",
+            "operationValue": 4,
+            "trapInstruction": "trap #VINT_FUNCTIONS",
+            "operationInstruction": "dc.w VINTS_ACTIVATE",
+            "argumentInstruction": "dc.l 0"
+          }
+        ]
+      }
+    ],
+    "directTableSourceSite": {
+      "sourceOrderKey": "cs_55832:2:loadMapEntities",
+      "programId": "cs_55832",
+      "tableSymbol": "ce_559AE",
+      "tableAddress": 350638
+    },
+    "reloadSourceSite": {
+      "sourceOrderKey": "cs_55832:76:reloadEntities",
+      "programId": "cs_55832",
+      "tableSymbol": "ms_map7_Entities",
+      "tableAddress": 349126
+    },
+    "mapSetupInputSourceSites": [
+      {
+        "sourceOrderKey": "cs_5249E:3:loadEntitiesFromMapSetup",
+        "programId": "cs_5249E",
+        "inputWords": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5FB6A:52:loadEntitiesFromMapSetup",
+        "programId": "cs_5FB6A",
+        "inputWords": [
+          9,
+          11,
+          0
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5EF60:2:loadEntitiesFromMapSetup",
+        "programId": "cs_5EF60",
+        "inputWords": [
+          9,
+          11,
+          3
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5CC26:5:loadEntitiesFromMapSetup",
+        "programId": "cs_5CC26",
+        "inputWords": [
+          5,
+          4,
+          1
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5CC26:35:loadEntitiesFromMapSetup",
+        "programId": "cs_5CC26",
+        "inputWords": [
+          8,
+          7,
+          1
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5CCF6:5:loadEntitiesFromMapSetup",
+        "programId": "cs_5CCF6",
+        "inputWords": [
+          5,
+          4,
+          1
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5CCF6:35:loadEntitiesFromMapSetup",
+        "programId": "cs_5CCF6",
+        "inputWords": [
+          10,
+          21,
+          1
+        ]
+      }
+    ],
+    "newEntityInputSourceSites": [
+      {
+        "sourceOrderKey": "cs_55242:1:newEntity",
+        "programId": "cs_55242",
+        "inputValues": [
+          142,
+          11,
+          0,
+          3,
+          206
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_55288:1:newEntity",
+        "programId": "cs_55288",
+        "inputValues": [
+          18,
+          16,
+          22,
+          3,
+          18
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:2:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          144,
+          29,
+          9,
+          1,
+          207
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:3:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          145,
+          28,
+          9,
+          1,
+          206
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:4:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          146,
+          28,
+          10,
+          1,
+          202
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:5:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          147,
+          28,
+          11,
+          1,
+          202
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:7:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          148,
+          30,
+          9,
+          1,
+          206
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:8:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          149,
+          30,
+          10,
+          1,
+          202
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_53176:9:newEntity",
+        "programId": "cs_53176",
+        "inputValues": [
+          150,
+          30,
+          11,
+          1,
+          202
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5DD8E:0:newEntity",
+        "programId": "cs_5DD8E",
+        "inputValues": [
+          26,
+          11,
+          8,
+          3,
+          255
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5E0EE:0:newEntity",
+        "programId": "cs_5E0EE",
+        "inputValues": [
+          26,
+          4,
+          12,
+          1,
+          255
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5F594:0:newEntity",
+        "programId": "cs_5F594",
+        "inputValues": [
+          28,
+          6,
+          15,
+          1,
+          255
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_5FF06:4:newEntity",
+        "programId": "cs_5FF06",
+        "inputValues": [
+          128,
+          39,
+          2,
+          3,
+          180
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_4FC32:1:newEntity",
+        "programId": "cs_4FC32",
+        "inputValues": [
+          13,
+          57,
+          25,
+          1,
+          255
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_4FF5A:1:newEntity",
+        "programId": "cs_4FF5A",
+        "inputValues": [
+          10,
+          43,
+          47,
+          3,
+          255
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_4FFDA:1:newEntity",
+        "programId": "cs_4FFDA",
+        "inputValues": [
+          11,
+          63,
+          63,
+          1,
+          11
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_4FFDA:2:newEntity",
+        "programId": "cs_4FFDA",
+        "inputValues": [
+          128,
+          63,
+          63,
+          2,
+          181
+        ]
+      },
+      {
+        "sourceOrderKey": "cs_4FFDA:3:newEntity",
+        "programId": "cs_4FFDA",
+        "inputValues": [
+          129,
+          63,
+          63,
+          2,
+          178
+        ]
+      }
+    ],
+    "mapSetupDefaultEntityTable": {
+      "currentMap": 17,
+      "selectedPointer": "ms_map17",
+      "selectedPointerAddress": 336516,
+      "entityTableSymbol": "ms_map17_Entities",
+      "entityTableAddress": 336564
+    },
+    "mapInitScriptJoins": [
+      {
+        "sourceOwnerSymbol": "ms_map17_InitFunction",
+        "sourcePath": "data/maps/entries/map17/mapsetups/s6_initfunction.asm",
+        "operationIndex": 2,
+        "scriptTargetSymbol": "cs_5249E",
+        "scriptTargetAddress": 337054,
+        "scriptTargetResolution": "embedded-init-source"
+      },
+      {
+        "sourceOwnerSymbol": "ms_map59_InitFunction",
+        "sourcePath": "data/maps/entries/map59/mapsetups/s6_initfunction.asm",
+        "operationIndex": 6,
+        "scriptTargetSymbol": "cs_5EF60",
+        "scriptTargetAddress": 388960,
+        "scriptTargetResolution": "embedded-init-source"
+      }
+    ],
+    "reloadInputUseSites": [
+      {
+        "symbol": "MAP_TILE_SIZE",
+        "value": 384,
+        "instruction": "divu.w #MAP_TILE_SIZE,d1"
+      },
+      {
+        "symbol": "ENTITYDEF_OFFSET_Y",
+        "value": 2,
+        "instruction": "move.w ENTITYDEF_OFFSET_Y(a5),d2"
+      },
+      {
+        "symbol": "MAP_TILE_SIZE",
+        "value": 384,
+        "instruction": "divu.w #MAP_TILE_SIZE,d2"
+      },
+      {
+        "symbol": "ENTITYDEF_OFFSET_FACING",
+        "value": 16,
+        "instruction": "move.b ENTITYDEF_OFFSET_FACING(a5),d3"
+      }
+    ],
+    "callerBreakdown": {
+      "callerHandlers": [
+        {
+          "handler": "csc2B_initializeNewEntity",
+          "instructionTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 0,
+            "EnableDisplayAndInterrupts": 0,
+            "GetEntityAddressFromCharacter": 0,
+            "GetMapSetupEntityList": 0,
+            "InitializeMapEntities": 0,
+            "InitializeNewEntity": 1,
+            "LoadEntityMapsprites": 0,
+            "j_InitializeMapEntities": 0
+          },
+          "effectiveTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 0,
+            "EnableDisplayAndInterrupts": 0,
+            "GetEntityAddressFromCharacter": 0,
+            "GetMapSetupEntityList": 0,
+            "InitializeMapEntities": 0,
+            "InitializeNewEntity": 1,
+            "LoadEntityMapsprites": 0
+          }
+        },
+        {
+          "handler": "csc42_loadMapEntities",
+          "instructionTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 1,
+            "EnableDisplayAndInterrupts": 1,
+            "GetEntityAddressFromCharacter": 0,
+            "GetMapSetupEntityList": 0,
+            "InitializeMapEntities": 1,
+            "InitializeNewEntity": 0,
+            "LoadEntityMapsprites": 1,
+            "j_InitializeMapEntities": 0
+          },
+          "effectiveTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 1,
+            "EnableDisplayAndInterrupts": 1,
+            "GetEntityAddressFromCharacter": 0,
+            "GetMapSetupEntityList": 0,
+            "InitializeMapEntities": 1,
+            "InitializeNewEntity": 0,
+            "LoadEntityMapsprites": 1
+          }
+        },
+        {
+          "handler": "csc44_reloadEntities",
+          "instructionTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 0,
+            "EnableDisplayAndInterrupts": 0,
+            "GetEntityAddressFromCharacter": 1,
+            "GetMapSetupEntityList": 0,
+            "InitializeMapEntities": 1,
+            "InitializeNewEntity": 0,
+            "LoadEntityMapsprites": 0,
+            "j_InitializeMapEntities": 0
+          },
+          "effectiveTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 0,
+            "EnableDisplayAndInterrupts": 0,
+            "GetEntityAddressFromCharacter": 1,
+            "GetMapSetupEntityList": 0,
+            "InitializeMapEntities": 1,
+            "InitializeNewEntity": 0,
+            "LoadEntityMapsprites": 0
+          }
+        },
+        {
+          "handler": "csc49_loadEntitiesFromMapSetup",
+          "instructionTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 1,
+            "EnableDisplayAndInterrupts": 1,
+            "GetEntityAddressFromCharacter": 0,
+            "GetMapSetupEntityList": 1,
+            "InitializeMapEntities": 0,
+            "InitializeNewEntity": 0,
+            "LoadEntityMapsprites": 1,
+            "j_InitializeMapEntities": 1
+          },
+          "effectiveTargetSiteCounts": {
+            "DisableDisplayAndInterrupts": 1,
+            "EnableDisplayAndInterrupts": 1,
+            "GetEntityAddressFromCharacter": 0,
+            "GetMapSetupEntityList": 1,
+            "InitializeMapEntities": 1,
+            "InitializeNewEntity": 0,
+            "LoadEntityMapsprites": 1
+          }
+        }
+      ],
+      "targetResolutions": [
+        {
+          "instructionTarget": "DisableDisplayAndInterrupts",
+          "effectiveTarget": "DisableDisplayAndInterrupts",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "EnableDisplayAndInterrupts",
+          "effectiveTarget": "EnableDisplayAndInterrupts",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "GetEntityAddressFromCharacter",
+          "effectiveTarget": "GetEntityAddressFromCharacter",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "GetMapSetupEntityList",
+          "effectiveTarget": "GetMapSetupEntityList",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "InitializeMapEntities",
+          "effectiveTarget": "InitializeMapEntities",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "InitializeNewEntity",
+          "effectiveTarget": "InitializeNewEntity",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "LoadEntityMapsprites",
+          "effectiveTarget": "LoadEntityMapsprites",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        },
+        {
+          "instructionTarget": "j_InitializeMapEntities",
+          "effectiveTarget": "InitializeMapEntities",
+          "aliasSourcePath": "code/common/tech/jumpinterfaces/s07_jumpinterface.asm",
+          "effectiveTargetScope": "external"
+        }
+      ],
+      "instructionTargetTotals": {
+        "DisableDisplayAndInterrupts": 2,
+        "EnableDisplayAndInterrupts": 2,
+        "GetEntityAddressFromCharacter": 1,
+        "GetMapSetupEntityList": 1,
+        "InitializeMapEntities": 2,
+        "InitializeNewEntity": 1,
+        "LoadEntityMapsprites": 2,
+        "j_InitializeMapEntities": 1
+      },
+      "effectiveTargetTotals": {
+        "DisableDisplayAndInterrupts": 2,
+        "EnableDisplayAndInterrupts": 2,
+        "GetEntityAddressFromCharacter": 1,
+        "GetMapSetupEntityList": 1,
+        "InitializeMapEntities": 3,
+        "InitializeNewEntity": 1,
+        "LoadEntityMapsprites": 2
+      },
+      "internalEffectiveTargetTotals": {
+        "DisableDisplayAndInterrupts": 0,
+        "EnableDisplayAndInterrupts": 0,
+        "GetEntityAddressFromCharacter": 0,
+        "GetMapSetupEntityList": 0,
+        "InitializeMapEntities": 0,
+        "InitializeNewEntity": 0,
+        "LoadEntityMapsprites": 0
+      },
+      "externalEffectiveTargetTotals": {
+        "DisableDisplayAndInterrupts": 2,
+        "EnableDisplayAndInterrupts": 2,
+        "GetEntityAddressFromCharacter": 1,
+        "GetMapSetupEntityList": 1,
+        "InitializeMapEntities": 3,
+        "InitializeNewEntity": 1,
+        "LoadEntityMapsprites": 2
+      }
+    },
+    "runtimeQuestions": [
+      "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+      "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+      "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+      "entity-population-reload/collision-pathfinding-consumer-effects"
+    ]
+  },
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4DF900FF4004207900FF40004E904E75",
+    "postHandlerAddress": 65430,
+    "ramInputAddress": 16728064
+  },
+  "cases": [
+    {
+      "id": "new-entity-empty-list",
+      "macro": "newEntity",
+      "sourceOrderKey": "cs_55242:1:newEntity",
+      "currentMapMode": "map-tactical-base",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        46
+      ],
+      "entitySlotReadIndices": [
+        1
+      ]
+    },
+    {
+      "id": "new-entity-existing-identity",
+      "macro": "newEntity",
+      "sourceOrderKey": "cs_55242:1:newEntity",
+      "currentMapMode": "map-tactical-base",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [
+        {
+          "offset": 46,
+          "value": 5
+        }
+      ],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        46
+      ],
+      "entitySlotReadIndices": [
+        6
+      ]
+    },
+    {
+      "id": "new-entity-clear-span-high-water",
+      "macro": "newEntity",
+      "sourceOrderKey": "cs_55242:1:newEntity",
+      "currentMapMode": "map-tactical-base",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [
+        {
+          "offset": 46,
+          "value": 48
+        }
+      ],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        46
+      ],
+      "entitySlotReadIndices": [
+        49
+      ]
+    },
+    {
+      "id": "load-map-entities-direct-table",
+      "macro": "loadMapEntities",
+      "sourceOrderKey": "cs_55832:2:loadMapEntities",
+      "currentMapMode": "map-tactical-base",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0,
+        32
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "reload-entities-existing-record",
+      "macro": "reloadEntities",
+      "sourceOrderKey": "cs_55832:76:reloadEntities",
+      "currentMapMode": "map-tactical-base",
+      "clearGameFlags": false,
+      "indexListSeedRecords": [
+        {
+          "offset": 0,
+          "value": 5
+        }
+      ],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [
+        {
+          "slotIndex": 5,
+          "fields": [
+            {
+              "field": "xWord",
+              "value": 3456
+            },
+            {
+              "field": "yWord",
+              "value": 4224
+            },
+            {
+              "field": "facingByte",
+              "value": 3
+            }
+          ]
+        }
+      ],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5249E-3-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5249E:3:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5FB6A-52-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5FB6A:52:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5EF60-2-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5EF60:2:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5CC26-5-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5CC26:5:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5CC26-35-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5CC26:35:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5CCF6-5-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5CCF6:5:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "map-setup-cs_5CCF6-35-loadEntitiesFromMapSetup",
+      "macro": "loadEntitiesFromMapSetup",
+      "sourceOrderKey": "cs_5CCF6:35:loadEntitiesFromMapSetup",
+      "currentMapMode": "map17-default",
+      "clearGameFlags": true,
+      "indexListSeedRecords": [],
+      "indexListSeedRanges": [],
+      "entitySlotSeedRecords": [],
+      "indexReadOffsets": [
+        0
+      ],
+      "entitySlotReadIndices": [
+        0,
+        1
+      ]
+    }
+  ],
+  "runtimeGolden": {
+    "recordOrder": [
+      "new-entity-empty-list",
+      "new-entity-existing-identity",
+      "new-entity-clear-span-high-water",
+      "load-map-entities-direct-table",
+      "reload-entities-existing-record",
+      "map-setup-cs_5249E-3-loadEntitiesFromMapSetup",
+      "map-setup-cs_5FB6A-52-loadEntitiesFromMapSetup",
+      "map-setup-cs_5EF60-2-loadEntitiesFromMapSetup",
+      "map-setup-cs_5CC26-5-loadEntitiesFromMapSetup",
+      "map-setup-cs_5CC26-35-loadEntitiesFromMapSetup",
+      "map-setup-cs_5CCF6-5-loadEntitiesFromMapSetup",
+      "map-setup-cs_5CCF6-35-loadEntitiesFromMapSetup"
+    ],
+    "records": [
+      {
+        "callbackEvents": [
+          {
+            "a0": 290360,
+            "callSiteAddressObserved": 290384,
+            "d0": 142,
+            "d1": 11,
+            "d2": 0,
+            "d3": 3,
+            "d4": 206,
+            "d5": 286926,
+            "instructionTarget": "InitializeNewEntity"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 3,
+              "mapspriteByte": 206,
+              "xDestWord": 4224,
+              "xWord": 4224,
+              "yWord": 0
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 290360,
+        "handlerReturned": true,
+        "id": "new-entity-empty-list",
+        "indexReadRecords": [
+          {
+            "offset": 46,
+            "value": 1
+          }
+        ],
+        "macro": "newEntity",
+        "nonEmptyClearSpanSlotCount": 20,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 290360,
+            "callSiteAddressObserved": 290384,
+            "d0": 142,
+            "d1": 11,
+            "d2": 0,
+            "d3": 3,
+            "d4": 206,
+            "d5": 286926,
+            "instructionTarget": "InitializeNewEntity"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 6,
+              "facingByte": 3,
+              "mapspriteByte": 206,
+              "xDestWord": 4224,
+              "xWord": 4224,
+              "yWord": 0
+            },
+            "slotIndex": 6
+          }
+        ],
+        "handlerAddressObserved": 290360,
+        "handlerReturned": true,
+        "id": "new-entity-existing-identity",
+        "indexReadRecords": [
+          {
+            "offset": 46,
+            "value": 6
+          }
+        ],
+        "macro": "newEntity",
+        "nonEmptyClearSpanSlotCount": 20,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 290360,
+            "callSiteAddressObserved": 290384,
+            "d0": 142,
+            "d1": 11,
+            "d2": 0,
+            "d3": 3,
+            "d4": 206,
+            "d5": 286926,
+            "instructionTarget": "InitializeNewEntity"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 49,
+              "facingByte": 3,
+              "mapspriteByte": 206,
+              "xDestWord": 4224,
+              "xWord": 4224,
+              "yWord": 0
+            },
+            "slotIndex": 49
+          }
+        ],
+        "handlerAddressObserved": 290360,
+        "handlerReturned": true,
+        "id": "new-entity-clear-span-high-water",
+        "indexReadRecords": [
+          {
+            "offset": 46,
+            "value": 49
+          }
+        ],
+        "macro": "newEntity",
+        "nonEmptyClearSpanSlotCount": 20,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288394,
+            "callSiteAddressObserved": 288402,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 350644,
+            "callSiteAddressObserved": 288414,
+            "d0": 1,
+            "d1": 11,
+            "d2": 7,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "InitializeMapEntities"
+          },
+          {
+            "a0": 350644,
+            "callSiteAddressObserved": 288420,
+            "d0": 1,
+            "d1": 11,
+            "d2": 7,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288424,
+            "d0": 1,
+            "d1": 64,
+            "d2": 7,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 1,
+              "mapspriteByte": 0,
+              "xDestWord": 4224,
+              "xWord": 4224,
+              "yWord": 2688
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 3,
+              "mapspriteByte": 205,
+              "xDestWord": 4608,
+              "xWord": 4608,
+              "yWord": 1920
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288394,
+        "handlerReturned": true,
+        "id": "load-map-entities-direct-table",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          },
+          {
+            "offset": 32,
+            "value": 1
+          }
+        ],
+        "macro": "loadMapEntities",
+        "nonEmptyClearSpanSlotCount": 17,
+        "scriptCursorRamOffsetAfter": 8
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288456,
+            "callSiteAddressObserved": 288466,
+            "d0": 0,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetEntityAddressFromCharacter"
+          },
+          {
+            "a0": 349126,
+            "callSiteAddressObserved": 288496,
+            "d0": 5,
+            "d1": 9,
+            "d2": 11,
+            "d3": 3,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "InitializeMapEntities"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 3,
+              "mapspriteByte": 0,
+              "xDestWord": 3456,
+              "xWord": 3456,
+              "yWord": 4224
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 3,
+              "mapspriteByte": 205,
+              "xDestWord": 4608,
+              "xWord": 4608,
+              "yWord": 1920
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288456,
+        "handlerReturned": true,
+        "id": "reload-entities-existing-record",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "reloadEntities",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 8
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 0,
+            "d2": 0,
+            "d3": 0,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 0,
+            "d2": 0,
+            "d3": 0,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 0,
+            "d3": 0,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 0,
+              "mapspriteByte": 0,
+              "xDestWord": 0,
+              "xWord": 0,
+              "yWord": 0
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5249E-3-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 9,
+            "d2": 11,
+            "d3": 0,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 9,
+            "d2": 11,
+            "d3": 0,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 11,
+            "d3": 0,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 0,
+              "mapspriteByte": 0,
+              "xDestWord": 3456,
+              "xWord": 3456,
+              "yWord": 4224
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5FB6A-52-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 9,
+            "d2": 11,
+            "d3": 3,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 9,
+            "d2": 11,
+            "d3": 3,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 11,
+            "d3": 3,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 3,
+              "mapspriteByte": 0,
+              "xDestWord": 3456,
+              "xWord": 3456,
+              "yWord": 4224
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5EF60-2-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 5,
+            "d2": 4,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 5,
+            "d2": 4,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 4,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 1,
+              "mapspriteByte": 0,
+              "xDestWord": 1920,
+              "xWord": 1920,
+              "yWord": 1536
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5CC26-5-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 8,
+            "d2": 7,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 8,
+            "d2": 7,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 7,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 1,
+              "mapspriteByte": 0,
+              "xDestWord": 3072,
+              "xWord": 3072,
+              "yWord": 2688
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5CC26-35-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 5,
+            "d2": 4,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 5,
+            "d2": 4,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 4,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 1,
+              "mapspriteByte": 0,
+              "xDestWord": 1920,
+              "xWord": 1920,
+              "yWord": 1536
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5CCF6-5-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      },
+      {
+        "callbackEvents": [
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288608,
+            "d0": 1024,
+            "d1": 2,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "DisableDisplayAndInterrupts"
+          },
+          {
+            "a0": 288600,
+            "callSiteAddressObserved": 288612,
+            "d0": 1,
+            "d1": 191,
+            "d2": 6,
+            "d3": 1634,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "GetMapSetupEntityList"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288624,
+            "d0": 1,
+            "d1": 10,
+            "d2": 21,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "j_InitializeMapEntities"
+          },
+          {
+            "a0": 336564,
+            "callSiteAddressObserved": 288630,
+            "d0": 1,
+            "d1": 10,
+            "d2": 21,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "LoadEntityMapsprites"
+          },
+          {
+            "a0": 16756482,
+            "callSiteAddressObserved": 288634,
+            "d0": 1,
+            "d1": 64,
+            "d2": 21,
+            "d3": 1,
+            "d4": 2,
+            "d5": 6,
+            "instructionTarget": "EnableDisplayAndInterrupts"
+          }
+        ],
+        "entitySlotReadRecords": [
+          {
+            "fields": {
+              "entityNumberByte": 0,
+              "facingByte": 1,
+              "mapspriteByte": 0,
+              "xDestWord": 3840,
+              "xWord": 3840,
+              "yWord": 8064
+            },
+            "slotIndex": 0
+          },
+          {
+            "fields": {
+              "entityNumberByte": 1,
+              "facingByte": 2,
+              "mapspriteByte": 5,
+              "xDestWord": 21888,
+              "xWord": 21888,
+              "yWord": 2304
+            },
+            "slotIndex": 1
+          }
+        ],
+        "handlerAddressObserved": 288600,
+        "handlerReturned": true,
+        "id": "map-setup-cs_5CCF6-35-loadEntitiesFromMapSetup",
+        "indexReadRecords": [
+          {
+            "offset": 0,
+            "value": 0
+          }
+        ],
+        "macro": "loadEntitiesFromMapSetup",
+        "nonEmptyClearSpanSlotCount": 13,
+        "scriptCursorRamOffsetAfter": 10
+      }
+    ]
+  }
+}

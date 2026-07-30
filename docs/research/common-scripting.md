@@ -1032,7 +1032,7 @@ cases, two handlers, one launch); observed result is
 
 ## Confirmed Map-Script Entity Population/Reload Command Family
 
-Evidence date: 2026-07-27.
+Evidence date: 2026-07-30.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field `entityPopulationCommandFacts` retains four
 source-named macro forms in source order: `newEntity` opcode `$2B` (18 sites, 8 encoded bytes),
@@ -1082,11 +1082,44 @@ effective implementation lies inside this four-handler surface, so every interna
 zero and external effective totals equal the effective totals. Comments, labels, near-miss mnemonics,
 and operands do not count as callers.
 
-**Unknown:** `entity-population-reload/runtime-effects-matrix` is the sole grouped H3 queue. One shared
-launch must determine spawning, slot allocation, capacity, persistence, activation, rendering,
-collision/pathfinding, and normal-story reachability for representative forms. The static contract does
-not promote source labels, cursor reads, target identity, or VInt records into any of those runtime
-claims.
+**Confirmed (H3):** `sf2-entity-population-reload-runtime-v1` replays 12 bounded invocations in one
+BizHawk 2.11.1 / Genesis Plus GX launch through the existing `RunMapSetupInitFunction` wrapper. A
+session-only 16-byte FF-padding trampoline sets A6 to a RAM-owned source-shaped stream and calls each
+unmodified handler. The three `newEntity` rows use source key `cs_55242:1:newEntity`; their selected
+`ENTITY_INDEX_LIST` offset 46 changes to 1, 6, and 49 for empty, preexisting-5, and preexisting-48
+seeds respectively, while the selected `ENTITY_DATA` records retain X/X-destination 4224, Y 0, facing
+3, entity-number 1/6/49, and mapsprite 206. This is an observed bounded record/list result, not a
+claim about a player-visible spawn lifecycle or capacity beyond the selected high-water seed.
+
+**Confirmed (H3):** the direct-table row `cs_55832:2:loadMapEntities` reaches
+`DisableDisplayAndInterrupts`, `InitializeMapEntities`, `LoadEntityMapsprites`, and
+`EnableDisplayAndInterrupts` at the guarded H1 sites in that order; its callback input pointer is
+`ce_559AE` ROM 350638 and its selected records 0/1 have exact fixture field values. The reload row
+`cs_55832:76:reloadEntities` first resolves `ENTITY_INDEX_LIST[0]=5` through
+`GetEntityAddressFromCharacter`, then reaches `InitializeMapEntities` with the selected slot-5
+X/Y/facing seed (3456/4224/3) and table pointer `ms_map7_Entities` ROM 349126. All seven source rows
+for `loadEntitiesFromMapSetup` execute with CURRENT_MAP 17 and cleared GAME_FLAGS; each reaches the
+five guarded callback identities in order, including the direct `j_InitializeMapEntities` identity,
+and the fixture preserves each exact three-word source input and selected post-handler records. These
+are observed handler-local callback, cursor, list, and record facts; they do not assign the source
+macro names an inferred gameplay lifecycle.
+
+### Runtime Questions — Entity Population/Reload
+
+**Unknown:** `entity-population-reload/allocation-capacity-beyond-observed-high-water` — the H3 matrix
+observes allocation through selected index value 48 / output 49, while the independently parsed
+`InitializeNewEntity` scan has 63 items and `ClearEntities` has a separate 49-record loop; no runtime
+case isolates the remaining scan interval or its failure behavior.
+
+**Unknown:** `entity-population-reload/normal-story-reachability-and-save-map-reload-persistence` —
+the matrix enters handlers through a session-only wrapper and does not establish normal story callers,
+save/load behavior, or a later map reload.
+
+**Unknown:** `entity-population-reload/player-visible-rendering-animation-vdp-timing` — callbacks and
+RAM records are observed, not sprites, animation, VDP state, or frame timing.
+
+**Unknown:** `entity-population-reload/collision-pathfinding-consumer-effects` — no collision or
+pathfinding consumer is observed.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` forms `newEntity`,
@@ -1096,9 +1129,14 @@ symbols `csc2B_initializeNewEntity`, `csc42_loadMapEntities`,
 `code/common/tech/jumpinterfaces/s07_jumpinterface.asm::j_InitializeMapEntities`; the H1 symbols above;
 and local US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
 The extractor additionally records the pinned callee-owner paths and SHA-256 values in
-`sourceIdentityJoins`. Reproduce with `uv run sf2 h2 map-script-engine`; observed result is
-`tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
-`expected.entityPopulationCommandFacts`.
+`sourceIdentityJoins`. Reproduce static facts with `uv run sf2 h2 map-script-engine`; reproduce the
+one-launch observation with `uv run sf2 h3 entity-population-reload --timeout-seconds 180`. The static
+result is `tests/fixtures/h2/map-script-engine-static-v1.json`, ID
+`sf2-map-script-engine-static-v1`, field `expected.entityPopulationCommandFacts`; the runtime result
+is `tests/fixtures/h3/entity-population-reload-v1.json`, ID
+`sf2-entity-population-reload-runtime-v1`, parsed by
+`schemas/h3-entity-population-reload-observation.schema.json` and observed by
+`tools/bizhawk/entity_population_reload_observer.lua`.
 
 ## Confirmed Map-Script `cloneEntity` Command Boundary
 

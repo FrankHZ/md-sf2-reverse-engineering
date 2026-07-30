@@ -3688,7 +3688,12 @@ def test_entity_population_contract_matches_complete_golden_fixture(
         "address": 286926,
         "relatedContractId": "sf2-entity-action-scripts-static-v1",
     }
-    assert actual["runtimeQuestions"] == ["entity-population-reload/runtime-effects-matrix"]
+    assert actual["runtimeQuestions"] == [
+        "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+        "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+        "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+        "entity-population-reload/collision-pathfinding-consumer-effects",
+    ]
 
 
 def test_entity_population_guards_reject_use_site_and_call_order_mutations_before_fixture(
@@ -4581,7 +4586,10 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-block-mutation/collision-pathfinding-consumer-effects",
         "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
         "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
-        "entity-population-reload/runtime-effects-matrix",
+        "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+        "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+        "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+        "entity-population-reload/collision-pathfinding-consumer-effects",
         "map-lifecycle/layout-collision-pathfinding-effects",
         "map-lifecycle/entity-reload-player-placement",
         "map-lifecycle/presentation-fade-hardware-timing",
@@ -4619,6 +4627,12 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
         "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
     ]
+    assert expected["entityPopulationCommandFacts"].pop("runtimeQuestions") == [
+        "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+        "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+        "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+        "entity-population-reload/collision-pathfinding-consumer-effects",
+    ]
     assert expected["entityPlacementCommandFacts"].pop("runtimeQuestions") == [
         "map-script-entity-placement/normal-story-reachability",
         "map-script-entity-placement/full-animation-visibility-presentation",
@@ -4655,7 +4669,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     ]
     # H3 queues are explicitly excluded so the canonical static digest remains stable.
     assert _canonical_digest(expected) == (
-        "37eee698a96e7bf6bd75b283efdfb10ba419cdc41e9dbaa4893a174907c936a6"
+        "e0946a222b9512f896ea2fed19fc9bda804ea2132dde42eb4ae8854f67a4fd25"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4708,8 +4722,17 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     output_schema["definitions"]["activePartyCommandFacts"]["required"].remove(
         "runtimeQuestions"
     )
+    del output_schema["properties"]["entityPopulationCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"]
+    del output_schema["definitions"]["entityPopulationCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    output_schema["definitions"]["entityPopulationCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
     assert _canonical_digest(output_schema) == (
-        "e5c7f0e592f357ad69dee682c6c471c092a39f9ebcd900c6ecb66d7add10139b"
+        "80126dc2397e37fc0aeed7c68acc764f918dbf88f60911504e2c67e40a7c6bf7"
     )
 
     fixture_schema = deepcopy(
@@ -4764,8 +4787,17 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     fixture_schema["definitions"]["activePartyCommandFacts"]["required"].remove(
         "runtimeQuestions"
     )
+    del fixture_schema["properties"]["expected"]["properties"][
+        "entityPopulationCommandFacts"
+    ]["allOf"][1]["properties"]["runtimeQuestions"]
+    del fixture_schema["definitions"]["entityPopulationCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    fixture_schema["definitions"]["entityPopulationCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
     assert _canonical_digest(fixture_schema) == (
-        "16086f0775fa70b4ef1a2de782e5f78b2a52ef1e1b20b9cdb98e27d59f156c5d"
+        "49c2bcefc3d9f5c1e8efd8b181866503316d116bbe26828f009ea9311586f983"
     )
 
 

@@ -294,9 +294,18 @@ handler cursor-read, VInt, direct-call, and source-constant records. Direct inst
 resolved effective target identities MUST remain distinct: in particular,
 `j_InitializeMapEntities` is not a replacement spelling for the `InitializeMapEntities` effective
 target. A remake MAY translate these records into its own entity-loading interface only after defining
-that interface independently. The original static contract does not establish spawning, slot
-allocation, capacity, persistence, activation, rendering, collision/pathfinding, or normal-story
-reachability.
+that interface independently. **Confirmed (H3):** the bounded runtime contract
+`sf2-entity-population-reload-runtime-v1` in
+`tests/fixtures/h3/entity-population-reload-v1.json` requires all 12 exact ordered records from one
+BizHawk launch: three `newEntity` identity-list high-water seeds, one direct-table load, one reload
+through an identity-list-selected record, and all seven `loadEntitiesFromMapSetup` source input rows.
+Each observation retains handler identity/return, script cursor offset, direct callback chronology and
+register snapshots, selected identity-list/entity fields, and the 49-record clear-span non-empty
+count. The fixture is a handler-local RAM/callback contract, not a remake entity-lifecycle, rendering,
+or scene model. A remake MUST leave capacity beyond the observed high-water seed, normal-story and
+save/map-reload persistence, player-visible rendering/animation/VDP timing, and collision/pathfinding
+consumer effects outside this contract until the four explicit
+`entity-population-reload/*` Unknown questions are separately observed.
 Map-script imports MUST retain source-named `cloneEntity` as a distinct ordered record in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
 `expected.entityCloneCommandFacts`. The record MUST preserve opcode `$25`, its six-byte physical

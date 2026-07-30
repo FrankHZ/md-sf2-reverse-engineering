@@ -211,8 +211,11 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   `story-state/branch-prompt-persistence-matrix`。
   相同 304-row 零计数 corpus 还固定四个 entity population/reload form（96 sites）、四个
   cursor/VInt/call/constant handler guard，以及保留 direct `j_InitializeMapEntities` 与 resolved
-  `InitializeMapEntities` identity 的 zero-inclusive caller map；其唯一 H3 queue 为
-  `entity-population-reload/runtime-effects-matrix`。
+  `InitializeMapEntities` identity 的 zero-inclusive caller map；H3 的一启动 12 case fixture 现在固定
+  handler-local callback/cursor/list/record 结果（含三个 selected `newEntity` index seed、direct table、
+  identity-list-selected reload，以及七个 map-setup input）；剩余 queue 为 observed-high-water 之外的
+  capacity、normal-story/save/map-reload persistence、player-visible rendering/animation/VDP timing、及
+  collision/pathfinding consumer effects。
   同一 304-row 零计数 corpus 还固定四个 map lifecycle form（108 sites）、四个 named handler 的
   cursor/probe、VInt、branch、call/fall-through guards，以及 five-target zero-inclusive caller map；
   H3 以一个五 case/单启动 fixture 固定 handler return、direct-H1-JSR-site order、post-handler

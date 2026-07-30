@@ -187,7 +187,10 @@ ENTITY_POPULATION_HANDLER_BY_MACRO = {
 }
 ENTITY_POPULATION_HANDLER_NAMES = tuple(ENTITY_POPULATION_HANDLER_BY_MACRO.values())
 ENTITY_POPULATION_RUNTIME_QUESTIONS = [
-    "entity-population-reload/runtime-effects-matrix"
+    "entity-population-reload/allocation-capacity-beyond-observed-high-water",
+    "entity-population-reload/normal-story-reachability-and-save-map-reload-persistence",
+    "entity-population-reload/player-visible-rendering-animation-vdp-timing",
+    "entity-population-reload/collision-pathfinding-consumer-effects",
 ]
 
 # These names retain the macro/handler spelling and source operand comments. They

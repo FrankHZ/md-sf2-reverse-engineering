@@ -81,10 +81,10 @@ index verifier proves every copy still agrees.
 
 ## Current Boundary
 
-As of 2026-07-30, the index contains 1,574 confirmed findings and 2,295 checked address bindings. It
-connects all 69 H3 fixture files plus 74 H2 fixtures needed by the completed code and data
+As of 2026-07-30, the index contains 1,586 confirmed findings and 2,319 checked address bindings. It
+connects all 73 H3 fixture files plus 74 H2 fixtures needed by the completed code and data
 inventories. This produces 381/387 code-file reach and 1,017/1,690 domain-aware data-file reach.
-The verifier reports the provenance split independently: 1,537 H1 records and 37 Z80 music-bank
+The verifier reports the provenance split independently: 1,549 H1 records and 37 Z80 music-bank
 records.
 
 Every indexed record still requires a named symbol in the claimed source file and an executable

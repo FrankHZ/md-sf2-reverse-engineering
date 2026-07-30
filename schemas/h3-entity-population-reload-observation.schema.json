@@ -1,0 +1,1665 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "h3-entity-population-reload-observation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "system",
+    "core",
+    "id",
+    "mapTest",
+    "recordOrder",
+    "records"
+  ],
+  "properties": {
+    "system": {
+      "const": "GEN"
+    },
+    "core": {
+      "const": "Genesis Plus GX"
+    },
+    "id": {
+      "const": "sf2-entity-population-reload-runtime-v1"
+    },
+    "mapTest": {
+      "const": 0
+    },
+    "recordOrder": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 12,
+      "maxItems": 12,
+      "allOf": [
+        {
+          "const": [
+            "new-entity-empty-list",
+            "new-entity-existing-identity",
+            "new-entity-clear-span-high-water",
+            "load-map-entities-direct-table",
+            "reload-entities-existing-record",
+            "map-setup-cs_5249E-3-loadEntitiesFromMapSetup",
+            "map-setup-cs_5FB6A-52-loadEntitiesFromMapSetup",
+            "map-setup-cs_5EF60-2-loadEntitiesFromMapSetup",
+            "map-setup-cs_5CC26-5-loadEntitiesFromMapSetup",
+            "map-setup-cs_5CC26-35-loadEntitiesFromMapSetup",
+            "map-setup-cs_5CCF6-5-loadEntitiesFromMapSetup",
+            "map-setup-cs_5CCF6-35-loadEntitiesFromMapSetup"
+          ]
+        }
+      ]
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/runtimeRecord"
+      },
+      "minItems": 12,
+      "maxItems": 12,
+      "allOf": [
+        {
+          "const": [
+            {
+              "callbackEvents": [
+                {
+                  "a0": 290360,
+                  "callSiteAddressObserved": 290384,
+                  "d0": 142,
+                  "d1": 11,
+                  "d2": 0,
+                  "d3": 3,
+                  "d4": 206,
+                  "d5": 286926,
+                  "instructionTarget": "InitializeNewEntity"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 3,
+                    "mapspriteByte": 206,
+                    "xDestWord": 4224,
+                    "xWord": 4224,
+                    "yWord": 0
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 290360,
+              "handlerReturned": true,
+              "id": "new-entity-empty-list",
+              "indexReadRecords": [
+                {
+                  "offset": 46,
+                  "value": 1
+                }
+              ],
+              "macro": "newEntity",
+              "nonEmptyClearSpanSlotCount": 20,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 290360,
+                  "callSiteAddressObserved": 290384,
+                  "d0": 142,
+                  "d1": 11,
+                  "d2": 0,
+                  "d3": 3,
+                  "d4": 206,
+                  "d5": 286926,
+                  "instructionTarget": "InitializeNewEntity"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 6,
+                    "facingByte": 3,
+                    "mapspriteByte": 206,
+                    "xDestWord": 4224,
+                    "xWord": 4224,
+                    "yWord": 0
+                  },
+                  "slotIndex": 6
+                }
+              ],
+              "handlerAddressObserved": 290360,
+              "handlerReturned": true,
+              "id": "new-entity-existing-identity",
+              "indexReadRecords": [
+                {
+                  "offset": 46,
+                  "value": 6
+                }
+              ],
+              "macro": "newEntity",
+              "nonEmptyClearSpanSlotCount": 20,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 290360,
+                  "callSiteAddressObserved": 290384,
+                  "d0": 142,
+                  "d1": 11,
+                  "d2": 0,
+                  "d3": 3,
+                  "d4": 206,
+                  "d5": 286926,
+                  "instructionTarget": "InitializeNewEntity"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 49,
+                    "facingByte": 3,
+                    "mapspriteByte": 206,
+                    "xDestWord": 4224,
+                    "xWord": 4224,
+                    "yWord": 0
+                  },
+                  "slotIndex": 49
+                }
+              ],
+              "handlerAddressObserved": 290360,
+              "handlerReturned": true,
+              "id": "new-entity-clear-span-high-water",
+              "indexReadRecords": [
+                {
+                  "offset": 46,
+                  "value": 49
+                }
+              ],
+              "macro": "newEntity",
+              "nonEmptyClearSpanSlotCount": 20,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288394,
+                  "callSiteAddressObserved": 288402,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 350644,
+                  "callSiteAddressObserved": 288414,
+                  "d0": 1,
+                  "d1": 11,
+                  "d2": 7,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "InitializeMapEntities"
+                },
+                {
+                  "a0": 350644,
+                  "callSiteAddressObserved": 288420,
+                  "d0": 1,
+                  "d1": 11,
+                  "d2": 7,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288424,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 7,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 1,
+                    "mapspriteByte": 0,
+                    "xDestWord": 4224,
+                    "xWord": 4224,
+                    "yWord": 2688
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 3,
+                    "mapspriteByte": 205,
+                    "xDestWord": 4608,
+                    "xWord": 4608,
+                    "yWord": 1920
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288394,
+              "handlerReturned": true,
+              "id": "load-map-entities-direct-table",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                },
+                {
+                  "offset": 32,
+                  "value": 1
+                }
+              ],
+              "macro": "loadMapEntities",
+              "nonEmptyClearSpanSlotCount": 17,
+              "scriptCursorRamOffsetAfter": 8
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288456,
+                  "callSiteAddressObserved": 288466,
+                  "d0": 0,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetEntityAddressFromCharacter"
+                },
+                {
+                  "a0": 349126,
+                  "callSiteAddressObserved": 288496,
+                  "d0": 5,
+                  "d1": 9,
+                  "d2": 11,
+                  "d3": 3,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "InitializeMapEntities"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 3,
+                    "mapspriteByte": 0,
+                    "xDestWord": 3456,
+                    "xWord": 3456,
+                    "yWord": 4224
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 3,
+                    "mapspriteByte": 205,
+                    "xDestWord": 4608,
+                    "xWord": 4608,
+                    "yWord": 1920
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288456,
+              "handlerReturned": true,
+              "id": "reload-entities-existing-record",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "reloadEntities",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 8
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 0,
+                  "d2": 0,
+                  "d3": 0,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 0,
+                  "d2": 0,
+                  "d3": 0,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 0,
+                  "d3": 0,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 0,
+                    "mapspriteByte": 0,
+                    "xDestWord": 0,
+                    "xWord": 0,
+                    "yWord": 0
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5249E-3-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 9,
+                  "d2": 11,
+                  "d3": 0,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 9,
+                  "d2": 11,
+                  "d3": 0,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 11,
+                  "d3": 0,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 0,
+                    "mapspriteByte": 0,
+                    "xDestWord": 3456,
+                    "xWord": 3456,
+                    "yWord": 4224
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5FB6A-52-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 9,
+                  "d2": 11,
+                  "d3": 3,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 9,
+                  "d2": 11,
+                  "d3": 3,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 11,
+                  "d3": 3,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 3,
+                    "mapspriteByte": 0,
+                    "xDestWord": 3456,
+                    "xWord": 3456,
+                    "yWord": 4224
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5EF60-2-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 5,
+                  "d2": 4,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 5,
+                  "d2": 4,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 4,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 1,
+                    "mapspriteByte": 0,
+                    "xDestWord": 1920,
+                    "xWord": 1920,
+                    "yWord": 1536
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5CC26-5-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 8,
+                  "d2": 7,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 8,
+                  "d2": 7,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 7,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 1,
+                    "mapspriteByte": 0,
+                    "xDestWord": 3072,
+                    "xWord": 3072,
+                    "yWord": 2688
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5CC26-35-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 5,
+                  "d2": 4,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 5,
+                  "d2": 4,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 4,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 1,
+                    "mapspriteByte": 0,
+                    "xDestWord": 1920,
+                    "xWord": 1920,
+                    "yWord": 1536
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5CCF6-5-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            },
+            {
+              "callbackEvents": [
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288608,
+                  "d0": 1024,
+                  "d1": 2,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "DisableDisplayAndInterrupts"
+                },
+                {
+                  "a0": 288600,
+                  "callSiteAddressObserved": 288612,
+                  "d0": 1,
+                  "d1": 191,
+                  "d2": 6,
+                  "d3": 1634,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "GetMapSetupEntityList"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288624,
+                  "d0": 1,
+                  "d1": 10,
+                  "d2": 21,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "j_InitializeMapEntities"
+                },
+                {
+                  "a0": 336564,
+                  "callSiteAddressObserved": 288630,
+                  "d0": 1,
+                  "d1": 10,
+                  "d2": 21,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "LoadEntityMapsprites"
+                },
+                {
+                  "a0": 16756482,
+                  "callSiteAddressObserved": 288634,
+                  "d0": 1,
+                  "d1": 64,
+                  "d2": 21,
+                  "d3": 1,
+                  "d4": 2,
+                  "d5": 6,
+                  "instructionTarget": "EnableDisplayAndInterrupts"
+                }
+              ],
+              "entitySlotReadRecords": [
+                {
+                  "fields": {
+                    "entityNumberByte": 0,
+                    "facingByte": 1,
+                    "mapspriteByte": 0,
+                    "xDestWord": 3840,
+                    "xWord": 3840,
+                    "yWord": 8064
+                  },
+                  "slotIndex": 0
+                },
+                {
+                  "fields": {
+                    "entityNumberByte": 1,
+                    "facingByte": 2,
+                    "mapspriteByte": 5,
+                    "xDestWord": 21888,
+                    "xWord": 21888,
+                    "yWord": 2304
+                  },
+                  "slotIndex": 1
+                }
+              ],
+              "handlerAddressObserved": 288600,
+              "handlerReturned": true,
+              "id": "map-setup-cs_5CCF6-35-loadEntitiesFromMapSetup",
+              "indexReadRecords": [
+                {
+                  "offset": 0,
+                  "value": 0
+                }
+              ],
+              "macro": "loadEntitiesFromMapSetup",
+              "nonEmptyClearSpanSlotCount": 13,
+              "scriptCursorRamOffsetAfter": 10
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "sourceOrderKey",
+        "currentMapMode",
+        "clearGameFlags",
+        "indexListSeedRecords",
+        "indexListSeedRanges",
+        "entitySlotSeedRecords",
+        "indexReadOffsets",
+        "entitySlotReadIndices"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "enum": [
+            "newEntity",
+            "loadMapEntities",
+            "reloadEntities",
+            "loadEntitiesFromMapSetup"
+          ]
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "currentMapMode": {
+          "enum": [
+            "map-tactical-base",
+            "map17-default"
+          ]
+        },
+        "clearGameFlags": {
+          "type": "boolean"
+        },
+        "indexListSeedRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "offset",
+              "value"
+            ],
+            "properties": {
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 62
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          },
+          "maxItems": 63
+        },
+        "indexListSeedRanges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "startOffset",
+              "count",
+              "value"
+            ],
+            "properties": {
+              "startOffset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 62
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 63
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          },
+          "maxItems": 63
+        },
+        "entitySlotSeedRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "slotIndex",
+              "fields"
+            ],
+            "properties": {
+              "slotIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 48
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "field",
+                    "value"
+                  ],
+                  "properties": {
+                    "field": {
+                      "enum": [
+                        "xWord",
+                        "yWord",
+                        "xDestWord",
+                        "facingByte",
+                        "entityNumberByte",
+                        "mapspriteByte"
+                      ]
+                    },
+                    "value": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 6
+              }
+            }
+          },
+          "maxItems": 49
+        },
+        "indexReadOffsets": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 62
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "entitySlotReadIndices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 62
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      }
+    },
+    "indexSeed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offset",
+        "value"
+      ],
+      "properties": {
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 62
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "indexRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startOffset",
+        "count",
+        "value"
+      ],
+      "properties": {
+        "startOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 62
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 63
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "slotSeed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slotIndex",
+        "fields"
+      ],
+      "properties": {
+        "slotIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 48
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "value"
+            ],
+            "properties": {
+              "field": {
+                "enum": [
+                  "xWord",
+                  "yWord",
+                  "xDestWord",
+                  "facingByte",
+                  "entityNumberByte",
+                  "mapspriteByte"
+                ]
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      }
+    },
+    "fieldValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "value"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "xWord",
+            "yWord",
+            "xDestWord",
+            "facingByte",
+            "entityNumberByte",
+            "mapspriteByte"
+          ]
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        }
+      }
+    },
+    "runtimeRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerAddressObserved",
+        "handlerReturned",
+        "scriptCursorRamOffsetAfter",
+        "callbackEvents",
+        "indexReadRecords",
+        "entitySlotReadRecords",
+        "nonEmptyClearSpanSlotCount"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "enum": [
+            "newEntity",
+            "loadMapEntities",
+            "reloadEntities",
+            "loadEntitiesFromMapSetup"
+          ]
+        },
+        "handlerAddressObserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "handlerReturned": {
+          "const": true
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "callbackEvents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "callSiteAddressObserved",
+              "d0",
+              "d1",
+              "d2",
+              "d3",
+              "d4",
+              "d5",
+              "a0"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "callSiteAddressObserved": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "d0": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "d1": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "d2": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "d3": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "d4": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "d5": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "a0": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 16777215
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "indexReadRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "offset",
+              "value"
+            ],
+            "properties": {
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 62
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "entitySlotReadRecords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "slotIndex",
+              "fields"
+            ],
+            "properties": {
+              "slotIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 62
+              },
+              "fields": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "xWord",
+                  "yWord",
+                  "xDestWord",
+                  "facingByte",
+                  "entityNumberByte",
+                  "mapspriteByte"
+                ],
+                "properties": {
+                  "xWord": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "yWord": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "xDestWord": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "facingByte": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "entityNumberByte": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "mapspriteByte": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  }
+                }
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "nonEmptyClearSpanSlotCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 49
+        }
+      }
+    },
+    "callbackEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "callSiteAddressObserved",
+        "d0",
+        "d1",
+        "d2",
+        "d3",
+        "d4",
+        "d5",
+        "a0"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "callSiteAddressObserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "d0": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "d1": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "d2": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "d3": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "d4": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "d5": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "a0": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16777215
+        }
+      }
+    },
+    "entityFields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "xWord",
+        "yWord",
+        "xDestWord",
+        "facingByte",
+        "entityNumberByte",
+        "mapspriteByte"
+      ],
+      "properties": {
+        "xWord": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "yWord": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "xDestWord": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "facingByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "entityNumberByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "mapspriteByte": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "slotRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slotIndex",
+        "fields"
+      ],
+      "properties": {
+        "slotIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 62
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "xWord",
+            "yWord",
+            "xDestWord",
+            "facingByte",
+            "entityNumberByte",
+            "mapspriteByte"
+          ],
+          "properties": {
+            "xWord": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "yWord": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "xDestWord": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "facingByte": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "entityNumberByte": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "mapspriteByte": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          }
+        }
+      }
+    },
+    "indexRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offset",
+        "value"
+      ],
+      "properties": {
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 62
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    }
+  }
+}

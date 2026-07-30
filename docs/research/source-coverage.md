@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,579 | 1,542 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,586 | 1,549 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 72 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,305 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 73 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,319 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -543,10 +543,12 @@ The adjacent entity population/reload slice is exact for four source forms: 18 `
 layouts and source comments (including the three deliberately blank `$49` labels), four exact named
 handler cursor/read/VInt/call/constant guards, and a zero-inclusive direct/effective caller inventory.
 The direct `j_InitializeMapEntities` identity remains distinct while the parsed jump-interface alias
-resolves it to an `InitializeMapEntities` effective total of three. The sole H3 follow-up is
-`entity-population-reload/runtime-effects-matrix`; spawning, slot allocation, capacity, persistence,
-activation, rendering, collision/pathfinding, and normal-story reachability are not credited as static
-coverage.
+resolves it to an `InitializeMapEntities` effective total of three. Its one-launch 12-case H3 matrix
+now confirms handler-local callback/cursor/list/record results for three selected `newEntity` identity
+seeds, one direct-table load, one identity-list-selected reload record, and all seven map-setup input
+rows. It does not credit capacity beyond high-water 49, normal-story/save/map-reload persistence,
+player-visible rendering/animation/VDP timing, or collision/pathfinding consumer effects; those remain
+four explicit grouped Unknown questions.
 The adjacent map lifecycle slice is exact for four source-faithful forms: seven `resetMap` `$36`,
 60 `loadMapFadeIn` `$37`, 24 `reloadMap` `$46`, and 17 `mapLoad` `$48` sites (108 total) across a
 further complete 304-row zero-inclusive corpus. It preserves macro operand comments, four named

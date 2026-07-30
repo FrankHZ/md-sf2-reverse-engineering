@@ -83,6 +83,7 @@ from sf2tool.h3.battlefield_matrix import verify_battlefield_movement_matrix
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
 from sf2tool.h3.entity_movement import verify_entity_movement_matrix
+from sf2tool.h3.entity_population_reload import verify_entity_population_reload
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
 from sf2tool.h3.force_state_active_party import verify_force_state_active_party
 from sf2tool.h3.gold import verify_gold_boundaries
@@ -716,6 +717,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_block_mutation)
     h3_map_block_mutation.add_argument("--timeout-seconds", type=int, default=180)
+    h3_entity_population_reload = h3_commands.add_parser(
+        "entity-population-reload",
+        help="verify one-launch entity population, table load, reload, and map-setup handlers",
+    )
+    _add_local_paths(h3_entity_population_reload)
+    h3_entity_population_reload.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_interaction_trigger = h3_commands.add_parser(
         "map-interaction-trigger",
         help="verify batched roof and step trigger gate, match, and marker boundaries",
@@ -1600,6 +1607,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-block-mutation":
         print_record(
             verify_map_block_mutation(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "entity-population-reload":
+        print_record(
+            verify_entity_population_reload(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
