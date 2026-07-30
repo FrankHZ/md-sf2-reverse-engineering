@@ -84,6 +84,7 @@ from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
 from sf2tool.h3.entity_movement import verify_entity_movement_matrix
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
+from sf2tool.h3.force_state_active_party import verify_force_state_active_party
 from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import (
     verify_growth,
@@ -763,6 +764,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_story_state)
     h3_story_state.add_argument("--timeout-seconds", type=int, default=180)
+    h3_force_state_active_party = h3_commands.add_parser(
+        "force-state-active-party",
+        help="verify bounded active-party, AI, follower, and battle-stat handler behavior",
+    )
+    _add_local_paths(h3_force_state_active_party)
+    h3_force_state_active_party.add_argument("--timeout-seconds", type=int, default=180)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -1650,6 +1657,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "story-state":
         print_record(
             verify_story_state(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "force-state-active-party":
+        print_record(
+            verify_force_state_active_party(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

@@ -1,0 +1,1133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "schemaVersion",
+    "mapTestIndex",
+    "romSha256",
+    "emulator",
+    "function",
+    "staticContractSha256",
+    "sharedHarnessFixture",
+    "maxFrames",
+    "instrumentation",
+    "runtimeContract",
+    "cases",
+    "caseInputs",
+    "observation"
+  ],
+  "properties": {
+    "id": {
+      "const": "sf2-force-state-active-party-runtime-v1"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "mapTestIndex": {
+      "const": 0
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "const": "2.11.1"
+        },
+        "core": {
+          "const": "Genesis Plus GX"
+        }
+      }
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runMapSetupInitFunctionAddress"
+      ],
+      "properties": {
+        "runMapSetupInitFunctionAddress": {
+          "const": 292092
+        }
+      }
+    },
+    "staticContractSha256": {
+      "const": "2E9084189E3642B2361E610BBDA765A6B87BA4783ACD404E09FBC6389E30DFA8"
+    },
+    "sharedHarnessFixture": {
+      "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+    },
+    "maxFrames": {
+      "const": 2400
+    },
+    "instrumentation": {
+      "const": {
+        "trampoline": {
+          "callSiteAddress": 292114,
+          "callSiteOriginalHex": "4E904CDF03FF",
+          "callSitePatchedHex": "4EB90000FF88",
+          "stubAddress": 65416,
+          "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+          "stubHex": "70004DF900FF4004207900FF40004E904E75",
+          "ramInputAddress": 16728064
+        }
+      }
+    },
+    "runtimeContract": {
+      "const": {
+        "entryAddress": 292092,
+        "handlers": [
+          {
+            "handler": "csc51_joinBattleParty",
+            "handlerAddress": 290562,
+            "returnAddress": 290646,
+            "calls": [
+              {
+                "h1Address": 290572,
+                "instructionTarget": "j_IsInBattleParty",
+                "effectiveTarget": "IsInBattleParty"
+              },
+              {
+                "h1Address": 290584,
+                "instructionTarget": "j_UpdateForce",
+                "effectiveTarget": "UpdateForce"
+              },
+              {
+                "h1Address": 290606,
+                "instructionTarget": "j_GetCurrentHp",
+                "effectiveTarget": "GetCurrentHp"
+              },
+              {
+                "h1Address": 290632,
+                "instructionTarget": "j_LeaveBattleParty",
+                "effectiveTarget": "LeaveBattleParty"
+              },
+              {
+                "h1Address": 290640,
+                "instructionTarget": "j_JoinBattleParty",
+                "effectiveTarget": "JoinBattleParty"
+              }
+            ]
+          },
+          {
+            "handler": "csc54_joinForceAi",
+            "handlerAddress": 290780,
+            "returnAddress": 290814,
+            "calls": [
+              {
+                "h1Address": 290782,
+                "instructionTarget": "j_GetActivationBitfield",
+                "effectiveTarget": "GetActivationBitfield"
+              },
+              {
+                "h1Address": 290802,
+                "instructionTarget": "j_JoinForce",
+                "effectiveTarget": "JoinForce"
+              },
+              {
+                "h1Address": 290808,
+                "instructionTarget": "j_SetActivationBitfield",
+                "effectiveTarget": "SetActivationBitfield"
+              }
+            ]
+          },
+          {
+            "handler": "csc55_resetCharacterBattleStats",
+            "handlerAddress": 290816,
+            "returnAddress": 290822,
+            "calls": [
+              {
+                "h1Address": 290816,
+                "instructionTarget": "ResetAlliesBattleStats",
+                "effectiveTarget": "ResetAlliesBattleStats"
+              }
+            ]
+          },
+          {
+            "handler": "csc56_addFollower",
+            "handlerAddress": 290824,
+            "returnAddress": 290862,
+            "calls": [
+              {
+                "h1Address": 290826,
+                "instructionTarget": "GetEntityAddressFromCharacter",
+                "effectiveTarget": "GetEntityAddressFromCharacter"
+              },
+              {
+                "h1Address": 290856,
+                "instructionTarget": "AddFollower",
+                "effectiveTarget": "AddFollower"
+              }
+            ]
+          }
+        ],
+        "resetServices": {
+          "calls": [
+            {
+              "code": "GHP",
+              "h1Address": 293070,
+              "instructionTarget": "j_GetCurrentHp",
+              "effectiveTarget": "GetCurrentHp"
+            },
+            {
+              "code": "GMAX",
+              "h1Address": 293076,
+              "instructionTarget": "j_GetMaxHp",
+              "effectiveTarget": "GetMaxHp"
+            },
+            {
+              "code": "SHP",
+              "h1Address": 293082,
+              "instructionTarget": "j_SetCurrentHp",
+              "effectiveTarget": "SetCurrentHp"
+            },
+            {
+              "code": "GMP",
+              "h1Address": 293088,
+              "instructionTarget": "j_GetMaxMp",
+              "effectiveTarget": "GetMaxMp"
+            },
+            {
+              "code": "SMP",
+              "h1Address": 293094,
+              "instructionTarget": "j_SetCurrentMp",
+              "effectiveTarget": "SetCurrentMp"
+            },
+            {
+              "code": "GSTATUS",
+              "h1Address": 293100,
+              "instructionTarget": "j_GetStatusEffects",
+              "effectiveTarget": "GetStatusEffects"
+            },
+            {
+              "code": "SSTATUS",
+              "h1Address": 293110,
+              "instructionTarget": "j_SetStatusEffects",
+              "effectiveTarget": "SetStatusEffects"
+            },
+            {
+              "code": "UPDATE",
+              "h1Address": 293116,
+              "instructionTarget": "j_UpdateCombatantStats",
+              "effectiveTarget": "UpdateCombatantStats"
+            }
+          ],
+          "allyCounter": 29,
+          "preUpdateStatusRetainMask": 7
+        },
+        "follower": {
+          "parameterOffsets": [
+            30,
+            32,
+            34
+          ],
+          "blockBytes": 42
+        },
+        "joinForceOwner": {
+          "orderedInstructions": [
+            "bsr.w SetFlag",
+            "bsr.s UpdateForce",
+            "cmpi.w #FORCE_MAX_SIZE,((BATTLE_PARTY_MEMBERS_NUMBER-$1000000)).w",
+            "bcc.s @SkipActiveForce",
+            "bsr.w JoinBattleParty"
+          ]
+        },
+        "aiControl": {
+          "mask": 4,
+          "setUseSite": "ori.w #AIBITFIELD_AI_CONTROLLED,d1",
+          "clearUseSite": "andi.w #($FFFF-AIBITFIELD_AI_CONTROLLED),d1"
+        },
+        "ram": {
+          "gameFlags": 16774790,
+          "forceFlagJoinedStart": 0,
+          "forceFlagActiveStart": 32,
+          "forceFlagClearByteSpan": 8,
+          "bitsPerByte": 8,
+          "firstFlagMask": 128,
+          "combatantData": 16771072,
+          "combatantEntryBytes": 56,
+          "maxHpOffset": 12,
+          "currentHpOffset": 14,
+          "maxMpOffset": 16,
+          "currentMpOffset": 17,
+          "statusOffset": 44,
+          "activationOffset": 52,
+          "explorationEntities": 16756514,
+          "entityIndexList": 16757056,
+          "entityData": 16754946,
+          "entityWalkingParameters": 16757152,
+          "entityEntryBytes": 32,
+          "entityActscriptOffset": 20,
+          "battlePartyMembers": 16758402,
+          "battlePartyMembersNumber": 16758336,
+          "dialogueNameIndex": 16758504,
+          "followerParameterOffsets": [
+            30,
+            32,
+            34
+          ]
+        }
+      }
+    },
+    "cases": {
+      "const": [
+        {
+          "id": "join-already-active",
+          "handler": "csc51_joinBattleParty",
+          "handlerAddress": 290562,
+          "axis": "already-active"
+        },
+        {
+          "id": "join-replace-dead",
+          "handler": "csc51_joinBattleParty",
+          "handlerAddress": 290562,
+          "axis": "dead-active-replacement"
+        },
+        {
+          "id": "join-replace-living-tail",
+          "handler": "csc51_joinBattleParty",
+          "handlerAddress": 290562,
+          "axis": "living-tail-replacement"
+        },
+        {
+          "id": "ai-clear-no-join",
+          "handler": "csc54_joinForceAi",
+          "handlerAddress": 290780,
+          "axis": "selector-zero"
+        },
+        {
+          "id": "ai-set-join",
+          "handler": "csc54_joinForceAi",
+          "handlerAddress": 290780,
+          "axis": "selector-nonzero"
+        },
+        {
+          "id": "reset-mixed-allies",
+          "handler": "csc55_resetCharacterBattleStats",
+          "handlerAddress": 290816,
+          "axis": "mixed-reset"
+        },
+        {
+          "id": "follower-empty",
+          "handler": "csc56_addFollower",
+          "handlerAddress": 290824,
+          "axis": "empty-list"
+        },
+        {
+          "id": "follower-existing",
+          "handler": "csc56_addFollower",
+          "handlerAddress": 290824,
+          "axis": "existing-chain"
+        },
+        {
+          "id": "follower-duplicate",
+          "handler": "csc56_addFollower",
+          "handlerAddress": 290824,
+          "axis": "duplicate-entity"
+        }
+      ]
+    },
+    "caseInputs": {
+      "const": [
+        {
+          "id": "join-already-active",
+          "handlerAddress": 290562,
+          "streamBytes": [
+            0,
+            0
+          ],
+          "state": {
+            "joined": [
+              0,
+              1
+            ],
+            "active": [
+              0,
+              1
+            ],
+            "hp": [
+              10,
+              10
+            ],
+            "probeMembers": [
+              0,
+              1,
+              2
+            ],
+            "probeCharacter": 0
+          }
+        },
+        {
+          "id": "join-replace-dead",
+          "handlerAddress": 290562,
+          "streamBytes": [
+            0,
+            2
+          ],
+          "state": {
+            "joined": [
+              0,
+              1,
+              2
+            ],
+            "active": [
+              0,
+              1
+            ],
+            "hp": [
+              0,
+              10
+            ],
+            "probeMembers": [
+              0,
+              1,
+              2
+            ],
+            "probeCharacter": 0
+          }
+        },
+        {
+          "id": "join-replace-living-tail",
+          "handlerAddress": 290562,
+          "streamBytes": [
+            0,
+            2
+          ],
+          "state": {
+            "joined": [
+              0,
+              1,
+              2
+            ],
+            "active": [
+              0,
+              1
+            ],
+            "hp": [
+              10,
+              10
+            ],
+            "probeMembers": [
+              0,
+              1,
+              2
+            ],
+            "probeCharacter": 0
+          }
+        },
+        {
+          "id": "ai-clear-no-join",
+          "handlerAddress": 290780,
+          "streamBytes": [
+            0,
+            3,
+            0,
+            0
+          ],
+          "state": {
+            "joined": [
+              3
+            ],
+            "active": [],
+            "hp": [],
+            "activation": 4,
+            "probeMembers": [
+              3
+            ],
+            "probeCharacter": 3
+          }
+        },
+        {
+          "id": "ai-set-join",
+          "handlerAddress": 290780,
+          "streamBytes": [
+            0,
+            4,
+            0,
+            1
+          ],
+          "state": {
+            "joined": [],
+            "active": [],
+            "hp": [],
+            "activation": 0,
+            "probeMembers": [
+              4
+            ],
+            "probeCharacter": 4
+          }
+        },
+        {
+          "id": "reset-mixed-allies",
+          "handlerAddress": 290816,
+          "streamBytes": [],
+          "state": {
+            "joined": [],
+            "active": [],
+            "hp": [],
+            "reset": true,
+            "probeCharacter": 0
+          }
+        },
+        {
+          "id": "follower-empty",
+          "handlerAddress": 290824,
+          "streamBytes": [
+            0,
+            0
+          ],
+          "state": {
+            "followers": [
+              -1
+            ],
+            "entityIndexAssignments": [
+              0
+            ],
+            "probeEntities": [
+              0
+            ]
+          }
+        },
+        {
+          "id": "follower-existing",
+          "handlerAddress": 290824,
+          "streamBytes": [
+            0,
+            0
+          ],
+          "state": {
+            "followers": [
+              1,
+              -1
+            ],
+            "entityIndexAssignments": [
+              0
+            ],
+            "probeEntities": [
+              0
+            ]
+          }
+        },
+        {
+          "id": "follower-duplicate",
+          "handlerAddress": 290824,
+          "streamBytes": [
+            0,
+            0
+          ],
+          "state": {
+            "followers": [
+              0,
+              -1
+            ],
+            "entityIndexAssignments": [
+              0
+            ],
+            "probeEntities": [
+              0
+            ]
+          }
+        }
+      ]
+    },
+    "observation": {
+      "const": {
+        "core": "Genesis Plus GX",
+        "id": "sf2-force-state-active-party-runtime-v1",
+        "mapTest": 0,
+        "recordOrder": [
+          "join-already-active",
+          "join-replace-dead",
+          "join-replace-living-tail",
+          "ai-clear-no-join",
+          "ai-set-join",
+          "reset-mixed-allies",
+          "follower-empty",
+          "follower-existing",
+          "follower-duplicate"
+        ],
+        "records": [
+          {
+            "after": {
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 65535,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 0
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 1
+                },
+                {
+                  "active": false,
+                  "joined": false,
+                  "member": 2
+                }
+              ]
+            },
+            "before": {
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 0
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 1
+                },
+                {
+                  "active": false,
+                  "joined": false,
+                  "member": 2
+                }
+              ]
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "IsInBattleParty",
+                "h1Address": 290572,
+                "instructionTarget": "j_IsInBattleParty",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290562,
+            "handlerReturned": true,
+            "id": "join-already-active"
+          },
+          {
+            "after": {
+              "battleParty": {
+                "count": 2,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  1
+                ]
+              },
+              "members": [
+                {
+                  "active": false,
+                  "joined": true,
+                  "member": 0
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 1
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 2
+                }
+              ]
+            },
+            "before": {
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 0
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 1
+                },
+                {
+                  "active": false,
+                  "joined": true,
+                  "member": 2
+                }
+              ]
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "IsInBattleParty",
+                "h1Address": 290572,
+                "instructionTarget": "j_IsInBattleParty",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "UpdateForce",
+                "h1Address": 290584,
+                "instructionTarget": "j_UpdateForce",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "GetCurrentHp",
+                "h1Address": 290606,
+                "instructionTarget": "j_GetCurrentHp",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "LeaveBattleParty",
+                "h1Address": 290632,
+                "instructionTarget": "j_LeaveBattleParty",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "JoinBattleParty",
+                "h1Address": 290640,
+                "instructionTarget": "j_JoinBattleParty",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290562,
+            "handlerReturned": true,
+            "id": "join-replace-dead"
+          },
+          {
+            "after": {
+              "battleParty": {
+                "count": 2,
+                "dialogueNameIndex": 1,
+                "members": [
+                  0,
+                  1
+                ]
+              },
+              "members": [
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 0
+                },
+                {
+                  "active": false,
+                  "joined": true,
+                  "member": 1
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 2
+                }
+              ]
+            },
+            "before": {
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 0
+                },
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 1
+                },
+                {
+                  "active": false,
+                  "joined": true,
+                  "member": 2
+                }
+              ]
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "IsInBattleParty",
+                "h1Address": 290572,
+                "instructionTarget": "j_IsInBattleParty",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "UpdateForce",
+                "h1Address": 290584,
+                "instructionTarget": "j_UpdateForce",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "GetCurrentHp",
+                "h1Address": 290606,
+                "instructionTarget": "j_GetCurrentHp",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "LeaveBattleParty",
+                "h1Address": 290632,
+                "instructionTarget": "j_LeaveBattleParty",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "JoinBattleParty",
+                "h1Address": 290640,
+                "instructionTarget": "j_JoinBattleParty",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290562,
+            "handlerReturned": true,
+            "id": "join-replace-living-tail"
+          },
+          {
+            "after": {
+              "activationBitfield": 0,
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": false,
+                  "joined": true,
+                  "member": 3
+                }
+              ]
+            },
+            "before": {
+              "activationBitfield": 4,
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": false,
+                  "joined": true,
+                  "member": 3
+                }
+              ]
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "GetActivationBitfield",
+                "h1Address": 290782,
+                "instructionTarget": "j_GetActivationBitfield",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "SetActivationBitfield",
+                "h1Address": 290808,
+                "instructionTarget": "j_SetActivationBitfield",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290780,
+            "handlerReturned": true,
+            "id": "ai-clear-no-join"
+          },
+          {
+            "after": {
+              "activationBitfield": 4,
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": true,
+                  "joined": true,
+                  "member": 4
+                }
+              ]
+            },
+            "before": {
+              "activationBitfield": 0,
+              "battleParty": {
+                "count": 0,
+                "dialogueNameIndex": 0,
+                "members": [
+                  0,
+                  0
+                ]
+              },
+              "members": [
+                {
+                  "active": false,
+                  "joined": false,
+                  "member": 4
+                }
+              ]
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "GetActivationBitfield",
+                "h1Address": 290782,
+                "instructionTarget": "j_GetActivationBitfield",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "JoinForce",
+                "h1Address": 290802,
+                "instructionTarget": "j_JoinForce",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "SetActivationBitfield",
+                "h1Address": 290808,
+                "instructionTarget": "j_SetActivationBitfield",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290780,
+            "handlerReturned": true,
+            "id": "ai-set-join"
+          },
+          {
+            "after": {
+              "representative": {
+                "currentHp": 20,
+                "currentMp": 10,
+                "maxHp": 20,
+                "maxMp": 10,
+                "status": 3
+              }
+            },
+            "before": {
+              "representative": {
+                "currentHp": 1,
+                "currentMp": 1,
+                "maxHp": 20,
+                "maxMp": 10,
+                "status": 15
+              }
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "ResetAlliesBattleStats",
+                "h1Address": 290816,
+                "instructionTarget": "ResetAlliesBattleStats",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290816,
+            "handlerReturned": true,
+            "id": "reset-mixed-allies",
+            "resetServiceTrace": "GHP:0,GMAX:0,SHP:0,GMP:0,SMP:0,GSTATUS:0,SSTATUS:0,UPDATE:0,GHP:1,GMAX:1,SHP:1,GMP:1,SMP:1,GSTATUS:1,SSTATUS:1,UPDATE:1,GHP:2,GMAX:2,SHP:2,GMP:2,SMP:2,GSTATUS:2,SSTATUS:2,UPDATE:2,GHP:3,GMAX:3,SHP:3,GMP:3,SMP:3,GSTATUS:3,SSTATUS:3,UPDATE:3,GHP:4,GMAX:4,SHP:4,GMP:4,SMP:4,GSTATUS:4,SSTATUS:4,UPDATE:4,GHP:5,GMAX:5,SHP:5,GMP:5,SMP:5,GSTATUS:5,SSTATUS:5,UPDATE:5,GHP:6,GMAX:6,SHP:6,GMP:6,SMP:6,GSTATUS:6,SSTATUS:6,UPDATE:6,GHP:7,GMAX:7,SHP:7,GMP:7,SMP:7,GSTATUS:7,SSTATUS:7,UPDATE:7,GHP:8,GMAX:8,SHP:8,GMP:8,SMP:8,GSTATUS:8,SSTATUS:8,UPDATE:8,GHP:9,GMAX:9,SHP:9,GMP:9,SMP:9,GSTATUS:9,SSTATUS:9,UPDATE:9,GHP:10,GMAX:10,SHP:10,GMP:10,SMP:10,GSTATUS:10,SSTATUS:10,UPDATE:10,GHP:11,GMAX:11,SHP:11,GMP:11,SMP:11,GSTATUS:11,SSTATUS:11,UPDATE:11,GHP:12,GMAX:12,SHP:12,GMP:12,SMP:12,GSTATUS:12,SSTATUS:12,UPDATE:12,GHP:13,GMAX:13,SHP:13,GMP:13,SMP:13,GSTATUS:13,SSTATUS:13,UPDATE:13,GHP:14,GMAX:14,SHP:14,GMP:14,SMP:14,GSTATUS:14,SSTATUS:14,UPDATE:14,GHP:15,GMAX:15,SHP:15,GMP:15,SMP:15,GSTATUS:15,SSTATUS:15,UPDATE:15,GHP:16,GMAX:16,SHP:16,GMP:16,SMP:16,GSTATUS:16,SSTATUS:16,UPDATE:16,GHP:17,GMAX:17,SHP:17,GMP:17,SMP:17,GSTATUS:17,SSTATUS:17,UPDATE:17,GHP:18,GMAX:18,SHP:18,GMP:18,SMP:18,GSTATUS:18,SSTATUS:18,UPDATE:18,GHP:19,GMAX:19,SHP:19,GMP:19,SMP:19,GSTATUS:19,SSTATUS:19,UPDATE:19,GHP:20,GMAX:20,SHP:20,GMP:20,SMP:20,GSTATUS:20,SSTATUS:20,UPDATE:20,GHP:21,GMAX:21,SHP:21,GMP:21,SMP:21,GSTATUS:21,SSTATUS:21,UPDATE:21,GHP:22,GMAX:22,SHP:22,GMP:22,SMP:22,GSTATUS:22,SSTATUS:22,UPDATE:22,GHP:23,GMAX:23,SHP:23,GMP:23,SMP:23,GSTATUS:23,SSTATUS:23,UPDATE:23,GHP:24,GMAX:24,SHP:24,GMP:24,SMP:24,GSTATUS:24,SSTATUS:24,UPDATE:24,GHP:25,GMAX:25,SHP:25,GMP:25,SMP:25,GSTATUS:25,SSTATUS:25,UPDATE:25,GHP:26,GMAX:26,SHP:26,GMP:26,SMP:26,GSTATUS:26,SSTATUS:26,UPDATE:26,GHP:27,GMAX:27,SHP:27,GMP:27,SMP:27,GSTATUS:27,SSTATUS:27,UPDATE:27,GHP:28,GMAX:28,SHP:28,GMP:28,SMP:28,GSTATUS:28,SSTATUS:28,UPDATE:28,GHP:29,GMAX:29,SHP:29,GMP:29,SMP:29,GSTATUS:29,SSTATUS:29,UPDATE:29"
+          },
+          {
+            "after": {
+              "entities": [
+                {
+                  "actscriptPointer": 16733846,
+                  "entity": 0,
+                  "parameters": [
+                    0,
+                    65512,
+                    0
+                  ]
+                }
+              ],
+              "followerBytesThroughPostTerminator": [
+                0,
+                255
+              ],
+              "walkingParametersPointer": 16733888
+            },
+            "before": {
+              "entities": [
+                {
+                  "actscriptPointer": 283132,
+                  "entity": 0,
+                  "parameters": [
+                    255,
+                    26368,
+                    44
+                  ]
+                }
+              ],
+              "followerBytesThroughPostTerminator": [
+                255,
+                255
+              ],
+              "walkingParametersPointer": 16733846
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "GetEntityAddressFromCharacter",
+                "h1Address": 290826,
+                "instructionTarget": "GetEntityAddressFromCharacter",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "AddFollower",
+                "h1Address": 290856,
+                "instructionTarget": "AddFollower",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290824,
+            "handlerReturned": true,
+            "id": "follower-empty"
+          },
+          {
+            "after": {
+              "entities": [
+                {
+                  "actscriptPointer": 16733846,
+                  "entity": 0,
+                  "parameters": [
+                    1,
+                    65512,
+                    0
+                  ]
+                }
+              ],
+              "followerBytesThroughPostTerminator": [
+                1,
+                0,
+                255
+              ],
+              "walkingParametersPointer": 16733888
+            },
+            "before": {
+              "entities": [
+                {
+                  "actscriptPointer": 283132,
+                  "entity": 0,
+                  "parameters": [
+                    255,
+                    26368,
+                    44
+                  ]
+                }
+              ],
+              "followerBytesThroughPostTerminator": [
+                1,
+                255,
+                255
+              ],
+              "walkingParametersPointer": 16733846
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "GetEntityAddressFromCharacter",
+                "h1Address": 290826,
+                "instructionTarget": "GetEntityAddressFromCharacter",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "AddFollower",
+                "h1Address": 290856,
+                "instructionTarget": "AddFollower",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290824,
+            "handlerReturned": true,
+            "id": "follower-existing"
+          },
+          {
+            "after": {
+              "entities": [
+                {
+                  "actscriptPointer": 16733846,
+                  "entity": 0,
+                  "parameters": [
+                    0,
+                    65512,
+                    0
+                  ]
+                }
+              ],
+              "followerBytesThroughPostTerminator": [
+                0,
+                255,
+                255
+              ],
+              "walkingParametersPointer": 16733888
+            },
+            "before": {
+              "entities": [
+                {
+                  "actscriptPointer": 283132,
+                  "entity": 0,
+                  "parameters": [
+                    255,
+                    26368,
+                    44
+                  ]
+                }
+              ],
+              "followerBytesThroughPostTerminator": [
+                0,
+                255,
+                255
+              ],
+              "walkingParametersPointer": 16733846
+            },
+            "chronology": [
+              {
+                "effectiveTarget": "GetEntityAddressFromCharacter",
+                "h1Address": 290826,
+                "instructionTarget": "GetEntityAddressFromCharacter",
+                "kind": "call"
+              },
+              {
+                "effectiveTarget": "AddFollower",
+                "h1Address": 290856,
+                "instructionTarget": "AddFollower",
+                "kind": "call"
+              }
+            ],
+            "handlerAddress": 290824,
+            "handlerReturned": true,
+            "id": "follower-duplicate"
+          }
+        ],
+        "system": "GEN"
+      }
+    }
+  }
+}

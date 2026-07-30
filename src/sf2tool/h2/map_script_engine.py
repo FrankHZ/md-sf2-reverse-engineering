@@ -117,7 +117,11 @@ ACTIVE_PARTY_HANDLER_NAMES = (
     "csc55_resetCharacterBattleStats",
     "csc56_addFollower",
 )
-ACTIVE_PARTY_RUNTIME_QUESTIONS = ["force-state/active-party-ai-follower-runtime-matrix"]
+ACTIVE_PARTY_RUNTIME_QUESTIONS = [
+    "force-state/active-party-ai-follower/normal-story-reachability",
+    "force-state/active-party-ai-follower/save-load-capacity-lifecycle",
+    "force-state/active-party-ai-follower/player-visible-presentation",
+]
 
 # Source macro labels distinguish the primary $10 carrier from its two fixed-
 # operand aliases.  This slice preserves those identities without inferring a

@@ -65,7 +65,7 @@ copy sibling fixture data into this contract. The active-party group additionall
 
 ## Evidence and Runtime Boundary
 
-Evidence date: 2026-07-27.
+Evidence date: 2026-07-30.
 
 Executable evidence is fixture ID `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field `forceStateCommandFacts`; its verifier is
@@ -74,8 +74,17 @@ full 304-program source-site/total corpus, section guards, caller maps, and comm
 identity. The nested `forceStateCommandFacts.activePartyCommandFacts` field pins the four additional
 forms, their 29 sites, source-owner identities, and their own 304-row total corpus.
 
-`force-state/roster-death-persistence-visible-outcomes` and
-`force-state/active-party-ai-follower-runtime-matrix` are the grouped H3 questions. Until they are
-observed, a remake MUST define its own save, capacity, roster membership, death/revive, activation,
-follower, and visible presentation policy explicitly rather than treating these static operations as a
-complete gameplay lifecycle.
+`force-state/roster-death-persistence-visible-outcomes` remains a grouped H3 question. The active-party
+matrix confirms bounded handler-local flag/list timing, activation/join state, reset service order, and
+follower allocation/list effects; a remake MUST still define normal-story
+reachability, save/load and capacity lifecycle, and player-visible presentation explicitly through
+`force-state/active-party-ai-follower/normal-story-reachability`,
+`force-state/active-party-ai-follower/save-load-capacity-lifecycle`, and
+`force-state/active-party-ai-follower/player-visible-presentation`.
+
+For fidelity within this bounded command surface, preserve the observable ordering rather than repairing
+the list immediately: `UpdateForce` may leave a handler-local pre-replacement party snapshot while
+membership flags have already changed. Preserve zero-selector no-join versus nonzero `JoinForce` behavior,
+apply the reset status mask before the subsequent stat update, and preserve duplicate-follower allocation
+and dynamic walking-parameter writes even when the follower list itself does not change. These are not
+rules about save/load capacity or player-visible presentation.

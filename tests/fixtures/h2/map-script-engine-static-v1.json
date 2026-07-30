@@ -396,7 +396,9 @@
       "entity-camera-text-wait-and-transition-frame-timing",
       "palette-fade-and-vdp-visible-presentation",
       "force-state/roster-death-persistence-visible-outcomes",
-      "force-state/active-party-ai-follower-runtime-matrix",
+      "force-state/active-party-ai-follower/normal-story-reachability",
+      "force-state/active-party-ai-follower/save-load-capacity-lifecycle",
+      "force-state/active-party-ai-follower/player-visible-presentation",
       "story-state/normal-story-reachability",
       "story-state/save-load-lifecycle-persistence",
       "story-state/player-visible-yes-no-presentation-timing",
@@ -24514,7 +24516,9 @@
           }
         },
         "runtimeQuestions": [
-          "force-state/active-party-ai-follower-runtime-matrix"
+        "force-state/active-party-ai-follower/normal-story-reachability",
+        "force-state/active-party-ai-follower/save-load-capacity-lifecycle",
+        "force-state/active-party-ai-follower/player-visible-presentation"
         ]
       }
     },

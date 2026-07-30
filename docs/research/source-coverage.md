@@ -511,8 +511,10 @@ total) across a second complete 304-row zero-inclusive program corpus. It retain
 cursor/branch/mutation/call guards, 11 direct/effective caller identities with zero-inclusive
 per-handler and derived scope maps, and source-identity joins to battle-party, activation-bit, and
 follower-owner and battle-stats-owner sources. Its grouped H3 follow-up is
-`force-state/active-party-ai-follower-runtime-matrix`; lifecycle, capacity, persistence, and visible
-effects are not credited as static coverage.
+the nine-case one-launch `sf2-force-state-active-party-runtime-v1` matrix. It confirms bounded local
+handler/service chronology, handler-local roster timing, activation/join mutation, reset-order, and
+follower allocation/list effects, but does not credit normal-story reachability, save-load/capacity lifecycle,
+or player-visible presentation; those three source-faithful queues remain explicit.
 The adjacent story-state branch/prompt slice is exact for seven source forms: 24 `jumpIfFlagSet`, 27
 `jumpIfFlagClear`, zero primary `csc10`, 37 `setF` aliases, 16 `clearF` aliases, 22 `yesNo`, and 20
 `setStoryFlag` sites (146 total) across another complete 304-row zero-inclusive corpus. It preserves

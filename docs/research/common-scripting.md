@@ -912,23 +912,47 @@ register-indirect calls do not count as caller sites.
 `code/common/scripting/map/resetalliesstats.asm` (`ResetAlliesBattleStats`). The joins carry each
 source SHA-256 and do not copy any sibling fixture payload.
 
-**Unknown:** `force-state/active-party-ai-follower-runtime-matrix` is one grouped H3 queue. It must
-observe active-party membership, activation-bit effects, reset effects, follower-chain effects, and
-their persistence/visible outcomes under shared setup. This static slice claims neither normal-story
-reachability nor a lifecycle, capacity, save, hardware, or presentation effect.
+**Confirmed runtime boundary:** `sf2-force-state-active-party-runtime-v1` at
+`tests/fixtures/h3/force-state-active-party-v1.json` records nine bounded Map Test 0 handler entries
+in one matrix: already-active return, dead-active replacement, living-tail replacement, selector-zero
+AI clear, selector-nonzero AI set/JoinForce, mixed reset, and empty/existing/duplicate follower inputs.
+The fixture preserves exact fixture-owned streams/seeds, handler and effective-service chronology, and
+compact before/after state surfaces. It confirms the handler-local `UpdateForce` list snapshot precedes
+the replacement flag mutation, selector-zero versus selector-nonzero activation/join outcomes, the
+30-ally ordered reset service cycle; its source mask 7 is applied before `UpdateCombatantStats`, and
+the measured representative then ends with status 3 and restored HP/MP. The fixture also records follower append/duplicate behavior
+with the allocated walking block pointer and three parameter words. It does not claim normal-story
+reachability, save/load or capacity lifecycle, or visible presentation.
+
+**Confirmed bounded outcomes:** the already-active input executes only `IsInBattleParty` and leaves the
+dialogue index at `-1`. Both replacement paths materialize `UpdateForce`'s list before `LeaveBattleParty`
+and `JoinBattleParty`: on handler return the flags have changed but the measured count/list remain the
+earlier `2`/`[0,1]`; the removed member is 0 for the dead path and 1 for the living-tail path, with
+dialogue indices 0 and 1 respectively. Selector zero has no `JoinForce` call; selector nonzero reaches it
+and makes member 4 joined and active while the handler-local count/list remains the prior zero/empty
+snapshot. Reset applies source mask 7 before `UpdateCombatantStats`; the representative ends status 3
+with HP and MP restored. A duplicate follower leaves the follower list unchanged but still allocates its
+42-byte walking block, advances the pointer, and writes the actscript and three parameter words. These
+are Map Test handler-local observations, not lifecycle or presentation claims.
+
+**Unknown:** `force-state/active-party-ai-follower/normal-story-reachability`,
+`force-state/active-party-ai-follower/save-load-capacity-lifecycle`, and
+`force-state/active-party-ai-follower/player-visible-presentation` remain separate queues.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` forms at lines 474-503;
 `code/common/scripting/map/mapscriptengine_1.asm` named sections at lines 1637-1811; the H1 listing
 addresses above; `sf2enums.asm::AIBITFIELD_AI_CONTROLLED`; and the follower/battle-stats owner files
 named above.
-Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture
+Reproduce the static contract with `uv run sf2 h2 map-script-engine` and the bounded runtime matrix
+with `uv run sf2 h3 force-state-active-party --timeout-seconds 180` (BizHawk 2.11.1, Genesis Plus GX,
+9 cases, 4 handlers, 1 launch); observed result is fixture
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, nested
 field `expected.forceStateCommandFacts.activePartyCommandFacts`.
 
 ## Confirmed Map-Script Block-Copy Command Family
 
-Evidence date: 2026-07-27.
+Evidence date: 2026-07-30.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field `mapBlockMutationCommandFacts` retains the
 two source-named macro forms in source order: `setBlocks` opcode `$34` (201 sites, 8 encoded bytes)
