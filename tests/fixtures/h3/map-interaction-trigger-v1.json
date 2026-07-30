@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-interaction-trigger-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "mapTestIndex": 0,
+  "observationBoundary": "Six cases replay the debug Map Test 0 prompt from one shared in-memory core state. A deterministic session-only copy of the verified ROM replaces the existing RunMapSetupInitFunction indirect call with the verified 16-byte FF-padding trampoline. The trampoline sets A6 to a RAM-owned word stream and JSRs one unmodified roof or step handler; the original disk ROM is re-hashed unchanged before launch. Lua writes only the handler input words, the source-named CURRENT_MAP, CURRENT_BATTLE, word_FFAF42, MAP_AREA_LAYER_TYPE, and VIEW_PLANE_UPDATE_TOGGLE_BITFIELD state, plus the selected nonasset layout marker words. It observes handler return, direct H1 call-site registers, the static table scan boundary, marker comparisons, and update-toggle bits. It does not establish complete layout, collision, pathfinding, presentation, audio, persistence, or normal-story reachability.",
+  "runtimeQuestions": [
+    "map-interaction-trigger/full-layout-collision-pathfinding-effects",
+    "map-interaction-trigger/presentation-audio-timing-hardware-effects",
+    "map-interaction-trigger/persistence-story-reachability"
+  ],
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "staticContractFixture": "tests/fixtures/h2/map-script-engine-static-v1.json",
+  "maxFrames": 7200,
+  "function": {
+    "entryAddress": 292092,
+    "roofHandlerAddress": 288438,
+    "stepHandlerAddress": 288582,
+    "roofDirectCalleeCallSiteAddress": 288450,
+    "stepDirectCalleeCallSiteAddress": 288594
+  },
+  "ram": {
+    "layoutBaseAddress": 16711680,
+    "currentMapAddress": 16774929,
+    "currentBattleAddress": 16774930,
+    "busyWordAddress": 16756546,
+    "mapAreaLayerTypeAddress": 16756550,
+    "updateToggleBitfieldAddress": 16754733
+  },
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4DF900FF4004207900FF40004E904E75",
+    "postHandlerAddress": 65430,
+    "ramInputAddress": 16728064
+  },
+  "cases": [
+    {
+      "id": "roof-map02-record0-hit",
+      "eventKind": "roof",
+      "table": {
+        "mapIndex": 2,
+        "kind": "roofEvents",
+        "symbol": "Map02s5_RoofEvents",
+        "recordIndex": 0,
+        "recordCount": 9,
+        "terminatorByteOffset": 72
+      },
+      "triggerTile": {
+        "x": 9,
+        "y": 13
+      },
+      "matchBoundary": "selected-record",
+      "initialState": {
+        "currentMap": 2,
+        "busyWord": 0,
+        "currentBattleByte": 255,
+        "mapAreaLayerTypeByte": 1,
+        "updateToggleBitfieldSeed": 0
+      },
+      "markerSeeds": {
+        "layoutSourceWordSeed": null,
+        "layoutDestinationWordSeed": 42330
+      },
+      "expected": {
+        "id": "roof-map02-record0-hit",
+        "handlerAddress": 288438,
+        "directCalleeCallSiteAddress": 288450,
+        "calleeName": "PerformMapBlockCopyScript",
+        "calleeD0WordAtDirectCall": 3456,
+        "calleeD1WordAtDirectCall": 4992,
+        "hashedTriggerTile": {
+          "x": 9,
+          "y": 13
+        },
+        "layoutSourceWordAddress": null,
+        "layoutDestinationWordAddress": 16716550,
+        "selectedTableAddress": 616978,
+        "recordStrideByteCount": 8,
+        "terminatorAddress": 617050,
+        "currentMapSeed": 2
+      },
+      "runtimeGolden": {
+        "currentMapAfter": 2,
+        "matchBoundaryObserved": "selected-record",
+        "terminatorBoundaryObserved": false,
+        "layoutDestinationMarkerChanged": true,
+        "layoutDestinationMarkerMatchesSourceMarker": null,
+        "updateToggleBit0Set": true,
+        "updateToggleBit1Set": false,
+        "busyWordAfter": 1,
+        "currentBattleByteAfter": 255
+      }
+    },
+    {
+      "id": "roof-map02-terminator-miss",
+      "eventKind": "roof",
+      "table": {
+        "mapIndex": 2,
+        "kind": "roofEvents",
+        "symbol": "Map02s5_RoofEvents",
+        "recordIndex": 0,
+        "recordCount": 9,
+        "terminatorByteOffset": 72
+      },
+      "triggerTile": {
+        "x": 0,
+        "y": 0
+      },
+      "matchBoundary": "terminator",
+      "initialState": {
+        "currentMap": 2,
+        "busyWord": 0,
+        "currentBattleByte": 255,
+        "mapAreaLayerTypeByte": 1,
+        "updateToggleBitfieldSeed": 0
+      },
+      "markerSeeds": {
+        "layoutSourceWordSeed": null,
+        "layoutDestinationWordSeed": 42330
+      },
+      "expected": {
+        "id": "roof-map02-terminator-miss",
+        "handlerAddress": 288438,
+        "directCalleeCallSiteAddress": 288450,
+        "calleeName": "PerformMapBlockCopyScript",
+        "calleeD0WordAtDirectCall": 0,
+        "calleeD1WordAtDirectCall": 0,
+        "hashedTriggerTile": {
+          "x": 0,
+          "y": 0
+        },
+        "layoutSourceWordAddress": null,
+        "layoutDestinationWordAddress": 16716550,
+        "selectedTableAddress": 616978,
+        "recordStrideByteCount": 8,
+        "terminatorAddress": 617050,
+        "currentMapSeed": 2
+      },
+      "runtimeGolden": {
+        "currentMapAfter": 2,
+        "matchBoundaryObserved": "terminator",
+        "terminatorBoundaryObserved": true,
+        "layoutDestinationMarkerChanged": false,
+        "layoutDestinationMarkerMatchesSourceMarker": null,
+        "updateToggleBit0Set": false,
+        "updateToggleBit1Set": false,
+        "busyWordAfter": 0,
+        "currentBattleByteAfter": 255
+      }
+    },
+    {
+      "id": "roof-map02-record0-busy-gate",
+      "eventKind": "roof",
+      "table": {
+        "mapIndex": 2,
+        "kind": "roofEvents",
+        "symbol": "Map02s5_RoofEvents",
+        "recordIndex": 0,
+        "recordCount": 9,
+        "terminatorByteOffset": 72
+      },
+      "triggerTile": {
+        "x": 9,
+        "y": 13
+      },
+      "matchBoundary": "busy-gate",
+      "initialState": {
+        "currentMap": 2,
+        "busyWord": 1,
+        "currentBattleByte": 255,
+        "mapAreaLayerTypeByte": 1,
+        "updateToggleBitfieldSeed": 0
+      },
+      "markerSeeds": {
+        "layoutSourceWordSeed": null,
+        "layoutDestinationWordSeed": 42330
+      },
+      "expected": {
+        "id": "roof-map02-record0-busy-gate",
+        "handlerAddress": 288438,
+        "directCalleeCallSiteAddress": 288450,
+        "calleeName": "PerformMapBlockCopyScript",
+        "calleeD0WordAtDirectCall": 3456,
+        "calleeD1WordAtDirectCall": 4992,
+        "hashedTriggerTile": {
+          "x": 9,
+          "y": 13
+        },
+        "layoutSourceWordAddress": null,
+        "layoutDestinationWordAddress": 16716550,
+        "selectedTableAddress": 616978,
+        "recordStrideByteCount": 8,
+        "terminatorAddress": 617050,
+        "currentMapSeed": 2
+      },
+      "runtimeGolden": {
+        "currentMapAfter": 2,
+        "matchBoundaryObserved": "busy-gate",
+        "terminatorBoundaryObserved": false,
+        "layoutDestinationMarkerChanged": false,
+        "layoutDestinationMarkerMatchesSourceMarker": null,
+        "updateToggleBit0Set": false,
+        "updateToggleBit1Set": false,
+        "busyWordAfter": 1,
+        "currentBattleByteAfter": 255
+      }
+    },
+    {
+      "id": "step-map02-record0-hit",
+      "eventKind": "step",
+      "table": {
+        "mapIndex": 2,
+        "kind": "stepEvents",
+        "symbol": "Map02s4_StepEvents",
+        "recordIndex": 0,
+        "recordCount": 9,
+        "terminatorByteOffset": 72
+      },
+      "triggerTile": {
+        "x": 9,
+        "y": 13
+      },
+      "matchBoundary": "selected-record",
+      "initialState": {
+        "currentMap": 2,
+        "busyWord": 0,
+        "currentBattleByte": 255,
+        "mapAreaLayerTypeByte": 0,
+        "updateToggleBitfieldSeed": 0
+      },
+      "markerSeeds": {
+        "layoutSourceWordSeed": 48879,
+        "layoutDestinationWordSeed": 42330
+      },
+      "expected": {
+        "id": "step-map02-record0-hit",
+        "handlerAddress": 288582,
+        "directCalleeCallSiteAddress": 288594,
+        "calleeName": "OpenDoor",
+        "calleeD0WordAtDirectCall": 3456,
+        "calleeD1WordAtDirectCall": 4992,
+        "hashedTriggerTile": {
+          "x": 9,
+          "y": 13
+        },
+        "layoutSourceWordAddress": 16711776,
+        "layoutDestinationWordAddress": 16713362,
+        "selectedTableAddress": 616904,
+        "recordStrideByteCount": 8,
+        "terminatorAddress": 616976,
+        "currentMapSeed": 2
+      },
+      "runtimeGolden": {
+        "currentMapAfter": 2,
+        "matchBoundaryObserved": "selected-record",
+        "terminatorBoundaryObserved": false,
+        "layoutDestinationMarkerChanged": true,
+        "layoutDestinationMarkerMatchesSourceMarker": true,
+        "updateToggleBit0Set": false,
+        "updateToggleBit1Set": true,
+        "busyWordAfter": 0,
+        "currentBattleByteAfter": 255
+      }
+    },
+    {
+      "id": "step-map02-terminator-miss",
+      "eventKind": "step",
+      "table": {
+        "mapIndex": 2,
+        "kind": "stepEvents",
+        "symbol": "Map02s4_StepEvents",
+        "recordIndex": 0,
+        "recordCount": 9,
+        "terminatorByteOffset": 72
+      },
+      "triggerTile": {
+        "x": 0,
+        "y": 0
+      },
+      "matchBoundary": "terminator",
+      "initialState": {
+        "currentMap": 2,
+        "busyWord": 0,
+        "currentBattleByte": 255,
+        "mapAreaLayerTypeByte": 0,
+        "updateToggleBitfieldSeed": 0
+      },
+      "markerSeeds": {
+        "layoutSourceWordSeed": 48879,
+        "layoutDestinationWordSeed": 42330
+      },
+      "expected": {
+        "id": "step-map02-terminator-miss",
+        "handlerAddress": 288582,
+        "directCalleeCallSiteAddress": 288594,
+        "calleeName": "OpenDoor",
+        "calleeD0WordAtDirectCall": 0,
+        "calleeD1WordAtDirectCall": 0,
+        "hashedTriggerTile": {
+          "x": 0,
+          "y": 0
+        },
+        "layoutSourceWordAddress": 16711776,
+        "layoutDestinationWordAddress": 16713362,
+        "selectedTableAddress": 616904,
+        "recordStrideByteCount": 8,
+        "terminatorAddress": 616976,
+        "currentMapSeed": 2
+      },
+      "runtimeGolden": {
+        "currentMapAfter": 2,
+        "matchBoundaryObserved": "terminator",
+        "terminatorBoundaryObserved": true,
+        "layoutDestinationMarkerChanged": false,
+        "layoutDestinationMarkerMatchesSourceMarker": false,
+        "updateToggleBit0Set": false,
+        "updateToggleBit1Set": false,
+        "busyWordAfter": 0,
+        "currentBattleByteAfter": 255
+      }
+    },
+    {
+      "id": "step-map02-record0-battle-gate",
+      "eventKind": "step",
+      "table": {
+        "mapIndex": 2,
+        "kind": "stepEvents",
+        "symbol": "Map02s4_StepEvents",
+        "recordIndex": 0,
+        "recordCount": 9,
+        "terminatorByteOffset": 72
+      },
+      "triggerTile": {
+        "x": 9,
+        "y": 13
+      },
+      "matchBoundary": "battle-gate",
+      "initialState": {
+        "currentMap": 2,
+        "busyWord": 0,
+        "currentBattleByte": 0,
+        "mapAreaLayerTypeByte": 0,
+        "updateToggleBitfieldSeed": 0
+      },
+      "markerSeeds": {
+        "layoutSourceWordSeed": 48879,
+        "layoutDestinationWordSeed": 42330
+      },
+      "expected": {
+        "id": "step-map02-record0-battle-gate",
+        "handlerAddress": 288582,
+        "directCalleeCallSiteAddress": 288594,
+        "calleeName": "OpenDoor",
+        "calleeD0WordAtDirectCall": 3456,
+        "calleeD1WordAtDirectCall": 4992,
+        "hashedTriggerTile": {
+          "x": 9,
+          "y": 13
+        },
+        "layoutSourceWordAddress": 16711776,
+        "layoutDestinationWordAddress": 16713362,
+        "selectedTableAddress": 616904,
+        "recordStrideByteCount": 8,
+        "terminatorAddress": 616976,
+        "currentMapSeed": 2
+      },
+      "runtimeGolden": {
+        "currentMapAfter": 2,
+        "matchBoundaryObserved": "battle-gate",
+        "terminatorBoundaryObserved": false,
+        "layoutDestinationMarkerChanged": false,
+        "layoutDestinationMarkerMatchesSourceMarker": false,
+        "updateToggleBit0Set": false,
+        "updateToggleBit1Set": false,
+        "busyWordAfter": 0,
+        "currentBattleByteAfter": 0
+      }
+    }
+  ]
+}

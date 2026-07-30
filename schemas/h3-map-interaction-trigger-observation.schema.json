@@ -1,0 +1,1376 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "system",
+    "core",
+    "id",
+    "mapTest",
+    "recordOrder",
+    "records"
+  ],
+  "properties": {
+    "system": {
+      "const": "GEN"
+    },
+    "core": {
+      "const": "Genesis Plus GX"
+    },
+    "id": {
+      "const": "sf2-map-interaction-trigger-runtime-v1"
+    },
+    "mapTest": {
+      "const": 0
+    },
+    "recordOrder": {
+      "const": [
+        "roof-map02-record0-hit",
+        "roof-map02-terminator-miss",
+        "roof-map02-record0-busy-gate",
+        "step-map02-record0-hit",
+        "step-map02-terminator-miss",
+        "step-map02-record0-battle-gate"
+      ]
+    },
+    "records": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": [
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "handlerAddress",
+                "directCalleeCallSiteAddress",
+                "calleeName",
+                "calleeD0WordAtDirectCall",
+                "calleeD1WordAtDirectCall",
+                "currentMapAfter",
+                "hashedTriggerTile",
+                "layoutSourceWordAddress",
+                "layoutDestinationWordAddress",
+                "handlerReturned",
+                "matchBoundaryObserved",
+                "terminatorBoundaryObserved",
+                "layoutDestinationMarkerChanged",
+                "layoutDestinationMarkerMatchesSourceMarker",
+                "updateToggleBit0Set",
+                "updateToggleBit1Set",
+                "busyWordAfter",
+                "currentBattleByteAfter",
+                "selectedTableAddress",
+                "recordStrideByteCount",
+                "terminatorAddress"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "handlerAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCalleeCallSiteAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "calleeName": {
+                  "enum": [
+                    "PerformMapBlockCopyScript",
+                    "OpenDoor"
+                  ]
+                },
+                "calleeD0WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "calleeD1WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentMapAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 78
+                },
+                "hashedTriggerTile": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    }
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "layoutDestinationWordAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "matchBoundaryObserved": {
+                  "enum": [
+                    "selected-record",
+                    "terminator",
+                    "busy-gate",
+                    "battle-gate"
+                  ]
+                },
+                "terminatorBoundaryObserved": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerChanged": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updateToggleBit0Set": {
+                  "type": "boolean"
+                },
+                "updateToggleBit1Set": {
+                  "type": "boolean"
+                },
+                "busyWordAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentBattleByteAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "selectedTableAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recordStrideByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "terminatorAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "roof-map02-record0-hit"
+                },
+                "handlerAddress": {
+                  "const": 288438
+                },
+                "directCalleeCallSiteAddress": {
+                  "const": 288450
+                },
+                "calleeName": {
+                  "const": "PerformMapBlockCopyScript"
+                },
+                "calleeD0WordAtDirectCall": {
+                  "const": 3456
+                },
+                "calleeD1WordAtDirectCall": {
+                  "const": 4992
+                },
+                "hashedTriggerTile": {
+                  "const": {
+                    "x": 9,
+                    "y": 13
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "const": null
+                },
+                "layoutDestinationWordAddress": {
+                  "const": 16716550
+                },
+                "selectedTableAddress": {
+                  "const": 616978
+                },
+                "recordStrideByteCount": {
+                  "const": 8
+                },
+                "terminatorAddress": {
+                  "const": 617050
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "currentMapAfter": {
+                  "const": 2
+                },
+                "matchBoundaryObserved": {
+                  "const": "selected-record"
+                },
+                "terminatorBoundaryObserved": {
+                  "const": false
+                },
+                "layoutDestinationMarkerChanged": {
+                  "const": true
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "const": null
+                },
+                "updateToggleBit0Set": {
+                  "const": true
+                },
+                "updateToggleBit1Set": {
+                  "const": false
+                },
+                "busyWordAfter": {
+                  "const": 1
+                },
+                "currentBattleByteAfter": {
+                  "const": 255
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "handlerAddress",
+                "directCalleeCallSiteAddress",
+                "calleeName",
+                "calleeD0WordAtDirectCall",
+                "calleeD1WordAtDirectCall",
+                "currentMapAfter",
+                "hashedTriggerTile",
+                "layoutSourceWordAddress",
+                "layoutDestinationWordAddress",
+                "handlerReturned",
+                "matchBoundaryObserved",
+                "terminatorBoundaryObserved",
+                "layoutDestinationMarkerChanged",
+                "layoutDestinationMarkerMatchesSourceMarker",
+                "updateToggleBit0Set",
+                "updateToggleBit1Set",
+                "busyWordAfter",
+                "currentBattleByteAfter",
+                "selectedTableAddress",
+                "recordStrideByteCount",
+                "terminatorAddress"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "handlerAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCalleeCallSiteAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "calleeName": {
+                  "enum": [
+                    "PerformMapBlockCopyScript",
+                    "OpenDoor"
+                  ]
+                },
+                "calleeD0WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "calleeD1WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentMapAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 78
+                },
+                "hashedTriggerTile": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    }
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "layoutDestinationWordAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "matchBoundaryObserved": {
+                  "enum": [
+                    "selected-record",
+                    "terminator",
+                    "busy-gate",
+                    "battle-gate"
+                  ]
+                },
+                "terminatorBoundaryObserved": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerChanged": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updateToggleBit0Set": {
+                  "type": "boolean"
+                },
+                "updateToggleBit1Set": {
+                  "type": "boolean"
+                },
+                "busyWordAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentBattleByteAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "selectedTableAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recordStrideByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "terminatorAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "roof-map02-terminator-miss"
+                },
+                "handlerAddress": {
+                  "const": 288438
+                },
+                "directCalleeCallSiteAddress": {
+                  "const": 288450
+                },
+                "calleeName": {
+                  "const": "PerformMapBlockCopyScript"
+                },
+                "calleeD0WordAtDirectCall": {
+                  "const": 0
+                },
+                "calleeD1WordAtDirectCall": {
+                  "const": 0
+                },
+                "hashedTriggerTile": {
+                  "const": {
+                    "x": 0,
+                    "y": 0
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "const": null
+                },
+                "layoutDestinationWordAddress": {
+                  "const": 16716550
+                },
+                "selectedTableAddress": {
+                  "const": 616978
+                },
+                "recordStrideByteCount": {
+                  "const": 8
+                },
+                "terminatorAddress": {
+                  "const": 617050
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "currentMapAfter": {
+                  "const": 2
+                },
+                "matchBoundaryObserved": {
+                  "const": "terminator"
+                },
+                "terminatorBoundaryObserved": {
+                  "const": true
+                },
+                "layoutDestinationMarkerChanged": {
+                  "const": false
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "const": null
+                },
+                "updateToggleBit0Set": {
+                  "const": false
+                },
+                "updateToggleBit1Set": {
+                  "const": false
+                },
+                "busyWordAfter": {
+                  "const": 0
+                },
+                "currentBattleByteAfter": {
+                  "const": 255
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "handlerAddress",
+                "directCalleeCallSiteAddress",
+                "calleeName",
+                "calleeD0WordAtDirectCall",
+                "calleeD1WordAtDirectCall",
+                "currentMapAfter",
+                "hashedTriggerTile",
+                "layoutSourceWordAddress",
+                "layoutDestinationWordAddress",
+                "handlerReturned",
+                "matchBoundaryObserved",
+                "terminatorBoundaryObserved",
+                "layoutDestinationMarkerChanged",
+                "layoutDestinationMarkerMatchesSourceMarker",
+                "updateToggleBit0Set",
+                "updateToggleBit1Set",
+                "busyWordAfter",
+                "currentBattleByteAfter",
+                "selectedTableAddress",
+                "recordStrideByteCount",
+                "terminatorAddress"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "handlerAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCalleeCallSiteAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "calleeName": {
+                  "enum": [
+                    "PerformMapBlockCopyScript",
+                    "OpenDoor"
+                  ]
+                },
+                "calleeD0WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "calleeD1WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentMapAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 78
+                },
+                "hashedTriggerTile": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    }
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "layoutDestinationWordAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "matchBoundaryObserved": {
+                  "enum": [
+                    "selected-record",
+                    "terminator",
+                    "busy-gate",
+                    "battle-gate"
+                  ]
+                },
+                "terminatorBoundaryObserved": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerChanged": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updateToggleBit0Set": {
+                  "type": "boolean"
+                },
+                "updateToggleBit1Set": {
+                  "type": "boolean"
+                },
+                "busyWordAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentBattleByteAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "selectedTableAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recordStrideByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "terminatorAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "roof-map02-record0-busy-gate"
+                },
+                "handlerAddress": {
+                  "const": 288438
+                },
+                "directCalleeCallSiteAddress": {
+                  "const": 288450
+                },
+                "calleeName": {
+                  "const": "PerformMapBlockCopyScript"
+                },
+                "calleeD0WordAtDirectCall": {
+                  "const": 3456
+                },
+                "calleeD1WordAtDirectCall": {
+                  "const": 4992
+                },
+                "hashedTriggerTile": {
+                  "const": {
+                    "x": 9,
+                    "y": 13
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "const": null
+                },
+                "layoutDestinationWordAddress": {
+                  "const": 16716550
+                },
+                "selectedTableAddress": {
+                  "const": 616978
+                },
+                "recordStrideByteCount": {
+                  "const": 8
+                },
+                "terminatorAddress": {
+                  "const": 617050
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "currentMapAfter": {
+                  "const": 2
+                },
+                "matchBoundaryObserved": {
+                  "const": "busy-gate"
+                },
+                "terminatorBoundaryObserved": {
+                  "const": false
+                },
+                "layoutDestinationMarkerChanged": {
+                  "const": false
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "const": null
+                },
+                "updateToggleBit0Set": {
+                  "const": false
+                },
+                "updateToggleBit1Set": {
+                  "const": false
+                },
+                "busyWordAfter": {
+                  "const": 1
+                },
+                "currentBattleByteAfter": {
+                  "const": 255
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "handlerAddress",
+                "directCalleeCallSiteAddress",
+                "calleeName",
+                "calleeD0WordAtDirectCall",
+                "calleeD1WordAtDirectCall",
+                "currentMapAfter",
+                "hashedTriggerTile",
+                "layoutSourceWordAddress",
+                "layoutDestinationWordAddress",
+                "handlerReturned",
+                "matchBoundaryObserved",
+                "terminatorBoundaryObserved",
+                "layoutDestinationMarkerChanged",
+                "layoutDestinationMarkerMatchesSourceMarker",
+                "updateToggleBit0Set",
+                "updateToggleBit1Set",
+                "busyWordAfter",
+                "currentBattleByteAfter",
+                "selectedTableAddress",
+                "recordStrideByteCount",
+                "terminatorAddress"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "handlerAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCalleeCallSiteAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "calleeName": {
+                  "enum": [
+                    "PerformMapBlockCopyScript",
+                    "OpenDoor"
+                  ]
+                },
+                "calleeD0WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "calleeD1WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentMapAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 78
+                },
+                "hashedTriggerTile": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    }
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "layoutDestinationWordAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "matchBoundaryObserved": {
+                  "enum": [
+                    "selected-record",
+                    "terminator",
+                    "busy-gate",
+                    "battle-gate"
+                  ]
+                },
+                "terminatorBoundaryObserved": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerChanged": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updateToggleBit0Set": {
+                  "type": "boolean"
+                },
+                "updateToggleBit1Set": {
+                  "type": "boolean"
+                },
+                "busyWordAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentBattleByteAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "selectedTableAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recordStrideByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "terminatorAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "step-map02-record0-hit"
+                },
+                "handlerAddress": {
+                  "const": 288582
+                },
+                "directCalleeCallSiteAddress": {
+                  "const": 288594
+                },
+                "calleeName": {
+                  "const": "OpenDoor"
+                },
+                "calleeD0WordAtDirectCall": {
+                  "const": 3456
+                },
+                "calleeD1WordAtDirectCall": {
+                  "const": 4992
+                },
+                "hashedTriggerTile": {
+                  "const": {
+                    "x": 9,
+                    "y": 13
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "const": 16711776
+                },
+                "layoutDestinationWordAddress": {
+                  "const": 16713362
+                },
+                "selectedTableAddress": {
+                  "const": 616904
+                },
+                "recordStrideByteCount": {
+                  "const": 8
+                },
+                "terminatorAddress": {
+                  "const": 616976
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "currentMapAfter": {
+                  "const": 2
+                },
+                "matchBoundaryObserved": {
+                  "const": "selected-record"
+                },
+                "terminatorBoundaryObserved": {
+                  "const": false
+                },
+                "layoutDestinationMarkerChanged": {
+                  "const": true
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "const": true
+                },
+                "updateToggleBit0Set": {
+                  "const": false
+                },
+                "updateToggleBit1Set": {
+                  "const": true
+                },
+                "busyWordAfter": {
+                  "const": 0
+                },
+                "currentBattleByteAfter": {
+                  "const": 255
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "handlerAddress",
+                "directCalleeCallSiteAddress",
+                "calleeName",
+                "calleeD0WordAtDirectCall",
+                "calleeD1WordAtDirectCall",
+                "currentMapAfter",
+                "hashedTriggerTile",
+                "layoutSourceWordAddress",
+                "layoutDestinationWordAddress",
+                "handlerReturned",
+                "matchBoundaryObserved",
+                "terminatorBoundaryObserved",
+                "layoutDestinationMarkerChanged",
+                "layoutDestinationMarkerMatchesSourceMarker",
+                "updateToggleBit0Set",
+                "updateToggleBit1Set",
+                "busyWordAfter",
+                "currentBattleByteAfter",
+                "selectedTableAddress",
+                "recordStrideByteCount",
+                "terminatorAddress"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "handlerAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCalleeCallSiteAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "calleeName": {
+                  "enum": [
+                    "PerformMapBlockCopyScript",
+                    "OpenDoor"
+                  ]
+                },
+                "calleeD0WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "calleeD1WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentMapAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 78
+                },
+                "hashedTriggerTile": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    }
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "layoutDestinationWordAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "matchBoundaryObserved": {
+                  "enum": [
+                    "selected-record",
+                    "terminator",
+                    "busy-gate",
+                    "battle-gate"
+                  ]
+                },
+                "terminatorBoundaryObserved": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerChanged": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updateToggleBit0Set": {
+                  "type": "boolean"
+                },
+                "updateToggleBit1Set": {
+                  "type": "boolean"
+                },
+                "busyWordAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentBattleByteAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "selectedTableAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recordStrideByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "terminatorAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "step-map02-terminator-miss"
+                },
+                "handlerAddress": {
+                  "const": 288582
+                },
+                "directCalleeCallSiteAddress": {
+                  "const": 288594
+                },
+                "calleeName": {
+                  "const": "OpenDoor"
+                },
+                "calleeD0WordAtDirectCall": {
+                  "const": 0
+                },
+                "calleeD1WordAtDirectCall": {
+                  "const": 0
+                },
+                "hashedTriggerTile": {
+                  "const": {
+                    "x": 0,
+                    "y": 0
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "const": 16711776
+                },
+                "layoutDestinationWordAddress": {
+                  "const": 16713362
+                },
+                "selectedTableAddress": {
+                  "const": 616904
+                },
+                "recordStrideByteCount": {
+                  "const": 8
+                },
+                "terminatorAddress": {
+                  "const": 616976
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "currentMapAfter": {
+                  "const": 2
+                },
+                "matchBoundaryObserved": {
+                  "const": "terminator"
+                },
+                "terminatorBoundaryObserved": {
+                  "const": true
+                },
+                "layoutDestinationMarkerChanged": {
+                  "const": false
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "const": false
+                },
+                "updateToggleBit0Set": {
+                  "const": false
+                },
+                "updateToggleBit1Set": {
+                  "const": false
+                },
+                "busyWordAfter": {
+                  "const": 0
+                },
+                "currentBattleByteAfter": {
+                  "const": 255
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "handlerAddress",
+                "directCalleeCallSiteAddress",
+                "calleeName",
+                "calleeD0WordAtDirectCall",
+                "calleeD1WordAtDirectCall",
+                "currentMapAfter",
+                "hashedTriggerTile",
+                "layoutSourceWordAddress",
+                "layoutDestinationWordAddress",
+                "handlerReturned",
+                "matchBoundaryObserved",
+                "terminatorBoundaryObserved",
+                "layoutDestinationMarkerChanged",
+                "layoutDestinationMarkerMatchesSourceMarker",
+                "updateToggleBit0Set",
+                "updateToggleBit1Set",
+                "busyWordAfter",
+                "currentBattleByteAfter",
+                "selectedTableAddress",
+                "recordStrideByteCount",
+                "terminatorAddress"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "handlerAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directCalleeCallSiteAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "calleeName": {
+                  "enum": [
+                    "PerformMapBlockCopyScript",
+                    "OpenDoor"
+                  ]
+                },
+                "calleeD0WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "calleeD1WordAtDirectCall": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentMapAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 78
+                },
+                "hashedTriggerTile": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    }
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "layoutDestinationWordAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "matchBoundaryObserved": {
+                  "enum": [
+                    "selected-record",
+                    "terminator",
+                    "busy-gate",
+                    "battle-gate"
+                  ]
+                },
+                "terminatorBoundaryObserved": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerChanged": {
+                  "type": "boolean"
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "updateToggleBit0Set": {
+                  "type": "boolean"
+                },
+                "updateToggleBit1Set": {
+                  "type": "boolean"
+                },
+                "busyWordAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "currentBattleByteAfter": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "selectedTableAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "recordStrideByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "terminatorAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "step-map02-record0-battle-gate"
+                },
+                "handlerAddress": {
+                  "const": 288582
+                },
+                "directCalleeCallSiteAddress": {
+                  "const": 288594
+                },
+                "calleeName": {
+                  "const": "OpenDoor"
+                },
+                "calleeD0WordAtDirectCall": {
+                  "const": 3456
+                },
+                "calleeD1WordAtDirectCall": {
+                  "const": 4992
+                },
+                "hashedTriggerTile": {
+                  "const": {
+                    "x": 9,
+                    "y": 13
+                  }
+                },
+                "layoutSourceWordAddress": {
+                  "const": 16711776
+                },
+                "layoutDestinationWordAddress": {
+                  "const": 16713362
+                },
+                "selectedTableAddress": {
+                  "const": 616904
+                },
+                "recordStrideByteCount": {
+                  "const": 8
+                },
+                "terminatorAddress": {
+                  "const": 616976
+                },
+                "handlerReturned": {
+                  "const": true
+                },
+                "currentMapAfter": {
+                  "const": 2
+                },
+                "matchBoundaryObserved": {
+                  "const": "battle-gate"
+                },
+                "terminatorBoundaryObserved": {
+                  "const": false
+                },
+                "layoutDestinationMarkerChanged": {
+                  "const": false
+                },
+                "layoutDestinationMarkerMatchesSourceMarker": {
+                  "const": false
+                },
+                "updateToggleBit0Set": {
+                  "const": false
+                },
+                "updateToggleBit1Set": {
+                  "const": false
+                },
+                "busyWordAfter": {
+                  "const": 0
+                },
+                "currentBattleByteAfter": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "additionalItems": false
+    }
+  }
+}

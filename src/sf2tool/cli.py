@@ -94,6 +94,7 @@ from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
 from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
+from sf2tool.h3.map_interaction_trigger import verify_map_interaction_trigger
 from sf2tool.h3.map_lifecycle import verify_map_lifecycle
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
@@ -697,6 +698,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_lifecycle)
     h3_map_lifecycle.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_interaction_trigger = h3_commands.add_parser(
+        "map-interaction-trigger",
+        help="verify batched roof and step trigger gate, match, and marker boundaries",
+    )
+    _add_local_paths(h3_map_interaction_trigger)
+    h3_map_interaction_trigger.add_argument("--timeout-seconds", type=int, default=120)
     h3_map_animation_vdp = h3_commands.add_parser(
         "map-animation-vdp",
         help="verify batched map-animation counter, wrap, DMA queue, and VRAM behavior",
@@ -1524,6 +1531,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-lifecycle":
         print_record(
             verify_map_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-interaction-trigger":
+        print_record(
+            verify_map_interaction_trigger(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

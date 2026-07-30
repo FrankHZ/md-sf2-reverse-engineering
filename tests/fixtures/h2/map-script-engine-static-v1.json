@@ -404,7 +404,9 @@
       "map-lifecycle/entity-reload-player-placement",
       "map-lifecycle/presentation-fade-hardware-timing",
       "map-lifecycle/story-reachability-persistence",
-      "map-interaction-trigger/runtime-effects-matrix",
+      "map-interaction-trigger/full-layout-collision-pathfinding-effects",
+      "map-interaction-trigger/presentation-audio-timing-hardware-effects",
+      "map-interaction-trigger/persistence-story-reachability",
       "map-script-camera-control/runtime-effects-matrix",
       "map-script-entity-placement/runtime-effects-reachability-matrix",
       "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
@@ -66532,7 +66534,9 @@
         }
       },
       "runtimeQuestions": [
-        "map-interaction-trigger/runtime-effects-matrix"
+        "map-interaction-trigger/full-layout-collision-pathfinding-effects",
+        "map-interaction-trigger/presentation-audio-timing-hardware-effects",
+        "map-interaction-trigger/persistence-story-reachability"
       ]
     },
     "mapCameraControlCommandFacts": {

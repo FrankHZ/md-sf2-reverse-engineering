@@ -55,7 +55,9 @@ Evidence is executable through:
 - `sf2-entity-movement-runtime-v1` in
   `tests/fixtures/h3/entity-movement-matrix-v1.json`;
 - `sf2-map-lifecycle-runtime-v1` in
-  `tests/fixtures/h3/map-lifecycle-v1.json`.
+  `tests/fixtures/h3/map-lifecycle-v1.json`;
+- `sf2-map-interaction-trigger-runtime-v1` in
+  `tests/fixtures/h3/map-interaction-trigger-v1.json`.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
@@ -270,10 +272,22 @@ the raw `trigger X`/`trigger Y` comments, source program/command identity, the t
 reads, both parsed `MAP_TILE_SIZE` use sites, direct target identity/order, and return boundary.
 The zero-inclusive direct/effective caller maps and the source-only link to the 79-table/94-record
 step corpus and 79-table/114-record roof corpus MUST remain separate from the eight command sites.
-A remake MAY adapt these records only through an independently specified interface. This static
-contract does not establish interaction reachability, coordinate units, map table selection, callee
-effects, collision/pathfinding, persistence, timing, rendering, or player-visible behavior; those
-remain in `map-interaction-trigger/runtime-effects-matrix`.
+A remake MAY adapt these records only through an independently specified interface.
+
+**Confirmed bounded runtime boundary:** `sf2-map-interaction-trigger-runtime-v1` at
+`tests/fixtures/h3/map-interaction-trigger-v1.json` records six Map 02 handler invocations in one
+launch. A consumer MUST retain every fixture case and its closed static and runtime record shape,
+including its exact handler/call-site identity, D0/D1 word pair, hash coordinates, selected table,
+stride/terminator address, `currentMapSeed`, handler return, match/terminator boundary, marker results,
+toggle bits, busy word, and battle byte. The record-0 hit, terminator miss, and busy/battle gate rows
+are bounded synthetic inputs; `currentMapSeed` is input identity while `currentMapAfter` is an observed
+post-handler value. The two marker probes are not a complete-layout, collision/pathfinding, or callee
+service-effect contract, and direct H1 JSR-site hits are not service-effect records.
+
+The following original behaviors remain unknown rather than inferred from these checkpoints:
+`map-interaction-trigger/full-layout-collision-pathfinding-effects`,
+`map-interaction-trigger/presentation-audio-timing-hardware-effects`, and
+`map-interaction-trigger/persistence-story-reachability`.
 Map-script imports MUST separately retain the source-faithful map lifecycle records `resetMap`,
 `loadMapFadeIn`, `reloadMap`, and `mapLoad` in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field `expected.mapLifecycleCommandFacts`.

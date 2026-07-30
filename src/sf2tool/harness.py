@@ -15,6 +15,7 @@ from sf2tool.h3.exp_command import verify_exp_command_boundaries
 from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import verify_growth
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
+from sf2tool.h3.map_interaction_trigger import verify_map_interaction_trigger
 from sf2tool.h3.map_lifecycle import verify_map_lifecycle
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
@@ -218,6 +219,8 @@ def verify(
         print_record(verify_witch_new_game_lifecycle(rom_path, upstream_path))
         _heading("H3: one-launch map lifecycle handler and boundary observations")
         print_record(verify_map_lifecycle(rom_path, upstream_path))
+        _heading("H3: one-launch map interaction trigger gate and marker observations")
+        print_record(verify_map_interaction_trigger(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
     _heading("Repository verification: PASS")

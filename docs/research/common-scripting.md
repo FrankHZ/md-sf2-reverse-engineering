@@ -1060,7 +1060,7 @@ session-only copy and re-hashes the original on-disk ROM unchanged before launch
 
 ## Confirmed Map-Script Source-Named Trigger Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-29.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field `mapInteractionTriggerCommandFacts` retains
 the two source-named macro forms in source order: `roofEvent` opcode `$43` (2 sites, 6 encoded bytes)
@@ -1077,7 +1077,7 @@ layer meaning, a collision rule, or a persistence rule.
 `525013B1AD4B1796BBBD398C063A3F7AF5DDD72D3B062888B1F1E7A26ECF58AB`; the ordered program-total
 SHA-256 is `D82DA66400E77E7881A4482AFF5A7541E64DA60E57068306B70102606E72F1E8`.
 
-**Confirmed:** `csc43_RoofEvent` is H1/ROM `$46696` and `csc47_StepEvent` is `$46726`.
+**Confirmed:** `csc43_RoofEvent` is H1/ROM `$466B6` and `csc47_StepEvent` is `$46746`.
 Each bounded named section has exactly six normalized statements: advancing `move.w (a6)+,d0` and
 `move.w (a6)+,d1`, parsed `mulu.w #MAP_TILE_SIZE,d0` and `mulu.w #MAP_TILE_SIZE,d1`, one direct
 call, and `rts`. The one parsed `sf2enums.asm` equate `MAP_TILE_SIZE` has value 384; both multiplier
@@ -1101,20 +1101,45 @@ canonical-map-import event-table decoder independently produces 79 `stepEventTab
 corpora; it does not map either eight-site command corpus to a table record or assert which data is
 observed at runtime.
 
-**Unknown:** `map-interaction-trigger/runtime-effects-matrix` is the sole grouped H3 queue. One shared
-runtime matrix must determine command reachability under normal play, coordinate interpretation,
-callee effects, map/table selection, collision/pathfinding changes, persistence, timing, presentation,
-and hardware-visible consequences. No such lifecycle or effect is promoted from this static slice.
+**Confirmed:** `sf2-map-interaction-trigger-runtime-v1` runs six bounded Map 02 cases in one BizHawk
+launch: roof/step record-0 hit, terminator miss, and their source-named busy/battle gates. It invokes
+the original handlers through `RunMapSetupInitFunction`'s configured seam, records the H1 direct-call
+sites `$466C2`/`$46752`, and records the pre-callee D0/D1 word pairs. The record-0 cases reach the
+source-selected records and the miss cases reach their exact table terminators; the busy and battle
+cases bypass their respective scan/callee paths. These results are bounded handler observations, not
+normal-story reachability evidence.
+
+**Confirmed:** in this matrix, the roof hit changes only the destination marker and has toggle bit 0
+set; the step hit changes the destination marker, matches the seeded source marker, and has toggle bit
+1 set. The four non-hit rows leave the destination marker unchanged. All six observed rows retain
+`CURRENT_MAP` 2 after the call. The two marker probes do not establish complete layout contents,
+collision/pathfinding, visible roof/door behavior, callee service results, timing, audio, or a
+hardware-visible effect.
+
+### Runtime-question queue
+
+**Unknown:** `map-interaction-trigger/full-layout-collision-pathfinding-effects` — establish complete
+layout mutation and any collision/pathfinding consequence beyond the two marker probes.
+
+**Unknown:** `map-interaction-trigger/presentation-audio-timing-hardware-effects` — establish
+presentation, sound, timing, and hardware-visible consequences.
+
+**Unknown:** `map-interaction-trigger/persistence-story-reachability` — establish normal-play caller
+reachability and persistence/story consequences.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `roofEvent` and
 `stepEvent`; `code/common/scripting/map/mapscriptengine_1.asm` symbols `csc43_RoofEvent` and
 `csc47_StepEvent`; `sf2enums.asm` equate `MAP_TILE_SIZE`; owner source
-`code/gameflow/exploration/exploration.asm` symbols `PerformMapBlockCopyScript` and `OpenDoor`; and
-local US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is
+`code/gameflow/exploration/exploration.asm` symbols `PerformMapBlockCopyScript` and `OpenDoor`; Map 02
+tables `Map02s5_RoofEvents` and `Map02s4_StepEvents`; H1 direct-call sites `$466C2` and `$46752`; and
+local US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce the
+static source contract with `uv run sf2 h2 map-script-engine` and the six-case runtime matrix with
+`uv run sf2 h3 map-interaction-trigger --timeout-seconds 120`. The tracked observations are
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
-`expected.mapInteractionTriggerCommandFacts`.
+`expected.mapInteractionTriggerCommandFacts`, and
+`tests/fixtures/h3/map-interaction-trigger-v1.json`, ID
+`sf2-map-interaction-trigger-runtime-v1`.
 
 ## Confirmed Map-Script Story-State Branch/Prompt Command Family
 

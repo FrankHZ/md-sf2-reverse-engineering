@@ -218,8 +218,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   player placement、presentation/fade/hardware timing 与 story reachability/persistence。
   同一 304-row 零计数 corpus 还固定两个 source-named trigger form（8 sites）、两段 named handler 的
   A6 word-read、`MAP_TILE_SIZE` use-site、call/return guards、two-target zero-inclusive caller map，
-  以及独立解析的 94-step/114-roof table boundary；唯一 H3 queue 为
-  `map-interaction-trigger/runtime-effects-matrix`。
+  以及独立解析的 94-step/114-roof table boundary；H3 以六 case/单启动 fixture 固定 Map 02
+  record-0 hit、terminator miss、busy/battle gate、direct-H1-JSR-site、D0/D1 word、hash/table
+  boundary、post-handler word 与双 marker。剩余 queue 为 full layout/collision/pathfinding、
+  presentation/audio/timing/hardware 与 persistence/story reachability。
   同一 304-row 零计数 corpus 还固定七个 source-named entity gesture/relationship/motion form（545
   sites）、七个 named handler 的 A6 cursor、source operand/literal、branch/loop/call/return guards，
   以及 ten-target zero-inclusive caller map；唯一 H3 queue 为

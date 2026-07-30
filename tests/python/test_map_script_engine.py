@@ -4555,7 +4555,7 @@ def _canonical_digest(value: object) -> str:
     return sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def test_map_lifecycle_h3_handoff_changes_only_runtime_question_queues() -> None:
+def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     expected = deepcopy(fixture["expected"])
     assert expected.pop("runtimeQuestions") == [
@@ -4571,7 +4571,9 @@ def test_map_lifecycle_h3_handoff_changes_only_runtime_question_queues() -> None
         "map-lifecycle/entity-reload-player-placement",
         "map-lifecycle/presentation-fade-hardware-timing",
         "map-lifecycle/story-reachability-persistence",
-        "map-interaction-trigger/runtime-effects-matrix",
+        "map-interaction-trigger/full-layout-collision-pathfinding-effects",
+        "map-interaction-trigger/presentation-audio-timing-hardware-effects",
+        "map-interaction-trigger/persistence-story-reachability",
         "map-script-camera-control/runtime-effects-matrix",
         "map-script-entity-placement/runtime-effects-reachability-matrix",
         "map-script-entity-action-bridge/runtime-effects-reachability-matrix",
@@ -4589,7 +4591,7 @@ def test_map_lifecycle_h3_handoff_changes_only_runtime_question_queues() -> None
         "map-lifecycle/story-reachability-persistence",
     ]
     assert _canonical_digest(expected) == (
-        "e181191adc90801667612e2817cafa593cb8b8a43009de84c0c305d410966456"
+        "b40787d3669f4a1bfb8ba9d28635e3b7924a6b3c109875654caf757a20a15ada"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4598,7 +4600,7 @@ def test_map_lifecycle_h3_handoff_changes_only_runtime_question_queues() -> None
         "runtimeQuestions"
     ]
     assert _canonical_digest(output_schema) == (
-        "adc52132736ddb14e81e69ea7c84b642d49519738bfb0a05a94d2e0ad227676b"
+        "360b93b505578b67f11fa50b220f9dc3ac03b2c53184667f1bc94a9d2fcfc2d2"
     )
 
     fixture_schema = deepcopy(
@@ -4609,7 +4611,7 @@ def test_map_lifecycle_h3_handoff_changes_only_runtime_question_queues() -> None
         "allOf"
     ][1]["properties"]["runtimeQuestions"]
     assert _canonical_digest(fixture_schema) == (
-        "30b984f86b32d34544d59adfc36b43d29fd1757cf9580dc8a08857e7a8764f3a"
+        "ddc98e61baf23d4a168c2d18dc70e0e0b3aa3d693ca3f6c17642283beb30b4da"
     )
 
 
@@ -5080,7 +5082,11 @@ def test_map_interaction_trigger_contract_matches_complete_golden_fixture(
             "canonicalRecordCounts": {"stepEvents": 94, "roofEvents": 114},
         },
     }
-    assert actual["runtimeQuestions"] == ["map-interaction-trigger/runtime-effects-matrix"]
+    assert actual["runtimeQuestions"] == [
+        "map-interaction-trigger/full-layout-collision-pathfinding-effects",
+        "map-interaction-trigger/presentation-audio-timing-hardware-effects",
+        "map-interaction-trigger/persistence-story-reachability",
+    ]
 
 
 def test_map_interaction_trigger_named_section_guards_reject_operand_and_order_drift() -> None:

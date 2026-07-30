@@ -217,7 +217,9 @@ MAP_INTERACTION_TRIGGER_DIRECT_TARGETS = (
     "OpenDoor",
 )
 MAP_INTERACTION_TRIGGER_RUNTIME_QUESTIONS = [
-    "map-interaction-trigger/runtime-effects-matrix"
+    "map-interaction-trigger/full-layout-collision-pathfinding-effects",
+    "map-interaction-trigger/presentation-audio-timing-hardware-effects",
+    "map-interaction-trigger/persistence-story-reachability",
 ]
 
 # These source macro labels delimit the camera-control slice.  They retain the
