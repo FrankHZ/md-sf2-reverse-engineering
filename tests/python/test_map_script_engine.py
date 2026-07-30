@@ -4586,7 +4586,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-lifecycle-presentation/normal-story-reachability",
         "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
         "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
-        "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
+        "map-script-entity-gesture-relationship-motion/normal-story-reachability",
+        "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
+        "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
         "map-script-screen-presentation/runtime-effects-matrix",
         "map-script-entity-presentation-fx/runtime-effects-matrix",
         "map-script-ui-command/runtime-effects-matrix",
@@ -4613,9 +4615,16 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
         "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
     ]
+    assert expected["entityGestureRelationshipMotionCommandFacts"].pop(
+        "runtimeQuestions"
+    ) == [
+        "map-script-entity-gesture-relationship-motion/normal-story-reachability",
+        "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
+        "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
+    ]
     # H3 queues are explicitly excluded so the canonical static digest remains stable.
     assert _canonical_digest(expected) == (
-        "d928aebbf0aebe52f924cdfa734f182f39cd655c8b4a9ca9e5b0809482b9e3f7"
+        "5b10957b26fb21f0bc5722fd5f010a3f561cecb00268e73fc37940f9568e1142"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4632,8 +4641,17 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del output_schema["properties"]["entityLifecyclePresentationCommandFacts"]["allOf"][1][
         "properties"
     ]["runtimeQuestions"]
+    del output_schema["properties"]["entityGestureRelationshipMotionCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"]
+    del output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
+        "properties"
+    ]["runtimeQuestions"]
+    output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
+        "required"
+    ].remove("runtimeQuestions")
     assert _canonical_digest(output_schema) == (
-        "8ba4be2c2e647535c7efaae535883b93e7efc4713dfe9563ad2e6035ce783a30"
+        "0656244f672bdbaceae9cdccf65e2431cde64335f1f2b9b63a297760ae4a7ad7"
     )
 
     fixture_schema = deepcopy(
@@ -4652,8 +4670,17 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del fixture_schema["properties"]["expected"]["properties"][
         "entityLifecyclePresentationCommandFacts"
     ]["allOf"][1]["const"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"][
+        "entityGestureRelationshipMotionCommandFacts"
+    ]["allOf"][1]["const"]["runtimeQuestions"]
+    del fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
+        "properties"
+    ]["runtimeQuestions"]
+    fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
+        "required"
+    ].remove("runtimeQuestions")
     assert _canonical_digest(fixture_schema) == (
-        "86b2d375c6886d12278b514687b3b2d28e92ff6d9d7119b36276680fbec23a58"
+        "583c8b51021b070f50739e246c758b7072c5e847e99e1755d20ebde11b2d6739"
     )
 
 
@@ -7009,7 +7036,9 @@ def test_map_entity_gesture_relationship_motion_contract_matches_complete_golden
             target: 0 for target in actual["callerBreakdown"]["instructionTargetTotals"]
         }
     assert actual["runtimeQuestions"] == [
-        "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix"
+        "map-script-entity-gesture-relationship-motion/normal-story-reachability",
+        "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
+        "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
     ]
 
 

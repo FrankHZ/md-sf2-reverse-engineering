@@ -345,7 +345,9 @@ ENTITY_GESTURE_RELATIONSHIP_MOTION_HANDLER_NAMES = tuple(
     ENTITY_GESTURE_RELATIONSHIP_MOTION_HANDLER_BY_MACRO.values()
 )
 ENTITY_GESTURE_RELATIONSHIP_MOTION_RUNTIME_QUESTIONS = [
-    "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix"
+    "map-script-entity-gesture-relationship-motion/normal-story-reachability",
+    "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
+    "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
 ]
 
 SCREEN_PRESENTATION_MACRO_NAMES = (

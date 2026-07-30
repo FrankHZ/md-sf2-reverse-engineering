@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,565 | 1,528 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,574 | 1,537 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 68 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,267 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 69 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,295 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -320,9 +320,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,565 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 68 H3 fixtures, and
-2,267 bindings. Of the records, 1,528 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,574 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 69 H3 fixtures, and
+2,295 bindings. Of the records, 1,537 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -450,9 +450,13 @@ The adjacent entity gesture/relationship/motion slice is exact for seven source-
 It retains 133 ordered source-site rows, the complete 304-row zero-inclusive program domain, raw macro
 operand comments/widths, seven complete named handler guards, parsed source constant/literal use sites,
 branch and loop target identity, and ten-target zero-inclusive direct/effective caller maps.
-`map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix` is the sole grouped
-H3 follow-up; source spelling does not credit entity action, relationship, movement, timing, collision,
-persistence, or presentation behavior as static coverage.
+Its 17-case, one-launch H3 matrix now reaches all seven handler entries and confirms only its exact
+controlled records: shiver's three source-local temporary/restore cycles, nod's final guarded counter
+write, follow's two selector records plus high-byte zero-HP helper boundary, five face operand/tie
+records, four move operand/forced-wait records, both fly layer writes, and the above-handler register
+record. The remaining grouped H3 queues are normal-story reachability, full entity-state/callback
+effects, and player-visible presentation/timing/collision/persistence; source spelling does not credit
+those outcomes as static coverage.
 The adjacent screen/map-presentation slice is exact for twelve source-named forms: 194 `setQuake`
 `$33`, 98 `fadeInB` `$39`, ten `fadeOutB` `$3A`, one `slowFadeInB` `$3B`, zero `slowFadeOutB` `$3C`,
 11 `tintMap` `$3D`, five `flickerOnce` `$3E`, 15 `mapFadeOutToWhite` `$3F`, 15

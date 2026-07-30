@@ -418,7 +418,9 @@
       "map-script-entity-lifecycle-presentation/normal-story-reachability",
       "map-script-entity-lifecycle-presentation/full-entity-state-callback-effects",
       "map-script-entity-lifecycle-presentation/player-visible-presentation-timing-collision-persistence",
-      "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix",
+      "map-script-entity-gesture-relationship-motion/normal-story-reachability",
+      "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
+      "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
       "map-script-screen-presentation/runtime-effects-matrix",
       "map-script-entity-presentation-fx/runtime-effects-matrix",
       "map-script-ui-command/runtime-effects-matrix",
@@ -94708,7 +94710,9 @@
         }
       },
       "runtimeQuestions": [
-        "map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix"
+        "map-script-entity-gesture-relationship-motion/normal-story-reachability",
+        "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
+        "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence"
       ]
     },
     "screenPresentationCommandFacts": {

@@ -552,7 +552,7 @@ cases, 8 handlers, 1 session-only launch, PASS.
 
 ## Confirmed Map-Script Entity Gesture/Relationship/Motion Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-30.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.entityGestureRelationshipMotionCommandFacts` retains seven source-named macro forms in source
@@ -586,22 +586,51 @@ zero-inclusive per-handler, direct/effective, internal/external maps. External t
 `WaitForVInt` 1, and `WaitForEntityToStopMoving` 2; every internal total is zero and no current call
 resolves through a jump-interface alias.
 
+**Confirmed (bounded H3 observer):** one session-only Map Test 0 replay of 17 fixed records entered
+all seven named handlers and compared each complete record in
+`sf2-map-entity-gesture-relationship-motion-runtime-v1`. The `shiver` row observed three guarded
+source-local cycles: temporary sprite-size word 21 and animation-counter byte `$FF`, then the seeded
+restored size `$1234` and counter `$55`, with three flags-B set and clear writes and the corresponding
+post-write bit states. The `nod` row observed its guarded final animation-counter write of 0. These
+are handler-seam observations; callback-caused post-handler fields remain exact record data, not a
+claim about a rendered or persistent effect.
+
+**Confirmed (bounded H3 observer):** two controlled `followEntity` selector rows reached the parsed
+`AddFollower` target order, while its zero-current-HP row used the non-advancing first script-word
+high-byte probe (character byte 0 from `$0002`) and returned through the adjustment boundary. Five
+`faceEntity` operand/tie rows, four `moveNextToPlayer` operand rows, both `fly` sides, and the one
+`moveEntityAboveAnother` row preserve their exact 16-bit source-local words, callback/register records,
+and forced wait-exit seam. The guarded fly writes observed layer bytes 0 and 16. These source-named
+records establish neither a normal-story context nor a player-visible direction, movement, following,
+collision, or presentation interpretation.
+
 ### Runtime questions — entity gesture/relationship/motion
 
-**Unknown:** `map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix` is the
-sole grouped H3 queue. One shared launch must establish normal-story reachability; raw operand/selector
-meaning; entity, position, following, layer, facing, animation, and presentation results; timing;
-collision/pathfinding; and persistence. No macro, handler, callee, field, or literal name promotes
-those runtime outcomes from this static contract.
+**Unknown:** the remaining grouped H3 queue is exactly:
+
+- `map-script-entity-gesture-relationship-motion/normal-story-reachability` for ordinary map-script
+  admission and story contexts.
+- `map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects` for unseeded
+  selector/state combinations and callback consequences outside this controlled matrix.
+- `map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence`
+  for visible output, natural timing, collision/pathfinding, and persistence.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros `shiver`, `nod`,
 `followEntity`, `faceEntity`, `moveNextToPlayer`, `fly`, and `moveEntityAboveAnother`;
 `code/common/scripting/map/mapscriptengine_1.asm` named sections above; H1 listing symbols/addresses;
 and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
-Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
+Reproduce the static contract with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.entityGestureRelationshipMotionCommandFacts`.
+`expected.entityGestureRelationshipMotionCommandFacts`. Reproduce the bounded runtime observation with
+`uv run sf2 h3 map-entity-gesture-relationship-motion --timeout-seconds 180`; it uses
+`tools/bizhawk/map_entity_gesture_relationship_motion_observer.lua` and
+`src/sf2tool/h3/map_entity_gesture_relationship_motion.py`, fixture ID
+`sf2-map-entity-gesture-relationship-motion-runtime-v1` at
+`tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json`, and recursively closed schemas
+`schemas/h3-map-entity-gesture-relationship-motion-fixture.schema.json` and
+`schemas/h3-map-entity-gesture-relationship-motion-observation.schema.json`. The command reported 17
+cases, 7 handlers, 1 session-only launch, PASS.
 
 ## Confirmed Map-Script Screen/Map Presentation Command Family
 

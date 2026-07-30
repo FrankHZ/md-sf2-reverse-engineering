@@ -94,6 +94,9 @@ from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
 from sf2tool.h3.map_camera_control import verify_map_camera_control
 from sf2tool.h3.map_entity_action_bridge import verify_map_entity_action_bridge
+from sf2tool.h3.map_entity_gesture_relationship_motion import (
+    verify_map_entity_gesture_relationship_motion,
+)
 from sf2tool.h3.map_entity_lifecycle_presentation import (
     verify_map_entity_lifecycle_presentation,
 )
@@ -728,6 +731,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_entity_lifecycle_presentation)
     h3_map_entity_lifecycle_presentation.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_entity_gesture_relationship_motion = h3_commands.add_parser(
+        "map-entity-gesture-relationship-motion",
+        help="verify one-launch entity gesture, relationship, and motion handler seams",
+    )
+    _add_local_paths(h3_map_entity_gesture_relationship_motion)
+    h3_map_entity_gesture_relationship_motion.add_argument(
+        "--timeout-seconds", type=int, default=180
+    )
     h3_map_entity_action_bridge = h3_commands.add_parser(
         "map-entity-action-bridge",
         help="verify six map-script entity-action bridge alias/control paths in one launch",
@@ -1593,6 +1604,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-entity-lifecycle-presentation":
         print_record(
             verify_map_entity_lifecycle_presentation(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-entity-gesture-relationship-motion":
+        print_record(
+            verify_map_entity_gesture_relationship_motion(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

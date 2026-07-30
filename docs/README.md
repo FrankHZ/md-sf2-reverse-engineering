@@ -233,8 +233,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   player-visible presentation/timing/collision/persistence。
   同一 304-row 零计数 corpus 还固定七个 source-named entity gesture/relationship/motion form（545
   sites）、七个 named handler 的 A6 cursor、source operand/literal、branch/loop/call/return guards，
-  以及 ten-target zero-inclusive caller map；唯一 H3 queue 为
-  `map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix`。
+  以及 ten-target zero-inclusive caller map；其单启动 17-case H3 已覆盖七个 handler 的受控
+  callback/state seam（包括 shiver 三轮 temporary/restore、follow high-byte zero-HP boundary、
+  face/move word boundary、fly 两侧和 above register record）；剩余 queue 为 normal-story
+  reachability、full entity-state/callback effects 与 player-visible presentation/timing/collision/persistence。
   同一 304-row 零计数 corpus 还固定十二个 source-named screen/map-presentation form（459 sites）、
   十二个 named handler 的 A6 cursor、immediate/operand、branch/loop/call/return guards，以及保留
   seven PC-relative `LaunchFading` target 的 five-target zero-inclusive caller map；唯一 H3 queue 为

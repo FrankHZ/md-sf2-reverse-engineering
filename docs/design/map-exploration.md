@@ -200,8 +200,17 @@ handler instruction order: A6 transfer versus non-advancing probe widths, source
 sites, branch polarity and target identity, loop target records, direct instruction/effective target
 caller maps, and return boundaries. These are source-layout and control-flow records. A remake MUST NOT
 normalize them into a gesture, relationship, position, following, movement, layer, facing, animation,
-timing, collision, persistence, or presentation model; all original runtime consequences remain in
-`map-script-entity-gesture-relationship-motion/runtime-effects-reachability-matrix`.
+timing, collision, persistence, or presentation model. The bounded H3 fixture
+`sf2-map-entity-gesture-relationship-motion-runtime-v1` at
+`tests/fixtures/h3/map-entity-gesture-relationship-motion-v1.json` preserves 17 exact Map Test 0
+records: all seven handler entries, direct/effective callback plans and observed callback order,
+source-local shiver/nod/fly write seams, the non-advancing follow HP byte probe, face/move word
+boundaries, and the `moveEntityAboveAnother` register record. An adapter MUST retain that controlled
+observation boundary without treating it as a player-visible, collision, timing, or persistent model.
+The remaining original questions are exactly
+`map-script-entity-gesture-relationship-motion/normal-story-reachability`,
+`map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects`, and
+`map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence`.
 Map-script imports MUST separately retain the twelve source-named forms `setQuake`, `fadeInB`,
 `fadeOutB`, `slowFadeInB`, `slowFadeOutB`, `tintMap`, `flickerOnce`, `mapFadeOutToWhite`,
 `mapFadeInFromWhite`, `flashScreenWhite`, `fadeInFromBlackHalf`, and `fadeOutToBlackHalf` in
