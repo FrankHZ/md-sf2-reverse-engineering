@@ -3339,7 +3339,11 @@ def test_map_block_mutation_contract_matches_complete_golden_and_helper_provenan
             "symbols": ["CopyMapBlocks"],
         }
     }
-    assert actual["runtimeQuestions"] == ["map-block-mutation/runtime-effects-matrix"]
+    assert actual["runtimeQuestions"] == [
+        "map-block-mutation/collision-pathfinding-consumer-effects",
+        "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
+        "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
+    ]
 
 
 def test_map_block_mutation_guards_reject_source_mutations_before_fixture(monkeypatch) -> None:
@@ -4574,7 +4578,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "story-state/normal-story-reachability",
         "story-state/save-load-lifecycle-persistence",
         "story-state/player-visible-yes-no-presentation-timing",
-        "map-block-mutation/runtime-effects-matrix",
+        "map-block-mutation/collision-pathfinding-consumer-effects",
+        "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
+        "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
         "entity-population-reload/runtime-effects-matrix",
         "map-lifecycle/layout-collision-pathfinding-effects",
         "map-lifecycle/entity-reload-player-placement",
@@ -4607,6 +4613,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-lifecycle/entity-reload-player-placement",
         "map-lifecycle/presentation-fade-hardware-timing",
         "map-lifecycle/story-reachability-persistence",
+    ]
+    assert expected["mapBlockMutationCommandFacts"].pop("runtimeQuestions") == [
+        "map-block-mutation/collision-pathfinding-consumer-effects",
+        "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
+        "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
     ]
     assert expected["entityPlacementCommandFacts"].pop("runtimeQuestions") == [
         "map-script-entity-placement/normal-story-reachability",
@@ -4644,11 +4655,20 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     ]
     # H3 queues are explicitly excluded so the canonical static digest remains stable.
     assert _canonical_digest(expected) == (
-        "c231c8a5aaa4a7cbc100d7259b10750edef403e600ab5745e79c9655537466de"
+        "37eee698a96e7bf6bd75b283efdfb10ba419cdc41e9dbaa4893a174907c936a6"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
     del output_schema["properties"]["runtimeQuestions"]
+    del output_schema["properties"]["mapBlockMutationCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"]
+    del output_schema["definitions"]["mapBlockMutationCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    output_schema["definitions"]["mapBlockMutationCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
     del output_schema["properties"]["forceStateCommandFacts"]["allOf"][1]["const"][
         "activePartyCommandFacts"
     ]["runtimeQuestions"]
@@ -4689,13 +4709,22 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     )
     assert _canonical_digest(output_schema) == (
-        "6b6c0d75396fa6d9cefac4e64b1a396afa9a73be9dabadd29afe06e06fc0f34c"
+        "e5c7f0e592f357ad69dee682c6c471c092a39f9ebcd900c6ecb66d7add10139b"
     )
 
     fixture_schema = deepcopy(
         load_json(repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"))
     )
     del fixture_schema["properties"]["expected"]["properties"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"][
+        "mapBlockMutationCommandFacts"
+    ]["allOf"][1]["properties"]["runtimeQuestions"]
+    del fixture_schema["definitions"]["mapBlockMutationCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    fixture_schema["definitions"]["mapBlockMutationCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
     del fixture_schema["properties"]["expected"]["properties"]["forceStateCommandFacts"][
         "allOf"
     ][1]["const"]["activePartyCommandFacts"]["runtimeQuestions"]
@@ -4736,7 +4765,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     )
     assert _canonical_digest(fixture_schema) == (
-        "bca2a388f6e7521c0f71c192313f1e26b78e573e4c3547d2b68bace93715324c"
+        "16086f0775fa70b4ef1a2de782e5f78b2a52ef1e1b20b9cdb98e27d59f156c5d"
     )
 
 

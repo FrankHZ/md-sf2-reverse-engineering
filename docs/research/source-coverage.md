@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,575 | 1,538 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,579 | 1,542 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 70 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,296 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 72 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,305 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -101,8 +101,9 @@ The current evidence is deep but narrow:
   across 89 programs, including prompt flag 89 and battle-unlock base 400.
   The adjacent map-block-copy extraction adds all 208 `setBlocks`/`setBlocksVar` commands across the
   same 304 zero-inclusive program rows, exact macro/handler/cursor/call order, paired helper shift/
-  byte-offset use sites, and the two-call direct/effective caller map; runtime effects remain one
-  grouped question.
+  byte-offset use sites, and the two-call direct/effective caller map. Its seven-case H3 matrix now
+  confirms direct layout-copy chronology/readbacks and the `$34`/`$35` update-toggle boundary; three
+  consumer, reachability/persistence, and VDP/timing questions remain explicit.
   Story reachability and timing/presentation remain batched runtime questions.
   The entity-action source surface is additionally closed across three shared and 75
   distributed files. The shared 2,864-byte corpus has 118 labels and 732 commands; the distributed
@@ -320,9 +321,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,575 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 70 H3 fixtures, and
-2,296 bindings. Of the records, 1,538 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,579 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 72 H3 fixtures, and
+2,305 bindings. Of the records, 1,542 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -531,9 +532,11 @@ six one-byte source-label fields, the two 8-byte layouts, three exact A6 word re
 identity/order, the `$34`-only source bit-set order, and the called helper's paired 8/6/2/128 shift/
 offset use sites with independently named stream, transfer, copy, and row-offset quantities. Its
 two direct/effective caller rows preserve the zero internal and two external `CopyMapBlocks` totals.
-`map-block-mutation/runtime-effects-matrix` is the sole H3 follow-up; mutation lifecycle, collision,
-pathfinding, presentation timing, persistence, and hardware effect are not credited as static
-coverage.
+Its one-launch seven-case H3 matrix now confirms direct bounded FF0000-layout word-copy chronology,
+overlap behavior, `$34` update-bit order, `$35` no-toggle behavior, and exact readbacks. Collision/
+pathfinding consumer effects, normal-story reachability plus map-reload/save persistence, and visible
+VDP presentation/cycle-pixel timing remain three explicit H3 questions; none is implied by this
+direct-layout coverage.
 The adjacent entity population/reload slice is exact for four source forms: 18 `newEntity` `$2B`, 69
 `loadMapEntities` `$42`, two `reloadEntities` `$44`, and seven `loadEntitiesFromMapSetup` `$49` sites
 (96 total) across a further complete 304-row zero-inclusive corpus. It retains physical command

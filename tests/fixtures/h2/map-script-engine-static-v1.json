@@ -402,7 +402,9 @@
       "story-state/normal-story-reachability",
       "story-state/save-load-lifecycle-persistence",
       "story-state/player-visible-yes-no-presentation-timing",
-      "map-block-mutation/runtime-effects-matrix",
+      "map-block-mutation/collision-pathfinding-consumer-effects",
+      "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
+      "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
       "entity-population-reload/runtime-effects-matrix",
       "map-lifecycle/layout-collision-pathfinding-effects",
       "map-lifecycle/entity-reload-player-placement",
@@ -46429,7 +46431,9 @@
         }
       },
       "runtimeQuestions": [
-        "map-block-mutation/runtime-effects-matrix"
+        "map-block-mutation/collision-pathfinding-consumer-effects",
+        "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
+        "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing"
       ]
     },
     "entityPopulationCommandFacts": {

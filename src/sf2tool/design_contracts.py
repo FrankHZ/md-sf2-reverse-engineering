@@ -19,6 +19,9 @@ CONTRACTS = {
             "sf2-map-init-dispatch-runtime-v1"
         ),
         "tests/fixtures/h3/map-lifecycle-v1.json": "sf2-map-lifecycle-runtime-v1",
+        "tests/fixtures/h3/map-block-mutation-v1.json": (
+            "sf2-map-block-mutation-runtime-v1"
+        ),
         "tests/fixtures/h3/map-interaction-trigger-v1.json": (
             "sf2-map-interaction-trigger-runtime-v1"
         ),

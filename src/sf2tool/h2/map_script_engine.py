@@ -165,7 +165,11 @@ MAP_BLOCK_MUTATION_HANDLER_BY_MACRO = {
     "setBlocksVar": "csc35_setBlocksVar",
 }
 MAP_BLOCK_MUTATION_HANDLER_NAMES = ("csc34_setBlocks", "csc35_setBlocksVar")
-MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS = ["map-block-mutation/runtime-effects-matrix"]
+MAP_BLOCK_MUTATION_RUNTIME_QUESTIONS = [
+    "map-block-mutation/collision-pathfinding-consumer-effects",
+    "map-block-mutation/normal-story-reachability-and-map-reload-save-persistence",
+    "map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing",
+]
 
 # These names retain the macro/handler spelling without assigning allocation,
 # persistence, collision, or presentation behavior to the commands.

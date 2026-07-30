@@ -994,10 +994,26 @@ The only source-identity join is the called helper owner
 `C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0`, symbol `CopyMapBlocks`.
 Comments, labels, near-miss mnemonics, and operands do not become caller sites.
 
-**Unknown:** `map-block-mutation/runtime-effects-matrix` is the sole grouped H3 queue. One shared
-launch must determine the relevant state mutation, collision/pathfinding interaction, visible-update
-timing, and persistence across representative source forms. This static slice does not claim any of
-those runtime outcomes.
+**Confirmed (H3):** `sf2-map-block-mutation-runtime-v1` runs seven bounded replays in one BizHawk
+launch through a session-only trampoline at the existing `RunMapSetupInitFunction` indirect-call seam.
+It observes both original handlers returning after one direct `CopyMapBlocks` call, the three input
+words at that call, and every source/destination word offset at the helper copy instruction. The two
+one-cell forms, a six-word cross-row rectangle, and both forward horizontal and vertical overlap
+directions all match the exact FF0000-layout readback records. This confirms only the observed
+forward word-copy chronology and bounded layout values; the independent Python model remains an
+expected-result check rather than evidence. For `$34`, the observed post-copy callbacks are bit 0 then
+bit 1 at `$46570`/`$46578`, with the update-toggle byte changing according to those writes. For `$35`,
+the observed matrices have no such callbacks and retain their seeded toggle byte. The observer records
+actual handler/call/copy-site identities, inputs, offsets, bit states, final toggle byte, and layout
+readbacks; it does not replace the original routines.
+
+**Unknown:** collision/pathfinding consumer effects remain
+`map-block-mutation/collision-pathfinding-consumer-effects`; normal-story reachability and
+map-reload/save persistence remain
+`map-block-mutation/normal-story-reachability-and-map-reload-save-persistence`; and visible VDP
+presentation plus cycle/pixel timing remain
+`map-block-mutation/visible-vdp-presentation-and-cycle-pixel-timing`. None is credited by the
+bounded direct-layout matrix.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` lines 345-364;
@@ -1005,9 +1021,14 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `code/gameflow/exploration/exploration.asm` lines 724-764; H1 addresses `$46566`, `$46582`, and
 `$03DB0`; local US-ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is
+`uv run sf2 h2 map-script-engine`; the runtime matrix reproduces with
+`uv run sf2 h3 map-block-mutation --timeout-seconds 180` (BizHawk 2.11.1, Genesis Plus GX, seven
+cases, two handlers, one launch); observed result is
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
-`expected.mapBlockMutationCommandFacts`.
+`expected.mapBlockMutationCommandFacts`, and `tests/fixtures/h3/map-block-mutation-v1.json`, ID
+`sf2-map-block-mutation-runtime-v1`. The H3 observer is
+`tools/bizhawk/map_block_mutation_observer.lua`; its parsed observation contract is
+`schemas/h3-map-block-mutation-observation.schema.json`.
 
 ## Confirmed Map-Script Entity Population/Reload Command Family
 

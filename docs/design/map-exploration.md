@@ -277,9 +277,14 @@ source-labeled one-byte fields (`source x`, `source y`, `width`, `height`, `dest
 and `d2`. The static adapter boundary MUST retain the exact direct `CopyMapBlocks` call and the
 source-named bit-set sequence present only after `csc34_setBlocks`; it MUST separately retain the
 helper's parsed 8-bit shifts, 6-bit row shifts, 2-byte inner offsets, 128-byte outer offsets, and
-loop-counter instructions. These are source-layout and instruction-order facts. A remake MUST NOT
-infer a working-layout lifecycle, collision/pathfinding effect, render update, persistence, capacity,
-or hardware effect until `map-block-mutation/runtime-effects-matrix` supplies runtime evidence.
+loop-counter instructions. These are source-layout and instruction-order facts. **Confirmed
+(H3):** the bounded runtime contract `sf2-map-block-mutation-runtime-v1` in
+`tests/fixtures/h3/map-block-mutation-v1.json` additionally requires exact forward FF0000-layout
+word-copy chronology/readbacks for both forms, a cross-row rectangle, and both horizontal/vertical
+overlap directions; it also requires `$34`'s observed post-copy toggle-bit order and `$35`'s absent
+toggle callback. A remake MUST keep collision/pathfinding consumer effects, normal-story reachability
+and map-reload/save persistence, and visible VDP presentation/cycle-pixel timing outside this contract
+until the three explicit `map-block-mutation/*` Unknown questions are separately observed.
 Map-script imports MUST retain the four source-named forms `newEntity`, `loadMapEntities`,
 `reloadEntities`, and `loadEntitiesFromMapSetup` as distinct ordered command records in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field

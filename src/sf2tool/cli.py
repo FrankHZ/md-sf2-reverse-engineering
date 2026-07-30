@@ -93,6 +93,7 @@ from sf2tool.h3.growth import (
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
+from sf2tool.h3.map_block_mutation import verify_map_block_mutation
 from sf2tool.h3.map_camera_control import verify_map_camera_control
 from sf2tool.h3.map_entity_action_bridge import verify_map_entity_action_bridge
 from sf2tool.h3.map_entity_gesture_relationship_motion import (
@@ -709,6 +710,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_lifecycle)
     h3_map_lifecycle.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_block_mutation = h3_commands.add_parser(
+        "map-block-mutation",
+        help="verify one-launch set-blocks and set-blocks-var layout mutation boundaries",
+    )
+    _add_local_paths(h3_map_block_mutation)
+    h3_map_block_mutation.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_interaction_trigger = h3_commands.add_parser(
         "map-interaction-trigger",
         help="verify batched roof and step trigger gate, match, and marker boundaries",
@@ -1585,6 +1592,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-lifecycle":
         print_record(
             verify_map_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-block-mutation":
+        print_record(
+            verify_map_block_mutation(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
