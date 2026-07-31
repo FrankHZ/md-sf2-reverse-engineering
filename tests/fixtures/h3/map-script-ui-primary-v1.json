@@ -1,0 +1,1157 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-script-ui-primary-runtime-v1",
+  "system": "GEN",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "evidenceDate": "2026-07-31",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "mapTestIndex": 0,
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "maxFrames": 7200,
+  "provenance": {
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "upstreamBranch": "master",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+    "h2FixtureId": "sf2-map-script-engine-static-v1",
+    "h2FieldPath": "expected.mapScriptUiPrimaryCommandFacts",
+    "command": "uv run sf2 h2 map-script-engine"
+  },
+  "function": {
+    "entryAddress": 292092,
+    "csc1D_showPortraitAddress": 289432,
+    "csc1E_hidePortraitAddress": 289490,
+    "csc12_executeContextMenuAddress": 292022,
+    "showPortraitFirstOperandFollowupAddress": 289434,
+    "showPortraitSentinelCompareAddress": 289470,
+    "menuFirstOperandFollowupAddress": 292024,
+    "csc1D_showPortraitReturnInstructionAddress": 289488,
+    "csc1E_hidePortraitReturnInstructionAddress": 289500,
+    "csc12_executeContextMenuReturnInstructionAddress": 292062
+  },
+  "ram": {
+    "portraitWindowIndexAddress": 16756864
+  },
+  "constants": {
+    "showPortraitCursorAdvanceByteCount": 2,
+    "menuCursorAdvanceByteCount": 2,
+    "menuSavedA6StackByteCount": 4,
+    "menuRestoredA6StackByteCount": 4,
+    "signedWordSentinel": 65535
+  },
+  "sourceContract": {
+    "sourceSiteOrderKeys": [
+      "cs_615E6:558:showPortrait",
+      "data/scripting/map/debugscripts.asm#L16:2:showPortrait",
+      "data/scripting/map/debugscripts.asm#L26:3:showPortrait",
+      "data/scripting/map/debugscripts.asm#L26:6:hidePortrait",
+      "data/scripting/map/debugscripts.asm#L76:8:showPortrait"
+    ],
+    "sourceSitesSha256": "FDF32E72E55D28E7EBC57BB5963658F6A4B10DE7C1920A2A69F75D1A90D4CC4A",
+    "showSourceOrderKeys": [
+      "cs_615E6:558:showPortrait",
+      "data/scripting/map/debugscripts.asm#L16:2:showPortrait",
+      "data/scripting/map/debugscripts.asm#L26:3:showPortrait",
+      "data/scripting/map/debugscripts.asm#L76:8:showPortrait"
+    ]
+  },
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4DF900FF4004207900FF40004E904E75",
+    "postHandlerAddress": 65430,
+    "ramInputAddress": 16728064,
+    "scriptInputRamOffset": 4,
+    "serviceInterception": {
+      "helperD1SeedRamOffset": 8,
+      "patches": [
+        {
+          "targetIdentity": "WaitForViewScrollEnd",
+          "targetRole": "effective",
+          "address": 18184,
+          "originalHex": "3F07",
+          "patchedHex": "4E75"
+        },
+        {
+          "targetIdentity": "GetEntityPortaitAndSpeechSfx",
+          "targetRole": "effective",
+          "address": 284216,
+          "originalHex": "48E78084024000FF",
+          "patchedHex": "323900FF40084E75"
+        },
+        {
+          "targetIdentity": "j_OpenPortraitWindow",
+          "targetRole": "instruction",
+          "address": 65592,
+          "originalHex": "4EFA",
+          "patchedHex": "4E75"
+        },
+        {
+          "targetIdentity": "j_ClosePortraitWindow",
+          "targetRole": "instruction",
+          "address": 65596,
+          "originalHex": "4EFA",
+          "patchedHex": "4E75"
+        },
+        {
+          "targetIdentity": "j_ChurchMenu",
+          "targetRole": "instruction",
+          "address": 131076,
+          "originalHex": "4EFA",
+          "patchedHex": "4E75"
+        },
+        {
+          "targetIdentity": "j_ShopMenu",
+          "targetRole": "instruction",
+          "address": 131072,
+          "originalHex": "4EFA",
+          "patchedHex": "4E75"
+        },
+        {
+          "targetIdentity": "j_BlacksmithMenu",
+          "targetRole": "instruction",
+          "address": 131084,
+          "originalHex": "4EFA",
+          "patchedHex": "4E75"
+        }
+      ]
+    }
+  },
+  "runtimeQuestions": [
+    "map-script-ui-command/normal-story-reachability",
+    "map-script-ui-command/full-window-animation-vdp-timing",
+    "map-script-ui-command/real-user-choice-service-side-effects",
+    "map-script-ui-command/save-persistence-map-entity-interactions"
+  ],
+  "cases": [
+    {
+      "id": "show-source-0",
+      "kind": "show-source",
+      "portraitWindowIndexWordSeed": 0,
+      "handlerInputWord": 32900,
+      "helperD1Word": 1,
+      "sourceInput": {
+        "programId": "cs_615E6",
+        "commandIndex": 558,
+        "sourceLine": 813,
+        "macro": "showPortrait",
+        "arguments": [
+          "$80",
+          "132"
+        ],
+        "sourceOrderKey": "cs_615E6:558:showPortrait",
+        "operandValues": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+            "streamOffset": 2,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "$80",
+            "resolvedValue": 128,
+            "resolution": "literal"
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity",
+            "streamOffset": 3,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "132",
+            "resolvedValue": 132,
+            "resolution": "literal"
+          }
+        ],
+        "handlerInputWord": 32900
+      },
+      "expected": {
+        "id": "show-source-0",
+        "kind": "show-source",
+        "handlerAddress": 289432,
+        "handlerInputWord": 32900,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddress": 289462,
+            "returnAddress": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddress": 289466,
+            "returnAddress": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddress": 289482,
+            "returnAddress": 289488
+          }
+        ],
+        "sourceInput": {
+          "programId": "cs_615E6",
+          "commandIndex": 558,
+          "sourceLine": 813,
+          "macro": "showPortrait",
+          "arguments": [
+            "$80",
+            "132"
+          ],
+          "sourceOrderKey": "cs_615E6:558:showPortrait",
+          "operandValues": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "$80",
+              "resolvedValue": 128,
+              "resolution": "literal"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "132",
+              "resolvedValue": 132,
+              "resolution": "literal"
+            }
+          ],
+          "handlerInputWord": 32900
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddressObserved": 289462,
+            "targetRole": "effective",
+            "targetAddressObserved": 18184,
+            "returnAddressObserved": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddressObserved": 289466,
+            "targetRole": "effective",
+            "targetAddressObserved": 284216,
+            "returnAddressObserved": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddressObserved": 289482,
+            "targetRole": "instruction",
+            "targetAddressObserved": 65592,
+            "returnAddressObserved": 289488
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 32900,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": 1,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "show-source-1",
+      "kind": "show-source",
+      "portraitWindowIndexWordSeed": 0,
+      "handlerInputWord": 0,
+      "helperD1Word": 1,
+      "sourceInput": {
+        "programId": "data/scripting/map/debugscripts.asm#L16",
+        "commandIndex": 2,
+        "sourceLine": 18,
+        "macro": "showPortrait",
+        "arguments": [
+          "$0",
+          "ALLY_BOWIE"
+        ],
+        "sourceOrderKey": "data/scripting/map/debugscripts.asm#L16:2:showPortrait",
+        "operandValues": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+            "streamOffset": 2,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "$0",
+            "resolvedValue": 0,
+            "resolution": "literal"
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity",
+            "streamOffset": 3,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "ALLY_BOWIE",
+            "resolvedValue": 0,
+            "resolution": "equate"
+          }
+        ],
+        "handlerInputWord": 0
+      },
+      "expected": {
+        "id": "show-source-1",
+        "kind": "show-source",
+        "handlerAddress": 289432,
+        "handlerInputWord": 0,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddress": 289462,
+            "returnAddress": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddress": 289466,
+            "returnAddress": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddress": 289482,
+            "returnAddress": 289488
+          }
+        ],
+        "sourceInput": {
+          "programId": "data/scripting/map/debugscripts.asm#L16",
+          "commandIndex": 2,
+          "sourceLine": 18,
+          "macro": "showPortrait",
+          "arguments": [
+            "$0",
+            "ALLY_BOWIE"
+          ],
+          "sourceOrderKey": "data/scripting/map/debugscripts.asm#L16:2:showPortrait",
+          "operandValues": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "$0",
+              "resolvedValue": 0,
+              "resolution": "literal"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "ALLY_BOWIE",
+              "resolvedValue": 0,
+              "resolution": "equate"
+            }
+          ],
+          "handlerInputWord": 0
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddressObserved": 289462,
+            "targetRole": "effective",
+            "targetAddressObserved": 18184,
+            "returnAddressObserved": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddressObserved": 289466,
+            "targetRole": "effective",
+            "targetAddressObserved": 284216,
+            "returnAddressObserved": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddressObserved": 289482,
+            "targetRole": "instruction",
+            "targetAddressObserved": 65592,
+            "returnAddressObserved": 289488
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 0,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": 1,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "show-source-2",
+      "kind": "show-source",
+      "portraitWindowIndexWordSeed": 0,
+      "handlerInputWord": 0,
+      "helperD1Word": 1,
+      "sourceInput": {
+        "programId": "data/scripting/map/debugscripts.asm#L26",
+        "commandIndex": 3,
+        "sourceLine": 29,
+        "macro": "showPortrait",
+        "arguments": [
+          "$0",
+          "ALLY_BOWIE"
+        ],
+        "sourceOrderKey": "data/scripting/map/debugscripts.asm#L26:3:showPortrait",
+        "operandValues": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+            "streamOffset": 2,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "$0",
+            "resolvedValue": 0,
+            "resolution": "literal"
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity",
+            "streamOffset": 3,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "ALLY_BOWIE",
+            "resolvedValue": 0,
+            "resolution": "equate"
+          }
+        ],
+        "handlerInputWord": 0
+      },
+      "expected": {
+        "id": "show-source-2",
+        "kind": "show-source",
+        "handlerAddress": 289432,
+        "handlerInputWord": 0,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddress": 289462,
+            "returnAddress": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddress": 289466,
+            "returnAddress": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddress": 289482,
+            "returnAddress": 289488
+          }
+        ],
+        "sourceInput": {
+          "programId": "data/scripting/map/debugscripts.asm#L26",
+          "commandIndex": 3,
+          "sourceLine": 29,
+          "macro": "showPortrait",
+          "arguments": [
+            "$0",
+            "ALLY_BOWIE"
+          ],
+          "sourceOrderKey": "data/scripting/map/debugscripts.asm#L26:3:showPortrait",
+          "operandValues": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "$0",
+              "resolvedValue": 0,
+              "resolution": "literal"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "ALLY_BOWIE",
+              "resolvedValue": 0,
+              "resolution": "equate"
+            }
+          ],
+          "handlerInputWord": 0
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddressObserved": 289462,
+            "targetRole": "effective",
+            "targetAddressObserved": 18184,
+            "returnAddressObserved": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddressObserved": 289466,
+            "targetRole": "effective",
+            "targetAddressObserved": 284216,
+            "returnAddressObserved": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddressObserved": 289482,
+            "targetRole": "instruction",
+            "targetAddressObserved": 65592,
+            "returnAddressObserved": 289488
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 0,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": 1,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "show-source-3",
+      "kind": "show-source",
+      "portraitWindowIndexWordSeed": 0,
+      "handlerInputWord": 0,
+      "helperD1Word": 1,
+      "sourceInput": {
+        "programId": "data/scripting/map/debugscripts.asm#L76",
+        "commandIndex": 8,
+        "sourceLine": 84,
+        "macro": "showPortrait",
+        "arguments": [
+          "$0",
+          "ALLY_BOWIE"
+        ],
+        "sourceOrderKey": "data/scripting/map/debugscripts.asm#L76:8:showPortrait",
+        "operandValues": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+            "streamOffset": 2,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "$0",
+            "resolvedValue": 0,
+            "resolution": "literal"
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity",
+            "streamOffset": 3,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "ALLY_BOWIE",
+            "resolvedValue": 0,
+            "resolution": "equate"
+          }
+        ],
+        "handlerInputWord": 0
+      },
+      "expected": {
+        "id": "show-source-3",
+        "kind": "show-source",
+        "handlerAddress": 289432,
+        "handlerInputWord": 0,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddress": 289462,
+            "returnAddress": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddress": 289466,
+            "returnAddress": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddress": 289482,
+            "returnAddress": 289488
+          }
+        ],
+        "sourceInput": {
+          "programId": "data/scripting/map/debugscripts.asm#L76",
+          "commandIndex": 8,
+          "sourceLine": 84,
+          "macro": "showPortrait",
+          "arguments": [
+            "$0",
+            "ALLY_BOWIE"
+          ],
+          "sourceOrderKey": "data/scripting/map/debugscripts.asm#L76:8:showPortrait",
+          "operandValues": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "$0",
+              "resolvedValue": 0,
+              "resolution": "literal"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "ALLY_BOWIE",
+              "resolvedValue": 0,
+              "resolution": "equate"
+            }
+          ],
+          "handlerInputWord": 0
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddressObserved": 289462,
+            "targetRole": "effective",
+            "targetAddressObserved": 18184,
+            "returnAddressObserved": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddressObserved": 289466,
+            "targetRole": "effective",
+            "targetAddressObserved": 284216,
+            "returnAddressObserved": 289470
+          },
+          {
+            "instructionTarget": "j_OpenPortraitWindow",
+            "effectiveTarget": "OpenPortraitWindow",
+            "callSiteAddressObserved": 289482,
+            "targetRole": "instruction",
+            "targetAddressObserved": 65592,
+            "returnAddressObserved": 289488
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 0,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": 1,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "show-busy-early-return",
+      "kind": "show-busy",
+      "portraitWindowIndexWordSeed": 1,
+      "handlerInputWord": 32900,
+      "helperD1Word": 1,
+      "sourceInput": {
+        "programId": "cs_615E6",
+        "commandIndex": 558,
+        "sourceLine": 813,
+        "macro": "showPortrait",
+        "arguments": [
+          "$80",
+          "132"
+        ],
+        "sourceOrderKey": "cs_615E6:558:showPortrait",
+        "operandValues": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+            "streamOffset": 2,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "$80",
+            "resolvedValue": 128,
+            "resolution": "literal"
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity",
+            "streamOffset": 3,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "132",
+            "resolvedValue": 132,
+            "resolution": "literal"
+          }
+        ],
+        "handlerInputWord": 32900
+      },
+      "expected": {
+        "id": "show-busy-early-return",
+        "kind": "show-busy",
+        "handlerAddress": 289432,
+        "handlerInputWord": 32900,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [],
+        "sourceInput": {
+          "programId": "cs_615E6",
+          "commandIndex": 558,
+          "sourceLine": 813,
+          "macro": "showPortrait",
+          "arguments": [
+            "$80",
+            "132"
+          ],
+          "sourceOrderKey": "cs_615E6:558:showPortrait",
+          "operandValues": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "$80",
+              "resolvedValue": 128,
+              "resolution": "literal"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "132",
+              "resolvedValue": 132,
+              "resolution": "literal"
+            }
+          ],
+          "handlerInputWord": 32900
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [],
+        "handlerInputWordAtFirstOperandUse": 32900,
+        "portraitWindowBusyEarlyReturnObserved": true,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": null,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "show-sentinel-d1-branch",
+      "kind": "show-sentinel",
+      "portraitWindowIndexWordSeed": 0,
+      "handlerInputWord": 32900,
+      "helperD1Word": 65535,
+      "sourceInput": {
+        "programId": "cs_615E6",
+        "commandIndex": 558,
+        "sourceLine": 813,
+        "macro": "showPortrait",
+        "arguments": [
+          "$80",
+          "132"
+        ],
+        "sourceOrderKey": "cs_615E6:558:showPortrait",
+        "operandValues": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+            "streamOffset": 2,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "$80",
+            "resolvedValue": 128,
+            "resolution": "literal"
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity",
+            "streamOffset": 3,
+            "widthBytes": 1,
+            "encoding": "direct",
+            "rawValue": "132",
+            "resolvedValue": 132,
+            "resolution": "literal"
+          }
+        ],
+        "handlerInputWord": 32900
+      },
+      "expected": {
+        "id": "show-sentinel-d1-branch",
+        "kind": "show-sentinel",
+        "handlerAddress": 289432,
+        "handlerInputWord": 32900,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddress": 289462,
+            "returnAddress": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddress": 289466,
+            "returnAddress": 289470
+          }
+        ],
+        "sourceInput": {
+          "programId": "cs_615E6",
+          "commandIndex": 558,
+          "sourceLine": 813,
+          "macro": "showPortrait",
+          "arguments": [
+            "$80",
+            "132"
+          ],
+          "sourceOrderKey": "cs_615E6:558:showPortrait",
+          "operandValues": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+              "streamOffset": 2,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "$80",
+              "resolvedValue": 128,
+              "resolution": "literal"
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity",
+              "streamOffset": 3,
+              "widthBytes": 1,
+              "encoding": "direct",
+              "rawValue": "132",
+              "resolvedValue": 132,
+              "resolution": "literal"
+            }
+          ],
+          "handlerInputWord": 32900
+        }
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddressObserved": 289462,
+            "targetRole": "effective",
+            "targetAddressObserved": 18184,
+            "returnAddressObserved": 289466
+          },
+          {
+            "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+            "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+            "callSiteAddressObserved": 289466,
+            "targetRole": "effective",
+            "targetAddressObserved": 284216,
+            "returnAddressObserved": 289470
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 32900,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": true,
+        "helperD1WordAtComparison": 65535,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "hide-close-chronology",
+      "kind": "hide",
+      "portraitWindowIndexWordSeed": null,
+      "handlerInputWord": null,
+      "helperD1Word": null,
+      "sourceInput": null,
+      "expected": {
+        "id": "hide-close-chronology",
+        "kind": "hide",
+        "handlerAddress": 289490,
+        "handlerInputWord": null,
+        "scriptCursorRamOffsetAfter": 4,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": false,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddress": 289490,
+            "returnAddress": 289494
+          },
+          {
+            "instructionTarget": "j_ClosePortraitWindow",
+            "effectiveTarget": "ClosePortraitWindow",
+            "callSiteAddress": 289494,
+            "returnAddress": 289500
+          }
+        ],
+        "sourceInput": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd",
+            "callSiteAddressObserved": 289490,
+            "targetRole": "effective",
+            "targetAddressObserved": 18184,
+            "returnAddressObserved": 289494
+          },
+          {
+            "instructionTarget": "j_ClosePortraitWindow",
+            "effectiveTarget": "ClosePortraitWindow",
+            "callSiteAddressObserved": 289494,
+            "targetRole": "instruction",
+            "targetAddressObserved": 65596,
+            "returnAddressObserved": 289500
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": null,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": null,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": null,
+        "a6RestoredFromStackObserved": null,
+        "scriptCursorRamOffsetAfterObserved": 4
+      }
+    },
+    {
+      "id": "menu-selector-0",
+      "kind": "menu",
+      "portraitWindowIndexWordSeed": null,
+      "handlerInputWord": 0,
+      "helperD1Word": null,
+      "sourceInput": null,
+      "expected": {
+        "id": "menu-selector-0",
+        "kind": "menu",
+        "handlerAddress": 292022,
+        "handlerInputWord": 0,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": true,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "j_ChurchMenu",
+            "effectiveTarget": "ChurchMenu",
+            "callSiteAddress": 292030,
+            "returnAddress": 292036
+          }
+        ],
+        "sourceInput": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "j_ChurchMenu",
+            "effectiveTarget": "ChurchMenu",
+            "callSiteAddressObserved": 292030,
+            "targetRole": "instruction",
+            "targetAddressObserved": 131076,
+            "returnAddressObserved": 292036
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 0,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": null,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": 16728070,
+        "a6RestoredFromStackObserved": true,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "menu-selector-1",
+      "kind": "menu",
+      "portraitWindowIndexWordSeed": null,
+      "handlerInputWord": 1,
+      "helperD1Word": null,
+      "sourceInput": null,
+      "expected": {
+        "id": "menu-selector-1",
+        "kind": "menu",
+        "handlerAddress": 292022,
+        "handlerInputWord": 1,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": true,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "j_ShopMenu",
+            "effectiveTarget": "ShopMenu",
+            "callSiteAddress": 292042,
+            "returnAddress": 292048
+          }
+        ],
+        "sourceInput": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "j_ShopMenu",
+            "effectiveTarget": "ShopMenu",
+            "callSiteAddressObserved": 292042,
+            "targetRole": "instruction",
+            "targetAddressObserved": 131072,
+            "returnAddressObserved": 292048
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 1,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": null,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": 16728070,
+        "a6RestoredFromStackObserved": true,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "menu-selector-2",
+      "kind": "menu",
+      "portraitWindowIndexWordSeed": null,
+      "handlerInputWord": 2,
+      "helperD1Word": null,
+      "sourceInput": null,
+      "expected": {
+        "id": "menu-selector-2",
+        "kind": "menu",
+        "handlerAddress": 292022,
+        "handlerInputWord": 2,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": true,
+        "directCallbackPlan": [
+          {
+            "instructionTarget": "j_BlacksmithMenu",
+            "effectiveTarget": "BlacksmithMenu",
+            "callSiteAddress": 292054,
+            "returnAddress": 292060
+          }
+        ],
+        "sourceInput": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [
+          {
+            "instructionTarget": "j_BlacksmithMenu",
+            "effectiveTarget": "BlacksmithMenu",
+            "callSiteAddressObserved": 292054,
+            "targetRole": "instruction",
+            "targetAddressObserved": 131084,
+            "returnAddressObserved": 292060
+          }
+        ],
+        "handlerInputWordAtFirstOperandUse": 2,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": null,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": 16728070,
+        "a6RestoredFromStackObserved": true,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    },
+    {
+      "id": "menu-selector-other",
+      "kind": "menu",
+      "portraitWindowIndexWordSeed": null,
+      "handlerInputWord": 3,
+      "helperD1Word": null,
+      "sourceInput": null,
+      "expected": {
+        "id": "menu-selector-other",
+        "kind": "menu",
+        "handlerAddress": 292022,
+        "handlerInputWord": 3,
+        "scriptCursorRamOffsetAfter": 6,
+        "stackPointerDeltaBytesAfter": 0,
+        "a6RestoredFromStack": true,
+        "directCallbackPlan": [],
+        "sourceInput": null
+      },
+      "runtimeGolden": {
+        "handlerReturned": true,
+        "callbackDispatchesObserved": [],
+        "handlerInputWordAtFirstOperandUse": 3,
+        "portraitWindowBusyEarlyReturnObserved": false,
+        "sentinelD1BranchObserved": false,
+        "helperD1WordAtComparison": null,
+        "stackPointerDeltaBytesObserved": 0,
+        "a6AtMenuSaveBoundaryObserved": 16728070,
+        "a6RestoredFromStackObserved": true,
+        "scriptCursorRamOffsetAfterObserved": 6
+      }
+    }
+  ]
+}

@@ -1,0 +1,1205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [
+    {
+      "$ref": "#/definitions/root"
+    },
+    {
+      "const": {
+        "system": "GEN",
+        "core": "Genesis Plus GX",
+        "id": "sf2-map-script-ui-primary-runtime-v1",
+        "mapTest": 0,
+        "recordOrder": [
+          "show-source-0",
+          "show-source-1",
+          "show-source-2",
+          "show-source-3",
+          "show-busy-early-return",
+          "show-sentinel-d1-branch",
+          "hide-close-chronology",
+          "menu-selector-0",
+          "menu-selector-1",
+          "menu-selector-2",
+          "menu-selector-other"
+        ],
+        "records": [
+          {
+            "id": "show-source-0",
+            "kind": "show-source",
+            "handlerAddress": 289432,
+            "handlerInputWord": 32900,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddress": 289462,
+                "returnAddress": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddress": 289466,
+                "returnAddress": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddress": 289482,
+                "returnAddress": 289488
+              }
+            ],
+            "sourceInput": {
+              "programId": "cs_615E6",
+              "commandIndex": 558,
+              "sourceLine": 813,
+              "macro": "showPortrait",
+              "arguments": [
+                "$80",
+                "132"
+              ],
+              "sourceOrderKey": "cs_615E6:558:showPortrait",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+                  "streamOffset": 2,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "$80",
+                  "resolvedValue": 128,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "entity",
+                  "streamOffset": 3,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "132",
+                  "resolvedValue": 132,
+                  "resolution": "literal"
+                }
+              ],
+              "handlerInputWord": 32900
+            },
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddressObserved": 289462,
+                "targetRole": "effective",
+                "targetAddressObserved": 18184,
+                "returnAddressObserved": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddressObserved": 289466,
+                "targetRole": "effective",
+                "targetAddressObserved": 284216,
+                "returnAddressObserved": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddressObserved": 289482,
+                "targetRole": "instruction",
+                "targetAddressObserved": 65592,
+                "returnAddressObserved": 289488
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 32900,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": 1,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "show-source-1",
+            "kind": "show-source",
+            "handlerAddress": 289432,
+            "handlerInputWord": 0,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddress": 289462,
+                "returnAddress": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddress": 289466,
+                "returnAddress": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddress": 289482,
+                "returnAddress": 289488
+              }
+            ],
+            "sourceInput": {
+              "programId": "data/scripting/map/debugscripts.asm#L16",
+              "commandIndex": 2,
+              "sourceLine": 18,
+              "macro": "showPortrait",
+              "arguments": [
+                "$0",
+                "ALLY_BOWIE"
+              ],
+              "sourceOrderKey": "data/scripting/map/debugscripts.asm#L16:2:showPortrait",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+                  "streamOffset": 2,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "$0",
+                  "resolvedValue": 0,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "entity",
+                  "streamOffset": 3,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "ALLY_BOWIE",
+                  "resolvedValue": 0,
+                  "resolution": "equate"
+                }
+              ],
+              "handlerInputWord": 0
+            },
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddressObserved": 289462,
+                "targetRole": "effective",
+                "targetAddressObserved": 18184,
+                "returnAddressObserved": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddressObserved": 289466,
+                "targetRole": "effective",
+                "targetAddressObserved": 284216,
+                "returnAddressObserved": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddressObserved": 289482,
+                "targetRole": "instruction",
+                "targetAddressObserved": 65592,
+                "returnAddressObserved": 289488
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 0,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": 1,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "show-source-2",
+            "kind": "show-source",
+            "handlerAddress": 289432,
+            "handlerInputWord": 0,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddress": 289462,
+                "returnAddress": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddress": 289466,
+                "returnAddress": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddress": 289482,
+                "returnAddress": 289488
+              }
+            ],
+            "sourceInput": {
+              "programId": "data/scripting/map/debugscripts.asm#L26",
+              "commandIndex": 3,
+              "sourceLine": 29,
+              "macro": "showPortrait",
+              "arguments": [
+                "$0",
+                "ALLY_BOWIE"
+              ],
+              "sourceOrderKey": "data/scripting/map/debugscripts.asm#L26:3:showPortrait",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+                  "streamOffset": 2,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "$0",
+                  "resolvedValue": 0,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "entity",
+                  "streamOffset": 3,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "ALLY_BOWIE",
+                  "resolvedValue": 0,
+                  "resolution": "equate"
+                }
+              ],
+              "handlerInputWord": 0
+            },
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddressObserved": 289462,
+                "targetRole": "effective",
+                "targetAddressObserved": 18184,
+                "returnAddressObserved": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddressObserved": 289466,
+                "targetRole": "effective",
+                "targetAddressObserved": 284216,
+                "returnAddressObserved": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddressObserved": 289482,
+                "targetRole": "instruction",
+                "targetAddressObserved": 65592,
+                "returnAddressObserved": 289488
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 0,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": 1,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "show-source-3",
+            "kind": "show-source",
+            "handlerAddress": 289432,
+            "handlerInputWord": 0,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddress": 289462,
+                "returnAddress": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddress": 289466,
+                "returnAddress": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddress": 289482,
+                "returnAddress": 289488
+              }
+            ],
+            "sourceInput": {
+              "programId": "data/scripting/map/debugscripts.asm#L76",
+              "commandIndex": 8,
+              "sourceLine": 84,
+              "macro": "showPortrait",
+              "arguments": [
+                "$0",
+                "ALLY_BOWIE"
+              ],
+              "sourceOrderKey": "data/scripting/map/debugscripts.asm#L76:8:showPortrait",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+                  "streamOffset": 2,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "$0",
+                  "resolvedValue": 0,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "entity",
+                  "streamOffset": 3,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "ALLY_BOWIE",
+                  "resolvedValue": 0,
+                  "resolution": "equate"
+                }
+              ],
+              "handlerInputWord": 0
+            },
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddressObserved": 289462,
+                "targetRole": "effective",
+                "targetAddressObserved": 18184,
+                "returnAddressObserved": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddressObserved": 289466,
+                "targetRole": "effective",
+                "targetAddressObserved": 284216,
+                "returnAddressObserved": 289470
+              },
+              {
+                "instructionTarget": "j_OpenPortraitWindow",
+                "effectiveTarget": "OpenPortraitWindow",
+                "callSiteAddressObserved": 289482,
+                "targetRole": "instruction",
+                "targetAddressObserved": 65592,
+                "returnAddressObserved": 289488
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 0,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": 1,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "show-busy-early-return",
+            "kind": "show-busy",
+            "handlerAddress": 289432,
+            "handlerInputWord": 32900,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [],
+            "sourceInput": {
+              "programId": "cs_615E6",
+              "commandIndex": 558,
+              "sourceLine": 813,
+              "macro": "showPortrait",
+              "arguments": [
+                "$80",
+                "132"
+              ],
+              "sourceOrderKey": "cs_615E6:558:showPortrait",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+                  "streamOffset": 2,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "$80",
+                  "resolvedValue": 128,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "entity",
+                  "streamOffset": 3,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "132",
+                  "resolvedValue": 132,
+                  "resolution": "literal"
+                }
+              ],
+              "handlerInputWord": 32900
+            },
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [],
+            "handlerInputWordAtFirstOperandUse": 32900,
+            "portraitWindowBusyEarlyReturnObserved": true,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": null,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "show-sentinel-d1-branch",
+            "kind": "show-sentinel",
+            "handlerAddress": 289432,
+            "handlerInputWord": 32900,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddress": 289462,
+                "returnAddress": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddress": 289466,
+                "returnAddress": 289470
+              }
+            ],
+            "sourceInput": {
+              "programId": "cs_615E6",
+              "commandIndex": 558,
+              "sourceLine": 813,
+              "macro": "showPortrait",
+              "arguments": [
+                "$80",
+                "132"
+              ],
+              "sourceOrderKey": "cs_615E6:558:showPortrait",
+              "operandValues": [
+                {
+                  "parameterOrdinal": 1,
+                  "sourceComment": "portrait modifier ($0-none, $40-mirrored, $80-display on right, $FF-undisplayed)",
+                  "streamOffset": 2,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "$80",
+                  "resolvedValue": 128,
+                  "resolution": "literal"
+                },
+                {
+                  "parameterOrdinal": 2,
+                  "sourceComment": "entity",
+                  "streamOffset": 3,
+                  "widthBytes": 1,
+                  "encoding": "direct",
+                  "rawValue": "132",
+                  "resolvedValue": 132,
+                  "resolution": "literal"
+                }
+              ],
+              "handlerInputWord": 32900
+            },
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddressObserved": 289462,
+                "targetRole": "effective",
+                "targetAddressObserved": 18184,
+                "returnAddressObserved": 289466
+              },
+              {
+                "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                "effectiveTarget": "GetEntityPortaitAndSpeechSfx",
+                "callSiteAddressObserved": 289466,
+                "targetRole": "effective",
+                "targetAddressObserved": 284216,
+                "returnAddressObserved": 289470
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 32900,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": true,
+            "helperD1WordAtComparison": 65535,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "hide-close-chronology",
+            "kind": "hide",
+            "handlerAddress": 289490,
+            "handlerInputWord": null,
+            "scriptCursorRamOffsetAfter": 4,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": false,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddress": 289490,
+                "returnAddress": 289494
+              },
+              {
+                "instructionTarget": "j_ClosePortraitWindow",
+                "effectiveTarget": "ClosePortraitWindow",
+                "callSiteAddress": 289494,
+                "returnAddress": 289500
+              }
+            ],
+            "sourceInput": null,
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "WaitForViewScrollEnd",
+                "effectiveTarget": "WaitForViewScrollEnd",
+                "callSiteAddressObserved": 289490,
+                "targetRole": "effective",
+                "targetAddressObserved": 18184,
+                "returnAddressObserved": 289494
+              },
+              {
+                "instructionTarget": "j_ClosePortraitWindow",
+                "effectiveTarget": "ClosePortraitWindow",
+                "callSiteAddressObserved": 289494,
+                "targetRole": "instruction",
+                "targetAddressObserved": 65596,
+                "returnAddressObserved": 289500
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": null,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": null,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": null,
+            "a6RestoredFromStackObserved": null,
+            "scriptCursorRamOffsetAfterObserved": 4
+          },
+          {
+            "id": "menu-selector-0",
+            "kind": "menu",
+            "handlerAddress": 292022,
+            "handlerInputWord": 0,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": true,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "j_ChurchMenu",
+                "effectiveTarget": "ChurchMenu",
+                "callSiteAddress": 292030,
+                "returnAddress": 292036
+              }
+            ],
+            "sourceInput": null,
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "j_ChurchMenu",
+                "effectiveTarget": "ChurchMenu",
+                "callSiteAddressObserved": 292030,
+                "targetRole": "instruction",
+                "targetAddressObserved": 131076,
+                "returnAddressObserved": 292036
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 0,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": null,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": 16728070,
+            "a6RestoredFromStackObserved": true,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "menu-selector-1",
+            "kind": "menu",
+            "handlerAddress": 292022,
+            "handlerInputWord": 1,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": true,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "j_ShopMenu",
+                "effectiveTarget": "ShopMenu",
+                "callSiteAddress": 292042,
+                "returnAddress": 292048
+              }
+            ],
+            "sourceInput": null,
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "j_ShopMenu",
+                "effectiveTarget": "ShopMenu",
+                "callSiteAddressObserved": 292042,
+                "targetRole": "instruction",
+                "targetAddressObserved": 131072,
+                "returnAddressObserved": 292048
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 1,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": null,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": 16728070,
+            "a6RestoredFromStackObserved": true,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "menu-selector-2",
+            "kind": "menu",
+            "handlerAddress": 292022,
+            "handlerInputWord": 2,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": true,
+            "directCallbackPlan": [
+              {
+                "instructionTarget": "j_BlacksmithMenu",
+                "effectiveTarget": "BlacksmithMenu",
+                "callSiteAddress": 292054,
+                "returnAddress": 292060
+              }
+            ],
+            "sourceInput": null,
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [
+              {
+                "instructionTarget": "j_BlacksmithMenu",
+                "effectiveTarget": "BlacksmithMenu",
+                "callSiteAddressObserved": 292054,
+                "targetRole": "instruction",
+                "targetAddressObserved": 131084,
+                "returnAddressObserved": 292060
+              }
+            ],
+            "handlerInputWordAtFirstOperandUse": 2,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": null,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": 16728070,
+            "a6RestoredFromStackObserved": true,
+            "scriptCursorRamOffsetAfterObserved": 6
+          },
+          {
+            "id": "menu-selector-other",
+            "kind": "menu",
+            "handlerAddress": 292022,
+            "handlerInputWord": 3,
+            "scriptCursorRamOffsetAfter": 6,
+            "stackPointerDeltaBytesAfter": 0,
+            "a6RestoredFromStack": true,
+            "directCallbackPlan": [],
+            "sourceInput": null,
+            "handlerReturned": true,
+            "callbackDispatchesObserved": [],
+            "handlerInputWordAtFirstOperandUse": 3,
+            "portraitWindowBusyEarlyReturnObserved": false,
+            "sentinelD1BranchObserved": false,
+            "helperD1WordAtComparison": null,
+            "stackPointerDeltaBytesObserved": 0,
+            "a6AtMenuSaveBoundaryObserved": 16728070,
+            "a6RestoredFromStackObserved": true,
+            "scriptCursorRamOffsetAfterObserved": 6
+          }
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "callback": {
+      "type": "object",
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "callSiteAddress",
+        "returnAddress"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "callSiteAddress": {
+          "type": "integer"
+        },
+        "returnAddress": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "operand": {
+      "type": "object",
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "encoding",
+        "rawValue",
+        "resolvedValue",
+        "resolution"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        },
+        "encoding": {
+          "type": "string"
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": "integer"
+        },
+        "resolution": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceInput": {
+      "type": "object",
+      "required": [
+        "programId",
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues",
+        "handlerInputWord"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/operand"
+          }
+        },
+        "handlerInputWord": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "expected": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "handlerAddress",
+        "handlerInputWord",
+        "scriptCursorRamOffsetAfter",
+        "stackPointerDeltaBytesAfter",
+        "a6RestoredFromStack",
+        "directCallbackPlan",
+        "sourceInput"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "handlerInputWord": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "stackPointerDeltaBytesAfter": {
+          "type": "integer"
+        },
+        "a6RestoredFromStack": {
+          "type": "boolean"
+        },
+        "directCallbackPlan": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/callback"
+          }
+        },
+        "sourceInput": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/sourceInput"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "handlerReturned",
+        "callbackDispatchesObserved",
+        "handlerInputWordAtFirstOperandUse",
+        "portraitWindowBusyEarlyReturnObserved",
+        "sentinelD1BranchObserved",
+        "helperD1WordAtComparison",
+        "stackPointerDeltaBytesObserved",
+        "a6AtMenuSaveBoundaryObserved",
+        "a6RestoredFromStackObserved",
+        "scriptCursorRamOffsetAfterObserved"
+      ],
+      "properties": {
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackDispatchesObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/observedCallback"
+          }
+        },
+        "handlerInputWordAtFirstOperandUse": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "portraitWindowBusyEarlyReturnObserved": {
+          "type": "boolean"
+        },
+        "sentinelD1BranchObserved": {
+          "type": "boolean"
+        },
+        "helperD1WordAtComparison": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stackPointerDeltaBytesObserved": {
+          "type": "integer"
+        },
+        "a6AtMenuSaveBoundaryObserved": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "a6RestoredFromStackObserved": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scriptCursorRamOffsetAfterObserved": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "handlerAddress",
+        "handlerInputWord",
+        "scriptCursorRamOffsetAfter",
+        "stackPointerDeltaBytesAfter",
+        "a6RestoredFromStack",
+        "directCallbackPlan",
+        "sourceInput",
+        "handlerReturned",
+        "callbackDispatchesObserved",
+        "handlerInputWordAtFirstOperandUse",
+        "portraitWindowBusyEarlyReturnObserved",
+        "sentinelD1BranchObserved",
+        "helperD1WordAtComparison",
+        "stackPointerDeltaBytesObserved",
+        "a6AtMenuSaveBoundaryObserved",
+        "a6RestoredFromStackObserved",
+        "scriptCursorRamOffsetAfterObserved"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "handlerAddress": {
+          "type": "integer"
+        },
+        "handlerInputWord": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scriptCursorRamOffsetAfter": {
+          "type": "integer"
+        },
+        "stackPointerDeltaBytesAfter": {
+          "type": "integer"
+        },
+        "a6RestoredFromStack": {
+          "type": "boolean"
+        },
+        "directCallbackPlan": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/callback"
+          }
+        },
+        "sourceInput": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/sourceInput"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "callbackDispatchesObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/observedCallback"
+          }
+        },
+        "handlerInputWordAtFirstOperandUse": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "portraitWindowBusyEarlyReturnObserved": {
+          "type": "boolean"
+        },
+        "sentinelD1BranchObserved": {
+          "type": "boolean"
+        },
+        "helperD1WordAtComparison": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stackPointerDeltaBytesObserved": {
+          "type": "integer"
+        },
+        "a6AtMenuSaveBoundaryObserved": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "a6RestoredFromStackObserved": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scriptCursorRamOffsetAfterObserved": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "root": {
+      "type": "object",
+      "required": [
+        "system",
+        "core",
+        "id",
+        "mapTest",
+        "recordOrder",
+        "records"
+      ],
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "core": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "mapTest": {
+          "type": "integer"
+        },
+        "recordOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 11,
+          "maxItems": 11
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/record"
+          },
+          "minItems": 11,
+          "maxItems": 11
+        }
+      },
+      "additionalProperties": false
+    },
+    "observedCallback": {
+      "type": "object",
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "callSiteAddressObserved",
+        "targetRole",
+        "targetAddressObserved",
+        "returnAddressObserved"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "callSiteAddressObserved": {
+          "type": "integer"
+        },
+        "targetRole": {
+          "enum": [
+            "instruction",
+            "effective"
+          ]
+        },
+        "targetAddressObserved": {
+          "type": "integer"
+        },
+        "returnAddressObserved": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

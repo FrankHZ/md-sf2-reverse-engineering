@@ -741,7 +741,7 @@ H1 listing symbols/addresses; and local US ROM SHA-256
 
 ## Confirmed Map-Script UI Primary Command Boundary
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-31.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.mapScriptUiPrimaryCommandFacts` retains three source-named primary forms in source order:
@@ -776,22 +776,69 @@ targets with zero-inclusive per-handler maps. Direct totals are `WaitForViewScro
 `OpenPortraitWindow`, `ClosePortraitWindow`, `ChurchMenu`, `ShopMenu`, and `BlacksmithMenu` respectively;
 all internal totals are zero. This preserves call identity and alias provenance only.
 
+### Bounded runtime matrix — UI primary commands
+
+**Confirmed:** `sf2-map-script-ui-primary-runtime-v1` executes eleven handler-local cases in one
+BizHawk Map Test 0 launch. The four actual `showPortrait` source input rows remain distinct by their
+full H2 `sourceOrderKey` and input provenance: `cs_615E6:558:showPortrait` supplies packed word
+`$8084`; the three debug rows each supply `$0000`. The H3 builder derives those rows from the complete
+H2 `sourceSites` records, then cross-checks the compact fixture's five-key order and SHA-256 before it
+compares any H3 golden. The compact H2 hash is not used to invent input rows.
+
+**Confirmed:** the synthetic busy-word row writes nonzero `PORTRAIT_WINDOW_INDEX` `$FFB080`, reaches
+`csc1D_showPortrait`, advances its A6 word read, executes no direct callback call site, and returns. A
+separate controlled `d1=$FFFF` row reaches the same handler's parsed `cmpi.w #-1,d1` at `$46ABE` after
+the direct helper call site and returns without the open-window direct call site. This is a bounded
+handler sentinel branch; it does not establish an entity/table meaning for `$FFFF`.
+
+**Confirmed:** the hide row reaches `csc1E_hidePortrait`, observes the parsed call-site identities
+`WaitForViewScrollEnd` then `j_ClosePortraitWindow`/`ClosePortraitWindow`, and reaches its handler
+return. The four menu rows enter `csc12_executeContextMenu` with selector words `0`, `1`, `2`, and `3`:
+the first three observe exactly one respective parsed alias pair `j_ChurchMenu`/`ChurchMenu`,
+`j_ShopMenu`/`ShopMenu`, or `j_BlacksmithMenu`/`BlacksmithMenu`; `3` observes none. All four menu rows restore the saved A6 after
+its two-byte input cursor advance and restore the stack pointer to its entry value. Instruction target,
+effective target, actual call-site PC, actual shim-target PC/role, actual callback-return PC, handler
+`rts` PC, and handler-side continuation PC stay distinct fields. The stack observation is made at the
+parsed `rts` before that instruction consumes the handler call return address, so it remains distinct
+from the trampoline's later return boundary.
+
+**Confirmed boundary:** the session-only ROM retains every actual handler direct-call instruction,
+observes its call-site and return-resumption PCs, and replaces only the parsed shim entry span. The
+observer separately records the shim entry PC and whether it is the parsed effective target or the
+instruction target. `WaitForViewScrollEnd` and the portrait helper execute their effective target shims;
+each menu/window jump-interface alias executes its instruction-target shim and returns before its parsed
+effective target executes. The `WaitForViewScrollEnd` and alias shims begin with `rts`; the portrait
+helper's eight-byte entry returns the case-provided `d1` word from harness RAM and then returns. Those
+exact identities, roles, addresses, original bytes, and replacement spans are fixture-pinned and
+ROM-verified before launch. The menu shims preserve the handler's selector `d0` instead of fabricating a
+menu result. It therefore proves handler-local dispatch, cursor/stack state, and return behavior, but
+does not execute or claim any portrait-window, church, shop, or blacksmith service effect; such effects
+are unobserved. The observer writes no `runtimeGolden` into its runtime configuration.
+
 ### Runtime questions — UI primary commands
 
-**Unknown:** `map-script-ui-command/runtime-effects-matrix` is the sole grouped H3 queue. One shared
-launch must establish normal-story reachability; operand meaning; UI output; input/choice result; timing
-and completion; repeat behavior; persistence; and interaction with map/entity state. No source macro,
-comment, handler, literal, field, jump alias, or callee name promotes those runtime outcomes from this
-static contract.
+**Unknown:** `map-script-ui-command/normal-story-reachability` remains a grouped route question.
+
+**Unknown:** `map-script-ui-command/full-window-animation-vdp-timing` remains a grouped presentation
+question.
+
+**Unknown:** `map-script-ui-command/real-user-choice-service-side-effects` remains a grouped service
+and input-result question.
+
+**Unknown:** `map-script-ui-command/save-persistence-map-entity-interactions` remains a grouped
+lifecycle question. No source macro, comment, handler, literal, field, jump alias, or callee name
+promotes these outcomes from the bounded matrix.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros named above;
 `code/common/scripting/map/mapscriptengine_1.asm` and `mapscriptengine_2.asm` sections above; H1 listing
 symbols/addresses; and local US ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`uv run sf2 h2 map-script-engine`; observed static result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.mapScriptUiPrimaryCommandFacts`.
+`expected.mapScriptUiPrimaryCommandFacts`. Reproduce the runtime boundary with
+`uv run sf2 h3 map-script-ui-primary --timeout-seconds 180`; observed result is fixture ID
+`sf2-map-script-ui-primary-runtime-v1` in `tests/fixtures/h3/map-script-ui-primary-v1.json`.
 
 ## Confirmed Map-Script Roster/Death Command Family
 

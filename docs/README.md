@@ -250,8 +250,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   `map-script-entity-presentation-fx/runtime-effects-matrix`。
   同一 304-row 零计数 corpus 还固定三个 source-named UI primary form（5 sites，含零使用 `menu`）、
   三个 named handler 的 A6 cursor、immediate/operand、branch/stack/call/return guards，及
-  provenance join 的 portrait-helper 与 seven-target alias-aware caller map；唯一 H3 queue 为
-  `map-script-ui-command/runtime-effects-matrix`。
+  provenance join 的 portrait-helper 与 seven-target alias-aware caller map；单启动 11-case H3
+  已验证 source-row input、busy/sentinel handler return、hide chronology 和 menu selector/A6/stack
+  边界；正常剧情、完整 window/VDP timing、真实 choice/service side effect 与 persistence 仍为四组
+  Unknown queue。
   同一 304-row 零计数 corpus 还固定单个 source-named `cloneEntity` `$25` form（9 sites）、完整
   `csc25_cloneEntity` 的两次 A6 word read/lookup 及唯一一字节 `ENTITYDEF_OFFSET_ENTNUM` transfer，
   而不把它提升为 whole-record copy/span；唯一 H3 queue 为

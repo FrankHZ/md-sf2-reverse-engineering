@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-07-30
+- Evidence date: 2026-07-31
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,586 | 1,549 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,590 | 1,553 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 73 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,319 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 74 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,330 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -321,9 +321,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,579 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 72 H3 fixtures, and
-2,305 bindings. Of the records, 1,542 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,590 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 74 H3 fixtures, and
+2,330 bindings. Of the records, 1,553 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -481,10 +481,15 @@ persistence, or reachability behavior as static coverage.
 `hidePortrait` `$1E`, and zero `menu` `$12` occurrences (five commands in four source-site rows). It
 retains all 304 zero-inclusive program rows, the source byte/word operand annotations, three complete
 named handler guards, a provenance join to the already parsed dialogue portrait-helper record, and
-seven-target alias-aware direct/effective caller maps. The sole grouped H3 follow-up is
-`map-script-ui-command/runtime-effects-matrix`; source names, packed fields, aliases, literals, and
-callee names do not credit UI output, input/choice, timing, persistence, save behavior, or reachability
-as static coverage.
+seven-target alias-aware direct/effective caller maps. Its one-launch 11-record H3 fixture additionally
+observes the four full-H2-source-order inputs, busy direct return, controlled `$FFFF` comparison branch,
+hide callback chronology, and all four menu selector partitions with A6/stack restoration. Service shims
+record their actual entry role: direct effective-target shims execute for the wait/helper calls, while
+jump-interface aliases execute only their instruction-target shims and return before their effective
+targets execute. The handler's direct instruction PCs and callback return-resumption PCs still execute.
+Thus the covered boundary is handler-local rather than UI/service behavior; service effects are
+unobserved. The remaining grouped questions are normal-story reachability, full window/VDP timing, real
+user choice/service side effects, and save/persistence/map-entity interactions.
 **Confirmed:** the residual source-named `cloneEntity` `$25` boundary is exact for nine commands in
 two source rows and the same 304-row zero-inclusive program domain. It retains two two-byte operand
 comments, the complete seven-statement `csc25_cloneEntity` section, two ordered A6 word reads and

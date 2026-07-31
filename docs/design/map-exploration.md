@@ -58,6 +58,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-lifecycle-v1.json`;
 - `sf2-map-interaction-trigger-runtime-v1` in
   `tests/fixtures/h3/map-interaction-trigger-v1.json`.
+- `sf2-map-script-ui-primary-runtime-v1` in
+  `tests/fixtures/h3/map-script-ui-primary-v1.json`.
 - `sf2-map-entity-lifecycle-presentation-runtime-v1` in
   `tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`.
 
@@ -242,10 +244,19 @@ raw macro comments including `menu`'s empty comment, complete command/program or
 zero-inclusive program domain. The import boundary MUST retain named handler instruction order: A6
 transfer widths, source immediate/operand records, branch targets, source stack-pointer transfer records,
 instruction/effective target caller maps with aliases, return boundaries, and the provenance join to
-`dialogueCommandFacts.portraitHelper`. These are source-layout and control-flow records. A remake MUST
-NOT normalize them into portrait drawing, menu/input handling, a selection result, timing, persistence,
-save behavior, or reachability model; all original runtime consequences remain in
-`map-script-ui-command/runtime-effects-matrix`.
+`dialogueCommandFacts.portraitHelper`. The bounded runtime fixture
+`sf2-map-script-ui-primary-runtime-v1` at
+`tests/fixtures/h3/map-script-ui-primary-v1.json` additionally retains eleven handler-local records:
+the four exact H2 source-row inputs, the busy-word direct-return boundary, a controlled `d1=$FFFF`
+comparison branch, hide's direct call chronology, and selector `0`/`1`/`2`/other menu partitions with
+A6/stack restoration. Its parsed instruction/effective identities remain provenance, while its actual
+call-site, shim-target role/PC, and callback-return PCs are bounded control-flow observations. The
+session-only ROM observes those PCs and replaces only parsed shim entry spans; aliases return from their
+instruction-target shim before their parsed effective target executes. Service effects are unobserved. A
+remake MUST NOT treat the fixture as
+portrait drawing, menu/input behavior, user choice, timing, persistence, save behavior, or reachability
+evidence. Those original questions remain explicitly Unknown in
+`docs/research/common-scripting.md` under the four `map-script-ui-command/*` queues.
 The shared interpreter contract defines 82 primary command layouts with 133 ordered operand fields
 over 234 bytes. An importer MUST preserve each field's byte width and stream offset, including
 shorthand-encoded words, and MUST represent sequential, absolute-jump, conditional-absolute-jump,

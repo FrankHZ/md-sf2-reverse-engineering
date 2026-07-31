@@ -427,7 +427,10 @@ MAP_SCRIPT_UI_PRIMARY_HANDLER_NAMES = tuple(
     MAP_SCRIPT_UI_PRIMARY_HANDLER_BY_MACRO.values()
 )
 MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS = [
-    "map-script-ui-command/runtime-effects-matrix"
+    "map-script-ui-command/normal-story-reachability",
+    "map-script-ui-command/full-window-animation-vdp-timing",
+    "map-script-ui-command/real-user-choice-service-side-effects",
+    "map-script-ui-command/save-persistence-map-entity-interactions",
 ]
 
 # This source-named command has two word operands and one bounded handler.

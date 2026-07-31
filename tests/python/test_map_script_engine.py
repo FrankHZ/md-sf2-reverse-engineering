@@ -4613,7 +4613,10 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
         "map-script-screen-presentation/runtime-effects-matrix",
         "map-script-entity-presentation-fx/runtime-effects-matrix",
-        "map-script-ui-command/runtime-effects-matrix",
+        "map-script-ui-command/normal-story-reachability",
+        "map-script-ui-command/full-window-animation-vdp-timing",
+        "map-script-ui-command/real-user-choice-service-side-effects",
+        "map-script-ui-command/save-persistence-map-entity-interactions",
         "map-script-entity-clone/runtime-effects-matrix",
     ]
     assert expected["mapLifecycleCommandFacts"].pop("runtimeQuestions") == [
@@ -4667,9 +4670,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
     ]
-    # H3 queues are explicitly excluded so the canonical static digest remains stable.
+    # Each H3 queue is asserted above; the remaining static shape stays digest-pinned.
     assert _canonical_digest(expected) == (
-        "e0946a222b9512f896ea2fed19fc9bda804ea2132dde42eb4ae8854f67a4fd25"
+        "8b291f94307fc1f838ded070a3914640958bcb9eff38544e316c75aa42583b5c"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -4677,10 +4680,19 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del output_schema["properties"]["mapBlockMutationCommandFacts"]["allOf"][1][
         "properties"
     ]["runtimeQuestions"]
+    del output_schema["properties"]["mapScriptUiPrimaryCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"]
     del output_schema["definitions"]["mapBlockMutationCommandFacts"]["properties"][
         "runtimeQuestions"
     ]
     output_schema["definitions"]["mapBlockMutationCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
+    del output_schema["definitions"]["mapScriptUiPrimaryCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    output_schema["definitions"]["mapScriptUiPrimaryCommandFacts"]["required"].remove(
         "runtimeQuestions"
     )
     del output_schema["properties"]["forceStateCommandFacts"]["allOf"][1]["const"][
@@ -4732,7 +4744,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     )
     assert _canonical_digest(output_schema) == (
-        "80126dc2397e37fc0aeed7c68acc764f918dbf88f60911504e2c67e40a7c6bf7"
+        "640b01a4210ccbd58ba277a3d78d8b06713943da0b56b2fef99ba0bec0c2cb69"
     )
 
     fixture_schema = deepcopy(
@@ -4742,10 +4754,19 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     del fixture_schema["properties"]["expected"]["properties"][
         "mapBlockMutationCommandFacts"
     ]["allOf"][1]["properties"]["runtimeQuestions"]
+    del fixture_schema["properties"]["expected"]["properties"][
+        "mapScriptUiPrimaryCommandFacts"
+    ]["allOf"][1]["properties"]["runtimeQuestions"]
     del fixture_schema["definitions"]["mapBlockMutationCommandFacts"]["properties"][
         "runtimeQuestions"
     ]
     fixture_schema["definitions"]["mapBlockMutationCommandFacts"]["required"].remove(
+        "runtimeQuestions"
+    )
+    del fixture_schema["definitions"]["mapScriptUiPrimaryFixtureCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ]
+    fixture_schema["definitions"]["mapScriptUiPrimaryFixtureCommandFacts"]["required"].remove(
         "runtimeQuestions"
     )
     del fixture_schema["properties"]["expected"]["properties"]["forceStateCommandFacts"][
@@ -4797,7 +4818,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     )
     assert _canonical_digest(fixture_schema) == (
-        "49c2bcefc3d9f5c1e8efd8b181866503316d116bbe26828f009ea9311586f983"
+        "a0fa7e5e69294683618915312d1d5ee4bbca807b0293453daa5da08f89791fec"
     )
 
 
@@ -6858,7 +6879,12 @@ def test_map_ui_command_boundary_matches_complete_golden_fixture(
     assert actual["callerBreakdown"]["internalInstructionTargetTotals"] == {
         target: 0 for target in instruction_totals
     }
-    assert actual["runtimeQuestions"] == ["map-script-ui-command/runtime-effects-matrix"]
+    assert actual["runtimeQuestions"] == [
+        "map-script-ui-command/normal-story-reachability",
+        "map-script-ui-command/full-window-animation-vdp-timing",
+        "map-script-ui-command/real-user-choice-service-side-effects",
+        "map-script-ui-command/save-persistence-map-entity-interactions",
+    ]
 
 
 def test_map_ui_command_boundary_source_guards_and_portrait_join_reject_drift(

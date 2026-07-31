@@ -364,7 +364,10 @@
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
         "map-script-screen-presentation/runtime-effects-matrix",
         "map-script-entity-presentation-fx/runtime-effects-matrix",
-        "map-script-ui-command/runtime-effects-matrix",
+        "map-script-ui-command/normal-story-reachability",
+        "map-script-ui-command/full-window-animation-vdp-timing",
+        "map-script-ui-command/real-user-choice-service-side-effects",
+        "map-script-ui-command/save-persistence-map-entity-interactions",
         "map-script-entity-clone/runtime-effects-matrix"
       ]
     },
@@ -49160,7 +49163,10 @@
             },
             "runtimeQuestions": {
               "const": [
-                "map-script-ui-command/runtime-effects-matrix"
+                "map-script-ui-command/normal-story-reachability",
+                "map-script-ui-command/full-window-animation-vdp-timing",
+                "map-script-ui-command/real-user-choice-service-side-effects",
+                "map-script-ui-command/save-persistence-map-entity-interactions"
               ]
             }
           }
@@ -68125,12 +68131,12 @@
           }
         },
         "runtimeQuestions": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 1,
-          "items": {
-            "type": "string"
-          }
+          "const": [
+            "map-script-ui-command/normal-story-reachability",
+            "map-script-ui-command/full-window-animation-vdp-timing",
+            "map-script-ui-command/real-user-choice-service-side-effects",
+            "map-script-ui-command/save-persistence-map-entity-interactions"
+          ]
         },
         "portraitHelperJoin": {
           "type": "object",
