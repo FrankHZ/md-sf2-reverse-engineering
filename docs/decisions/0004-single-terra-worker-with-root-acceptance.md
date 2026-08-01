@@ -3,15 +3,19 @@
 - Status: **Accepted**
 - Decision date: 2026-07-20
 - Scope: ordinary Phase 2 reverse-engineering slices
+- Integration scope: supplemented by [ADR 0006](./0006-parallel-worktrees-and-topic-branch-integration.md)
 
 ## Decision
 
-Use one project-scoped `terra_reverse_engineer` custom agent for each ordinary Phase 2 slice. The root
+Use one project-scoped `terra_reverse_engineer` custom agent for each ordinary Phase 2 slice within its
+research topic worktree. The root
 agent scopes the slice and its acceptance criteria, launches the worker, then reviews the handoff and
-diff, reruns verification, scans the tracked/private boundary, stages exact accepted files, and commits.
+diff, reruns verification, scans the tracked/private boundary, stages exact accepted files, and commits
+to the current topic branch rather than directly to `main`.
 The root does not independently perform the reverse engineering or implementation assigned to the
 worker. Review questions return to the same worker through a follow-up. Concurrent write workers are
-not used in the shared worktree.
+not used in the slice worktree. ADR 0006 permits a separate design-synthesis lane in another worktree and
+owns the serialized integration rules between topic branches.
 
 The worker remains static-first under ADR 0003: inventory a coherent subsystem, create a structured
 parser or contract and project-owned tests, document the evidence, and leave only a grouped H3 runtime
@@ -44,7 +48,8 @@ and keeps the durable repository record coherent.
 3. The root compares the handoff with the diff, checks labels, provenance, and counters, and sends any
    correction back to the same worker.
 4. The root runs `uv run sf2 verify` and the owning narrow command, scans the private-artifact boundary,
-   stages exact accepted paths, reviews the cached diff, and commits.
+   stages exact accepted paths, reviews the cached diff, and commits to the current research topic
+   branch. Push, pull-request, and final-main integration follow ADR 0006.
 
 ## Safeguards and Limits
 
@@ -55,8 +60,8 @@ and keeps the durable repository record coherent.
   project direction, and must not read or update external memory.
 - Neither role runs `uv run sf2 verify --full` by default. The full gate remains limited to milestones,
   release/merge readiness, shared harness changes, or an explicit full-parity request.
-- The root is the sole stager and committer and must inspect the staged file list and cached diff before
-  committing.
+- Within the research slice, the root is the sole stager and committer and must inspect the staged file
+  list and cached diff before committing. It does not commit ordinary slice work directly to `main`.
 - Codex custom-agent configuration is not a security boundary. It supplies role instructions and model
   defaults; it cannot by itself prevent a worker from invoking Git or writing an ignored path. The
   worker policy plus root review, verification, and artifact scan provide the operational safeguard.

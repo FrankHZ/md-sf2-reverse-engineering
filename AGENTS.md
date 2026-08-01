@@ -35,13 +35,44 @@ memory store for routine work. If the user explicitly requests a one-time migrat
 still-valid, project-specific facts into their owning tracked documents; do not make the memory store
 a continuing synchronization target.
 
+## Parallel Worktree and Topic-Branch Contract
+
+`main` is the integration branch, not an ordinary agent worktree. New research, design synthesis,
+tooling, and governance slices use short-lived topic branches created from an up-to-date `origin/main`
+and an isolated Git worktree. Use the `codex/research-*`, `codex/design-*`, `codex/tooling-*`, or
+`codex/repo-*` prefix that matches the lane. A worktree may be reused after a branch is merged, but do
+not turn a topic branch into a permanent parallel source of truth.
+
+Do not run parallel writers in one worktree. Parallel work is allowed across isolated worktrees only
+when each slice declares its owning files, shared-file needs, acceptance commands, and dependencies.
+The default capacity is one active Phase 2 research lane and one active design-synthesis lane. Starting
+multiple research write lanes requires explicitly disjoint parser, fixture, schema, manifest, index, and
+documentation ownership; superficial subsystem separation is insufficient when the branches still edit
+the same aggregate contract.
+
+Topic branches consume accepted `main` state. A branch that must consume an unmerged branch declares a
+stacked dependency and merge order; otherwise do not cite or promote unmerged findings as repository
+facts. Files that commonly require an explicit single owner include `README.md`, `docs/README.md`,
+`docs/research/source-coverage.md`, `manifests/research-index.json`, `src/sf2tool/cli.py`,
+`src/sf2tool/design_contracts.py`, shared schemas/fixtures, and this file.
+
+Integration is serialized. Before a branch is accepted, update it onto current `main`, resolve semantic
+conflicts with the owning lane, rerun its lane gates plus `uv run sf2 verify`, scan the tracked/private
+boundary, stage exact paths, and review the cached diff. Commit and push the accepted topic branch, then
+merge it through the integration queue. An unmerged branch or remote worktree is visible collaboration
+state, not the durable project source of truth.
+
+Keep ignored runtime scratch isolated per worktree. Private immutable inputs may be copied and
+hash-verified per worktree or exposed through narrowly scoped read-only paths, but do not share an entire
+`local/` root when concurrent tools could write derived ROMs, traces, emulator state, or reports into it.
+
 ## Root/Worker Orchestration Contract
 
-For ordinary Phase 2 work, the root thread scopes one coherent slice and its acceptance commands but
-does not personally reverse engineer or implement that slice. It starts exactly one
+For ordinary Phase 2 work in the active research topic worktree, the root thread scopes one coherent
+slice and its acceptance commands but does not personally reverse engineer or implement that slice. It starts exactly one
 `terra_reverse_engineer` worker and gives it the owning document, bounded source surface, expected
 tracked outputs, and one narrow H2/H3 acceptance command. If the named role is unavailable, the root
-must explicitly spawn `gpt-5.6-terra`. Do not run parallel write workers in this shared worktree.
+must explicitly spawn `gpt-5.6-terra`. Do not run parallel write workers in the slice worktree.
 
 The worker performs the slice: complete static inventory, structured parser/contract, project-owned
 tests and research documentation, and a grouped H3 question queue. It must preserve evidence labels
@@ -86,18 +117,21 @@ capacity checkpoints must contain a tested bounded change and are never presente
 
 The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
 and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
-inputs and unintended changes; stages only the accepted paths; reviews the cached diff; and commits.
+inputs and unintended changes; stages only the accepted paths; reviews the cached diff; and commits to
+the current research topic branch, never directly to `main`.
 `uv run sf2 verify --full` remains a milestone, release/merge-readiness, shared-harness, or explicit
 full-parity gate, never the default worker or root command. This workflow is an operational division of
 responsibility, not a security boundary: worker instructions and root review are both required.
 
 Within the accepted Phase 2 direction, continue autonomously through the root/worker workflow: the
-root scopes, accepts, scans, and commits; the worker performs the assigned reverse engineering or
+root scopes, accepts, scans, and commits on the research topic branch; the worker performs the assigned reverse engineering or
 implementation, documentation, and slice-local narrow checks. Do not pause for approval or produce a
 user report after every ordinary slice. Ask the user only before a phase change, modern-engine choice,
 new distribution/licensing posture, destructive treatment of private inputs, or another decision that
 materially changes project direction. Preserve unrelated or unfinished work already present in the
-worktree, and have the root stage only files owned by the accepted slice.
+worktree, and have the root stage only files owned by the accepted slice. After acceptance, the root may
+push the topic branch and open or update its pull request; final integration remains serialized under the
+parallel-worktree contract above.
 
 When more documents exist, use these ownership boundaries:
 
@@ -110,6 +144,13 @@ When more documents exist, use these ownership boundaries:
 - `tests/python/`: project-owned Python unit and contract tests.
 - `tests/fixtures/`: small redistributable metadata and behavioral expectations.
 - `remake/`: modern-engine implementation after its contracts are accepted.
+
+Evidence-bound subsystem documents in `docs/design/` remain part of their research slice when accepted
+findings change. Cross-subsystem or player-facing synthesis documents use the design-synthesis lane and
+may explain only accepted evidence from `main`; that lane does not edit `docs/research/`, schemas,
+fixtures, manifests, extractors, or evidence-bound design contracts unless a separate research slice and
+merge dependency explicitly assigns those files. Shared indexes and registries receive one branch owner
+per change.
 
 Do not create empty scaffolding for these paths. Add a directory when a concrete
 slice owns content in it.
@@ -302,6 +343,8 @@ JSON between runtimes.
 
 A slice is done when its outputs are reproducible, provenance is recorded,
 relevant docs and contracts agree, generated/private artifacts remain untracked,
-`uv run sf2 verify` and the owning narrow verification command pass. If
+the topic branch is updated onto current `main`, and `uv run sf2 verify` plus the owning narrow
+verification command pass. A design-synthesis-only slice uses `uv run sf2 design-contracts test` and
+the public tracked-input gate before the final integration `uv run sf2 verify`. If
 verification cannot run, report the exact missing dependency or evidence instead
 of substituting confidence.

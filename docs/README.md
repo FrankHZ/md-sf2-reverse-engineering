@@ -324,6 +324,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`0005-remake-value-driven-driver-freeze.md`](./decisions/0005-remake-value-driven-driver-freeze.md)：
   保留既有证据与验证，同时冻结低重制价值的 driver/hardware 精确度，把 Phase 2 主线转向事件、地图、
   UI/存档与实现无关内容合同。
+- [`0006-parallel-worktrees-and-topic-branch-integration.md`](./decisions/0006-parallel-worktrees-and-topic-branch-integration.md)：
+  `main` 串行集成、research/design 双 worktree 车道、短生命周期 topic branch、共享文件所有权与
+  tracked-only 远端检查的协作边界。
 
 ## Evidence Vocabulary
 
