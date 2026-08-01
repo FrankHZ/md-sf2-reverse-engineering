@@ -62,6 +62,19 @@ run `uv run sf2 design-contracts test` and the tracked-input public test profile
 `uv run sf2 verify` at final integration. `uv run sf2 verify --full` remains limited to milestone,
 release/merge-readiness, shared-harness, or explicitly requested parity gates.
 
+Full-gate reuse is decided by changed paths and dependencies rather than by commit identity alone. Record
+the research topic head/tree that passed the full profile and inspect the path delta from its tested base
+to the final `origin/main`. An upstream delta limited to accepted, non-registered Layer B synthesis docs
+under `docs/design/` and their `docs/README.md` index entries does not invalidate that result: rebase, then
+rerun the research branch's narrow command and normal `uv run sf2 verify`. Do not cancel or restart a full
+run merely because such a design branch merged.
+
+The full result is invalid when the research diff changes after it ran, conflict resolution changes
+semantics, or an upstream delta touches executable code, tests, schemas, fixtures, manifests,
+harness/toolchain configuration, evidence-bound design contracts, or another full-profile input. Any
+delta not demonstrably confined to the design-only exception is invalidating. Thus design integration
+never requests `verify --full`, while a release or materially affected research integration still can.
+
 GitHub-hosted checks must not receive the private ROM, upstream checkout, derived ROMs, emulator state, or
 extracted assets. They may run Ruff, `tests/python/test_native_harness.py`, and design-contract
 traceability because those gates use tracked inputs. Private H0/H1/H2/H3 verification remains a local
@@ -83,6 +96,11 @@ Two isolated lanes preserve the proven research acceptance boundary while allowi
 to proceed. A serialized merge queue keeps the repository record, aggregate counters, and evidence labels
 coherent.
 
+A design-only merge changes the research branch's eventual commit ancestry but not the executable inputs
+covered by its long-running full profile. Treating every new `main` SHA as automatic invalidation wastes
+that result and couples independent lanes again. The explicit path exception preserves the result only
+where the dependency boundary is demonstrable; all ambiguous or executable deltas remain conservative.
+
 ## Consequences
 
 - Ordinary agent work no longer commits directly to `main`.
@@ -90,5 +108,6 @@ coherent.
   branch.
 - Design synthesis can progress beside research but consumes accepted evidence by default.
 - Branches may require a final rebase and correction when shared contracts changed while they were open.
+- A design-only `main` advance does not discard an otherwise applicable passing research full gate.
 - Remote CI provides a public tracked-input signal, not a substitute for local private-evidence gates.
 - Additional research concurrency requires structural separation of shared outputs before it is enabled.

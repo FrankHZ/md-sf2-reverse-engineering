@@ -62,6 +62,17 @@ boundary, stage exact paths, and review the cached diff. Commit and push the acc
 merge it through the integration queue. An unmerged branch or remote worktree is visible collaboration
 state, not the durable project source of truth.
 
+Gate invalidation is path- and dependency-based, not commit-SHA-based. Record the topic head/tree that
+passed `uv run sf2 verify --full` and inspect every later `main` delta before discarding that result. A
+`main` advance limited to accepted, non-registered Layer B design-synthesis documents plus their
+`docs/README.md` index entries does not invalidate an already passing research full gate. After rebasing
+that research branch, rerun its owning narrow command plus the normal `uv run sf2 verify`; do not restart
+the full profile solely because those design-only paths changed. Rerun the full profile when the topic's
+full-tested diff changes, conflict resolution changes semantics, or the upstream delta reaches code,
+tests, schemas, fixtures, manifests, harness/toolchain configuration, evidence-bound contracts, or any
+other input owned by the full profile. When the delta is not clearly within the design-only exception,
+treat the previous full result as invalid.
+
 Keep ignored runtime scratch isolated per worktree. Private immutable inputs may be copied and
 hash-verified per worktree or exposed through narrowly scoped read-only paths, but do not share an entire
 `local/` root when concurrent tools could write derived ROMs, traces, emulator state, or reports into it.
@@ -95,8 +106,9 @@ and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans f
 inputs and unintended changes; stages only the accepted paths; reviews the cached diff; and commits to
 the current research topic branch, never directly to `main`.
 `uv run sf2 verify --full` remains a milestone, release/merge-readiness, shared-harness, or explicit
-full-parity gate, never the default worker or root command. This workflow is an operational division of
-responsibility, not a security boundary: worker instructions and root review are both required.
+full-parity gate, never the default worker or root command. A design-synthesis branch or a design-only
+advance of `main` never triggers it. This workflow is an operational division of responsibility, not a
+security boundary: worker instructions and root review are both required.
 
 Within the accepted Phase 2 direction, continue autonomously through the root/worker workflow: the
 root scopes, accepts, scans, and commits on the research topic branch; the worker performs the assigned reverse engineering or
