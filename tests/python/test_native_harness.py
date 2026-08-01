@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
 import pytest
 
-from sf2tool import research_index
+from sf2tool import harness, research_index
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
 from sf2tool.design_contracts import verify_design_contracts
@@ -89,6 +91,79 @@ def test_verify_defaults_to_commit_profile_and_full_is_explicit() -> None:
 
     full_args = build_parser().parse_args(["verify", "--full"])
     assert full_args.full is True
+
+
+def test_python_verification_profiles_use_exact_command_shapes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = Path(__file__).resolve().parents[2]
+    expected_target = root / "tests" / "python" / "test_native_harness.py"
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", str(expected_target.relative_to(root))],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert tracked.stdout.strip() == "tests/python/test_native_harness.py"
+    assert harness.COMMIT_PYTEST_TARGETS == ("tests/python/test_native_harness.py",)
+    assert expected_target.is_file()
+    target_contents = expected_target.read_text(encoding="utf-8")
+    assert "def test_python_verification_profiles_use_exact_command_shapes" in target_contents
+
+    calls: list[tuple[list[str], Path, bool]] = []
+
+    def record_call(arguments: list[str], *, cwd: Path, check: bool) -> None:
+        calls.append((arguments, cwd, check))
+
+    monkeypatch.setattr(harness.subprocess, "run", record_call)
+
+    harness._run_python_gates(full=False)
+    assert calls == [
+        ([sys.executable, "-m", "ruff", "check", "src", "tests/python"], root, True),
+        (
+            [sys.executable, "-m", "pytest", "tests/python/test_native_harness.py"],
+            root,
+            True,
+        ),
+    ]
+
+    calls.clear()
+    harness._run_python_gates(full=True)
+    assert calls == [
+        ([sys.executable, "-m", "ruff", "check", "src", "tests/python"], root, True),
+        ([sys.executable, "-m", "pytest"], root, True),
+    ]
+
+
+def test_verify_headings_identify_commit_and_full_python_profiles(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    profiles: list[bool] = []
+    monkeypatch.setattr(harness, "_run_python_gates", lambda *, full: profiles.append(full))
+    monkeypatch.setattr(harness, "verify_design_contracts", lambda: {"Status": "PASS"})
+    monkeypatch.setattr(harness, "verify_index", lambda _: {"Status": "PASS"})
+    monkeypatch.setattr(harness, "verify_rom", lambda _: {"Status": "PASS"})
+    monkeypatch.setattr(harness, "verify_toolchain", lambda _: {"Status": "PASS"})
+
+    harness.verify(rom_path=Path("rom.bin"), upstream_path=Path("upstream"))
+    commit_output = capsys.readouterr().out
+    assert profiles == [False]
+    assert "=== Python: commit-critical shared test suite ===" in commit_output
+    assert "=== Repository commit verification: PASS ===" in commit_output
+
+    harness.verify(
+        rom_path=Path("rom.bin"),
+        upstream_path=Path("upstream"),
+        skip_rebuild=True,
+        skip_extraction=True,
+        skip_runtime=True,
+        full=True,
+    )
+    full_output = capsys.readouterr().out
+    assert profiles == [False, True]
+    assert "=== Python: full Python suite ===" in full_output
+    assert "=== Repository full verification: PASS ===" in full_output
 
 
 def test_verify_quick_remains_a_hidden_compatibility_alias() -> None:

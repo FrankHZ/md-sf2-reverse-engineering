@@ -247,13 +247,14 @@ point as later rails become available:
 5. **Remake parity**: run the same implementation-neutral fixtures against remake
    systems and report intentional deviations separately.
 
-Use `uv run sf2 verify` as the normal commit gate. It owns Ruff, pytest, design-contract
-traceability, the research index, ROM identity, and toolchain provenance. Pair it with only the
-narrow H2/H3 command that owns the changed slice (for example, `uv run sf2 h2 map-setup` or
-`uv run sf2 h3 battle-exp`). Do not
-run the 10+ minute `uv run sf2 verify --full` after every ordinary commit. Reserve the full gate for
-phase milestones, release/merge readiness, changes to shared harness orchestration or legacy rails,
-and explicit full-parity requests.
+Use `uv run sf2 verify` as the normal commit gate. It owns a full Ruff scan, the shared critical
+`tests/python/test_native_harness.py` suite, design-contract traceability, the research index, ROM
+identity, and toolchain provenance; it is not broad Python regression. Pair it with only the narrow
+H2/H3 command that owns the changed slice (for example, `uv run sf2 h2 map-setup` or
+`uv run sf2 h3 battle-exp`). Run the complete Python suite explicitly with `uv run pytest`. Do not
+run the 10+ minute `uv run sf2 verify --full` after every ordinary commit. That full profile runs the
+complete Python suite followed by H1/H2/H3 and is reserved for phase milestones, release/merge
+readiness, changes to shared harness orchestration or legacy rails, and explicit full-parity requests.
 
 Phase 2 research is static-first and subsystem-batched. Inventory the complete source scope, parse
 stable tables and control-flow rules, and record a runtime-question queue before creating H3 work.

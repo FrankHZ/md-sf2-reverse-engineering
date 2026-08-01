@@ -135,6 +135,9 @@ H3_STAGES = (
     ),
 )
 
+RUFF_TARGETS = ("src", "tests/python")
+COMMIT_PYTEST_TARGETS = ("tests/python/test_native_harness.py",)
+
 
 def _heading(title: str) -> None:
     print(f"=== {title} ===", flush=True)
@@ -150,14 +153,17 @@ def _run_stage(stage: LegacyStage, rom_path: Path, upstream_path: Path) -> None:
     run_powershell(stage.script, arguments)
 
 
-def _run_python_gates() -> None:
+def _run_python_gates(*, full: bool) -> None:
     root = repo_path(".")
     subprocess.run(
-        [sys.executable, "-m", "ruff", "check", "src", "tests/python"],
+        [sys.executable, "-m", "ruff", "check", *RUFF_TARGETS],
         cwd=root,
         check=True,
     )
-    subprocess.run([sys.executable, "-m", "pytest"], cwd=root, check=True)
+    pytest_arguments = [sys.executable, "-m", "pytest"]
+    if not full:
+        pytest_arguments.extend(COMMIT_PYTEST_TARGETS)
+    subprocess.run(pytest_arguments, cwd=root, check=True)
 
 
 def verify(
@@ -169,8 +175,9 @@ def verify(
     skip_runtime: bool = False,
     full: bool = False,
 ) -> None:
-    _heading("Python: static and unit gates")
-    _run_python_gates()
+    python_profile = "full Python suite" if full else "commit-critical shared test suite"
+    _heading(f"Python: {python_profile}")
+    _run_python_gates(full=full)
     _heading("Documentation: design-contract traceability")
     print_record(verify_design_contracts())
     _heading("Research: symbol, address, fixture, and document index")
@@ -223,4 +230,4 @@ def verify(
         print_record(verify_map_interaction_trigger(rom_path, upstream_path))
         for stage in H3_STAGES:
             _run_stage(stage, rom_path, upstream_path)
-    _heading("Repository verification: PASS")
+    _heading("Repository full verification: PASS")

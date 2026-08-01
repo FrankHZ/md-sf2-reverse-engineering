@@ -208,8 +208,10 @@ uv run sf2 verify
 uv run sf2 verify --full
 ```
 
-日常提交默认只跑 `verify`（Ruff、pytest、设计合同、研究索引、ROM 身份和工具链来源）以及本次
-改动直接拥有的窄 rail，例如 `uv run sf2 h3 battle-exp`。十分钟以上的 `verify --full` 只在阶段
+日常提交默认只跑 `verify`（全量 Ruff、共享关键测试集
+`tests/python/test_native_harness.py`、设计合同、研究索引、ROM 身份和工具链来源）以及本次改动
+直接拥有的窄 rail，例如 `uv run sf2 h3 battle-exp`；它不是广泛 Python 回归。完整 Python suite
+请直接运行 `uv run pytest`。`verify --full` 运行完整 Python suite 后再运行 H1/H2/H3，只在阶段
 里程碑、准备合并/发布、共享 harness 或兼容层发生变化，以及明确要求全量 parity 时运行。
 
 统一入口已经覆盖逆向关系索引、H0、toolchain provenance、H1、静态表双路径 parity 与成长合同 H2，以及

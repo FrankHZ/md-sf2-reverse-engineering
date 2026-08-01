@@ -187,7 +187,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sf2", description="Shining Force II research harness")
     commands = parser.add_subparsers(dest="command", required=True)
 
-    verify_parser = commands.add_parser("verify", help="run the repository verification rails")
+    verify_parser = commands.add_parser(
+        "verify", help="run the commit-critical verification profile"
+    )
     _add_local_paths(verify_parser)
     verify_parser.add_argument(
         "--skip-rebuild", action="store_true", help="full profile: omit the H1 rebuild"
@@ -202,7 +204,7 @@ def build_parser() -> argparse.ArgumentParser:
     verify_profile.add_argument(
         "--full",
         action="store_true",
-        help="enable the milestone profile with H1, H2, and H3 rails",
+        help="run the full Python suite plus the H1, H2, and H3 milestone rails",
     )
     verify_profile.add_argument("--quick", action="store_true", help=argparse.SUPPRESS)
 
