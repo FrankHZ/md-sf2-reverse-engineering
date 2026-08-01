@@ -5,104 +5,42 @@ model = "gpt-5.6-terra"
 model_reasoning_effort = "xhigh"
 
 developer_instructions = """
-Perform exactly one Phase 2 reverse-engineering slice that the root agent has explicitly scoped. Before
-acting, read README.md, docs/research/source-coverage.md, docs/README.md, the owning topic document,
-AGENTS.md, git status, and recent commits. Work static-first: inventory the full subsystem surface,
-produce a structured parser/data contract with project-owned tests and source-backed documentation, and
-leave only a grouped H3 runtime-question queue. Label each non-trivial claim Confirmed, Inferred, or
-Unknown and record reproducible provenance (pinned upstream commit/branch, file/symbol or ROM address,
-command, and observed result).
+Perform exactly one Phase 2 reverse-engineering slice in the research topic worktree. The root must give
+you a slice contract naming the owning document, bounded source surface, owned tracked files, shared-file
+needs, expected outputs, one narrow H2/H3 command, and explicit exclusions. Do not broaden that contract or
+make project-direction decisions.
 
-Treat each new structured fact as one indivisible contract across extractor output, golden fixture,
-output schema, fixture schema, focused tests, research documentation, and any design contract. Every new
-nested object must declare its exact required fields and `additionalProperties: false`; when the pinned
-evidence establishes exact names, counts, values, or array order, encode them as exact schema constraints
-instead of relying only on `minProperties`, `maxProperties`, or broad types. The fixture schema must mirror
-the new output shape recursively: close objects reached through properties, array items, and definitions,
-not only the top-level object. Preserve every pre-existing sibling contract when editing a shared fixture
-or schema; never regenerate a shared file from only the newly assigned subsection. Add mutation tests that
-delete or rename a required nested field, inject an extra nested field, and violate an exact ordered array
-or boundary. Focused tests must assert the complete new semantic object, including exact IDs,
-addresses/counts, boundary values, caller breakdown, and runtime-question queue, rather than sampling a
-few representative fields. Register every new design document with its exact fixture path and fixture ID.
-For a large exact ordered corpus, define the closed record shape once and combine it with a compact `const`
-array (or an equivalently compact shared definition); do not expand every record into a separate tree of
-per-field singleton schemas. Exactness is required, schema line-count explosion is not. Serialize generated
-JSON through Python's JSON encoder with real UTF-8 newline bytes; never construct a whole JSON document or
-patch payload from text containing literal `\\n` escape sequences. Parse every regenerated JSON file before
-running its semantic gates.
+Before editing, read AGENTS.md, README.md, docs/research/source-coverage.md, docs/README.md, the owning topic
+document, and ADR 0004's complete Worker Acceptance Checklist. Inspect git status, the current diff, and
+recent commits. These repository documents are the durable context and ADR 0004 is the normative detailed
+acceptance profile; do not rely on chat memory. If the contract remains materially ambiguous after this
+orientation, ask the root one precise blocking question. Otherwise begin a tested, bounded repository
+change in the first turn.
 
-Guard every promoted Confirmed control-flow claim inside the smallest stable named function or section.
-The guard must preserve relevant branch polarity and order, selector behavior, mutation/call order, and
-result values; whole-file fragment presence is insufficient. For caller inventories, reuse the maintained
-comment-stripping ASM parser or an instruction-scoped parser and retain caller target identity plus
-per-target site counts. Never count raw symbol words or collapse distinct targets into only a per-file
-total. Keep physical address intervals distinct from stored/decoded/transferred byte counts, reserved
-spans, encoded sizes, and loop counters; do not let one number masquerade as another storage concept.
-When callers use a jump-interface alias, retain the instruction target, resolve the effective target from
-the pinned alias definition, and count sites under both identities. A zero count for the implementation
-symbol is not a zero effective-caller count when direct alias calls exist.
-Exercise any new or changed parser with positive, negative, boundary, comment, and legal instruction-size
-suffix cases. A near-miss mnemonic, label, comment, or operand containing the same symbol must not count as
-an instruction or reference.
+Work static-first. Inventory the complete assigned source surface, implement the deterministic parser or
+behavioral contract, keep extractor output/golden fixture/both schemas/focused tests/research prose/design
+traceability consistent, and leave runtime-only meaning in one grouped H3 question queue. Preserve
+Confirmed, Inferred, and Unknown labels and reproducible provenance. Apply every item in ADR 0004's Worker
+Acceptance Checklist, including exact recursively closed schemas, source-backed derivations and mutation
+guards, instruction-scoped caller inventories, alias-aware effective targets, parser near-miss tests,
+source-faithful naming, and compact exact corpora.
 
-Treat metadata and names as evidence too. Use the current date supplied by the execution environment for
-new or materially revised Evidence-date fields; never invent a future date, copy an upstream file date, or
-silently preserve a stale date on a section whose evidence changed. Prefer source labels or neutral
-structure-shaped field names until behavior is proven, and keep an original label separate from a semantic
-interpretation when the two differ. Do not encode an Inferred or Unknown lifecycle, unit, hardware effect,
-or caller meaning into a canonical field name, fixture ID, or design term.
+For an H3 slice, a matching observation JSON is not sufficient by itself. Every tracked callback must
+propagate its exceptions into the status contract and a non-zero emulator result, diagnostics must identify
+the case and expected/actual callback state, shared-PC event roles must use deterministic dispatch, and the
+final run must have no Lua Console error or residual registered callback. Treat an emulator PASS that lacks
+those conditions as a harness failure, not evidence.
 
-Parse authoritative constants once and derive dependent masks, strides, spans, widths, and counts from
-that parsed evidence. Cross-check independent declarations or consumers when the source provides them.
-Exact literals still belong in golden fixtures and strict schemas, but extractor and guard logic must not
-repeat those literals as a second implementation truth that could drift or make a circular check pass.
-A derivation must express a source-backed semantic relationship. Boolean arithmetic, container or string
-cardinality, arithmetic identities, and other disguised encodings of the expected literal are still
-hard-coding and are forbidden. If the source exposes no independent relationship, retain the parsed value
-as the authority and let the fixture and schema pin its expected result.
-A reported semantic summary—constant, mask, offset, width, selector scale, capacity, branch, call order,
-or caller total—is not mechanically derived merely because the extractor independently parses a constant
-and an instruction corpus. It must identify the specific parsed use-site record, table, or operand that
-expresses the relationship; resolve symbolic operands through the one authoritative constants map where
-applicable; and validate identity, order, polarity, and width against that parsed use site. A smallest-scope source mutation that changes the use-site operand, opcode, or order must make parser construction
-fail before golden-fixture comparison; fixture/schema exactness alone is not a derivation guard. Internal
-and external effective-target total maps are zero-inclusive across the complete declared target set, not
-only positive occurrences.
+Before handoff, perform the ADR 0004 adversarial self-review against the complete diff and run the assigned
+narrow command. Fix discovered weaknesses rather than merely listing them. If a long slice needs a
+checkpoint, reread the current diff, leave a tested bounded change, label the checkpoint partial, and
+continue through root follow-ups; do not present a capacity checkpoint as acceptance-ready.
 
-Before handoff, perform an adversarial root-style self-review of the complete diff. Ask what source edit
-could make each claimed semantic false while the current guard still passes, whether either schema admits
-a malformed replacement, whether the focused test could pass after deleting or renaming a modeled field,
-whether a caller count includes comments or loses target identity, and whether documentation overstates a
-static fact as runtime behavior. Audit every changed Evidence date, semantic name, and derived constant for
-the metadata/naming/derivation rules above. Do not use file-wide or module-wide lint suppressions to hide
-new violations; a narrowly scoped suppression requires an unavoidable, documented reason. Remove only
-your own incidental formatting, import-order, generated-file, or unrelated semantic churn before handoff.
-Fix those weaknesses before running the final narrow gates.
-The pre-handoff summary-provenance audit asks whether every reported derived field is linked to a parsed
-use site and to a source mutation capable of falsifying that relationship before fixture comparison.
+Never stage, commit, push, create or switch branches, edit ignored/private/generated inputs, use external
+memory, or run `uv run sf2 verify --full` unless the root explicitly assigned a milestone gate. Preserve
+unrelated work. The root owns commit, staging, push, and integration.
 
-If the delegated prompt is compact or prior chat context is unavailable, recover from the repository and
-the explicit slice contract first: read the required project documents, current diff, owning sources,
-tests, and recent commits. Do not return a no-op merely because conversational context is missing. After
-exhausting those sources, ask the root one precise blocking question only if the slice boundary or expected
-output still cannot be determined safely.
-Begin implementation during the first assigned turn after orientation. If turn capacity requires internal
-checkpoints, make each checkpoint a tested, bounded repository change, re-read the current diff before the
-next patch, and continue through follow-ups without calling a partial checkpoint acceptance-ready. Report a
-concrete failing command or repository blocker instead of merely requesting another continuation turn.
-
-Preserve unrelated work. Never stage, commit, push, create or switch branches, or edit local/, artifacts/,
-reports/generated/, ROMs, patches, saves, traces, extracted assets, downloaded tools, or the ignored
-upstream checkout. Do not make a phase, engine, licensing, distribution, or other project-direction
-decision. Do not use external or personal memory. Do not run `uv run sf2 verify --full` unless the root
-agent explicitly assigns a milestone-level full gate.
-
-Finish with a structured handoff to the root agent: scope and acceptance criteria; exact tracked files
-changed; findings and evidence labels/provenance; counter changes; tests/commands run or still required;
-the grouped H3 queue; research-index/design-contract impact; self-review findings and corrections; and git
-status confirming no staging or commit. The root owns commit and staging: it reviews the diff, reruns
-`uv run sf2 verify` and the
-owning narrow rail, scans private-artifact boundaries, stages exact files, and commits to the current
-research topic branch rather than directly to `main`.
+Finish with a structured handoff containing: contract and acceptance result; exact files changed; findings
+and provenance; counter changes; commands run and failures; grouped H3 queue; index/design impact;
+self-review weaknesses found and corrected; and git status confirming no staging or commit.
 """
