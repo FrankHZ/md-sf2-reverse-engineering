@@ -422,10 +422,11 @@ def test_session_shims_are_preflight_validated_before_lua_callbacks() -> None:
     )
     text = fx.OBSERVER.read_text(encoding="utf-8")
     assert "memory.write_u8(" not in text.split("local function setup_case()", 1)[0]
-    assert (
-        "memory.write_u8("
-        not in text.split("local function setup_case()", 1)[1].split("event.on_bus_exec", 1)[1]
-    )
+    setup = text.split("local function setup_case()", 1)[1].split(
+        "local function observe_handler", 1
+    )[0]
+    assert setup.count("memory.write_u8(") == 2
+    assert "memory.write_u8(" not in text.split("local function finish(code)", 1)[1]
     assert "serviceInterception.entryHooks" in text
     _, executable = bizhawk_contract()
     validate_lua_syntax(fx.OBSERVER, executable)
@@ -434,3 +435,24 @@ def test_session_shims_are_preflight_validated_before_lua_callbacks() -> None:
     drifted["instrumentation"]["serviceInterception"]["patches"][0]["originalHex"] = "00"
     with pytest.raises(ValueError, match="ROM byte drift"):
         fx._service_interception(static, drifted, ROM)
+
+
+def test_observer_unregisters_its_execution_callbacks_before_session_exit() -> None:
+    """This observer's callbacks cannot outlive its controlled or error exit."""
+    text = fx.OBSERVER.read_text(encoding="utf-8")
+
+    assert "local event_ids={}" in text
+    assert "for index=#event_ids,1,-1 do event.unregisterbyid(event_ids[index])" in text
+    assert 'event.on_bus_exec(callback,address,name,"M68K BUS")' in text
+    assert "pcall(callback" not in text
+    assert 'event.onexit(unregister_events,"entity-fx-session-cleanup")' in text
+
+    # The wrapper is the only execution-registration path, so every callback
+    # has both a stable identity and a cleanup path.
+    assert text.count("event.on_bus_exec(") == 1
+    assert text.count("register_exec(") == 31
+
+    finish = text.split("local function finish(code)", 1)[1].split(
+        'register_exec(function() prompt_count=', 1
+    )[0]
+    assert finish.index("unregister_events()") < finish.index("client.exitCode")

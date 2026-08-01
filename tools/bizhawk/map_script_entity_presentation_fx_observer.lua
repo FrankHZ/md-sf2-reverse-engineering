@@ -2,6 +2,7 @@ local config=assert(dofile(assert(os.getenv("SF2_H3_CONFIG"),"SF2_H3_CONFIG is n
 local stage,prompt_count,case_index="cheat",0,1
 local queue,records={},{}
 local replay_state,pending_save,pending_replay,pending_finish=nil,false,false,false
+local event_ids={}
 local active,handler_entered,handler_returned=false,false,false
 local handler_entry_pc=nil
 local callback_dispatches,pending_callback={},nil
@@ -35,6 +36,13 @@ local function restore_source_nulls(source_input)
   for _,operand in ipairs(source_input.operandValues) do
     if operand.resolution=="symbol" and operand.resolvedValue==nil then operand.resolvedValue=json_null end
   end
+end
+
+local function unregister_events()
+  for index=#event_ids,1,-1 do event.unregisterbyid(event_ids[index]);event_ids[index]=nil end
+end
+local function register_exec(callback,address,name)
+  event_ids[#event_ids+1]=event.on_bus_exec(callback,address,name,"M68K BUS")
 end
 
 local function entity_address() return config.ram.entityDataAddress end
@@ -159,6 +167,7 @@ local function append_record()
   records[#records+1]=record
 end
 local function finish(code)
+  unregister_events()
   if replay_state then memorysavestate.removestate(replay_state) end
   if code~=0 then client.exitCode(code);return end
   local result={system=emu.getsystemid(),core="Genesis Plus GX",id=config.fixtureId,mapTest=config.mapTestIndex,recordOrder={},records=records}
@@ -166,38 +175,39 @@ local function finish(code)
   local file=assert(io.open(config.outputPath,"w"));file:write(json(result).."\n");file:close();client.exitCode(0)
 end
 
-event.on_bus_exec(function() prompt_count=prompt_count+1;status("milestone:number-prompt-entry:"..prompt_count);if prompt_count==1 then stage="map";pending_save=true;pulse("C") end end,config.harness["function"].numberPromptAddress,"entity-fx-number","M68K BUS")
-event.on_bus_exec(function() status("milestone:flag-prompt-entry");pulse("B") end,config.harness["function"].flagPromptAddress,"entity-fx-flag","M68K BUS")
-event.on_bus_exec(setup_case,config["function"].entryAddress,"entity-fx-entry","M68K BUS")
-event.on_bus_exec(function() observe_handler("animEntityFX",config["function"].csc22_animateEntityFadeInOrOutAddress) end,config["function"].csc22_animateEntityFadeInOrOutAddress,"entity-fx-csc22","M68K BUS")
-event.on_bus_exec(function() observe_handler("headshake",config["function"].csc27_entityShakeHeadAddress) end,config["function"].csc27_entityShakeHeadAddress,"entity-fx-csc27","M68K BUS")
-event.on_bus_exec(function() observe_handler("entityFlashWhite",config["function"].csc18_flashEntityWhiteAddress) end,config["function"].csc18_flashEntityWhiteAddress,"entity-fx-csc18","M68K BUS")
-event.on_bus_exec(function() observe_operand(config["function"].csc22FirstOperandReadAfterAddress) end,config["function"].csc22FirstOperandReadAfterAddress,"entity-fx-csc22-first","M68K BUS")
-event.on_bus_exec(function() observe_operand(config["function"].csc22SecondOperandReadAfterAddress) end,config["function"].csc22SecondOperandReadAfterAddress,"entity-fx-csc22-second","M68K BUS")
-event.on_bus_exec(function() observe_operand(config["function"].csc27FirstOperandReadAfterAddress) end,config["function"].csc27FirstOperandReadAfterAddress,"entity-fx-csc27-first","M68K BUS")
-event.on_bus_exec(function() observe_operand(config["function"].csc18FirstOperandReadAfterAddress) end,config["function"].csc18FirstOperandReadAfterAddress,"entity-fx-csc18-first","M68K BUS")
-event.on_bus_exec(function() observe_flash_duration(config["function"].csc18SecondOperandReadAfterAddress) end,config["function"].csc18SecondOperandReadAfterAddress,"entity-fx-csc18-second","M68K BUS")
-event.on_bus_exec(function() if active then first_compare=word(emu.getregister("M68K D0")) end end,config["function"].csc22FirstCompareAddress,"entity-fx-csc22-compare-6","M68K BUS")
-event.on_bus_exec(function() if active then second_compare=word(emu.getregister("M68K D0")) end end,config["function"].csc22SecondCompareAddress,"entity-fx-csc22-compare-7","M68K BUS")
-event.on_bus_exec(function() if active then post_loop_compare=word(emu.getregister("M68K D2")) end end,config["function"].csc22PostLoopCompareAddress,"entity-fx-csc22-post","M68K BUS")
-event.on_bus_exec(function() if active then chunk_d1=word(emu.getregister("M68K D1")) end end,config["function"].csc22ChunkBitTestAddress,"entity-fx-csc22-chunk-bit","M68K BUS")
-event.on_bus_exec(function() if active then chunk_shift_count=chunk_shift_count+1 end end,config["function"].csc22ChunkShiftAddress,"entity-fx-csc22-chunk-shift","M68K BUS")
-event.on_bus_exec(function() if active then chunk_add_count=chunk_add_count+1 end end,config["function"].csc22ChunkAddAddress,"entity-fx-csc22-chunk-add","M68K BUS")
-event.on_bus_exec(function() observe_loop("animEntityFX",config["function"].csc22RegularLoopAddress) end,config["function"].csc22RegularLoopAddress,"entity-fx-csc22-loop","M68K BUS")
-event.on_bus_exec(function() observe_loop("animEntityFX",config["function"].csc22ChunkLoopAddress) end,config["function"].csc22ChunkLoopAddress,"entity-fx-csc22-chunk-loop","M68K BUS")
-event.on_bus_exec(function() observe_loop("headshake",config["function"].csc27LoopAddress) end,config["function"].csc27LoopAddress,"entity-fx-csc27-loop","M68K BUS")
-event.on_bus_exec(function() observe_loop("entityFlashWhite",config["function"].csc18LoopAddress) end,config["function"].csc18LoopAddress,"entity-fx-csc18-loop","M68K BUS")
-event.on_bus_exec(function() if active then anim_initial=read_entity(config.constants.animCounterByteOffset) end end,config["function"].csc27InitialAnimAfterWriteAddress,"entity-fx-csc27-anim-initial","M68K BUS")
-event.on_bus_exec(function() if active then anim_final=read_entity(config.constants.animCounterByteOffset) end end,config["function"].csc27FinalAnimAfterWriteAddress,"entity-fx-csc27-anim-final","M68K BUS")
-event.on_bus_exec(function() if active then flags_set=read_entity(config.constants.flagsBByteOffset) end end,config["function"].csc18SetFlagsAfterWriteAddress,"entity-fx-csc18-flags-set","M68K BUS")
-event.on_bus_exec(function() if active then flags_clear=read_entity(config.constants.flagsBByteOffset) end end,config["function"].csc18ClearFlagsAfterWriteAddress,"entity-fx-csc18-flags-clear","M68K BUS")
-for _,address in ipairs({config["function"].csc22ReturnAddress,config["function"].loc_46BE2ReturnAddress,config["function"].csc27ReturnAddress,config["function"].csc18ReturnAddress}) do local item=address;event.on_bus_exec(function() observe_return(item) end,item,"entity-fx-return-"..item,"M68K BUS") end
+register_exec(function() prompt_count=prompt_count+1;status("milestone:number-prompt-entry:"..prompt_count);if prompt_count==1 then stage="map";pending_save=true;pulse("C") end end,config.harness["function"].numberPromptAddress,"entity-fx-number")
+register_exec(function() status("milestone:flag-prompt-entry");pulse("B") end,config.harness["function"].flagPromptAddress,"entity-fx-flag")
+register_exec(setup_case,config["function"].entryAddress,"entity-fx-entry")
+register_exec(function() observe_handler("animEntityFX",config["function"].csc22_animateEntityFadeInOrOutAddress) end,config["function"].csc22_animateEntityFadeInOrOutAddress,"entity-fx-csc22")
+register_exec(function() observe_handler("headshake",config["function"].csc27_entityShakeHeadAddress) end,config["function"].csc27_entityShakeHeadAddress,"entity-fx-csc27")
+register_exec(function() observe_handler("entityFlashWhite",config["function"].csc18_flashEntityWhiteAddress) end,config["function"].csc18_flashEntityWhiteAddress,"entity-fx-csc18")
+register_exec(function() observe_operand(config["function"].csc22FirstOperandReadAfterAddress) end,config["function"].csc22FirstOperandReadAfterAddress,"entity-fx-csc22-first")
+register_exec(function() observe_operand(config["function"].csc22SecondOperandReadAfterAddress) end,config["function"].csc22SecondOperandReadAfterAddress,"entity-fx-csc22-second")
+register_exec(function() observe_operand(config["function"].csc27FirstOperandReadAfterAddress) end,config["function"].csc27FirstOperandReadAfterAddress,"entity-fx-csc27-first")
+register_exec(function() observe_operand(config["function"].csc18FirstOperandReadAfterAddress) end,config["function"].csc18FirstOperandReadAfterAddress,"entity-fx-csc18-first")
+register_exec(function() observe_flash_duration(config["function"].csc18SecondOperandReadAfterAddress) end,config["function"].csc18SecondOperandReadAfterAddress,"entity-fx-csc18-second")
+register_exec(function() if active then first_compare=word(emu.getregister("M68K D0")) end end,config["function"].csc22FirstCompareAddress,"entity-fx-csc22-compare-6")
+register_exec(function() if active then second_compare=word(emu.getregister("M68K D0")) end end,config["function"].csc22SecondCompareAddress,"entity-fx-csc22-compare-7")
+register_exec(function() if active then post_loop_compare=word(emu.getregister("M68K D2")) end end,config["function"].csc22PostLoopCompareAddress,"entity-fx-csc22-post")
+register_exec(function() if active then chunk_d1=word(emu.getregister("M68K D1")) end end,config["function"].csc22ChunkBitTestAddress,"entity-fx-csc22-chunk-bit")
+register_exec(function() if active then chunk_shift_count=chunk_shift_count+1 end end,config["function"].csc22ChunkShiftAddress,"entity-fx-csc22-chunk-shift")
+register_exec(function() if active then chunk_add_count=chunk_add_count+1 end end,config["function"].csc22ChunkAddAddress,"entity-fx-csc22-chunk-add")
+register_exec(function() observe_loop("animEntityFX",config["function"].csc22RegularLoopAddress) end,config["function"].csc22RegularLoopAddress,"entity-fx-csc22-loop")
+register_exec(function() observe_loop("animEntityFX",config["function"].csc22ChunkLoopAddress) end,config["function"].csc22ChunkLoopAddress,"entity-fx-csc22-chunk-loop")
+register_exec(function() observe_loop("headshake",config["function"].csc27LoopAddress) end,config["function"].csc27LoopAddress,"entity-fx-csc27-loop")
+register_exec(function() observe_loop("entityFlashWhite",config["function"].csc18LoopAddress) end,config["function"].csc18LoopAddress,"entity-fx-csc18-loop")
+register_exec(function() if active then anim_initial=read_entity(config.constants.animCounterByteOffset) end end,config["function"].csc27InitialAnimAfterWriteAddress,"entity-fx-csc27-anim-initial")
+register_exec(function() if active then anim_final=read_entity(config.constants.animCounterByteOffset) end end,config["function"].csc27FinalAnimAfterWriteAddress,"entity-fx-csc27-anim-final")
+register_exec(function() if active then flags_set=read_entity(config.constants.flagsBByteOffset) end end,config["function"].csc18SetFlagsAfterWriteAddress,"entity-fx-csc18-flags-set")
+register_exec(function() if active then flags_clear=read_entity(config.constants.flagsBByteOffset) end end,config["function"].csc18ClearFlagsAfterWriteAddress,"entity-fx-csc18-flags-clear")
+for _,address in ipairs({config["function"].csc22ReturnAddress,config["function"].loc_46BE2ReturnAddress,config["function"].csc27ReturnAddress,config["function"].csc18ReturnAddress}) do local item=address;register_exec(function() observe_return(item) end,item,"entity-fx-return-"..item) end
 local seen_sites={};local seen_returns={};for _,derived in ipairs(config.derived) do for _,callback in ipairs(derived.directCallbackPlan) do
-  if not seen_sites[callback.callSiteAddress] then local item=callback.callSiteAddress;seen_sites[item]=true;event.on_bus_exec(function() observe_callback_site(item) end,item,"entity-fx-call-"..item,"M68K BUS") end
-  if not seen_returns[callback.returnAddress] then local item=callback.returnAddress;seen_returns[item]=true;event.on_bus_exec(function() observe_callback_return(item) end,item,"entity-fx-return-call-"..item,"M68K BUS") end
+  if not seen_sites[callback.callSiteAddress] then local item=callback.callSiteAddress;seen_sites[item]=true;register_exec(function() observe_callback_site(item) end,item,"entity-fx-call-"..item) end
+  if not seen_returns[callback.returnAddress] then local item=callback.returnAddress;seen_returns[item]=true;register_exec(function() observe_callback_return(item) end,item,"entity-fx-return-call-"..item) end
 end end
-for _,hook in ipairs(config.instrumentation.serviceInterception.entryHooks) do local item=hook.address;event.on_bus_exec(function() observe_callback_target(item) end,item,"entity-fx-target-"..item,"M68K BUS") end
-event.on_bus_exec(function() if not active then return end;append_record();active=false;case_index=case_index+1;if case_index>#config.cases then pending_finish=true else pending_replay=true end end,config.instrumentation.postHandlerAddress,"entity-fx-post","M68K BUS")
+for _,hook in ipairs(config.instrumentation.serviceInterception.entryHooks) do local item=hook.address;register_exec(function() observe_callback_target(item) end,item,"entity-fx-target-"..item) end
+register_exec(function() if not active then return end;append_record();active=false;case_index=case_index+1;if case_index>#config.cases then pending_finish=true else pending_replay=true end end,config.instrumentation.postHandlerAddress,"entity-fx-post")
+event_ids[#event_ids+1]=event.onexit(unregister_events,"entity-fx-session-cleanup")
 
 status("milestone:observer-ready")
 local frames=0
