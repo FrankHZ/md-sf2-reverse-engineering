@@ -938,55 +938,68 @@
               "branchPartition": "transition-chunk-d1-zero",
               "callbackPlanSegmentsObserved": [
                 {
+                  "repeatCountObserved": 1,
+                  "callbackSitesObserved": [
+                    {
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "effectiveTarget": "GetEntityAddressFromCharacter",
+                      "callSiteAddressObserved": 289604,
+                      "targetRole": "effective",
+                      "targetAddressObserved": 290890,
+                      "returnAddressObserved": 289608
+                    }
+                  ]
+                },
+                {
                   "repeatCountObserved": 16,
                   "callbackSitesObserved": [
                     {
-                      "returnAddressObserved": 289782,
-                      "targetAddressObserved": 291018,
                       "instructionTarget": "LoadMapsprite",
-                      "targetRole": "effective",
+                      "effectiveTarget": "LoadMapsprite",
                       "callSiteAddressObserved": 289778,
-                      "effectiveTarget": "LoadMapsprite"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 291018,
+                      "returnAddressObserved": 289782
                     },
                     {
-                      "returnAddressObserved": 289788,
-                      "targetAddressObserved": 286224,
                       "instructionTarget": "sub_45E10",
-                      "targetRole": "effective",
+                      "effectiveTarget": "sub_45E10",
                       "callSiteAddressObserved": 289782,
-                      "effectiveTarget": "sub_45E10"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 286224,
+                      "returnAddressObserved": 289788
                     },
                     {
-                      "returnAddressObserved": 289792,
-                      "targetAddressObserved": 290974,
                       "instructionTarget": "DmaMapsprite",
-                      "targetRole": "effective",
+                      "effectiveTarget": "DmaMapsprite",
                       "callSiteAddressObserved": 289788,
-                      "effectiveTarget": "DmaMapsprite"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 290974,
+                      "returnAddressObserved": 289792
                     },
                     {
-                      "returnAddressObserved": 289796,
-                      "targetAddressObserved": 3822,
                       "instructionTarget": "WaitForVInt",
-                      "targetRole": "effective",
+                      "effectiveTarget": "WaitForVInt",
                       "callSiteAddressObserved": 289792,
-                      "effectiveTarget": "WaitForVInt"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 3822,
+                      "returnAddressObserved": 289796
                     },
                     {
-                      "returnAddressObserved": 289800,
-                      "targetAddressObserved": 3822,
                       "instructionTarget": "WaitForVInt",
-                      "targetRole": "effective",
+                      "effectiveTarget": "WaitForVInt",
                       "callSiteAddressObserved": 289796,
-                      "effectiveTarget": "WaitForVInt"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 3822,
+                      "returnAddressObserved": 289800
                     },
                     {
-                      "returnAddressObserved": 289804,
-                      "targetAddressObserved": 3822,
                       "instructionTarget": "WaitForVInt",
-                      "targetRole": "effective",
+                      "effectiveTarget": "WaitForVInt",
                       "callSiteAddressObserved": 289800,
-                      "effectiveTarget": "WaitForVInt"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 3822,
+                      "returnAddressObserved": 289804
                     }
                   ]
                 }
@@ -996,15 +1009,15 @@
               "macro": "animEntityFX",
               "scriptCursorRamOffsetAfter": 8,
               "callbackSiteCounts": {
+                "GetEntityAddressFromCharacter": 1,
+                "LoadMapsprite": 16,
+                "ApplySpriteCropEffect": 0,
+                "DmaMapsprite": 16,
+                "WaitForVInt": 48,
                 "sub_45E10": 16,
                 "sub_45D1C": 0,
-                "GetEntityAddressFromCharacter": 0,
-                "ApplySpriteCropEffect": 0,
                 "UpdateEntitySprite_0": 0,
-                "LoadMapsprite": 16,
-                "WaitForVInt": 48,
-                "sub_45D46": 0,
-                "DmaMapsprite": 16
+                "sub_45D46": 0
               },
               "id": "transition-source-6",
               "sourceInput": {
@@ -1069,57 +1082,70 @@
               "flagsBByteAfterSetWriteObserved": null,
               "callbackPlanSegments": [
                 {
+                  "repeatCount": 1,
                   "callbacks": [
                     {
-                      "callSiteAddress": 289778,
-                      "returnAddress": 289782,
-                      "instructionTarget": "LoadMapsprite",
-                      "targetAddress": 291018,
-                      "targetRole": "effective",
-                      "effectiveTarget": "LoadMapsprite"
-                    },
-                    {
-                      "callSiteAddress": 289782,
-                      "returnAddress": 289788,
-                      "instructionTarget": "sub_45E10",
-                      "targetAddress": 286224,
-                      "targetRole": "effective",
-                      "effectiveTarget": "sub_45E10"
-                    },
-                    {
-                      "callSiteAddress": 289788,
-                      "returnAddress": 289792,
-                      "instructionTarget": "DmaMapsprite",
-                      "targetAddress": 290974,
-                      "targetRole": "effective",
-                      "effectiveTarget": "DmaMapsprite"
-                    },
-                    {
-                      "callSiteAddress": 289792,
-                      "returnAddress": 289796,
-                      "instructionTarget": "WaitForVInt",
-                      "targetAddress": 3822,
-                      "targetRole": "effective",
-                      "effectiveTarget": "WaitForVInt"
-                    },
-                    {
-                      "callSiteAddress": 289796,
-                      "returnAddress": 289800,
-                      "instructionTarget": "WaitForVInt",
-                      "targetAddress": 3822,
-                      "targetRole": "effective",
-                      "effectiveTarget": "WaitForVInt"
-                    },
-                    {
-                      "callSiteAddress": 289800,
-                      "returnAddress": 289804,
-                      "instructionTarget": "WaitForVInt",
-                      "targetAddress": 3822,
-                      "targetRole": "effective",
-                      "effectiveTarget": "WaitForVInt"
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "effectiveTarget": "GetEntityAddressFromCharacter",
+                      "callSiteAddress": 289604,
+                      "targetAddress": 290890,
+                      "returnAddress": 289608,
+                      "targetRole": "effective"
                     }
-                  ],
-                  "repeatCount": 16
+                  ]
+                },
+                {
+                  "repeatCount": 16,
+                  "callbacks": [
+                    {
+                      "instructionTarget": "LoadMapsprite",
+                      "effectiveTarget": "LoadMapsprite",
+                      "callSiteAddress": 289778,
+                      "targetAddress": 291018,
+                      "returnAddress": 289782,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "sub_45E10",
+                      "effectiveTarget": "sub_45E10",
+                      "callSiteAddress": 289782,
+                      "targetAddress": 286224,
+                      "returnAddress": 289788,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "DmaMapsprite",
+                      "effectiveTarget": "DmaMapsprite",
+                      "callSiteAddress": 289788,
+                      "targetAddress": 290974,
+                      "returnAddress": 289792,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "WaitForVInt",
+                      "effectiveTarget": "WaitForVInt",
+                      "callSiteAddress": 289792,
+                      "targetAddress": 3822,
+                      "returnAddress": 289796,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "WaitForVInt",
+                      "effectiveTarget": "WaitForVInt",
+                      "callSiteAddress": 289796,
+                      "targetAddress": 3822,
+                      "returnAddress": 289800,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "WaitForVInt",
+                      "effectiveTarget": "WaitForVInt",
+                      "callSiteAddress": 289800,
+                      "targetAddress": 3822,
+                      "returnAddress": 289804,
+                      "targetRole": "effective"
+                    }
+                  ]
                 }
               ],
               "handlerInputWords": [
@@ -1132,55 +1158,68 @@
               "branchPartition": "transition-chunk-d1-nonzero",
               "callbackPlanSegmentsObserved": [
                 {
+                  "repeatCountObserved": 1,
+                  "callbackSitesObserved": [
+                    {
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "effectiveTarget": "GetEntityAddressFromCharacter",
+                      "callSiteAddressObserved": 289604,
+                      "targetRole": "effective",
+                      "targetAddressObserved": 290890,
+                      "returnAddressObserved": 289608
+                    }
+                  ]
+                },
+                {
                   "repeatCountObserved": 16,
                   "callbackSitesObserved": [
                     {
-                      "returnAddressObserved": 289782,
-                      "targetAddressObserved": 291018,
                       "instructionTarget": "LoadMapsprite",
-                      "targetRole": "effective",
+                      "effectiveTarget": "LoadMapsprite",
                       "callSiteAddressObserved": 289778,
-                      "effectiveTarget": "LoadMapsprite"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 291018,
+                      "returnAddressObserved": 289782
                     },
                     {
-                      "returnAddressObserved": 289788,
-                      "targetAddressObserved": 286224,
                       "instructionTarget": "sub_45E10",
-                      "targetRole": "effective",
+                      "effectiveTarget": "sub_45E10",
                       "callSiteAddressObserved": 289782,
-                      "effectiveTarget": "sub_45E10"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 286224,
+                      "returnAddressObserved": 289788
                     },
                     {
-                      "returnAddressObserved": 289792,
-                      "targetAddressObserved": 290974,
                       "instructionTarget": "DmaMapsprite",
-                      "targetRole": "effective",
+                      "effectiveTarget": "DmaMapsprite",
                       "callSiteAddressObserved": 289788,
-                      "effectiveTarget": "DmaMapsprite"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 290974,
+                      "returnAddressObserved": 289792
                     },
                     {
-                      "returnAddressObserved": 289796,
-                      "targetAddressObserved": 3822,
                       "instructionTarget": "WaitForVInt",
-                      "targetRole": "effective",
+                      "effectiveTarget": "WaitForVInt",
                       "callSiteAddressObserved": 289792,
-                      "effectiveTarget": "WaitForVInt"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 3822,
+                      "returnAddressObserved": 289796
                     },
                     {
-                      "returnAddressObserved": 289800,
-                      "targetAddressObserved": 3822,
                       "instructionTarget": "WaitForVInt",
-                      "targetRole": "effective",
+                      "effectiveTarget": "WaitForVInt",
                       "callSiteAddressObserved": 289796,
-                      "effectiveTarget": "WaitForVInt"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 3822,
+                      "returnAddressObserved": 289800
                     },
                     {
-                      "returnAddressObserved": 289804,
-                      "targetAddressObserved": 3822,
                       "instructionTarget": "WaitForVInt",
-                      "targetRole": "effective",
+                      "effectiveTarget": "WaitForVInt",
                       "callSiteAddressObserved": 289800,
-                      "effectiveTarget": "WaitForVInt"
+                      "targetRole": "effective",
+                      "targetAddressObserved": 3822,
+                      "returnAddressObserved": 289804
                     }
                   ]
                 }
@@ -1190,15 +1229,15 @@
               "macro": "animEntityFX",
               "scriptCursorRamOffsetAfter": 8,
               "callbackSiteCounts": {
+                "GetEntityAddressFromCharacter": 1,
+                "LoadMapsprite": 16,
+                "ApplySpriteCropEffect": 0,
+                "DmaMapsprite": 16,
+                "WaitForVInt": 48,
                 "sub_45E10": 16,
                 "sub_45D1C": 0,
-                "GetEntityAddressFromCharacter": 0,
-                "ApplySpriteCropEffect": 0,
                 "UpdateEntitySprite_0": 0,
-                "LoadMapsprite": 16,
-                "WaitForVInt": 48,
-                "sub_45D46": 0,
-                "DmaMapsprite": 16
+                "sub_45D46": 0
               },
               "id": "transition-source-7",
               "sourceInput": {
@@ -1263,57 +1302,70 @@
               "flagsBByteAfterSetWriteObserved": null,
               "callbackPlanSegments": [
                 {
+                  "repeatCount": 1,
                   "callbacks": [
                     {
-                      "callSiteAddress": 289778,
-                      "returnAddress": 289782,
-                      "instructionTarget": "LoadMapsprite",
-                      "targetAddress": 291018,
-                      "targetRole": "effective",
-                      "effectiveTarget": "LoadMapsprite"
-                    },
-                    {
-                      "callSiteAddress": 289782,
-                      "returnAddress": 289788,
-                      "instructionTarget": "sub_45E10",
-                      "targetAddress": 286224,
-                      "targetRole": "effective",
-                      "effectiveTarget": "sub_45E10"
-                    },
-                    {
-                      "callSiteAddress": 289788,
-                      "returnAddress": 289792,
-                      "instructionTarget": "DmaMapsprite",
-                      "targetAddress": 290974,
-                      "targetRole": "effective",
-                      "effectiveTarget": "DmaMapsprite"
-                    },
-                    {
-                      "callSiteAddress": 289792,
-                      "returnAddress": 289796,
-                      "instructionTarget": "WaitForVInt",
-                      "targetAddress": 3822,
-                      "targetRole": "effective",
-                      "effectiveTarget": "WaitForVInt"
-                    },
-                    {
-                      "callSiteAddress": 289796,
-                      "returnAddress": 289800,
-                      "instructionTarget": "WaitForVInt",
-                      "targetAddress": 3822,
-                      "targetRole": "effective",
-                      "effectiveTarget": "WaitForVInt"
-                    },
-                    {
-                      "callSiteAddress": 289800,
-                      "returnAddress": 289804,
-                      "instructionTarget": "WaitForVInt",
-                      "targetAddress": 3822,
-                      "targetRole": "effective",
-                      "effectiveTarget": "WaitForVInt"
+                      "instructionTarget": "GetEntityAddressFromCharacter",
+                      "effectiveTarget": "GetEntityAddressFromCharacter",
+                      "callSiteAddress": 289604,
+                      "targetAddress": 290890,
+                      "returnAddress": 289608,
+                      "targetRole": "effective"
                     }
-                  ],
-                  "repeatCount": 16
+                  ]
+                },
+                {
+                  "repeatCount": 16,
+                  "callbacks": [
+                    {
+                      "instructionTarget": "LoadMapsprite",
+                      "effectiveTarget": "LoadMapsprite",
+                      "callSiteAddress": 289778,
+                      "targetAddress": 291018,
+                      "returnAddress": 289782,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "sub_45E10",
+                      "effectiveTarget": "sub_45E10",
+                      "callSiteAddress": 289782,
+                      "targetAddress": 286224,
+                      "returnAddress": 289788,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "DmaMapsprite",
+                      "effectiveTarget": "DmaMapsprite",
+                      "callSiteAddress": 289788,
+                      "targetAddress": 290974,
+                      "returnAddress": 289792,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "WaitForVInt",
+                      "effectiveTarget": "WaitForVInt",
+                      "callSiteAddress": 289792,
+                      "targetAddress": 3822,
+                      "returnAddress": 289796,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "WaitForVInt",
+                      "effectiveTarget": "WaitForVInt",
+                      "callSiteAddress": 289796,
+                      "targetAddress": 3822,
+                      "returnAddress": 289800,
+                      "targetRole": "effective"
+                    },
+                    {
+                      "instructionTarget": "WaitForVInt",
+                      "effectiveTarget": "WaitForVInt",
+                      "callSiteAddress": 289800,
+                      "targetAddress": 3822,
+                      "returnAddress": 289804,
+                      "targetRole": "effective"
+                    }
+                  ]
                 }
               ],
               "handlerInputWords": [

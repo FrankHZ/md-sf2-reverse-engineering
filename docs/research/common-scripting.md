@@ -748,7 +748,7 @@ Reproduce static facts with `uv run sf2 h2 map-script-engine`; observed result i
 
 ## Confirmed Map-Script Entity Presentation-FX Command Family
 
-Evidence date: 2026-07-31.
+Evidence date: 2026-08-01.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.entityPresentationFxCommandFacts` retains three source-named macro forms in source order:
@@ -803,7 +803,13 @@ the only table-loop case that executes its guarded post-loop block; chunk select
 and 16 adds, while selector 7 records 16 shifts and 0 adds. These are operand, branch, loop, and return
 facts only—not a claim that the source labels describe visible transitions.
 
-**Confirmed (H3):** all 1,145 direct callback events are internally checked in actual call-site PC,
+**Confirmed (H3):** before either selector-6/7 branch enters `loc_46BE2`, the named
+`csc22_animateEntityFadeInOrOut` section unconditionally reaches its first direct call at H1 `$46B44`
+(`GetEntityAddressFromCharacter`), its effective entry `$4704A`, and its return-resumption `$46B48`.
+Each special-selector case therefore retains that one callback before its 16 repeated chunk sequences.
+This is source/control-flow chronology only; it does not establish a service-body or presentation effect.
+
+**Confirmed (H3):** all 1,147 direct callback events are internally checked in actual call-site PC,
 effective-target-entry PC, and return-resumption order. The fixture represents that exact chronology as
 closed callback records plus compact repeated segments, rather than expanding each repeated loop into a
 new schema tree. All nine H2 target identities remain direct equals effective and all per-case target maps

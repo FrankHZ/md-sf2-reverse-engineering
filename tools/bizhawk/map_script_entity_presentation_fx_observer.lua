@@ -3,6 +3,8 @@ local stage,prompt_count,case_index="cheat",0,1
 local queue,records={},{}
 local replay_state,pending_save,pending_replay,pending_finish=nil,false,false,false
 local event_ids={}
+local observer_failed,current_dispatch_phase=false,"registration"
+local session_cleaned=false
 local active,handler_entered,handler_returned=false,false,false
 local handler_entry_pc=nil
 local callback_dispatches,pending_callback={},nil
@@ -41,8 +43,33 @@ end
 local function unregister_events()
   for index=#event_ids,1,-1 do event.unregisterbyid(event_ids[index]);event_ids[index]=nil end
 end
+local function cleanup_session()
+  if session_cleaned then return end
+  session_cleaned=true;unregister_events()
+  if replay_state then memorysavestate.removestate(replay_state);replay_state=nil end
+end
+local function expected_callback_for_failure()
+  if pending_callback~=nil then return pending_callback end
+  local derived=config.derived[case_index]
+  if active and derived~=nil and derived.directCallbackPlan~=nil then return derived.directCallbackPlan[#callback_dispatches+1] end
+  return nil
+end
+local function fail_callback(phase,address,message)
+  if observer_failed then return end
+  observer_failed=true
+  local expected=expected_callback_for_failure()
+  local payload={caseId=nullable((config.cases[case_index] or {}).id),phase=phase,actualPc=nullable(emu.getregister("M68K PC")),expectedCallSiteAddress=nullable(expected and (expected.callSiteAddressExpected or expected.callSiteAddress)),expectedTargetAddress=nullable(expected and (expected.targetAddressExpected or expected.targetAddress)),expectedReturnAddress=nullable(expected and (expected.returnAddressExpected or expected.returnAddress)),pendingCallback=nullable(copy(pending_callback)),error=tostring(message)}
+  local diagnostic=config.observerFailureContract.statusPrefix..json(payload)
+  status(diagnostic);print(diagnostic)
+  if config.observerFailureContract.removeOutputBeforeExit then os.remove(config.outputPath) end
+  cleanup_session();client.exitCode(config.observerFailureContract.exitCode)
+end
 local function register_exec(callback,address,name)
-  event_ids[#event_ids+1]=event.on_bus_exec(callback,address,name,"M68K BUS")
+  event_ids[#event_ids+1]=event.on_bus_exec(function()
+    if observer_failed then return end
+    local ok,message=pcall(callback)
+    if not ok then fail_callback(current_dispatch_phase,address,message) end
+  end,address,name,"M68K BUS")
 end
 
 local function entity_address() return config.ram.entityDataAddress end
@@ -77,7 +104,7 @@ local function observe_callback_site(address)
   if not active then return end
   local pc=emu.getregister("M68K PC");if pc~=address or pending_callback~=nil then error("entity-presentation FX callback call-site PC drift") end
   local callback=callback_for_site(address)
-  pending_callback={instructionTarget=callback.instructionTarget,effectiveTarget=callback.effectiveTarget,callSiteAddressObserved=pc,targetRole=callback.targetRole,targetAddressExpected=callback.targetAddress,returnAddressExpected=callback.returnAddress}
+  pending_callback={instructionTarget=callback.instructionTarget,effectiveTarget=callback.effectiveTarget,callSiteAddressExpected=callback.callSiteAddress,callSiteAddressObserved=pc,targetRole=callback.targetRole,targetAddressExpected=callback.targetAddress,returnAddressExpected=callback.returnAddress}
 end
 local function observe_callback_target(address)
   if not active then return end
@@ -167,54 +194,63 @@ local function append_record()
   records[#records+1]=record
 end
 local function finish(code)
-  unregister_events()
-  if replay_state then memorysavestate.removestate(replay_state) end
+  if observer_failed then return end
+  cleanup_session()
   if code~=0 then client.exitCode(code);return end
   local result={system=emu.getsystemid(),core="Genesis Plus GX",id=config.fixtureId,mapTest=config.mapTestIndex,recordOrder={},records=records}
   for _,case in ipairs(config.cases) do result.recordOrder[#result.recordOrder+1]=case.id end
   local file=assert(io.open(config.outputPath,"w"));file:write(json(result).."\n");file:close();client.exitCode(0)
 end
 
-register_exec(function() prompt_count=prompt_count+1;status("milestone:number-prompt-entry:"..prompt_count);if prompt_count==1 then stage="map";pending_save=true;pulse("C") end end,config.harness["function"].numberPromptAddress,"entity-fx-number")
-register_exec(function() status("milestone:flag-prompt-entry");pulse("B") end,config.harness["function"].flagPromptAddress,"entity-fx-flag")
-register_exec(setup_case,config["function"].entryAddress,"entity-fx-entry")
-register_exec(function() observe_handler("animEntityFX",config["function"].csc22_animateEntityFadeInOrOutAddress) end,config["function"].csc22_animateEntityFadeInOrOutAddress,"entity-fx-csc22")
-register_exec(function() observe_handler("headshake",config["function"].csc27_entityShakeHeadAddress) end,config["function"].csc27_entityShakeHeadAddress,"entity-fx-csc27")
-register_exec(function() observe_handler("entityFlashWhite",config["function"].csc18_flashEntityWhiteAddress) end,config["function"].csc18_flashEntityWhiteAddress,"entity-fx-csc18")
-register_exec(function() observe_operand(config["function"].csc22FirstOperandReadAfterAddress) end,config["function"].csc22FirstOperandReadAfterAddress,"entity-fx-csc22-first")
-register_exec(function() observe_operand(config["function"].csc22SecondOperandReadAfterAddress) end,config["function"].csc22SecondOperandReadAfterAddress,"entity-fx-csc22-second")
-register_exec(function() observe_operand(config["function"].csc27FirstOperandReadAfterAddress) end,config["function"].csc27FirstOperandReadAfterAddress,"entity-fx-csc27-first")
-register_exec(function() observe_operand(config["function"].csc18FirstOperandReadAfterAddress) end,config["function"].csc18FirstOperandReadAfterAddress,"entity-fx-csc18-first")
-register_exec(function() observe_flash_duration(config["function"].csc18SecondOperandReadAfterAddress) end,config["function"].csc18SecondOperandReadAfterAddress,"entity-fx-csc18-second")
-register_exec(function() if active then first_compare=word(emu.getregister("M68K D0")) end end,config["function"].csc22FirstCompareAddress,"entity-fx-csc22-compare-6")
-register_exec(function() if active then second_compare=word(emu.getregister("M68K D0")) end end,config["function"].csc22SecondCompareAddress,"entity-fx-csc22-compare-7")
-register_exec(function() if active then post_loop_compare=word(emu.getregister("M68K D2")) end end,config["function"].csc22PostLoopCompareAddress,"entity-fx-csc22-post")
-register_exec(function() if active then chunk_d1=word(emu.getregister("M68K D1")) end end,config["function"].csc22ChunkBitTestAddress,"entity-fx-csc22-chunk-bit")
-register_exec(function() if active then chunk_shift_count=chunk_shift_count+1 end end,config["function"].csc22ChunkShiftAddress,"entity-fx-csc22-chunk-shift")
-register_exec(function() if active then chunk_add_count=chunk_add_count+1 end end,config["function"].csc22ChunkAddAddress,"entity-fx-csc22-chunk-add")
-register_exec(function() observe_loop("animEntityFX",config["function"].csc22RegularLoopAddress) end,config["function"].csc22RegularLoopAddress,"entity-fx-csc22-loop")
-register_exec(function() observe_loop("animEntityFX",config["function"].csc22ChunkLoopAddress) end,config["function"].csc22ChunkLoopAddress,"entity-fx-csc22-chunk-loop")
-register_exec(function() observe_loop("headshake",config["function"].csc27LoopAddress) end,config["function"].csc27LoopAddress,"entity-fx-csc27-loop")
-register_exec(function() observe_loop("entityFlashWhite",config["function"].csc18LoopAddress) end,config["function"].csc18LoopAddress,"entity-fx-csc18-loop")
-register_exec(function() if active then anim_initial=read_entity(config.constants.animCounterByteOffset) end end,config["function"].csc27InitialAnimAfterWriteAddress,"entity-fx-csc27-anim-initial")
-register_exec(function() if active then anim_final=read_entity(config.constants.animCounterByteOffset) end end,config["function"].csc27FinalAnimAfterWriteAddress,"entity-fx-csc27-anim-final")
-register_exec(function() if active then flags_set=read_entity(config.constants.flagsBByteOffset) end end,config["function"].csc18SetFlagsAfterWriteAddress,"entity-fx-csc18-flags-set")
-register_exec(function() if active then flags_clear=read_entity(config.constants.flagsBByteOffset) end end,config["function"].csc18ClearFlagsAfterWriteAddress,"entity-fx-csc18-flags-clear")
-for _,address in ipairs({config["function"].csc22ReturnAddress,config["function"].loc_46BE2ReturnAddress,config["function"].csc27ReturnAddress,config["function"].csc18ReturnAddress}) do local item=address;register_exec(function() observe_return(item) end,item,"entity-fx-return-"..item) end
-local seen_sites={};local seen_returns={};for _,derived in ipairs(config.derived) do for _,callback in ipairs(derived.directCallbackPlan) do
-  if not seen_sites[callback.callSiteAddress] then local item=callback.callSiteAddress;seen_sites[item]=true;register_exec(function() observe_callback_site(item) end,item,"entity-fx-call-"..item) end
-  if not seen_returns[callback.returnAddress] then local item=callback.returnAddress;seen_returns[item]=true;register_exec(function() observe_callback_return(item) end,item,"entity-fx-return-call-"..item) end
-end end
-for _,hook in ipairs(config.instrumentation.serviceInterception.entryHooks) do local item=hook.address;register_exec(function() observe_callback_target(item) end,item,"entity-fx-target-"..item) end
-register_exec(function() if not active then return end;append_record();active=false;case_index=case_index+1;if case_index>#config.cases then pending_finish=true else pending_replay=true end end,config.instrumentation.postHandlerAddress,"entity-fx-post")
-event_ids[#event_ids+1]=event.onexit(unregister_events,"entity-fx-session-cleanup")
+local function observe_phase(phase,address)
+  if phase=="callback-return" then observe_callback_return(address)
+  elseif phase=="number-prompt" then prompt_count=prompt_count+1;status("milestone:number-prompt-entry:"..prompt_count);if prompt_count==1 then stage="map";pending_save=true;pulse("C") end
+  elseif phase=="flag-prompt" then status("milestone:flag-prompt-entry");pulse("B")
+  elseif phase=="setup-case" then setup_case()
+  elseif phase=="handler-animEntityFX" then observe_handler("animEntityFX",address)
+  elseif phase=="handler-headshake" then observe_handler("headshake",address)
+  elseif phase=="handler-entityFlashWhite" then observe_handler("entityFlashWhite",address)
+  elseif phase=="operand-csc22-first" or phase=="operand-csc22-second" or phase=="operand-csc27-first" or phase=="operand-csc18-first" then observe_operand(address)
+  elseif phase=="flash-duration-csc18-second" then observe_flash_duration(address)
+  elseif phase=="selector-first-compare" then if active then first_compare=word(emu.getregister("M68K D0")) end
+  elseif phase=="selector-second-compare" then if active then second_compare=word(emu.getregister("M68K D0")) end
+  elseif phase=="selector-post-loop-compare" then if active then post_loop_compare=word(emu.getregister("M68K D2")) end
+  elseif phase=="special-transition-d1-bit-test" then if active then chunk_d1=word(emu.getregister("M68K D1")) end
+  elseif phase=="special-transition-shift" then if active then chunk_shift_count=chunk_shift_count+1 end
+  elseif phase=="special-transition-add" then if active then chunk_add_count=chunk_add_count+1 end
+  elseif phase=="loop-anim-regular" then observe_loop("animEntityFX",address)
+  elseif phase=="loop-anim-chunk" then observe_loop("animEntityFX",address)
+  elseif phase=="loop-headshake" then observe_loop("headshake",address)
+  elseif phase=="loop-flash" then observe_loop("entityFlashWhite",address)
+  elseif phase=="field-headshake-anim-initial" then if active then anim_initial=read_entity(config.constants.animCounterByteOffset) end
+  elseif phase=="field-headshake-anim-final" then if active then anim_final=read_entity(config.constants.animCounterByteOffset) end
+  elseif phase=="field-flash-flags-set" then if active then flags_set=read_entity(config.constants.flagsBByteOffset) end
+  elseif phase=="field-flash-flags-clear" then if active then flags_clear=read_entity(config.constants.flagsBByteOffset) end
+  elseif phase=="handler-return" then observe_return(address)
+  elseif phase=="callback-site" then observe_callback_site(address)
+  elseif phase=="callback-target" then observe_callback_target(address)
+  elseif phase=="post-handler" then if not active then return end;append_record();active=false;case_index=case_index+1;if case_index>#config.cases then pending_finish=true else pending_replay=true end
+  else error("entity-presentation FX observer dispatch phase drift: "..phase) end
+end
+local function dispatch_observation(address,phases)
+  for _,phase in ipairs(phases) do
+    if observer_failed then return end
+    current_dispatch_phase=phase;observe_phase(phase,address)
+  end
+end
+for _,plan in ipairs(config.observerDispatchPlan) do
+  local address,phases=plan.address,plan.phases
+  register_exec(function() dispatch_observation(address,phases) end,address,"entity-fx-dispatch-"..address)
+end
+event_ids[#event_ids+1]=event.onexit(cleanup_session,"entity-fx-session-cleanup")
 
 status("milestone:observer-ready")
 local frames=0
-while true do
+while not observer_failed do
   frames=frames+1
   if pending_finish then finish(0) elseif pending_save then pending_save=false;replay_state=memorysavestate.savecorestate();status("milestone:saved-map-prompt") elseif pending_replay then pending_replay=false;memorysavestate.loadcorestate(replay_state);queue={};pulse("C");status("milestone:replay-map-prompt") end
   if frames>=config.maxFrames then status("timeout:frame-budget-exhausted:case="..case_index);finish(1) end
   local button=nil;if stage=="cheat" then local pointer=memory.read_u32_be(config.harness.ram.cheatPointerAddress,"M68K BUS");if pointer>=0x28FF0 and pointer<0x29000 then button=names[cheat[pointer-0x28FF0+1]] elseif memory.read_u8(config.harness.ram.debugModeAddress,"M68K BUS")==255 then button="Down" end elseif #queue>0 then button=table.remove(queue,1) end
   set_button(button);joypad.set({},2);emu.frameadvance()
 end
+client.exitCode(config.observerFailureContract.exitCode)

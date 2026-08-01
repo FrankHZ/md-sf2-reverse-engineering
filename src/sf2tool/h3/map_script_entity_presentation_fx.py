@@ -10,6 +10,7 @@ player-visible result or service-body effect to them.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from collections import Counter
 from pathlib import Path
@@ -62,6 +63,111 @@ RUNTIME_QUESTIONS = [
     "map-script-entity-presentation-fx/service-body-map-entity-state-effects",
     "map-script-entity-presentation-fx/persistence-and-map-entity-interactions",
 ]
+OBSERVER_OUTPUT_NAME = "map-script-entity-presentation-fx"
+OBSERVER_FAILURE_CONTRACT = {
+    "exitCode": 1,
+    "removeOutputBeforeExit": True,
+    "statusPrefix": "failure:observer-callback:",
+}
+_OBSERVER_FAILURE_FIELDS = {
+    "actualPc",
+    "caseId",
+    "error",
+    "expectedCallSiteAddress",
+    "expectedReturnAddress",
+    "expectedTargetAddress",
+    "pendingCallback",
+    "phase",
+}
+_OBSERVER_PHASE_ORDER = (
+    "callback-return",
+    "number-prompt",
+    "flag-prompt",
+    "setup-case",
+    "handler-animEntityFX",
+    "handler-headshake",
+    "handler-entityFlashWhite",
+    "operand-csc22-first",
+    "operand-csc22-second",
+    "operand-csc27-first",
+    "operand-csc18-first",
+    "flash-duration-csc18-second",
+    "selector-first-compare",
+    "selector-second-compare",
+    "selector-post-loop-compare",
+    "special-transition-d1-bit-test",
+    "special-transition-shift",
+    "special-transition-add",
+    "loop-anim-regular",
+    "loop-anim-chunk",
+    "loop-headshake",
+    "loop-flash",
+    "field-headshake-anim-initial",
+    "field-headshake-anim-final",
+    "field-flash-flags-set",
+    "field-flash-flags-clear",
+    "handler-return",
+    "callback-site",
+    "callback-target",
+    "post-handler",
+)
+
+
+def _observer_status_path() -> Path:
+    return DERIVED_ROOT / f"{OBSERVER_OUTPUT_NAME}.status.txt"
+
+
+def _observer_output_path() -> Path:
+    return DERIVED_ROOT / f"{OBSERVER_OUTPUT_NAME}.observed.json"
+
+
+def _callback_failure_status(status_path: Path) -> dict[str, Any] | None:
+    """Return the observer's structured callback failure sentinel, if present."""
+    if not status_path.is_file():
+        return None
+    prefix = OBSERVER_FAILURE_CONTRACT["statusPrefix"]
+    failures = [
+        line.removeprefix(prefix)
+        for line in status_path.read_text(encoding="utf-8").splitlines()
+        if line.startswith(prefix)
+    ]
+    if not failures:
+        return None
+    if len(failures) != 1:
+        raise ValueError("entity-presentation FX callback failure status multiplicity drift")
+    try:
+        payload = json.loads(failures[0])
+    except json.JSONDecodeError as error:
+        raise ValueError("entity-presentation FX callback failure status JSON drift") from error
+    if not isinstance(payload, dict) or set(payload) != _OBSERVER_FAILURE_FIELDS:
+        raise ValueError("entity-presentation FX callback failure status shape drift")
+    if not isinstance(payload["phase"], str) or not isinstance(payload["error"], str):
+        raise ValueError("entity-presentation FX callback failure status text drift")
+    if payload["caseId"] is not None and not isinstance(payload["caseId"], str):
+        raise ValueError("entity-presentation FX callback failure case identity drift")
+    for field in (
+        "actualPc",
+        "expectedCallSiteAddress",
+        "expectedTargetAddress",
+        "expectedReturnAddress",
+    ):
+        if payload[field] is not None and (
+            not isinstance(payload[field], int) or isinstance(payload[field], bool)
+        ):
+            raise ValueError(f"entity-presentation FX callback failure {field} drift")
+    if payload["pendingCallback"] is not None and not isinstance(payload["pendingCallback"], dict):
+        raise ValueError("entity-presentation FX callback failure pending state drift")
+    return payload
+
+
+def _raise_for_callback_failure_status(status_path: Path, output_path: Path) -> None:
+    payload = _callback_failure_status(status_path)
+    if payload is not None:
+        output_path.unlink(missing_ok=True)
+        raise RuntimeError(
+            "entity-presentation FX observer callback failure status:\n"
+            f"{json.dumps(payload, sort_keys=True)}"
+        )
 
 
 def _literal(text: str) -> int:
@@ -720,6 +826,116 @@ def _expand_callback_segments(segments: list[dict[str, Any]]) -> list[dict[str, 
     return expanded
 
 
+def _observer_dispatch_plan(
+    static: dict[str, Any],
+    fixture: dict[str, Any],
+    runtime_derived: list[dict[str, Any]],
+    harness: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Build the one-callback-per-PC observer plan from parsed runtime facts."""
+    phases_by_address: dict[int, set[str]] = {}
+
+    def add(address: int, phase: str) -> None:
+        if phase not in _OBSERVER_PHASE_ORDER:
+            raise ValueError(f"entity-presentation FX unknown observer phase: {phase}")
+        if not isinstance(address, int) or isinstance(address, bool):
+            raise ValueError(f"entity-presentation FX observer phase address drift: {phase}")
+        phases_by_address.setdefault(address, set()).add(phase)
+
+    function = static["function"]
+    for phase, field in (
+        ("number-prompt", "numberPromptAddress"),
+        ("flag-prompt", "flagPromptAddress"),
+    ):
+        add(harness["function"][field], phase)
+    add(function["entryAddress"], "setup-case")
+    for macro, handler in HANDLER_FORMS:
+        add(function[f"{handler}Address"], f"handler-{macro}")
+    for phase, field in (
+        ("operand-csc22-first", "csc22FirstOperandReadAfterAddress"),
+        ("operand-csc22-second", "csc22SecondOperandReadAfterAddress"),
+        ("operand-csc27-first", "csc27FirstOperandReadAfterAddress"),
+        ("operand-csc18-first", "csc18FirstOperandReadAfterAddress"),
+        ("flash-duration-csc18-second", "csc18SecondOperandReadAfterAddress"),
+        ("selector-first-compare", "csc22FirstCompareAddress"),
+        ("selector-second-compare", "csc22SecondCompareAddress"),
+        ("selector-post-loop-compare", "csc22PostLoopCompareAddress"),
+        ("special-transition-d1-bit-test", "csc22ChunkBitTestAddress"),
+        ("special-transition-shift", "csc22ChunkShiftAddress"),
+        ("special-transition-add", "csc22ChunkAddAddress"),
+        ("loop-anim-regular", "csc22RegularLoopAddress"),
+        ("loop-anim-chunk", "csc22ChunkLoopAddress"),
+        ("loop-headshake", "csc27LoopAddress"),
+        ("loop-flash", "csc18LoopAddress"),
+        ("field-headshake-anim-initial", "csc27InitialAnimAfterWriteAddress"),
+        ("field-headshake-anim-final", "csc27FinalAnimAfterWriteAddress"),
+        ("field-flash-flags-set", "csc18SetFlagsAfterWriteAddress"),
+        ("field-flash-flags-clear", "csc18ClearFlagsAfterWriteAddress"),
+        ("handler-return", "csc22ReturnAddress"),
+        ("handler-return", "loc_46BE2ReturnAddress"),
+        ("handler-return", "csc27ReturnAddress"),
+        ("handler-return", "csc18ReturnAddress"),
+    ):
+        add(function[field], phase)
+    for derived in runtime_derived:
+        for callback in derived["directCallbackPlan"]:
+            add(callback["returnAddress"], "callback-return")
+            add(callback["callSiteAddress"], "callback-site")
+    for hook in fixture["instrumentation"]["serviceInterception"]["entryHooks"]:
+        add(hook["address"], "callback-target")
+    add(fixture["instrumentation"]["postHandlerAddress"], "post-handler")
+    phase_index = {phase: index for index, phase in enumerate(_OBSERVER_PHASE_ORDER)}
+    return [
+        {
+            "address": address,
+            "phases": sorted(phases, key=phase_index.__getitem__),
+        }
+        for address, phases in sorted(phases_by_address.items())
+    ]
+
+
+def _validate_observer_dispatch_plan(
+    static: dict[str, Any],
+    fixture: dict[str, Any],
+    runtime_derived: list[dict[str, Any]],
+    harness: dict[str, Any],
+    observed: object,
+) -> list[dict[str, Any]]:
+    expected = _observer_dispatch_plan(static, fixture, runtime_derived, harness)
+    if observed != expected:
+        raise ValueError("entity-presentation FX observer dispatch plan drift")
+    return expected
+
+
+def _model_callback_dispatch_at_pc(
+    *,
+    address: int,
+    phases: list[str],
+    pending_callback: dict[str, Any] | None,
+    next_callback: dict[str, Any] | None,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Model the direct-callback state transition for one dispatcher PC.
+
+    A return address may also be the following call-site address.  The model
+    makes the required return-before-site transition executable without
+    relying on BizHawk's callback ordering.
+    """
+    completed: dict[str, Any] | None = None
+    pending = pending_callback
+    for phase in phases:
+        if phase == "callback-return":
+            if pending is None or pending["returnAddress"] != address:
+                raise ValueError("entity-presentation FX callback return model drift")
+            completed, pending = pending, None
+        elif phase == "callback-site":
+            if pending is not None:
+                raise ValueError("entity-presentation FX callback site model chronology drift")
+            if next_callback is None or next_callback["callSiteAddress"] != address:
+                raise ValueError("entity-presentation FX callback site model identity drift")
+            pending = next_callback
+    return completed, pending
+
+
 def _compact_observed_callback_dispatches(
     callback_dispatches: list[dict[str, Any]],
     callback_patterns: list[dict[str, Any]],
@@ -866,7 +1082,7 @@ def _expected_case(static: dict[str, Any], case: dict[str, Any]) -> dict[str, An
                     _source_use(chunk_rows, "moveq #$F,d7")["instruction"],
                 )["n"]
             )
-            callback_segments = [_callback_segment(loop, initial + 1)]
+            callback_segments = [_callback_segment(pre, 1), _callback_segment(loop, initial + 1)]
             return_address = static["function"]["loc_46BE2ReturnAddress"]
             branch_d1 = special_matches[0]["d1WordValue"]
             branch = "transition-chunk-d1-zero" if branch_d1 == 0 else "transition-chunk-d1-nonzero"
@@ -1122,6 +1338,8 @@ def verify_map_script_entity_presentation_fx(
         {**case, "directCallbackPlan": _expand_callback_segments(case["callbackPlanSegments"])}
         for case in derived
     ]
+    harness = load_json(repo_path(fixture["sharedHarnessFixture"]))["harness"]
+    dispatch_plan = _observer_dispatch_plan(static, fixture, runtime_derived, harness)
     instrumented = _instrument_fx_rom(rom_path, fixture, static)
 
     def observe() -> dict[str, Any]:
@@ -1137,18 +1355,31 @@ def verify_map_script_entity_presentation_fx(
                 "targetIdentities": static["sourceFacts"]["callerTargetIdentities"],
                 "instrumentation": fixture["instrumentation"],
                 "maxFrames": fixture["maxFrames"],
-                "harness": load_json(repo_path(fixture["sharedHarnessFixture"]))["harness"],
+                "harness": harness,
                 "cases": _observer_cases(fixture),
                 "derived": runtime_derived,
                 "outputDerived": derived,
+                "observerDispatchPlan": dispatch_plan,
+                "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
             },
-            output_name="map-script-entity-presentation-fx",
+            output_name=OBSERVER_OUTPUT_NAME,
             timeout_seconds=timeout_seconds,
         )
 
-    observed = _with_instrumented_rom_database(
-        instrumented, "SF2 H3 instrumented entity-presentation FX", observe
-    )
+    try:
+        observed = _with_instrumented_rom_database(
+            instrumented, "SF2 H3 instrumented entity-presentation FX", observe
+        )
+    except RuntimeError as error:
+        failure = _callback_failure_status(_observer_status_path())
+        if failure is None:
+            raise
+        _observer_output_path().unlink(missing_ok=True)
+        raise RuntimeError(
+            f"{error}\nEntity-presentation FX callback failure status:\n"
+            f"{json.dumps(failure, sort_keys=True)}"
+        ) from error
+    _raise_for_callback_failure_status(_observer_status_path(), _observer_output_path())
     validate_json(observed, OBSERVATION_SCHEMA, owner="entity-presentation FX runtime observation")
     for runtime_case, observed_case in zip(runtime_derived, observed["records"], strict=True):
         observed_dispatches = [
