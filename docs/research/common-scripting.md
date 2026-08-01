@@ -1295,7 +1295,7 @@ is `tests/fixtures/h3/entity-population-reload-v1.json`, ID
 
 ## Confirmed Map-Script `cloneEntity` Command Boundary
 
-Evidence date: 2026-07-29.
+Evidence date: 2026-08-01.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field `entityCloneCommandFacts` retains the single
 source-named form `cloneEntity`: opcode `$25`, six encoded bytes, and two two-byte operands (four
@@ -1327,21 +1327,47 @@ direct/effective total 2, internal direct/effective total 0, and external direct
 there is no jump-interface alias. The provenance-only join points to the existing entity-population
 callee-owner record, without copying entity population, placement, action, or lifecycle facts.
 
-**Unknown:** `map-script-entity-clone/runtime-effects-matrix` is the sole grouped H3 queue. A shared
-runtime matrix must determine any whole-record behavior, entity identity effect, lifetime, allocation,
-visibility, collision/pathfinding, persistence, timing, rendering, and normal-story reachability.
-None of those claims follows from the macro name, source comments, A6 reads, lookup calls, or the
-single source-named field-byte transfer.
+**Confirmed (bounded H3):** `sf2-map-script-entity-clone-runtime-v1` runs all nine source-ordered
+word pairs in one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch. Every record reaches actual H1
+handler entry `$46C5A` and its `rts` `$46C6E`; A6 begins at the session input offset 4 and ends at 8.
+The observed input pairs are exactly 129/130, 131/132, 131/133, 131/134, 131/135, 131/136,
+131/137, 131/138, and 132/131 in the H2 source-key order. Each record observes the same ordered
+original lookup chronology: call `$46C5C`, entry `$4704A`, return-resumption `$46C60`; then call
+`$46C66`, entry `$4704A`, return-resumption `$46C6A`. The lookup body is unpatched and executes in
+each of the 18 calls.
+
+**Confirmed (bounded H3):** the session harness controls only its A6 input words, the two
+`ENTITY_INDEX_LIST` bytes selected by the original mask/test/subtract path, and the named byte plus its
+immediate neighboring bytes in two distinct `ENTITY_DATA` records. At the actual `$46C60` byte-read PC,
+the source record index and offset-18 byte are observed; at the actual `$46C6A` byte-write PC, the
+destination record index and pre-write byte are observed. After the handler returns, the destination
+offset-18 byte equals the observed source byte in every row, while the seeded offset-17 and offset-19
+destination bytes retain their exact sentinel values. This is a one-byte handler-local RAM result, not
+a statement about any other field or consumer.
+
+**Unknown:** the only remaining grouped H3 queues are
+`map-script-entity-clone/further-runtime-state-matrix`,
+`map-script-entity-clone/further-runtime-external-consumer-matrix`, and
+`map-script-entity-clone/further-runtime-context-matrix`. Whole-record behavior, entity identity,
+lifetime, allocation, visibility, collision/pathfinding, persistence, timing, rendering, and
+normal-story reachability remain unclaimed. None follows from the macro name, source comments, A6
+reads, lookup calls, or the bounded offset-18 byte result.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm::cloneEntity`;
 `code/common/scripting/map/mapscriptengine_2.asm` dispatcher slot `$25`;
 `code/common/scripting/map/mapscriptengine_1.asm::csc25_cloneEntity` and
-`GetEntityAddressFromCharacter`; `sf2enums.asm::ENTITYDEF_OFFSET_ENTNUM`; H1 `$46C5A`; and local
-US-ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is
+`GetEntityAddressFromCharacter`; `sf2enums.asm::ENTITYDEF_OFFSET_ENTNUM`; H1 handler PCs
+`$46C5A/$46C5C/$46C60/$46C64/$46C66/$46C6A/$46C6E`; H1 lookup entry `$4704A`; and local US-ROM
+SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce static facts
+with `uv run sf2 h2 map-script-engine` (fixture
 `tests/fixtures/h2/map-script-engine-static-v1.json`, ID `sf2-map-script-engine-static-v1`, field
-`expected.entityCloneCommandFacts`.
+`expected.entityCloneCommandFacts`) and the bounded runtime result with
+`uv run sf2 h3 map-script-entity-clone --timeout-seconds 180` (fixture
+`tests/fixtures/h3/map-script-entity-clone-v1.json`, ID
+`sf2-map-script-entity-clone-runtime-v1`; verifier
+`src/sf2tool/h3/map_script_entity_clone.py`; observer
+`tools/bizhawk/map_script_entity_clone_observer.lua`).
 
 ## Confirmed Map-Script Map Load/Reload/Reset Command Family
 

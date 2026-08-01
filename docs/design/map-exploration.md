@@ -62,6 +62,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-script-ui-primary-v1.json`.
 - `sf2-map-script-entity-presentation-fx-runtime-v1` in
   `tests/fixtures/h3/map-script-entity-presentation-fx-v1.json`.
+- `sf2-map-script-entity-clone-runtime-v1` in
+  `tests/fixtures/h3/map-script-entity-clone-v1.json`.
 - `sf2-map-script-screen-presentation-runtime-v1` in
   `tests/fixtures/h3/map-script-screen-presentation-v1.json`.
 - `sf2-map-entity-lifecycle-presentation-runtime-v1` in
@@ -344,8 +346,23 @@ complete `csc25_cloneEntity` section: two advancing two-byte A6 reads, ordered
 into D1, the following lookup, the matching byte write from D1, and return. The importer MUST keep the
 four operand bytes separate from the one-byte field transfer. It MUST NOT infer a stored record span,
 loop/counter, whole-record copy, entity lifecycle, allocation, collision/pathfinding, visibility,
-persistence, timing, rendering, or normal-story reachability; those questions remain in
-`map-script-entity-clone/runtime-effects-matrix`.
+persistence, timing, rendering, or normal-story reachability.
+
+**Confirmed bounded runtime boundary:** `sf2-map-script-entity-clone-runtime-v1` at
+`tests/fixtures/h3/map-script-entity-clone-v1.json` preserves all nine source-ordered word pairs from
+one Map Test 0 launch. A consumer MUST retain the exact H1 handler entry/RTS, A6 offsets 4/8, both
+input-word reads, the two call-site/lookup-entry/return-resumption PC triples, and the offset-18
+source-byte/destination-byte before-and-after records. The two adjacent destination-byte sentinels are
+also part of every exact record; their preservation proves only the bounded adjacent-byte condition.
+The lookup body executes unmodified in this session-only trampoline harness. This fixture does not
+create a lifecycle, whole-record, allocation, presentation, collision/pathfinding, persistence, timing,
+or story model.
+
+**Unknown:** `map-script-entity-clone/further-runtime-state-matrix`,
+`map-script-entity-clone/further-runtime-external-consumer-matrix`, and
+`map-script-entity-clone/further-runtime-context-matrix` remain the only grouped queue. A remake MUST
+leave the unobserved state, consumer, and context questions outside this contract until independently
+observed.
 Map-script imports MUST retain the two source-named forms `roofEvent` and `stepEvent` as distinct
 ordered records in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field

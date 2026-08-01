@@ -260,8 +260,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   Unknown queue。
   同一 304-row 零计数 corpus 还固定单个 source-named `cloneEntity` `$25` form（9 sites）、完整
   `csc25_cloneEntity` 的两次 A6 word read/lookup 及唯一一字节 `ENTITYDEF_OFFSET_ENTNUM` transfer，
-  而不把它提升为 whole-record copy/span；唯一 H3 queue 为
-  `map-script-entity-clone/runtime-effects-matrix`。
+  而不把它提升为 whole-record copy/span；单启动 9-case H3 已固定 handler entry/RTS、A6 4/8
+  cursor boundary、两次 word/lookup PC chronology、offset-18 byte before/after 和相邻字节 sentinel；
+  其余 Unknown 为 neutral state、external-consumer 与 context 三组矩阵。
 - [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
   两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
   39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot

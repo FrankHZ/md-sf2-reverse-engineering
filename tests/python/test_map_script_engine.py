@@ -4124,7 +4124,11 @@ def test_entity_clone_contract_matches_complete_golden_fixture(
             "symbol": "GetEntityAddressFromCharacter",
         },
     }
-    assert actual["runtimeQuestions"] == ["map-script-entity-clone/runtime-effects-matrix"]
+    assert actual["runtimeQuestions"] == [
+        "map-script-entity-clone/further-runtime-state-matrix",
+        "map-script-entity-clone/further-runtime-external-consumer-matrix",
+        "map-script-entity-clone/further-runtime-context-matrix",
+    ]
 
 
 def test_entity_clone_use_site_and_call_order_guards_fail_before_fixture(monkeypatch) -> None:
@@ -4629,7 +4633,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-ui-command/full-window-animation-vdp-timing",
         "map-script-ui-command/real-user-choice-service-side-effects",
         "map-script-ui-command/save-persistence-map-entity-interactions",
-        "map-script-entity-clone/runtime-effects-matrix",
+        "map-script-entity-clone/further-runtime-state-matrix",
+        "map-script-entity-clone/further-runtime-external-consumer-matrix",
+        "map-script-entity-clone/further-runtime-context-matrix",
     ]
     assert expected["mapLifecycleCommandFacts"].pop("runtimeQuestions") == [
         "map-lifecycle/layout-collision-pathfinding-effects",
@@ -4705,6 +4711,15 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     expected["screenPresentationCommandFacts"]["runtimeQuestions"] = [
         "map-script-screen-presentation/runtime-effects-matrix"
     ]
+    assert expected["entityCloneCommandFacts"].pop("runtimeQuestions") == [
+        "map-script-entity-clone/further-runtime-state-matrix",
+        "map-script-entity-clone/further-runtime-external-consumer-matrix",
+        "map-script-entity-clone/further-runtime-context-matrix",
+    ]
+    # The bounded clone H3 matrix replaces this H2 sentinel without static-shape drift.
+    expected["entityCloneCommandFacts"]["runtimeQuestions"] = [
+        "map-script-entity-clone/runtime-effects-matrix"
+    ]
     # Each H3 queue is asserted above; the remaining static shape stays digest-pinned.
     assert _canonical_digest(expected) == (
         "8b291f94307fc1f838ded070a3914640958bcb9eff38544e316c75aa42583b5c"
@@ -4778,6 +4793,9 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     output_schema["properties"]["screenPresentationCommandFacts"]["allOf"][1][
         "properties"
     ]["runtimeQuestions"] = {"const": ["map-script-screen-presentation/runtime-effects-matrix"]}
+    output_schema["properties"]["entityCloneCommandFacts"]["allOf"][1]["properties"][
+        "runtimeQuestions"
+    ] = {"const": ["map-script-entity-clone/runtime-effects-matrix"]}
     output_schema["definitions"]["screenPresentationCommandFacts"]["properties"][
         "runtimeQuestions"
     ] = {
@@ -4885,6 +4903,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     ]["allOf"][1]["const"]["runtimeQuestions"] = [
         "map-script-screen-presentation/runtime-effects-matrix"
     ]
+    fixture_schema["properties"]["expected"]["properties"][
+        "entityCloneCommandFacts"
+    ]["allOf"][1]["properties"]["runtimeQuestions"] = {
+        "const": ["map-script-entity-clone/runtime-effects-matrix"]
+    }
     fixture_schema["definitions"]["screenPresentationFixtureCommandFacts"]["properties"][
         "runtimeQuestions"
     ] = {

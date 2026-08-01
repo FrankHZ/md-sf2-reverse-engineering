@@ -189,7 +189,9 @@
             "map-script-ui-command/full-window-animation-vdp-timing",
             "map-script-ui-command/real-user-choice-service-side-effects",
             "map-script-ui-command/save-persistence-map-entity-interactions",
-            "map-script-entity-clone/runtime-effects-matrix"
+            "map-script-entity-clone/further-runtime-state-matrix",
+            "map-script-entity-clone/further-runtime-external-consumer-matrix",
+            "map-script-entity-clone/further-runtime-context-matrix"
           ]
         },
         "dialogueCommandFacts": {
@@ -49492,7 +49494,9 @@
                 },
                 "runtimeQuestions": {
                   "const": [
-                    "map-script-entity-clone/runtime-effects-matrix"
+                    "map-script-entity-clone/further-runtime-state-matrix",
+                    "map-script-entity-clone/further-runtime-external-consumer-matrix",
+                    "map-script-entity-clone/further-runtime-context-matrix"
                   ]
                 }
               }

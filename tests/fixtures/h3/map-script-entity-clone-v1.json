@@ -1,0 +1,1273 @@
+{
+  "id": "sf2-map-script-entity-clone-runtime-v1",
+  "evidenceDate": "2026-08-01",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "mapTestIndex": 0,
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "maxFrames": 9600,
+  "instrumentation": {
+    "callSiteAddress": 292114,
+    "callSiteOriginalHex": "4E904CDF03FF",
+    "callSitePatchedHex": "4EB90000FF88",
+    "stubAddress": 65416,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4DF900FF4004207900FF40004E904E75",
+    "postHandlerAddress": 65430,
+    "ramInputAddress": 16728064,
+    "scriptInputRamOffset": 4
+  },
+  "provenance": {
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "upstreamBranch": "master",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+    "h2FixtureId": "sf2-map-script-engine-static-v1",
+    "h2FieldPath": "expected.entityCloneCommandFacts",
+    "command": "uv run sf2 h2 map-script-engine"
+  },
+  "function": {
+    "handlerEntryAddress": 289882,
+    "sourceOperandReadAddress": 289882,
+    "destinationOperandReadAddress": 289892,
+    "sourceLookupCallSiteAddress": 289884,
+    "destinationLookupCallSiteAddress": 289894,
+    "sourceLookupReturnAddress": 289888,
+    "destinationLookupReturnAddress": 289898,
+    "sourceFieldReadAddress": 289888,
+    "destinationFieldWriteAddress": 289898,
+    "handlerRtsAddress": 289902,
+    "lookupEntryAddress": 290890,
+    "runMapSetupInitFunctionAddress": 292092
+  },
+  "ram": {
+    "entityDataAddress": 16754946,
+    "entityIndexListAddress": 16757056
+  },
+  "constants": {
+    "lookupMask": 255,
+    "lookupIndexDifference": 96,
+    "lookupIndexTransferByteCount": 1,
+    "entityRecordByteCount": 32,
+    "entnumByteOffset": 18,
+    "entnumTransferByteCount": 1,
+    "lookupMaskUseSite": {
+      "instruction": "andi.w #COMBATANT_MASK_ALL,d0",
+      "sourceLine": 1844
+    },
+    "lookupSignedTestUseSite": {
+      "instruction": "tst.b d0",
+      "sourceLine": 1845
+    },
+    "lookupPositiveBranchUseSite": {
+      "instruction": "bpl.s @Ally",
+      "sourceLine": 1846
+    },
+    "lookupDifferenceUseSite": {
+      "instruction": "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+      "sourceLine": 1847
+    },
+    "lookupIndexReadUseSite": {
+      "instruction": "move.b (a5,d0.w),d0",
+      "sourceLine": 1850
+    },
+    "lookupStrideUseSite": {
+      "instruction": "lsl.w #ENTITYDEF_SIZE_BITS,d0",
+      "sourceLine": 1852
+    }
+  },
+  "sourceFacts": {
+    "compactH2Boundary": {
+      "macros": [
+        {
+          "name": "cloneEntity",
+          "opcode": 37,
+          "encodedBytes": 6,
+          "operandBytes": 4,
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 4,
+              "widthBytes": 2,
+              "expression": "\\2",
+              "parameterOrdinals": [
+                2
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1,
+            2
+          ],
+          "handler": "csc25_cloneEntity",
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "copied entity",
+              "streamOffset": 2,
+              "widthBytes": 2
+            },
+            {
+              "parameterOrdinal": 2,
+              "sourceComment": "entity clone",
+              "streamOffset": 4,
+              "widthBytes": 2
+            }
+          ],
+          "sourceCommandCount": 9
+        }
+      ],
+      "sourceSiteOrderKeys": [
+        "bbcs_16:7:cloneEntity",
+        "bbcs_16:8:cloneEntity",
+        "bbcs_16:9:cloneEntity",
+        "bbcs_16:10:cloneEntity",
+        "bbcs_16:11:cloneEntity",
+        "bbcs_16:12:cloneEntity",
+        "bbcs_16:13:cloneEntity",
+        "bbcs_16:14:cloneEntity",
+        "IntroCutscene2:4:cloneEntity"
+      ],
+      "sourceSitesSha256": "867E601D639D063120D3A3A5C7B5CE52664A59A1A6D2CC397C8861A896F042A2",
+      "programTotalsSha256": "36F45DF30945F8AA1883D1982702DE9A7290D4C0E797F52923C90471E85ECE70",
+      "callerBreakdown": {
+        "callerHandlers": [
+          {
+            "handler": "csc25_cloneEntity",
+            "instructionTargetSiteCounts": {
+              "GetEntityAddressFromCharacter": 2
+            },
+            "effectiveTargetSiteCounts": {
+              "GetEntityAddressFromCharacter": 2
+            }
+          }
+        ],
+        "targetResolutions": [
+          {
+            "instructionTarget": "GetEntityAddressFromCharacter",
+            "effectiveTarget": "GetEntityAddressFromCharacter",
+            "aliasSourcePath": null,
+            "effectiveTargetScope": "external"
+          }
+        ],
+        "instructionTargetTotals": {
+          "GetEntityAddressFromCharacter": 2
+        },
+        "effectiveTargetTotals": {
+          "GetEntityAddressFromCharacter": 2
+        },
+        "internalInstructionTargetTotals": {
+          "GetEntityAddressFromCharacter": 0
+        },
+        "externalInstructionTargetTotals": {
+          "GetEntityAddressFromCharacter": 2
+        },
+        "internalEffectiveTargetTotals": {
+          "GetEntityAddressFromCharacter": 0
+        },
+        "externalEffectiveTargetTotals": {
+          "GetEntityAddressFromCharacter": 2
+        }
+      },
+      "sourceIdentityJoins": {
+        "handlerSource": {
+          "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+          "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+          "symbol": "csc25_cloneEntity"
+        },
+        "entityAddressLookupOwner": {
+          "sourceFactPath": "entityPopulationCommandFacts.sourceIdentityJoins.calleeOwners",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+          "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+          "symbol": "GetEntityAddressFromCharacter"
+        }
+      },
+      "runtimeQuestions": [
+        "map-script-entity-clone/further-runtime-state-matrix",
+        "map-script-entity-clone/further-runtime-external-consumer-matrix",
+        "map-script-entity-clone/further-runtime-context-matrix"
+      ],
+      "sourceInputRowsSha256": "40C441E43F945641B18AE70F388B16DC9DEAECAA6BAFE64AF8F00C7F0272FB20"
+    },
+    "handlerUseSites": [
+      {
+        "instruction": "move.w (a6)+,d0",
+        "sourceLine": 1276
+      },
+      {
+        "instruction": "bsr.w GetEntityAddressFromCharacter",
+        "sourceLine": 1277
+      },
+      {
+        "instruction": "move.b ENTITYDEF_OFFSET_ENTNUM(a5),d1",
+        "sourceLine": 1278
+      },
+      {
+        "instruction": "move.w (a6)+,d0",
+        "sourceLine": 1279
+      },
+      {
+        "instruction": "bsr.w GetEntityAddressFromCharacter",
+        "sourceLine": 1280
+      },
+      {
+        "instruction": "move.b d1,ENTITYDEF_OFFSET_ENTNUM(a5)",
+        "sourceLine": 1281
+      },
+      {
+        "instruction": "rts",
+        "sourceLine": 1282
+      }
+    ],
+    "lookupUseSites": [
+      {
+        "instruction": "lea ((ENTITY_INDEX_LIST-$1000000)).w,a5",
+        "sourceLine": 1843
+      },
+      {
+        "instruction": "andi.w #COMBATANT_MASK_ALL,d0",
+        "sourceLine": 1844
+      },
+      {
+        "instruction": "tst.b d0",
+        "sourceLine": 1845
+      },
+      {
+        "instruction": "bpl.s @Ally",
+        "sourceLine": 1846
+      },
+      {
+        "instruction": "subi.b #ENTITY_ENEMY_INDEX_DIFFERENCE,d0",
+        "sourceLine": 1847
+      },
+      {
+        "instruction": "move.b (a5,d0.w),d0",
+        "sourceLine": 1850
+      },
+      {
+        "instruction": "move.l d0,-(sp)",
+        "sourceLine": 1851
+      },
+      {
+        "instruction": "lsl.w #ENTITYDEF_SIZE_BITS,d0",
+        "sourceLine": 1852
+      },
+      {
+        "instruction": "lea ((ENTITY_DATA-$1000000)).w,a5",
+        "sourceLine": 1853
+      },
+      {
+        "instruction": "adda.w d0,a5",
+        "sourceLine": 1854
+      },
+      {
+        "instruction": "move.l (sp)+,d0",
+        "sourceLine": 1855
+      },
+      {
+        "instruction": "rts",
+        "sourceLine": 1856
+      }
+    ],
+    "evidenceLabels": {
+      "staticFindings": "Confirmed",
+      "runtimeObservations": "Confirmed"
+    }
+  },
+  "runtimeQuestions": [
+    "map-script-entity-clone/further-runtime-state-matrix",
+    "map-script-entity-clone/further-runtime-external-consumer-matrix",
+    "map-script-entity-clone/further-runtime-context-matrix"
+  ],
+  "sourceContract": {
+    "macros": [
+      {
+        "name": "cloneEntity",
+        "opcode": 37,
+        "encodedBytes": 6,
+        "operandBytes": 4,
+        "operandLayout": [
+          {
+            "streamOffset": 2,
+            "widthBytes": 2,
+            "expression": "\\1",
+            "parameterOrdinals": [
+              1
+            ],
+            "encoding": "direct"
+          },
+          {
+            "streamOffset": 4,
+            "widthBytes": 2,
+            "expression": "\\2",
+            "parameterOrdinals": [
+              2
+            ],
+            "encoding": "direct"
+          }
+        ],
+        "parameterOrdinals": [
+          1,
+          2
+        ],
+        "handler": "csc25_cloneEntity",
+        "sourceOperandAnnotations": [
+          {
+            "parameterOrdinal": 1,
+            "sourceComment": "copied entity",
+            "streamOffset": 2,
+            "widthBytes": 2
+          },
+          {
+            "parameterOrdinal": 2,
+            "sourceComment": "entity clone",
+            "streamOffset": 4,
+            "widthBytes": 2
+          }
+        ],
+        "sourceCommandCount": 9
+      }
+    ],
+    "sourceSiteOrderKeys": [
+      "bbcs_16:7:cloneEntity",
+      "bbcs_16:8:cloneEntity",
+      "bbcs_16:9:cloneEntity",
+      "bbcs_16:10:cloneEntity",
+      "bbcs_16:11:cloneEntity",
+      "bbcs_16:12:cloneEntity",
+      "bbcs_16:13:cloneEntity",
+      "bbcs_16:14:cloneEntity",
+      "IntroCutscene2:4:cloneEntity"
+    ],
+    "sourceSitesSha256": "867E601D639D063120D3A3A5C7B5CE52664A59A1A6D2CC397C8861A896F042A2",
+    "programTotalsSha256": "36F45DF30945F8AA1883D1982702DE9A7290D4C0E797F52923C90471E85ECE70",
+    "callerBreakdown": {
+      "callerHandlers": [
+        {
+          "handler": "csc25_cloneEntity",
+          "instructionTargetSiteCounts": {
+            "GetEntityAddressFromCharacter": 2
+          },
+          "effectiveTargetSiteCounts": {
+            "GetEntityAddressFromCharacter": 2
+          }
+        }
+      ],
+      "targetResolutions": [
+        {
+          "instructionTarget": "GetEntityAddressFromCharacter",
+          "effectiveTarget": "GetEntityAddressFromCharacter",
+          "aliasSourcePath": null,
+          "effectiveTargetScope": "external"
+        }
+      ],
+      "instructionTargetTotals": {
+        "GetEntityAddressFromCharacter": 2
+      },
+      "effectiveTargetTotals": {
+        "GetEntityAddressFromCharacter": 2
+      },
+      "internalInstructionTargetTotals": {
+        "GetEntityAddressFromCharacter": 0
+      },
+      "externalInstructionTargetTotals": {
+        "GetEntityAddressFromCharacter": 2
+      },
+      "internalEffectiveTargetTotals": {
+        "GetEntityAddressFromCharacter": 0
+      },
+      "externalEffectiveTargetTotals": {
+        "GetEntityAddressFromCharacter": 2
+      }
+    },
+    "sourceIdentityJoins": {
+      "handlerSource": {
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+        "symbol": "csc25_cloneEntity"
+      },
+      "entityAddressLookupOwner": {
+        "sourceFactPath": "entityPopulationCommandFacts.sourceIdentityJoins.calleeOwners",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceSha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+        "symbol": "GetEntityAddressFromCharacter"
+      }
+    },
+    "runtimeQuestions": [
+      "map-script-entity-clone/further-runtime-state-matrix",
+      "map-script-entity-clone/further-runtime-external-consumer-matrix",
+      "map-script-entity-clone/further-runtime-context-matrix"
+    ],
+    "sourceInputRowsSha256": "40C441E43F945641B18AE70F388B16DC9DEAECAA6BAFE64AF8F00C7F0272FB20"
+  },
+  "cases": [
+    {
+      "id": "bbcs-16-command-7",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:7:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 7,
+        "sourceLine": 11,
+        "sourceWords": [
+          129,
+          130
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 0,
+        "destinationEntnumByteSeed": 255,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 0
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 255
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-7",
+        "sourceOrderKey": "bbcs_16:7:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 129
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 130
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 33
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 34
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 0
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 255,
+          "byteValueAfterObserved": 0
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 0,
+            "byteValueAfterObserved": 0
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 255,
+            "byteValueAfterObserved": 255
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-8",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:8:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 8,
+        "sourceLine": 12,
+        "sourceWords": [
+          131,
+          132
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 255,
+        "destinationEntnumByteSeed": 0,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 255
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 0
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-8",
+        "sourceOrderKey": "bbcs_16:8:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 132
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 36
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 255
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 0,
+          "byteValueAfterObserved": 255
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 255,
+            "byteValueAfterObserved": 255
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 0,
+            "byteValueAfterObserved": 0
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-9",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:9:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 9,
+        "sourceLine": 13,
+        "sourceWords": [
+          131,
+          133
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 127,
+        "destinationEntnumByteSeed": 128,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 1
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 254
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-9",
+        "sourceOrderKey": "bbcs_16:9:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 133
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 37
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 127
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 128,
+          "byteValueAfterObserved": 127
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 1,
+            "byteValueAfterObserved": 1
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 254,
+            "byteValueAfterObserved": 254
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-10",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:10:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 10,
+        "sourceLine": 14,
+        "sourceWords": [
+          131,
+          134
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 128,
+        "destinationEntnumByteSeed": 127,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 254
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 1
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-10",
+        "sourceOrderKey": "bbcs_16:10:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 134
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 38
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 128
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 127,
+          "byteValueAfterObserved": 128
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 254,
+            "byteValueAfterObserved": 254
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 1,
+            "byteValueAfterObserved": 1
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-11",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:11:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 11,
+        "sourceLine": 15,
+        "sourceWords": [
+          131,
+          135
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 1,
+        "destinationEntnumByteSeed": 254,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 127
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 128
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-11",
+        "sourceOrderKey": "bbcs_16:11:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 135
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 39
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 1
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 254,
+          "byteValueAfterObserved": 1
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 127,
+            "byteValueAfterObserved": 127
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 128,
+            "byteValueAfterObserved": 128
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-12",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:12:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 12,
+        "sourceLine": 16,
+        "sourceWords": [
+          131,
+          136
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 254,
+        "destinationEntnumByteSeed": 1,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 128
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 127
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-12",
+        "sourceOrderKey": "bbcs_16:12:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 136
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 40
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 254
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 1,
+          "byteValueAfterObserved": 254
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 128,
+            "byteValueAfterObserved": 128
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 127,
+            "byteValueAfterObserved": 127
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-13",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:13:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 13,
+        "sourceLine": 17,
+        "sourceWords": [
+          131,
+          137
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 64,
+        "destinationEntnumByteSeed": 191,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 64
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 192
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-13",
+        "sourceOrderKey": "bbcs_16:13:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 137
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 41
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 64
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 191,
+          "byteValueAfterObserved": 64
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 64,
+            "byteValueAfterObserved": 64
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 192,
+            "byteValueAfterObserved": 192
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "bbcs-16-command-14",
+      "sourceInput": {
+        "sourceOrderKey": "bbcs_16:14:cloneEntity",
+        "programId": "bbcs_16",
+        "commandIndex": 14,
+        "sourceLine": 18,
+        "sourceWords": [
+          131,
+          138
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 192,
+        "destinationEntnumByteSeed": 63,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 192
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 64
+          }
+        ]
+      },
+      "expected": {
+        "id": "bbcs-16-command-14",
+        "sourceOrderKey": "bbcs_16:14:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 131
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 138
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 35
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 42
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 192
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 63,
+          "byteValueAfterObserved": 192
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 192,
+            "byteValueAfterObserved": 192
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 64,
+            "byteValueAfterObserved": 64
+          }
+        ],
+        "handlerReturned": true
+      }
+    },
+    {
+      "id": "intro-cutscene-2-command-4",
+      "sourceInput": {
+        "sourceOrderKey": "IntroCutscene2:4:cloneEntity",
+        "programId": "IntroCutscene2",
+        "commandIndex": 4,
+        "sourceLine": 8,
+        "sourceWords": [
+          132,
+          131
+        ]
+      },
+      "scriptCursorRamOffsetBefore": 4,
+      "harnessControls": {
+        "sourceRecordIndexSeed": 0,
+        "destinationRecordIndexSeed": 1,
+        "sourceEntnumByteSeed": 85,
+        "destinationEntnumByteSeed": 170,
+        "destinationAdjacentByteSeeds": [
+          {
+            "byteOffset": 17,
+            "byteValue": 85
+          },
+          {
+            "byteOffset": 19,
+            "byteValue": 170
+          }
+        ]
+      },
+      "expected": {
+        "id": "intro-cutscene-2-command-4",
+        "sourceOrderKey": "IntroCutscene2:4:cloneEntity",
+        "handlerEntryPc": 289882,
+        "handlerRtsPc": 289902,
+        "scriptCursorRamOffsetBefore": 4,
+        "scriptCursorRamOffsetAfter": 8,
+        "cursorAdvanceByteCountObserved": 4,
+        "operandReads": [
+          {
+            "ordinal": 1,
+            "instructionPc": 289882,
+            "a6RamOffsetBefore": 4,
+            "wordObserved": 132
+          },
+          {
+            "ordinal": 2,
+            "instructionPc": 289892,
+            "a6RamOffsetBefore": 6,
+            "wordObserved": 131
+          }
+        ],
+        "lookupCallSequence": [
+          {
+            "ordinal": 1,
+            "callSitePc": 289884,
+            "targetEntryPc": 290890,
+            "returnPc": 289888,
+            "lookupIndexByteOffsetObserved": 36
+          },
+          {
+            "ordinal": 2,
+            "callSitePc": 289894,
+            "targetEntryPc": 290890,
+            "returnPc": 289898,
+            "lookupIndexByteOffsetObserved": 35
+          }
+        ],
+        "sourceEntnumRead": {
+          "instructionPc": 289888,
+          "recordIndexObserved": 0,
+          "byteOffset": 18,
+          "byteValueObserved": 85
+        },
+        "destinationEntnumWrite": {
+          "instructionPc": 289898,
+          "recordIndexObserved": 1,
+          "byteOffset": 18,
+          "byteValueBeforeObserved": 170,
+          "byteValueAfterObserved": 85
+        },
+        "destinationAdjacentBytes": [
+          {
+            "byteOffset": 17,
+            "byteValueBeforeObserved": 85,
+            "byteValueAfterObserved": 85
+          },
+          {
+            "byteOffset": 19,
+            "byteValueBeforeObserved": 170,
+            "byteValueAfterObserved": 170
+          }
+        ],
+        "handlerReturned": true
+      }
+    }
+  ]
+}

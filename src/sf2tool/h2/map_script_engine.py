@@ -446,7 +446,11 @@ MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS = [
 ENTITY_CLONE_MACRO_NAMES = ("cloneEntity",)
 ENTITY_CLONE_HANDLER_BY_MACRO = {"cloneEntity": "csc25_cloneEntity"}
 ENTITY_CLONE_HANDLER_NAMES = tuple(ENTITY_CLONE_HANDLER_BY_MACRO.values())
-ENTITY_CLONE_RUNTIME_QUESTIONS = ["map-script-entity-clone/runtime-effects-matrix"]
+ENTITY_CLONE_RUNTIME_QUESTIONS = [
+    "map-script-entity-clone/further-runtime-state-matrix",
+    "map-script-entity-clone/further-runtime-external-consumer-matrix",
+    "map-script-entity-clone/further-runtime-context-matrix",
+]
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:

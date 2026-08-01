@@ -42,6 +42,9 @@ CONTRACTS = {
         "tests/fixtures/h3/map-script-entity-placement-v1.json": (
             "sf2-map-script-entity-placement-runtime-v1"
         ),
+        "tests/fixtures/h3/map-script-entity-clone-v1.json": (
+            "sf2-map-script-entity-clone-runtime-v1"
+        ),
         "tests/fixtures/h3/map-script-ui-primary-v1.json": (
             "sf2-map-script-ui-primary-runtime-v1"
         ),
