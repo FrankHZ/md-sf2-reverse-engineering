@@ -1,101 +1,134 @@
-# 文档路线图与治理边界
+# Documentation Roadmap and Governance Boundaries
 
-- 状态：**Confirmed 的仓库治理说明**；它不是原版游戏证据，也不选择重制引擎、产品、平台或商业方向。
-- 记录日期：2026-08-01
-- 范围：把有来源的合同组织成简洁的玩家向说明，不改变其证据标签；未来重制选择仍须进入明确
-  的 decision 与 H4 验收边界。
+- Status: **Confirmed repository governance guidance**; this document is not evidence about the
+  original game and does not select a remake engine, product, platform, or commercial direction.
+- Record date: 2026-08-01
+- Scope: organize sourced contracts into concise player-facing explanations without changing their
+  evidence labels; future remake choices still require explicit decisions and H4 acceptance
+  boundaries.
 
-## 三层边界
+## Authoring Language Policy
 
-| 层 | 归属与允许内容 | 禁止的捷径 |
+**Confirmed repository policy:** during the current design-synthesis phase, English is the canonical
+authoring and review language for new or materially revised design-synthesis documents. Preserve
+source-faithful identifiers, fixture IDs, evidence labels, and code vocabulary rather than inventing
+translated equivalents.
+
+Do not create ad hoc bilingual terminology while the glossary is unsettled. Once a project glossary
+has been accepted, translation should happen as a dedicated batch with terminology consistency,
+link integrity, evidence-label preservation, and fixture-trace QA. The English source remains the
+review baseline until that batch defines another explicit policy.
+
+## Three-Layer Boundary
+
+| Layer | Ownership and allowed content | Prohibited shortcut |
 | --- | --- | --- |
-| A. 原版行为/数据合同 | `docs/research/`、`schemas/`、manifests、H2/H3 fixtures 与有来源的设计合同记录 **Confirmed**、**Inferred**、**Unknown** 事实。 | 源宏、字段或符号名不自动等于玩家可见含义；保留原标签，另行说明有证据支持的解释。 |
-| B. 重建设计说明 | `docs/design/` 可解释 A 层支持的玩家向后果，链接本地 research/fixture owner，并把缺口列为 **Unknown**。 | 不得把静态 call、地址或看似合理的读法升级为原版行为、战役结论或玩家体验事实。 |
-| C. 未来重制决定 | 现代化、实现意图或产品选择属于明确的 decision 与独立的 expected-deviation/H4 验收边界。 | 不得把现代化重写为原版行为，或从综合文档中选择引擎/产品方向。 |
+| A. Original behavior/data contracts | `docs/research/`, `schemas/`, manifests, H2/H3 fixtures, and sourced design contracts record **Confirmed**, **Inferred**, and **Unknown** facts. | A source macro, field, or symbol name does not automatically establish player-visible meaning. Preserve the source label and explain only interpretations supported by evidence. |
+| B. Reconstructed design explanation | `docs/design/` may explain player-facing consequences supported by Layer A, link the local research/fixture owner, and mark gaps as **Unknown**. | Do not promote a static call, address, or plausible reading into original behavior, a campaign conclusion, or a player-experience fact. |
+| C. Future remake decisions | Modernization, implementation intent, and product choices belong in explicit decisions and separate expected-deviation/H4 acceptance boundaries. | Do not rewrite modernization as original behavior or use a synthesis document to choose an engine or product direction. |
 
-**Confirmed 仓库规则：**B 层是已接受 A 层证据的可追溯解释，不是第二套证据系统。**Inferred**
-解释保留标签，**Unknown** 行为保留为问题而非补写成叙事。
+**Confirmed repository rule:** Layer B is a traceable interpretation of accepted Layer A evidence,
+not a second evidence system. **Inferred** interpretations retain that label, and **Unknown** behavior
+remains a question rather than being completed as narrative.
 
-## 当前基线与近期综合
+## Current Baseline and Near-Term Synthesis
 
-**Confirmed 仓库基线：**现有合同覆盖 combat、maps、level-up、spells、services、save/input/window、
-dialogue、party/roster state 与 randomness，均已列入[设计索引](../README.md#design)，并追溯到
-research 与 fixture owner。本路线图不合并或替换这些合同。
+**Confirmed repository baseline:** existing contracts cover combat, maps, level-up, spells, services,
+save/input/window, dialogue, party/roster state, and randomness. They are listed in the
+[design index](../README.md#design) and trace back to research and fixture owners. This roadmap does
+not merge or replace those contracts.
 
-下列是 **Inferred 的规划优先级**，不是其中设计结论已经成立的声称。每个综合文档在所列 evidence
-owner 稳定前必须保持增量性质。
+The following ordering is an **Inferred planning priority**, not a claim that the listed design
+conclusions already exist. Each synthesis document must remain incremental until its evidence owners
+are stable.
 
-| 顺序 | 候选文档 | 范围与前提 | 现有合同/证据链接 | 非目标 / 停止条件 |
+| Order | Candidate document | Scope and prerequisites | Existing contract/evidence links | Non-goal / stop condition |
 | ---: | --- | --- | --- | --- |
-| 1 | gameplay overview | 说明当前可支持的 player actions、state boundary 与主要 subsystem handoff；仅从已接受的 map、dialogue、roster、service、input 事实开始。 | [map exploration](./map-exploration.md)、[dialogue](./dialogue-system.md)、[party/roster](./party-roster-state.md)、[services](./service-interactions.md)、[map-script fixture](../../tests/fixtures/h2/map-script-engine-static-v1.json) | 不承诺完整战役流、界面手感或 narrative experience；它们仍为 **Unknown**。 |
-| 2 | tactical battle loop | 说明从 player input/control 经 battle action、resolution、state replay 到已知 outcome 的有界顺序，并保留每条未解分支；需要已接受的 battle-loop/action/AI research 与 combat/spell 合同。 | [battle-loop research](../research/battle-loop.md)、[battle-actions research](../research/battle-actions.md)、[combat](./combat-resolution.md)、[spell resolution](./spell-resolution.md)、[physical-damage fixture](../../tests/fixtures/h3/physical-damage-v1.json) | 不从孤立案例发明 tactics、balance intent、target-selection meaning 或通用 simulation。 |
-| 3 | progression and economy | 仅在 input、output、order 与 persistence 有证据时，连接 growth、EXP/gold/item/service 边界为资源流说明。 | [ally-growth research](../research/ally-growth.md)、[common-stats research](../research/common-stats.md)、[level-up](./level-up.md)、[services](./service-interactions.md)、[level-up fixture](../../tests/fixtures/h3/level-up-boundaries-v1.json) | 不声称预期难度曲线、价格、最优 build 或长期 economy。 |
-| 4 | story progression | 把 Confirmed 的 state/route/dialogue/roster boundary 说明为可追溯的 progression map，并保留 normal-story reachability 与 presentation 标签；因后二者最不稳定，置于前述文档之后。 | [gameflow research](../research/gameflow-core.md)、[common-scripting research](../research/common-scripting.md)、[dialogue](./dialogue-system.md)、[party/roster](./party-roster-state.md)、[dialogue runtime fixture](../../tests/fixtures/h3/map-script-dialogue-v1.json) | 不从 source label 或孤立 program reference 重建 plot beat、player choice consequence 或完整 story route。 |
+| 1 | gameplay overview | Explain currently supported player actions, state boundaries, and major subsystem handoffs, beginning only from accepted map, dialogue, roster, service, and input facts. | [map exploration](./map-exploration.md), [dialogue](./dialogue-system.md), [party/roster](./party-roster-state.md), [services](./service-interactions.md), [map-script fixture](../../tests/fixtures/h2/map-script-engine-static-v1.json) | Do not promise a complete campaign flow, interface feel, or narrative experience; these remain **Unknown**. |
+| 2 | tactical battle loop | Explain the bounded order from player input/control through battle action, resolution, state replay, and known outcomes while retaining every unresolved branch; requires accepted battle-loop/action/AI research and combat/spell contracts. | [battle-loop research](../research/battle-loop.md), [battle-actions research](../research/battle-actions.md), [combat](./combat-resolution.md), [spell resolution](./spell-resolution.md), [physical-damage fixture](../../tests/fixtures/h3/physical-damage-v1.json) | Do not invent tactics, balance intent, target-selection meaning, or a general simulation from isolated cases. |
+| 3 | progression and economy | Connect growth, EXP/gold/item, and service boundaries into a resource-flow explanation only where inputs, outputs, order, and persistence have evidence. | [ally-growth research](../research/ally-growth.md), [common-stats research](../research/common-stats.md), [level-up](./level-up.md), [services](./service-interactions.md), [level-up fixture](../../tests/fixtures/h3/level-up-boundaries-v1.json) | Do not claim an intended difficulty curve, intended prices, an optimal build, or a long-term economy. |
+| 4 | story progression | Explain Confirmed state/route/dialogue/roster boundaries as a traceable progression map while retaining normal-story reachability and presentation labels; these least-stable dependencies place it after the preceding documents. | [gameflow research](../research/gameflow-core.md), [common-scripting research](../research/common-scripting.md), [dialogue](./dialogue-system.md), [party/roster](./party-roster-state.md), [dialogue runtime fixture](../../tests/fixtures/h3/map-script-dialogue-v1.json) | Do not reconstruct plot beats, player-choice consequences, or a complete story route from source labels or isolated program references. |
 
-该顺序先建立读者导航，再处理最有界的 tactical loop、相连的资源流，最后处理依赖 reachability 的
-story 说明。当 active slice 正在改写 owner contract，或答案大多仍为 **Unknown** 时，文档等待。
+This order establishes reader navigation first, then covers the most bounded tactical loop, connected
+resource flows, and finally story explanation that depends on reachability. A document waits when an
+active slice is revising its owner contract or when most answers remain **Unknown**.
 
-## 长期方向
+## Long-Term Directions
 
-下列是 **Unknown 的未来方向**，不是当前承诺。只有 entry criteria 能引用已接受的本地 evidence 时才可
-启动；任一项均不授权新的 engine design。
+The following are **Unknown future directions**, not current commitments. Work may begin only when
+entry criteria cite accepted local evidence; none of these directions authorizes a new engine design.
 
-| 方向 | 进入条件与证据依赖 | 非目标 |
+| Direction | Entry criteria and evidence dependencies | Non-goal |
 | --- | --- | --- |
-| map-design principles | 有文档化 map corpus、route/event/area evidence，且有足够的 reachability 与 interaction outcome 观察，可区分 layout 事实和 player-route 解释。 | 不从 64×64 layout data 单独推断作者意图或重设计关卡。 |
-| player roster choice space | 已接受的 roster、class/promotion、growth、equipment、battle-party 与 persistence/capacity boundary；未解 lifecycle limit 仍须可见。 | 不发布 tier list、“best party”建议或假设的玩家偏好。 |
-| player/enemy numerical curves | 完整的 source-backed numeric table，加上 runtime-confirmed application、cap 与 level/encounter context，足以命名 unit 和 boundary。 | 不设定重制 balance target，也不把数学曲线称为预期难度。 |
-| battle simulation | 完整且彼此兼容的 battle-loop/action/AI/pathfinding/state contract，以及有范围的 H4 adapter acceptance surface。 | 不选择 simulation architecture、不声称通用预测准确性，亦不以模型补全未解分支。 |
+| map-design principles | A documented map corpus, route/event/area evidence, and enough reachability and interaction-outcome observations to distinguish layout facts from player-route interpretation. | Do not infer authorial intent or redesign levels from 64x64 layout data alone. |
+| player roster choice space | Accepted roster, class/promotion, growth, equipment, battle-party, and persistence/capacity boundaries; unresolved lifecycle limits remain visible. | Do not publish a tier list, “best party” advice, or assumed player preferences. |
+| player/enemy numerical curves | Complete source-backed numeric tables plus runtime-confirmed application, caps, and level/encounter context sufficient to name units and boundaries. | Do not set remake balance targets or describe mathematical curves as intended difficulty. |
+| battle simulation | Complete and mutually compatible battle-loop/action/AI/pathfinding/state contracts plus a bounded H4 adapter acceptance surface. | Do not select a simulation architecture, claim general predictive accuracy, or use a model to fill unresolved branches. |
 
-## 可复用的作者结构
+## Reusable Authoring Structure
 
-每篇未来 `docs/design/` 综合文档可选择性采用以下结构；这是文档形状，不是并行 workspace 或强制的
-完整 GDD 模板。
+Future `docs/design/` synthesis documents may selectively use the following structure. This describes
+document shape, not a parallel workspace or a mandatory full GDD template.
 
-1. **受众与判断边界。**说明读者（researcher、fidelity implementer 或 player-facing explainer）、
-   支持的判断与不支持的判断；原版声称在 source-owner 层标为 **Confirmed**、**Inferred** 或 **Unknown**。
-2. **玩家动词与 action–goal alignment。**从有证据的 input、state change、outcome 开始；原 source
-   label 与中性 player-action phrase 分开。没有本地证据的 player goal/meaning 是 **Inferred** 或 **Unknown**。
-3. **loops、state flow 与 system dynamics。**只画有 evidence owner 的有序 transition、resource 与
-   feedback relationship；保留未观察分支，不能把 control-flow graph 画成 engine architecture。
-4. **evidence matrix。**每条实质记录包含 label、bounded claim、source/research owner、contract、适用时的
-   fixture ID/path 与 remaining question。诸如 [runtime RNG and battle math](../research/runtime-rng-and-battle-math.md)、
-   [combat fixture](../../tests/fixtures/h3/physical-damage-v1.json)、[combat contract](./combat-resolution.md)
-   的本地链接即为规范 trace，不另复制 evidence ledger。
-5. **original-fidelity 与 modernization。**先写 original-fidelity rule，再把 deliberate deviation 标为
-   future decision 与独立 expected-deviation fixture；没有 decision 即不暗示现代化。
-6. **H4 acceptance、扩展与停止条件。**列出 adapter-visible parity fact、fixture consumer 与继续扩展所需
-   evidence；当缺口属于 runtime、reachability、presentation 或 product question 时停止，不静默扩张合同。
+1. **Audience and judgment boundary.** Identify the reader—researcher, fidelity implementer, or
+   player-facing explainer—and the supported and unsupported judgments. Original-game claims retain
+   **Confirmed**, **Inferred**, or **Unknown** at the source-owner layer.
+2. **Player verbs and action-goal alignment.** Begin with evidenced inputs, state changes, and
+   outcomes. Keep original source labels separate from neutral player-action phrases. A player goal
+   or meaning without local evidence is **Inferred** or **Unknown**.
+3. **Loops, state flow, and system dynamics.** Diagram only ordered transitions, resources, and
+   feedback relationships with evidence owners. Retain unobserved branches and do not present a
+   control-flow graph as engine architecture.
+4. **Evidence matrix.** Every substantive entry includes its label, bounded claim, source/research
+   owner, contract, fixture ID/path when applicable, and remaining question. Local links such as
+   [runtime RNG and battle math](../research/runtime-rng-and-battle-math.md),
+   [combat fixture](../../tests/fixtures/h3/physical-damage-v1.json), and
+   [combat contract](./combat-resolution.md) are the canonical trace; do not copy another evidence
+   ledger.
+5. **Original fidelity and modernization.** State the original-fidelity rule first, then mark a
+   deliberate deviation as a future decision with a separate expected-deviation fixture. In the
+   absence of a decision, do not imply modernization.
+6. **H4 acceptance, expansion, and stop conditions.** List adapter-visible parity facts, fixture
+   consumers, and the evidence required for expansion. Stop when a gap is a runtime, reachability,
+   presentation, or product question rather than silently expanding the contract.
 
-## 外部参考的 provenance 与选择性采用
+## External Reference Provenance and Selective Adoption
 
-**Confirmed 外部参考 provenance：**[DY-2026/GameDesignOS README](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/README.md)、
-[contract catalog](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/contracts/README.md) 与
+**Confirmed external-reference provenance:** the
+[DY-2026/GameDesignOS README](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/README.md),
+[contract catalog](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/contracts/README.md), and
 [player-promise contract schema](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/contracts/player-promise-contract.schema.json)
-于 2026-08-01 在固定 `main` commit `d01dfebc6eac7a619b9a18f3cbafa51270d1edba` 访问；其许可证为
-[MIT](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/LICENSE)。复现命令
-`git ls-remote https://github.com/DY-2026/GameDesignOS.git` 观察到该 commit 为 `refs/heads/main`；对所列
-pinned raw document/template 的请求均返回 HTTP 200。
+were accessed on 2026-08-01 at pinned `main` commit
+`d01dfebc6eac7a619b9a18f3cbafa51270d1edba`; the repository uses the
+[MIT license](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/LICENSE).
+The reproduction command `git ls-remote https://github.com/DY-2026/GameDesignOS.git` observed that
+commit at `refs/heads/main`, and requests for each listed pinned raw document/template returned HTTP
+200.
 
-选择性采用下列结构提示：[player-verb inventory](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/player-verb-inventory.md)、
-[system-dynamics map](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/system-dynamics-map.md)、
-[game-dissection report](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-experience-analyzer/templates/game-dissection-report.md)、
-[full design brief](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/full-design-brief.md) 与
-[reference-game boundary](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/reference-game-boundary.md)：
-reader/action scope、visible uncertainty、loop mapping、evidence link、scope gate 与 validation condition。
-它们已适配本仓库的 evidence label 与 H4 boundary，未复制模板文本。
+The following structural prompts were selectively adopted:
+[player-verb inventory](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/player-verb-inventory.md),
+[system-dynamics map](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/system-dynamics-map.md),
+[game-dissection report](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-experience-analyzer/templates/game-dissection-report.md),
+[full design brief](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/full-design-brief.md), and
+[reference-game boundary](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/reference-game-boundary.md):
+reader/action scope, visible uncertainty, loop mapping, evidence links, scope gates, and validation
+conditions. They were adapted to this repository's evidence labels and H4 boundary without copying
+template text.
 
-明确拒绝该外部项目的九目录 workspace、commercial pitch/market assumption 与第二套 evidence/decision
-system。本仓库已分别拥有 `docs/research/`、`docs/design/`、`docs/decisions/`、`schemas/`、
-manifests/research-index、H2/H3 fixtures 与 H4 acceptance boundary。外部参考只是选择性借用的作者视角，
-不是项目依赖或新的 source of truth。
+This project explicitly rejects the external project's nine-directory workspace, commercial
+pitch/market assumptions, and second evidence/decision system. This repository already owns
+`docs/research/`, `docs/design/`, `docs/decisions/`, `schemas/`, `manifests/research-index`, H2/H3
+fixtures, and the H4 acceptance boundary. The external reference contributes only selective
+authoring perspective; it is not a project dependency or a new source of truth.
 
-## 协作与后续 hygiene
+## Collaboration and Continuing Hygiene
 
-**Confirmed 协作规则：**在 accepted evidence 基础上可在 reverse-engineering 持续期间增加综合文档；
-不得与 active worker 并行重写某 subsystem contract。未来 finding 改变结论时，同时更新 owning research
-note、fixture/contract 与 design explanation，使 trace 双向保持一致。
+**Confirmed collaboration rule:** synthesis documents may be added over accepted evidence while
+reverse engineering continues, but they must not rewrite a subsystem contract in parallel with its
+active worker. When a future finding changes a conclusion, update the owning research note,
+fixture/contract, and design explanation together so the trace remains bidirectional.
 
-**Confirmed 仓库 hygiene closure：**[`party-roster-state.md`](./party-roster-state.md) 现已在
-`src/sf2tool/design_contracts.py` 注册其 H2 map-script 与 H3 active-party fixture；公共 tracked-input
-gate 会验证文档、fixture path 和 fixture ID 的双向 trace。这项 closure 不改变任何原版游戏 finding。
+**Confirmed repository hygiene closure:** [`party-roster-state.md`](./party-roster-state.md) is now
+registered in `src/sf2tool/design_contracts.py` with its H2 map-script and H3 active-party fixtures.
+The public tracked-input gate validates document path, fixture path, and fixture ID traceability in
+both directions. This closure does not change any original-game finding.
