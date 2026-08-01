@@ -15,9 +15,10 @@ source-faithful identifiers, fixture IDs, evidence labels, and code vocabulary r
 translated equivalents.
 
 Do not create ad hoc bilingual terminology while the glossary is unsettled. Once a project glossary
-has been accepted, translation should happen as a dedicated batch with terminology consistency,
-link integrity, evidence-label preservation, and fixture-trace QA. The English source remains the
-review baseline until that batch defines another explicit policy.
+has been accepted, non-English localization from the canonical English source should happen as a
+dedicated batch with terminology consistency, link integrity, evidence-label preservation, and
+fixture-trace QA. The English source remains the review baseline unless that localization batch
+defines another explicit policy.
 
 ## Three-Layer Boundary
 
