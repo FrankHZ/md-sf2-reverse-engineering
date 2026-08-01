@@ -80,40 +80,15 @@ and provenance, avoid all project-direction decisions, and hand the completed wo
 staging or committing. Questions, incomplete evidence, and review findings go back to the same worker
 through a follow-up rather than causing the root to take over reverse engineering.
 
-Before handoff, the worker performs an adversarial acceptance pass. Extractor output, golden fixture,
-both output and fixture schemas, focused tests, research prose, and any design contract must describe the
-same complete shape. New nested schema objects use exact required fields and
-`additionalProperties: false`; known names, counts, values, and array order are constrained exactly rather
-than only by broad types or property counts. Focused tests assert the whole new semantic object and its
-boundaries. Each Confirmed control-flow claim is guarded within the smallest stable named function or
-section, including relevant branch polarity and mutation/call order. Caller inventories use parsed call
-instructions and retain target identity and per-target site counts. Stored byte counts, address spans,
-encoded sizes, transfer sizes, and loop counters remain separately named and documented. The handoff lists
-the weaknesses found and corrected during this self-review. New or materially revised Evidence dates use
-the actual current project date from the execution environment. Canonical names remain source-faithful or
-neutral until their semantics are proven. Extractors parse authoritative constants once and derive masks,
-strides, spans, widths, and counts from them instead of duplicating magic values in implementation guards;
-golden fixtures and strict schemas still pin the resulting exact values. Boolean arithmetic, container or
-string cardinality, and arithmetic identities do not qualify as derivation. Both schemas close every nested
-object recursively and focused mutation tests reject missing, renamed, extra, reordered, and out-of-bound
-content. Changed parsers cover positive, negative, boundary, comment, and legal instruction-suffix cases.
-Reported semantic summaries—constants, masks, offsets, widths, selector scales, capacities, branches, call
-orders, and caller totals—must identify the specific parsed use-site record/table/operand that expresses
-the relationship, resolve symbols through the one parsed constants map where applicable, and validate
-identity/order/polarity/width there. Independently parsing a constant and an instruction corpus is not a
-derivation. A smallest-scope source mutation of that use-site operand/opcode/order must make parser
-construction fail before golden-fixture comparison; fixture/schema exactness is not a derivation guard.
-Caller effective-target total maps are zero-inclusive across the complete declared target set for both
-internal and external inventories, not only positive occurrences. The worker's pre-handoff
-summary-provenance audit asks whether every reported derived field has both a parsed use-site link and a
-mutation capable of falsifying it.
-Workers do not use file-wide lint suppression or include unrelated formatting/generated churn. When chat
-context is compact, they recover from the repository, current diff, and explicit slice contract before
-asking the root a precise blocking question. Large exact corpora use one closed reusable record schema plus
-a compact exact-order constraint instead of per-record schema expansion; generated JSON uses a real JSON
-serializer and is parsed before gates. Caller audits resolve jump-interface aliases while retaining both
-instruction and effective target identities. A worker begins implementation in its first assigned turn;
-capacity checkpoints must contain a tested bounded change and are never presented as completed handoffs.
+Every delegation uses the complete slice contract defined by ADR 0004: owning document, bounded source
+surface, owned tracked files, shared-file needs, expected outputs, one narrow H2/H3 command, and explicit
+exclusions. The worker reads ADR 0004's complete **Worker Acceptance Checklist** before editing and treats
+it as the normative detailed acceptance profile instead of relying on a growing duplicate checklist in
+the injected role prompt. Before handoff it performs that adversarial pass against the complete diff,
+fixes the weaknesses it finds, and reports the corrections. For H3 work, a matching observation file is
+not sufficient: callback exceptions must reach the status/exit contract, diagnostics must identify the
+case plus expected/actual callback state, shared-PC roles need deterministic dispatch, and acceptance
+requires both a passing command and a Lua Console with no errors or residual callbacks.
 
 The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
 and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
@@ -138,7 +113,8 @@ When more documents exist, use these ownership boundaries:
 - `docs/research/`: source-backed reverse-engineering findings.
 - `docs/design/`: implementation-neutral game design reconstructed from evidence.
 - `docs/decisions/`: durable architecture and tool decisions.
-- `schemas/`: canonical extracted-data contracts.
+- `schemas/`: canonical extracted-data contracts; follow `schemas/README.md` for the frozen legacy root
+  and the `core/`, `h2/`, and `h3/` layout used by new contracts.
 - `src/sf2tool/`: maintained Python CLI, extractors, verifiers, and harness code.
 - `tools/`: repeatable inspection, extraction, conversion, and validation code.
 - `tests/python/`: project-owned Python unit and contract tests.

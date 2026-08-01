@@ -917,53 +917,69 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
     assert agent["model_reasoning_effort"] == "xhigh"
 
     instructions = agent["developer_instructions"]
+    assert len(instructions.split()) <= 700
+    normalized_instructions = " ".join(instructions.split())
     for required_text in (
+        "exactly one Phase 2 reverse-engineering slice",
+        "slice contract",
+        "ADR 0004's complete Worker Acceptance Checklist",
+        "tested, bounded repository change",
+        "Work static-first",
+        "Confirmed, Inferred, and Unknown",
+        "matching observation JSON is not sufficient",
+        "Every tracked callback",
+        "no Lua Console error or residual registered callback",
         "Never stage",
-        "Do not use external",
+        "use external memory",
         "verify --full",
         "root owns commit",
-        "additionalProperties: false",
-        "branch polarity",
-        "caller target identity",
-        "physical address intervals",
-        "adversarial root-style self-review",
-        "current date supplied by the execution environment",
-        "structure-shaped field names",
-        "Parse authoritative constants once",
-        "second implementation truth",
-        "close objects reached through properties",
-        "Preserve every pre-existing sibling contract",
-        "inject an extra nested field",
-        "legal instruction-size",
-        "Boolean arithmetic",
-        "container or string",
-        "file-wide or module-wide lint suppressions",
-        "Do not return a no-op",
-        "compact `const`",
-        "Python's JSON encoder",
-        "jump-interface alias",
-        "zero effective-caller count",
-        "Begin implementation during the first assigned turn",
-        "tested, bounded repository change",
-        "specific parsed use-site record",
-        "smallest-scope source mutation",
-        "zero-inclusive across the complete declared target set",
-        "pre-handoff summary-provenance audit",
+        "structured handoff",
     ):
-        assert required_text in instructions
+        assert required_text in normalized_instructions
     for required_text in (
-        "fixture/schema exactness is not a derivation guard",
-        "Caller effective-target total maps are zero-inclusive",
-        "summary-provenance audit",
+        "complete slice contract defined by ADR 0004",
+        "normative detailed acceptance profile",
+        "callback exceptions must reach the status/exit contract",
+        "schemas/README.md",
     ):
         assert required_text in agents_guide
     for required_text in (
         "Shop slice needed many partial/rejection rounds",
         "one narrow semantic-root rejection",
         "Keep `xhigh`; do not raise",
+        "runner/observer failure-propagation defect",
+        "1,301 words",
+        "prompt-size ceiling",
         "Fixture/schema exactness alone is not a derivation guard",
+        "An H3 command does not pass merely because BizHawk exits normally",
     ):
         assert required_text in adr
+
+
+def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
+    root = Path(__file__).resolve().parents[2]
+    schema_root = root / "schemas"
+    legacy_root_schemas = tuple(schema_root.glob("*.schema.json"))
+    assert len(legacy_root_schemas) <= 248
+
+    allowed_namespaces = {"core", "h2", "h3"}
+    for path in schema_root.rglob("*.schema.json"):
+        relative_parts = path.relative_to(schema_root).parts
+        if len(relative_parts) == 1:
+            continue
+        assert len(relative_parts) == 2, path
+        assert relative_parts[0] in allowed_namespaces, path
+
+    layout = " ".join(
+        (schema_root / "README.md").read_text(encoding="utf-8").split()
+    )
+    for required_text in (
+        "organized by evidence rail",
+        "frozen legacy layout",
+        "New schemas go under `core/`, `h2/`, or `h3/`",
+        "dedicated `codex/repo-*` branch",
+    ):
+        assert required_text in layout
 
 
 def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:

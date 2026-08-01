@@ -2,6 +2,7 @@
 
 - Status: **Accepted**
 - Decision date: 2026-07-20
+- Workflow review: 2026-08-01
 - Scope: ordinary Phase 2 reverse-engineering slices
 - Integration scope: supplemented by [ADR 0006](./0006-parallel-worktrees-and-topic-branch-integration.md)
 
@@ -28,8 +29,17 @@ surface, the root explicitly selects `gpt-5.6-terra` when spawning the worker.
 
 The role remains at `xhigh` reasoning effort. Tested bounded checkpoints improved execution without
 requiring a broader model change: the Shop slice needed many partial/rejection rounds, while Church and
-Caravan each needed one narrow semantic-root rejection. Keep `xhigh`; do not raise the ordinary worker to
-`max` or `ultra` on this history alone.
+Caravan each needed one narrow semantic-root rejection. The 2026-08-01 review also separated contract
+omissions from the entity-presentation-FX false PASS: the latter was a runner/observer failure-propagation
+defect and not evidence that static reasoning needed a larger model. Keep `xhigh`; do not raise the
+ordinary worker to `max` or `ultra` on this history alone.
+
+The same review found that copying every historical acceptance lesson into the injected custom-agent
+prompt had grown it to 1,301 words and made the native harness test preserve dozens of prompt substrings.
+That pattern diluted the execution sequence and turned each rejection into another permanent prompt
+clause. The custom-agent prompt is now a compact protocol that points to this ADR's complete checklist as
+the single detailed acceptance owner. Tests protect the role boundary, required protocol stages, and a
+prompt-size ceiling rather than freezing each checklist sentence in two places.
 
 ## Why
 
@@ -40,8 +50,10 @@ and keeps the durable repository record coherent.
 
 ## Workflow
 
-1. The root specifies the owning topic, bounded source surface, tracked outputs, and one narrow H2/H3
-   acceptance command.
+1. The root supplies a slice contract with the owning topic/document, bounded source surface, owned
+   tracked files, shared-file needs, expected outputs, one narrow H2/H3 acceptance command, and explicit
+   exclusions. Static and runtime work are separate slices unless the contract gives a concrete reason
+   they must share one implementation change.
 2. The Terra worker performs the complete static slice and returns a structured handoff without staging
    or committing. Before handoff it performs an adversarial self-review against the acceptance checklist
    below and reports the weaknesses it corrected.
@@ -131,6 +143,11 @@ quality contract. Before handoff, the worker therefore checks all of the followi
     target set, not merely positive occurrences.
 22. The worker's pre-handoff summary-provenance audit asks whether every reported derived field links to a
     parsed use site and to a mutation capable of falsifying it before fixture comparison.
+23. An H3 command does not pass merely because BizHawk exits normally and an observation JSON matches.
+    Every tracked callback exception reaches a status record and non-zero emulator exit; diagnostics name
+    the case plus actual/expected call-site, target, return, and pending callback state where applicable;
+    multiple roles at one PC use one deterministic dispatcher; and the accepted run leaves no Lua Console
+    error or registered callback behind.
 
 The root repeats these checks independently. A rejection returns to the same worker and becomes input to
 its next self-review; the root does not silently patch the research implementation.
