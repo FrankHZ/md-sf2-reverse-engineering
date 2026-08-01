@@ -1,3 +1,4 @@
+import re
 from collections import Counter
 from copy import deepcopy
 from hashlib import sha256
@@ -67,6 +68,7 @@ from sf2tool.h2.map_script_engine import (
     _map_lifecycle_macro_annotations,
     _map_lifecycle_read_use_site,
     _map_lifecycle_section_guard,
+    _map_macro_contracts,
     _map_script_ui_primary_macro_annotations,
     _map_script_ui_primary_portrait_helper_join,
     _map_script_ui_primary_section_guard,
@@ -77,6 +79,16 @@ from sf2tool.h2.map_script_engine import (
     _screen_presentation_direct_calls,
     _screen_presentation_macro_annotations,
     _screen_presentation_section_guard,
+    _script_control_aliases,
+    _script_control_cursor_read_use_site,
+    _script_control_handler_guard,
+    _script_control_macro_facts,
+    _script_control_main_loop_guard,
+    _script_control_operand_annotations,
+    _script_control_resolve_operand,
+    _script_control_sound_operand_join,
+    _script_control_validate_corpus_hashes,
+    _source_equates,
     _statements,
     _story_state_corpus_order_facts,
     _story_state_facts,
@@ -300,6 +312,503 @@ def test_map_entity_placement_cursor_read_parser_preserves_advance_and_sizes() -
     ):
         with pytest.raises(ValueError, match="entity-placement cursor-read"):
             _entity_placement_cursor_read_use_site(near_miss)
+
+
+def test_script_control_operand_and_cursor_parsers_reject_near_misses() -> None:
+    assert _script_control_resolve_operand("SFX_WARP", {"SFX_WARP": 89}) == {
+        "sourceOperand": "SFX_WARP",
+        "sourceSymbol": "SFX_WARP",
+        "resolvedValue": 89,
+    }
+    assert _script_control_resolve_operand("$80", {}) == {
+        "sourceOperand": "$80",
+        "sourceSymbol": None,
+        "resolvedValue": 128,
+    }
+    with pytest.raises(ValueError, match="not a source equate or literal"):
+        _script_control_resolve_operand("SFX_NOT_DECLARED", {})
+
+    assert _script_control_cursor_read_use_site("move.w (a6)+,d0") == {
+        "sourceRegister": "a6",
+        "destinationRegister": "d0",
+        "transferredByteCount": 2,
+        "cursorAdvanceByteCount": 2,
+        "instruction": "move.w (a6)+,d0",
+    }
+    assert _script_control_cursor_read_use_site("movea.l (a6),a6") == {
+        "sourceRegister": "a6",
+        "destinationRegister": "a6",
+        "transferredByteCount": 4,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "movea.l (a6),a6",
+    }
+    assert _script_control_cursor_read_use_site("move.w (a6)+,d0 ; source comment")[
+        "instruction"
+    ] == "move.w (a6)+,d0"
+    for near_miss in (
+        "label: move.w (a6)+,d0",
+        "move.w (a5)+,d0",
+        "move.w (a6)+,d8",
+        "moveq #1,d0",
+    ):
+        with pytest.raises(ValueError, match="script-control cursor-read"):
+            _script_control_cursor_read_use_site(near_miss)
+
+
+def test_script_control_macro_and_handler_guards_reject_local_drift() -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    macro_source = (disasm / "sf2cutscenemacros.asm").read_text(encoding="utf-8")
+    macro_rows = _script_control_macro_facts(
+        macro_source, _map_macro_contracts(disasm)
+    )
+    assert [row["name"] for row in macro_rows] == [
+        "csWait",
+        "playSound",
+        "csc06",
+        "executeSubroutine",
+        "jump",
+        "cscNop",
+        "csc_end",
+    ]
+    assert macro_rows[0]["negativeWaitLeadByte"] == 128
+    assert macro_rows[5]["encodedBytes"] == 0
+    assert macro_rows[6]["encodedWord"] == 65535
+    with pytest.raises(ValueError, match="negative path"):
+        _script_control_macro_facts(
+            macro_source.replace("dc.b $80", "dc.b $00", 1),
+            _map_macro_contracts(disasm),
+        )
+    assert _script_control_operand_annotations(
+        """
+        ; source comment before an emission
+        dc.w $05
+
+        dc.w \\1 ; operand comment
+        """
+    ) == [
+        {
+            "parameterOrdinal": 1,
+            "sourceComment": "operand comment",
+            "streamOffset": 2,
+            "widthBytes": 2,
+            "encoding": "direct",
+        }
+    ]
+
+    engine_source = (
+        disasm / "code/common/scripting/map/mapscriptengine_2.asm"
+    ).read_text(encoding="utf-8")
+    guard = _script_control_main_loop_guard(
+        engine_source, _source_equates(disasm), macro_rows
+    )
+    assert guard["terminatorCompare"] == {
+        "instruction": "cmpi.w #-1,d0",
+        "comparedSignedValue": -1,
+        "terminatorMacro": "csc_end",
+        "terminatorEncodedWord": 65535,
+        "terminatorEncodedByteCount": 2,
+    }
+    assert guard["negativeWaitPath"]["byteMaskUse"] == {
+        "constant": "BYTE_MASK",
+        "value": 255,
+        "instruction": "andi.w #BYTE_MASK,d0",
+    }
+    for old, new in (
+        ("cmpi.w  #-1,d0", "cmpi.w  #0,d0"),
+        ("bpl.s   loc_47174", "bmi.s   loc_47174"),
+        ("add.w   d0,d0", "addq.w  #2,d0"),
+    ):
+        with pytest.raises(ValueError, match="statement|script-control"):
+            _script_control_main_loop_guard(
+                engine_source.replace(old, new, 1), _source_equates(disasm), macro_rows
+            )
+
+    def handler_statements(name: str) -> list[str]:
+        match = re.search(
+            rf"^{name}:\s*\n(?P<body>.*?)^\s*; End of function {name}\s*$",
+            engine_source,
+            re.MULTILINE | re.DOTALL,
+        )
+        assert match is not None
+        return _statements(match.group("body"))
+
+    for macro, handler in (
+        ("playSound", "csc05_playSound"),
+        ("csc06", "csc06_doNothing"),
+        ("executeSubroutine", "csc0A_executeSubroutine"),
+        ("jump", "csc0B_jump"),
+    ):
+        statements = handler_statements(handler)
+        _script_control_handler_guard(macro, statements)
+        mutated = [*statements]
+        mutated[0] = "nop"
+        with pytest.raises(ValueError, match="statement order drift"):
+            _script_control_handler_guard(macro, mutated)
+
+
+def test_script_control_aliases_guard_source_and_rom_target_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    addresses = map_script_engine.listing_symbol_addresses(
+        (disasm.parent / "build/sf2build-h1.lst").read_text(encoding="utf-8")
+    )
+    rom = repo_path("local/roms/sf2-us.bin").read_bytes()
+    targets = {
+        "j_FadeOut_WaitForP1Input",
+        "j_PlayEndingKissSequence",
+        "j_csub_40F2",
+    }
+    assert _script_control_aliases(disasm, targets, addresses, rom) == {
+        "j_FadeOut_WaitForP1Input": {
+            "effectiveTarget": "FadeOut_WaitForP1Input",
+            "sourcePath": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+        },
+        "j_PlayEndingKissSequence": {
+            "effectiveTarget": "PlayEndingKissSequence",
+            "sourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_2.asm",
+        },
+        "j_csub_40F2": {
+            "effectiveTarget": "csub_40F2",
+            "sourcePath": "data/maps/entries/map08/mapsetups/scripts.asm",
+        },
+    }
+    original_reader = map_script_engine.read_upstream_text
+
+    def altered_reader(path: Path) -> str:
+        source = original_reader(path)
+        if path.as_posix().endswith("data/maps/entries/map08/mapsetups/scripts.asm"):
+            return source.replace("jmp     (csub_40F2).w", "rts", 1)
+        return source
+
+    monkeypatch.setattr(map_script_engine, "read_upstream_text", altered_reader)
+    with pytest.raises(ValueError, match="alias instruction drift"):
+        _script_control_aliases(disasm, targets, addresses, rom)
+
+
+def test_script_control_sound_join_validates_fixture_identity_and_domains(
+    map_script_engine_output: dict,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    disasm = repo_path("local/upstream/SF2DISASM/disasm")
+    source_sites = map_script_engine_output["scriptControlCommandFacts"]["sourceSites"]
+    assert _script_control_sound_operand_join(disasm, source_sites)[
+        "sourceCategoryCounts"
+    ] == {"music": 58, "sfx": 224, "sound-command": 27}
+    original_loader = map_script_engine.load_json
+
+    def loader_with(mutate):
+        def loader(path: Path) -> dict:
+            data = original_loader(path)
+            if path == map_script_engine.SOUND_DATA_FIXTURE:
+                data = deepcopy(data)
+                mutate(data)
+            return data
+
+        return loader
+
+    monkeypatch.setattr(
+        map_script_engine,
+        "load_json",
+        loader_with(
+            lambda data: data["expected"]["commandModel"]["bankSelection"].__setitem__(
+                "enumSourceSha256", "0" * 64
+            )
+        ),
+    )
+    with pytest.raises(ValueError, match="sound-data contract identity"):
+        _script_control_sound_operand_join(disasm, source_sites)
+
+    monkeypatch.setattr(
+        map_script_engine,
+        "load_json",
+        loader_with(
+            lambda data: data["expected"]["commandModel"]["bankSelection"][
+                "summary"
+            ].__setitem__("commandSlotCount", 1)
+        ),
+    )
+    with pytest.raises(ValueError, match="outside maintained music domain"):
+        _script_control_sound_operand_join(disasm, source_sites)
+
+    monkeypatch.setattr(
+        map_script_engine,
+        "load_json",
+        loader_with(
+            lambda data: data["expected"]["commandModel"]["sfxModel"]["summary"].__setitem__(
+                "minimumCommand", 120
+            )
+        ),
+    )
+    with pytest.raises(ValueError, match="outside maintained SFX domain"):
+        _script_control_sound_operand_join(disasm, source_sites)
+
+
+def test_script_control_command_boundary_matches_complete_golden_fixture(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    actual = map_script_engine_output["scriptControlCommandFacts"]
+    expected = fixture["expected"]["scriptControlCommandFacts"]
+    assert expected == {key: actual[key] for key in expected}
+    _script_control_validate_corpus_hashes(actual)
+    assert actual["summary"] == {
+        "macroCount": 7,
+        "sourceUseCount": 2336,
+        "sourceSiteProgramCount": 304,
+        "zeroUseMacroCount": 2,
+        "sourceEncodedByteCount": 5822,
+        "waitSourceUseCount": 1591,
+        "soundSourceUseCount": 309,
+        "subroutineSourceUseCount": 122,
+        "jumpSourceUseCount": 11,
+        "terminatorSourceUseCount": 303,
+    }
+    assert [
+        (
+            row["name"],
+            row["opcode"],
+            row["encodedBytes"],
+            row["operandBytes"],
+            row["sourceCommandCount"],
+            row.get("handler"),
+        )
+        for row in actual["macros"]
+    ] == [
+        ("csWait", None, 2, 1, 1591, None),
+        ("playSound", 5, 4, 2, 309, "csc05_playSound"),
+        ("csc06", 6, 2, 0, 0, "csc06_doNothing"),
+        ("executeSubroutine", 10, 6, 4, 122, "csc0A_executeSubroutine"),
+        ("jump", 11, 6, 4, 11, "csc0B_jump"),
+        ("cscNop", None, 0, 0, 0, None),
+        ("csc_end", None, 2, 0, 303, None),
+    ]
+    assert (len(actual["sourceSites"]), len(actual["programTotals"])) == (304, 304)
+    assert actual["sourceSitesSha256"] == (
+        "5D853AB05645D181B4B2934242817A42DD40547CB4021181E21B01D11D387571"
+    )
+    assert actual["programTotalsSha256"] == (
+        "9FE27CBCA9C4911C82667541384CD0AF3E5BEFCE7D3AF248602D1146F796F2C7"
+    )
+    assert actual["targetInventoriesSha256"] == (
+        "197FC6AC1D8E4E2CAA82FDC3A00FFF3AE07F2F8D6E64BCBA41A03A8980A084C8"
+    )
+    assert actual["mainLoopGuard"]["terminatorCompare"] == {
+        "instruction": "cmpi.w #-1,d0",
+        "comparedSignedValue": -1,
+        "terminatorMacro": "csc_end",
+        "terminatorEncodedWord": 65535,
+        "terminatorEncodedByteCount": 2,
+    }
+    assert actual["mainLoopGuard"]["negativeWaitPath"]["byteMaskUse"] == {
+        "constant": "BYTE_MASK",
+        "value": 255,
+        "instruction": "andi.w #BYTE_MASK,d0",
+    }
+    assert [
+        (row["macro"], row["handler"], row["address"], row["opcode"])
+        for row in actual["handlers"]
+    ] == [
+        ("playSound", "csc05_playSound", 291704, 5),
+        ("csc06", "csc06_doNothing", 291712, 6),
+        ("executeSubroutine", "csc0A_executeSubroutine", 291850, 10),
+        ("jump", "csc0B_jump", 291860, 11),
+    ]
+    assert actual["handlers"][2]["sectionGuard"]["orderedInstructions"] == [
+        "movea.l (a6)+,a1",
+        "move.l a0,-(sp)",
+        "jsr (a1)",
+        "movea.l (sp)+,a0",
+        "rts",
+    ]
+    assert actual["handlers"][3]["sectionGuard"]["scriptCursorReadUseSite"] == {
+        "sourceRegister": "a6",
+        "destinationRegister": "a6",
+        "transferredByteCount": 4,
+        "cursorAdvanceByteCount": 0,
+        "instruction": "movea.l (a6),a6",
+    }
+    for macro, use_count, target_count, active_target_count in (
+        ("executeSubroutine", 122, 47, 47),
+        ("jump", 11, 348, 10),
+    ):
+        inventory = actual["targetInventories"][macro]
+        assert inventory["sourceUseCount"] == use_count
+        assert len(inventory["declaredInstructionTargets"]) == target_count
+        assert len(inventory["declaredEffectiveTargets"]) == target_count
+        assert len(inventory["instructionTargetTotals"]) == target_count
+        assert len(inventory["effectiveTargetTotals"]) == target_count
+        assert sum(value > 0 for value in inventory["instructionTargetTotals"].values()) == (
+            active_target_count
+        )
+        assert sum(value > 0 for value in inventory["effectiveTargetTotals"].values()) == (
+            active_target_count
+        )
+        assert sum(inventory["instructionTargetTotals"].values()) == use_count
+        assert sum(inventory["effectiveTargetTotals"].values()) == use_count
+        assert set(inventory["effectiveTargetTotals"]) == set(
+            inventory["declaredEffectiveTargets"]
+        )
+        assert set(inventory["internalEffectiveTargetTotals"]) == set(
+            inventory["declaredEffectiveTargets"]
+        )
+        assert set(inventory["externalEffectiveTargetTotals"]) == set(
+            inventory["declaredEffectiveTargets"]
+        )
+        assert inventory["unresolvedInstructionTargetCount"] == 0
+    assert [
+        (row["instructionTarget"], row["effectiveTarget"], row["aliasSourcePath"])
+        for row in actual["targetInventories"]["executeSubroutine"]["targetResolutions"]
+        if row["instructionTarget"] != row["effectiveTarget"]
+    ] == [
+        (
+            "j_FadeOut_WaitForP1Input",
+            "FadeOut_WaitForP1Input",
+            "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+        ),
+        (
+            "j_PlayEndingKissSequence",
+            "PlayEndingKissSequence",
+            "code/common/tech/jumpinterfaces/s03_jumpinterface_2.asm",
+        ),
+        (
+            "j_csub_40F2",
+            "csub_40F2",
+            "data/maps/entries/map08/mapsetups/scripts.asm",
+        ),
+    ]
+    assert actual["soundOperandJoin"]["sourceCategoryCounts"] == {
+        "music": 58,
+        "sfx": 224,
+        "sound-command": 27,
+    }
+    assert actual["runtimeQuestions"] == [
+        "map-script-control-audio/wait-normal-and-skip-gate",
+        "map-script-control-audio/no-op-dispatch-boundary",
+        "map-script-control-audio/sound-dispatch-boundary",
+        "map-script-control-audio/subroutine-call-return-boundary",
+        "map-script-control-audio/jump-cursor-redirect-and-end-boundary",
+    ]
+
+
+def test_script_control_command_boundary_schemas_reject_nested_and_corpus_mutations(
+    map_script_engine_output: dict,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    sources = (map_script_engine_output, fixture)
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for source, schema_path in zip(sources, schema_paths, strict=True):
+        validate_json(source, schema_path, owner="script-control baseline")
+        target_path = (
+            ("scriptControlCommandFacts",)
+            if source is map_script_engine_output
+            else ("expected", "scriptControlCommandFacts")
+        )
+
+        def target_for(value: dict, target_path: tuple[str, ...] = target_path) -> dict:
+            target = value
+            for key in target_path:
+                target = target[key]
+            return target
+
+        missing = deepcopy(source)
+        del target_for(missing)["mainLoopGuard"]["negativeWaitPath"]["byteMaskUse"]
+        with pytest.raises(ValueError, match="byteMaskUse"):
+            validate_json(missing, schema_path, owner="script-control missing nested")
+
+        renamed = deepcopy(source)
+        guard = target_for(renamed)["handlers"][2]["sectionGuard"]
+        guard["callInstruction"] = guard.pop("indirectCallInstruction")
+        with pytest.raises(ValueError, match="indirectCallInstruction"):
+            validate_json(renamed, schema_path, owner="script-control renamed nested")
+
+        extra = deepcopy(source)
+        target_for(extra)["handlers"][0]["sectionGuard"]["extra"] = True
+        with pytest.raises(ValueError, match="extra"):
+            validate_json(extra, schema_path, owner="script-control extra nested")
+
+        boundary = deepcopy(source)
+        target_for(boundary)["macros"].pop()
+        with pytest.raises(ValueError):
+            validate_json(boundary, schema_path, owner="script-control macro boundary")
+
+    reordered = deepcopy(map_script_engine_output)["scriptControlCommandFacts"]
+    reordered["sourceSites"][0], reordered["sourceSites"][1] = (
+        reordered["sourceSites"][1],
+        reordered["sourceSites"][0],
+    )
+    with pytest.raises(ValueError, match="sourceSitesSha256"):
+        _script_control_validate_corpus_hashes(reordered)
+
+
+def test_script_control_command_schema_uses_compact_closed_corpora() -> None:
+    schema_paths = (
+        repo_path("schemas/map-script-engine-static.schema.json"),
+        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    )
+    for path in schema_paths:
+        schema = load_json(path)
+        fixture_schema = path.name.startswith("h2-map-script-engine")
+        command_contract = (
+            schema["properties"]["expected"]["properties"]["scriptControlCommandFacts"]
+            if fixture_schema
+            else schema["properties"]["scriptControlCommandFacts"]
+        )
+        exact = command_contract["allOf"][1]
+        assert {"sourceSites", "programTotals", "targetInventories"}.isdisjoint(
+            exact.get("const", exact.get("properties", {}))
+        )
+        definition_name = (
+            "scriptControlFixtureCommandFacts"
+            if fixture_schema
+            else "scriptControlCommandFacts"
+        )
+        facts = schema["definitions"][definition_name]
+        assert facts["additionalProperties"] is False
+        if fixture_schema:
+            assert {"sourceSites", "programTotals", "targetInventories"}.isdisjoint(
+                facts["required"]
+            )
+        else:
+            assert {"sourceSites", "programTotals", "targetInventories"} <= set(
+                facts["required"]
+            )
+            for corpus in ("sourceSites", "programTotals"):
+                contract = facts["properties"][corpus]
+                assert contract["minItems"] == contract["maxItems"] == 304
+                assert "const" not in contract
+            for target, count in (("executeSubroutine", 47), ("jump", 348)):
+                inventory = facts["properties"]["targetInventories"]["properties"][target]
+                assert inventory["properties"]["declaredEffectiveTargets"] == {
+                    "type": "array",
+                    "minItems": count,
+                    "maxItems": count,
+                    "items": {"type": "string"},
+                }
+                for name in (
+                    "instructionTargetTotals",
+                    "effectiveTargetTotals",
+                    "internalInstructionTargetTotals",
+                    "externalInstructionTargetTotals",
+                    "internalEffectiveTargetTotals",
+                    "externalEffectiveTargetTotals",
+                ):
+                    assert "const" not in inventory["properties"][name]
+
+        def assert_closed_objects(value: object) -> None:
+            if isinstance(value, dict):
+                if value.get("type") == "object":
+                    assert value.get("additionalProperties") is False
+                for child in value.values():
+                    assert_closed_objects(child)
+            elif isinstance(value, list):
+                for child in value:
+                    assert_closed_objects(child)
+
+        assert_closed_objects(facts)
 
 
 def test_map_camera_control_section_guard_rejects_operand_branch_and_call_order() -> None:

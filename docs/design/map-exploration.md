@@ -98,6 +98,27 @@ opcode or target names alone.
 Standalone script resources likewise retain ordered commands, operand text, and resolved references
 between all 178 labels. These are importable command graphs, not proof that a modern engine may skip
 the original interpreter's state, wait, camera, dialogue, or presentation sequencing.
+
+**Confirmed source contract:** an importer that retains map-script command graphs MUST preserve the
+source-faithful control/audio forms from `sf2-map-script-engine-static-v1`,
+`tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.scriptControlCommandFacts`: `csWait`, `playSound`, `csc06`, `executeSubroutine`, `jump`,
+the zero-byte source form `cscNop`, and the two-byte `$FFFF` `csc_end` form. `playSound` retains its
+raw source enum operand and its maintained sound-data identity; it MUST NOT be normalized into an
+audible-result, music, effect, or timing field merely from its source label.
+
+**Confirmed source contract:** the imported interpreter model MUST keep the static A6-cursor boundary
+distinct from encoded-byte storage. The named dispatch loop reads a word, compares signed `-1` with the
+`csc_end` word, has a source-negative branch through the `BYTE_MASK`/`Sleep` sequence, and doubles the
+non-negative selector before table dispatch. `executeSubroutine` transfers a four-byte target with
+post-increment before its save/call/restore sequence; `jump` transfers a four-byte target into A6 with
+zero cursor advance. These source control-flow facts require fidelity tests, but they do not establish
+timer units, sound playback, story reachability, persistence, or player-visible presentation.
+
+**Unknown:** runtime behavior remains only the grouped
+`map-script-control-audio/*` queue in
+[`common-scripting.md`](../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary).
+
 Direct map-event `txt` and operand-free `clsTxt` forms are likewise source identities, not a display
 contract. An importer MUST retain each ordered site as either a numeric text-line identifier or the
 literal `$FFFF` sentinel source form, plus its caller and independently named physical/setup/route

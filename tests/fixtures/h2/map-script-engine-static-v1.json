@@ -441,7 +441,12 @@
       "map-script-ui-command/save-persistence-map-entity-interactions",
       "map-script-entity-clone/further-runtime-state-matrix",
       "map-script-entity-clone/further-runtime-external-consumer-matrix",
-      "map-script-entity-clone/further-runtime-context-matrix"
+      "map-script-entity-clone/further-runtime-context-matrix",
+      "map-script-control-audio/wait-normal-and-skip-gate",
+      "map-script-control-audio/no-op-dispatch-boundary",
+      "map-script-control-audio/sound-dispatch-boundary",
+      "map-script-control-audio/subroutine-call-return-boundary",
+      "map-script-control-audio/jump-cursor-redirect-and-end-boundary"
     ],
     "dialogueCommandFacts": {
       "macros": [
@@ -99556,5 +99561,847 @@
         "map-script-entity-clone/further-runtime-context-matrix"
       ]
     }
-  }
+  ,
+    "scriptControlCommandFacts": {
+      "summary": {
+        "macroCount": 7,
+        "sourceUseCount": 2336,
+        "sourceSiteProgramCount": 304,
+        "zeroUseMacroCount": 2,
+        "sourceEncodedByteCount": 5822,
+        "waitSourceUseCount": 1591,
+        "soundSourceUseCount": 309,
+        "subroutineSourceUseCount": 122,
+        "jumpSourceUseCount": 11,
+        "terminatorSourceUseCount": 303
+      },
+      "macroSourceOrder": [
+        "csWait",
+        "playSound",
+        "csc06",
+        "executeSubroutine",
+        "jump",
+        "cscNop",
+        "csc_end"
+      ],
+      "macros": [
+        {
+          "name": "csWait",
+          "directiveKind": "sleep",
+          "opcode": null,
+          "encodedBytes": 2,
+          "operandBytes": 1,
+          "emissionRows": [
+            {
+              "streamOffset": 0,
+              "widthBytes": 1,
+              "expression": "$80",
+              "parameterOrdinals": [],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 1,
+              "widthBytes": 1,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "operandLayout": [
+            {
+              "streamOffset": 1,
+              "widthBytes": 1,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1
+          ],
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "duration",
+              "streamOffset": 1,
+              "widthBytes": 1,
+              "encoding": "direct"
+            }
+          ],
+          "negativeWaitLeadByte": 128,
+          "sourceCommandCount": 1591
+        },
+        {
+          "name": "playSound",
+          "directiveKind": "command",
+          "opcode": 5,
+          "encodedBytes": 4,
+          "operandBytes": 2,
+          "emissionRows": [
+            {
+              "streamOffset": 0,
+              "widthBytes": 2,
+              "expression": "$05",
+              "parameterOrdinals": [],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1
+          ],
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "music/sound/command to start",
+              "streamOffset": 2,
+              "widthBytes": 2,
+              "encoding": "direct"
+            }
+          ],
+          "sourceCommandCount": 309,
+          "handler": "csc05_playSound"
+        },
+        {
+          "name": "csc06",
+          "directiveKind": "command",
+          "opcode": 6,
+          "encodedBytes": 2,
+          "operandBytes": 0,
+          "emissionRows": [
+            {
+              "streamOffset": 0,
+              "widthBytes": 2,
+              "expression": "$06",
+              "parameterOrdinals": [],
+              "encoding": "direct"
+            }
+          ],
+          "operandLayout": [],
+          "parameterOrdinals": [],
+          "sourceOperandAnnotations": [],
+          "sourceCommandCount": 0,
+          "handler": "csc06_doNothing"
+        },
+        {
+          "name": "executeSubroutine",
+          "directiveKind": "command",
+          "opcode": 10,
+          "encodedBytes": 6,
+          "operandBytes": 4,
+          "emissionRows": [
+            {
+              "streamOffset": 0,
+              "widthBytes": 2,
+              "expression": "$0A",
+              "parameterOrdinals": [],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 2,
+              "widthBytes": 4,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 4,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1
+          ],
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "subroutine address",
+              "streamOffset": 2,
+              "widthBytes": 4,
+              "encoding": "direct"
+            }
+          ],
+          "sourceCommandCount": 122,
+          "handler": "csc0A_executeSubroutine"
+        },
+        {
+          "name": "jump",
+          "directiveKind": "command",
+          "opcode": 11,
+          "encodedBytes": 6,
+          "operandBytes": 4,
+          "emissionRows": [
+            {
+              "streamOffset": 0,
+              "widthBytes": 2,
+              "expression": "$0B",
+              "parameterOrdinals": [],
+              "encoding": "direct"
+            },
+            {
+              "streamOffset": 2,
+              "widthBytes": 4,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "operandLayout": [
+            {
+              "streamOffset": 2,
+              "widthBytes": 4,
+              "expression": "\\1",
+              "parameterOrdinals": [
+                1
+              ],
+              "encoding": "direct"
+            }
+          ],
+          "parameterOrdinals": [
+            1
+          ],
+          "sourceOperandAnnotations": [
+            {
+              "parameterOrdinal": 1,
+              "sourceComment": "address to jump to",
+              "streamOffset": 2,
+              "widthBytes": 4,
+              "encoding": "direct"
+            }
+          ],
+          "sourceCommandCount": 11,
+          "handler": "csc0B_jump"
+        },
+        {
+          "name": "cscNop",
+          "directiveKind": "source-nop",
+          "opcode": null,
+          "encodedBytes": 0,
+          "operandBytes": 0,
+          "emissionRows": [],
+          "operandLayout": [],
+          "parameterOrdinals": [],
+          "sourceOperandAnnotations": [],
+          "sourceCommandCount": 0
+        },
+        {
+          "name": "csc_end",
+          "directiveKind": "terminator",
+          "opcode": null,
+          "encodedBytes": 2,
+          "operandBytes": 0,
+          "emissionRows": [
+            {
+              "streamOffset": 0,
+              "widthBytes": 2,
+              "expression": "$FFFF",
+              "parameterOrdinals": [],
+              "encoding": "direct"
+            }
+          ],
+          "operandLayout": [],
+          "parameterOrdinals": [],
+          "sourceOperandAnnotations": [],
+          "encodedWord": 65535,
+          "sourceCommandCount": 303
+        }
+      ],
+      "sourceSitesSha256": "5D853AB05645D181B4B2934242817A42DD40547CB4021181E21B01D11D387571",
+      "programTotalsSha256": "9FE27CBCA9C4911C82667541384CD0AF3E5BEFCE7D3AF248602D1146F796F2C7",
+      "mainLoopGuard": {
+        "sectionLabel": "loc_47156",
+        "orderedInstructions": [
+          "move.w (a6)+,d0",
+          "cmpi.w #-1,d0",
+          "beq.w loc_47234",
+          "tst.w d0",
+          "bpl.s loc_47174",
+          "tst.b ((SKIP_CUTSCENE_TEXT-$1000000)).w",
+          "bne.s loc_47172",
+          "andi.w #BYTE_MASK,d0",
+          "jsr (Sleep).w",
+          "bra.s loc_47140",
+          "add.w d0,d0",
+          "move.w rjt_cutsceneScriptCommands(pc,d0.w),d0",
+          "jsr rjt_cutsceneScriptCommands(pc,d0.w)",
+          "bra.s loc_47140"
+        ],
+        "scriptCursorReadUseSite": {
+          "sourceRegister": "a6",
+          "destinationRegister": "d0",
+          "transferredByteCount": 2,
+          "cursorAdvanceByteCount": 2,
+          "instruction": "move.w (a6)+,d0"
+        },
+        "terminatorCompare": {
+          "instruction": "cmpi.w #-1,d0",
+          "comparedSignedValue": -1,
+          "terminatorMacro": "csc_end",
+          "terminatorEncodedWord": 65535,
+          "terminatorEncodedByteCount": 2
+        },
+        "negativeWaitPath": {
+          "negativeTestInstruction": "tst.w d0",
+          "negativeBranchInstruction": "bpl.s loc_47174",
+          "skipGateReadInstruction": "tst.b ((SKIP_CUTSCENE_TEXT-$1000000)).w",
+          "skipGateBranchInstruction": "bne.s loc_47172",
+          "byteMaskUse": {
+            "constant": "BYTE_MASK",
+            "value": 255,
+            "instruction": "andi.w #BYTE_MASK,d0"
+          },
+          "sleepCallInstruction": "jsr (Sleep).w",
+          "loopInstruction": "bra.s loc_47140",
+          "waitMacro": "csWait",
+          "waitLeadByte": 128,
+          "waitDurationOperandWidthBytes": 1
+        },
+        "opcodeDispatchPath": {
+          "selectorScaleInstruction": "add.w d0,d0",
+          "tableReadInstruction": "move.w rjt_cutsceneScriptCommands(pc,d0.w),d0",
+          "dispatchCallInstruction": "jsr rjt_cutsceneScriptCommands(pc,d0.w)",
+          "loopInstruction": "bra.s loc_47140"
+        },
+        "branchTargets": [
+          {
+            "branchInstruction": "beq.w loc_47234",
+            "targetLabel": "loc_47234",
+            "targetInstruction": "tst.w ((DIALOGUE_WINDOW_INDEX-$1000000)).w"
+          },
+          {
+            "branchInstruction": "bpl.s loc_47174",
+            "targetLabel": "loc_47174",
+            "targetInstruction": "add.w d0,d0"
+          },
+          {
+            "branchInstruction": "bne.s loc_47172",
+            "targetLabel": "loc_47172",
+            "targetInstruction": "bra.s loc_47140"
+          },
+          {
+            "branchInstruction": "bra.s loc_47140",
+            "targetLabel": "loc_47140",
+            "targetInstruction": "btst #INPUT_BIT_START,((PLAYER_2_INPUT-$1000000)).w"
+          },
+          {
+            "branchInstruction": "bra.s loc_47140",
+            "targetLabel": "loc_47140",
+            "targetInstruction": "btst #INPUT_BIT_START,((PLAYER_2_INPUT-$1000000)).w"
+          }
+        ]
+      },
+      "handlers": [
+        {
+          "macro": "playSound",
+          "handler": "csc05_playSound",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+          "address": 291704,
+          "opcode": 5,
+          "sourceCommandCount": 309,
+          "statementCount": 3,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "move.w (a6)+,d0",
+              "sndCom SOUND_COMMAND_GET_D0_PARAMETER",
+              "rts"
+            ],
+            "returnInstruction": "rts",
+            "scriptCursorReadUseSite": {
+              "sourceRegister": "a6",
+              "destinationRegister": "d0",
+              "transferredByteCount": 2,
+              "cursorAdvanceByteCount": 2,
+              "instruction": "move.w (a6)+,d0"
+            },
+            "soundCommandInstruction": "sndCom SOUND_COMMAND_GET_D0_PARAMETER",
+            "soundCommandSymbol": "SOUND_COMMAND_GET_D0_PARAMETER"
+          }
+        },
+        {
+          "macro": "csc06",
+          "handler": "csc06_doNothing",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+          "address": 291712,
+          "opcode": 6,
+          "sourceCommandCount": 0,
+          "statementCount": 1,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "rts"
+            ],
+            "returnInstruction": "rts",
+            "scriptCursorReadUseSites": []
+          }
+        },
+        {
+          "macro": "executeSubroutine",
+          "handler": "csc0A_executeSubroutine",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+          "address": 291850,
+          "opcode": 10,
+          "sourceCommandCount": 122,
+          "statementCount": 5,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "movea.l (a6)+,a1",
+              "move.l a0,-(sp)",
+              "jsr (a1)",
+              "movea.l (sp)+,a0",
+              "rts"
+            ],
+            "returnInstruction": "rts",
+            "scriptCursorReadUseSite": {
+              "sourceRegister": "a6",
+              "destinationRegister": "a1",
+              "transferredByteCount": 4,
+              "cursorAdvanceByteCount": 4,
+              "instruction": "movea.l (a6)+,a1"
+            },
+            "targetRegister": "a1",
+            "saveInstruction": "move.l a0,-(sp)",
+            "indirectCallInstruction": "jsr (a1)",
+            "restoreInstruction": "movea.l (sp)+,a0"
+          }
+        },
+        {
+          "macro": "jump",
+          "handler": "csc0B_jump",
+          "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+          "address": 291860,
+          "opcode": 11,
+          "sourceCommandCount": 11,
+          "statementCount": 2,
+          "sectionGuard": {
+            "orderedInstructions": [
+              "movea.l (a6),a6",
+              "rts"
+            ],
+            "returnInstruction": "rts",
+            "scriptCursorReadUseSite": {
+              "sourceRegister": "a6",
+              "destinationRegister": "a6",
+              "transferredByteCount": 4,
+              "cursorAdvanceByteCount": 0,
+              "instruction": "movea.l (a6),a6"
+            },
+            "cursorRedirectInstruction": "movea.l (a6),a6"
+          }
+        }
+      ],
+      "targetInventoriesSha256": "197FC6AC1D8E4E2CAA82FDC3A00FFF3AE07F2F8D6E64BCBA41A03A8980A084C8",
+      "soundOperandJoin": {
+        "soundDataContractId": "sf2-sound-data-static-v1",
+        "soundDataFixturePath": "tests/fixtures/h2/sound-data-static-v1.json",
+        "sourceEnumPath": "sf2enums.asm",
+        "sourceEnumSha256": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",
+        "musicDomainFactPath": "commandModel.bankSelection",
+        "sfxDomainFactPath": "commandModel.sfxModel",
+        "soundOperands": [
+          {
+            "sourceSymbol": "MUSIC_ITEM",
+            "value": 27,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_BATTLEFIELD_DEATH",
+            "value": 116,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 31,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_MAIN_THEME",
+            "value": 1,
+            "sourceCategory": "music",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_DEMON_BREATH",
+            "value": 117,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 9,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_BIG_DOOR_RUMBLE",
+            "value": 93,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 41,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_VALIDATION",
+            "value": 67,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_DOOR_OPEN",
+            "value": 92,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SOUND_COMMAND_FADE_OUT",
+            "value": 253,
+            "sourceCategory": "sound-command",
+            "sourceUseCount": 24,
+            "soundDataFactPath": "sf2enums.asm#SoundCommands"
+          },
+          {
+            "sourceSymbol": "MUSIC_SAD_THEME_1",
+            "value": 16,
+            "sourceCategory": "music",
+            "sourceUseCount": 3,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_BOSS_ATTACK",
+            "value": 6,
+            "sourceCategory": "music",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_LIGHTNING_1",
+            "value": 81,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_LIGHTNING_2",
+            "value": 82,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 3,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_HIT_2",
+            "value": 84,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_ENEMY_ATTACK",
+            "value": 5,
+            "sourceCategory": "music",
+            "sourceUseCount": 6,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_TOWN",
+            "value": 8,
+            "sourceCategory": "music",
+            "sourceUseCount": 3,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_FALLING",
+            "value": 88,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 12,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_SHRINE",
+            "value": 35,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_JUMP",
+            "value": 87,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_BATTLE_THEME_3",
+            "value": 33,
+            "sourceCategory": "music",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_MONSTER_SCREAM",
+            "value": 94,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_MITULA_SHRINE",
+            "value": 40,
+            "sourceCategory": "music",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_BATTLE_THEME_1",
+            "value": 34,
+            "sourceCategory": "music",
+            "sourceUseCount": 8,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_INTRO_LIGHTNING",
+            "value": 118,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 14,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_BOLT_SPELL",
+            "value": 119,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 9,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_SAD_THEME_3",
+            "value": 15,
+            "sourceCategory": "music",
+            "sourceUseCount": 4,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_STOP",
+            "value": 32,
+            "sourceCategory": "music",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_ZEON_ATTACK",
+            "value": 7,
+            "sourceCategory": "music",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_WITCH",
+            "value": 10,
+            "sourceCategory": "music",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_BLAST_SPELL",
+            "value": 114,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 39,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_SAD_THEME_2",
+            "value": 12,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_LANDSTALKER_ITEM",
+            "value": 101,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_PIANO_THEME",
+            "value": 17,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_CASTLE",
+            "value": 38,
+            "sourceCategory": "music",
+            "sourceUseCount": 3,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_JOIN",
+            "value": 19,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_SECRET_PATH_ROCK",
+            "value": 96,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 3,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_DESOUL_HOVERING",
+            "value": 110,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_SPELL_CAST",
+            "value": 77,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 7,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_PRISM_LASER_CUTSCENE_FIRING",
+            "value": 111,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 6,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_ENDING",
+            "value": 41,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_DIALOG_BLEEP_6",
+            "value": 74,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 5,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_DIALOG_BLEEP_8",
+            "value": 76,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 5,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SOUND_COMMAND_CUT_OUT",
+            "value": 254,
+            "sourceCategory": "sound-command",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "sf2enums.asm#SoundCommands"
+          },
+          {
+            "sourceSymbol": "SOUND_COMMAND_PLAY_PREVIOUS_MUSIC",
+            "value": 251,
+            "sourceCategory": "sound-command",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "sf2enums.asm#SoundCommands"
+          },
+          {
+            "sourceSymbol": "SFX_BLO",
+            "value": 100,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_PRISM_LASER_FIRING",
+            "value": 108,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 3,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_FINAL_BATTLE",
+            "value": 36,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "MUSIC_MITULA",
+            "value": 14,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          },
+          {
+            "sourceSymbol": "SFX_DOOR_OPEN_HIGH_PITCH",
+            "value": 78,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 16,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_BOOST",
+            "value": 109,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "SFX_WARP",
+            "value": 89,
+            "sourceCategory": "sfx",
+            "sourceUseCount": 2,
+            "soundDataFactPath": "commandModel.sfxModel"
+          },
+          {
+            "sourceSymbol": "MUSIC_PROMOTED_ATTACK_LOOP",
+            "value": 4,
+            "sourceCategory": "music",
+            "sourceUseCount": 1,
+            "soundDataFactPath": "commandModel.bankSelection"
+          }
+        ],
+        "sourceCategoryCounts": {
+          "music": 58,
+          "sfx": 224,
+          "sound-command": 27
+        }
+      },
+      "soundOperandJoinSha256": "205C2F9E7CC481B7C5B387D2736635FC40E5763C41544A3A8C9D0D205F4FA654",
+      "runtimeQuestions": [
+        "map-script-control-audio/wait-normal-and-skip-gate",
+        "map-script-control-audio/no-op-dispatch-boundary",
+        "map-script-control-audio/sound-dispatch-boundary",
+        "map-script-control-audio/subroutine-call-return-boundary",
+        "map-script-control-audio/jump-cursor-redirect-and-end-boundary"
+      ]
+    }}
 }

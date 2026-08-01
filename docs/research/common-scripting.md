@@ -954,6 +954,83 @@ symbols/addresses; and local US ROM SHA-256
 `uv run sf2 h3 map-script-ui-primary --timeout-seconds 180`; observed result is fixture ID
 `sf2-map-script-ui-primary-runtime-v1` in `tests/fixtures/h3/map-script-ui-primary-v1.json`.
 
+## Confirmed Map-Script Control/Audio Macro Boundary
+
+Evidence date: 2026-08-01.
+
+**Confirmed:** `sf2-map-script-engine-static-v1` field
+`expected.scriptControlCommandFacts` records seven source-named forms in this exact source order:
+`csWait` (2 encoded bytes: literal `$80`, then one byte operand), `playSound` `$05` (4 bytes, one
+word operand), `csc06` `$06` (2 bytes, no operand), `executeSubroutine` `$0A` (6 bytes, one long
+operand), `jump` `$0B` (6 bytes, one long operand), `cscNop` (a source no-op that emits zero bytes),
+and `csc_end` (one `$FFFF` word, 2 bytes). The source labels and `playSound` operand comments do not
+establish a duration unit, audible result, player-facing lifecycle, or story meaning.
+
+**Confirmed:** the complete 304-program corpus contains 2,336 occurrences and 5,822 physically
+encoded source bytes: 1,591 `csWait`, 309 `playSound`, zero `csc06`, 122 `executeSubroutine`, 11
+`jump`, zero `cscNop`, and 303 `csc_end`. Each source-site record retains its program ID, source path,
+program address when the source record has one (otherwise explicit null), command index, source line,
+source form, and encoded-byte count. The compact,
+order-sensitive SHA-256 guards are `5D853AB05645D181B4B2934242817A42DD40547CB4021181E21B01D11D387571`
+for all source sites and `9FE27CBCA9C4911C82667541384CD0AF3E5BEFCE7D3AF248602D1146F796F2C7` for all
+304 zero-inclusive program totals. These byte counts and addresses are separate source-storage facts;
+they are not transfer sizes, timer units, or runtime iteration counts.
+
+**Confirmed:** the bounded `ExecuteMapScript` loop section `loc_47156` at H1 `$47156` reads a word
+from A6 with post-increment, compares it with signed `-1`, and branches to `loc_47234`. Its negative
+path retains the `bpl.s loc_47174` polarity, the `SKIP_CUTSCENE_TEXT` read/`bne.s loc_47172` gate,
+`andi.w #BYTE_MASK,d0` with parsed value 255, the direct `(Sleep).w` call, and its loop branch in
+source order. The non-negative path doubles D0, reads the word-offset dispatch table, calls through
+that table, then loops. The guard cross-checks the signed comparison against the emitted `$FFFF`
+`csc_end` word; it is a static control-flow relationship, not a claim that `Sleep` or the skip gate
+has a particular player-visible outcome.
+
+**Confirmed:** four bounded handler sections in
+`code/common/scripting/map/mapscriptengine_2.asm` retain exact order and cursor records:
+`csc05_playSound` at H1 `$47378` reads one A6 word then executes
+`sndCom SOUND_COMMAND_GET_D0_PARAMETER`; `csc06_doNothing` at `$47380` is only `rts` and performs no
+A6 read; `csc0A_executeSubroutine` at `$4740A` reads one A6 long into A1, saves A0, calls `(a1)`,
+restores A0, and returns; and `csc0B_jump` at `$47414` reads a long from `(a6)` into A6 without
+post-increment and returns. The long transfer and zero cursor advance of the last form remain
+separate fields.
+
+**Confirmed:** instruction-scoped target inventories retain caller identity rather than raw symbol
+counts. `executeSubroutine` has 122 source uses over 47 declared/active instruction and effective
+targets; `jump` has 11 uses, a complete 348-label declared target domain, and 10 positive target rows.
+Both internal/external instruction/effective maps are zero-inclusive, and neither inventory has an
+unresolved operand. Three `executeSubroutine` instruction targets resolve through verified aliases:
+`j_FadeOut_WaitForP1Input` → `FadeOut_WaitForP1Input`, `j_PlayEndingKissSequence` →
+`PlayEndingKissSequence`, and `j_csub_40F2` → `csub_40F2`. The complete target-inventory hash is
+`197FC6AC1D8E4E2CAA82FDC3A00FFF3AE07F2F8D6E64BCBA41A03A8980A084C8`.
+
+**Confirmed:** `playSound` joins only source operands to the maintained sound-data contract
+`sf2-sound-data-static-v1`, fixture `tests/fixtures/h2/sound-data-static-v1.json`; it does not
+reparse or characterize the sound driver. Its 309 uses are source-enum categories `music` 58, `sfx`
+224, and `sound-command` 27 across 51 distinct source symbols. The complete join, including its
+fixture identity and `sf2enums.asm` source identity, is guarded by SHA-256
+`205C2F9E7CC481B7C5B387D2736635FC40E5763C41544A3A8C9D0D205F4FA654`.
+
+### Grouped H3 runtime-question queue
+
+**Unknown:** the grouped queue is exactly:
+
+- `map-script-control-audio/wait-normal-and-skip-gate` — normal execution and skip-gate outcomes;
+- `map-script-control-audio/no-op-dispatch-boundary` — dispatch and return observations for `$06`;
+- `map-script-control-audio/sound-dispatch-boundary` — sound-command consumer behavior and timing;
+- `map-script-control-audio/subroutine-call-return-boundary` — callee effects and return-state behavior;
+- `map-script-control-audio/jump-cursor-redirect-and-end-boundary` — cursor redirect, termination, and
+  any normal-story reachability.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` branch `master`, commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` forms named above;
+`code/common/scripting/map/mapscriptengine_2.asm` `ExecuteMapScript`, `loc_47156`, and the four
+named handlers; `sf2enums.asm`; H1 listing addresses above; and local US ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
+`uv run pytest tests/python/test_map_script_engine.py -k script_control -q` and
+`uv run sf2 h2 map-script-engine`; observed static result is fixture ID
+`sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
+`expected.scriptControlCommandFacts`.
+
 ## Confirmed Map-Script Roster/Death Command Family
 
 **Confirmed:** `sf2-map-script-engine-static-v1` separately retains the source-named primary forms

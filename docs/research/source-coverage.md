@@ -369,6 +369,12 @@ handlers have a cursor-flow class. Its remaining three runtime questions are gro
 story reachability, multi-service frame timing, and visible presentation. The full program graph now
 owns 304 programs, 348 labels, 303 `csc_end` terminations plus one jump termination, 62 resolved
 script jumps, and 122 resolved assembly-subroutine calls; none justifies a one-case emulator launch.
+The same static boundary now closes seven source-named control/audio forms: 1,591 `csWait`, 309
+`playSound`, zero `csc06`, 122 `executeSubroutine`, 11 `jump`, zero-byte/zero-use `cscNop`, and 303
+`csc_end` forms (2,336 source uses, 5,822 encoded source bytes). It retains all 304 program totals,
+the named main-loop and four handler guards, zero-inclusive instruction/effective target inventories,
+and the source-only sound-enum join. Its five `map-script-control-audio/*` entries are an explicit
+grouped H3 queue, not a sound-driver, timer, player-visible, or normal-story-runtime claim.
 The adjacent reference graph scans all 2,077 code/data files and separates 297 statically referenced
 programs from seven zero-reference source bodies. This is an input-selection bound, not proof that
 the corresponding caller state occurs during normal play.

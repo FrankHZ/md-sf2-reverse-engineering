@@ -10,6 +10,8 @@ from typing import Any
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import _access_rows, _global_access_rows
 from sf2tool.h2.map_content import build_map_content_contract
+from sf2tool.h2.sound_data import FIXTURE as SOUND_DATA_FIXTURE
+from sf2tool.h2.sound_data import ID as SOUND_DATA_ID
 from sf2tool.h2.sprite_dialogue import build_sprite_dialogue_contract
 from sf2tool.h2.stats import build_stats_inventory
 from sf2tool.h2.text_banks import build_text_line_domain_contract
@@ -450,6 +452,33 @@ ENTITY_CLONE_RUNTIME_QUESTIONS = [
     "map-script-entity-clone/further-runtime-state-matrix",
     "map-script-entity-clone/further-runtime-external-consumer-matrix",
     "map-script-entity-clone/further-runtime-context-matrix",
+]
+
+# This source-ordered group closes the remaining map-script forms that encode
+# wait/control/audio operands or deliberately emit no command bytes.  The
+# labels stay source-faithful: static evidence does not establish a player-
+# facing lifecycle, audible result, or story meaning.
+SCRIPT_CONTROL_MACRO_NAMES = (
+    "csWait",
+    "playSound",
+    "csc06",
+    "executeSubroutine",
+    "jump",
+    "cscNop",
+    "csc_end",
+)
+SCRIPT_CONTROL_HANDLER_BY_MACRO = {
+    "playSound": "csc05_playSound",
+    "csc06": "csc06_doNothing",
+    "executeSubroutine": "csc0A_executeSubroutine",
+    "jump": "csc0B_jump",
+}
+SCRIPT_CONTROL_RUNTIME_QUESTIONS = [
+    "map-script-control-audio/wait-normal-and-skip-gate",
+    "map-script-control-audio/no-op-dispatch-boundary",
+    "map-script-control-audio/sound-dispatch-boundary",
+    "map-script-control-audio/subroutine-call-return-boundary",
+    "map-script-control-audio/jump-cursor-redirect-and-end-boundary",
 ]
 
 
@@ -2538,6 +2567,814 @@ def _force_state_program_facts(
     if len(program_totals) != program_corpus["summary"]["programCount"]:
         raise ValueError("bounded macro group zero-inclusive program domain drift")
     return source_sites, program_totals
+
+
+def _script_control_operand_annotations(body: str) -> list[dict[str, Any]]:
+    """Retain source comments for parameter-bearing emission rows only."""
+    annotations = []
+    emissions = _emission_rows(body)
+    emission_index = 0
+    for raw_line in body.splitlines():
+        code = raw_line.split(";", 1)[0].strip()
+        if not re.match(r"^(?:dc|defineShorthand)\.[bwl]\s+", code):
+            continue
+        if emission_index >= len(emissions):
+            raise ValueError("script-control source emission/comment alignment drift")
+        emission = emissions[emission_index]
+        emission_index += 1
+        if not emission["parameterOrdinals"]:
+            continue
+        comment = raw_line.split(";", 1)[1].strip() if ";" in raw_line else ""
+        annotations.append(
+            {
+                "parameterOrdinal": emission["parameterOrdinals"][0],
+                "sourceComment": comment,
+                "streamOffset": emission["streamOffset"],
+                "widthBytes": emission["widthBytes"],
+                "encoding": emission["encoding"],
+            }
+        )
+    if emission_index != len(emissions):
+        raise ValueError("script-control source emission/comment count drift")
+    return annotations
+
+
+def _script_control_macro_facts(
+    macro_source: str, macros: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Join one parsed macro contract to its source-order/comment evidence."""
+    blocks = _macro_blocks(macro_source.split("; entity data structure", 1)[0])
+    positions = []
+    rows = []
+    for name in SCRIPT_CONTROL_MACRO_NAMES:
+        if name not in blocks or name not in macros:
+            raise ValueError(f"script-control macro is missing: {name}")
+        position = macro_source.find(f"{name}: macro")
+        if position < 0:
+            raise ValueError(f"script-control macro declaration is missing: {name}")
+        positions.append(position)
+        emissions = _emission_rows(blocks[name])
+        contract = macros[name]
+        if (
+            contract["encodedBytes"] != sum(row["widthBytes"] for row in emissions)
+            or contract["operandBytes"]
+            != sum(row["widthBytes"] for row in contract["operandLayout"])
+            or contract["parameterOrdinals"]
+            != sorted(
+                {
+                    ordinal
+                    for row in emissions
+                    for ordinal in row["parameterOrdinals"]
+                }
+            )
+        ):
+            raise ValueError(f"script-control macro physical layout drift: {name}")
+        rows.append(
+            {
+                "name": name,
+                "directiveKind": contract["kind"],
+                "opcode": contract["opcode"],
+                "encodedBytes": contract["encodedBytes"],
+                "operandBytes": contract["operandBytes"],
+                "emissionRows": emissions,
+                "operandLayout": contract["operandLayout"],
+                "parameterOrdinals": contract["parameterOrdinals"],
+                "sourceOperandAnnotations": _script_control_operand_annotations(
+                    blocks[name]
+                ),
+            }
+        )
+    if positions != sorted(positions):
+        raise ValueError("script-control macro source order drift")
+
+    by_name = {row["name"]: row for row in rows}
+    wait_rows = by_name["csWait"]["emissionRows"]
+    if (
+        len(wait_rows) != 2
+        or wait_rows[0]["streamOffset"] != 0
+        or wait_rows[0]["widthBytes"] != 1
+        or wait_rows[1]["streamOffset"] != 1
+        or wait_rows[1]["widthBytes"] != 1
+        or wait_rows[1]["parameterOrdinals"] != [1]
+    ):
+        raise ValueError("script-control wait emission layout drift")
+    try:
+        wait_lead_byte = _literal(wait_rows[0]["expression"])
+    except ValueError as error:
+        raise ValueError("script-control wait lead byte is not a literal") from error
+    if not wait_lead_byte & 0x80:
+        raise ValueError("script-control wait lead byte no longer selects negative path")
+    by_name["csWait"]["negativeWaitLeadByte"] = wait_lead_byte
+
+    nop = by_name["cscNop"]
+    if nop["directiveKind"] != "source-nop" or nop["emissionRows"]:
+        raise ValueError("script-control source-nop emission drift")
+    terminator_rows = by_name["csc_end"]["emissionRows"]
+    if len(terminator_rows) != 1 or terminator_rows[0]["widthBytes"] != 2:
+        raise ValueError("script-control terminator emission layout drift")
+    try:
+        by_name["csc_end"]["encodedWord"] = _literal(
+            terminator_rows[0]["expression"]
+        )
+    except ValueError as error:
+        raise ValueError("script-control terminator is not a literal word") from error
+    return rows
+
+
+def _script_control_resolve_operand(
+    operand: str, equates: dict[str, int]
+) -> dict[str, Any]:
+    """Resolve a source operand through the one parsed equate map when named."""
+    source_operand = operand.strip()
+    if source_operand in equates:
+        return {
+            "sourceOperand": source_operand,
+            "sourceSymbol": source_operand,
+            "resolvedValue": equates[source_operand],
+        }
+    try:
+        return {
+            "sourceOperand": source_operand,
+            "sourceSymbol": None,
+            "resolvedValue": _literal(source_operand),
+        }
+    except ValueError as error:
+        raise ValueError(
+            f"script-control operand is not a source equate or literal: {source_operand}"
+        ) from error
+
+
+def _script_control_sound_category(symbol: str) -> str:
+    """Keep only the source enum namespace category; do not infer audible behavior."""
+    if symbol.startswith("MUSIC_"):
+        return "music"
+    if symbol.startswith("SFX_"):
+        return "sfx"
+    if symbol.startswith("SOUND_COMMAND_"):
+        return "sound-command"
+    raise ValueError(f"script-control sound operand lacks a sound enum namespace: {symbol}")
+
+
+def _script_control_program_facts(
+    program_corpus: dict[str, Any],
+    equates: dict[str, int],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Inventory all seven forms with 304 zero-inclusive owning-program totals."""
+    source_sites: list[dict[str, Any]] = []
+    program_totals: list[dict[str, Any]] = []
+    for program in program_corpus["programs"]:
+        counts: Counter[str] = Counter()
+        command_rows = []
+        for command in program["commands"]:
+            macro = command["macro"]
+            if macro not in SCRIPT_CONTROL_MACRO_NAMES:
+                continue
+            counts[macro] += 1
+            row: dict[str, Any] = {
+                "commandIndex": command["index"],
+                "sourceLine": command["sourceLine"],
+                "macro": macro,
+                "directiveKind": command["kind"],
+                "encodedBytes": command["encodedBytes"],
+            }
+            if macro in ("csWait", "playSound"):
+                if len(command["arguments"]) != 1:
+                    raise ValueError(f"script-control source operand count drift: {macro}")
+                row["operand"] = _script_control_resolve_operand(
+                    command["arguments"][0], equates
+                )
+                if macro == "playSound":
+                    symbol = row["operand"]["sourceSymbol"]
+                    if symbol is None:
+                        raise ValueError("script-control sound operand must name a source symbol")
+                    row["soundCategory"] = _script_control_sound_category(symbol)
+            elif macro in ("executeSubroutine", "jump"):
+                if len(command["arguments"]) != 1:
+                    raise ValueError(f"script-control target operand count drift: {macro}")
+                target = command.get("targetSymbol")
+                address = command.get("targetAddress")
+                if target is None or address is None:
+                    raise ValueError(f"script-control target resolution drift: {macro}")
+                row["target"] = {
+                    "sourceOperand": command["arguments"][0],
+                    "instructionTarget": target,
+                    "instructionTargetAddress": address,
+                }
+            elif command["arguments"]:
+                raise ValueError(f"script-control argument-free macro drift: {macro}")
+            command_rows.append(row)
+        program_totals.append(
+            {
+                "programId": program["id"],
+                "commandCount": sum(counts.values()),
+                "macroCounts": {name: counts[name] for name in SCRIPT_CONTROL_MACRO_NAMES},
+            }
+        )
+        if command_rows:
+            source_sites.append(
+                {
+                    "programId": program["id"],
+                    "sourcePath": program["sourcePath"],
+                    "programAddress": program["address"],
+                    "commands": command_rows,
+                }
+            )
+    if len(program_totals) != program_corpus["summary"]["programCount"]:
+        raise ValueError("script-control zero-inclusive program domain drift")
+    return source_sites, program_totals
+
+
+def _script_control_cursor_read_use_site(instruction: str) -> dict[str, Any]:
+    """Parse one A6 read without treating comments, labels, or near misses as reads."""
+    code = instruction.split(";", 1)[0].strip()
+    match = re.fullmatch(
+        r"move(?P<address>a)?\.(?P<size>[bwl]) \(a6\)(?P<advance>\+)?,"
+        r"(?P<destination>[ad][0-7])",
+        code,
+    )
+    if match is None:
+        raise ValueError("script-control cursor-read use-site drift")
+    transferred = {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return {
+        "sourceRegister": "a6",
+        "destinationRegister": match.group("destination"),
+        "transferredByteCount": transferred,
+        "cursorAdvanceByteCount": transferred if match.group("advance") else 0,
+        "instruction": code,
+    }
+
+
+def _script_control_branch_target_record(
+    function_source: str, branch_instruction: str
+) -> dict[str, Any]:
+    """Resolve a local control branch to the target's first parsed instruction."""
+    branch = re.fullmatch(
+        r"(?:beq|bne|bpl|bra)\.[bwls] (?P<label>@?[A-Za-z_][A-Za-z0-9_]*)",
+        branch_instruction,
+    )
+    if branch is None:
+        raise ValueError("script-control branch instruction drift")
+    label = branch.group("label")
+    match = re.search(rf"^{re.escape(label)}:\s*$", function_source, re.MULTILINE)
+    if match is None:
+        raise ValueError(f"script-control branch target label is missing: {label}")
+    target_statements = _statements(function_source[match.end() :])
+    if not target_statements:
+        raise ValueError(f"script-control branch target is empty: {label}")
+    return {"targetLabel": label, "targetInstruction": target_statements[0]}
+
+
+def _script_control_main_loop_guard(
+    engine_source: str,
+    equates: dict[str, int],
+    macro_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Guard the named dispatch section's terminator, wait, and opcode paths."""
+    function = re.search(
+        r"^ExecuteMapScript:\s*\n(?P<body>.*?)"
+        r"^\s*; End of function ExecuteMapScript\s*$",
+        engine_source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if function is None:
+        raise ValueError("script-control ExecuteMapScript function is missing")
+    function_source = function.group("body")
+    section = re.search(
+        r"^loc_47156:\s*\n(?P<body>.*?)^rjt_cutsceneScriptCommands:",
+        function_source,
+        re.MULTILINE | re.DOTALL,
+    )
+    if section is None:
+        raise ValueError("script-control dispatch section is missing")
+    statements = _statements(section.group("body"))
+    ordered = _force_state_ordered_statements(
+        statements,
+        [
+            r"move\.w \(a6\)\+,d0",
+            r"cmpi\.w #(?P<terminator>-1),d0",
+            r"beq\.w loc_47234",
+            r"tst\.w d0",
+            r"bpl\.s loc_47174",
+            r"tst\.b \(\(SKIP_CUTSCENE_TEXT-\$1000000\)\)\.w",
+            r"bne\.s loc_47172",
+            r"andi\.w #(?P<mask>[A-Za-z_][A-Za-z0-9_]*),d0",
+            r"jsr \(Sleep\)\.w",
+            r"bra\.s loc_47140",
+            r"add\.w d0,d0",
+            r"move\.w rjt_cutsceneScriptCommands\(pc,d0\.w\),d0",
+            r"jsr rjt_cutsceneScriptCommands\(pc,d0\.w\)",
+            r"bra\.s loc_47140",
+        ],
+        owner="ExecuteMapScript.loc_47156",
+    )
+    if len(statements) != len(ordered):
+        raise ValueError("script-control dispatch section statement coverage drift")
+    terminator_match = re.fullmatch(r"cmpi\.w #(?P<value>-1),d0", ordered[1])
+    mask_match = re.fullmatch(r"andi\.w #(?P<name>[A-Za-z_][A-Za-z0-9_]*),d0", ordered[7])
+    if terminator_match is None or mask_match is None:
+        raise ValueError("script-control main-loop use-site parser drift")
+    mask_name = mask_match.group("name")
+    if mask_name != "BYTE_MASK" or mask_name not in equates:
+        raise ValueError("script-control wait mask source use drift")
+    macro_by_name = {row["name"]: row for row in macro_rows}
+    terminator = macro_by_name["csc_end"]
+    if _signed_word(terminator["encodedWord"]) != int(terminator_match.group("value")):
+        raise ValueError("script-control terminator compare/source emission drift")
+    wait = macro_by_name["csWait"]
+    if wait["negativeWaitLeadByte"] & 0x80 == 0:
+        raise ValueError("script-control wait lead no longer selects negative branch")
+    branch_indexes = (2, 4, 6, 9, 13)
+    return {
+        "sectionLabel": "loc_47156",
+        "orderedInstructions": ordered,
+        "scriptCursorReadUseSite": _script_control_cursor_read_use_site(ordered[0]),
+        "terminatorCompare": {
+            "instruction": ordered[1],
+            "comparedSignedValue": int(terminator_match.group("value")),
+            "terminatorMacro": "csc_end",
+            "terminatorEncodedWord": terminator["encodedWord"],
+            "terminatorEncodedByteCount": terminator["encodedBytes"],
+        },
+        "negativeWaitPath": {
+            "negativeTestInstruction": ordered[3],
+            "negativeBranchInstruction": ordered[4],
+            "skipGateReadInstruction": ordered[5],
+            "skipGateBranchInstruction": ordered[6],
+            "byteMaskUse": {
+                "constant": mask_name,
+                "value": equates[mask_name],
+                "instruction": ordered[7],
+            },
+            "sleepCallInstruction": ordered[8],
+            "loopInstruction": ordered[9],
+            "waitMacro": "csWait",
+            "waitLeadByte": wait["negativeWaitLeadByte"],
+            "waitDurationOperandWidthBytes": wait["operandBytes"],
+        },
+        "opcodeDispatchPath": {
+            "selectorScaleInstruction": ordered[10],
+            "tableReadInstruction": ordered[11],
+            "dispatchCallInstruction": ordered[12],
+            "loopInstruction": ordered[13],
+        },
+        "branchTargets": [
+            {
+                "branchInstruction": ordered[index],
+                **_script_control_branch_target_record(function_source, ordered[index]),
+            }
+            for index in branch_indexes
+        ],
+    }
+
+
+def _script_control_handler_guard(
+    macro: str, statements: list[str]
+) -> dict[str, Any]:
+    """Guard each named handler's complete bounded statement order."""
+    expected = {
+        "playSound": [
+            "move.w (a6)+,d0",
+            "sndCom SOUND_COMMAND_GET_D0_PARAMETER",
+            "rts",
+        ],
+        "csc06": ["rts"],
+        "executeSubroutine": [
+            "movea.l (a6)+,a1",
+            "move.l a0,-(sp)",
+            "jsr (a1)",
+            "movea.l (sp)+,a0",
+            "rts",
+        ],
+        "jump": ["movea.l (a6),a6", "rts"],
+    }
+    if macro not in expected:
+        raise ValueError(f"script-control handler profile is missing: {macro}")
+    if statements != expected[macro]:
+        raise ValueError(f"script-control handler statement order drift: {macro}")
+    guard: dict[str, Any] = {
+        "orderedInstructions": statements,
+        "returnInstruction": statements[-1],
+    }
+    if macro == "playSound":
+        guard["scriptCursorReadUseSite"] = _script_control_cursor_read_use_site(
+            statements[0]
+        )
+        command = re.fullmatch(r"sndCom (?P<symbol>[A-Za-z_][A-Za-z0-9_]*)", statements[1])
+        if command is None or command.group("symbol") != "SOUND_COMMAND_GET_D0_PARAMETER":
+            raise ValueError("script-control sound command source use drift")
+        guard["soundCommandInstruction"] = statements[1]
+        guard["soundCommandSymbol"] = command.group("symbol")
+    elif macro == "csc06":
+        guard["scriptCursorReadUseSites"] = []
+    elif macro == "executeSubroutine":
+        guard["scriptCursorReadUseSite"] = _script_control_cursor_read_use_site(
+            statements[0]
+        )
+        guard["targetRegister"] = "a1"
+        guard["saveInstruction"] = statements[1]
+        guard["indirectCallInstruction"] = statements[2]
+        guard["restoreInstruction"] = statements[3]
+    else:
+        guard["scriptCursorReadUseSite"] = _script_control_cursor_read_use_site(
+            statements[0]
+        )
+        guard["cursorRedirectInstruction"] = statements[0]
+    return guard
+
+
+def _script_control_aliases(
+    disasm: Path, instruction_targets: set[str], addresses: dict[str, int], rom: bytes
+) -> dict[str, dict[str, str]]:
+    """Resolve every source-defined ``j_`` target, including local non-interface aliases."""
+    aliases: dict[str, dict[str, str]] = {}
+    expected = {target for target in instruction_targets if target.startswith("j_")}
+    for root_name in ("code", "data"):
+        for path in sorted((disasm / root_name).rglob("*.asm"), key=lambda item: item.as_posix()):
+            source = read_upstream_text(path)
+            for target in expected:
+                match = re.search(
+                    rf"^{re.escape(target)}:\s*\n(?P<body>.*?)"
+                    rf"^\s*; End of function {re.escape(target)}\s*$",
+                    source,
+                    re.MULTILINE | re.DOTALL,
+                )
+                if match is None:
+                    continue
+                statements = _statements(match.group("body"))
+                if len(statements) != 1:
+                    raise ValueError(
+                        f"script-control alias statement boundary drift: {target}"
+                    )
+                jump = re.fullmatch(
+                    r"jmp(?:\.[bwls])? \(?(?P<effective>[A-Za-z_][A-Za-z0-9_]*)\)?(?:\.w|\(pc\))?",
+                    statements[0],
+                )
+                if jump is None:
+                    raise ValueError(f"script-control alias instruction drift: {target}")
+                effective = jump.group("effective")
+                if target not in addresses or effective not in addresses:
+                    raise ValueError(
+                        f"script-control alias address is missing: {target} -> {effective}"
+                    )
+                alias_address = addresses[target]
+                opcode = rom[alias_address : alias_address + 2]
+                if opcode == b"\x4e\xfa":
+                    encoded = rom[alias_address + 2 : alias_address + 4]
+                    resolved_address = alias_address + 2 + int.from_bytes(
+                        encoded, "big", signed=True
+                    )
+                elif opcode == b"\x4e\xf8":
+                    encoded = rom[alias_address + 2 : alias_address + 4]
+                    resolved_address = int.from_bytes(encoded, "big")
+                elif opcode == b"\x4e\xf9":
+                    encoded = rom[alias_address + 2 : alias_address + 6]
+                    resolved_address = int.from_bytes(encoded, "big")
+                else:
+                    raise ValueError(f"script-control alias ROM opcode drift: {target}")
+                if resolved_address != addresses[effective]:
+                    raise ValueError(
+                        f"script-control alias source/ROM target drift: {target} -> {effective}"
+                    )
+                if target in aliases:
+                    raise ValueError(f"script-control alias declaration is duplicated: {target}")
+                aliases[target] = {
+                    "effectiveTarget": effective,
+                    "sourcePath": path.relative_to(disasm).as_posix(),
+                }
+    if set(aliases) != expected:
+        raise ValueError(
+            "script-control alias coverage drift: "
+            f"expected {sorted(expected)}, got {sorted(aliases)}"
+        )
+    return dict(sorted(aliases.items()))
+
+
+def _script_control_target_inventories(
+    disasm: Path,
+    source_sites: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+) -> dict[str, Any]:
+    """Resolve source target operands while retaining instruction/effective identities."""
+    execute_targets = {
+        command["target"]["instructionTarget"]
+        for site in source_sites
+        for command in site["commands"]
+        if command["macro"] == "executeSubroutine"
+    }
+    program_target_domain = sorted(program_corpus["labelOwners"])
+    aliases = _script_control_aliases(
+        disasm, execute_targets | set(program_target_domain), addresses, rom
+    )
+    inventories: dict[str, Any] = {}
+    for macro, scope, declared_targets in (
+        ("executeSubroutine", "external", sorted(execute_targets)),
+        ("jump", "internal", program_target_domain),
+    ):
+        command_rows = [
+            command
+            for site in source_sites
+            for command in site["commands"]
+            if command["macro"] == macro
+        ]
+        actual_instruction_targets = {
+            command["target"]["instructionTarget"] for command in command_rows
+        }
+        if not actual_instruction_targets.issubset(set(declared_targets)):
+            raise ValueError(f"script-control target domain drift: {macro}")
+        declared_effective_by_instruction: dict[str, str] = {}
+        for target in declared_targets:
+            effective = aliases.get(target, {}).get("effectiveTarget", target)
+            declared_effective_by_instruction[target] = effective
+        declared_effective_targets = sorted(set(declared_effective_by_instruction.values()))
+        resolutions = []
+        for target in sorted(actual_instruction_targets):
+            effective = declared_effective_by_instruction[target]
+            if target not in addresses or effective not in addresses:
+                raise ValueError(
+                    f"script-control resolved target lacks H1 identity: {target} -> {effective}"
+                )
+            resolutions.append(
+                {
+                    "instructionTarget": target,
+                    "instructionTargetAddress": addresses[target],
+                    "effectiveTarget": effective,
+                    "effectiveTargetAddress": addresses[effective],
+                    "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+                    "effectiveTargetScope": scope,
+                }
+            )
+        for command in command_rows:
+            target = command["target"]["instructionTarget"]
+            effective = declared_effective_by_instruction[target]
+            command["target"].update(
+                {
+                    "effectiveTarget": effective,
+                    "effectiveTargetAddress": addresses[effective],
+                    "aliasSourcePath": aliases.get(target, {}).get("sourcePath"),
+                }
+            )
+        instruction_totals = {
+            target: sum(
+                command["target"]["instructionTarget"] == target
+                for command in command_rows
+            )
+            for target in declared_targets
+        }
+        effective_totals = {
+            target: sum(
+                command["target"]["effectiveTarget"] == target
+                for command in command_rows
+            )
+            for target in declared_effective_targets
+        }
+        inventories[macro] = {
+            "declaredInstructionTargets": declared_targets,
+            "declaredEffectiveTargets": declared_effective_targets,
+            "targetResolutions": resolutions,
+            "instructionTargetTotals": instruction_totals,
+            "effectiveTargetTotals": effective_totals,
+            "internalInstructionTargetTotals": {
+                target: instruction_totals[target] if scope == "internal" else 0
+                for target in declared_targets
+            },
+            "externalInstructionTargetTotals": {
+                target: instruction_totals[target] if scope == "external" else 0
+                for target in declared_targets
+            },
+            "internalEffectiveTargetTotals": {
+                target: effective_totals[target] if scope == "internal" else 0
+                for target in declared_effective_targets
+            },
+            "externalEffectiveTargetTotals": {
+                target: effective_totals[target] if scope == "external" else 0
+                for target in declared_effective_targets
+            },
+            "unresolvedInstructionTargetCount": 0,
+            "sourceUseCount": len(command_rows),
+        }
+    return inventories
+
+
+def _script_control_sound_operand_join(
+    disasm: Path, source_sites: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Join script-used source symbols to the maintained sound-data identity only."""
+    sound_fixture = load_json(SOUND_DATA_FIXTURE)
+    sound_model = sound_fixture["expected"]["commandModel"]
+    bank_selection = sound_model["bankSelection"]
+    sfx_model = sound_model["sfxModel"]
+    enum_path = disasm / "sf2enums.asm"
+    enum_sha256 = hashlib.sha256(enum_path.read_bytes()).hexdigest().upper()
+    music_slot_count = bank_selection["summary"]["commandSlotCount"]
+    sfx_summary = sfx_model["summary"]
+    sfx_minimum = sfx_summary["minimumCommand"]
+    sfx_maximum = sfx_summary["maximumCommand"]
+    if (
+        bank_selection["enumSourcePath"] != "sf2enums.asm"
+        or bank_selection["enumSourceSha256"] != enum_sha256
+        or music_slot_count <= 0
+        or sfx_summary["commandCount"] <= 0
+        or sfx_minimum > sfx_maximum
+    ):
+        raise ValueError("script-control sound-data contract identity drift")
+    operands = [
+        command
+        for site in source_sites
+        for command in site["commands"]
+        if command["macro"] == "playSound"
+    ]
+    counts: Counter[str] = Counter(command["operand"]["sourceSymbol"] for command in operands)
+    first_occurrence: dict[str, int] = {}
+    for index, command in enumerate(operands):
+        first_occurrence.setdefault(command["operand"]["sourceSymbol"], index)
+    rows = []
+    for symbol in sorted(counts, key=first_occurrence.__getitem__):
+        command = operands[first_occurrence[symbol]]
+        category = command["soundCategory"]
+        value = command["operand"]["resolvedValue"]
+        if category == "music" and not 1 <= value <= music_slot_count:
+            raise ValueError("script-control sound value outside maintained music domain")
+        if category == "sfx" and not sfx_minimum <= value <= sfx_maximum:
+            raise ValueError("script-control sound value outside maintained SFX domain")
+        source_fact_path = (
+            "commandModel.bankSelection"
+            if category == "music"
+            else "commandModel.sfxModel"
+            if category == "sfx"
+            else "sf2enums.asm#SoundCommands"
+        )
+        rows.append(
+            {
+                "sourceSymbol": symbol,
+                "value": value,
+                "sourceCategory": category,
+                "sourceUseCount": counts[symbol],
+                "soundDataFactPath": source_fact_path,
+            }
+        )
+    category_counts = Counter(command["soundCategory"] for command in operands)
+    return {
+        "soundDataContractId": SOUND_DATA_ID,
+        "soundDataFixturePath": SOUND_DATA_FIXTURE.relative_to(repo_path(".")).as_posix(),
+        "sourceEnumPath": "sf2enums.asm",
+        "sourceEnumSha256": enum_sha256,
+        "musicDomainFactPath": "commandModel.bankSelection",
+        "sfxDomainFactPath": "commandModel.sfxModel",
+        "soundOperands": rows,
+        "sourceCategoryCounts": {
+            category: category_counts[category]
+            for category in ("music", "sfx", "sound-command")
+        },
+    }
+
+
+def _script_control_corpus_order_facts(
+    source_sites: list[dict[str, Any]], program_totals: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Pin large source-use corpora by closed records, counts, and order hashes."""
+    source_order_keys = [
+        ":".join((site["programId"], str(command["commandIndex"]), command["macro"]))
+        for site in source_sites
+        for command in site["commands"]
+    ]
+    program_order_keys = [row["programId"] for row in program_totals]
+    if (
+        len(source_order_keys) != len(set(source_order_keys))
+        or len(program_order_keys) != len(set(program_order_keys))
+    ):
+        raise ValueError("script-control corpus order identity drift")
+    return {
+        "sourceSitesSha256": hashlib.sha256(
+            _canonical_bytes({"sourceSites": source_sites})
+        ).hexdigest().upper(),
+        "programTotalsSha256": hashlib.sha256(
+            _canonical_bytes({"programTotals": program_totals})
+        ).hexdigest().upper(),
+    }
+
+
+def _script_control_validate_corpus_hashes(facts: dict[str, Any]) -> None:
+    """Reject a changed compact corpus before golden-fixture comparison."""
+    expected = _script_control_corpus_order_facts(
+        facts["sourceSites"], facts["programTotals"]
+    )
+    expected["targetInventoriesSha256"] = hashlib.sha256(
+        _canonical_bytes({"targetInventories": facts["targetInventories"]})
+    ).hexdigest().upper()
+    expected["soundOperandJoinSha256"] = hashlib.sha256(
+        _canonical_bytes({"soundOperandJoin": facts["soundOperandJoin"]})
+    ).hexdigest().upper()
+    for field, value in expected.items():
+        if facts[field] != value:
+            raise ValueError(f"script-control {field} drift")
+
+
+def _script_control_command_facts(
+    disasm: Path,
+    equates: dict[str, int],
+    macros: dict[str, dict[str, Any]],
+    dispatch_targets: list[str],
+    handlers: list[dict[str, Any]],
+    program_corpus: dict[str, Any],
+    addresses: dict[str, int],
+    rom: bytes,
+    source_counts: Counter[str],
+) -> dict[str, Any]:
+    """Build the complete source-faithful control/audio command boundary."""
+    macro_source = read_upstream_text(disasm / MACRO_PATH)
+    macro_rows = _script_control_macro_facts(macro_source, macros)
+    source_sites, program_totals = _script_control_program_facts(program_corpus, equates)
+    derived_counts: Counter[str] = Counter(
+        command["macro"] for site in source_sites for command in site["commands"]
+    )
+    if any(derived_counts[name] != source_counts[name] for name in SCRIPT_CONTROL_MACRO_NAMES):
+        raise ValueError("script-control source-use inventory drift")
+    for row in macro_rows:
+        row["sourceCommandCount"] = derived_counts[row["name"]]
+        handler_name = SCRIPT_CONTROL_HANDLER_BY_MACRO.get(row["name"])
+        if handler_name is not None:
+            row["handler"] = handler_name
+
+    main_loop_guard = _script_control_main_loop_guard(
+        read_upstream_text(disasm / DISPATCH_SOURCE), equates, macro_rows
+    )
+    handler_rows = []
+    for macro, handler_name in SCRIPT_CONTROL_HANDLER_BY_MACRO.items():
+        contract = macros[macro]
+        opcode = contract["opcode"]
+        if opcode is None or dispatch_targets[opcode] != handler_name:
+            raise ValueError(f"script-control dispatcher target drift: {macro}")
+        handler = _handler_by_name(handlers, handler_name)
+        statements = _stable_handler_statements(disasm, handler)
+        section_guard = _script_control_handler_guard(macro, statements)
+        cursor_reads = (
+            section_guard.get("scriptCursorReadUseSites")
+            if "scriptCursorReadUseSites" in section_guard
+            else [section_guard["scriptCursorReadUseSite"]]
+        )
+        cursor_advance = sum(row["cursorAdvanceByteCount"] for row in cursor_reads)
+        cursor_transfer = sum(row["transferredByteCount"] for row in cursor_reads)
+        if macro == "jump":
+            if cursor_advance != 0 or cursor_transfer != contract["operandBytes"]:
+                raise ValueError("script-control jump cursor redirect width drift")
+        elif cursor_advance != contract["operandBytes"]:
+            raise ValueError(f"script-control handler cursor width drift: {macro}")
+        handler_rows.append(
+            {
+                "macro": macro,
+                "handler": handler_name,
+                "sourcePath": handler["sourcePath"],
+                "address": handler["address"],
+                "opcode": opcode,
+                "sourceCommandCount": derived_counts[macro],
+                "statementCount": len(statements),
+                "sectionGuard": section_guard,
+            }
+        )
+    target_inventories = _script_control_target_inventories(
+        disasm, source_sites, program_corpus, addresses, rom
+    )
+    sound_operand_join = _script_control_sound_operand_join(disasm, source_sites)
+    facts = {
+        "summary": {
+            "macroCount": len(macro_rows),
+            "sourceUseCount": sum(derived_counts.values()),
+            "sourceSiteProgramCount": len(source_sites),
+            "zeroUseMacroCount": sum(
+                derived_counts[name] == 0 for name in SCRIPT_CONTROL_MACRO_NAMES
+            ),
+            "sourceEncodedByteCount": sum(
+                command["encodedBytes"]
+                for site in source_sites
+                for command in site["commands"]
+            ),
+            "waitSourceUseCount": derived_counts["csWait"],
+            "soundSourceUseCount": derived_counts["playSound"],
+            "subroutineSourceUseCount": derived_counts["executeSubroutine"],
+            "jumpSourceUseCount": derived_counts["jump"],
+            "terminatorSourceUseCount": derived_counts["csc_end"],
+        },
+        "macroSourceOrder": list(SCRIPT_CONTROL_MACRO_NAMES),
+        "macros": macro_rows,
+        "sourceSites": source_sites,
+        **_script_control_corpus_order_facts(source_sites, program_totals),
+        "programTotals": program_totals,
+        "mainLoopGuard": main_loop_guard,
+        "handlers": handler_rows,
+        "targetInventories": target_inventories,
+        "targetInventoriesSha256": hashlib.sha256(
+            _canonical_bytes({"targetInventories": target_inventories})
+        ).hexdigest().upper(),
+        "soundOperandJoin": sound_operand_join,
+        "soundOperandJoinSha256": hashlib.sha256(
+            _canonical_bytes({"soundOperandJoin": sound_operand_join})
+        ).hexdigest().upper(),
+        "runtimeQuestions": SCRIPT_CONTROL_RUNTIME_QUESTIONS,
+    }
+    _script_control_validate_corpus_hashes(facts)
+    return facts
 
 
 def _force_state_ordered_statements(
@@ -12041,6 +12878,17 @@ def build_map_script_engine_contract(
         addresses,
         rom,
     )
+    script_control_command_facts = _script_control_command_facts(
+        disasm,
+        source_equates,
+        macros,
+        targets,
+        handlers,
+        program_corpus,
+        addresses,
+        rom,
+        source_counts,
+    )
     table_address = addresses["rjt_cutsceneScriptCommands"]
     table_bytes = rom[table_address : table_address + len(targets) * 2]
     expected_words = b"".join(
@@ -12202,6 +13050,7 @@ def build_map_script_engine_contract(
         ),
         "screenPresentationCommandFacts": screen_presentation_command_facts,
         "entityPresentationFxCommandFacts": entity_presentation_fx_command_facts,
+        "scriptControlCommandFacts": script_control_command_facts,
         "runtimeQuestions": [
             "caller-dependent-story-branch-reachability-and-persistence",
             "entity-camera-text-wait-and-transition-frame-timing",
@@ -12222,6 +13071,7 @@ def build_map_script_engine_contract(
             *ENTITY_PRESENTATION_FX_RUNTIME_QUESTIONS,
             *MAP_SCRIPT_UI_PRIMARY_RUNTIME_QUESTIONS,
             *ENTITY_CLONE_RUNTIME_QUESTIONS,
+            *SCRIPT_CONTROL_RUNTIME_QUESTIONS,
         ],
     }
 
@@ -12233,6 +13083,7 @@ def verify_map_script_engine_contract(
     validate_json(fixture, FIXTURE_SCHEMA, owner="map-script engine fixture")
     manifest = load_json(MANIFEST)
     output = build_map_script_engine_contract(rom_path, upstream_path)
+    _script_control_validate_corpus_hashes(output["scriptControlCommandFacts"])
     validate_json(output, SCHEMA, owner="map-script engine static contract")
     if (
         fixture["upstreamCommit"] != output["upstream"]["commit"]
@@ -12287,6 +13138,7 @@ def verify_map_script_engine_contract(
         ],
         "screenPresentationCommandFacts": output["screenPresentationCommandFacts"],
         "entityPresentationFxCommandFacts": output["entityPresentationFxCommandFacts"],
+        "scriptControlCommandFacts": output["scriptControlCommandFacts"],
     }
     for field in (
         "summary",
@@ -12323,6 +13175,7 @@ def verify_map_script_engine_contract(
         "entityGestureRelationshipMotionCommandFacts",
         "screenPresentationCommandFacts",
         "entityPresentationFxCommandFacts",
+        "scriptControlCommandFacts",
         "mostUsedMacros",
         "unusedMacros",
         "runtimeQuestions",
@@ -12371,6 +13224,11 @@ def verify_map_script_engine_contract(
         if field == "entityPresentationFxCommandFacts":
             actual = {
                 key: output["entityPresentationFxCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "scriptControlCommandFacts":
+            actual = {
+                key: output["scriptControlCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "dispatcherFacts":
