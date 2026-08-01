@@ -5145,6 +5145,11 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-clone/further-runtime-state-matrix",
         "map-script-entity-clone/further-runtime-external-consumer-matrix",
         "map-script-entity-clone/further-runtime-context-matrix",
+        "map-script-control-audio/wait-normal-and-skip-gate",
+        "map-script-control-audio/no-op-dispatch-boundary",
+        "map-script-control-audio/sound-dispatch-boundary",
+        "map-script-control-audio/subroutine-call-return-boundary",
+        "map-script-control-audio/jump-cursor-redirect-and-end-boundary",
     ]
     assert expected["mapLifecycleCommandFacts"].pop("runtimeQuestions") == [
         "map-lifecycle/layout-collision-pathfinding-effects",
@@ -5231,7 +5236,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     ]
     # Each H3 queue is asserted above; the remaining static shape stays digest-pinned.
     assert _canonical_digest(expected) == (
-        "8b291f94307fc1f838ded070a3914640958bcb9eff38544e316c75aa42583b5c"
+        "5ece905a0dc3fadbdf120e2bc60eab9130e2004ff4b7579b99697261ce959788"
     )
 
     output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
@@ -5335,7 +5340,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     )
     assert _canonical_digest(output_schema) == (
-        "640b01a4210ccbd58ba277a3d78d8b06713943da0b56b2fef99ba0bec0c2cb69"
+        "9d12c0d70a778231f7a26eb7976899065089f1b9d75cfe2f53895084917a3807"
     )
 
     fixture_schema = deepcopy(
@@ -5447,7 +5452,7 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "runtimeQuestions"
     )
     assert _canonical_digest(fixture_schema) == (
-        "a0fa7e5e69294683618915312d1d5ee4bbca807b0293453daa5da08f89791fec"
+        "f78a60fd8ae531812a1dc8802347ee0fbac9bc20a6017433b7f2c944bfec5483"
     )
 
 
