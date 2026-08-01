@@ -279,6 +279,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`gameplay-overview.md`](./design/gameplay-overview.md)：从已接受的 gameflow、map、input、dialogue、
   party/roster、service、battle、growth 与 save 合同综合玩家动词、顶层状态流、局部 loops 和 subsystem
   handoff，并明确保留 campaign、体验、平衡及未来上层设计的 Unknown/decision 边界。
+- [`tactical-battle-loop.md`](./design/tactical-battle-loop.md)：从已接受的 battle control、player/AI
+  control、movement/target、action construction、combat/spell resolution、state replay 与 outcome 证据综合
+  有界战术战斗循环，并明确保留 tactics、balance、presentation 与通用 simulation 的 Unknown/decision
+  边界。
 - [`combat-resolution.md`](./design/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
   spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
   fixture 边界。
