@@ -1,57 +1,71 @@
-# 玩法总览与系统边界
+# Gameplay Overview and System Boundaries
 
-- 状态：**已接受证据的设计综合**；本文不新增原版事实，也不选择重制引擎、产品形态或平衡方向。
-- 记录日期：2026-08-01
-- 受众：需要理解玩家动作、顶层状态与 subsystem handoff 的研究者、设计说明作者和 fidelity
-  implementer。
-- 范围：只连接当前 `main` 已接受的 gameflow、map、input、dialogue、party/roster、service、battle、
-  growth 与 save 合同；每条解释保留 **Confirmed**、**Inferred** 或 **Unknown** 标签。
+- Status: **design synthesis over accepted evidence**; this document adds no original-game fact and
+  selects no remake engine, product shape, or balance direction.
+- Record date: 2026-08-01
+- Audience: researchers, design-document authors, and fidelity implementers who need to understand
+  player actions, top-level states, and subsystem handoffs.
+- Scope: connect only gameflow, map, input, dialogue, party/roster, service, battle, growth, and save
+  contracts accepted on current `main`; every interpretation retains its **Confirmed**,
+  **Inferred**, or **Unknown** label.
 
-本文是[文档路线图](./documentation-roadmap.md)的第一篇 B 层综合说明。它提供导航，不替代任何
-research owner、fixture 或 subsystem contract。文中的 **Confirmed** 表示所述边界已经由链接的 A 层
-证据确认；**Inferred** 表示把多个已确认边界连接成了中性的玩家向解释；**Unknown** 表示当前证据
-不支持继续解释。
+This is the first Layer B synthesis described by the
+[documentation roadmap](./documentation-roadmap.md). It provides navigation and does not replace any
+research owner, fixture, or subsystem contract. **Confirmed** means the stated boundary is supported
+by linked Layer A evidence. **Inferred** means multiple confirmed boundaries have been connected into
+a neutral player-facing explanation. **Unknown** means current evidence does not support further
+interpretation.
 
-## 本文支持与不支持的判断
+## Supported and Unsupported Judgments
 
-本文支持下列判断：
+This document supports judgments about:
 
-- 玩家在哪些已确认的状态边界上可以移动、交互、管理资源、选择战斗动作或保存；
-- exploration、script/service、battle、growth 与 save owner 之间传递哪一类状态；
-- fidelity implementation 应从哪些现有合同和 fixture 取得验收事实。
+- the confirmed state boundaries at which a player can move, interact, manage resources, choose a
+  battle action, or save;
+- the categories of state handed among exploration, script/service, battle, growth, and save owners;
+- the existing contracts and fixtures from which a fidelity implementation should obtain acceptance
+  facts.
 
-本文不支持下列判断：
+This document does not support judgments about:
 
-- 完整战役路线、情节节拍、角色动机或玩家应当感受到的 narrative experience；
-- 地图作者意图、预期策略、最佳 roster、难度/数值曲线或经济平衡；
-- 原版界面手感、逐帧输入延迟、可见动画/音频时序或硬件级渲染 parity；
-- remake 的引擎、平台、UI、无障碍、存档可靠性改造或 intentional rebalance 决定。
+- a complete campaign route, story beats, character motivations, or the narrative experience a
+  player is supposed to have;
+- map-author intent, intended strategy, the best roster, difficulty/numerical curves, or economic
+  balance;
+- original interface feel, frame-exact input latency, visible animation/audio timing, or
+  hardware-level rendering parity;
+- remake engine, platform, UI, accessibility, save-reliability modernization, or intentional
+  rebalance decisions.
 
-## 玩家动词与即时目标
+## Player Verbs and Immediate Goals
 
-下表把 source-facing 行为翻译成中性的 player-action phrase。它不把程序符号名当作原版玩家语义，
-也不从一次状态 mutation 推导长期设计目的。
+The table translates source-facing behavior into neutral player-action phrases. It does not treat a
+program symbol as original player-facing meaning or derive a long-term design purpose from one state
+mutation.
 
-| 玩家动作 | 当前证据支持的即时目标 | 标签与边界 |
+| Player action | Immediate goal supported by current evidence | Label and boundary |
 | --- | --- | --- |
-| 开始、载入或恢复 | 进入一个已有或新建的游戏状态；从 suspend 状态恢复战斗 | **Confirmed** 的 witch/save action routing、两槽数据边界和 battle resume 入口；完整可见选择流程、跨进程耐久性与断电行为仍 **Unknown**。 |
-| 在地图上移动 | 改变受控实体位置，并让 map movement/event 逻辑继续求值 | entity movement/action 的更新顺序、位置/碰撞单位及 map event polling 是 **Confirmed**；路线目的、移动手感与每个可见 frame 是 **Unknown**。 |
-| 触发或检查 | 面向附近实体、区域或可检查 block，请求一个脚本、事件或物品结果 | admission、优先级、对象类别和 inventory handoff 是 **Confirmed**；正常故事 reachability、文本/动画/音效呈现和多数结果的长期持久性仍 **Unknown**。 |
-| 打开菜单并管理物品 | 选择 field/battle menu action，使用、给予、装备或丢弃合法物品 | battle player-control 与 service/stat owner 确认了有界分支和 mutation 顺序；本文不声称所有 field-menu 页面、取消手感或完整可见反馈。 |
-| 使用服务 | 在 shop、church、caravan/depot 或 blacksmith 的已确认 action surface 上交换资源或改变成员状态 | 动作、取消边界和 gold/item/member mutation 次序是 **Confirmed static**；地图/NPC 准入、服务后返回探索、持久化和呈现仍 **Unknown**。 |
-| 在战斗中定位、选目标和行动 | 选择合法 tile/目标以及 attack、magic、item、stay/search 等结果 | player-control state machine 和 action-resolution 边界是 **Confirmed static**，部分 math/status 有 H3；战术意图、AI 公平性、完整战斗 pacing 与通用模拟准确性不在本文范围。 |
-| 接受成长与恢复 | 让 EXP、level-up、状态恢复或 service mutation 更新角色状态 | 已有合同确认若干输入、顺序、clamp 与输出；玩家 roster 取舍、build 意图、成长体验和完整数值曲线仍 **Unknown**。 |
-| 保存、复制、删除或 suspend | 在已确认的存储 seam 上保留、复制、清除或临时中断状态 | SRAM layout、checksum、slot action 和 in-process H3 是 **Confirmed**；原版断电原子性与长期真实设备耐久性仍 **Unknown**。 |
+| Start, load, or resume | Enter a new or existing game state; resume a suspended battle | Witch/save action routing, the two-slot data boundary, and the battle-resume entry are **Confirmed**. The complete visible choice flow, cross-process durability, and power-loss behavior remain **Unknown**. |
+| Move on a map | Change the controlled entity position and allow map movement/event logic to continue evaluating | Entity movement/action update order, position/collision units, and map-event polling are **Confirmed**. Route purpose, movement feel, and every visible frame are **Unknown**. |
+| Activate or inspect | Face a nearby entity, area, or inspectable block and request a script, event, or item result | Admission, priority, object categories, and inventory handoff are **Confirmed**. Normal-story reachability, text/animation/audio presentation, and long-term persistence of most results remain **Unknown**. |
+| Open a menu and manage items | Select a field/battle menu action and use, give, equip, or drop a legal item | Battle player-control and service/stat owners confirm bounded branches and mutation order. This document does not claim every field-menu page, cancellation feel, or complete visible feedback. |
+| Use a service | Exchange resources or change member state through the confirmed shop, church, caravan/depot, or blacksmith action surface | Action, cancellation, and gold/item/member mutation order are **Confirmed static**. Map/NPC admission, return to exploration, persistence, and presentation remain **Unknown**. |
+| Position, target, and act in battle | Choose a legal tile/target and an attack, magic, item, stay/search, or other supported outcome | The player-control state machine and action-resolution boundaries are **Confirmed static**, with H3 coverage for selected math/status paths. Tactical intent, AI fairness, complete battle pacing, and general simulation accuracy are outside this document. |
+| Receive growth or recovery | Apply EXP, level-up, status recovery, or service mutations to character state | Existing contracts confirm selected inputs, order, clamps, and outputs. Player roster tradeoffs, build intent, growth experience, and complete numerical curves remain **Unknown**. |
+| Save, copy, delete, or suspend | Preserve, duplicate, clear, or temporarily interrupt state at a confirmed storage seam | SRAM layout, checksum, slot actions, and in-process H3 behavior are **Confirmed**. Original power-loss atomicity and long-term physical-device durability remain **Unknown**. |
 
-**Inferred action–goal alignment：**这些动作共同允许玩家推进当前可达状态、解决局部战斗或资源
-约束，并保留可恢复的进度。把它们进一步解释为“探索世界”“培养理想队伍”或“掌握特定战术”虽
-符合类型直觉，却尚未由本仓库的 campaign reachability、player observation 或作者意图证据确认。
+**Inferred action-goal alignment:** together, these actions allow the player to advance currently
+reachable state, resolve a local battle or resource constraint, and retain recoverable progress.
+Interpreting them further as “explore the world,” “build an ideal force,” or “master a particular
+tactic” may fit genre expectations, but campaign reachability, player observation, and authorial
+intent evidence in this repository do not yet confirm those meanings.
 
-## 顶层状态流
+## Top-Level State Flow
 
-下图是 design synthesis，不是 engine architecture。实线仅表示 owning documents 已确认存在并记录
-顺序的 handoff；虚线表示多个已确认边界之间的 **Inferred player-level connection**，其完整 caller、
-可见转场或持久性尚未闭合。
+The following is design synthesis, not engine architecture. Solid lines represent handoffs whose
+existence and order are recorded by owning documents. Dashed lines represent an **Inferred
+player-level connection** between confirmed boundaries whose complete caller, visible transition, or
+persistence has not been closed.
 
 ```mermaid
 flowchart TD
@@ -76,104 +90,121 @@ flowchart TD
     O --> C
 ```
 
-### 已确认的 flow anchors
+### Confirmed Flow Anchors
 
-1. `MainLoop` 先处理 flag-driven map switching，再检查 battle；`-1` 是无战斗 sentinel。真实 battle
-   返回后会再次经过 map switching，exploration 的 warp-style transition 也返回 outer loop。
-2. `ExplorationLoop` 建立或恢复 map/entity state，加载地图资源并执行 setup，然后在 map event 与
-   A/C action 之间循环。poll 和 dispatch 都先检查 map event，因此同一轮已可见时 event 优先。
-3. player action 路径按 A 再 C 测试。A 进入 field-menu path；C 可到 caravan、entity activation、
-   area inspection 或 field-menu fallback，另有不属于普通玩法说明的 debug route。
-4. `BattleLoop` 区分 suspended 和 new-battle 入口。新战斗执行初始化、cutscene、roster、region、spawn
-   与 turn-order 边界；每次 action 后在 after-turn effect 前后各处理 death 和 faction outcome。
-5. victory、defeat 与 battle-4 special-loss 返回不同 outcome state；这些返回继续连接 main/map egress
-   边界，但本文不据此补写剧情意义。
+1. `MainLoop` applies flag-driven map switching before checking for a battle; `-1` is the no-battle
+   sentinel. A real battle return passes through map switching again, and an exploration
+   warp-style transition also returns to the outer loop.
+2. `ExplorationLoop` establishes or restores map/entity state, loads map resources, runs setup, and
+   then loops between map events and A/C actions. Both polling and dispatch check the map event first,
+   so an event wins when both values are visible in the same iteration.
+3. The player-action path tests A before C. A enters the field-menu path. C can route to caravan,
+   entity activation, area inspection, or field-menu fallback, with a separate debug route outside
+   the ordinary gameplay explanation.
+4. `BattleLoop` distinguishes suspended and new-battle entries. A new battle crosses initialization,
+   cutscene, roster, region, spawn, and turn-order boundaries. After each action, death and faction
+   outcomes are processed on both sides of the after-turn effect.
+5. Victory, defeat, and the battle-4 special loss return distinct outcome state. Those returns join
+   the main/map egress boundary, but this document does not supply narrative meaning for them.
 
-### 尚不能闭合的 transition
+### Transitions That Cannot Yet Be Closed
 
-- service、dialogue、roster command 或 item handoff 在全部 normal-story caller 中何时发生；
-- 每条 interaction 的 player-visible completion、cancel、return-to-exploration 与 audio/window 时序；
-- save/load 后所有 map、party、service 与 battle state 的跨进程持久性；
-- campaign 中所有 branch、battle 和 map 的实际可达顺序。
+- when service, dialogue, roster commands, or item handoffs occur across all normal-story callers;
+- player-visible completion, cancellation, return-to-exploration, and audio/window timing for each
+  interaction;
+- cross-process persistence of all map, party, service, and battle state after save/load;
+- the actual reachable order of every branch, battle, and map in the campaign.
 
-以上均为 **Unknown**；虚线不能成为 remake 中未经 decision 的隐含 route。
+All are **Unknown**. A dashed connection must not become an implicit remake route without a decision.
 
-## Loops 与 system dynamics
+## Loops and System Dynamics
 
-### 已确认的局部循环
+### Confirmed Local Loops
 
-- **Exploration polling loop：**map/entity update 产生或保持状态，`WaitForEvent` 先观察 pending map
-  event，再观察 A/C；outer loop 仍先 dispatch event。该优先级为 **Confirmed**，精确 VInt publication
-  edge 为 **Unknown**。
-- **Battle round/action loop：**new/resumed battle 进入 individual-turn processing；action resolution
-  后 death/outcome 检查夹住 after-turn effect；`0xFF` turn-order entry 开启下一 round。顶层顺序为
-  **Confirmed**，完整逐行动呈现和所有 runtime caller state 未全部确认。
-- **Service/menu loop：**现有 service 合同确认各 action、取消分支与 mutation order；把它们统称为
-  玩家反复访问的经济/恢复 loop 是 **Inferred**，因为 admission、return 和 campaign frequency 未闭合。
+- **Exploration polling loop:** map/entity update produces or retains state. `WaitForEvent` observes a
+  pending map event before A/C, and the outer loop still dispatches the event first. That priority is
+  **Confirmed**; the exact VInt publication edge is **Unknown**.
+- **Battle round/action loop:** a new or resumed battle enters individual-turn processing. Death and
+  outcome checks surround the after-turn effect, and a `0xFF` turn-order entry starts the next round.
+  The top-level order is **Confirmed**; complete action-by-action presentation and all runtime caller
+  states are not.
+- **Service/menu loop:** current service contracts confirm actions, cancellation branches, and
+  mutation order. Describing them as an economic/recovery loop repeatedly visited by the player is
+  **Inferred**, because admission, return, and campaign frequency are not closed.
 
-### 有证据边界的反馈关系
+### Feedback Relationships with Evidence Boundaries
 
-| 状态关系 | 当前标签 | 不得扩张成的结论 |
+| State relationship | Current label | Conclusion it must not become |
 | --- | --- | --- |
-| battle action → HP/status/death → outcome checks | 各 edge 与若干公式/状态案例 **Confirmed**；完整战斗体验是 **Inferred** | 预期战术、目标优先级意义、难度或 pacing |
-| battle EXP/reward → level/stat/resource mutation → 后续可消费角色状态 | 单独的 reward、level-up、gold/item 与 service 边界有 **Confirmed** 合同；跨战役 feedback loop 为 **Inferred** | 最优 build、合理 grind、玩家/敌人数值曲线 |
-| flag/map setup/event/script → map、dialogue 或 roster state | selector、command shape、handler order 与若干 H3 为 **Confirmed** | plot beat、作者意图、完整 story consequence |
-| damage/status/item limits → church/shop/caravan/item actions | service resource order 与若干 stat 状态为 **Confirmed**；访问频率和 player pressure 为 **Unknown** | 经济平衡、补给节奏或策略必要性 |
-| save/suspend action → serialized/resumed state | layout、helper order 与 bounded H3 为 **Confirmed** | 所有 subsystem 完整 snapshot、断电安全或现代 save UX |
+| battle action → HP/status/death → outcome checks | Individual edges and selected formula/status cases are **Confirmed**; the complete battle experience is **Inferred**. | Intended tactics, target-priority meaning, difficulty, or pacing |
+| battle EXP/reward → level/stat/resource mutation → character state consumed later | Individual reward, level-up, gold/item, and service boundaries have **Confirmed** contracts; the campaign-wide feedback loop is **Inferred**. | Optimal builds, appropriate grinding, or player/enemy numerical curves |
+| flag/map setup/event/script → map, dialogue, or roster state | Selectors, command shape, handler order, and selected H3 cases are **Confirmed**. | Plot beats, authorial intent, or complete story consequences |
+| damage/status/item limits → church/shop/caravan/item actions | Service resource order and selected stat state are **Confirmed**; visit frequency and player pressure are **Unknown**. | Economic balance, supply pacing, or strategic necessity |
+| save/suspend action → serialized/resumed state | Layout, helper order, and bounded H3 are **Confirmed**. | A complete snapshot of every subsystem, power-loss safety, or modern save UX |
 
-因此，当前仓库已经能描述多个局部 state machine 和它们的接口，却还不能把这些接口升级为一个已证明
-的完整 core loop、campaign loop 或 meta progression loop。
+The repository can therefore describe multiple local state machines and their interfaces, but cannot
+yet promote those interfaces into a proven complete core loop, campaign loop, or meta-progression
+loop.
 
-## Evidence matrix
+## Evidence Matrix
 
-| 综合边界 | 标签与 bounded claim | Evidence owner / executable trace | Remaining question |
+| Synthesis boundary | Label and bounded claim | Evidence owner / executable trace | Remaining question |
 | --- | --- | --- | --- |
-| main 与 exploration routing | **Confirmed** 的 map switch、battle sentinel、event-before-input 和 interaction admission/order | [gameflow research](../research/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../tests/fixtures/h2/gameflow-core-static-v1.json)） | VInt edge、transition frames、normal-story reachability |
-| map state 与 movement/event | **Confirmed** 的 map import、setup/event order、working layout 和 bounded movement/action behavior | [map contract](./map-exploration.md)及其逐项 H2/H3 fixture 清单；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 最终渲染、完整 player route、部分 persistence |
-| input seam | **Confirmed** 的 raw sampling、current/repeat state 与 wait helpers | [input contract](./input-system.md)；`sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../tests/fixtures/h2/tech-services-static-v1.json)）拥有 raw sampling 与 wait helpers，`sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../tests/fixtures/h2/tech-interrupts-static-v1.json)）拥有 VInt-derived current/repeat stage | controller protocol、frame-exact latency 与 player-visible repeat cadence |
-| dialogue handoff | **Confirmed** 的六个 command layout、handler order 与 21-case handler-local runtime seam | [dialogue contract](./dialogue-system.md)；`sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../tests/fixtures/h3/map-script-dialogue-v1.json)） | text/portrait/audio rendering、story reachability、persistence |
-| party/roster handoff | **Confirmed** 的十个 source form、branch/mutation/call order 与 bounded active-party effect | [party/roster contract](./party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)）和 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../tests/fixtures/h3/force-state-active-party-v1.json)） | roster/list capacity、story lifecycle、save persistence 与玩家选择空间 |
-| service actions | **Confirmed static** 的 shop/church/caravan/blacksmith action 与 resource mutation order | [service contract](./service-interactions.md)；`sf2-common-menus-static-v1`（[`common-menus-static-v1.json`](../../tests/fixtures/h2/common-menus-static-v1.json)） | admission、return、presentation 与 persistent outcome |
-| battle entry、turn 与 outcome | **Confirmed static** 的 new/resume、round/action/death/outcome ordering | [battle-loop research](../research/battle-loop.md)；top-level executable trace 为 `sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../tests/fixtures/h2/battle-control-static-v1.json)）。[battle-functions research](../research/battle-functions.md)与 `sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../tests/fixtures/h2/battle-functions-static-v1.json)）仅支持 shared individual-turn/player-control surface | 完整 player-visible loop、runtime caller states 与战术解释 |
-| action resolution | 物理、法术、状态、EXP 和若干 replay boundary 的 **Confirmed** implementation-neutral contracts | [combat contract](./combat-resolution.md)、[spell contract](./spell-resolution.md)、[randomness contract](./randomness.md)及各自 fixture 清单 | 尚未观察的分支、distribution isolation、通用 battle simulation |
-| growth | **Confirmed** 的 level-up order、growth、clamp、spell 与 refresh boundary | [level-up contract](./level-up.md)及其 H2/H3 fixture 清单 | campaign context、roster choice、预期曲线与平衡 intent |
-| save 与 suspend | **Confirmed** 的两槽 layout、checksum、action routing 和 bounded in-process replay | [save contract](./save-system.md)；`sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../tests/fixtures/h3/witch-save-actions-v1.json)） | 跨进程、断电、完整 subsystem persistence 和 visible UX |
+| main and exploration routing | **Confirmed** map switching, battle sentinel, event-before-input order, and interaction admission/order | [gameflow research](../research/gameflow-core.md); `sf2-gameflow-core-static-v1` ([`gameflow-core-static-v1.json`](../../tests/fixtures/h2/gameflow-core-static-v1.json)) | VInt edge, transition frames, normal-story reachability |
+| map state and movement/event | **Confirmed** map import, setup/event order, working layout, and bounded movement/action behavior | [map contract](./map-exploration.md) and its itemized H2/H3 fixture list; `sf2-map-interaction-trigger-runtime-v1` ([`map-interaction-trigger-v1.json`](../../tests/fixtures/h3/map-interaction-trigger-v1.json)) | Final rendering, complete player route, selected persistence |
+| input seam | **Confirmed** raw sampling, current/repeat state, and wait helpers | [input contract](./input-system.md); `sf2-tech-services-static-v1` ([`tech-services-static-v1.json`](../../tests/fixtures/h2/tech-services-static-v1.json)) owns raw sampling and wait helpers, while `sf2-tech-interrupts-static-v1` ([`tech-interrupts-static-v1.json`](../../tests/fixtures/h2/tech-interrupts-static-v1.json)) owns the VInt-derived current/repeat stage | Controller protocol, frame-exact latency, player-visible repeat cadence |
+| dialogue handoff | **Confirmed** six command layouts, handler order, and 21-case handler-local runtime seam | [dialogue contract](./dialogue-system.md); `sf2-map-script-dialogue-runtime-v1` ([`map-script-dialogue-v1.json`](../../tests/fixtures/h3/map-script-dialogue-v1.json)) | Text/portrait/audio rendering, story reachability, persistence |
+| party/roster handoff | **Confirmed** ten source forms, branch/mutation/call order, and bounded active-party effect | [party/roster contract](./party-roster-state.md); `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)) and `sf2-force-state-active-party-runtime-v1` ([`force-state-active-party-v1.json`](../../tests/fixtures/h3/force-state-active-party-v1.json)) | Roster/list capacity, story lifecycle, save persistence, player choice space |
+| service actions | **Confirmed static** shop/church/caravan/blacksmith actions and resource-mutation order | [service contract](./service-interactions.md); `sf2-common-menus-static-v1` ([`common-menus-static-v1.json`](../../tests/fixtures/h2/common-menus-static-v1.json)) | Admission, return, presentation, persistent outcome |
+| battle entry, turn, and outcome | **Confirmed static** new/resume, round/action/death/outcome order | [battle-loop research](../research/battle-loop.md); top-level executable trace `sf2-battle-control-static-v1` ([`battle-control-static-v1.json`](../../tests/fixtures/h2/battle-control-static-v1.json)). [Battle-functions research](../research/battle-functions.md) and `sf2-battle-functions-static-v1` ([`battle-functions-static-v1.json`](../../tests/fixtures/h2/battle-functions-static-v1.json)) support only the shared individual-turn/player-control surface | Complete player-visible loop, runtime caller states, tactical interpretation |
+| action resolution | **Confirmed** implementation-neutral physical, spell, status, EXP, and selected replay boundaries | [combat contract](./combat-resolution.md), [spell contract](./spell-resolution.md), [randomness contract](./randomness.md), and their fixture lists | Unobserved branches, distribution isolation, general battle simulation |
+| growth | **Confirmed** level-up order, growth, clamps, spells, and refresh boundary | [level-up contract](./level-up.md) and its H2/H3 fixture list | Campaign context, roster choice, intended curves, balance intent |
+| save and suspend | **Confirmed** two-slot layout, checksum, action routing, and bounded in-process replay | [save contract](./save-system.md); `sf2-witch-save-actions-runtime-v1` ([`witch-save-actions-v1.json`](../../tests/fixtures/h3/witch-save-actions-v1.json)) | Cross-process behavior, power loss, complete subsystem persistence, visible UX |
 
-表中 trace 只提供 owner 导航。fixture 的 exact expectations 仍由其 schema、extractor/verifier 与 owning
-contract 定义，本文不得复制一套较弱的 expectation。
+The table provides owner navigation only. Exact expectations remain defined by each fixture's schema,
+extractor/verifier, and owning contract; this document must not copy a weaker expectation set.
 
-## Original fidelity 与 modernization
+## Original Fidelity and Modernization
 
-### Fidelity rules
+### Fidelity Rules
 
-未来 implementation 若声称复现本文覆盖的原版 boundary，至少应：
+A future implementation claiming fidelity for a boundary covered here should at minimum:
 
-1. 从 owning contract/fixture 消费 map、input、script、party、service、battle、growth 与 save state，
-   不从本图或 player-facing phrase 反推数据结构；
-2. 保留已确认的 selector、priority、branch polarity、mutation/call order、clamp 与 sentinel；
-3. 对 **Unknown** 的 reachability、presentation、timing、capacity 或 persistence 不作原版事实声称；
-4. 将 deliberate deviation 与 original-compatible expectation 分开报告。
+1. consume map, input, script, party, service, battle, growth, and save state from owning
+   contracts/fixtures rather than deriving data structures from this diagram or a player-facing
+   phrase;
+2. preserve confirmed selectors, priorities, branch polarity, mutation/call order, clamps, and
+   sentinels;
+3. make no original-game claim for **Unknown** reachability, presentation, timing, capacity, or
+   persistence;
+4. report deliberate deviations separately from original-compatible expectations.
 
-### 尚未作出的 modernization decisions
+### Modernization Decisions Not Yet Made
 
-现代输入映射、加速/跳过、UI 信息层级、无障碍、自动保存、原子存档、跨平台存储、内容重排、角色
-再平衡、敌人数值重标定与新的 battle simulator 都可能是合理方向，但当前一项也未由本文决定。任何
-此类选择都应在 `docs/decisions/` 或 future remake specification 中说明理由，并用独立
-expected-deviation/H4 acceptance 与原版 parity 分开。
+Modern input mapping, acceleration/skipping, UI information hierarchy, accessibility, autosave,
+atomic saves, cross-platform storage, content reordering, character rebalancing, enemy-stat
+retargeting, and a new battle simulator may all be reasonable directions, but none is decided here.
+Any such choice should state its rationale in `docs/decisions/` or a future remake specification and
+separate its expected-deviation/H4 acceptance from original parity.
 
-## H4 接入与停止条件
+## H4 Integration and Stop Conditions
 
-本文本身不是新的 executable contract，不注册比 subsystem fixtures 更宽松的 aggregate golden。
-H4 adapter 应按需消费 evidence matrix 中的 owner，并让同一 fixture 能验证原版 harness 与 remake
-adapter 的相同 implementation-neutral fact。跨 subsystem scenario 只有在所有输入、状态单位、顺序和
-输出边界均已被 owner 接受后才可增加。
+This document is not a new executable contract and does not register an aggregate golden weaker than
+the subsystem fixtures. An H4 adapter should consume evidence-matrix owners as needed and use the
+same fixture to verify the same implementation-neutral fact against the original harness and remake
+adapter. A cross-subsystem scenario may be added only after all input, state-unit, order, and output
+boundaries have accepted owners.
 
-在下列任一条件成立时，本文停止扩张并把问题留在 owner queue：
+Stop expanding this document and leave the question in the owner queue whenever:
 
-- 答案需要未接受的 reverse-engineering branch、未观察的 normal-story reachability 或可见 timing；
-- 需要把 source name、静态 call 或单个 fixture case 解释成玩家意图、balance 或 campaign rule；
-- 需要选择 engine architecture、产品体验或 intentional deviation；
-- 需要完整 map-design principles、roster choice space、player/enemy curve 或 battle simulation。
+- the answer requires an unaccepted reverse-engineering branch, unobserved normal-story
+  reachability, or visible timing;
+- a source name, static call, or single fixture case would need to become player intent, balance, or
+  a campaign rule;
+- engine architecture, product experience, or an intentional deviation must be selected;
+- complete map-design principles, roster choice space, player/enemy curves, or battle simulation are
+  required.
 
-后四个上层方向继续保留在[文档路线图的长期方向](./documentation-roadmap.md#长期方向)，待各自 entry
-criteria 满足后再开独立 design-synthesis slice。
+Those four upper-layer directions remain in the documentation roadmap's
+[long-term directions](./documentation-roadmap.md#long-term-directions) until their entry criteria are
+satisfied and a separate design-synthesis slice begins.
