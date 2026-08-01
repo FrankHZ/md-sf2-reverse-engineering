@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,607 | 1,570 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,614 | 1,577 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 76 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,399 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 77 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,414 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -321,9 +321,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,607 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 76 H3 fixtures, and
-2,399 bindings. Of the records, 1,570 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,614 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 77 H3 fixtures, and
+2,414 bindings. Of the records, 1,577 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -380,9 +380,10 @@ program-command references (2,058 `nextSingleText`, 0 `nextSingleTextVar`, 577 `
 `nextTextVar`, 234 `textCursor`, 14 `hideText`) and zero-inclusive totals for all 304 programs.
 The static contract retains physical macro bytes separately from handler word reads; guards the named
 skip/sentinel/call/index/close sections; and joins the independent 4,267-line text-ID domain and
-119-row sprite-dialogue table by source/ROM provenance. Its only new H3 work is the grouped
-`dialogue-presentation/runtime-matrix`; timing, rendering, and story-specific meaning remain outside
-this static credit.
+119-row sprite-dialogue table by source/ROM provenance. Its one-launch 21-case H3 matrix now confirms
+only handler-local entry/RTS, A6/stack, skip, direct-call/return, source-set call-register, and direct
+state-write seams. Normal story reachability, rendered portrait/speech/controller timing, and unshimmed
+service completion/persistence remain the three grouped `map-script-dialogue/*` questions.
 Its directly coupled transition family is also exact: five primary source forms account for 146 ordered
 sites across all 304 zero-inclusive program totals (38 `warp`, seven `resetMap`, 60 `loadMapFadeIn`,
 24 `reloadMap`, and 17 `mapLoad`). The contract separately keeps the 79-ID canonical map domain and

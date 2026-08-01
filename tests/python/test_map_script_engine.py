@@ -2081,12 +2081,21 @@ def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
     reordered = deepcopy(map_script_engine_output)
     references = reordered["dialogueCommandFacts"]["sourceSiteReferences"]
     references[0], references[1] = references[1], references[0]
-    with pytest.raises(ValueError, match="const"):
+    with pytest.raises(ValueError, match="sourceSiteReferences"):
         validate_json(reordered, output_schema, owner="dialogue output reordered sites")
+
+    summary_boundary = deepcopy(map_script_engine_output)
+    summary_boundary["dialogueCommandFacts"]["sourceInputSummary"]["count"] -= 1
+    with pytest.raises(ValueError, match="sourceInputSummary"):
+        validate_json(
+            summary_boundary,
+            output_schema,
+            owner="dialogue output source summary boundary",
+        )
 
     missing_zero_caller = deepcopy(map_script_engine_output)
     del missing_zero_caller["dialogueCommandFacts"]["callerBreakdown"]["callerHandlers"][4]
-    with pytest.raises(ValueError, match="const"):
+    with pytest.raises(ValueError, match="callerBreakdown"):
         validate_json(
             missing_zero_caller, output_schema, owner="dialogue output missing zero caller"
         )
@@ -2105,7 +2114,7 @@ def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
         "callerHandlers"
     ]
     caller_rows[4], caller_rows[5] = caller_rows[5], caller_rows[4]
-    with pytest.raises(ValueError, match="const"):
+    with pytest.raises(ValueError, match="callerBreakdown"):
         validate_json(reordered_callers, output_schema, owner="dialogue output reordered callers")
 
     boundary = deepcopy(fixture)
@@ -4673,6 +4682,19 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
     ]
+    assert expected["dialogueCommandFacts"].pop("runtimeQuestions") == [
+        "map-script-dialogue/normal-story-reachability",
+        "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+        "map-script-dialogue/service-body-effects-and-persistence",
+    ]
+    assert expected["dialogueCommandFacts"].pop("sourceInputSummary") == {
+        "count": 2883,
+        "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5",
+    }
+    # This H3 slice replaces the former sentinel and adds only its compact H2 source join fact.
+    expected["dialogueCommandFacts"]["runtimeQuestions"] = [
+        "dialogue-presentation/runtime-matrix"
+    ]
     assert expected["screenPresentationCommandFacts"].pop("runtimeQuestions") == [
         "map-script-screen-presentation/normal-story-reachability",
         "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
@@ -4735,6 +4757,24 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
         "required"
     ].remove("runtimeQuestions")
+    dialogue_exact = output_schema["properties"]["dialogueCommandFacts"]["allOf"][1]["const"]
+    assert dialogue_exact.pop("runtimeQuestions") == [
+        "map-script-dialogue/normal-story-reachability",
+        "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+        "map-script-dialogue/service-body-effects-and-persistence",
+    ]
+    assert dialogue_exact.pop("sourceInputSummary") == {
+        "count": 2883,
+        "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5",
+    }
+    dialogue_exact["runtimeQuestions"] = ["dialogue-presentation/runtime-matrix"]
+    del output_schema["definitions"]["dialogueCommandFacts"]["properties"][
+        "sourceInputSummary"
+    ]
+    output_schema["definitions"]["dialogueCommandFacts"]["required"].remove(
+        "sourceInputSummary"
+    )
+    del output_schema["definitions"]["dialogueSourceInputSummary"]
     output_schema["properties"]["screenPresentationCommandFacts"]["allOf"][1][
         "properties"
     ]["runtimeQuestions"] = {"const": ["map-script-screen-presentation/runtime-effects-matrix"]}
@@ -4820,6 +4860,26 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
         "required"
     ].remove("runtimeQuestions")
+    dialogue_fixture_exact = fixture_schema["properties"]["expected"]["properties"][
+        "dialogueCommandFacts"
+    ]["allOf"][1]["const"]
+    assert dialogue_fixture_exact.pop("runtimeQuestions") == [
+        "map-script-dialogue/normal-story-reachability",
+        "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+        "map-script-dialogue/service-body-effects-and-persistence",
+    ]
+    assert dialogue_fixture_exact.pop("sourceInputSummary") == {
+        "count": 2883,
+        "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5",
+    }
+    dialogue_fixture_exact["runtimeQuestions"] = ["dialogue-presentation/runtime-matrix"]
+    del fixture_schema["definitions"]["dialogueCommandFacts"]["properties"][
+        "sourceInputSummary"
+    ]
+    fixture_schema["definitions"]["dialogueCommandFacts"]["required"].remove(
+        "sourceInputSummary"
+    )
+    del fixture_schema["definitions"]["dialogueSourceInputSummary"]
     fixture_schema["properties"]["expected"]["properties"][
         "screenPresentationCommandFacts"
     ]["allOf"][1]["const"]["runtimeQuestions"] = [

@@ -1,0 +1,1271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 map-script dialogue H3 fixture",
+  "allOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "id",
+        "system",
+        "romSha256",
+        "upstreamCommit",
+        "evidenceDate",
+        "emulator",
+        "mapTestIndex",
+        "sharedHarnessFixture",
+        "maxFrames",
+        "provenance",
+        "function",
+        "ram",
+        "constants",
+        "sourceContract",
+        "instrumentation",
+        "runtimeQuestions",
+        "cases",
+        "caseSemanticsSha256"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer",
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "const": "sf2-map-script-dialogue-runtime-v1"
+        },
+        "system": {
+          "type": "string",
+          "const": "GEN"
+        },
+        "romSha256": {
+          "type": "string",
+          "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+        },
+        "evidenceDate": {
+          "type": "string",
+          "const": "2026-07-31"
+        },
+        "emulator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "version",
+            "core"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "const": "BizHawk"
+            },
+            "version": {
+              "type": "string",
+              "const": "2.11.1"
+            },
+            "core": {
+              "type": "string",
+              "const": "Genesis Plus GX"
+            }
+          }
+        },
+        "mapTestIndex": {
+          "type": "integer",
+          "const": 0
+        },
+        "sharedHarnessFixture": {
+          "type": "string",
+          "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+        },
+        "maxFrames": {
+          "type": "integer",
+          "const": 10800
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "upstreamRepository",
+            "upstreamBranch",
+            "upstreamCommit",
+            "h2FixturePath",
+            "h2FixtureId",
+            "h2FieldPath",
+            "uiPrimaryFixturePath",
+            "uiPrimaryFixtureId",
+            "command"
+          ],
+          "properties": {
+            "upstreamRepository": {
+              "type": "string",
+              "const": "https://github.com/ShiningForceCentral/SF2DISASM"
+            },
+            "upstreamBranch": {
+              "type": "string",
+              "const": "master"
+            },
+            "upstreamCommit": {
+              "type": "string",
+              "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+            },
+            "h2FixturePath": {
+              "type": "string",
+              "const": "tests/fixtures/h2/map-script-engine-static-v1.json"
+            },
+            "h2FixtureId": {
+              "type": "string",
+              "const": "sf2-map-script-engine-static-v1"
+            },
+            "h2FieldPath": {
+              "type": "string",
+              "const": "expected.dialogueCommandFacts"
+            },
+            "uiPrimaryFixturePath": {
+              "type": "string",
+              "const": "tests/fixtures/h3/map-script-ui-primary-v1.json"
+            },
+            "uiPrimaryFixtureId": {
+              "type": "string",
+              "const": "sf2-map-script-ui-primary-runtime-v1"
+            },
+            "command": {
+              "type": "string",
+              "const": "uv run sf2 h2 map-script-engine"
+            }
+          }
+        },
+        "function": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entryAddress",
+            "csc00_displaySingleTextboxAddress",
+            "csc01_displaySingleTextboxWithVarsAddress",
+            "csc02_displayTextboxAddress",
+            "csc03_displayTextboxWithVarsAddress",
+            "csc04_setTextIndexAddress",
+            "csc09_hideDialogueAndPortraitWindowsAddress",
+            "csc00_displaySingleTextboxReturnAddress",
+            "csc01_displaySingleTextboxWithVarsReturnAddress",
+            "csc02_displayTextboxReturnAddress",
+            "csc03_displayTextboxWithVarsReturnAddress",
+            "csc04_setTextIndexReturnAddress",
+            "csc09_hideDialogueAndPortraitWindowsReturnAddress",
+            "csc00_displaySingleTextboxSkipBranchTargetAddress",
+            "csc02_displayTextboxSkipBranchTargetAddress"
+          ],
+          "properties": {
+            "entryAddress": {
+              "type": "integer",
+              "const": 292092
+            },
+            "csc00_displaySingleTextboxAddress": {
+              "type": "integer",
+              "const": 291402
+            },
+            "csc01_displaySingleTextboxWithVarsAddress": {
+              "type": "integer",
+              "const": 291486
+            },
+            "csc02_displayTextboxAddress": {
+              "type": "integer",
+              "const": 291566
+            },
+            "csc03_displayTextboxWithVarsAddress": {
+              "type": "integer",
+              "const": 291634
+            },
+            "csc04_setTextIndexAddress": {
+              "type": "integer",
+              "const": 291698
+            },
+            "csc09_hideDialogueAndPortraitWindowsAddress": {
+              "type": "integer",
+              "const": 291838
+            },
+            "csc00_displaySingleTextboxReturnAddress": {
+              "type": "integer",
+              "const": 291484
+            },
+            "csc01_displaySingleTextboxWithVarsReturnAddress": {
+              "type": "integer",
+              "const": 291564
+            },
+            "csc02_displayTextboxReturnAddress": {
+              "type": "integer",
+              "const": 291632
+            },
+            "csc03_displayTextboxWithVarsReturnAddress": {
+              "type": "integer",
+              "const": 291696
+            },
+            "csc04_setTextIndexReturnAddress": {
+              "type": "integer",
+              "const": 291702
+            },
+            "csc09_hideDialogueAndPortraitWindowsReturnAddress": {
+              "type": "integer",
+              "const": 291848
+            },
+            "csc00_displaySingleTextboxSkipBranchTargetAddress": {
+              "type": "integer",
+              "const": 291480
+            },
+            "csc02_displayTextboxSkipBranchTargetAddress": {
+              "type": "integer",
+              "const": 291628
+            }
+          }
+        },
+        "ram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "DIALOGUE_NAME_INDEX_2",
+            "DIALOGUE_NAME_INDEX_1",
+            "CURRENT_SPEECH_SFX",
+            "CUTSCENE_DIALOG_INDEX",
+            "SKIP_CUTSCENE_TEXT"
+          ],
+          "properties": {
+            "DIALOGUE_NAME_INDEX_2": {
+              "type": "integer",
+              "const": 16758506
+            },
+            "DIALOGUE_NAME_INDEX_1": {
+              "type": "integer",
+              "const": 16758504
+            },
+            "CURRENT_SPEECH_SFX": {
+              "type": "integer",
+              "const": 16756892
+            },
+            "CUTSCENE_DIALOG_INDEX": {
+              "type": "integer",
+              "const": 16758342
+            },
+            "SKIP_CUTSCENE_TEXT": {
+              "type": "integer",
+              "const": 16758344
+            }
+          }
+        },
+        "constants": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sentinelWord",
+            "modifierByteValues",
+            "textCursorValueBounds"
+          ],
+          "properties": {
+            "sentinelWord": {
+              "type": "integer",
+              "const": 65535
+            },
+            "modifierByteValues": {
+              "type": "array",
+              "const": [
+                0,
+                128,
+                192,
+                255
+              ]
+            },
+            "textCursorValueBounds": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimum",
+                "maximum",
+                "domainMinimum",
+                "domainMaximum"
+              ],
+              "properties": {
+                "minimum": {
+                  "type": "integer",
+                  "const": 240
+                },
+                "maximum": {
+                  "type": "integer",
+                  "const": 4233
+                },
+                "domainMinimum": {
+                  "type": "integer",
+                  "const": 0
+                },
+                "domainMaximum": {
+                  "type": "integer",
+                  "const": 4266
+                }
+              }
+            }
+          }
+        },
+        "sourceContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceSiteReferenceCount",
+            "programTotalCount",
+            "sourceInputSummary"
+          ],
+          "properties": {
+            "sourceSiteReferenceCount": {
+              "type": "integer",
+              "const": 205
+            },
+            "programTotalCount": {
+              "type": "integer",
+              "const": 304
+            },
+            "sourceInputSummary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "count",
+                "sha256"
+              ],
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "const": 2883
+                },
+                "sha256": {
+                  "type": "string",
+                  "const": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5"
+                }
+              }
+            }
+          }
+        },
+        "instrumentation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callSiteAddress",
+            "callSiteOriginalHex",
+            "callSitePatchedHex",
+            "stubAddress",
+            "stubOriginalHex",
+            "stubHex",
+            "postHandlerAddress",
+            "ramInputAddress",
+            "scriptInputRamOffset",
+            "speechSfxSeedRamOffset",
+            "speechSfxWordSeed",
+            "registerSeeds",
+            "stateSeeds",
+            "serviceInterception"
+          ],
+          "properties": {
+            "callSiteAddress": {
+              "type": "integer",
+              "const": 292114
+            },
+            "callSiteOriginalHex": {
+              "type": "string",
+              "const": "4E904CDF03FF"
+            },
+            "callSitePatchedHex": {
+              "type": "string",
+              "const": "4EB90000FF88"
+            },
+            "stubAddress": {
+              "type": "integer",
+              "const": 65416
+            },
+            "stubOriginalHex": {
+              "type": "string",
+              "const": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+            },
+            "stubHex": {
+              "type": "string",
+              "const": "4DF900FF4004303C0400323C0002343C0006207900FF40004E904E75"
+            },
+            "postHandlerAddress": {
+              "type": "integer",
+              "const": 65442
+            },
+            "ramInputAddress": {
+              "type": "integer",
+              "const": 16728064
+            },
+            "scriptInputRamOffset": {
+              "type": "integer",
+              "const": 4
+            },
+            "speechSfxSeedRamOffset": {
+              "type": "integer",
+              "const": 16
+            },
+            "speechSfxWordSeed": {
+              "type": "integer",
+              "const": 17767
+            },
+            "registerSeeds": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "d0",
+                "d1",
+                "d2"
+              ],
+              "properties": {
+                "d0": {
+                  "type": "integer",
+                  "const": 1024
+                },
+                "d1": {
+                  "type": "integer",
+                  "const": 2
+                },
+                "d2": {
+                  "type": "integer",
+                  "const": 6
+                }
+              }
+            },
+            "stateSeeds": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "dialogueIndexWord",
+                "currentSpeechSfxWord",
+                "nameIndex1Word",
+                "nameIndex2Word"
+              ],
+              "properties": {
+                "dialogueIndexWord": {
+                  "type": "integer",
+                  "const": 14505
+                },
+                "currentSpeechSfxWord": {
+                  "type": "integer",
+                  "const": 42405
+                },
+                "nameIndex1Word": {
+                  "type": "integer",
+                  "const": 46774
+                },
+                "nameIndex2Word": {
+                  "type": "integer",
+                  "const": 51143
+                }
+              }
+            },
+            "serviceInterception": {
+              "type": "array",
+              "const": [
+                {
+                  "instructionTarget": "csc1D_showPortrait",
+                  "address": 289432,
+                  "originalHex": "301E",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "instructionTarget": "GetEntityPortaitAndSpeechSfx",
+                  "address": 284216,
+                  "originalHex": "48E78084024000FF",
+                  "patchedHex": "343900FF40104E75"
+                },
+                {
+                  "instructionTarget": "WaitForViewScrollEnd",
+                  "address": 18184,
+                  "originalHex": "3F07",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "instructionTarget": "DisplayText",
+                  "address": 25184,
+                  "originalHex": "48E7",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "instructionTarget": "j_ClosePortraitWindow",
+                  "address": 65596,
+                  "originalHex": "4EFA",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "instructionTarget": "Sleep",
+                  "address": 3844,
+                  "originalHex": "48A7",
+                  "patchedHex": "4E75"
+                }
+              ],
+              "minItems": 6,
+              "maxItems": 6,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "address",
+                  "originalHex",
+                  "patchedHex"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "integer"
+                  },
+                  "originalHex": {
+                    "type": "string"
+                  },
+                  "patchedHex": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "const": [
+            "map-script-dialogue/normal-story-reachability",
+            "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+            "map-script-dialogue/service-body-effects-and-persistence"
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "const": [
+            {
+              "id": "nextSingleText-source-modifier-255-sentinel",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle00:2:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    14505,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    6
+                  ],
+                  [
+                    10,
+                    2,
+                    6
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-modifier-0-high-bit-set",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle01:9:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    129,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-modifier-0-high-bit-clear",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "bbcs_01:43:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    2,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-modifier-192-high-bit-clear",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "bbcs_04:10:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    49180,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-modifier-192-high-bit-set",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle07:34:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    49282,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-modifier-128-high-bit-clear",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "cs_5E772:19:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    32789,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-modifier-128-high-bit-set",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "cs_6093A:16:nextSingleText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    32896,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-0-high-bit-set",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "bbcs_01:11:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    135,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-0-high-bit-clear",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "bbcs_04:13:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    4,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-255-sentinel",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle05:6:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    14505,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    6
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-192-high-bit-set",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle07:47:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    49282,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-192-high-bit-clear",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle13:19:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    49162,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-128-high-bit-clear",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "cs_60708:17:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    32796,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextText-source-modifier-128-high-bit-set",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "cs_6093A:15:nextText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    32896,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextSingleText-source-skip-flag-set",
+              "macro": "nextSingleText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "bbcs_01:43:nextSingleText",
+              "skipFlagByteSeed": 1,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": []
+              }
+            },
+            {
+              "id": "nextText-source-skip-flag-set",
+              "macro": "nextText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "bbcs_04:13:nextText",
+              "skipFlagByteSeed": 1,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": []
+              }
+            },
+            {
+              "id": "nextSingleTextVar-controlled-zero-source",
+              "macro": "nextSingleTextVar",
+              "sourceStatus": "controlled-zero-source",
+              "sourceOrderKey": null,
+              "skipFlagByteSeed": 0,
+              "inputWords": [
+                1,
+                4660,
+                22136
+              ],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    1,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    10,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "nextTextVar-controlled-zero-source",
+              "macro": "nextTextVar",
+              "sourceStatus": "controlled-zero-source",
+              "sourceOrderKey": null,
+              "skipFlagByteSeed": 0,
+              "inputWords": [
+                1,
+                9029,
+                26505
+              ],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ],
+                  [
+                    1,
+                    2,
+                    6
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ],
+                  [
+                    14505,
+                    2,
+                    17767
+                  ]
+                ]
+              }
+            },
+            {
+              "id": "textCursor-source-minimum",
+              "macro": "textCursor",
+              "sourceStatus": "source",
+              "sourceOrderKey": "data/maps/entries/map72/mapsetups/s6_initfunction.asm#L23:4:textCursor",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": []
+              }
+            },
+            {
+              "id": "textCursor-source-maximum",
+              "macro": "textCursor",
+              "sourceStatus": "source",
+              "sourceOrderKey": "IntroCutscene4:0:textCursor",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": []
+              }
+            },
+            {
+              "id": "hideText-source",
+              "macro": "hideText",
+              "sourceStatus": "source",
+              "sourceOrderKey": "abcs_battle00:3:hideText",
+              "skipFlagByteSeed": 0,
+              "inputWords": [],
+              "runtimeGolden": {
+                "directCallRegisterWordsObserved": [
+                  [
+                    1024,
+                    2,
+                    6
+                  ]
+                ]
+              }
+            }
+          ],
+          "minItems": 21,
+          "maxItems": 21,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "macro",
+              "sourceStatus",
+              "sourceOrderKey",
+              "skipFlagByteSeed",
+              "inputWords",
+              "runtimeGolden"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "macro": {
+                "type": "string",
+                "enum": [
+                  "nextSingleText",
+                  "nextSingleTextVar",
+                  "nextText",
+                  "nextTextVar",
+                  "textCursor",
+                  "hideText"
+                ]
+              },
+              "sourceStatus": {
+                "type": "string",
+                "enum": [
+                  "source",
+                  "controlled-zero-source"
+                ]
+              },
+              "sourceOrderKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "skipFlagByteSeed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "inputWords": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                }
+              },
+              "runtimeGolden": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "directCallRegisterWordsObserved"
+                ],
+                "properties": {
+                  "directCallRegisterWordsObserved": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "caseSemanticsSha256": {
+          "type": "string",
+          "const": "B8CA4913646A3782F9F8D846A72C9D7DBA28C7DED1A58E2A712BCD5CF49C6501"
+        }
+      }
+    }
+  ]
+}

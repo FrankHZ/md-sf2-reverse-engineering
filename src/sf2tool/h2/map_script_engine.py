@@ -60,7 +60,11 @@ DIALOGUE_CALLER_HANDLER_NAMES = tuple(
 ) + (PORTRAIT_HANDLER,)
 DIALOGUE_CALLEE_TARGETS = (PORTRAIT_HANDLER, ENTITY_DIALOGUE_CONSUMER)
 DIALOGUE_CONSTANT_NAMES = ("COMBATANT_MASK_ALL", "ENTITY_NONE")
-DIALOGUE_RUNTIME_QUESTIONS = ["dialogue-presentation/runtime-matrix"]
+DIALOGUE_RUNTIME_QUESTIONS = [
+    "map-script-dialogue/normal-story-reachability",
+    "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+    "map-script-dialogue/service-body-effects-and-persistence",
+]
 
 TRANSITION_MACROS = ("warp", "resetMap", "loadMapFadeIn", "reloadMap", "mapLoad")
 TRANSITION_HANDLER_BY_MACRO = {
@@ -1853,6 +1857,7 @@ def _dialogue_command_facts(
     constants = _dialogue_equates(source_equates)
     programs = program_corpus["programs"]
     source_references = []
+    source_order_keys = []
     program_totals = []
     source_counts: Counter[str] = Counter()
     modifier_values: Counter[int] = Counter()
@@ -1867,9 +1872,15 @@ def _dialogue_command_facts(
             if macro not in DIALOGUE_MACROS:
                 continue
             command_indexes.append(command["index"])
+            source_order_keys.append(":".join((program["id"], str(command["index"]), macro)))
             source_counts[macro] += 1
             counts[macro] += 1
             arguments = command["arguments"]
+            layout = macros[macro]["operandLayout"]
+            if len(arguments) != len(layout):
+                raise ValueError(f"dialogue source operand layout drift: {macro}")
+            for argument, _field in zip(arguments, layout, strict=True):
+                _resolved_dialogue_operand(argument, constants)
             if macro in DIALOGUE_DISPLAY_MACROS:
                 if len(arguments) < 2:
                     raise ValueError(f"dialogue display command lacks modifier/entity: {macro}")
@@ -1908,6 +1919,8 @@ def _dialogue_command_facts(
     ]
     if len(set(flattened_references)) != len(flattened_references):
         raise ValueError("dialogue source reference identity drift")
+    if len(source_order_keys) != len(set(source_order_keys)):
+        raise ValueError("dialogue source-order identity drift")
     for name in DIALOGUE_MACROS:
         if sum(row["macroCounts"][name] for row in program_totals) != source_counts[name]:
             raise ValueError(f"dialogue per-program total drift: {name}")
@@ -1964,6 +1977,12 @@ def _dialogue_command_facts(
         )
     return {
         "macros": selected_macros,
+        "sourceInputSummary": {
+            "count": len(source_order_keys),
+            "sha256": hashlib.sha256(
+                _canonical_bytes({"sourceInputOrderKeys": source_order_keys})
+            ).hexdigest().upper(),
+        },
         "sourceSiteReferences": source_references,
         "programTotals": program_totals,
         "operandFacts": {
@@ -12308,6 +12327,11 @@ def verify_map_script_engine_contract(
         if field == "entityPlacementCommandFacts":
             actual = {
                 key: output["entityPlacementCommandFacts"][key]
+                for key in fixture["expected"][field]
+            }
+        if field == "dialogueCommandFacts":
+            actual = {
+                key: output["dialogueCommandFacts"][key]
                 for key in fixture["expected"][field]
             }
         if field == "mapScriptUiPrimaryCommandFacts":

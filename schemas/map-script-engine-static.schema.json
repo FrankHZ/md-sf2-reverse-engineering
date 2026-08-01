@@ -4509,6 +4509,10 @@
                 ]
               }
             ],
+            "sourceInputSummary": {
+              "count": 2883,
+              "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5"
+            },
             "programTotals": [
               {
                 "programId": "cs_45284",
@@ -9620,7 +9624,9 @@
               "sourcePath": "data/spritedialogproperties.asm"
             },
             "runtimeQuestions": [
-              "dialogue-presentation/runtime-matrix"
+              "map-script-dialogue/normal-story-reachability",
+              "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+              "map-script-dialogue/service-body-effects-and-persistence"
             ]
           }
         }
@@ -49835,6 +49841,24 @@
         }
       }
     },
+    "dialogueSourceInputSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "sha256"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "const": 2883
+        },
+        "sha256": {
+          "type": "string",
+          "const": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5"
+        }
+      }
+    },
     "sourceSiteReference": {
       "type": "object",
       "additionalProperties": false,
@@ -50395,6 +50419,7 @@
       "additionalProperties": false,
       "required": [
         "macros",
+        "sourceInputSummary",
         "sourceSiteReferences",
         "programTotals",
         "operandFacts",
@@ -50412,6 +50437,9 @@
           "items": {
             "$ref": "#/definitions/dialogueMacro"
           }
+        },
+        "sourceInputSummary": {
+          "$ref": "#/definitions/dialogueSourceInputSummary"
         },
         "sourceSiteReferences": {
           "type": "array",

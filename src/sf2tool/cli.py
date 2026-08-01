@@ -108,6 +108,7 @@ from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
 from sf2tool.h3.map_interaction_trigger import verify_map_interaction_trigger
 from sf2tool.h3.map_lifecycle import verify_map_lifecycle
+from sf2tool.h3.map_script_dialogue import verify_map_script_dialogue
 from sf2tool.h3.map_script_entity_presentation_fx import (
     verify_map_script_entity_presentation_fx,
 )
@@ -763,6 +764,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_script_entity_presentation_fx)
     h3_map_script_entity_presentation_fx.add_argument("--timeout-seconds", type=int, default=180)
+    h3_map_script_dialogue = h3_commands.add_parser(
+        "map-script-dialogue",
+        help="verify one-launch dialogue handler branches, state writes, and callback seams",
+    )
+    _add_local_paths(h3_map_script_dialogue)
+    h3_map_script_dialogue.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_script_screen_presentation = h3_commands.add_parser(
         "map-script-screen-presentation",
         help="verify one-launch screen-presentation handler branch, loop, and callback seams",
@@ -1683,6 +1690,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-script-entity-presentation-fx":
         print_record(
             verify_map_script_entity_presentation_fx(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-script-dialogue":
+        print_record(
+            verify_map_script_dialogue(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

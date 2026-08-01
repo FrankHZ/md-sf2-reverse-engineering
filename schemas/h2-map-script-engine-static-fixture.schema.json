@@ -417,6 +417,10 @@
                     "sourceCommandCount": 14
                   }
                 ],
+                "sourceInputSummary": {
+                  "count": 2883,
+                  "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5"
+                },
                 "sourceSiteReferences": [
                   {
                     "programId": "abcs_battle00",
@@ -9438,7 +9442,9 @@
                   "sourcePath": "data/spritedialogproperties.asm"
                 },
                 "runtimeQuestions": [
-                  "dialogue-presentation/runtime-matrix"
+                  "map-script-dialogue/normal-story-reachability",
+                  "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
+                  "map-script-dialogue/service-body-effects-and-persistence"
                 ]
               }
             }
@@ -50147,6 +50153,7 @@
       "additionalProperties": false,
       "required": [
         "macros",
+        "sourceInputSummary",
         "sourceSiteReferences",
         "programTotals",
         "operandFacts",
@@ -50216,6 +50223,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "sourceInputSummary": {
+          "$ref": "#/definitions/dialogueSourceInputSummary"
         }
       }
     },
@@ -68073,6 +68083,24 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "dialogueSourceInputSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "sha256"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
         }
       }
     }

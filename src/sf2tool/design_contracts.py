@@ -6,6 +6,14 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/dialogue-system.md": {
+        "tests/fixtures/h2/map-script-engine-static-v1.json": (
+            "sf2-map-script-engine-static-v1"
+        ),
+        "tests/fixtures/h3/map-script-dialogue-v1.json": (
+            "sf2-map-script-dialogue-runtime-v1"
+        ),
+    },
     "docs/design/map-exploration.md": {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",

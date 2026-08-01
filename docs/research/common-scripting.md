@@ -125,9 +125,42 @@ consumer first masks the entity/character value with parsed `COMBATANT_MASK_ALL`
 map-sprite byte. Its only table join is by the sibling 119-row sprite-dialogue contract's identity,
 pinned commit, ROM hash, source path, and addresses; no decoded text or sibling fixture data is copied.
 
-The grouped H3 queue has one dialogue item: `dialogue-presentation/runtime-matrix`, covering skip,
-packed modifier/entity handling, portrait/speech presentation, input/wait cadence, and close/clear/sleep
-observation under shared setup. Story meaning and visible timing remain **Unknown**.
+### Bounded runtime matrix — dialogue handlers
+
+**Confirmed (H3):** `sf2-map-script-dialogue-runtime-v1` replays 21 handler-local records through one
+BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch. Before deriving cases it joins the existing 205
+ordered H2 source-site references to the authoritative 304-program corpus transiently, checks the
+2,883-row order digest, and keeps no second copied command corpus. The source-derived partitions cover
+all four observed modifier-byte values (0/128/192/255), high-bit-clear/high-bit-set and `$FFFF` sentinel
+inputs for both non-`Var` display forms; two skip-flag controls; the two zero-source `*Var` forms; both
+explicit `textCursor` bounds 240/4,233; and `hideText`.
+
+**Confirmed (H3):** all six handler entry/RTS PCs, A6 end offsets, pre-RTS four-byte call-frame deltas,
+skip branch polarity, ordered direct instruction/effective target/call-site/target-entry/return records,
+zero-inclusive target counts, and direct RAM write results match their guarded named H1 sections. The
+observer captures each entry, call-site, target-entry, and return PC before resolving an instruction or
+effective-target label through its unique guarded source/H1 address map. The session trampoline explicitly
+seeds D0/D1/D2; each recorded call-register triple is then derived from the parsed D0 source use-site
+(`(a6)`, `CUTSCENE_DIALOG_INDEX`, or immediate 10) and verified RTS shims, rather than treating an
+emulator sample as source authority. The service entries are patched only in a checksum-updated session
+copy after original-byte preflight; they are not evidence about portrait, text, audio, wait, close, or
+sleep service bodies.
+
+**Unknown:** the remaining grouped queues are exactly:
+
+- `map-script-dialogue/normal-story-reachability`: normal script/save route admission;
+- `map-script-dialogue/rendered-portrait-speech-and-controller-timing`: visible output, speech playback,
+  input, waits, and frame timing;
+- `map-script-dialogue/service-body-effects-and-persistence`: unshimmed service execution, completion,
+  repeat behavior, and persistence.
+
+Provenance: USA retail ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`; pinned
+`ShiningForceCentral/SF2DISASM` `master` `c834c652b6862bc5679fd7f69a38a7093206efc6`;
+`mapscriptengine_2.asm` named `csc00`/`csc01`/`csc02`/`csc03`/`csc04`/`csc09` sections and
+`build/sf2build-h1.lst`; fixture `tests/fixtures/h3/map-script-dialogue-v1.json`; verifier
+`src/sf2tool/h3/map_script_dialogue.py`; observed result `21 cases, 6 handlers, 1 launch, PASS` on
+2026-07-31. Reproduce with `uv run sf2 h3 map-script-dialogue --timeout-seconds 180`.
 
 ## Confirmed Map-Script Transition Command Family
 

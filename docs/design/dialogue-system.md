@@ -4,14 +4,16 @@
   state writes, source-labelled modifier bits, close/clear call order, and the bounded
   entity-to-map-sprite dialogue-property seam below.
 - **Inferred original behavior:** none promoted here.
-- **Unknown original behavior:** text rendering cadence, input/wait timing, visible portrait placement,
-  speech-SFX playback timing, and caller-dependent story presentation.
-- Evidence date: 2026-07-27
+- **Unknown original behavior:** normal-story reachability, rendered text/portrait/speech/controller
+  timing, and unshimmed service completion/repeat/persistence.
+- Evidence date: 2026-07-31
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-map-script-engine-static-v1` in
-  `tests/fixtures/h2/map-script-engine-static-v1.json`; `src/sf2tool/h2/map_script_engine.py`; and
-  `docs/research/common-scripting.md`.
+  `tests/fixtures/h2/map-script-engine-static-v1.json`; and
+  `sf2-map-script-dialogue-runtime-v1` in
+  `tests/fixtures/h3/map-script-dialogue-v1.json`; `src/sf2tool/h2/map_script_engine.py`;
+  `src/sf2tool/h3/map_script_dialogue.py`; and `docs/research/common-scripting.md`.
 
 ## Confirmed Static Contract
 
@@ -57,11 +59,20 @@ byte. The map-script contract joins the existing 119-row, 478-byte sprite-dialog
 the sibling contract's ID, pinned commit, ROM hash, source path, and addresses; it does not copy decoded
 text or use the sibling golden fixture as evidence.
 
-## Runtime Matrix Boundary
+## Confirmed Runtime Boundary
 
-One future H3 `dialogue-presentation/runtime-matrix` should observe skip admission, packed modifier/entity
-sentinel handling, portrait suppression/placement, speech-SFX timing, text completion/input waits, and
-the close/clear/sleep presentation path under shared setup. No one-case emulator fixture is warranted.
+The one-launch `sf2-map-script-dialogue-runtime-v1` fixture retains 21 handler-local cases: all six
+entry/return PC pairs, A6/stack boundaries, skip admission, source-partitioned packed inputs, the two
+controlled zero-source `*Var` layouts, cursor bounds, close path, ordered direct call identities and
+zero-inclusive target counts, direct state writes, and session-controlled call register words. The H3
+observer captures entry/call/target/return PCs first and resolves call labels only through the unique
+guarded source/H1 address map. A remake adapter MUST preserve those facts as command/service seams. The
+explicit D0/D1/D2 trampoline inputs and the RTS service shims are harness controls, not original
+caller/service behavior.
+
+The remaining original questions are exactly the three `map-script-dialogue/*` queues in
+`docs/research/common-scripting.md`; a remake MUST NOT infer visual portrait placement, audio playback,
+text completion, controller timing, story reachability, or persistence from this handler-local matrix.
 
 ## Remake Boundary
 

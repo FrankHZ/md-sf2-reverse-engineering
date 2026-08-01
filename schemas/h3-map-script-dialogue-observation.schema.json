@@ -1,0 +1,529 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 map-script dialogue H3 observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "system",
+    "core",
+    "id",
+    "mapTest",
+    "recordOrder",
+    "records"
+  ],
+  "properties": {
+    "system": {
+      "type": "string",
+      "const": "GEN"
+    },
+    "core": {
+      "type": "string",
+      "const": "Genesis Plus GX"
+    },
+    "id": {
+      "type": "string",
+      "const": "sf2-map-script-dialogue-runtime-v1"
+    },
+    "mapTest": {
+      "type": "integer",
+      "const": 0
+    },
+    "recordOrder": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 21,
+      "maxItems": 21,
+      "const": [
+        "nextSingleText-source-modifier-255-sentinel",
+        "nextSingleText-source-modifier-0-high-bit-set",
+        "nextSingleText-source-modifier-0-high-bit-clear",
+        "nextSingleText-source-modifier-192-high-bit-clear",
+        "nextSingleText-source-modifier-192-high-bit-set",
+        "nextSingleText-source-modifier-128-high-bit-clear",
+        "nextSingleText-source-modifier-128-high-bit-set",
+        "nextText-source-modifier-0-high-bit-set",
+        "nextText-source-modifier-0-high-bit-clear",
+        "nextText-source-modifier-255-sentinel",
+        "nextText-source-modifier-192-high-bit-set",
+        "nextText-source-modifier-192-high-bit-clear",
+        "nextText-source-modifier-128-high-bit-clear",
+        "nextText-source-modifier-128-high-bit-set",
+        "nextSingleText-source-skip-flag-set",
+        "nextText-source-skip-flag-set",
+        "nextSingleTextVar-controlled-zero-source",
+        "nextTextVar-controlled-zero-source",
+        "textCursor-source-minimum",
+        "textCursor-source-maximum",
+        "hideText-source"
+      ]
+    },
+    "records": {
+      "type": "array",
+      "items": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-255-sentinel"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-0-high-bit-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-0-high-bit-clear"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-192-high-bit-clear"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-192-high-bit-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-128-high-bit-clear"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-modifier-128-high-bit-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-0-high-bit-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-0-high-bit-clear"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-255-sentinel"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-192-high-bit-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-192-high-bit-clear"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-128-high-bit-clear"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-modifier-128-high-bit-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleText-source-skip-flag-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextText-source-skip-flag-set"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextSingleTextVar-controlled-zero-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "nextTextVar-controlled-zero-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "textCursor-source-minimum"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "textCursor-source-maximum"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/definitions/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "hideText-source"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "additionalItems": false,
+      "minItems": 21,
+      "maxItems": 21
+    }
+  },
+  "definitions": {
+    "call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTargetObserved",
+        "effectiveTargetObserved",
+        "callSiteAddressObserved",
+        "targetEntryAddressObserved",
+        "returnAddressObserved"
+      ],
+      "properties": {
+        "instructionTargetObserved": {
+          "type": "string"
+        },
+        "effectiveTargetObserved": {
+          "type": "string"
+        },
+        "callSiteAddressObserved": {
+          "type": "integer"
+        },
+        "targetEntryAddressObserved": {
+          "type": "integer"
+        },
+        "returnAddressObserved": {
+          "type": "integer"
+        }
+      }
+    },
+    "effectiveTargetCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "csc1D_showPortrait",
+        "GetEntityPortaitAndSpeechSfx",
+        "WaitForViewScrollEnd",
+        "DisplayText",
+        "ClosePortraitWindow",
+        "Sleep"
+      ],
+      "properties": {
+        "csc1D_showPortrait": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityPortaitAndSpeechSfx": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "DisplayText": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ClosePortraitWindow": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "registerWords": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65535
+      }
+    },
+    "stateWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kindObserved",
+        "resumeAddressObserved",
+        "wordValueObserved"
+      ],
+      "properties": {
+        "kindObserved": {
+          "type": "string"
+        },
+        "resumeAddressObserved": {
+          "type": "integer"
+        },
+        "wordValueObserved": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "handlerEntryPcObserved",
+        "handlerReturnPcObserved",
+        "handlerReturned",
+        "scriptCursorRamOffsetAfterObserved",
+        "stackPointerDeltaBytesObserved",
+        "skipFlagBranchTakenObserved",
+        "directCallsObserved",
+        "effectiveTargetCountsObserved",
+        "directCallRegisterWordsObserved",
+        "stateWritesObserved"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "handlerEntryPcObserved": {
+          "type": "integer"
+        },
+        "handlerReturnPcObserved": {
+          "type": "integer"
+        },
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "scriptCursorRamOffsetAfterObserved": {
+          "type": "integer"
+        },
+        "stackPointerDeltaBytesObserved": {
+          "type": "integer"
+        },
+        "skipFlagBranchTakenObserved": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "directCallsObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/call"
+          }
+        },
+        "effectiveTargetCountsObserved": {
+          "$ref": "#/definitions/effectiveTargetCounts"
+        },
+        "directCallRegisterWordsObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registerWords"
+          }
+        },
+        "stateWritesObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/stateWrite"
+          }
+        }
+      }
+    }
+  }
+}

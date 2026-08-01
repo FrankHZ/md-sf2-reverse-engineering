@@ -299,7 +299,8 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`window-system.md`](./design/window-system.md)：八槽 window entry、layout 分配/回收、packed
   coordinate 寻址、VInt composition/DMA 调用顺序，以及呈现时序未知边界。
 - [`dialogue-system.md`](./design/dialogue-system.md)：六个 map-script dialogue command 的物理
-  layout、cursor/name-index/portrait consumer 静态顺序，以及单一集中 H3 presentation matrix 边界。
+  layout、cursor/name-index/portrait consumer 静态顺序，以及 21-case 单启动 handler-local H3 合同和
+  三个明确的 presentation/runtime Unknown 边界。
 - [`party-roster-state.md`](./design/party-roster-state.md)：十个 map-script roster/death 与
   active-party/AI/follower source form 的 physical layout、named handler branch/mutation/call order、
   alias-aware caller identity，以及两个 grouped H3 runtime 边界。
