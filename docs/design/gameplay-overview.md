@@ -126,8 +126,8 @@ All are **Unknown**. A dashed connection must not become an implicit remake rout
   **Confirmed**; the exact VInt publication edge is **Unknown**.
 - **Battle round/action loop:** a new or resumed battle enters individual-turn processing. Death and
   outcome checks surround the after-turn effect, and a `0xFF` turn-order entry starts the next round.
-  The top-level order is **Confirmed**; complete action-by-action presentation and all runtime caller
-  states are not.
+  The top-level order is **Confirmed**; neither complete action-by-action presentation nor the full
+  set of runtime caller states is fully confirmed.
 - **Service/menu loop:** current service contracts confirm actions, cancellation branches, and
   mutation order. Describing them as an economic/recovery loop repeatedly visited by the player is
   **Inferred**, because admission, return, and campaign frequency are not closed.
