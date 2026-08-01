@@ -956,6 +956,40 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
         assert required_text in adr
 
 
+def test_parallel_worktree_contract_scopes_full_gate_invalidation() -> None:
+    root = Path(__file__).resolve().parents[2]
+    agents_guide = " ".join(
+        (root / "AGENTS.md").read_text(encoding="utf-8").split()
+    )
+    adr = " ".join(
+        (
+            root
+            / "docs"
+            / "decisions"
+            / "0006-parallel-worktrees-and-topic-branch-integration.md"
+        )
+        .read_text(encoding="utf-8")
+        .split()
+    )
+
+    for required_text in (
+        "Gate invalidation is path- and dependency-based, not commit-SHA-based",
+        "non-registered Layer B design-synthesis documents",
+        "does not invalidate an already passing research full gate",
+        "owning narrow command plus the normal `uv run sf2 verify`",
+        "A design-synthesis branch or a design-only advance of `main` never triggers it",
+    ):
+        assert required_text in agents_guide
+
+    for required_text in (
+        "Full-gate reuse is decided by changed paths and dependencies",
+        "Do not cancel or restart a full run merely because such a design branch merged",
+        "Any delta not demonstrably confined to the design-only exception is invalidating",
+        "design integration never requests `verify --full`",
+    ):
+        assert required_text in adr
+
+
 def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
     root = Path(__file__).resolve().parents[2]
     schema_root = root / "schemas"
