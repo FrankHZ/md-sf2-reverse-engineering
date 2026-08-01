@@ -96,6 +96,6 @@ manifests/research-index、H2/H3 fixtures 与 H4 acceptance boundary。外部参
 不得与 active worker 并行重写某 subsystem contract。未来 finding 改变结论时，同时更新 owning research
 note、fixture/contract 与 design explanation，使 trace 双向保持一致。
 
-**Confirmed 仓库 hygiene gap：**[`party-roster-state.md`](./party-roster-state.md) 已被索引和引用，但未出现于
-`src/sf2tool/design_contracts.py`。这是 follow-up traceability task，不是原版游戏 finding，也不是本路线图
-所作的代码修改。
+**Confirmed 仓库 hygiene closure：**[`party-roster-state.md`](./party-roster-state.md) 现已在
+`src/sf2tool/design_contracts.py` 注册其 H2 map-script 与 H3 active-party fixture；公共 tracked-input
+gate 会验证文档、fixture path 和 fixture ID 的双向 trace。这项 closure 不改变任何原版游戏 finding。
