@@ -111,6 +111,9 @@ from sf2tool.h3.map_lifecycle import verify_map_lifecycle
 from sf2tool.h3.map_script_entity_presentation_fx import (
     verify_map_script_entity_presentation_fx,
 )
+from sf2tool.h3.map_script_screen_presentation import (
+    verify_map_script_screen_presentation,
+)
 from sf2tool.h3.map_script_ui_primary import verify_map_script_ui_primary
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
@@ -760,6 +763,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_script_entity_presentation_fx)
     h3_map_script_entity_presentation_fx.add_argument("--timeout-seconds", type=int, default=180)
+    h3_map_script_screen_presentation = h3_commands.add_parser(
+        "map-script-screen-presentation",
+        help="verify one-launch screen-presentation handler branch, loop, and callback seams",
+    )
+    _add_local_paths(h3_map_script_screen_presentation)
+    h3_map_script_screen_presentation.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_entity_lifecycle_presentation = h3_commands.add_parser(
         "map-entity-lifecycle-presentation",
         help="verify one-launch entity lifecycle/presentation handler boundaries",
@@ -1674,6 +1683,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-script-entity-presentation-fx":
         print_record(
             verify_map_script_entity_presentation_fx(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-script-screen-presentation":
+        print_record(
+            verify_map_script_screen_presentation(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

@@ -430,7 +430,10 @@
       "map-script-entity-gesture-relationship-motion/normal-story-reachability",
       "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
       "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
-      "map-script-screen-presentation/runtime-effects-matrix",
+      "map-script-screen-presentation/normal-story-reachability",
+      "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+      "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+      "map-script-screen-presentation/map-and-entity-state-interactions",
       "map-script-entity-presentation-fx/runtime-effects-matrix",
       "map-script-ui-command/normal-story-reachability",
       "map-script-ui-command/full-window-animation-vdp-timing",
@@ -24524,9 +24527,9 @@
           }
         },
         "runtimeQuestions": [
-        "force-state/active-party-ai-follower/normal-story-reachability",
-        "force-state/active-party-ai-follower/save-load-capacity-lifecycle",
-        "force-state/active-party-ai-follower/player-visible-presentation"
+          "force-state/active-party-ai-follower/normal-story-reachability",
+          "force-state/active-party-ai-follower/save-load-capacity-lifecycle",
+          "force-state/active-party-ai-follower/player-visible-presentation"
         ]
       }
     },
@@ -96706,7 +96709,10 @@
         }
       },
       "runtimeQuestions": [
-        "map-script-screen-presentation/runtime-effects-matrix"
+        "map-script-screen-presentation/normal-story-reachability",
+        "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+        "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+        "map-script-screen-presentation/map-and-entity-state-interactions"
       ]
     },
     "entityPresentationFxCommandFacts": {

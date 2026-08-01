@@ -1,0 +1,639 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "system",
+    "romSha256",
+    "upstreamCommit",
+    "evidenceDate",
+    "emulator",
+    "mapTestIndex",
+    "sharedHarnessFixture",
+    "maxFrames",
+    "provenance",
+    "function",
+    "constants",
+    "sourceContract",
+    "instrumentation",
+    "runtimeQuestions",
+    "caseSemanticsSha256",
+    "cases"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-script-screen-presentation-runtime-v1"
+    },
+    "system": {
+      "const": "GEN"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "upstreamCommit": {
+      "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+    },
+    "evidenceDate": {
+      "const": "2026-07-31"
+    },
+    "emulator": {
+      "$ref": "#/$defs/emulator"
+    },
+    "mapTestIndex": {
+      "const": 0
+    },
+    "sharedHarnessFixture": {
+      "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+    },
+    "maxFrames": {
+      "const": 10800
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "function": {
+      "$ref": "#/$defs/function"
+    },
+    "constants": {
+      "$ref": "#/$defs/constants"
+    },
+    "sourceContract": {
+      "$ref": "#/$defs/sourceContract"
+    },
+    "instrumentation": {
+      "$ref": "#/$defs/instrumentation"
+    },
+    "runtimeQuestions": {
+      "const": [
+        "map-script-screen-presentation/normal-story-reachability",
+        "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+        "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+        "map-script-screen-presentation/map-and-entity-state-interactions"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "items": {
+        "$ref": "#/$defs/case"
+      },
+      "allOf": [
+        {
+          "const": [
+            {
+              "id": "quake-direct-source",
+              "macro": "setQuake",
+              "sourceOrderKey": "abcs_battle04:36:setQuake"
+            },
+            {
+              "id": "quake-4000-source",
+              "macro": "setQuake",
+              "sourceOrderKey": "bbcs_16:72:setQuake"
+            },
+            {
+              "id": "quake-8000-source",
+              "macro": "setQuake",
+              "sourceOrderKey": "bbcs_16:51:setQuake"
+            },
+            {
+              "id": "fade-in-source",
+              "macro": "fadeInB",
+              "sourceOrderKey": "abcs_battle01:7:fadeInB"
+            },
+            {
+              "id": "fade-out-source",
+              "macro": "fadeOutB",
+              "sourceOrderKey": "abcs_battle15:15:fadeOutB"
+            },
+            {
+              "id": "slow-fade-in-source",
+              "macro": "slowFadeInB",
+              "sourceOrderKey": "cs_55832:5:slowFadeInB"
+            },
+            {
+              "id": "slow-fade-out-controlled",
+              "macro": "slowFadeOutB",
+              "sourceOrderKey": null
+            },
+            {
+              "id": "tint-source",
+              "macro": "tintMap",
+              "sourceOrderKey": "abcs_battle34:23:tintMap"
+            },
+            {
+              "id": "flicker-source",
+              "macro": "flickerOnce",
+              "sourceOrderKey": "abcs_battle34:46:flickerOnce"
+            },
+            {
+              "id": "fade-out-white-source",
+              "macro": "mapFadeOutToWhite",
+              "sourceOrderKey": "abcs_battle01:16:mapFadeOutToWhite"
+            },
+            {
+              "id": "fade-in-white-source",
+              "macro": "mapFadeInFromWhite",
+              "sourceOrderKey": "abcs_battle01:18:mapFadeInFromWhite"
+            },
+            {
+              "id": "flash-duration-2-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "bbcs_31:37:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-10-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "IntroCutscene4:24:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-20-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "abcs_battle28:56:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-30-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "abcs_battle26:18:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-40-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "bbcs_30:27:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-50-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "bbcs_38:35:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-60-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "cs_5EF60:97:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-70-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "cs_58116:9:flashScreenWhite"
+            },
+            {
+              "id": "flash-duration-90-source",
+              "macro": "flashScreenWhite",
+              "sourceOrderKey": "cs_58330:2:flashScreenWhite"
+            },
+            {
+              "id": "fade-in-half-source",
+              "macro": "fadeInFromBlackHalf",
+              "sourceOrderKey": "bbcs_42:16:fadeInFromBlackHalf"
+            },
+            {
+              "id": "fade-out-half-source",
+              "macro": "fadeOutToBlackHalf",
+              "sourceOrderKey": "IntroCutscene1:102:fadeOutToBlackHalf"
+            }
+          ]
+        }
+      ]
+    },
+    "caseSemanticsSha256": {
+      "const": "A27977B680C5AE2ECD5DB3563B1B8AD2F002309C7AFD87D14410531A86129AA0"
+    }
+  },
+  "$defs": {
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "const": "2.11.1"
+        },
+        "core": {
+          "const": "Genesis Plus GX"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstreamRepository",
+        "upstreamBranch",
+        "upstreamCommit",
+        "h2FixturePath",
+        "h2FixtureId",
+        "h2FieldPath",
+        "command"
+      ],
+      "properties": {
+        "upstreamRepository": {
+          "const": "https://github.com/ShiningForceCentral/SF2DISASM"
+        },
+        "upstreamBranch": {
+          "const": "master"
+        },
+        "upstreamCommit": {
+          "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+        },
+        "h2FixturePath": {
+          "const": "tests/fixtures/h2/map-script-engine-static-v1.json"
+        },
+        "h2FixtureId": {
+          "const": "sf2-map-script-engine-static-v1"
+        },
+        "h2FieldPath": {
+          "const": "expected.screenPresentationCommandFacts"
+        },
+        "command": {
+          "const": "uv run sf2 h2 map-script-engine"
+        }
+      }
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryAddress",
+        "csc33_setQuakeAmountAddress",
+        "csc39_fadeInFromBlackAddress",
+        "csc3A_fadeOutToBlackAddress",
+        "csc3B_slowFadeInFromBlackAddress",
+        "csc3C_slowFadeOutToBlackAddress",
+        "csc3D_tintMapAddress",
+        "csc3E_FlickerOnceAddress",
+        "csc3F_fadeMapOutToWhiteAddress",
+        "csc40_fadeMapInFromWhiteAddress",
+        "csc41_flashScreenWhiteAddress",
+        "csc4A_fadeInFromBlackHalfAddress",
+        "csc4B_fadeOutToBlackHalfAddress",
+        "csc33_setQuakeAmountReturnAddress",
+        "csc39_fadeInFromBlackReturnAddress",
+        "csc3A_fadeOutToBlackReturnAddress",
+        "csc3B_slowFadeInFromBlackReturnAddress",
+        "csc3C_slowFadeOutToBlackReturnAddress",
+        "csc3D_tintMapReturnAddress",
+        "csc3E_FlickerOnceReturnAddress",
+        "csc3F_fadeMapOutToWhiteReturnAddress",
+        "csc40_fadeMapInFromWhiteReturnAddress",
+        "csc41_flashScreenWhiteReturnAddress",
+        "csc4A_fadeInFromBlackHalfReturnAddress",
+        "csc4B_fadeOutToBlackHalfReturnAddress",
+        "quakeDirectWriteResumeAddress",
+        "quakeLoopWriteResumeAddress",
+        "slowFadeInReadResumeAddress",
+        "slowFadeInSetResumeAddress",
+        "slowFadeInRestoreResumeAddress",
+        "slowFadeOutReadResumeAddress",
+        "slowFadeOutSetResumeAddress",
+        "slowFadeOutRestoreResumeAddress",
+        "flashOperandReadResumeAddress"
+      ],
+      "properties": {
+        "entryAddress": {
+          "const": 292092
+        },
+        "csc33_setQuakeAmountAddress": {
+          "const": 288030
+        },
+        "csc39_fadeInFromBlackAddress": {
+          "const": 288260
+        },
+        "csc3A_fadeOutToBlackAddress": {
+          "const": 288266
+        },
+        "csc3B_slowFadeInFromBlackAddress": {
+          "const": 288272
+        },
+        "csc3C_slowFadeOutToBlackAddress": {
+          "const": 288292
+        },
+        "csc3D_tintMapAddress": {
+          "const": 288312
+        },
+        "csc3E_FlickerOnceAddress": {
+          "const": 288326
+        },
+        "csc3F_fadeMapOutToWhiteAddress": {
+          "const": 288340
+        },
+        "csc40_fadeMapInFromWhiteAddress": {
+          "const": 288354
+        },
+        "csc41_flashScreenWhiteAddress": {
+          "const": 288368
+        },
+        "csc4A_fadeInFromBlackHalfAddress": {
+          "const": 288648
+        },
+        "csc4B_fadeOutToBlackHalfAddress": {
+          "const": 288662
+        },
+        "csc33_setQuakeAmountReturnAddress": {
+          "const": 288100
+        },
+        "csc39_fadeInFromBlackReturnAddress": {
+          "const": 288264
+        },
+        "csc3A_fadeOutToBlackReturnAddress": {
+          "const": 288270
+        },
+        "csc3B_slowFadeInFromBlackReturnAddress": {
+          "const": 288290
+        },
+        "csc3C_slowFadeOutToBlackReturnAddress": {
+          "const": 288310
+        },
+        "csc3D_tintMapReturnAddress": {
+          "const": 288324
+        },
+        "csc3E_FlickerOnceReturnAddress": {
+          "const": 288338
+        },
+        "csc3F_fadeMapOutToWhiteReturnAddress": {
+          "const": 288352
+        },
+        "csc40_fadeMapInFromWhiteReturnAddress": {
+          "const": 288366
+        },
+        "csc41_flashScreenWhiteReturnAddress": {
+          "const": 288392
+        },
+        "csc4A_fadeInFromBlackHalfReturnAddress": {
+          "const": 288660
+        },
+        "csc4B_fadeOutToBlackHalfReturnAddress": {
+          "const": 288674
+        },
+        "quakeDirectWriteResumeAddress": {
+          "const": 288076
+        },
+        "quakeLoopWriteResumeAddress": {
+          "const": 288092
+        },
+        "slowFadeInReadResumeAddress": {
+          "const": 288276
+        },
+        "slowFadeInSetResumeAddress": {
+          "const": 288282
+        },
+        "slowFadeInRestoreResumeAddress": {
+          "const": 288290
+        },
+        "slowFadeOutReadResumeAddress": {
+          "const": 288296
+        },
+        "slowFadeOutSetResumeAddress": {
+          "const": 288302
+        },
+        "slowFadeOutRestoreResumeAddress": {
+          "const": 288310
+        },
+        "flashOperandReadResumeAddress": {
+          "const": 288372
+        }
+      }
+    },
+    "constants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "FADING_COUNTER_MAX",
+        "FLASH_QUICKLY_2",
+        "FLICKER_ONCE",
+        "HALF_IN_FROM_BLACK",
+        "HALF_OUT_TO_BLACK",
+        "IN_FROM_WHITE",
+        "OUT_TO_BLACK_2",
+        "OUT_TO_WHITE",
+        "QUAKE_AMPLITUDE"
+      ],
+      "properties": {
+        "FADING_COUNTER_MAX": {
+          "const": 16768754
+        },
+        "FLASH_QUICKLY_2": {
+          "const": 11
+        },
+        "FLICKER_ONCE": {
+          "const": 10
+        },
+        "HALF_IN_FROM_BLACK": {
+          "const": 14
+        },
+        "HALF_OUT_TO_BLACK": {
+          "const": 9
+        },
+        "IN_FROM_WHITE": {
+          "const": 3
+        },
+        "OUT_TO_BLACK_2": {
+          "const": 15
+        },
+        "OUT_TO_WHITE": {
+          "const": 4
+        },
+        "QUAKE_AMPLITUDE": {
+          "const": 16754700
+        }
+      }
+    },
+    "sourceContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceSitesSha256",
+        "programTotalsSha256",
+        "sourceSiteOrderKeyCount",
+        "programTotalOrderKeyCount"
+      ],
+      "properties": {
+        "sourceSitesSha256": {
+          "const": "EE24CB393511FD9640AC96E427815CBC1851B2A6384A9D045FE74CC7E28F0948"
+        },
+        "programTotalsSha256": {
+          "const": "DB8AFFDF9AE1FE4B119CF916EB1F9792A383F5BD7FE6B7F95B7FD7CBE8F3107F"
+        },
+        "sourceSiteOrderKeyCount": {
+          "const": 459
+        },
+        "programTotalOrderKeyCount": {
+          "const": 304
+        }
+      }
+    },
+    "instrumentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callSiteAddress",
+        "callSiteOriginalHex",
+        "callSitePatchedHex",
+        "stubAddress",
+        "stubOriginalHex",
+        "stubHex",
+        "postHandlerAddress",
+        "ramInputAddress",
+        "scriptInputRamOffset",
+        "fadingCounterSeed",
+        "serviceInterception"
+      ],
+      "properties": {
+        "callSiteAddress": {
+          "const": 292114
+        },
+        "callSiteOriginalHex": {
+          "const": "4E904CDF03FF"
+        },
+        "callSitePatchedHex": {
+          "const": "4EB90000FF88"
+        },
+        "stubAddress": {
+          "const": 65416
+        },
+        "stubOriginalHex": {
+          "const": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+        },
+        "stubHex": {
+          "const": "4DF900FF4004207900FF40004E904E75"
+        },
+        "postHandlerAddress": {
+          "const": 65430
+        },
+        "ramInputAddress": {
+          "const": 16728064
+        },
+        "scriptInputRamOffset": {
+          "const": 4
+        },
+        "fadingCounterSeed": {
+          "const": 165
+        },
+        "serviceInterception": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/servicePatch"
+          },
+          "allOf": [
+            {
+              "const": [
+                {
+                  "targetIdentity": "Sleep",
+                  "address": 3844,
+                  "originalHex": "48A7",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "targetIdentity": "FadeInFromBlack",
+                  "address": 3286,
+                  "originalHex": "11FC",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "targetIdentity": "FadeOutToBlack",
+                  "address": 3296,
+                  "originalHex": "11FC",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "targetIdentity": "LaunchFading",
+                  "address": 288676,
+                  "originalHex": "1F03",
+                  "patchedHex": "4E75"
+                },
+                {
+                  "targetIdentity": "DuplicatePalettes",
+                  "address": 3170,
+                  "originalHex": "48E7",
+                  "patchedHex": "4E75"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "sourceOrderKey"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "macro": {
+          "enum": [
+            "setQuake",
+            "fadeInB",
+            "fadeOutB",
+            "slowFadeInB",
+            "slowFadeOutB",
+            "tintMap",
+            "flickerOnce",
+            "mapFadeOutToWhite",
+            "mapFadeInFromWhite",
+            "flashScreenWhite",
+            "fadeInFromBlackHalf",
+            "fadeOutToBlackHalf"
+          ]
+        },
+        "sourceOrderKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "servicePatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetIdentity",
+        "address",
+        "originalHex",
+        "patchedHex"
+      ],
+      "properties": {
+        "targetIdentity": {
+          "enum": [
+            "Sleep",
+            "FadeInFromBlack",
+            "FadeOutToBlack",
+            "LaunchFading",
+            "DuplicatePalettes"
+          ]
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "originalHex": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{4}$"
+        },
+        "patchedHex": {
+          "const": "4E75"
+        }
+      }
+    }
+  }
+}

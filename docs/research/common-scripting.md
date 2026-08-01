@@ -634,7 +634,7 @@ cases, 7 handlers, 1 session-only launch, PASS.
 
 ## Confirmed Map-Script Screen/Map Presentation Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-31.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.screenPresentationCommandFacts` retains twelve source-named macro forms in source order:
@@ -671,21 +671,47 @@ their zero-inclusive per-handler maps: `Sleep` 1, `FadeInFromBlack` 2, `FadeOutT
 form; no call currently resolves through a jump-interface alias. This is a service boundary only: the
 called implementation is outside this slice.
 
+### Bounded runtime matrix — screen/map presentation
+
+**Confirmed (H3):** `sf2-map-script-screen-presentation-runtime-v1` runs 22 handler-local records in
+one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch. It rehashes all 459 H2 source command records
+and their 304 zero-inclusive program totals before case derivation. The source-backed rows cover all
+twelve handler entries: three `setQuake` bit-test paths (unflagged `$0000`, `$4002`, and `$8002`), every
+zero-operand form, the nine distinct source-observed `flashScreenWhite` right-shift results from
+durations 2, 10, 20, 30, 40, 50, 60, 70, and 90, and one explicitly marked controlled case for the
+zero-use `slowFadeOutB` form. It confirms only handler-local facts: actual entry/return PCs, A6 cursor
+advance, stack restoration, direct target/call-site/return chronology, the `setQuake` word writes,
+slow-fade counter-byte read/write/restore sequence, flash shifted word and loop count, and source-set
+register words at direct calls.
+
+**Confirmed (H3 limitation):** `Sleep`, `FadeInFromBlack`, `FadeOutToBlack`, `LaunchFading`, and
+`DuplicatePalettes` execute session-only entry `rts` shims after their actual target PCs are observed.
+Their original bodies do not execute; no result claims service-body effects, visible output, palettes,
+VDP state, timing, completion/repeat, persistence, story reachability, or map/entity interaction.
+
 ### Runtime questions — screen/map presentation
 
-**Unknown:** `map-script-screen-presentation/runtime-effects-matrix` is the sole grouped H3 queue. One
-shared launch must establish normal-story reachability; operand/selector meaning; visual/palette/VDP
-results; frame timing; completion and repeat behavior; persistence; and interaction with map/entity
-state. No source macro, comment, handler, literal, field, or callee name promotes those runtime outcomes
-from this static contract.
+**Unknown:** the remaining grouped queues are exactly:
+
+- `map-script-screen-presentation/normal-story-reachability`: normal script and save-state reachability;
+- `map-script-screen-presentation/visible-palette-vdp-and-frame-timing`: player-visible output,
+  palette/VDP state, and frame timing;
+- `map-script-screen-presentation/service-body-completion-repeat-and-persistence`: unshimmed service
+  execution, completion/repeat behavior, and persistence;
+- `map-script-screen-presentation/map-and-entity-state-interactions`: effects outside the directly
+  observed handler instructions.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros named above;
 `code/common/scripting/map/mapscriptengine_1.asm` named sections above; H1 listing symbols/addresses;
 and local US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
-Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
+Reproduce static facts with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.screenPresentationCommandFacts`.
+`expected.screenPresentationCommandFacts`. Reproduce the bounded runtime seam with
+`uv run sf2 h3 map-script-screen-presentation --timeout-seconds 180`; its fixture is
+`tests/fixtures/h3/map-script-screen-presentation-v1.json` and its recursively closed contracts are
+`schemas/h3-map-script-screen-presentation-fixture.schema.json` and
+`schemas/h3-map-script-screen-presentation-observation.schema.json`.
 
 ## Confirmed Map-Script Entity Presentation-FX Command Family
 

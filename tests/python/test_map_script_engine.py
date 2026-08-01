@@ -4611,7 +4611,10 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-gesture-relationship-motion/normal-story-reachability",
         "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
-        "map-script-screen-presentation/runtime-effects-matrix",
+        "map-script-screen-presentation/normal-story-reachability",
+        "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+        "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+        "map-script-screen-presentation/map-and-entity-state-interactions",
         "map-script-entity-presentation-fx/runtime-effects-matrix",
         "map-script-ui-command/normal-story-reachability",
         "map-script-ui-command/full-window-animation-vdp-timing",
@@ -4670,6 +4673,16 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
     ]
+    assert expected["screenPresentationCommandFacts"].pop("runtimeQuestions") == [
+        "map-script-screen-presentation/normal-story-reachability",
+        "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+        "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+        "map-script-screen-presentation/map-and-entity-state-interactions",
+    ]
+    # The H3 queue replaces this H2 sentinel without changing the static contract digest.
+    expected["screenPresentationCommandFacts"]["runtimeQuestions"] = [
+        "map-script-screen-presentation/runtime-effects-matrix"
+    ]
     # Each H3 queue is asserted above; the remaining static shape stays digest-pinned.
     assert _canonical_digest(expected) == (
         "8b291f94307fc1f838ded070a3914640958bcb9eff38544e316c75aa42583b5c"
@@ -4722,6 +4735,17 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
         "required"
     ].remove("runtimeQuestions")
+    output_schema["properties"]["screenPresentationCommandFacts"]["allOf"][1][
+        "properties"
+    ]["runtimeQuestions"] = {"const": ["map-script-screen-presentation/runtime-effects-matrix"]}
+    output_schema["definitions"]["screenPresentationCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ] = {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 1,
+        "items": {"type": "string"},
+    }
     del output_schema["definitions"]["storyStateCommandFacts"]["properties"][
         "runtimeQuestions"
     ]
@@ -4796,6 +4820,19 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
     fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
         "required"
     ].remove("runtimeQuestions")
+    fixture_schema["properties"]["expected"]["properties"][
+        "screenPresentationCommandFacts"
+    ]["allOf"][1]["const"]["runtimeQuestions"] = [
+        "map-script-screen-presentation/runtime-effects-matrix"
+    ]
+    fixture_schema["definitions"]["screenPresentationFixtureCommandFacts"]["properties"][
+        "runtimeQuestions"
+    ] = {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 1,
+        "items": {"type": "string"},
+    }
     del fixture_schema["definitions"]["storyStateCommandFacts"]["properties"][
         "runtimeQuestions"
     ]
@@ -7666,7 +7703,10 @@ def test_map_screen_presentation_contract_matches_complete_golden_fixture(
             target: 0 for target in actual["callerBreakdown"]["instructionTargetTotals"]
         }
     assert actual["runtimeQuestions"] == [
-        "map-script-screen-presentation/runtime-effects-matrix"
+        "map-script-screen-presentation/normal-story-reachability",
+        "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+        "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+        "map-script-screen-presentation/map-and-entity-state-interactions",
     ]
 
 

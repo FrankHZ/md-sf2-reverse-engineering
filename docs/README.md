@@ -242,8 +242,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   reachability、full entity-state/callback effects 与 player-visible presentation/timing/collision/persistence。
   同一 304-row 零计数 corpus 还固定十二个 source-named screen/map-presentation form（459 sites）、
   十二个 named handler 的 A6 cursor、immediate/operand、branch/loop/call/return guards，以及保留
-  seven PC-relative `LaunchFading` target 的 five-target zero-inclusive caller map；唯一 H3 queue 为
-  `map-script-screen-presentation/runtime-effects-matrix`。
+  seven PC-relative `LaunchFading` target 的 five-target zero-inclusive caller map；其一启动 22-case
+  H3 已固定 handler-local entry/return、cursor、direct-call/target/return、quake write、slow-counter
+  和 flash-loop seam；visible/palette/VDP/timing/service body/persistence/reachability 仍保留四组
+  Unknown queue。
   同一 304-row 零计数 corpus 还固定三个 source-named entity-presentation-FX form（177 sites）、
   三个 named handler 的 A6 cursor、immediate/operand、branch/function-chunk/loop/call/return guards，
   以及 nine-target zero-inclusive caller map；单启动 10-case H3 已固定 handler-local 的

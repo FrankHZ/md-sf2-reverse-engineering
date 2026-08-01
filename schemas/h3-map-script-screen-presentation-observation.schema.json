@@ -1,0 +1,560 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "system",
+    "core",
+    "id",
+    "mapTest",
+    "recordOrder",
+    "records"
+  ],
+  "properties": {
+    "system": {
+      "const": "GEN"
+    },
+    "core": {
+      "const": "Genesis Plus GX"
+    },
+    "id": {
+      "const": "sf2-map-script-screen-presentation-runtime-v1"
+    },
+    "mapTest": {
+      "const": 0
+    },
+    "recordOrder": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "items": {
+        "type": "string"
+      },
+      "const": [
+        "quake-direct-source",
+        "quake-4000-source",
+        "quake-8000-source",
+        "fade-in-source",
+        "fade-out-source",
+        "slow-fade-in-source",
+        "slow-fade-out-controlled",
+        "tint-source",
+        "flicker-source",
+        "fade-out-white-source",
+        "fade-in-white-source",
+        "flash-duration-2-source",
+        "flash-duration-10-source",
+        "flash-duration-20-source",
+        "flash-duration-30-source",
+        "flash-duration-40-source",
+        "flash-duration-50-source",
+        "flash-duration-60-source",
+        "flash-duration-70-source",
+        "flash-duration-90-source",
+        "fade-in-half-source",
+        "fade-out-half-source"
+      ]
+    },
+    "records": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "items": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "quake-direct-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "quake-4000-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "quake-8000-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fade-in-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fade-out-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "slow-fade-in-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "slow-fade-out-controlled"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "tint-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flicker-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fade-out-white-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fade-in-white-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-2-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-10-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-20-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-30-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-40-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-50-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-60-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-70-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "flash-duration-90-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fade-in-half-source"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/record"
+            },
+            {
+              "properties": {
+                "id": {
+                  "const": "fade-out-half-source"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "additionalItems": false
+    }
+  },
+  "$defs": {
+    "observedCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectiveTargetObserved",
+        "callSiteAddressObserved",
+        "targetAddressObserved",
+        "returnAddressObserved"
+      ],
+      "properties": {
+        "effectiveTargetObserved": {
+          "enum": [
+            "Sleep",
+            "FadeInFromBlack",
+            "FadeOutToBlack",
+            "LaunchFading",
+            "DuplicatePalettes"
+          ]
+        },
+        "callSiteAddressObserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetAddressObserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "returnAddressObserved": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "targetCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Sleep",
+        "FadeInFromBlack",
+        "FadeOutToBlack",
+        "LaunchFading",
+        "DuplicatePalettes"
+      ],
+      "properties": {
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FadeInFromBlack": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FadeOutToBlack": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LaunchFading": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "DuplicatePalettes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "wordTriple": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65535
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "handlerEntryPcObserved",
+        "handlerReturnPcObserved",
+        "handlerReturned",
+        "scriptCursorRamOffsetAfterObserved",
+        "stackPointerDeltaBytesObserved",
+        "directCallsObserved",
+        "effectiveTargetCountsObserved",
+        "quakeAmplitudeWordWritesObserved",
+        "fadingCounterByteReadsObserved",
+        "fadingCounterByteWritesObserved",
+        "flashDurationWordAfterShiftObserved",
+        "flashLoopIterationCountObserved",
+        "directCallRegisterWordsObserved"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "handlerEntryPcObserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "handlerReturnPcObserved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "scriptCursorRamOffsetAfterObserved": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 6
+        },
+        "stackPointerDeltaBytesObserved": {
+          "type": "integer"
+        },
+        "directCallsObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/observedCall"
+          }
+        },
+        "effectiveTargetCountsObserved": {
+          "$ref": "#/$defs/targetCounts"
+        },
+        "quakeAmplitudeWordWritesObserved": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          }
+        },
+        "fadingCounterByteReadsObserved": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "fadingCounterByteWritesObserved": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "flashDurationWordAfterShiftObserved": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 8191
+        },
+        "flashLoopIterationCountObserved": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "directCallRegisterWordsObserved": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/wordTriple"
+          }
+        }
+      }
+    }
+  }
+}

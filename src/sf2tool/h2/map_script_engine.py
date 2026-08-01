@@ -395,7 +395,10 @@ SCREEN_PRESENTATION_HANDLER_BY_MACRO = {
 }
 SCREEN_PRESENTATION_HANDLER_NAMES = tuple(SCREEN_PRESENTATION_HANDLER_BY_MACRO.values())
 SCREEN_PRESENTATION_RUNTIME_QUESTIONS = [
-    "map-script-screen-presentation/runtime-effects-matrix"
+    "map-script-screen-presentation/normal-story-reachability",
+    "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+    "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+    "map-script-screen-presentation/map-and-entity-state-interactions",
 ]
 
 ENTITY_PRESENTATION_FX_MACRO_NAMES = (

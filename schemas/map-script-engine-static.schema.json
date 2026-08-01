@@ -362,7 +362,10 @@
         "map-script-entity-gesture-relationship-motion/normal-story-reachability",
         "map-script-entity-gesture-relationship-motion/full-entity-state-callback-effects",
         "map-script-entity-gesture-relationship-motion/player-visible-presentation-timing-collision-persistence",
-        "map-script-screen-presentation/runtime-effects-matrix",
+        "map-script-screen-presentation/normal-story-reachability",
+        "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+        "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+        "map-script-screen-presentation/map-and-entity-state-interactions",
         "map-script-entity-presentation-fx/runtime-effects-matrix",
         "map-script-ui-command/normal-story-reachability",
         "map-script-ui-command/full-window-animation-vdp-timing",
@@ -46808,7 +46811,10 @@
             },
             "runtimeQuestions": {
               "const": [
-                "map-script-screen-presentation/runtime-effects-matrix"
+                "map-script-screen-presentation/normal-story-reachability",
+                "map-script-screen-presentation/visible-palette-vdp-and-frame-timing",
+                "map-script-screen-presentation/service-body-completion-repeat-and-persistence",
+                "map-script-screen-presentation/map-and-entity-state-interactions"
               ]
             }
           }
@@ -66181,8 +66187,8 @@
         },
         "runtimeQuestions": {
           "type": "array",
-          "minItems": 1,
-          "maxItems": 1,
+          "minItems": 4,
+          "maxItems": 4,
           "items": {
             "type": "string"
           }

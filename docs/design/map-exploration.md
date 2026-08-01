@@ -62,6 +62,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-script-ui-primary-v1.json`.
 - `sf2-map-script-entity-presentation-fx-runtime-v1` in
   `tests/fixtures/h3/map-script-entity-presentation-fx-v1.json`.
+- `sf2-map-script-screen-presentation-runtime-v1` in
+  `tests/fixtures/h3/map-script-screen-presentation-v1.json`.
 - `sf2-map-entity-lifecycle-presentation-runtime-v1` in
   `tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`.
 
@@ -226,7 +228,14 @@ operand records, branch polarity/target identity, loop-target records, instructi
 PC-relative/direct addressing form, effective target caller maps, and return boundaries. These are
 source-layout and control-flow records. A remake MUST NOT normalize them into a screen effect, map
 effect, visual, palette, VDP, timing, persistence, or reachability model; all original runtime
-consequences remain in `map-script-screen-presentation/runtime-effects-matrix`.
+consequences remain intentionally outside the H2 import. The bounded H3 fixture
+`sf2-map-script-screen-presentation-runtime-v1` at
+`tests/fixtures/h3/map-script-screen-presentation-v1.json` preserves all twelve handler entries,
+source-derived quake and flash operand partitions, direct target/call/return chronology, A6/stack
+boundaries, direct handler-local RAM writes, and source-set call-register words. An adapter MUST retain
+that seam without treating its service-entry shims as original service behavior or as a visual/palette,
+VDP, timing, persistence, reachability, or map/entity model. The remaining original questions are the
+four exact `map-script-screen-presentation/*` queues in `docs/research/common-scripting.md`.
 Map-script imports MUST separately retain the three source-named forms `animEntityFX`, `headshake`, and
 `entityFlashWhite` in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field
