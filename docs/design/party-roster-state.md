@@ -75,9 +75,12 @@ identity. The nested `forceStateCommandFacts.activePartyCommandFacts` field pins
 forms, their 29 sites, source-owner identities, and their own 304-row total corpus.
 
 `force-state/roster-death-persistence-visible-outcomes` remains a grouped H3 question. The active-party
-matrix confirms bounded handler-local flag/list timing, activation/join state, reset service order, and
-follower allocation/list effects; a remake MUST still define normal-story
-reachability, save/load and capacity lifecycle, and player-visible presentation explicitly through
+matrix is fixture ID `sf2-force-state-active-party-runtime-v1` at
+`tests/fixtures/h3/force-state-active-party-v1.json`; its verifier is
+`src/sf2tool/h3/force_state_active_party.py`. It confirms bounded handler-local flag/list timing,
+activation/join state, reset service order, and follower allocation/list effects; a remake MUST still
+define normal-story reachability, save/load and capacity lifecycle, and player-visible presentation
+explicitly through
 `force-state/active-party-ai-follower/normal-story-reachability`,
 `force-state/active-party-ai-follower/save-load-capacity-lifecycle`, and
 `force-state/active-party-ai-follower/player-visible-presentation`.

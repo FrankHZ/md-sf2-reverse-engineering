@@ -14,6 +14,14 @@ CONTRACTS = {
             "sf2-map-script-dialogue-runtime-v1"
         ),
     },
+    "docs/design/party-roster-state.md": {
+        "tests/fixtures/h2/map-script-engine-static-v1.json": (
+            "sf2-map-script-engine-static-v1"
+        ),
+        "tests/fixtures/h3/force-state-active-party-v1.json": (
+            "sf2-force-state-active-party-runtime-v1"
+        ),
+    },
     "docs/design/map-exploration.md": {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
