@@ -689,7 +689,7 @@ Reproduce with `uv run sf2 h2 map-script-engine`; observed result is fixture ID
 
 ## Confirmed Map-Script Entity Presentation-FX Command Family
 
-Evidence date: 2026-07-28.
+Evidence date: 2026-07-31.
 
 **Confirmed:** `sf2-map-script-engine-static-v1` field
 `expected.entityPresentationFxCommandFacts` retains three source-named macro forms in source order:
@@ -722,22 +722,71 @@ zero-inclusive per-handler maps: `GetEntityAddressFromCharacter` 3, `LoadMapspri
 are external and no direct call resolves through a jump-interface alias. The inventory retains call-site
 identity only, not a claim about callee effects.
 
-### Runtime questions — entity presentation FX
+**Confirmed (H3):** fixture `sf2-map-script-entity-presentation-fx-runtime-v1` at
+`tests/fixtures/h3/map-script-entity-presentation-fx-v1.json` runs ten cases in one BizHawk 2.11.1 /
+Genesis Plus GX launch. It rehashes the complete H2 source-site corpus before fixture comparison, then
+uses every source-observed transition selector 2–7, one headshake row with entity word 0, and the
+source-observed flash-duration boundaries 10, 57, and 180. The non-aligned 57 input preserves the
+`lsr.w #2,d7` source use site; no unit or visual meaning is assigned to the macro's `duration` comment.
 
-**Unknown:** `map-script-entity-presentation-fx/runtime-effects-matrix` is the sole grouped H3 queue.
-One shared launch must establish normal-story reachability; entity/transition operand meaning; visible
-output; timing and completion; repeat behavior; state persistence; and interactions with map/entity
-state. No macro, comment, handler, literal, field, table, or callee name promotes those runtime outcomes
-from this static contract.
+**Confirmed:** the session-only seam is guarded inside named `RunMapSetupInitFunction` at H1 `$474FC`:
+after `GetCurrentMapSetup`, its `cmpi.w #-1,(a0)`, `bne.s loc_4750E`, and `bra.w loc_47514` retain
+their source order and polarity; the non-sentinel path loads `MAPSETUP_OFFSET_INIT_FUNCTION(a0)` into
+A0, invokes the indirect `jsr (a0)` at `$47512`, and resumes at `$47514`. The fixture binds both
+injection PCs and preflights the source ROM bytes before the observer registers execute callbacks. This
+is harness routing evidence, not a claim about ordinary map setup reachability.
+
+**Confirmed (H3):** actual M68K entry PC observations reach all three named handlers. Selectors 2–5
+return at H1 `$46BB0`; selector 6 reaches `loc_46BE2` with observed `d1=$0000`, selector 7 reaches
+the same chunk with `d1=$FFFF`, and both return at `$46C1E`. Headshake and flash return at `$46D0E`
+and `$46A10`. The corresponding local loop counts are 23, 16, 7, and 3/15/46. The selector-4 case is
+the only table-loop case that executes its guarded post-loop block; chunk selector 6 records 0 shifts
+and 16 adds, while selector 7 records 16 shifts and 0 adds. These are operand, branch, loop, and return
+facts only—not a claim that the source labels describe visible transitions.
+
+**Confirmed (H3):** all 1,145 direct callback events are internally checked in actual call-site PC,
+effective-target-entry PC, and return-resumption order. The fixture represents that exact chronology as
+closed callback records plus compact repeated segments, rather than expanding each repeated loop into a
+new schema tree. All nine H2 target identities remain direct equals effective and all per-case target maps
+are zero-inclusive. Eight effective entries are session-ROM shims after a source/ROM preflight:
+`GetEntityAddressFromCharacter` executes only `lea ENTITY_DATA,a5; rts`; `LoadMapsprite`,
+`ApplySpriteCropEffect`, `DmaMapsprite`, `sub_45E10`, `sub_45D1C`, `UpdateEntitySprite_0`, and
+`sub_45D46` execute only `rts`. Their original bodies do not execute in this matrix. `WaitForVInt`
+remains unpatched because it participates in the boot/menu cadence; its original entry, body, and return
+execute, but no whole-service, hardware-timing, or presentation effect is inferred. No jump-interface
+alias occurs.
+
+**Confirmed (H3):** with the session seed `ENTITYDEF_OFFSET_ANIMCOUNTER=$7F`, headshake observes the
+initial `$FF` byte write and final `$00` byte write. With `ENTITYDEF_OFFSET_FLAGS_B=$A1`, all three flash
+cases observe `$A5` after the `%100` OR write and `$A1` after the `%11111011` AND write. These are the
+only direct entity-state byte writes promoted by this fixture; it does not claim a full-record mutation,
+rendering, timing, persistence, or player-visible result.
+
+### Remaining H3 Runtime Questions
+
+**Unknown:** the remaining grouped H3 queue is exactly:
+
+- `map-script-entity-presentation-fx/normal-story-reachability`: normal script/save-state reachability;
+- `map-script-entity-presentation-fx/player-visible-output-timing-completion-repeat`: visible output,
+  timing, completion, and repeat behavior;
+- `map-script-entity-presentation-fx/service-body-map-entity-state-effects`: bypassed-service effects and
+  the complete `WaitForVInt` service/hardware path;
+- `map-script-entity-presentation-fx/persistence-and-map-entity-interactions`: persistence and unmodeled
+  map/entity-state interactions.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` macros named above;
 `code/common/scripting/map/mapscriptengine_1.asm` named sections and `loc_46BE2` function chunk above;
-H1 listing symbols/addresses; and local US ROM SHA-256
+`code/common/scripting/map/mapsetupsfunctions_1.asm` `RunMapSetupInitFunction`; H1 listing
+symbols/addresses; and local US ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`. Reproduce with
-`uv run sf2 h2 map-script-engine`; observed result is fixture ID
+`uv run sf2 h2 map-script-engine`; H3 is reproduced with
+`uv run sf2 h3 map-script-entity-presentation-fx --timeout-seconds 180`; the H2 observed result is fixture ID
 `sf2-map-script-engine-static-v1` in `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.entityPresentationFxCommandFacts`.
+`expected.entityPresentationFxCommandFacts`; the H3 fixture and recursively closed contracts are
+`tests/fixtures/h3/map-script-entity-presentation-fx-v1.json`,
+`schemas/h3-map-script-entity-presentation-fx-fixture.schema.json`, and
+`schemas/h3-map-script-entity-presentation-fx-observation.schema.json`.
 
 ## Confirmed Map-Script UI Primary Command Boundary
 

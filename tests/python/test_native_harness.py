@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 import re
 import tomllib
 from pathlib import Path
 
 import pytest
 
+from sf2tool import research_index
 from sf2tool.cli import build_parser, full_verify_requested
 from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
 from sf2tool.design_contracts import verify_design_contracts
@@ -32,16 +34,38 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1590
-    assert result["Confirmed"] == 1590
+    assert result["Records"] == 1594
+    assert result["Confirmed"] == 1594
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 74
-    assert result["AddressBindings"] == 2330
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 75
+    assert result["AddressBindings"] == 2363
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1553
+    assert result["H1ListingRecords"] == 1557
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
+
+
+def test_research_index_rejects_duplicate_evidence_address_ids(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    index = json.loads(research_index.INDEX_PATH.read_text(encoding="utf-8"))
+    headshake = next(
+        record
+        for record in index["records"]
+        if record["id"] == "map.entity-presentation-fx.headshake"
+    )
+    return_binding = next(
+        binding
+        for binding in headshake["evidence"][0]["bindings"]
+        if binding["fixtureField"] == "function.csc27ReturnAddress"
+    )
+    return_binding["addressId"] = "final-anim-after"
+    mutated_index = tmp_path / "research-index-duplicate-binding.json"
+    mutated_index.write_bytes((json.dumps(index, indent=2) + chr(10)).encode("utf-8"))
+    monkeypatch.setattr(research_index, "INDEX_PATH", mutated_index)
+    with pytest.raises(ValueError, match="duplicate evidence address ID"):
+        research_index.verify_index()
 
 
 def test_listing_symbol_addresses_indexes_once_and_rejects_conflicts() -> None:

@@ -108,6 +108,9 @@ from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
 from sf2tool.h3.map_interaction_trigger import verify_map_interaction_trigger
 from sf2tool.h3.map_lifecycle import verify_map_lifecycle
+from sf2tool.h3.map_script_entity_presentation_fx import (
+    verify_map_script_entity_presentation_fx,
+)
 from sf2tool.h3.map_script_ui_primary import verify_map_script_ui_primary
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
@@ -748,6 +751,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_script_ui_primary)
     h3_map_script_ui_primary.add_argument("--timeout-seconds", type=int, default=180)
+    h3_map_script_entity_presentation_fx = h3_commands.add_parser(
+        "map-script-entity-presentation-fx",
+        help=(
+            "verify one-launch entity-presentation FX handler branch, loop, "
+            "and callback boundaries"
+        ),
+    )
+    _add_local_paths(h3_map_script_entity_presentation_fx)
+    h3_map_script_entity_presentation_fx.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_entity_lifecycle_presentation = h3_commands.add_parser(
         "map-entity-lifecycle-presentation",
         help="verify one-launch entity lifecycle/presentation handler boundaries",
@@ -1654,6 +1666,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-script-ui-primary":
         print_record(
             verify_map_script_ui_primary(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-script-entity-presentation-fx":
+        print_record(
+            verify_map_script_entity_presentation_fx(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

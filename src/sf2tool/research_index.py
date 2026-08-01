@@ -154,12 +154,18 @@ def verify_index(upstream_path: Path | None = None) -> dict[str, Any]:
             if previous_id != evidence["fixtureId"]:
                 raise ValueError(f"conflicting fixture IDs indexed for {fixture_relative}")
 
+            evidence_address_ids: set[str] = set()
             for binding in evidence["bindings"]:
                 address_id = binding["addressId"]
                 if address_id not in addresses:
                     raise ValueError(
                         f"binding in {record_id} refers to missing address ID {address_id!r}"
                     )
+                if address_id in evidence_address_ids:
+                    raise ValueError(
+                        f"duplicate evidence address ID {address_id!r} in {record_id}"
+                    )
+                evidence_address_ids.add(address_id)
                 fixture_value = _nested_value(fixture, binding["fixtureField"])
                 index_value = addresses[address_id]["value"]
                 if fixture_value != index_value:

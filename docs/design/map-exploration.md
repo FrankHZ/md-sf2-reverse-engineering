@@ -60,6 +60,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-interaction-trigger-v1.json`.
 - `sf2-map-script-ui-primary-runtime-v1` in
   `tests/fixtures/h3/map-script-ui-primary-v1.json`.
+- `sf2-map-script-entity-presentation-fx-runtime-v1` in
+  `tests/fixtures/h3/map-script-entity-presentation-fx-v1.json`.
 - `sf2-map-entity-lifecycle-presentation-runtime-v1` in
   `tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`.
 
@@ -233,9 +235,15 @@ the direct versus `ENTITY_TRANSITION_` shorthand encoding, raw macro comments, c
 order, and the zero-inclusive program domain. The import boundary MUST retain named handler instruction
 order: A6 transfer widths, immediate/source-operand records, the separately marked `loc_46BE2` branch
 chunk target, loop-target records, instruction/effective target caller maps, and return boundaries.
-These are source-layout and control-flow records. A remake MUST NOT normalize them into an entity effect,
-head motion, color change, transition meaning, visual, timing, persistence, or reachability model; all
-original runtime consequences remain in `map-script-entity-presentation-fx/runtime-effects-matrix`.
+These are source-layout and control-flow records. The bounded one-launch H3 fixture
+`sf2-map-script-entity-presentation-fx-runtime-v1` at
+`tests/fixtures/h3/map-script-entity-presentation-fx-v1.json` additionally requires source-observed
+transition selectors 2–7, flash duration boundaries 10/57/180, all three handler entry PCs, A6 cursor
+boundaries, H1 return PCs, local branch/loop counts, compact exact call-site/target/return chronology,
+and the two direct entity-byte-write seams. A remake MUST NOT normalize any of those records into an
+entity effect, head motion, color change, transition meaning, visual, timing, persistence, or
+reachability model. The remaining original questions are exactly the four grouped
+`map-script-entity-presentation-fx/*` queues in `docs/research/common-scripting.md`.
 Map-script imports MUST separately retain the three source-named primary forms `showPortrait`,
 `hidePortrait`, and `menu` in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field

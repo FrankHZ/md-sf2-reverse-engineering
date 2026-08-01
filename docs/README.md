@@ -246,8 +246,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   `map-script-screen-presentation/runtime-effects-matrix`。
   同一 304-row 零计数 corpus 还固定三个 source-named entity-presentation-FX form（177 sites）、
   三个 named handler 的 A6 cursor、immediate/operand、branch/function-chunk/loop/call/return guards，
-  以及 nine-target zero-inclusive caller map；唯一 H3 queue 为
-  `map-script-entity-presentation-fx/runtime-effects-matrix`。
+  以及 nine-target zero-inclusive caller map；单启动 10-case H3 已固定 handler-local 的
+  entry/operand/branch/loop/callback/return 记录及两个直接 entity-byte-write seam；剩余四组
+  Unknown queue 为 normal-story reachability、player-visible output/timing/completion/repeat、
+  bypassed-service/`WaitForVInt` effects 与 persistence/map-entity interactions。
   同一 304-row 零计数 corpus 还固定三个 source-named UI primary form（5 sites，含零使用 `menu`）、
   三个 named handler 的 A6 cursor、immediate/operand、branch/stack/call/return guards，及
   provenance join 的 portrait-helper 与 seven-target alias-aware caller map；单启动 11-case H3

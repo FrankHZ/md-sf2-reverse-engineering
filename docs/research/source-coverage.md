@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,590 | 1,553 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,594 | 1,557 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 74 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,330 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 75 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,363 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -321,9 +321,9 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,590 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 74 H3 fixtures, and
-2,330 bindings. Of the records, 1,553 use H1 and 37 use the restricted Z80 music-bank domain. The
+files and the corresponding `data` query yields 1,690. The index summary reports 1,594 records; its
+verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 75 H3 fixtures, and
+2,363 bindings. Of the records, 1,557 use H1 and 37 use the restricted Z80 music-bank domain. The
 default `uv run sf2 verify` checks those
 relationships on every ordinary commit.
 
@@ -473,10 +473,13 @@ do not credit visual, timing, palette, VDP, persistence, or reachability behavio
 63 `headshake` `$27`, and 48 `entityFlashWhite` `$18` commands (177 total). It retains 61 ordered
 source-site rows, the complete 304-row zero-inclusive program domain, exact direct/shorthand operand
 annotations, three complete handler guards, the separately marked `loc_46BE2` function-chunk target for
-the two matching branches, and nine-target zero-inclusive direct/effective caller maps. The sole grouped
-H3 follow-up is `map-script-entity-presentation-fx/runtime-effects-matrix`; source names, fields,
-literals, tables, and callee names do not credit an entity effect, selector meaning, visual, timing,
-persistence, or reachability behavior as static coverage.
+the two matching branches, and nine-target zero-inclusive direct/effective caller maps. Its one-launch,
+ten-case H3 fixture confirms only handler-local entry/operand/branch/loop/callback/return records and the
+two direct entity-byte-write seams. The remaining grouped H3 queue covers normal-story reachability,
+player-visible output/timing/completion/repeat, bypassed-service effects including `WaitForVInt`, and
+persistence/map-entity interactions; source names, fields, literals, tables, and callee names do not
+credit any entity effect, selector meaning, visual, timing, persistence, or reachability behavior as
+static coverage.
 **Confirmed:** the adjacent UI-primary-command boundary is exact for four `showPortrait` `$1D`, one
 `hidePortrait` `$1E`, and zero `menu` `$12` occurrences (five commands in four source-site rows). It
 retains all 304 zero-inclusive program rows, the source byte/word operand annotations, three complete
