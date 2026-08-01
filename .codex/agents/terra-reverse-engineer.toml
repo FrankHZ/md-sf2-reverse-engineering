@@ -103,5 +103,6 @@ changed; findings and evidence labels/provenance; counter changes; tests/command
 the grouped H3 queue; research-index/design-contract impact; self-review findings and corrections; and git
 status confirming no staging or commit. The root owns commit and staging: it reviews the diff, reruns
 `uv run sf2 verify` and the
-owning narrow rail, scans private-artifact boundaries, stages exact files, and commits.
+owning narrow rail, scans private-artifact boundaries, stages exact files, and commits to the current
+research topic branch rather than directly to `main`.
 """

@@ -95,11 +95,18 @@ table range 另覆盖核心角色/职业/物品/法术/敌人/成长、物品辅
 
 ## Phase 2 Worker Workflow
 
-普通 Phase 2 切片由一个 project-scoped Terra worker 完成：root 线程只定义范围和验收命令，worker
-完成 static-first inventory、结构化 parser/contract、tests/docs 与 grouped H3 queue；随后 root 独立复核
-diff/evidence/counters，运行 `uv run sf2 verify` 与拥有该切片的窄 rail，扫描私有产物边界，并精确
-stage/commit。不得并行写入；worker 不得 stage/commit/push，也不默认运行 `verify --full`。该分工和
-非安全边界限制见 [ADR 0004](./docs/decisions/0004-single-terra-worker-with-root-acceptance.md)。
+`main` 只负责串行集成；普通 Phase 2 切片在独立 research topic branch/worktree 中由一个
+project-scoped Terra worker 完成。root 线程定义范围和验收命令，worker 完成 static-first inventory、
+结构化 parser/contract、tests/docs 与 grouped H3 queue；随后 root 独立复核 diff/evidence/counters，
+运行 `uv run sf2 verify` 与拥有该切片的窄 rail，扫描私有产物边界，并只在当前 topic branch 上精确
+stage/commit。worker 不得 stage/commit/push，也不默认运行 `verify --full`。
+
+一个独立 design-synthesis worktree 可以同时整理已合并证据，但不得反向修改或提升 research finding；
+同一 worktree 不允许并行写者，跨分支共享文件必须有单一 owner，合并前统一更新到最新 `main` 并重新
+验收。研究切片内部分工见
+[ADR 0004](./docs/decisions/0004-single-terra-worker-with-root-acceptance.md)，topic branch、并行 worktree
+和串行集成规则见
+[ADR 0006](./docs/decisions/0006-parallel-worktrees-and-topic-branch-integration.md)。
 
 ## 我们要交付什么
 
