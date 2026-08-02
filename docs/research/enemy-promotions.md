@@ -70,7 +70,9 @@ record's persistent flag and aborts if it was already set. It gives the item to 
 inventory permits; otherwise only rare items enter deals. The source contains an unreachable
 battle-upgrade/random-chance block after an unconditional branch, so it is not part of the rule.
 
-The H3 replay matrix confirms the core branches on the original ROM. Taros Sword seed `1281`
+The bounded ten-case H3 fixture [`sf2-enemy-item-drop-behavior-v1`](../../tests/fixtures/h3/enemy-item-drop-behavior-v1.json)
+supplies the runtime evidence in this paragraph. The H3 replay matrix confirms the core branches on the
+original ROM. Taros Sword seed `1281`
 produces roll 8, leaves flag 24 clear, and leaves the item on the enemy. Seed 0 produces roll 0,
 sets flag 24, removes the sword, and gives it to the actor. Starting with flag 24 already set still
 consumes the successful rare roll but aborts before removal or delivery. A non-random Short Rod row
@@ -152,7 +154,6 @@ null; its exact renderer-visible consequences remain a separate behavioral quest
 - Enemy upgrade selection, difficulty adjustment, AI command-set merging, and second-turn behavior
   must be modeled as transformations, not flattened into the base record.
 - Next H3 cases should use one AGI-below-128 and one AGI-above-128 enemy, plus a promotion case that
-  distinguishes the promotee from the special-item holder; reward cases should exercise rare-drop
-  RNG, full inventory/deals routing, and an already-set drop flag.
+  distinguishes the promotee from the special-item holder.
 - Battle sprites, map sprites, battle placement, and enemy-upgrade ranges are not
   part of this contract yet.
