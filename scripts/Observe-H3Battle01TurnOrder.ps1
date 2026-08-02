@@ -76,7 +76,7 @@ event.on_bus_exec(function()
     status("milestone:number-prompt:" .. prompt_count)
     print("milestone:number-prompt:" .. prompt_count)
     if prompt_count == 1 then pulse("Right"); pulse("C")
-    elseif prompt_count == 2 then pulse("C") end
+    elseif prompt_count == 2 then pulse("Right"); pulse("C") end
 end, 0x16282, "sf2-number-prompt", "M68K BUS")
 
 event.on_bus_exec(function()

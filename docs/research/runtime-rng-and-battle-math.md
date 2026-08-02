@@ -267,10 +267,13 @@ The fixed-size list is bubble-sorted by its signed agility byte in descending or
 as explicit fixture cases rather than “cleaned up” from the prose formula.
 
 The first end-to-end turn-order fixture uses the original debug-mode input sequence and built-in
-Battle Test UI to enter Battle 01 from reset. Player 2 Start invokes the original debug text-skip
-path; no save state, movie, patched ROM, or register write is used. After normal combatant
-initialization, the harness writes seed `0x1234` at function entry `0x25544` and observes the sorted
-array at `0x2559E`.
+Battle Test UI to enter Battle 01 from reset. At the second number prompt it uses Right+C to select
+nonzero option 1, so the original debug flow sets the selected battle's shared
+`BATTLE_INTRO_CUTSCENE_FLAGS_START` flag. The original before-battle and battle-start wrappers check
+that flag and skip their scripts; Battle 01 and normal combatant initialization still run. Player 2
+Start remains as a fallback during later battle-scene playback. No save state, movie, patched
+ROM, or register write is used. After normal combatant initialization, the harness writes seed
+`0x1234` at function entry `0x25544` and observes the sorted array at `0x2559E`.
 
 Nine entries pass: three placed allies and six Gizmos. Bowie (combatant 0, debug-test AGI 99) sorts
 first with score 109; the remaining ordered `(combatant, score)` pairs are `(2,8)`, `(1,6)`,

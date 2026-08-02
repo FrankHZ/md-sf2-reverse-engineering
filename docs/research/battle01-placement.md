@@ -102,9 +102,13 @@ when combatant 0 (Bowie) has zero HP even if another ally survives. Battle 01 do
 generic loop with a leader-victory condition.
 
 The H3 fixture enters the original built-in Debug Battle Test using real controller input, chooses
-Battle 01, and skips cutscene text with the original Player 2 Start behavior. After the original game
-initializes combatants, the harness fixes only `RANDOM_SEED` to `0x1234` at
-`GenerateBattleTurnOrder` (`0x25544`). At `0x2559E`, the sorted list contains exactly three allies
+Battle 01, then uses Right+C at the second number prompt to select nonzero option 1. The original
+`DebugModeBattleTest` flow adds `BATTLE_INTRO_CUTSCENE_FLAGS_START` to the selected battle and sets
+that shared flag. The original before-battle and battle-start cutscene wrappers then see the flag and
+skip their scripts; normal Battle 01/combatant initialization still runs. Player 2 Start remains in
+the harness as a fallback during later battle-scene playback, not as the before-battle cutscene
+skip mechanism. After the original game initializes combatants, the harness fixes only
+`RANDOM_SEED` to `0x1234` at `GenerateBattleTurnOrder` (`0x25544`). At `0x2559E`, the sorted list contains exactly three allies
 (0, 2, 1) and six enemies (128–133), proving unplaced joined allies are skipped and all six stored
 Gizmos are live participants. Exact randomized scores are committed in
 `tests/fixtures/h3/battle01-turn-order-v1.json`.
