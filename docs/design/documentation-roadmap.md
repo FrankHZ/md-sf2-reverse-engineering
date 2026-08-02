@@ -32,6 +32,26 @@ defines another explicit policy.
 not a second evidence system. **Inferred** interpretations retain that label, and **Unknown** behavior
 remains a question rather than being completed as narrative.
 
+## Pre-Synthesis Evidence Review
+
+**Confirmed repository rule:** every Layer B synthesis slice must adversarially review the Layer A
+evidence it will explain. A link to an accepted document is necessary but not sufficient. The review
+must inspect, where present, the owning research prose, evidence-bound design contract, executable
+fixture payload and exact fixture ID, schema/verifier or focused test, and the narrow H2/H3 command
+that owns the claimed quantity, unit, order, or state transition.
+
+The review must specifically test for stale question queues, summary prose that is broader than its
+fixture, units reused across different lifecycle stages, source-static call order described as a
+runtime outcome, and controlled validation seams presented as natural campaign behavior. Record the
+surfaces checked and the disposition in the synthesis document or its review record.
+
+When owners disagree, Layer B must not select the convenient answer or silently repair Layer A.
+Exclude the disputed conclusion or retain it as **Unknown**, report the exact mismatch to the owning
+research lane, and wait for an accepted owner correction before expanding the synthesis. A stale
+queue or over-broad summary may be nonblocking only when the executable owner and the stricter claim
+boundary agree; the synthesis must use that stricter boundary and keep the discrepancy visible to
+reviewers.
+
 ## Current Baseline and Near-Term Synthesis
 
 **Confirmed repository baseline:** existing contracts cover combat, maps, level-up, spells, services,
