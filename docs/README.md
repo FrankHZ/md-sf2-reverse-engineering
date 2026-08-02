@@ -354,6 +354,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`0006-parallel-worktrees-and-topic-branch-integration.md`](./decisions/0006-parallel-worktrees-and-topic-branch-integration.md)：
   `main` 串行集成、research/design 双 worktree 车道、短生命周期 topic branch、共享文件所有权与
   tracked-only 远端检查的协作边界。
+- [`0007-schema-contract-composition-and-migration.md`](./decisions/0007-schema-contract-composition-and-migration.md)：
+  审计巨型 schema 的 golden/shape 重复，规定本地 `$ref` registry、结构合同与精确 fixture 分层，
+  并按 common-stats、common-menus、map-events、map-script/H3 的顺序迁移且不削弱负向门禁。
 
 ## Evidence Vocabulary
 
