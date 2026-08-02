@@ -141,9 +141,11 @@ tools/                  Repeatable inspection and emulator-support tools
 scripts/                Frozen compatibility layer for remaining legacy H1–H3 rails
 tests/fixtures/         Small redistributable metadata and behavioral expectations
 tests/python/           Project-owned unit and contract tests
-remake/                 Future modern-engine implementation after contract acceptance
 local/                  Ignored ROMs, saves, traces, upstream checkouts, and generated output
 ```
+
+The planned `remake/` path does not exist yet. It will be created only after the relevant contracts
+and engine decision are accepted; the project does not create empty scaffolding for future phases.
 
 Research explains evidence. Evidence-bound design contracts express implementation-neutral behavior.
 Cross-subsystem design synthesis connects accepted owners. Decision records own project choices. A
