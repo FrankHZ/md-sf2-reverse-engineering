@@ -19,6 +19,8 @@
     "InitializeZ80": 1014
   },
   "expected": {
+    "indexedRecordIds": ["gameflow.exploration.actions", "gameflow.exploration.engine", "gameflow.exploration.interaction", "gameflow.exploration.item-handoff", "gameflow.exploration.loop", "gameflow.main-loop", "gameflow.start.base-tiles", "gameflow.start.cold-start", "gameflow.start.game-init", "gameflow.start.intro", "gameflow.start.region", "gameflow.start.system-init", "gameflow.start.z80-init", "map.block-mutation.copy-helper"],
+    "indexedSourcePaths": ["code/gameflow/exploration/exploration.asm", "code/gameflow/exploration/explorationfunctions_0.asm", "code/gameflow/exploration/explorationfunctions_1.asm", "code/gameflow/exploration/explorationfunctions_2.asm", "code/gameflow/exploration/explorationvints.asm", "code/gameflow/mainloop.asm", "code/gameflow/start/basetiles.asm", "code/gameflow/start/gameinit.asm", "code/gameflow/start/gameintro.asm", "code/gameflow/start/gamestart.asm", "code/gameflow/start/regioncheck.asm", "code/gameflow/start/systeminit.asm", "code/gameflow/start/z80init.asm"],
     "startupFacts": {
       "coldStartVdpRegisterCount": 24,
       "coldStartZ80BootstrapByteCount": 38,
