@@ -75,7 +75,11 @@ The current evidence is deep but narrow:
   with main-loop, victory/defeat, difficulty, spriteset, music/VInt, and laser-ray contracts;
   upgrade/egress, suspended persistence, table content, and visual sequencing remain partial. All 29
   battle-action files now have static/H3 reach, with engine sequencing, item break/use, Taros gating,
-  and target sorting modeled. The seven shared battle-function files are now inventoried too, with
+  target sorting, and a complete 54-site battle-scene message-command corpus modeled. That corpus
+  binds `$10`/`$11` macro expansion to source-built dispatcher slots, all 29 source files, and 43
+  immediate enum-to-line-domain joins; it preserves eleven dynamic message operands without claiming
+  rendered text or wait/presentation behavior. The
+  seven shared battle-function files are now inventoried too, with
   individual-turn AI/player routing, Kiwi Flame Breath, exits, loading, and move SFX modeled;
   six player-control/cursor/menu entry points additionally own nine source ranges, 1,039 statements,
   231 branches, 207 direct calls, and the static selection/cancel/suspend decisions. The same rail

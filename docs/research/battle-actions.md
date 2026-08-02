@@ -6,7 +6,7 @@
 - Status: **Inferred** for presentation roles still based only on upstream labels/comments
 - Status: **Unknown** for animation/message timing, item-break probability semantics beyond the RNG
   call contract, ailment sub-routes not already covered by H3, and reachability of unused helpers
-- Evidence date: 2026-07-18
+- Evidence date: 2026-08-02
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -51,6 +51,33 @@ lower HP, leaving the weakest later, then clears the sort bit from every entry.
 `nullsub_BBE4` and the sleep/NOP helper file are inventoried but not claimed reachable. Presentation
 helpers for action/death messages, spell/physical animation, curse damage, and ailment dispatch now
 have H1-bound footholds; deeper behavior remains queued for static parsing before any shared H3 run.
+
+## Battle-Scene Message Commands
+
+**Confirmed:** the two source macros in `sf2battlescenemacros.asm` construct command words `$10`
+(`displayMessage`) and `$11` (`displayMessageWithNoWait`). The source-built battle-scene dispatcher in
+`code/gameflow/battle/battlescenes/battlesceneengine_0.asm` independently resolves those command words
+to `bsc10_displayMessage` and `bsc11_displayMessageWithNoWait`, respectively. Both emit the same six
+runtime output words in this order: command, message, combatant, item-or-spell, reserved zero, and number. This is
+12 bytes in the battle-scene command buffer. `writeBscParam` emits one runtime word for each supplied
+parameter; its `(a` source-form branch is two byte writes, while the other source-form branch is one
+word write. The H2 contract separately records the site-specific assembled 68000 instruction bytes so
+they are not confused with the runtime command-buffer bytes.
+
+The complete 29-file battle-action inventory has 54 direct uses in 11 positive and 18 zero-use files:
+49 `displayMessage` and five `displayMessageWithNoWait`. All 54 source forms are bound in the pinned
+H1 listing. Forty-three message operands are immediate `#MESSAGE_*` symbols, resolved through the
+parsed `sf2enums.asm` map and checked against the 4,267-line `gamescript.txt` ID domain. The remaining
+eleven preserve their dynamic source expressions without selecting a message ID. The tracked corpus
+contains symbols and numeric IDs only; it does not decode or reproduce dialogue text.
+
+## Runtime Question Queue
+
+The eleven dynamic `d1`/`d2` message operands remain a static control-flow follow-up: their source
+routes must be parsed before any message ID is claimed. One future grouped H3 queue remains for normal
+caller reachability; observed `$10`/`$11` wait, input, and service-completion behavior; and rendered
+text, portrait/layout, timing, persistence, and caller-visible completion. The static macro names,
+dispatcher join, and buffer layout do not settle those runtime questions.
 
 ## Reproduction
 
