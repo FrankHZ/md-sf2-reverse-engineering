@@ -219,9 +219,11 @@ and branch target for the four route sections and the complete second action-fil
 Raise iterates the current-force result list with `d7`, skips a member when `j_GetCurrentHp` is above
 zero, computes level times `CHURCHMENU_PER_LEVEL_RAISE_COST = 10`, and conditionally adds
 `CHURCHMENU_RAISE_COST_EXTRA_WHEN_PROMOTED = 200` after its promotion-data result. After the gold
-comparison's `bcc` branch it calls `j_DecreaseGold`, `j_IncreaseCurrentHp` with `CHAR_STATCAP_HP`,
-and `UpdateAllyMapsprite` in that order. This is **Confirmed** source control flow; the final HP
-value, prompt timing, and caller-visible outcome are not inferred.
+comparison's `bcc` branch, `routeDerived.raise.mutationCalls` records the **Confirmed** source-derived
+mutation-call order `j_DecreaseGold`, then `j_IncreaseCurrentHp` after `move.w #CHAR_STATCAP_HP,d1`,
+then `UpdateAllyMapsprite`. This filtered mutation-helper order does not assert that no other calls
+intervene; the final current-HP value and caller-visible runtime outcome are **Unknown**, as is prompt
+timing.
 
 Cure has separately recorded poison, stun, and curse paths. The parser derives poison cost `10`, stun
 cost `20`, and the source masks `STATUSEFFECT_POISON = 2`, `STATUSEFFECT_STUN = 1`,
