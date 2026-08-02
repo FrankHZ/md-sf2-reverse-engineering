@@ -1,10 +1,12 @@
 import copy
+import json
 import shutil
 from pathlib import Path
 from typing import Any
 
 import pytest
 
+from sf2tool.h2 import battle_actions
 from sf2tool.h2.battle_actions import (
     BATTLE_SCENE_ENGINE_SOURCE_ROOT,
     BATTLE_SCENE_MACROS_PATH,
@@ -12,6 +14,8 @@ from sf2tool.h2.battle_actions import (
     FIXTURE,
     FIXTURE_SCHEMA,
     H1_LIST_PATH,
+    ITEM_BREAK_MESSAGES_PATH,
+    MACROS_PATH,
     MESSAGE_MACRO_NAMES,
     SCHEMA,
     SOURCE_ROOT,
@@ -27,8 +31,6 @@ from sf2tool.h2.battle_actions import (
 from sf2tool.jsonio import load_json, validate_json
 
 UPSTREAM = Path("local/upstream/SF2DISASM")
-
-
 def _swap_first_occurrences(value: bytes, first: bytes, second: bytes) -> bytes:
     first_index = value.index(first)
     second_index = value.index(second, first_index + len(first))
@@ -41,9 +43,21 @@ def _swap_first_occurrences(value: bytes, first: bytes, second: bytes) -> bytes:
     )
 
 
+def _replace_after(value: bytes, anchor: bytes, old: bytes, new: bytes) -> bytes:
+    anchor_index = value.index(anchor)
+    target_index = value.index(old, anchor_index + len(anchor))
+    return value[:target_index] + new + value[target_index + len(old) :]
+
+
 def _copy_message_sources(tmp_path: Path) -> tuple[Path, Path]:
     disasm = tmp_path / "disasm"
-    for relative in (BATTLE_SCENE_MACROS_PATH, ENUMS_PATH, TEXT_LINES_PATH):
+    for relative in (
+        BATTLE_SCENE_MACROS_PATH,
+        ENUMS_PATH,
+        TEXT_LINES_PATH,
+        ITEM_BREAK_MESSAGES_PATH,
+        MACROS_PATH,
+    ):
         destination = disasm / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(UPSTREAM / "disasm" / relative, destination)
@@ -84,6 +98,10 @@ def test_battle_message_contract_matches_complete_fixture_and_corpus() -> None:
         },
         "distinctImmediateMessageSymbolCount": 41,
         "distinctImmediateMessageIdCount": 41,
+        "dynamicResolutionCount": 11,
+        "unresolvedDynamicSiteCount": 0,
+        "dynamicCandidateCount": 56,
+        "distinctDynamicCandidateMessageIdCount": 56,
         "callerTotalCount": 35,
         "h1BoundSiteCount": 54,
     }
@@ -103,6 +121,119 @@ def test_battle_message_contract_matches_complete_fixture_and_corpus() -> None:
         "lineId": 395,
         "sourceUseCount": 1,
     }
+    dynamic_sites = [
+        site
+        for site in contract["messageSites"]
+        if site["messageOperand"]["kind"] == "dynamic-expression"
+    ]
+    assert [
+        (
+            site["sourcePath"],
+            site["sourceLine"],
+            site["messageOperand"]["staticResolution"]["resolver"],
+            len(site["messageOperand"]["staticResolution"]["candidateMessages"]),
+        )
+        for site in dynamic_sites
+    ] == [
+        (
+            "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+            34,
+            "attack-type-chain",
+            3,
+        ),
+        (
+            "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+            83,
+            "spell-selector-chain",
+            9,
+        ),
+        (
+            "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+            116,
+            "muddled-message-offset",
+            10,
+        ),
+        (
+            "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+            134,
+            "prism-enemy-branch",
+            2,
+        ),
+        ("code/gameflow/battle/battleactions/inflictdamage.asm", 153, "damage-branch-chain", 5),
+        ("code/gameflow/battle/battleactions/displaydeathmessage.asm", 20, "death-side-branch", 2),
+        (
+            "code/gameflow/battle/battleactions/castspell.asm",
+            422,
+            "muddle-spell-shared-assignment",
+            1,
+        ),
+        ("code/gameflow/battle/battleactions/castspell.asm", 482, "desoul-side-branch", 2),
+        ("code/gameflow/battle/battleactions/castspell.asm", 572, "absorb-side-branch", 2),
+        ("code/gameflow/battle/battleactions/breakuseditem.asm", 32, "item-break-message", 10),
+        ("code/gameflow/battle/battleactions/breakuseditem.asm", 44, "item-break-message", 10),
+    ]
+    assert [
+        candidate["lineId"]
+        for candidate in dynamic_sites[2]["messageOperand"]["staticResolution"]["candidateMessages"]
+    ] == list(range(322, 332))
+    assert dynamic_sites[1]["messageOperand"]["staticResolution"]["controlFacts"] == [
+        {
+            "kind": "selector-register",
+            "symbol": "BATTLESCENE_SPELL_INDEX",
+            "value": None,
+            "branchMnemonic": None,
+            "branchTarget": None,
+            "messageSymbol": None,
+            "messageLineId": None,
+        },
+        *[
+            {
+                "kind": "selector-branch", "symbol": symbol, "value": value,
+                "branchMnemonic": "beq", "branchTarget": "@Message_CastSpell",
+                "messageSymbol": message_symbol, "messageLineId": message_line_id,
+            }
+            for symbol, value, message_symbol, message_line_id in (
+                ("SPELL_SPOIT", 15, "MESSAGE_SPELLCAST_PUT_ON_A_DEMON_SMILE", 310),
+                ("SPELL_FLAME", 17, "MESSAGE_SPELLCAST_BELCHED_OUT_FLAMES", 278),
+                ("SPELL_KIWI", 41, "MESSAGE_SPELLCAST_BELCHED_OUT_FLAMES", 278),
+                ("SPELL_SNOW", 18, "MESSAGE_SPELLCAST_BLEW_OUT_A_SNOWSTORM", 279),
+                ("SPELL_DEMON", 19, "MESSAGE_SPELLCAST_CAST_DEMON_BREATH", 276),
+                ("SPELL_ODDEYE", 43, "MESSAGE_SPELLCAST_ODD_EYE_BEAM", 320),
+                ("SPELL_DAO", 29, "MESSAGE_SPELLCAST_SUMMONED", 283),
+                ("SPELL_APOLLO", 30, "MESSAGE_SPELLCAST_SUMMONED", 283),
+                ("SPELL_NEPTUN", 31, "MESSAGE_SPELLCAST_SUMMONED", 283),
+                ("SPELL_ATLAS", 32, "MESSAGE_SPELLCAST_SUMMONED", 283),
+            )
+        ],
+        {
+            "kind": "selector-register",
+            "symbol": "BATTLEACTION_OFFSET_ITEM_OR_SPELL",
+            "value": None,
+            "branchMnemonic": None,
+            "branchTarget": None,
+            "messageSymbol": None,
+            "messageLineId": None,
+        },
+        {
+            "kind": "selector-branch", "symbol": "SPELL_AQUA", "value": 40,
+            "branchMnemonic": "beq", "branchTarget": "@Message_CastSpell",
+            "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_AQUA_BREATH", "messageLineId": 281,
+        },
+        {
+            "kind": "selector-branch", "symbol": "SPELL_AQUA|SPELL_LV2", "value": 104,
+            "branchMnemonic": "beq", "branchTarget": "@Message_CastSpell",
+            "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_BUBBLE_BREATH", "messageLineId": 282,
+        },
+        {
+            "kind": "final-default-assignment", "symbol": None, "value": None,
+            "branchMnemonic": None, "branchTarget": None,
+            "messageSymbol": "MESSAGE_SPELLCAST_DEFAULT", "messageLineId": 274,
+        },
+    ]
+    assert contract["itemBreakMessageResolver"]["h1ByteCount"] == 52
+    assert contract["itemBreakMessageResolver"]["h1Sha256"] == (
+        "037C7F69095E47FA84808F9E596403EDA681D10766205D7B3EF86E3C36BA12B5"
+    )
     assert contract["battleSceneDispatcher"] == {
         "contractId": "sf2-battle-scene-engine-static-v1",
         "upstreamCommit": output["upstream"]["commit"],
@@ -206,6 +337,318 @@ def test_battle_message_source_parser_ignores_comments_near_misses_and_rejects_a
     )
     with pytest.raises(ValueError, match="requires four operands"):
         _parse_source_message_uses(disasm)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_battle_message_dynamic_resolver_source_grammar_guards_fail_before_fixture(
+    tmp_path: Path,
+) -> None:
+    disasm, upstream = _copy_message_sources(tmp_path)
+    baseline = _build_battle_message_contract(disasm, upstream)
+    assert baseline["summary"]["unresolvedDynamicSiteCount"] == 0
+
+    create = disasm / SOURCE_ROOT / "createbattlescenemessage.asm"
+    original_create = create.read_bytes()
+    create.write_bytes(
+        original_create.replace(
+            b"move.w  #MESSAGE_BATTLE_ATTACK,d1",
+            b"move.w  #MESSAGE_BATTLE_DODGE,d1",
+            1,
+        )
+    )
+    with pytest.raises(ValueError, match="attack message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        original_create.replace(b"bls.s   @Message_Muddled", b"bhi.s   @Message_Muddled", 1)
+    )
+    with pytest.raises(ValueError, match="muddled message offset source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        original_create.replace(
+            b"beq.w   @Message_Attack ", b"beq.w   @Message_CastSpell ", 1
+        )
+    )
+    with pytest.raises(ValueError, match="attack message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        _swap_first_occurrences(
+            original_create,
+            b"move.w  #MESSAGE_BATTLE_SECOND_ATTACK,d1",
+            b"move.w  #MESSAGE_BATTLE_COUNTER_ATTACK,d1",
+        )
+    )
+    with pytest.raises(ValueError, match="attack message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        original_create.replace(
+            b"move.w  BATTLEACTION_OFFSET_ITEM_OR_SPELL(a3),d2",
+            b"move.w  ((BATTLESCENE_SPELL_INDEX-$1000000)).w,d2",
+            1,
+        )
+    )
+    with pytest.raises(ValueError, match="cast message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        original_create.replace(b"cmpi.w  #9,d0", b"cmpi.w  #8,d0", 1)
+    )
+    with pytest.raises(ValueError, match="muddled message offset source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        original_create.replace(b"add.w   d0,d1", b"add.w   d2,d1", 1)
+    )
+    with pytest.raises(ValueError, match="muddled message offset source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(
+        original_create.replace(
+            b"@Message_Attack:\r\n",
+            b"move.w  #MESSAGE_BATTLE_DODGE,d1\r\n@Message_Attack:\r\n",
+            1,
+        )
+    )
+    with pytest.raises(ValueError, match="attack message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    create.write_bytes(original_create)
+
+    damage = disasm / SOURCE_ROOT / "inflictdamage.asm"
+    original_damage = damage.read_bytes()
+    damage.write_bytes(
+        original_damage.replace(b"bra.s   @Goto_CutoffMessage", b"bra.s   @CutoffMessage", 1)
+    )
+    with pytest.raises(ValueError, match="damage message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    damage.write_bytes(
+        original_damage.replace(b"bra.s   @CutoffMessage", b"bra.s   @Goto_CutoffMessage", 1)
+    )
+    with pytest.raises(ValueError, match="damage message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    damage.write_bytes(original_damage)
+
+    death = disasm / SOURCE_ROOT / "displaydeathmessage.asm"
+    original_death = death.read_bytes()
+    death.write_bytes(
+        original_death.replace(
+            b"bra.s   @WriteBattleMessageCommand", b"bra.s   @Enemy", 1
+        )
+    )
+    with pytest.raises(ValueError, match="death message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    death.write_bytes(original_death)
+
+    cast = disasm / SOURCE_ROOT / "castspell.asm"
+    original_cast = cast.read_bytes()
+    cast.write_bytes(
+        _replace_after(
+            original_cast,
+            b"spellEffect_Muddle:",
+            b"@BattleMessage:\r\n",
+            b"move.w  #MESSAGE_BATTLE_FELL_ASLEEP,d2\r\n@BattleMessage:\r\n",
+        )
+    )
+    with pytest.raises(ValueError, match="muddle spell message source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    cast.write_bytes(
+        _replace_after(
+            original_cast,
+            b"@DetermineBattleMessage:",
+            b"bne.s   @EnemyMessage",
+            b"bne.s   byte_B53C",
+        )
+    )
+    with pytest.raises(ValueError, match="desoul message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    cast.write_bytes(
+        original_cast.replace(b"bra.s   byte_B562", b"bra.s   @EnemyMessage", 1)
+    )
+    with pytest.raises(ValueError, match="desoul message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    cast.write_bytes(
+        _replace_after(
+            original_cast,
+            b"@DetermineMessage:",
+            b"bne.s   @EnemyMessage",
+            b"bne.s   byte_B642",
+        )
+    )
+    with pytest.raises(ValueError, match="absorb message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    cast.write_bytes(
+        original_cast.replace(b"bra.s   byte_B66C", b"bra.s   @EnemyMessage", 1)
+    )
+    with pytest.raises(ValueError, match="absorb message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    cast.write_bytes(
+        _replace_after(
+            original_cast,
+            b"@DetermineMessage:",
+            b"move.b  (a5),d0",
+            b"move.b  (a4),d0",
+        )
+    )
+    with pytest.raises(ValueError, match="absorb message selector source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    cast.write_bytes(original_cast)
+
+    break_source = disasm / SOURCE_ROOT / "breakuseditem.asm"
+    original_break_source = break_source.read_bytes()
+    break_source.write_bytes(
+        original_break_source.replace(b"moveq   #0,d0", b"moveq   #2,d0", 1)
+    )
+    with pytest.raises(ValueError, match="item-break caller break mode source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    break_source.write_bytes(
+        original_break_source.replace(b"tst.b   dodge(a2)", b"tst.b   cutoff(a2)", 1)
+    )
+    with pytest.raises(ValueError, match="item-break helper source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    break_source.write_bytes(
+        original_break_source.replace(b"bra.s   @Goto_FindItem", b"bra.s   @FindItem", 1)
+    )
+    with pytest.raises(ValueError, match="item-break helper source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    break_source.write_bytes(
+        original_break_source.replace(b"bra.s   @FindItem_Loop", b"bra.s   @Done", 1)
+    )
+    with pytest.raises(ValueError, match="item-break helper source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    break_source.write_bytes(
+        original_break_source.replace(
+            b"andi.w  #ITEMENTRY_MASK_INDEX,d0", b"andi.w  #$7E,d0", 1
+        )
+    )
+    with pytest.raises(ValueError, match="item-break helper source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    break_source.write_bytes(
+        original_break_source.replace(b"add.w   d0,d3", b"add.w   d1,d3", 1)
+    )
+    with pytest.raises(ValueError, match="item-break helper source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    break_source.write_bytes(original_break_source)
+
+    table = disasm / ITEM_BREAK_MESSAGES_PATH
+    original_table = table.read_bytes()
+    table.write_bytes(
+        original_table.replace(
+            b"itemBreakMessage POWER_RING, PIECES",
+            b"itemBreakMessage POWER_RING, FLAMES",
+            1,
+        )
+    )
+    with pytest.raises(ValueError, match="item-break table H1 byte parity drift"):
+        _build_battle_message_contract(disasm, upstream)
+    table.write_bytes(original_table.replace(b"tableEnd.w", b"tableEnd.b", 1))
+    with pytest.raises(ValueError, match="item-break table source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    table.write_bytes(
+        original_table
+        + b"\r\n; itemBreakMessage POWER_RING, FLAMES\r\n"
+    )
+    assert _build_battle_message_contract(disasm, upstream) == baseline
+    table.write_bytes(
+        original_table.replace(b"tableEnd.w", b"dc.b    $00\r\n                tableEnd.w", 1)
+    )
+    with pytest.raises(ValueError, match="item-break table source grammar drift"):
+        _build_battle_message_contract(disasm, upstream)
+    table.write_bytes(original_table)
+
+    listing = upstream / H1_LIST_PATH
+    original_listing = listing.read_bytes()
+    listing.write_bytes(
+        original_listing.replace(
+            b"0000BCF0 13                       M",
+            b"0000BCF0 12                       M",
+            1,
+        )
+    )
+    with pytest.raises(ValueError, match="item-break table H1 byte parity drift"):
+        _build_battle_message_contract(disasm, upstream)
+    listing.write_bytes(original_listing)
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_battle_message_item_auxiliary_owner_join_is_verifier_only_and_exact(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = build_battle_actions_inventory(UPSTREAM)
+    owner_source = battle_actions.ITEM_AUXILIARY_FIXTURE
+    monkeypatch.setattr(
+        battle_actions,
+        "ITEM_AUXILIARY_FIXTURE",
+        tmp_path / "missing-item-auxiliary-fixture.json",
+    )
+    assert build_battle_actions_inventory(UPSTREAM) == output
+
+    def assert_owner_rejected(
+        suffix: str,
+        mutate: Any,
+        expected_error: str,
+    ) -> None:
+        owner_path = tmp_path / f"item-auxiliary-{suffix}.json"
+        owner = load_json(owner_source)
+        mutate(owner)
+        owner_path.write_text(json.dumps(owner, indent=2) + "\n", encoding="utf-8")
+        validate_json(
+            owner,
+            battle_actions.ITEM_AUXILIARY_FIXTURE_SCHEMA,
+            owner=f"temporary owner fixture {suffix}",
+        )
+        monkeypatch.setattr(battle_actions, "ITEM_AUXILIARY_FIXTURE", owner_path)
+        output_path = tmp_path / f"battle-actions-{suffix}.json"
+        with pytest.raises(ValueError, match=expected_error):
+            battle_actions.verify_battle_actions_inventory(
+                UPSTREAM,
+                output_path=output_path,
+            )
+        assert not output_path.exists()
+
+    assert_owner_rejected(
+        "commit",
+        lambda owner: owner.__setitem__("upstreamCommit", "0" * 40),
+        "item-break owner provenance drift",
+    )
+    assert_owner_rejected(
+        "rom-sha256",
+        lambda owner: owner.__setitem__("romSha256", "0" * 64),
+        "item-break owner ROM provenance drift",
+    )
+    assert_owner_rejected(
+        "address",
+        lambda owner: owner["table"].__setitem__("table_ItemBreakMessages", 48369),
+        "item-break owner table address drift",
+    )
+    assert_owner_rejected(
+        "count",
+        lambda owner: owner["summary"].__setitem__("breakMessageCount", 24),
+        "item-break owner row count drift",
+    )
+    assert_owner_rejected(
+        "rule",
+        lambda owner: owner["consumerRules"].__setitem__(
+            "breakMessages", "matched item byte replaces the selected base message"
+        ),
+        "item-break owner consumer rule drift",
+    )
+
+    canonical_rom_sha256 = load_json(battle_actions.ROM_MANIFEST)["hashes"]["sha256"]
+    owner = load_json(owner_source)
+    owner["romSha256"] = "0" * 64
+    owner_path = tmp_path / "item-auxiliary-owner-matches-fixture-only.json"
+    owner_path.write_text(json.dumps(owner, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(battle_actions, "ITEM_AUXILIARY_FIXTURE", owner_path)
+    with pytest.raises(ValueError, match="item-break owner ROM provenance drift"):
+        battle_actions._verify_item_break_auxiliary_owner(
+            output,
+            fixture_rom_sha256="0" * 64,
+            canonical_rom_sha256=canonical_rom_sha256,
+        )
+
+    monkeypatch.setattr(battle_actions, "ITEM_AUXILIARY_FIXTURE", owner_source)
+    with pytest.raises(ValueError, match="item-break owner ROM provenance drift"):
+        battle_actions._verify_item_break_auxiliary_owner(
+            output,
+            fixture_rom_sha256="0" * 64,
+            canonical_rom_sha256=canonical_rom_sha256,
+        )
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -409,6 +852,63 @@ def test_battle_message_schemas_recursively_close_compact_contract_mutations() -
     def reorder_caller_totals(value: dict[str, Any], *, fixture_value: bool) -> None:
         contract(value, fixture_value=fixture_value)["callerTotals"].reverse()
 
+    def missing_dynamic_resolution(value: dict[str, Any], *, fixture_value: bool) -> None:
+        dynamic_operand = contract(value, fixture_value=fixture_value)["messageSites"][3][
+            "messageOperand"
+        ]
+        dynamic_operand.pop("staticResolution")
+
+    def extra_dynamic_control_field(value: dict[str, Any], *, fixture_value: bool) -> None:
+        control = contract(value, fixture_value=fixture_value)["messageSites"][3][
+            "messageOperand"
+        ]["staticResolution"]["controlFacts"][0]
+        control["unexpected"] = True
+
+    def wrong_dynamic_candidate(value: dict[str, Any], *, fixture_value: bool) -> None:
+        candidates = contract(value, fixture_value=fixture_value)["messageSites"][3][
+            "messageOperand"
+        ]["staticResolution"]["candidateMessages"]
+        candidates[0]["lineId"] = 274
+
+    def reorder_dynamic_candidates(value: dict[str, Any], *, fixture_value: bool) -> None:
+        contract(value, fixture_value=fixture_value)["messageSites"][3]["messageOperand"][
+            "staticResolution"
+        ]["candidateMessages"].reverse()
+
+    def wrong_item_break_offset(value: dict[str, Any], *, fixture_value: bool) -> None:
+        contract(value, fixture_value=fixture_value)["itemBreakMessageResolver"]["tableRows"][
+            0
+        ]["messageOffset"] = 0
+
+    def renamed_item_break_field(value: dict[str, Any], *, fixture_value: bool) -> None:
+        resolver = contract(value, fixture_value=fixture_value)["itemBreakMessageResolver"]
+        resolver["renamedTableRows"] = resolver.pop("tableRows")
+
+    def wrong_item_break_h1_hash(value: dict[str, Any], *, fixture_value: bool) -> None:
+        resolver = contract(value, fixture_value=fixture_value)["itemBreakMessageResolver"]
+        resolver["h1Sha256"] = "0" * 64
+
+    def wrong_dynamic_summary(value: dict[str, Any], *, fixture_value: bool) -> None:
+        contract(value, fixture_value=fixture_value)["summary"]["unresolvedDynamicSiteCount"] = 1
+
+    def wrong_dynamic_selector(value: dict[str, Any], *, fixture_value: bool) -> None:
+        controls = contract(value, fixture_value=fixture_value)["messageSites"][4][
+            "messageOperand"
+        ]["staticResolution"]["controlFacts"]
+        controls[1]["symbol"] = "COMBATANT_BIT_ALLY"
+
+    def wrong_dynamic_branch(value: dict[str, Any], *, fixture_value: bool) -> None:
+        controls = contract(value, fixture_value=fixture_value)["messageSites"][3][
+            "messageOperand"
+        ]["staticResolution"]["controlFacts"]
+        controls[2]["branchTarget"] = "@Unexpected"
+
+    def wrong_muddled_bound(value: dict[str, Any], *, fixture_value: bool) -> None:
+        controls = contract(value, fixture_value=fixture_value)["messageSites"][7][
+            "messageOperand"
+        ]["staticResolution"]["controlFacts"]
+        controls[1]["value"] = 8
+
     mutations = (
         missing,
         renamed,
@@ -424,6 +924,17 @@ def test_battle_message_schemas_recursively_close_compact_contract_mutations() -
         reorder_immediate_messages,
         reorder_file_totals,
         reorder_caller_totals,
+        missing_dynamic_resolution,
+        extra_dynamic_control_field,
+        wrong_dynamic_candidate,
+        reorder_dynamic_candidates,
+        wrong_item_break_offset,
+        renamed_item_break_field,
+        wrong_item_break_h1_hash,
+        wrong_dynamic_summary,
+        wrong_dynamic_selector,
+        wrong_dynamic_branch,
+        wrong_muddled_bound,
     )
     for base, schema, owner, fixture_value in (
         (output, SCHEMA, "battle actions output", False),
