@@ -198,18 +198,39 @@ jump-interface alias. The complete effective totals are `ResetCurrentMap` 1, `Lo
 so internal effective totals are explicitly zero. Comment text, operands, labels, and near-miss
 mnemonics are not call sites.
 
-The sole grouped H3 question is **Unknown**:
-`map-script-transition-presentation-matrix`. One shared launch should observe event consumption,
-map/camera state, fade/display timing, and caller-dependent presentation for representative forms;
-the static source contract does not establish any of those runtime outcomes.
+**Confirmed (bounded H3):** `sf2-map-script-transition-runtime-v1` runs five RAM-owned representative
+streams through the unmodified `ExecuteMapScript` loop in one BizHawk 2.11.1 / Genesis Plus GX Map
+Test 0 launch. It confirms the five opcode/terminal words, A6 offsets after each handler, handler
+entry and return chronology, csc37-to-csc48 fall-through, direct handler service-call/return seams,
+and the bounded csc07 event bytes. With explicit initial map/view-target seeds it also records the
+resulting `CURRENT_MAP`, `VIEW_TARGET_ENTITY`, and selected View Plane A words. `ResetCurrentMap`
+tail-branches into `LoadMap`; that service body's shared `EnableDisplayAndInterrupts` and
+`WaitForVInt` entries are deterministically dispatched as nested service roles, not misreported as
+additional direct csc36 calls.
+
+The source has csc37 write `OUT_TO_BLACK` value 2 before its fall-through. In this bounded run,
+after `LoadMapTilesets` and at the first observed csc48 `WaitForVInt` entry, `FADING_SETTING` is
+already 0. The observer reads that value before any optional safety clear and therefore does not
+alter it in this run. This establishes neither fade duration/completion nor a player-visible result.
+
+The grouped H3 question remains **Unknown**:
+`map-script-transition-presentation-matrix`. Event consumption, map/camera presentation, fade/display
+timing, caller-dependent presentation, normal-story reachability, persistence, and unobserved service
+effects remain outside this synthetic, bounded matrix.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, `master`,
 `sf2cutscenemacros.asm`,
 `code/common/scripting/map/mapscriptengine_1.asm` (`csc36`, `csc37`, `csc46`, `csc48`),
 `mapscriptengine_2.asm` (`csc07` and dispatcher), `sf2enums.asm`, the H1 listing addresses, and the
-US ROM SHA-256 in the fixture. Reproduce with `uv run sf2 h2 map-script-engine`; the observed output
-is fixture ID `sf2-map-script-engine-static-v1`, transition field `transitionCommandFacts`.
+US ROM SHA-256 in the fixture. Reproduce static evidence with `uv run sf2 h2 map-script-engine`; the
+observed output is fixture ID `sf2-map-script-engine-static-v1`, transition field
+`transitionCommandFacts`. Reproduce bounded runtime evidence with
+`uv run sf2 h3 map-script-transition --timeout-seconds 180`; its fixture is
+`tests/fixtures/h3/map-script-transition-v1.json`, its recursively closed contracts are
+`schemas/h3/h3-map-script-transition-fixture.schema.json` and
+`schemas/h3/h3-map-script-transition-observation.schema.json`, and its verifier is
+`src/sf2tool/h3/map_script_transition.py`.
 
 ## Confirmed Map-Script Camera-Control Command Family
 

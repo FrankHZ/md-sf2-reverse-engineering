@@ -58,6 +58,8 @@ Evidence is executable through:
   `tests/fixtures/h3/map-lifecycle-v1.json`;
 - `sf2-map-script-control-audio-runtime-v1` in
   `tests/fixtures/h3/map-script-control-audio-v1.json`;
+- `sf2-map-script-transition-runtime-v1` in
+  `tests/fixtures/h3/map-script-transition-v1.json`;
 - `sf2-map-interaction-trigger-runtime-v1` in
   `tests/fixtures/h3/map-interaction-trigger-v1.json`.
 - `sf2-map-script-ui-primary-runtime-v1` in
@@ -149,6 +151,16 @@ reads, direct service call identity/order, and the `csc37_loadMapAndFadeIn` fall
 multiplier as source facts. A remake MAY map these forms to an engine-specific transition IR only after
 it defines its own behavior; the original source contract does not establish event consumption,
 camera state, fade timing, display timing, or player-visible transition results.
+
+**Confirmed bounded runtime boundary:** `sf2-map-script-transition-runtime-v1` at
+`tests/fixtures/h3/map-script-transition-v1.json` adds one five-case launch through the original
+interpreter. An original-fidelity adapter MUST preserve the observed opcode/A6/handler-return order,
+csc37-to-csc48 fall-through, direct service seam order, csc07 event bytes, and the explicitly seeded
+map/view-target/plane-A state facts as distinct adapter data. The source writes `OUT_TO_BLACK` value 2
+at csc37 entry, while this bounded run reads `FADING_SETTING` as 0 at the first csc48
+`WaitForVInt` entry after `LoadMapTilesets`; neither fact defines a fade duration or visible result.
+The adapter MUST NOT turn these synthetic Map Test outcomes into normal-story reachability,
+persistence, collision/pathfinding, camera presentation, or display behavior.
 Map-script imports MUST separately retain the source-faithful `setCameraEntity`, `setCamDest`, and
 `cameraSpeed` records in `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field

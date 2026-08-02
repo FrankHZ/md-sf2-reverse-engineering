@@ -1,0 +1,793 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/fixture",
+  "definitions": {
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "id",
+        "romSha256",
+        "emulator",
+        "mapTestIndex",
+        "observationBoundary",
+        "runtimeQuestions",
+        "sharedHarnessFixture",
+        "staticContractFixture",
+        "provenance",
+        "maxFrames",
+        "function",
+        "service",
+        "ram",
+        "fadeSourceWrite",
+        "instrumentation",
+        "cases"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "const": "sf2-map-script-transition-runtime-v1"
+        },
+        "romSha256": {
+          "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+        },
+        "emulator": {
+          "const": {
+            "name": "BizHawk",
+            "version": "2.11.1",
+            "core": "Genesis Plus GX"
+          }
+        },
+        "mapTestIndex": {
+          "const": 0
+        },
+        "observationBoundary": {
+          "type": "string"
+        },
+        "runtimeQuestions": {
+          "const": [
+            "map-script-transition-presentation-matrix"
+          ]
+        },
+        "sharedHarnessFixture": {
+          "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+        },
+        "staticContractFixture": {
+          "const": "tests/fixtures/h2/map-script-engine-static-v1.json"
+        },
+        "provenance": {
+          "const": {
+            "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+            "upstreamBranch": "master",
+            "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+            "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+            "h2FixtureId": "sf2-map-script-engine-static-v1",
+            "h2FieldPath": "expected.transitionCommandFacts",
+            "command": "uv run sf2 h2 map-script-engine"
+          }
+        },
+        "maxFrames": {
+          "const": 7200
+        },
+        "function": {
+          "const": {
+            "entryAddress": 292092,
+            "entryInjectionCallSiteAddress": 292114,
+            "executeMapScriptAddress": 291116,
+            "scriptWordReadAfterAddress": 291160,
+            "opcodeDispatchCallAddress": 291194,
+            "opcodeDispatchReturnAddress": 291198,
+            "endAddress": 291380,
+            "warpHandlerAddress": 291714,
+            "resetHandlerAddress": 288142,
+            "fadeHandlerAddress": 288154,
+            "reloadHandlerAddress": 288520,
+            "mapLoadHandlerAddress": 288182
+          }
+        },
+        "service": {
+          "const": {
+            "ResetCurrentMap": 15878,
+            "LoadMapTilesets": 10722,
+            "LoadMap": 10892,
+            "EnableDisplayAndInterrupts": 3142,
+            "WaitForVInt": 3822
+          }
+        },
+        "ram": {
+          "const": {
+            "currentMapAddress": 16774929,
+            "viewTargetEntityAddress": 16754732,
+            "fadingSettingAddress": 16768752,
+            "mapEventTypeAddress": 16754762,
+            "mapEventParam1Address": 16754764,
+            "viewPlaneAPixelXAddress": 16754704,
+            "viewPlaneAPixelYAddress": 16754706
+          }
+        },
+        "fadeSourceWrite": {
+          "const": {
+            "address": 288154,
+            "symbol": "OUT_TO_BLACK",
+            "value": 2
+          }
+        },
+        "instrumentation": {
+          "const": {
+            "callSiteAddress": 292114,
+            "callSiteOriginalHex": "4E904CDF03FF",
+            "callSitePatchedHex": "4EB90000FF88",
+            "stubAddress": 65416,
+            "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+            "stubHex": "207C00FF40044EB90004712C588F4CDF03FF4E75",
+            "trampolinePostHandlerAddress": 65434,
+            "ramInputAddress": 16728064
+          }
+        },
+        "cases": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/definitions/case"
+          },
+          "additionalItems": false,
+          "allOf": [
+            {
+              "const": [
+                {
+                  "id": "warp-event",
+                  "macro": "warp",
+                  "initialCurrentMap": 3,
+                  "viewTargetSeed": 90,
+                  "operandWords": [
+                    4,
+                    5,
+                    6,
+                    7
+                  ],
+                  "releaseFadeAtFirstWait": false,
+                  "runtimeGolden": {
+                    "currentMapAfter": 3,
+                    "viewTargetEntityAfter": 90,
+                    "viewPlaneAPixelX": null,
+                    "viewPlaneAPixelY": null,
+                    "mapEventTypeWordAfter": 1,
+                    "mapEventClearByteAfter": 0,
+                    "mapEventPayloadBytesAfter": [
+                      4,
+                      5,
+                      6,
+                      7
+                    ],
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": []
+                  },
+                  "expected": {
+                    "id": "warp-event",
+                    "macro": "warp",
+                    "handlerEntries": [
+                      "ExecuteMapScript",
+                      "csc07_warp"
+                    ],
+                    "scriptWordReads": [
+                      {
+                        "word": 7,
+                        "cursorAfterReadOffset": 2
+                      },
+                      {
+                        "word": 65535,
+                        "cursorAfterReadOffset": 8
+                      }
+                    ],
+                    "cursorAfterHandlerOffset": 6,
+                    "handlerReturned": true,
+                    "fallthroughCsc48Observed": false,
+                    "serviceCallOrder": [],
+                    "currentMapAfter": 3,
+                    "viewTargetEntityAfter": 90,
+                    "viewPlaneAPixelX": null,
+                    "viewPlaneAPixelY": null,
+                    "mapEventTypeWordAfter": 1,
+                    "mapEventClearByteAfter": 0,
+                    "mapEventPayloadBytesAfter": [
+                      4,
+                      5,
+                      6,
+                      7
+                    ],
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": []
+                  }
+                },
+                {
+                  "id": "reset-current",
+                  "macro": "resetMap",
+                  "initialCurrentMap": 3,
+                  "viewTargetSeed": 90,
+                  "operandWords": [],
+                  "releaseFadeAtFirstWait": false,
+                  "runtimeGolden": {
+                    "currentMapAfter": 3,
+                    "viewTargetEntityAfter": 90,
+                    "viewPlaneAPixelX": 0,
+                    "viewPlaneAPixelY": 12288,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": [
+                      "ResetCurrentMap"
+                    ]
+                  },
+                  "expected": {
+                    "id": "reset-current",
+                    "macro": "resetMap",
+                    "handlerEntries": [
+                      "ExecuteMapScript",
+                      "csc36_resetMap"
+                    ],
+                    "scriptWordReads": [
+                      {
+                        "word": 54,
+                        "cursorAfterReadOffset": 2
+                      },
+                      {
+                        "word": 65535,
+                        "cursorAfterReadOffset": 4
+                      }
+                    ],
+                    "cursorAfterHandlerOffset": 2,
+                    "handlerReturned": true,
+                    "fallthroughCsc48Observed": false,
+                    "serviceCallOrder": [
+                      "ResetCurrentMap"
+                    ],
+                    "currentMapAfter": 3,
+                    "viewTargetEntityAfter": 90,
+                    "viewPlaneAPixelX": 0,
+                    "viewPlaneAPixelY": 12288,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": [
+                      "ResetCurrentMap"
+                    ]
+                  }
+                },
+                {
+                  "id": "fade-load",
+                  "macro": "loadMapFadeIn",
+                  "initialCurrentMap": 3,
+                  "viewTargetSeed": 90,
+                  "operandWords": [
+                    4,
+                    1,
+                    2
+                  ],
+                  "releaseFadeAtFirstWait": true,
+                  "runtimeGolden": {
+                    "currentMapAfter": 4,
+                    "viewTargetEntityAfter": 255,
+                    "viewPlaneAPixelX": 384,
+                    "viewPlaneAPixelY": 13056,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": 0,
+                    "serviceReturnOrder": [
+                      "LoadMapTilesets",
+                      "WaitForVInt",
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ]
+                  },
+                  "expected": {
+                    "id": "fade-load",
+                    "macro": "loadMapFadeIn",
+                    "handlerEntries": [
+                      "ExecuteMapScript",
+                      "csc37_loadMapAndFadeIn",
+                      "csc48_loadMap"
+                    ],
+                    "scriptWordReads": [
+                      {
+                        "word": 55,
+                        "cursorAfterReadOffset": 2
+                      },
+                      {
+                        "word": 65535,
+                        "cursorAfterReadOffset": 10
+                      }
+                    ],
+                    "cursorAfterHandlerOffset": 8,
+                    "handlerReturned": true,
+                    "fallthroughCsc48Observed": true,
+                    "serviceCallOrder": [
+                      "LoadMapTilesets",
+                      "WaitForVInt",
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ],
+                    "currentMapAfter": 4,
+                    "viewTargetEntityAfter": 255,
+                    "viewPlaneAPixelX": 384,
+                    "viewPlaneAPixelY": 13056,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": 0,
+                    "serviceReturnOrder": [
+                      "LoadMapTilesets",
+                      "WaitForVInt",
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ]
+                  }
+                },
+                {
+                  "id": "reload-current",
+                  "macro": "reloadMap",
+                  "initialCurrentMap": 3,
+                  "viewTargetSeed": 90,
+                  "operandWords": [
+                    3,
+                    5
+                  ],
+                  "releaseFadeAtFirstWait": false,
+                  "runtimeGolden": {
+                    "currentMapAfter": 3,
+                    "viewTargetEntityAfter": 255,
+                    "viewPlaneAPixelX": 1152,
+                    "viewPlaneAPixelY": 14208,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": [
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ]
+                  },
+                  "expected": {
+                    "id": "reload-current",
+                    "macro": "reloadMap",
+                    "handlerEntries": [
+                      "ExecuteMapScript",
+                      "csc46_reloadMap"
+                    ],
+                    "scriptWordReads": [
+                      {
+                        "word": 70,
+                        "cursorAfterReadOffset": 2
+                      },
+                      {
+                        "word": 65535,
+                        "cursorAfterReadOffset": 8
+                      }
+                    ],
+                    "cursorAfterHandlerOffset": 6,
+                    "handlerReturned": true,
+                    "fallthroughCsc48Observed": false,
+                    "serviceCallOrder": [
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ],
+                    "currentMapAfter": 3,
+                    "viewTargetEntityAfter": 255,
+                    "viewPlaneAPixelX": 1152,
+                    "viewPlaneAPixelY": 14208,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": [
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ]
+                  }
+                },
+                {
+                  "id": "map-load",
+                  "macro": "mapLoad",
+                  "initialCurrentMap": 3,
+                  "viewTargetSeed": 90,
+                  "operandWords": [
+                    4,
+                    6,
+                    7
+                  ],
+                  "releaseFadeAtFirstWait": false,
+                  "runtimeGolden": {
+                    "currentMapAfter": 4,
+                    "viewTargetEntityAfter": 255,
+                    "viewPlaneAPixelX": 2304,
+                    "viewPlaneAPixelY": 14976,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": [
+                      "LoadMapTilesets",
+                      "WaitForVInt",
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ]
+                  },
+                  "expected": {
+                    "id": "map-load",
+                    "macro": "mapLoad",
+                    "handlerEntries": [
+                      "ExecuteMapScript",
+                      "csc48_loadMap"
+                    ],
+                    "scriptWordReads": [
+                      {
+                        "word": 72,
+                        "cursorAfterReadOffset": 2
+                      },
+                      {
+                        "word": 65535,
+                        "cursorAfterReadOffset": 10
+                      }
+                    ],
+                    "cursorAfterHandlerOffset": 8,
+                    "handlerReturned": true,
+                    "fallthroughCsc48Observed": false,
+                    "serviceCallOrder": [
+                      "LoadMapTilesets",
+                      "WaitForVInt",
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ],
+                    "currentMapAfter": 4,
+                    "viewTargetEntityAfter": 255,
+                    "viewPlaneAPixelX": 2304,
+                    "viewPlaneAPixelY": 14976,
+                    "mapEventTypeWordAfter": null,
+                    "mapEventClearByteAfter": null,
+                    "mapEventPayloadBytesAfter": null,
+                    "fadeSettingAtFirstWait": null,
+                    "serviceReturnOrder": [
+                      "LoadMapTilesets",
+                      "WaitForVInt",
+                      "LoadMap",
+                      "EnableDisplayAndInterrupts",
+                      "WaitForVInt"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "initialCurrentMap",
+        "viewTargetSeed",
+        "operandWords",
+        "releaseFadeAtFirstWait",
+        "runtimeGolden",
+        "expected"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "enum": [
+            "warp",
+            "resetMap",
+            "loadMapFadeIn",
+            "reloadMap",
+            "mapLoad"
+          ]
+        },
+        "initialCurrentMap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "viewTargetSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "operandWords": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          }
+        },
+        "releaseFadeAtFirstWait": {
+          "type": "boolean"
+        },
+        "runtimeGolden": {
+          "$ref": "#/definitions/runtimeGolden"
+        },
+        "expected": {
+          "$ref": "#/definitions/record"
+        }
+      }
+    },
+    "runtimeGolden": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currentMapAfter",
+        "viewTargetEntityAfter",
+        "viewPlaneAPixelX",
+        "viewPlaneAPixelY",
+        "mapEventTypeWordAfter",
+        "mapEventClearByteAfter",
+        "mapEventPayloadBytesAfter",
+        "fadeSettingAtFirstWait",
+        "serviceReturnOrder"
+      ],
+      "properties": {
+        "currentMapAfter": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "viewTargetEntityAfter": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "viewPlaneAPixelX": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "viewPlaneAPixelY": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "mapEventTypeWordAfter": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "mapEventClearByteAfter": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "mapEventPayloadBytesAfter": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "fadeSettingAtFirstWait": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "serviceReturnOrder": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ResetCurrentMap",
+              "LoadMapTilesets",
+              "LoadMap",
+              "EnableDisplayAndInterrupts",
+              "WaitForVInt"
+            ]
+          }
+        }
+      }
+    },
+    "wordRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "word",
+        "cursorAfterReadOffset"
+      ],
+      "properties": {
+        "word": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "cursorAfterReadOffset": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro",
+        "handlerEntries",
+        "scriptWordReads",
+        "cursorAfterHandlerOffset",
+        "handlerReturned",
+        "fallthroughCsc48Observed",
+        "serviceCallOrder",
+        "currentMapAfter",
+        "viewTargetEntityAfter",
+        "viewPlaneAPixelX",
+        "viewPlaneAPixelY",
+        "mapEventTypeWordAfter",
+        "mapEventClearByteAfter",
+        "mapEventPayloadBytesAfter",
+        "fadeSettingAtFirstWait",
+        "serviceReturnOrder"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "macro": {
+          "enum": [
+            "warp",
+            "resetMap",
+            "loadMapFadeIn",
+            "reloadMap",
+            "mapLoad"
+          ]
+        },
+        "handlerEntries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scriptWordReads": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/definitions/wordRead"
+          }
+        },
+        "cursorAfterHandlerOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "handlerReturned": {
+          "type": "boolean"
+        },
+        "fallthroughCsc48Observed": {
+          "type": "boolean"
+        },
+        "serviceCallOrder": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ResetCurrentMap",
+              "LoadMapTilesets",
+              "LoadMap",
+              "EnableDisplayAndInterrupts",
+              "WaitForVInt"
+            ]
+          }
+        },
+        "currentMapAfter": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "viewTargetEntityAfter": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "viewPlaneAPixelX": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "viewPlaneAPixelY": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "mapEventTypeWordAfter": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "mapEventClearByteAfter": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "mapEventPayloadBytesAfter": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "fadeSettingAtFirstWait": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "serviceReturnOrder": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ResetCurrentMap",
+              "LoadMapTilesets",
+              "LoadMap",
+              "EnableDisplayAndInterrupts",
+              "WaitForVInt"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

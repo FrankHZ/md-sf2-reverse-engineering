@@ -32,7 +32,7 @@ from sf2tool.rom import mega_drive_checksum
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
         "Documents": 11,
-        "FixtureReferences": 84,
+        "FixtureReferences": 85,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }
@@ -41,14 +41,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1616
-    assert result["Confirmed"] == 1616
+    assert result["Records"] == 1617
+    assert result["Confirmed"] == 1617
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 79
-    assert result["AddressBindings"] == 2453
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 80
+    assert result["AddressBindings"] == 2472
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1579
+    assert result["H1ListingRecords"] == 1580
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
