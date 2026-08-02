@@ -122,6 +122,7 @@ from sf2tool.h3.map_script_ui_primary import verify_map_script_ui_primary
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
+from sf2tool.h3.random_services import verify_random_services
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.sound_timing import verify_sound_timing
 from sf2tool.h3.spell_attack import verify_spell_attack
@@ -607,6 +608,12 @@ def build_parser() -> argparse.ArgumentParser:
     h3_rng = h3_commands.add_parser("rng", help="verify base and debug-aware RNG behavior")
     h3_rng.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
     h3_rng.add_argument("--timeout-seconds", type=int, default=60)
+    h3_random_services = h3_commands.add_parser(
+        "random-services",
+        help="verify one-launch random range/retry and seed-copy service boundaries",
+    )
+    h3_random_services.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    h3_random_services.add_argument("--timeout-seconds", type=int, default=180)
     h3_growth = h3_commands.add_parser(
         "growth", help="verify stat-gain and complete level-up behavior"
     )
@@ -1486,6 +1493,10 @@ def dispatch(args: argparse.Namespace) -> None:
         )
     elif args.command == "h3" and args.h3_command == "rng":
         print_record(verify_rng(args.rom_path, timeout_seconds=args.timeout_seconds))
+    elif args.command == "h3" and args.h3_command == "random-services":
+        print_record(
+            verify_random_services(args.rom_path, timeout_seconds=args.timeout_seconds)
+        )
     elif args.command == "h3" and args.h3_command == "growth":
         print_record(
             verify_growth(

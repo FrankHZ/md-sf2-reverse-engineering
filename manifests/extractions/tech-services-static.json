@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-tech-services-static-v1",
-  "outputSha256": "AFB65F665AA77846932D78B8B12D16350E4FF2F86021E2436624901B3C7359E9",
+  "outputSha256": "28C41150CAF28B1D46DB80D0F4B8F7AF869721C766ECC2B32FF2B0BB00FCB59B",
   "summary": {
     "fileCount": 12,
     "incbinFileCount": 5,
@@ -17,7 +17,7 @@
     "m68kDirectCallSiteCount": 12,
     "m68kInternalDirectTargetCount": 4,
     "m68kExternalDirectTargetCount": 2,
-    "indexedRecordCount": 12,
+    "indexedRecordCount": 15,
     "indexedFileCount": 11
   }
 }

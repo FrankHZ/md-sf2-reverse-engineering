@@ -43,8 +43,12 @@ Relevant RAM symbols are `DEBUG_MODE_TOGGLE=$FFB0A9`, `PLAYER_1_INPUT=$FFDE97`,
 
 The complete H2 source contract, including the seed-copy byte generator, low-byte bounded-domain
 discrepancy, and direct-target versus jump-alias call inventory, is owned by
-[`technical-services.md`](./technical-services.md). Retry timing/distribution and seed-copy isolation
-are still unobserved; no additional H3 fixture was created for this static expansion.
+[`technical-services.md`](./technical-services.md). The one-launch
+`random-services-v1.json` H3 matrix now observes helper-local range/retry, alias/effective-target,
+and the big-endian base-address byte lane within the seed-copy word, recording the original helper
+return state separately from the following controlled source-shaped probe copy. Text/menu caller loops, timing,
+retry distribution outside the matrix seeds, and cross-caller seed-copy lifetime remain Unknown rather
+than inferred from the probe.
 
 ## Confirmed: Base RNG
 
@@ -97,9 +101,11 @@ the override explains controller-dependent results observed in the built-in Batt
 
 ## Confirmed: Thinking-AI RNG in Final Action Choice
 
-The AI's spell-versus-item branch uses a separate generator, not either RNG above. It updates only
-the low byte of `RANDOM_SEED_COPY` with `(seed * 541 + 12345) & 0xFF`, retrying until the unsigned
-byte is below the requested range. The final action caller requests range two, so accepted values are
+The AI's spell-versus-item branch uses a separate generator, not either RNG above. Its static source
+shape updates one byte at the `RANDOM_SEED_COPY` base address with a masked computed byte, retrying
+until that returned unsigned byte is below the requested range. The independent random-services H3
+matrix resolves the 68000 big-endian lane as the word high byte. The final action caller requests range
+two, so accepted values are
 0 for spell and 1 for item; physical attack is ignored whenever both special target lists are
 non-empty.
 

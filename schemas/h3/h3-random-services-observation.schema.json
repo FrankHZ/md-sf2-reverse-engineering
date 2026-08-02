@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 random services runtime observation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "core", "id", "caseOrder", "records"],
+  "properties": {
+    "system": { "const": "GEN" },
+    "core": { "const": "Genesis Plus GX" },
+    "id": { "const": "sf2-random-services-matrix-runtime-v1" },
+    "caseOrder": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": [
+        { "const": "unsigned-low-byte-zero" },
+        { "const": "unsigned-range-one" },
+        { "const": "unsigned-signed-range-boundary" },
+        { "const": "unsigned-range-two-retry" },
+        { "const": "thinking-low-byte-zero" },
+        { "const": "thinking-range-one" },
+        { "const": "thinking-signed-range-boundary" },
+        { "const": "thinking-range-two-retry-alias" },
+        { "const": "text-symbol-wait-copy-shape" },
+        { "const": "diamond-menu-copy-shape" }
+      ],
+      "additionalItems": false
+    },
+    "records": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": [
+        { "$ref": "#/$defs/unsignedEarlyZero" },
+        { "$ref": "#/$defs/unsignedRangeOne" },
+        { "$ref": "#/$defs/unsignedSignedBoundary" },
+        { "$ref": "#/$defs/unsignedRetry" },
+        { "$ref": "#/$defs/thinkingEarlyZero" },
+        { "$ref": "#/$defs/thinkingRangeOne" },
+        { "$ref": "#/$defs/thinkingSignedBoundary" },
+        { "$ref": "#/$defs/thinkingRetry" },
+        { "$ref": "#/$defs/textCopyShape" },
+        { "$ref": "#/$defs/diamondCopyShape" }
+      ],
+      "additionalItems": false
+    }
+  },
+  "$defs": {
+    "record": { "type": "object", "additionalProperties": false, "required": ["id", "randomSeedAfter", "seedCopyAtHelperReturn", "seedCopyAfterSourceCopy", "resultLowByte", "generatorCallCount", "generatorOutputs", "generatorStates", "returnPath", "instructionTargetObserved", "effectiveTargetObserved", "sourceCopyWriteSeen"], "properties": { "id": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "randomSeedAfter": { "type": "integer", "minimum": 0, "maximum": 65535 }, "seedCopyAtHelperReturn": { "type": "integer", "minimum": 0, "maximum": 65535 }, "seedCopyAfterSourceCopy": { "type": "integer", "minimum": 0, "maximum": 65535 }, "resultLowByte": { "type": "integer", "minimum": 0, "maximum": 255 }, "generatorCallCount": { "type": "integer", "minimum": 0 }, "generatorOutputs": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } }, "generatorStates": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 65535 } }, "returnPath": { "enum": ["base", "normal", "early"] }, "instructionTargetObserved": { "const": true }, "effectiveTargetObserved": { "const": true }, "sourceCopyWriteSeen": { "const": true } } },
+    "unsignedEarlyZero": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-low-byte-zero" } } }] },
+    "unsignedRangeOne": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-range-one" } } }] },
+    "unsignedSignedBoundary": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-signed-range-boundary" } } }] },
+    "unsignedRetry": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-range-two-retry" } } }] },
+    "thinkingEarlyZero": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "thinking-low-byte-zero" } } }] },
+    "thinkingRangeOne": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "thinking-range-one" } } }] },
+    "thinkingSignedBoundary": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "thinking-signed-range-boundary" } } }] },
+    "thinkingRetry": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "thinking-range-two-retry-alias" } } }] },
+    "textCopyShape": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "text-symbol-wait-copy-shape" } } }] },
+    "diamondCopyShape": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "diamond-menu-copy-shape" } } }] }
+  }
+}

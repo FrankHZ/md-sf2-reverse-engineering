@@ -5,11 +5,11 @@
   SRAM slot/checksum structure, the complete variable-width-font, context-Huffman, and witch-menu
   direct payload/pointer boundaries, the four-stream unused-cloud and two-palette unused-base
   boundaries, the 68000 music-wait command, Z80 driver build chain, and the complete six-entry RNG
-  service boundary
+  service boundary and the one-launch range-low-byte retry and controlled source-shaped copy matrix
 - Status: **Inferred** for caller-visible retry distribution and perceived RNG delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
-- Evidence date: 2026-07-20
+- Evidence date: 2026-08-02
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -152,36 +152,55 @@ Disabled debug or no direction takes the base-generator fallback. Existing H3 ev
 
 **Confirmed:** `GenerateRandomValueUnsigned` advances the word at `RANDOM_SEED_COPY` by
 `state * 541 + 12345` and returns its masked low byte. The misleadingly named
-`GenerateRandomValueSigned` reads that low byte, sign-extends it before an *unsigned* multiply by
-the same constants, then masks and stores its low byte. Both bounded helpers return zero for low-byte
-ranges 0, 1, and 128..255. For 2..127 they accept unsigned bytes 0..range-1 and retry otherwise.
+`GenerateRandomValueSigned` has the H2 source shape “read one byte at the `RANDOM_SEED_COPY` base
+address, sign-extend before an *unsigned* multiply by the same constants, mask the computed result
+to one byte, and write one byte back at that same base address.” Both bounded helpers return zero for
+range low-byte values 0, 1, and 128..255. For 2..127 they accept unsigned bytes 0..range-1 and retry otherwise.
 The `GenerateRandomNumberUnderD6` source comment claims lower bound 2; that claim conflicts with its
-actual comparison and is preserved as a discrepancy, not normalized into the contract.
+actual comparison and is preserved as a discrepancy, not normalized into the contract. One BizHawk
+2.11.1 / Genesis Plus GX natural-start probe uses the accepted debug Battle Test route only as setup,
+then redirects the original `GenerateBattleTurnOrder` return through a work-RAM probe. That probe
+executes original `WaitForRandomValueToMatch`, `j_GenerateRandomNumberUnderD6`, its effective target,
+and the base generator against ten generated cases. It observes entry, helper-generator return, helper
+return, and the exact `move.b d7,RANDOM_SEED_COPY` shape; it establishes no Battle Test behavior. The
+range low-byte values 0, 1, and 255 return zero after one generated value. Unsigned range two retries
+`194, 51, 0`; thinking range two reaches zero after 57 generated values from this exact seed. The H3
+word result resolves the source-shape lane: on the 68000 big-endian word at `$FFDFB0`, the base-address
+byte is the word high byte. The original bounded helpers return `d7=0` with helper-return seed-copy
+states `$53C2` and `$985D`; the controlled `move.b d7,RANDOM_SEED_COPY` probe instruction then changes
+those states to `$00C2` and `$005D`. It is not helper-local behavior. The source-context text and
+diamond shapes similarly take `$ABCD → $ECCD` and `$5A33 → $6833`, preserving the low byte. Both helper
+paths leave `RANDOM_SEED` unchanged. The complete observed matrix is
+`tests/fixtures/h3/random-services-v1.json` (`sf2-random-services-matrix-runtime-v1`).
 
 The direct-call inventory contains 131 direct `GenerateRandomNumber` sites, 26 direct
 `GenerateRandomOrDebugNumber` sites, and no direct sites for the other five named entries. In
 particular, `GenerateRandomNumberUnderD6` has **zero direct target sites**; six sites call the
 separate `j_GenerateRandomNumberUnderD6` jump-interface alias in
 `code/common/tech/jumpinterfaces/s13_jumpinterface.asm`. This distinguishes source spelling
-from runtime reachability. **Unknown:** the retry count/distribution and timing, and whether
-`RANDOM_SEED_COPY` is isolated across text, menu, and AI callers. The single grouped H3 matrix is
-`random-services-matrix-range-retry-and-seed-copy-isolation`; existing range-two action evidence is
+from runtime reachability. The text `symbol_wait1` and diamond-menu direct source sites are represented
+only as source-context copy-shape rows: both set range 256, call the base generator, then use the
+same byte-store encoding. **Unknown:** their full caller loops, VInt/input/menu/text timing, and
+cross-caller seed-copy lifetime/isolation. The grouped H3 queue remains
+`random-services-matrix-range-retry-and-seed-copy-isolation` for that caller-context boundary; existing range-two action evidence is
 `battle-ai-action-choice-v1.json` (`sf2-battle-ai-action-choice-runtime-v1`). The implementation
 boundary is [`randomness.md`](../design/randomness.md).
 
 ## Concentrated Runtime Queue
 
-No emulator was launched for this batch. ADR 0005 (priority decision 2026-07-23) freezes raw
-controller electrical/latency behavior, SRAM hardware-failure behavior, audio timing/register output,
-and VDP/DMA micro-timing after their import and visible contracts are adequate. The active grouped
-questions are:
+This batch's one-launch random-services H3 probe closes only the helper-local range/retry, alias, and
+controlled source-shaped copy boundary. It does not execute text/menu/AI caller contexts or establish
+their timing or shared seed-copy lifetime. ADR 0005 (priority decision 2026-07-23) freezes raw controller
+electrical/latency behavior, SRAM hardware-failure behavior, audio timing/register output, and VDP/DMA
+micro-timing after their import and visible contracts are adequate. The remaining grouped questions are:
 
 1. controller/input behavior that leaves a concrete UI/menu wait or repeat acceptance ambiguity;
 2. SRAM signature/checksum/occupied-flag and save/copy/delete/reload behavior that leaves a concrete
    user-visible save-flow ambiguity;
 3. music loop/transition/fade/resume or SFX selection/priority/interruption behavior when the existing
    command/channel seam is insufficient for a remake acceptance contract;
-4. RNG low-byte range/retry boundaries and seed-copy isolation across text, menu, and AI callers;
+4. RNG text/menu/AI caller-context execution and seed-copy lifetime/isolation (the helper-local
+   range/retry and base-address byte-lane facts are now observed);
 5. asset routing or a user-visible presentation contract for the nominally unused graphics resources.
 
 Reuse the existing VInt/controller, save-state, sound-driver, or graphics seam for one bounded reopen
@@ -196,6 +215,7 @@ uv run sf2 h2 variable-width-font
 uv run sf2 h2 text-huffman
 uv run sf2 h2 unused-tech-assets
 uv run sf2 h2 witch-menu-graphics
+uv run sf2 h3 random-services --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

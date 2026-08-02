@@ -1,6 +1,6 @@
 # Randomness Services
 
-- Evidence date: 2026-07-20
+- Evidence date: 2026-08-02
 - Source baseline: `ShiningForceCentral/SF2DISASM` `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
 ## Contract
@@ -19,19 +19,29 @@ direction falls back to the base generator. The observed override/fallback and
 register boundary is `tests/fixtures/h3/debug-rng-v1.json`
 (`sf2-rng-debug-override-v1`).
 
-**Confirmed:** the thinking-AI byte path uses `RANDOM_SEED_COPY`; its source
-label `GenerateRandomValueSigned` sign-extends a low byte before an unsigned
-multiplication by 541 plus 12345, masks and stores the low byte. The bounded
+**Confirmed:** the thinking-AI byte path uses `RANDOM_SEED_COPY`; its H2 source
+shape reads one byte at that base address, sign-extends it before an unsigned
+multiplication by 541 plus 12345, masks the result to one byte, and writes one
+byte back at the same base address. The bounded
 `GenerateRandomNumberUnderD6` service returns zero immediately for low-byte
 ranges 0, 1, and 128--255; for 2--127 it retries until an unsigned byte is in
 0..range-1. The upstream comment says the accepted lower bound is 2, which does
 not match the static comparison. Existing action-choice observation for the
 range-two branch is `tests/fixtures/h3/battle-ai-action-choice-v1.json`
-(`sf2-battle-ai-action-choice-runtime-v1`).
+(`sf2-battle-ai-action-choice-runtime-v1`). The independent ten-case runtime matrix in
+`tests/fixtures/h3/random-services-v1.json`
+(`sf2-random-services-matrix-runtime-v1`) confirms those range-low-byte early exits, the unsigned
+range-two three-step retry, and the thinking exact-seed 57-step retry. It also resolves the byte lane:
+the base-address byte is the big-endian seed-copy word's high byte. The original bounded helpers return
+`d7=0` while retaining their helper-return seed-copy states (`$53C2` and `$985D` in the early rows).
+Only the controlled source-shaped probe copy that follows each helper writes that returned byte into the
+high byte, yielding `$00C2` and `$005D`; source-context text and diamond rows likewise preserve their
+low byte. Neither helper changes `RANDOM_SEED`. The natural Battle Test route is setup-only for that
+probe; it does not establish battle, UI, text/menu, timing, or story behavior.
 
-**Unknown:** retry iteration counts/distribution, caller-visible timing, and
-whether the seed-copy state is isolated across text, menu, and AI scenarios.
-They remain one grouped H3 matrix rather than new one-case fixtures.
+**Unknown:** caller-visible timing, retry distribution outside the exact matrix seeds, and actual
+text/menu/AI caller execution and shared seed-copy lifetime. They remain one grouped H3 matrix rather
+than new one-case fixtures.
 
 ## Implementation Boundary
 
