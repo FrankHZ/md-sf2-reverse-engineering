@@ -27,7 +27,7 @@ The safe synthesis is therefore a **progression framework**, not a campaign rout
 2. current map plus ordered flags selects a six-part map setup;
 3. ordered map events and map-script branches select local programs;
 4. local programs may inspect or mutate flags, dialogue state, roster state, and map state;
-5. map/battle transitions return control to the top-level loop;
+5. warp-style exploration returns and returning `BattleLoop` handoffs re-enter the top-level route;
 6. save services can serialize the bounded combatant-data region, but complete subsystem persistence
    is not yet demonstrated.
 
