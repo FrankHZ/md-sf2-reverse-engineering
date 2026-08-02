@@ -48,22 +48,26 @@ uv run sf2 h3 gold
 uv run sf2 h3 enemy-drops
 ```
 
-The executable owners agreed on the values and order synthesized below. The review also found two
-owner-document discrepancies that this synthesis does not copy:
+The executable owners agreed on the values and order synthesized below. The original audit also found
+two owner-document discrepancies and deliberately did not copy them. Both findings have since been
+resolved in their owning documents:
 
-1. [Promotions, Enemy Definitions, and Rewards](../research/enemy-promotions.md) still ends by
-   queuing rare-drop RNG, full-inventory/deals, and repeated-flag cases even though the same document
-   and the passing ten-case `sf2-enemy-item-drop-behavior-v1` fixture already confirm them. This is a
-   stale queue entry, not an unresolved executable result.
-2. The service summary says Church Raise restores current HP, while its direct research and fixture
-   owner confirms only the source-static call order `DecreaseGold -> IncreaseCurrentHp ->
-   UpdateAllyMapsprite` and explicitly leaves final HP and caller-visible outcome unconfirmed. This
-   synthesis therefore treats the Raise outcome as **Unknown** and retains only the static call seam.
+1. [Issue #11](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/11) recorded a stale
+   reward queue for rare-drop RNG, full-inventory/deals routing, and an already-set drop flag. The
+   merged [owner correction PR #18](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/18)
+   removed that queue and explicitly retained the accepted ten-case
+   `sf2-enemy-item-drop-behavior-v1` evidence covering those branches.
+2. [Issue #12](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/12) recorded an
+   over-broad Church Raise summary. The merged
+   [owner correction PR #19](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/19) now
+   preserves only the source-derived filtered mutation-helper order `j_DecreaseGold` →
+   `j_IncreaseCurrentHp` (after `move.w #CHAR_STATCAP_HP,d1`) → `UpdateAllyMapsprite`. That order
+   does not assert that no other calls intervene; final current HP and caller-visible runtime outcome
+   remain **Unknown**.
 
-Both discrepancies were reported to the owning lane and retained as bounded follow-up
-[Issue #11](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/11) and
-[Issue #12](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/12). Neither authorizes this
-design branch to edit a research finding or evidence-bound subsystem contract.
+These are resolved audit findings, not pending follow-up work. This synthesis continues to consume the
+accepted drop fixture and the bounded Raise call seam without promoting either into broader reward UX,
+service completion, persistence, or player-visible outcome claims.
 
 ## Resource and Level Vocabulary
 
