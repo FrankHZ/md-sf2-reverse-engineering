@@ -2,8 +2,8 @@
 
 - **Confirmed original behavior:** bounded New-game/re-entry handoffs, top-level map/battle/exploration
   routing, ordered setup and event selection, the complete map-script program graph, handler-local
-  story-flag mutation, dialogue cursor/control seams, roster mutations, map lifecycle calls, and the
-  in-process save actions described below.
+  story-flag mutation, dialogue cursor/control seams, roster mutations, map lifecycle/transition
+  boundaries, and the in-process save actions described below.
 - **Inferred original behavior:** these independently confirmed seams form a reusable progression
   architecture in which map, flag, party, and battle state select later local behavior.
 - **Unknown original behavior:** a complete normal-play chronology, plot-beat meaning, player-choice
@@ -49,6 +49,11 @@ names alone. The audit kept the following distinctions intact:
   wins**. These rules are not interchangeable.
 - [common-scripting research](../research/common-scripting.md) owns the complete program corpus and
   handler-local command families. Static references prove graph topology, not normal-story reachability.
+- The map-lifecycle runtime fixture owns five direct handler replays, direct JSR-site order, the reset
+  tail, and bounded layout/current-map fields. The separate map-script transition fixture owns five
+  `ExecuteMapScript` streams, including `warp`, opcode/A6/dispatcher/handler/fall-through chronology,
+  bounded `csc07` event bytes, and direct service entry/return seams. Neither owns event consumption,
+  visible transition behavior, normal-story reachability, or persistence.
 - [dialogue](./dialogue-system.md) and [party/roster](./party-roster-state.md) own their state and
   runtime boundaries. Neither fixture proves who speaks, why a member joins, or how either event is
   presented during normal play.
@@ -56,14 +61,15 @@ names alone. The audit kept the following distinctions intact:
   It does not prove that every story-relevant subsystem survives a process restart or power loss.
 
 The focused audit reproduced the map-script, setup, event, story-state, dialogue, force-state,
-control/audio, map-lifecycle, New-game, and save-action fixtures. No mismatch was found among those
-owners. Their exact fixture identities remain visible in the [evidence matrix](#evidence-matrix).
+control/audio, map-lifecycle, map-script-transition, New-game, and save-action fixtures. No mismatch
+was found among those owners. Their exact fixture identities remain visible in the
+[evidence matrix](#evidence-matrix).
 
 ## Progression Vocabulary
 
 | Term | Confirmed meaning in this synthesis | Boundary that remains visible |
 | --- | --- | --- |
-| top-level route | Static `MainLoop` ordering applies flag-driven map switching, tests for battle, and otherwise reaches exploration; a completed battle passes through map switching again. | Exact transition frames and a complete campaign chronology are **Unknown**. |
+| top-level route | Static `MainLoop` ordering applies flag-driven map switching, tests for battle, and otherwise reaches exploration; a returning `BattleLoop` invocation passes through map switching again. | Exact transition frames, battle-outcome semantics, and a complete campaign chronology are **Unknown**. |
 | game flag | A bit addressable through confirmed check/set/clear handlers. The static map-script corpus has bounded read and write sites. | A numeric flag or source name does not establish its narrative meaning or lifetime. |
 | setup route | Current map selects a default six-pointer setup and then scans every ordered flag variant; each set variant replaces the candidate. | Selection is confirmed, but a normal save's reachable map/flag combinations are **Unknown**. |
 | event route | Ordered entity, zone, or item records select the first match and hand off to a bounded target identity. | The selected program's side effects and presentation are outside the event-dispatch fixture. |
@@ -91,7 +97,7 @@ flowchart TD
     Script -.-> Flags["Game flags and battle-unlock flag range"]
     Script -.-> Dialogue["Dialogue state seam"]
     Script -.-> Roster["Roster/party/follower state seam"]
-    Script -.-> Lifecycle["Map reset/load/reload seam"]
+    Script -.-> Lifecycle["Map lifecycle and transition seams"]
     Lifecycle -.-> Script
     Explore -->|"warp-style transition return"| Main
     Flags -.-> Save["Two-slot save representation"]
@@ -216,7 +222,7 @@ into plot assertions. A local script may mutate party-related state; who joins, 
 is optional, and how it persists or appears to the player remain **Unknown** until a normal-route
 fixture closes them.
 
-### Control, audio, and map lifecycle
+### Control, audio, map lifecycle, and transitions
 
 **Confirmed static and runtime:** seven control/audio forms account for 2,336 source occurrences. A
 six-case matrix confirms bounded wait/skip, no-op dispatch, sound-command trap, subroutine call/return,
@@ -224,9 +230,22 @@ jump cursor replacement, and end behavior. It does not prove duration, audible o
 
 Four map lifecycle forms account for 108 commands: reset, fade-load, reload, and map-load. The
 five-case runtime matrix confirms handler return and ordered direct call-site boundaries, including the
-reset tail and current-map changes. Visible fade, entity placement consequences, collision/pathfinding,
-normal-story reachability, and persistence remain **Unknown**. The separate source `warp` form and the
-top-level warp return establish a control handoff, not a complete visible transition.
+reset tail, selected layout markers, and current-map changes. It does not execute representative
+streams from the interpreter or include `warp`.
+
+**Confirmed bounded transition runtime:** the separate five-case transition matrix runs `warp`,
+reset, fade-load, reload, and map-load streams through the unmodified `ExecuteMapScript` loop. It
+confirms opcode and terminal-word consumption, A6 offsets, handler/dispatcher entry and return order,
+the fade-load handler's fall-through into map-load, bounded `csc07` event bytes, and direct service
+entry/return seams. The source writes `OUT_TO_BLACK` value 2 at `csc37` entry, while this bounded run
+observes `FADING_SETTING` 0 at the first `csc48` `WaitForVInt` entry after `LoadMapTilesets`. Those
+are distinct source/runtime facts, not a fade-duration or completion rule.
+
+Event consumption, visible map/camera presentation, fade/display timing, entity placement,
+collision/pathfinding, unobserved service effects, normal-story reachability, and persistence remain
+**Unknown**. The transition fixture's `warp` event bytes and the top-level warp-style return establish
+bounded producer and control handoffs; they do not close what consumes the event or what the player
+sees.
 
 ## Entry, Re-entry, and Persistence
 
@@ -281,7 +300,7 @@ interpretation, isolated target execution, or a synthetic all-flags experiment i
 
 | Boundary | Evidence label and bounded claim | Exact executable owners | Remaining question |
 | --- | --- | --- | --- |
-| top-level gameflow | **Confirmed static** map switching, battle sentinel/order, exploration return, event-before-action branch priority | [gameflow research](../research/gameflow-core.md); `sf2-gameflow-core-static-v1` ([`gameflow-core-static-v1.json`](../../tests/fixtures/h2/gameflow-core-static-v1.json)) | Runtime timing, transition frames, normal campaign chronology |
+| top-level gameflow | **Confirmed static** map switching, battle sentinel/call order, a returning `BattleLoop` invocation passing through map switching again, exploration return, and event-before-action branch priority | [gameflow research](../research/gameflow-core.md); `sf2-gameflow-core-static-v1` ([`gameflow-core-static-v1.json`](../../tests/fixtures/h2/gameflow-core-static-v1.json)) | Runtime timing, battle-outcome semantics, transition frames, normal campaign chronology |
 | complete script graph | **Confirmed static** 304-program/13,515-command corpus and resolved explicit transfers | [common-scripting research](../research/common-scripting.md); `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)) | Normal-save admission and reachable-route ordering |
 | setup selection | **Confirmed static/runtime** ordered map/flag scan, last-set-wins, aliases, and missing/default cases | [map-data research](../research/map-data-inventory.md); `sf2-map-setup-static-v1` ([`map-setup-static-v1.json`](../../tests/fixtures/h2/map-setup-static-v1.json)) and `sf2-map-setup-selection-runtime-v1` ([`map-setup-selection-v1.json`](../../tests/fixtures/h3/map-setup-selection-v1.json)) | Reachable map/flag combinations and selected setup effects |
 | event selection | **Confirmed static/runtime** ordered records and first-match entity/zone/item target selection | [map exploration](./map-exploration.md); `sf2-map-events-static-v1` ([`map-events-static-v1.json`](../../tests/fixtures/h2/map-events-static-v1.json)) and `sf2-map-event-dispatch-runtime-v1` ([`map-event-dispatch-v1.json`](../../tests/fixtures/h3/map-event-dispatch-v1.json)) | Selected script effects, normal reachability, presentation |
@@ -290,6 +309,7 @@ interpretation, isolated target execution, or a synthetic all-flags experiment i
 | roster/party seam | **Confirmed static/runtime subsets** roster/death forms and nine active-party/AI/reset/follower cases | [party/roster contract](./party-roster-state.md); `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)) and `sf2-force-state-active-party-runtime-v1` ([`force-state-active-party-v1.json`](../../tests/fixtures/h3/force-state-active-party-v1.json)) | Recruitment meaning, capacity lifecycle, persistence, presentation |
 | script control | **Confirmed static/runtime** wait/skip, no-op, sound trap, subroutine, jump, and end seams | `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)) and `sf2-map-script-control-audio-runtime-v1` ([`map-script-control-audio-v1.json`](../../tests/fixtures/h3/map-script-control-audio-v1.json)) | Duration, service effects, audible result, normal reachability |
 | map lifecycle | **Confirmed static/runtime** reset/load/reload handlers and ordered direct call-site boundaries | `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)) and `sf2-map-lifecycle-runtime-v1` ([`map-lifecycle-v1.json`](../../tests/fixtures/h3/map-lifecycle-v1.json)) | Visible transition, entity/layout consequences, persistence, normal route |
+| map-script transition | **Confirmed bounded runtime** five interpreter streams, including `warp`, with opcode/A6/handler/dispatcher/fall-through chronology, bounded event bytes, direct service seams, and source `OUT_TO_BLACK=2` versus observed first-wait `FADING_SETTING=0` | `sf2-map-script-engine-static-v1` ([`map-script-engine-static-v1.json`](../../tests/fixtures/h2/map-script-engine-static-v1.json)) and `sf2-map-script-transition-runtime-v1` ([`map-script-transition-v1.json`](../../tests/fixtures/h3/map-script-transition-v1.json)) | Event consumption, presentation/fade/display timing, normal reachability, persistence, collision/pathfinding, unobserved effects |
 | New-game and load re-entry | **Confirmed bounded runtime** controlled map-3/save/MainLoop handoff and flag-88 load routing | [save contract](./save-system.md); `sf2-witch-new-game-lifecycle-runtime-v1` ([`witch-new-game-lifecycle-v1.json`](../../tests/fixtures/h3/witch-new-game-lifecycle-v1.json)) and `sf2-witch-save-actions-runtime-v1` ([`witch-save-actions-v1.json`](../../tests/fixtures/h3/witch-save-actions-v1.json)) | Player-driven UX, flag meaning, full persistence, cross-process behavior |
 | save representation | **Confirmed static** two slots, checksum/check order, occupancy, and bounded combatant-data copy direction | `sf2-tech-services-static-v1` ([`tech-services-static-v1.json`](../../tests/fixtures/h2/tech-services-static-v1.json)) | Canonical story-save schema and durable-medium behavior |
 
