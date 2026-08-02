@@ -21,7 +21,7 @@ timing.
 | Surface | Ordered actions | Confirmed static boundary |
 | --- | --- | --- |
 | Shop | buy, sell, repair, deals | Buy/deals remove gold before granting an item; a deals purchase also removes its deals entry. Selling grants gold, removes the member-held item, and routes rare items to deals. Repair removes gold and repairs the selected item slot. |
-| Church | raise, cure, promote, save | Raise restores current HP after payment; cure replaces status bits after payment; promotion is data/member-gated before class change/promotion; save reaches the save operation. |
+| Church | raise, cure, promote, save | Raise preserves the source-derived mutation-call order `j_DecreaseGold` → `j_IncreaseCurrentHp` (after `move.w #CHAR_STATCAP_HP,d1`) → `UpdateAllyMapsprite`; this filtered mutation-helper order does not assert that no other calls intervene, and final current-HP value and caller-visible runtime outcome are **Unknown**. Cure replaces status bits after payment; promotion is data/member-gated before class change/promotion; save reaches the save operation. |
 | Caravan | join, depot, item, purge | The top, depot, and item selectors are source-ordered word-relative tables. Deposit calls storage-add before member-slot drop; derive and give retain distinct normal/exchange call sequences; rare-drop branches can call the deals helper. |
 | Blacksmith | fulfill ready orders, then place pending order | No diamond menu. Static source preserves ready/pending counting, fulfillment storage-clear/add/equip order, placement gates and payment/drop/pick/flag order, plus the bounded weapon-row picker. |
 
@@ -46,12 +46,16 @@ presentation.
 
 ### Church source boundary
 
-The Church design contract consumes only the **Confirmed** static route boundary: Raise's source order
-is payment, HP increase, then ally-map-sprite update; Cure's status-write paths preserve separate
-poison/stun/curse masks and costs; Promote preserves its level/data gates and class-then-promotion
-call order; Save reaches its named save call and records its separate suspend branch. The contract does
-not treat selector values, helper names, status masks, or jump-interface callers as a runtime promise
-about service admission, persistence, prompt timing, or rendered presentation.
+The Church design contract consumes only the **Confirmed** static route boundary:
+`routeDerived.raise.mutationCalls` preserves the source-derived mutation-call order `j_DecreaseGold` →
+`j_IncreaseCurrentHp` (after `move.w #CHAR_STATCAP_HP,d1`) → `UpdateAllyMapsprite`. This filtered
+mutation-helper order does not assert that no other calls intervene; the final current-HP value and
+caller-visible runtime outcome are **Unknown**. The named helper and cap operand do not establish either
+runtime result. Cure's status-write paths preserve separate poison/stun/curse masks and costs; Promote
+preserves its level/data gates and class-then-promotion call order; Save reaches its named save call and
+records its separate suspend branch. The contract does not treat selector values, helper names, status
+masks, or jump-interface callers as a runtime promise about service admission, persistence, prompt
+timing, or rendered presentation.
 
 ### Caravan source boundary
 
