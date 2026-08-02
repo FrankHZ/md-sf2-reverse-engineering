@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-battle-actions-static-v1",
-  "outputSha256": "57E04339A7AA082E1BE1771E9BCF00B029A4AFE2788A2E7EFF8943E94F6DB80F",
+  "outputSha256": "9646B32C6B9B106FA53C9AA2AF43C98AB0C500155A6CD0DEE5A5964931AE4CE0",
   "summary": {
     "fileCount": 29,
     "sourceLineCount": 4375,
@@ -15,5 +15,25 @@
     "externalDirectTargetCount": 57,
     "indexedRecordCount": 45,
     "indexedFileCount": 29
+  },
+  "battleMessageSummary": {
+    "macroDefinitionCount": 2,
+    "writeBscParamDefinitionCount": 1,
+    "completeSourceFileCount": 29,
+    "positiveSourceFileCount": 11,
+    "zeroSourceFileCount": 18,
+    "siteCount": 54,
+    "modeCounts": {
+      "displayMessage": 49,
+      "displayMessageWithNoWait": 5
+    },
+    "messageOperandKindCounts": {
+      "immediate-message-enum": 43,
+      "dynamic-expression": 11
+    },
+    "distinctImmediateMessageSymbolCount": 41,
+    "distinctImmediateMessageIdCount": 41,
+    "callerTotalCount": 35,
+    "h1BoundSiteCount": 54
   }
 }

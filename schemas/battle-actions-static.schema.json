@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II battle actions static source inventory",
   "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "actionFacts", "files"],
+  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "actionFacts", "battleMessageContract", "files"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-battle-actions-static-v1" },
@@ -31,6 +31,1718 @@
     "internalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
     "externalDirectCallTargets": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
     "actionFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
+    "battleMessageContract": {
+      "allOf": [
+        { "$ref": "#/definitions/battleMessageContract" },
+        {
+          "const": {
+            "macroDefinitions": [
+              {
+                "sourceMacro": "displayMessage",
+                "sourcePath": "sf2battlescenemacros.asm",
+                "definitionSourceLine": 100,
+                "commandWord": 16,
+                "formalParameterCount": 4,
+                "runtimeOutputSlots": [
+                  "command",
+                  "message",
+                  "combatant",
+                  "item-or-spell",
+                  "reserved-zero",
+                  "number"
+                ],
+                "runtimeOutputWordCount": 6,
+                "runtimeOutputByteCount": 12,
+                "emissionStatementTemplates": [
+                  "move.w #$10,(a6)+",
+                  "writebscparam \\1",
+                  "writebscparam \\2",
+                  "writebscparam \\3",
+                  "move.w #0,(a6)+",
+                  "writebscparam \\4"
+                ]
+              },
+              {
+                "sourceMacro": "displayMessageWithNoWait",
+                "sourcePath": "sf2battlescenemacros.asm",
+                "definitionSourceLine": 109,
+                "commandWord": 17,
+                "formalParameterCount": 4,
+                "runtimeOutputSlots": [
+                  "command",
+                  "message",
+                  "combatant",
+                  "item-or-spell",
+                  "reserved-zero",
+                  "number"
+                ],
+                "runtimeOutputWordCount": 6,
+                "runtimeOutputByteCount": 12,
+                "emissionStatementTemplates": [
+                  "move.w #$11,(a6)+",
+                  "writebscparam \\1",
+                  "writebscparam \\2",
+                  "writebscparam \\3",
+                  "move.w #0,(a6)+",
+                  "writebscparam \\4"
+                ]
+              }
+            ],
+            "battleSceneDispatcher": {
+              "contractId": "sf2-battle-scene-engine-static-v1",
+              "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+              "sourcePath": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+              "macroDispatches": [
+                {
+                  "sourceMacro": "displayMessage",
+                  "commandWord": 16,
+                  "handler": "bsc10_displayMessage"
+                },
+                {
+                  "sourceMacro": "displayMessageWithNoWait",
+                  "commandWord": 17,
+                  "handler": "bsc11_displayMessageWithNoWait"
+                }
+              ]
+            },
+            "writeBscParamDefinition": {
+              "sourceMacro": "writeBscParam",
+              "sourcePath": "sf2battlescenemacros.asm",
+              "definitionSourceLine": 5,
+              "formalParameterCount": 1,
+              "addressRegisterCondition": "instr('\\1','(a')=0",
+              "ordinaryEmissionTemplates": [
+                "move.w \\1,(a6)+"
+              ],
+              "addressRegisterEmissionTemplates": [
+                "move.b #0,(a6)+",
+                "move.b \\1,(a6)+"
+              ],
+              "runtimeOutputWordCount": 1,
+              "runtimeOutputByteCount": 2
+            },
+            "textLineDomain": {
+              "sourcePath": "data/scripting/text/gamescript.txt",
+              "sourceSha256": "14EB069436F9F77081AAFF6125312A9C277CB24255BE5F0D1EF108AF53AEA205",
+              "lineIdCount": 4267,
+              "firstLineId": 0,
+              "lastLineId": 4266,
+              "maxLineIdEquate": "MESSAGES_MAX_INDEX",
+              "maxLineIdValue": 4266,
+              "idsAreContiguous": true
+            },
+            "immediateMessages": [
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_CURSED_AND_STUNNED",
+                "lineId": 359,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_STUNNED_AND_CANNOT_MOVE",
+                "lineId": 361,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_SILENCED",
+                "lineId": 296,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_USED_ITEM",
+                "lineId": 275,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_EXPLODED",
+                "lineId": 318,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_FOUND_GOLD_COINS",
+                "lineId": 393,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_DODGE",
+                "lineId": 286,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_INEFFECTIVE_ATTACK",
+                "lineId": 289,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_POISONED",
+                "lineId": 339,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_FELL_ASLEEP",
+                "lineId": 338,
+                "sourceUseCount": 2
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_STUNNED",
+                "lineId": 347,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_BECOMES_CONFUSED",
+                "lineId": 346,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_HAS_BEEN_SILENCED",
+                "lineId": 335,
+                "sourceUseCount": 2
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_CURSED_AND_DAMAGED",
+                "lineId": 360,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_RECOVERED_HIT_POINTS",
+                "lineId": 298,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_NO_LONGER_POISONED",
+                "lineId": 301,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_NO_LONGER_STUNNED",
+                "lineId": 302,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_IS_NO_LONGER_CURSED",
+                "lineId": 303,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_BOOST_SPELL_AGI_INCREASE",
+                "lineId": 332,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_BOOST_SPELL_DEF_INCREASE",
+                "lineId": 341,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_AGILITY_DECREASED_BY",
+                "lineId": 333,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_DEFENSE_DECREASED_BY",
+                "lineId": 342,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_ATTACK_SPELL_EFFECT",
+                "lineId": 334,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_ATTACK_POWER_IS_BOOSTED_BY",
+                "lineId": 150,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_DEFENSIVE_POWER_IS_BOOSTED_BY",
+                "lineId": 151,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_AGILITY_IS_BOOSTED_BY",
+                "lineId": 152,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_MOVEMENT_RANGE_IS_ENLARGED_BY",
+                "lineId": 153,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_MAX_HP_ARE_RAISED_BY",
+                "lineId": 154,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_MAX_MP_ARE_RAISED_BY",
+                "lineId": 155,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_BECAME_LEVEL",
+                "lineId": 244,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_HP_INCREASED_BY",
+                "lineId": 266,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_MP_INCREASED_BY",
+                "lineId": 267,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_ATTACK_INCREASED_BY",
+                "lineId": 268,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_DEFENSE_INCREASED_BY",
+                "lineId": 269,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_AGILITY_INCREASED_BY",
+                "lineId": 270,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_LEARNED_THE_NEW_MAGIC_SPELL",
+                "lineId": 271,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_SPELL_INCREASED_TO_LEVEL",
+                "lineId": 272,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_RECOVERED_MAGIC_POINTS",
+                "lineId": 300,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_THE_SPELL_HAS_NO_EFFECT",
+                "lineId": 295,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_DROPPED_ITEM",
+                "lineId": 396,
+                "sourceUseCount": 1
+              },
+              {
+                "messageSymbol": "MESSAGE_BATTLE_RECEIVED_ITEM",
+                "lineId": 395,
+                "sourceUseCount": 1
+              }
+            ],
+            "fileTotals": [
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+                "sourceH1StartAddress": 39826,
+                "sourceH1EndAddressExclusive": 40644,
+                "siteCount": 3
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/determineineffectiveattack.asm",
+                "sourceH1StartAddress": 40644,
+                "sourceH1EndAddressExclusive": 40744,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+                "sourceH1StartAddress": 40744,
+                "sourceH1EndAddressExclusive": 41052,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceH1StartAddress": 41052,
+                "sourceH1EndAddressExclusive": 41472,
+                "siteCount": 6
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlesceneanimation.asm",
+                "sourceH1StartAddress": 41472,
+                "sourceH1EndAddressExclusive": 41806,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_2.asm",
+                "sourceH1StartAddress": 41806,
+                "sourceH1EndAddressExclusive": 42140,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+                "sourceH1StartAddress": 42140,
+                "sourceH1EndAddressExclusive": 42318,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/getspellanimation.asm",
+                "sourceH1StartAddress": 42318,
+                "sourceH1EndAddressExclusive": 42728,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/animateaction.asm",
+                "sourceH1StartAddress": 42728,
+                "sourceH1EndAddressExclusive": 43000,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/giveexpandgold.asm",
+                "sourceH1StartAddress": 43000,
+                "sourceH1EndAddressExclusive": 43120,
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/earnexp.asm",
+                "sourceH1StartAddress": 43122,
+                "sourceH1EndAddressExclusive": 43468,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/sorttargets.asm",
+                "sourceH1StartAddress": 43468,
+                "sourceH1EndAddressExclusive": 43672,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/unused_battleactions.asm",
+                "sourceH1StartAddress": 43672,
+                "sourceH1EndAddressExclusive": 43702,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/attack.asm",
+                "sourceH1StartAddress": 43702,
+                "sourceH1EndAddressExclusive": 43772,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/determinedodge.asm",
+                "sourceH1StartAddress": 43772,
+                "sourceH1EndAddressExclusive": 43966,
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/calculatedamage.asm",
+                "sourceH1StartAddress": 43966,
+                "sourceH1EndAddressExclusive": 44110,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/determinecriticalhit.asm",
+                "sourceH1StartAddress": 44110,
+                "sourceH1EndAddressExclusive": 44234,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictdamage.asm",
+                "sourceH1StartAddress": 44266,
+                "sourceH1EndAddressExclusive": 44594,
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "sourceH1StartAddress": 44594,
+                "sourceH1EndAddressExclusive": 44912,
+                "siteCount": 5
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictcursedamage.asm",
+                "sourceH1StartAddress": 44912,
+                "sourceH1EndAddressExclusive": 45070,
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/determinedoubleandcounter.asm",
+                "sourceH1StartAddress": 45070,
+                "sourceH1EndAddressExclusive": 45184,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/displaydeathmessage.asm",
+                "sourceH1StartAddress": 45184,
+                "sourceH1EndAddressExclusive": 45224,
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceH1StartAddress": 45224,
+                "sourceH1EndAddressExclusive": 47874,
+                "siteCount": 30
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/calculatespelldamage.asm",
+                "sourceH1StartAddress": 47874,
+                "sourceH1EndAddressExclusive": 48056,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/useitem.asm",
+                "sourceH1StartAddress": 48056,
+                "sourceH1EndAddressExclusive": 48100,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/nullsub_BBE4.asm",
+                "sourceH1StartAddress": 48100,
+                "sourceH1EndAddressExclusive": 48102,
+                "siteCount": 0
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/breakuseditem.asm",
+                "sourceH1StartAddress": 48102,
+                "sourceH1EndAddressExclusive": 48368,
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/dropenemyitem.asm",
+                "sourceH1StartAddress": 48420,
+                "sourceH1EndAddressExclusive": 48722,
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/getresistancetospell.asm",
+                "sourceH1StartAddress": 49706,
+                "sourceH1EndAddressExclusive": 49742,
+                "siteCount": 0
+              }
+            ],
+            "callerTotals": [
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+                "enclosingGlobalLabel": "WriteBattlesceneScript",
+                "siteCount": 3
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/breakuseditem.asm",
+                "enclosingGlobalLabel": "battlesceneScript_BreakUsedItem",
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "battlesceneScript_DetermineSpellEffectiveness",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "battlesceneScript_DisplaySlowMessages",
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B17A",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B1F4",
+                "siteCount": 3
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B2B6",
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B3E2",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B45A",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B4EA",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B562",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B5A8",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B66C",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B6A2",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B708",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B76E",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B802",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B848",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B8BA",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_B93A",
+                "siteCount": 8
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "enclosingGlobalLabel": "byte_BA7C",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "enclosingGlobalLabel": "battlesceneScript_DisplayActionMessage",
+                "siteCount": 5
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "enclosingGlobalLabel": "byte_A1E6",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/determinedodge.asm",
+                "enclosingGlobalLabel": "battlesceneScript_DetermineDodge",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/displaydeathmessage.asm",
+                "enclosingGlobalLabel": "battlesceneScript_DisplayDeathMessage",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/dropenemyitem.asm",
+                "enclosingGlobalLabel": "battlesceneScript_DropEnemyItem",
+                "siteCount": 2
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/giveexpandgold.asm",
+                "enclosingGlobalLabel": "byte_A840",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "enclosingGlobalLabel": "inflictAilment_Muddle",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "enclosingGlobalLabel": "inflictAilment_Poison",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "enclosingGlobalLabel": "inflictAilment_Silence",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "enclosingGlobalLabel": "inflictAilment_Sleep",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "enclosingGlobalLabel": "inflictAilment_Stun",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictcursedamage.asm",
+                "enclosingGlobalLabel": "byte_AFF4",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictdamage.asm",
+                "enclosingGlobalLabel": "battlesceneScript_InflictDamage",
+                "siteCount": 1
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictdamage.asm",
+                "enclosingGlobalLabel": "byte_AE1A",
+                "siteCount": 1
+              }
+            ],
+            "messageSites": [
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+                "sourceLine": 84,
+                "enclosingGlobalLabel": "WriteBattlesceneScript",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_CURSED_AND_STUNNED",
+                  "(a4)",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_CURSED_AND_STUNNED",
+                  "lineId": 359
+                },
+                "h1ExpansionAddress": 39996,
+                "assembledInstructionByteCount": 26
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+                "sourceLine": 93,
+                "enclosingGlobalLabel": "WriteBattlesceneScript",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_STUNNED_AND_CANNOT_MOVE",
+                  "(a4)",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_STUNNED_AND_CANNOT_MOVE",
+                  "lineId": 361
+                },
+                "h1ExpansionAddress": 40032,
+                "assembledInstructionByteCount": 26
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
+                "sourceLine": 104,
+                "enclosingGlobalLabel": "WriteBattlesceneScript",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_SILENCED",
+                  "(a4)",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_SILENCED",
+                  "lineId": 296
+                },
+                "h1ExpansionAddress": 40076,
+                "assembledInstructionByteCount": 26
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceLine": 34,
+                "enclosingGlobalLabel": "battlesceneScript_DisplayActionMessage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 41094,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceLine": 83,
+                "enclosingGlobalLabel": "battlesceneScript_DisplayActionMessage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "d0",
+                  "d2",
+                  "d3"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 41276,
+                "assembledInstructionByteCount": 16
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceLine": 91,
+                "enclosingGlobalLabel": "battlesceneScript_DisplayActionMessage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_USED_ITEM",
+                  "d0",
+                  "d2",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_USED_ITEM",
+                  "lineId": 275
+                },
+                "h1ExpansionAddress": 41308,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceLine": 98,
+                "enclosingGlobalLabel": "battlesceneScript_DisplayActionMessage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_EXPLODED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_EXPLODED",
+                  "lineId": 318
+                },
+                "h1ExpansionAddress": 41340,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceLine": 116,
+                "enclosingGlobalLabel": "battlesceneScript_DisplayActionMessage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 41396,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+                "sourceLine": 134,
+                "enclosingGlobalLabel": "byte_A1E6",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 41446,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/giveexpandgold.asm",
+                "sourceLine": 77,
+                "enclosingGlobalLabel": "byte_A840",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_FOUND_GOLD_COINS",
+                  "#0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_FOUND_GOLD_COINS",
+                  "lineId": 393
+                },
+                "h1ExpansionAddress": 43086,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/determinedodge.asm",
+                "sourceLine": 86,
+                "enclosingGlobalLabel": "battlesceneScript_DetermineDodge",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_DODGE",
+                  "(a4)",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_DODGE",
+                  "lineId": 286
+                },
+                "h1ExpansionAddress": 43926,
+                "assembledInstructionByteCount": 26
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictdamage.asm",
+                "sourceLine": 44,
+                "enclosingGlobalLabel": "battlesceneScript_InflictDamage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_INEFFECTIVE_ATTACK",
+                  "(a5)",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_INEFFECTIVE_ATTACK",
+                  "lineId": 289
+                },
+                "h1ExpansionAddress": 44286,
+                "assembledInstructionByteCount": 26
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictdamage.asm",
+                "sourceLine": 153,
+                "enclosingGlobalLabel": "byte_AE1A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "(a5)",
+                  "#0",
+                  "d6"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 44570,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "sourceLine": 72,
+                "enclosingGlobalLabel": "inflictAilment_Poison",
+                "sourceMacro": "displayMessageWithNoWait",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_POISONED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_POISONED",
+                  "lineId": 339
+                },
+                "h1ExpansionAddress": 44710,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "sourceLine": 77,
+                "enclosingGlobalLabel": "inflictAilment_Sleep",
+                "sourceMacro": "displayMessageWithNoWait",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_FELL_ASLEEP",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_FELL_ASLEEP",
+                  "lineId": 338
+                },
+                "h1ExpansionAddress": 44738,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "sourceLine": 82,
+                "enclosingGlobalLabel": "inflictAilment_Stun",
+                "sourceMacro": "displayMessageWithNoWait",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_STUNNED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_STUNNED",
+                  "lineId": 347
+                },
+                "h1ExpansionAddress": 44766,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "sourceLine": 87,
+                "enclosingGlobalLabel": "inflictAilment_Muddle",
+                "sourceMacro": "displayMessageWithNoWait",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_BECOMES_CONFUSED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_BECOMES_CONFUSED",
+                  "lineId": 346
+                },
+                "h1ExpansionAddress": 44794,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictailment.asm",
+                "sourceLine": 135,
+                "enclosingGlobalLabel": "inflictAilment_Silence",
+                "sourceMacro": "displayMessageWithNoWait",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_HAS_BEEN_SILENCED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_HAS_BEEN_SILENCED",
+                  "lineId": 335
+                },
+                "h1ExpansionAddress": 44882,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/inflictcursedamage.asm",
+                "sourceLine": 79,
+                "enclosingGlobalLabel": "byte_AFF4",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_CURSED_AND_DAMAGED",
+                  "d0",
+                  "#0",
+                  "d3"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_CURSED_AND_DAMAGED",
+                  "lineId": 360
+                },
+                "h1ExpansionAddress": 45048,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/displaydeathmessage.asm",
+                "sourceLine": 20,
+                "enclosingGlobalLabel": "battlesceneScript_DisplayDeathMessage",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 45202,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 111,
+                "enclosingGlobalLabel": "byte_B17A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_RECOVERED_HIT_POINTS",
+                  "d0",
+                  "#0",
+                  "d6"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_RECOVERED_HIT_POINTS",
+                  "lineId": 298
+                },
+                "h1ExpansionAddress": 45434,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 169,
+                "enclosingGlobalLabel": "byte_B1F4",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_NO_LONGER_POISONED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_NO_LONGER_POISONED",
+                  "lineId": 301
+                },
+                "h1ExpansionAddress": 45584,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 175,
+                "enclosingGlobalLabel": "byte_B1F4",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_NO_LONGER_STUNNED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_NO_LONGER_STUNNED",
+                  "lineId": 302
+                },
+                "h1ExpansionAddress": 45612,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 181,
+                "enclosingGlobalLabel": "byte_B1F4",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_IS_NO_LONGER_CURSED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_IS_NO_LONGER_CURSED",
+                  "lineId": 303
+                },
+                "h1ExpansionAddress": 45640,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 232,
+                "enclosingGlobalLabel": "byte_B2B6",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_BOOST_SPELL_AGI_INCREASE",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_BOOST_SPELL_AGI_INCREASE",
+                  "lineId": 332
+                },
+                "h1ExpansionAddress": 45784,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 237,
+                "enclosingGlobalLabel": "byte_B2B6",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_BOOST_SPELL_DEF_INCREASE",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_BOOST_SPELL_DEF_INCREASE",
+                  "lineId": 341
+                },
+                "h1ExpansionAddress": 45816,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 285,
+                "enclosingGlobalLabel": "battlesceneScript_DisplaySlowMessages",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_AGILITY_DECREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_AGILITY_DECREASED_BY",
+                  "lineId": 333
+                },
+                "h1ExpansionAddress": 45938,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 290,
+                "enclosingGlobalLabel": "battlesceneScript_DisplaySlowMessages",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_DEFENSE_DECREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_DEFENSE_DECREASED_BY",
+                  "lineId": 342
+                },
+                "h1ExpansionAddress": 45970,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 328,
+                "enclosingGlobalLabel": "byte_B3E2",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_ATTACK_SPELL_EFFECT",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_ATTACK_SPELL_EFFECT",
+                  "lineId": 334
+                },
+                "h1ExpansionAddress": 46084,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 371,
+                "enclosingGlobalLabel": "byte_B45A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_HAS_BEEN_SILENCED",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_HAS_BEEN_SILENCED",
+                  "lineId": 335
+                },
+                "h1ExpansionAddress": 46192,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 422,
+                "enclosingGlobalLabel": "byte_B4EA",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d2",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 46336,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 482,
+                "enclosingGlobalLabel": "byte_B562",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d2",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 46434,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 512,
+                "enclosingGlobalLabel": "byte_B5A8",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_FELL_ASLEEP",
+                  "d0",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_FELL_ASLEEP",
+                  "lineId": 338
+                },
+                "h1ExpansionAddress": 46526,
+                "assembledInstructionByteCount": 22
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 572,
+                "enclosingGlobalLabel": "byte_B66C",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d1",
+                  "d0",
+                  "#0",
+                  "d2"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 46700,
+                "assembledInstructionByteCount": 18
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 599,
+                "enclosingGlobalLabel": "byte_B6A2",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_ATTACK_POWER_IS_BOOSTED_BY",
+                  "(a5)",
+                  "#0",
+                  "d0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_ATTACK_POWER_IS_BOOSTED_BY",
+                  "lineId": 150
+                },
+                "h1ExpansionAddress": 46780,
+                "assembledInstructionByteCount": 24
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 631,
+                "enclosingGlobalLabel": "byte_B708",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_DEFENSIVE_POWER_IS_BOOSTED_BY",
+                  "(a5)",
+                  "#0",
+                  "d0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_DEFENSIVE_POWER_IS_BOOSTED_BY",
+                  "lineId": 151
+                },
+                "h1ExpansionAddress": 46882,
+                "assembledInstructionByteCount": 24
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 663,
+                "enclosingGlobalLabel": "byte_B76E",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_AGILITY_IS_BOOSTED_BY",
+                  "(a5)",
+                  "#0",
+                  "d0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_AGILITY_IS_BOOSTED_BY",
+                  "lineId": 152
+                },
+                "h1ExpansionAddress": 46984,
+                "assembledInstructionByteCount": 24
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 702,
+                "enclosingGlobalLabel": "byte_B802",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_MOVEMENT_RANGE_IS_ENLARGED_BY",
+                  "d0",
+                  "#0",
+                  "d2"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_MOVEMENT_RANGE_IS_ENLARGED_BY",
+                  "lineId": 153
+                },
+                "h1ExpansionAddress": 47106,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 734,
+                "enclosingGlobalLabel": "byte_B848",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_MAX_HP_ARE_RAISED_BY",
+                  "(a5)",
+                  "#0",
+                  "d0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_MAX_HP_ARE_RAISED_BY",
+                  "lineId": 154
+                },
+                "h1ExpansionAddress": 47202,
+                "assembledInstructionByteCount": 24
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 773,
+                "enclosingGlobalLabel": "byte_B8BA",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_MAX_MP_ARE_RAISED_BY",
+                  "(a5)",
+                  "#0",
+                  "d0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_MAX_MP_ARE_RAISED_BY",
+                  "lineId": 155
+                },
+                "h1ExpansionAddress": 47316,
+                "assembledInstructionByteCount": 24
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 814,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_BECAME_LEVEL",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_BECAME_LEVEL",
+                  "lineId": 244
+                },
+                "h1ExpansionAddress": 47440,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 818,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_HP_INCREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_HP_INCREASED_BY",
+                  "lineId": 266
+                },
+                "h1ExpansionAddress": 47464,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 824,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_MP_INCREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_MP_INCREASED_BY",
+                  "lineId": 267
+                },
+                "h1ExpansionAddress": 47488,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 830,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_ATTACK_INCREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_ATTACK_INCREASED_BY",
+                  "lineId": 268
+                },
+                "h1ExpansionAddress": 47512,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 836,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_DEFENSE_INCREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_DEFENSE_INCREASED_BY",
+                  "lineId": 269
+                },
+                "h1ExpansionAddress": 47536,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 842,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_AGILITY_INCREASED_BY",
+                  "d0",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_AGILITY_INCREASED_BY",
+                  "lineId": 270
+                },
+                "h1ExpansionAddress": 47560,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 854,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_LEARNED_THE_NEW_MAGIC_SPELL",
+                  "d0",
+                  "d2",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_LEARNED_THE_NEW_MAGIC_SPELL",
+                  "lineId": 271
+                },
+                "h1ExpansionAddress": 47598,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 860,
+                "enclosingGlobalLabel": "byte_B93A",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_SPELL_INCREASED_TO_LEVEL",
+                  "d2",
+                  "#0",
+                  "d1"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_SPELL_INCREASED_TO_LEVEL",
+                  "lineId": 272
+                },
+                "h1ExpansionAddress": 47622,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 906,
+                "enclosingGlobalLabel": "byte_BA7C",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_RECOVERED_MAGIC_POINTS",
+                  "d0",
+                  "#0",
+                  "d6"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_RECOVERED_MAGIC_POINTS",
+                  "lineId": 300
+                },
+                "h1ExpansionAddress": 47740,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/castspell.asm",
+                "sourceLine": 965,
+                "enclosingGlobalLabel": "battlesceneScript_DetermineSpellEffectiveness",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_THE_SPELL_HAS_NO_EFFECT",
+                  "(a5)",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_THE_SPELL_HAS_NO_EFFECT",
+                  "lineId": 295
+                },
+                "h1ExpansionAddress": 47788,
+                "assembledInstructionByteCount": 26
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/breakuseditem.asm",
+                "sourceLine": 32,
+                "enclosingGlobalLabel": "battlesceneScript_BreakUsedItem",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d3",
+                  "d1",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 48184,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/breakuseditem.asm",
+                "sourceLine": 44,
+                "enclosingGlobalLabel": "battlesceneScript_BreakUsedItem",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "d3",
+                  "d1",
+                  "#0",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "dynamic-expression",
+                  "messageSymbol": null,
+                  "lineId": null
+                },
+                "h1ExpansionAddress": 48228,
+                "assembledInstructionByteCount": 20
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/dropenemyitem.asm",
+                "sourceLine": 112,
+                "enclosingGlobalLabel": "battlesceneScript_DropEnemyItem",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_DROPPED_ITEM",
+                  "(a5)",
+                  "d1",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_DROPPED_ITEM",
+                  "lineId": 396
+                },
+                "h1ExpansionAddress": 48642,
+                "assembledInstructionByteCount": 24
+              },
+              {
+                "sourcePath": "code/gameflow/battle/battleactions/dropenemyitem.asm",
+                "sourceLine": 114,
+                "enclosingGlobalLabel": "battlesceneScript_DropEnemyItem",
+                "sourceMacro": "displayMessage",
+                "operandExpressions": [
+                  "#MESSAGE_BATTLE_RECEIVED_ITEM",
+                  "(a4)",
+                  "d1",
+                  "#0"
+                ],
+                "messageOperand": {
+                  "kind": "immediate-message-enum",
+                  "messageSymbol": "MESSAGE_BATTLE_RECEIVED_ITEM",
+                  "lineId": 395
+                },
+                "h1ExpansionAddress": 48666,
+                "assembledInstructionByteCount": 24
+              }
+            ],
+            "summary": {
+              "macroDefinitionCount": 2,
+              "writeBscParamDefinitionCount": 1,
+              "completeSourceFileCount": 29,
+              "positiveSourceFileCount": 11,
+              "zeroSourceFileCount": 18,
+              "siteCount": 54,
+              "modeCounts": {
+                "displayMessage": 49,
+                "displayMessageWithNoWait": 5
+              },
+              "messageOperandKindCounts": {
+                "immediate-message-enum": 43,
+                "dynamic-expression": 11
+              },
+              "distinctImmediateMessageSymbolCount": 41,
+              "distinctImmediateMessageIdCount": 41,
+              "callerTotalCount": 35,
+              "h1BoundSiteCount": 54
+            }
+          }
+        }
+      ]
+    },
     "files": {
       "type": "array", "minItems": 29, "maxItems": 29,
       "items": {
@@ -42,6 +1754,1010 @@
           "globalLabels": { "type": "array", "items": { "type": "string" } },
           "localLabelCount": { "type": "integer" }, "directCalls": { "type": "array" },
           "indirectCallSiteCount": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "nonnegative": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nullableMessageSymbol": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^MESSAGE_[A-Z0-9_]+$"
+        }
+      ]
+    },
+    "nullableLineId": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4266
+        }
+      ]
+    },
+    "messageOperand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "messageSymbol",
+        "lineId"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "immediate-message-enum",
+            "dynamic-expression"
+          ]
+        },
+        "messageSymbol": {
+          "$ref": "#/definitions/nullableMessageSymbol"
+        },
+        "lineId": {
+          "$ref": "#/definitions/nullableLineId"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "const": "immediate-message-enum"
+            },
+            "messageSymbol": {
+              "type": "string",
+              "pattern": "^MESSAGE_[A-Z0-9_]+$"
+            },
+            "lineId": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4266
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "dynamic-expression"
+            },
+            "messageSymbol": {
+              "const": null
+            },
+            "lineId": {
+              "const": null
+            }
+          }
+        }
+      ]
+    },
+    "messageMacroDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceMacro",
+        "sourcePath",
+        "definitionSourceLine",
+        "commandWord",
+        "formalParameterCount",
+        "runtimeOutputSlots",
+        "runtimeOutputWordCount",
+        "runtimeOutputByteCount",
+        "emissionStatementTemplates"
+      ],
+      "properties": {
+        "sourceMacro": {
+          "enum": [
+            "displayMessage",
+            "displayMessageWithNoWait"
+          ]
+        },
+        "sourcePath": {
+          "const": "sf2battlescenemacros.asm"
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "commandWord": {
+          "enum": [
+            16,
+            17
+          ]
+        },
+        "formalParameterCount": {
+          "const": 4
+        },
+        "runtimeOutputSlots": {
+          "const": [
+            "command",
+            "message",
+            "combatant",
+            "item-or-spell",
+            "reserved-zero",
+            "number"
+          ]
+        },
+        "runtimeOutputWordCount": {
+          "const": 6
+        },
+        "runtimeOutputByteCount": {
+          "const": 12
+        },
+        "emissionStatementTemplates": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "battleMessageDispatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceMacro",
+        "commandWord",
+        "handler"
+      ],
+      "properties": {
+        "sourceMacro": {
+          "enum": [
+            "displayMessage",
+            "displayMessageWithNoWait"
+          ]
+        },
+        "commandWord": {
+          "enum": [
+            16,
+            17
+          ]
+        },
+        "handler": {
+          "enum": [
+            "bsc10_displayMessage",
+            "bsc11_displayMessageWithNoWait"
+          ]
+        }
+      }
+    },
+    "battleSceneDispatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "sourcePath",
+        "macroDispatches"
+      ],
+      "properties": {
+        "contractId": {
+          "const": "sf2-battle-scene-engine-static-v1"
+        },
+        "upstreamCommit": {
+          "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+        },
+        "sourcePath": {
+          "const": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm"
+        },
+        "macroDispatches": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/battleMessageDispatch"
+                },
+                {
+                  "properties": {
+                    "sourceMacro": {
+                      "const": "displayMessage"
+                    },
+                    "commandWord": {
+                      "const": 16
+                    },
+                    "handler": {
+                      "const": "bsc10_displayMessage"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/battleMessageDispatch"
+                },
+                {
+                  "properties": {
+                    "sourceMacro": {
+                      "const": "displayMessageWithNoWait"
+                    },
+                    "commandWord": {
+                      "const": 17
+                    },
+                    "handler": {
+                      "const": "bsc11_displayMessageWithNoWait"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "additionalItems": false
+        }
+      }
+    },
+    "writeBscParamDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceMacro",
+        "sourcePath",
+        "definitionSourceLine",
+        "formalParameterCount",
+        "addressRegisterCondition",
+        "ordinaryEmissionTemplates",
+        "addressRegisterEmissionTemplates",
+        "runtimeOutputWordCount",
+        "runtimeOutputByteCount"
+      ],
+      "properties": {
+        "sourceMacro": {
+          "const": "writeBscParam"
+        },
+        "sourcePath": {
+          "const": "sf2battlescenemacros.asm"
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "formalParameterCount": {
+          "const": 1
+        },
+        "addressRegisterCondition": {
+          "const": "instr('\\1','(a')=0"
+        },
+        "ordinaryEmissionTemplates": {
+          "const": [
+            "move.w \\1,(a6)+"
+          ]
+        },
+        "addressRegisterEmissionTemplates": {
+          "const": [
+            "move.b #0,(a6)+",
+            "move.b \\1,(a6)+"
+          ]
+        },
+        "runtimeOutputWordCount": {
+          "const": 1
+        },
+        "runtimeOutputByteCount": {
+          "const": 2
+        }
+      }
+    },
+    "textLineDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "lineIdCount",
+        "firstLineId",
+        "lastLineId",
+        "maxLineIdEquate",
+        "maxLineIdValue",
+        "idsAreContiguous"
+      ],
+      "properties": {
+        "sourcePath": {
+          "const": "data/scripting/text/gamescript.txt"
+        },
+        "sourceSha256": {
+          "const": "14EB069436F9F77081AAFF6125312A9C277CB24255BE5F0D1EF108AF53AEA205"
+        },
+        "lineIdCount": {
+          "const": 4267
+        },
+        "firstLineId": {
+          "const": 0
+        },
+        "lastLineId": {
+          "const": 4266
+        },
+        "maxLineIdEquate": {
+          "const": "MESSAGES_MAX_INDEX"
+        },
+        "maxLineIdValue": {
+          "const": 4266
+        },
+        "idsAreContiguous": {
+          "const": true
+        }
+      }
+    },
+    "immediateMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageSymbol",
+        "lineId",
+        "sourceUseCount"
+      ],
+      "properties": {
+        "messageSymbol": {
+          "type": "string",
+          "pattern": "^MESSAGE_[A-Z0-9_]+$"
+        },
+        "lineId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4266
+        },
+        "sourceUseCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "fileTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceH1StartAddress",
+        "sourceH1EndAddressExclusive",
+        "siteCount"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^code/gameflow/battle/battleactions/[A-Za-z0-9_]+\\.asm$"
+        },
+        "sourceH1StartAddress": {
+          "$ref": "#/definitions/nonnegative"
+        },
+        "sourceH1EndAddressExclusive": {
+          "$ref": "#/definitions/nonnegative"
+        },
+        "siteCount": {
+          "$ref": "#/definitions/nonnegative"
+        }
+      }
+    },
+    "callerTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "enclosingGlobalLabel",
+        "siteCount"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^code/gameflow/battle/battleactions/[A-Za-z0-9_]+\\.asm$"
+        },
+        "enclosingGlobalLabel": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "siteCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "messageSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceLine",
+        "enclosingGlobalLabel",
+        "sourceMacro",
+        "operandExpressions",
+        "messageOperand",
+        "h1ExpansionAddress",
+        "assembledInstructionByteCount"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^code/gameflow/battle/battleactions/[A-Za-z0-9_]+\\.asm$"
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "enclosingGlobalLabel": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "sourceMacro": {
+          "enum": [
+            "displayMessage",
+            "displayMessageWithNoWait"
+          ]
+        },
+        "operandExpressions": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "messageOperand": {
+          "$ref": "#/definitions/messageOperand"
+        },
+        "h1ExpansionAddress": {
+          "$ref": "#/definitions/nonnegative"
+        },
+        "assembledInstructionByteCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "messageSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macroDefinitionCount",
+        "writeBscParamDefinitionCount",
+        "completeSourceFileCount",
+        "positiveSourceFileCount",
+        "zeroSourceFileCount",
+        "siteCount",
+        "modeCounts",
+        "messageOperandKindCounts",
+        "distinctImmediateMessageSymbolCount",
+        "distinctImmediateMessageIdCount",
+        "callerTotalCount",
+        "h1BoundSiteCount"
+      ],
+      "properties": {
+        "macroDefinitionCount": {
+          "const": 2
+        },
+        "writeBscParamDefinitionCount": {
+          "const": 1
+        },
+        "completeSourceFileCount": {
+          "const": 29
+        },
+        "positiveSourceFileCount": {
+          "const": 11
+        },
+        "zeroSourceFileCount": {
+          "const": 18
+        },
+        "siteCount": {
+          "const": 54
+        },
+        "modeCounts": {
+          "const": {
+            "displayMessage": 49,
+            "displayMessageWithNoWait": 5
+          }
+        },
+        "messageOperandKindCounts": {
+          "const": {
+            "immediate-message-enum": 43,
+            "dynamic-expression": 11
+          }
+        },
+        "distinctImmediateMessageSymbolCount": {
+          "const": 41
+        },
+        "distinctImmediateMessageIdCount": {
+          "const": 41
+        },
+        "callerTotalCount": {
+          "const": 35
+        },
+        "h1BoundSiteCount": {
+          "const": 54
+        }
+      }
+    },
+    "battleMessageContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macroDefinitions",
+        "battleSceneDispatcher",
+        "writeBscParamDefinition",
+        "textLineDomain",
+        "immediateMessages",
+        "fileTotals",
+        "callerTotals",
+        "messageSites",
+        "summary"
+      ],
+      "properties": {
+        "macroDefinitions": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/messageMacroDefinition"
+                },
+                {
+                  "properties": {
+                    "sourceMacro": {
+                      "const": "displayMessage"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/messageMacroDefinition"
+                },
+                {
+                  "properties": {
+                    "sourceMacro": {
+                      "const": "displayMessageWithNoWait"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "additionalItems": false
+        },
+        "battleSceneDispatcher": {
+          "$ref": "#/definitions/battleSceneDispatcher"
+        },
+        "writeBscParamDefinition": {
+          "$ref": "#/definitions/writeBscParamDefinition"
+        },
+        "textLineDomain": {
+          "$ref": "#/definitions/textLineDomain"
+        },
+        "immediateMessages": {
+          "type": "array",
+          "minItems": 41,
+          "maxItems": 41,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/immediateMessage"
+          }
+        },
+        "fileTotals": {
+          "type": "array",
+          "minItems": 29,
+          "maxItems": 29,
+          "items": {
+            "$ref": "#/definitions/fileTotal"
+          }
+        },
+        "callerTotals": {
+          "type": "array",
+          "minItems": 35,
+          "maxItems": 35,
+          "items": {
+            "$ref": "#/definitions/callerTotal"
+          }
+        },
+        "messageSites": {
+          "type": "array",
+          "minItems": 54,
+          "maxItems": 54,
+          "items": {
+            "$ref": "#/definitions/messageSite"
+          },
+          "allOf": [
+            {
+              "items": [
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 39996
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 40032
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 40076
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 41094
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 41276
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 41308
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 41340
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 41396
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 41446
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 43086
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 43926
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44286
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44570
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44710
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44738
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44766
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44794
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 44882
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45048
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45202
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45434
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45584
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45612
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45640
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45784
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45816
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45938
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 45970
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46084
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46192
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46336
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46434
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46526
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46700
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46780
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46882
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 46984
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47106
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47202
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47316
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47440
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47464
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47488
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47512
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47536
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47560
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47598
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47622
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47740
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 47788
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 48184
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 48228
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 48642
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "h1ExpansionAddress": {
+                      "const": 48666
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "summary": {
+          "$ref": "#/definitions/messageSummary"
         }
       }
     }
