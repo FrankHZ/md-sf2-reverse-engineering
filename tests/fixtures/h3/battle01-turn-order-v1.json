@@ -3,7 +3,7 @@
   "id": "sf2-battle01-turn-order-v1",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": { "name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX" },
-  "inputHarness": "original debug-mode sequence and Battle Test UI; Player 2 Start skips cutscene text",
+  "inputHarness": "original debug-mode sequence and Battle Test UI; prompt 2 selects nonzero option 1 with Right+C, setting the shared intro-cutscene flag; Player 2 Start remains a fallback during later battle-scene playback",
   "function": { "entryAddress": 152900, "observeAddress": 152990, "seedAddress": 16768676, "turnOrderAddress": 16774938 },
   "battleId": 1,
   "seed": 4660,
