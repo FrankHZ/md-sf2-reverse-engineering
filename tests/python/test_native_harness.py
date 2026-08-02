@@ -32,7 +32,7 @@ from sf2tool.rom import mega_drive_checksum
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
         "Documents": 11,
-        "FixtureReferences": 85,
+        "FixtureReferences": 86,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }
@@ -41,14 +41,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1617
-    assert result["Confirmed"] == 1617
+    assert result["Records"] == 1620
+    assert result["Confirmed"] == 1620
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 80
-    assert result["AddressBindings"] == 2472
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 81
+    assert result["AddressBindings"] == 2493
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1580
+    assert result["H1ListingRecords"] == 1583
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
@@ -1029,6 +1029,24 @@ def test_tracked_lua_does_not_use_reserved_words_as_dot_fields() -> None:
             if pattern.search(line):
                 failures.append(f"{path.name}:{line_number}: {line.strip()}")
     assert not failures, "Lua reserved word used after '.':\n" + "\n".join(failures)
+
+
+def test_random_services_observer_has_callback_failure_and_cleanup_contract() -> None:
+    root = Path(__file__).resolve().parents[2]
+    observer = (root / "tools" / "bizhawk" / "random_services_observer.lua").read_text(
+        encoding="utf-8"
+    )
+    for required_text in (
+        "pcall(function()",
+        "callback()",
+        "failure:observer-callback:",
+        "client.exitCode(1)",
+        "event.unregisterbyid",
+        "duplicate physical-PC callback",
+        "callbacks-cleared:0",
+        "observer-finished",
+    ):
+        assert required_text in observer
 
 
 def test_bizhawk_lua_preflight_compiles_observers_and_rejects_syntax_errors(

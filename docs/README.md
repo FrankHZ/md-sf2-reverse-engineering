@@ -121,7 +121,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   pointer 的完整静态路由表。
 - [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
   variable-width font、context-Huffman 与 witch-menu direct payload、68000 sound bridge、RNG 和
-  独立 Z80 driver 构建链、没有 symbolic consumer 的 cloud/base payload 边界，以及 20/20
+  独立 Z80 driver 构建链、RNG range-low-byte retry 与 controlled source-shaped copy 单启动矩阵、没有 symbolic consumer 的 cloud/base payload 边界，以及 20/20
   technical incbin 到 8 个深层 H2 owner 的可执行归属审计。
 - [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
   map event、交互和物品 handoff。
@@ -327,7 +327,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`party-roster-state.md`](./design/party-roster-state.md)：十个 map-script roster/death 与
   active-party/AI/follower source form 的 physical layout、named handler branch/mutation/call order、
   alias-aware caller identity，以及两个 grouped H3 runtime 边界。
-- [`randomness.md`](./design/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG 与有界采样的
+- [`randomness.md`](./design/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG、有界采样、helper-return state 与 controlled source-shaped copy 的
   静态/运行时合同，以及 retry 与 seed-copy 隔离边界。
 
 ## Decisions

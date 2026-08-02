@@ -5,6 +5,7 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2.services import (
+    _require_thinking_byte_base_shape,
     _rng_direct_call_counts,
     _rng_source_comment_lower_bound,
     build_service_inventory,
@@ -41,6 +42,36 @@ def test_rng_source_comment_lower_bound_is_parsed_and_required() -> None:
     ) == 2
     with pytest.raises(ValueError, match="range comment"):
         _rng_source_comment_lower_bound("; different comment")
+
+
+def test_thinking_rng_base_byte_shape_rejects_operand_and_order_near_misses() -> None:
+    source = """\
+GenerateRandomValueSigned:
+                lea     (RANDOM_SEED_COPY).l,a0
+                clr.w   d7
+                move.b  (a0),d7
+                ext.w   d7
+                mulu.w  #541,d7
+                addi.w  #12345,d7
+                andi.w  #BYTE_MASK,d7
+                move.b  d7,(a0)
+; End of function GenerateRandomValueSigned
+"""
+    _require_thinking_byte_base_shape(source)
+    mutations = {
+        "base-address": source.replace("(RANDOM_SEED_COPY).l,a0", "(RANDOM_SEED_COPY+1).l,a0"),
+        "read-operand": source.replace("move.b  (a0),d7", "move.b  (a1),d7"),
+        "sign-extension": source.replace("ext.w   d7", "nop"),
+        "arithmetic-order": source.replace(
+            "mulu.w  #541,d7\n                addi.w  #12345,d7",
+            "addi.w  #12345,d7\n                mulu.w  #541,d7",
+        ),
+        "mask": source.replace("andi.w  #BYTE_MASK,d7", "andi.w  #WORD_MASK,d7"),
+        "write-operand": source.replace("move.b  d7,(a0)", "move.b  d7,(a1)"),
+    }
+    for malformed in mutations.values():
+        with pytest.raises(ValueError, match="RNG section semantic drift"):
+            _require_thinking_byte_base_shape(malformed)
 
 
 def test_rng_schema_definitions_match_between_output_and_fixture() -> None:
@@ -96,6 +127,16 @@ def test_random_services_static_contract_covers_generators_bounds_and_callers() 
     random_facts = build_service_inventory(UPSTREAM)["randomServicesFacts"]
 
     assert random_facts == fixture["expected"]["randomServicesFacts"]
+    assert random_facts["thinkingByteGenerator"] == {
+        "sourceLabel": "GenerateRandomValueSigned",
+        "seedCopyAddress": 16768944,
+        "readsByteAtSeedCopyBaseThenSignExtendsBeforeUnsignedMultiply": True,
+        "multiplier": 541,
+        "increment": 12345,
+        "masksComputedResultToByte": True,
+        "writesByteAtSeedCopyBase": True,
+        "returnedValueWidthBits": 8,
+    }
     assert random_facts["thinkingBoundedSampler"] == {
         "sourceLabel": "GenerateRandomNumberUnderD6",
         "rangeLowByteImmediateZeroValues": [0, 1],

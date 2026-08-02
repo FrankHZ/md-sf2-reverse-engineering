@@ -549,6 +549,25 @@ def _require_rng_ordered_section(
         position += len(fragment)
 
 
+def _require_thinking_byte_base_shape(source: str) -> None:
+    """Guard the exact base-address byte operand shape without naming a word lane."""
+    _require_rng_ordered_section(
+        source,
+        "GenerateRandomValueSigned:",
+        "; End of function GenerateRandomValueSigned",
+        (
+            "lea     (RANDOM_SEED_COPY).l,a0",
+            "clr.w   d7",
+            "move.b  (a0),d7",
+            "ext.w   d7",
+            "mulu.w  #541,d7",
+            "addi.w  #12345,d7",
+            "andi.w  #BYTE_MASK,d7",
+            "move.b  d7,(a0)",
+        ),
+    )
+
+
 def _rng_immediate(section: str, instruction: str, register: str) -> int:
     match = re.search(
         rf"{re.escape(instruction)}\s+#(\$[0-9A-F]+|\d+),{re.escape(register)}",
@@ -730,21 +749,9 @@ def _random_services_facts(disasm: Path, listing: str) -> dict[str, Any]:
             "clr.b   d7",
         ),
     )
-    _require_rng_ordered_section(
-        thinking_source,
-        "GenerateRandomValueSigned:",
-        "; End of function GenerateRandomValueSigned",
-        (
-            "lea     (RANDOM_SEED_COPY).l,a0",
-            "clr.w   d7",
-            "move.b  (a0),d7",
-            "ext.w   d7",
-            f"mulu.w  #{thinking_multiplier},d7",
-            f"addi.w  #{thinking_increment},d7",
-            "andi.w  #BYTE_MASK,d7",
-            "move.b  d7,(a0)",
-        ),
-    )
+    if (thinking_multiplier, thinking_increment) != (541, 12345):
+        raise ValueError("thinking RNG arithmetic constants drifted")
+    _require_thinking_byte_base_shape(thinking_source)
     _require_rng_ordered_section(
         thinking_source,
         "GenerateRandomNumberUnderD6:",
@@ -852,10 +859,11 @@ def _random_services_facts(disasm: Path, listing: str) -> dict[str, Any]:
         "thinkingByteGenerator": {
             "sourceLabel": "GenerateRandomValueSigned",
             "seedCopyAddress": addresses["RANDOM_SEED_COPY"],
-            "readsLowByteThenSignExtendsBeforeUnsignedMultiply": True,
+            "readsByteAtSeedCopyBaseThenSignExtendsBeforeUnsignedMultiply": True,
             "multiplier": thinking_multiplier,
             "increment": thinking_increment,
-            "masksAndStoresLowByte": True,
+            "masksComputedResultToByte": True,
+            "writesByteAtSeedCopyBase": True,
             "returnedValueWidthBits": byte_width_bits,
         },
         "thinkingBoundedSampler": {
