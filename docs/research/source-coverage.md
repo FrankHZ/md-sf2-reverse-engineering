@@ -325,11 +325,10 @@ uv run sf2 research-index test
 ```
 
 For the pinned checkout, `rg --files local/upstream/SF2DISASM/disasm/code -g '*.asm'` yields 387
-files and the corresponding `data` query yields 1,690. The index summary reports 1,615 records; its
-verifier reports 381 unique code files, 1,017 unique data files, 74 H2 fixtures, 78 H3 fixtures, and
-2,428 bindings. Of the records, 1,578 use H1 and 37 use the restricted Z80 music-bank domain. The
-default `uv run sf2 verify` checks those
-relationships on every ordinary commit.
+files and the corresponding `data` query yields 1,690. Use the coverage table above for its maintained
+denominators and evidence boundaries; use the two index commands for volatile record, fixture, binding,
+and listing-domain totals. The default `uv run sf2 verify` checks those relationships on every ordinary
+commit.
 
 ## Static-First Cadence
 
