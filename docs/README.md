@@ -292,6 +292,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   persistent EXP and level-up, stat refresh, gold, enemy drops, item destinations, source-static
   service exchanges, and save boundaries after an adversarial owner/fixture audit, while retaining
   balance, campaign reachability, service-runtime, and end-to-end persistence Unknown boundaries.
+- [`story-progression.md`](./design/story-progression.md): maps the bounded top-level route, ordered
+  setup/event selection, script graph, story-state, dialogue, roster, transition, and save handoffs
+  after an adversarial owner/fixture audit, while retaining plot chronology, choice consequences,
+  normal-save reachability, full persistence, and presentation as Unknown boundaries.
 - [`combat-resolution.md`](./design/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
   spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
   fixture 边界。
