@@ -77,8 +77,11 @@ The current evidence is deep but narrow:
   battle-action files now have static/H3 reach, with engine sequencing, item break/use, Taros gating,
   target sorting, and a complete 54-site battle-scene message-command corpus modeled. That corpus
   binds `$10`/`$11` macro expansion to source-built dispatcher slots, all 29 source files, and 43
-  immediate enum-to-line-domain joins; it preserves eleven dynamic message operands without claiming
-  rendered text or wait/presentation behavior. The
+  immediate enum-to-line-domain joins and statically resolves all eleven dynamic operands into 56
+  finite candidate line IDs (56 distinct): selector/default/override chains, Muddle's bounded offset,
+  and the two item-break caller modes plus their 25-row lookup table, including source/H1 byte parity
+  and the accepted item-auxiliary owner join. It still does not claim rendered
+  text or wait/presentation behavior. The
   seven shared battle-function files are now inventoried too, with
   individual-turn AI/player routing, Kiwi Flame Breath, exits, loading, and move SFX modeled;
   six player-control/cursor/menu entry points additionally own nine source ranges, 1,039 statements,

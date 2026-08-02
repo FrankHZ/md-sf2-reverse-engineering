@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-battle-actions-static-v1",
-  "outputSha256": "9646B32C6B9B106FA53C9AA2AF43C98AB0C500155A6CD0DEE5A5964931AE4CE0",
+  "outputSha256": "5736A4347EA3CD9B7EA71C194256D8BB274C28216D62838476B0DAADB6C2D543",
   "summary": {
     "fileCount": 29,
     "sourceLineCount": 4375,
@@ -33,6 +33,10 @@
     },
     "distinctImmediateMessageSymbolCount": 41,
     "distinctImmediateMessageIdCount": 41,
+    "dynamicResolutionCount": 11,
+    "unresolvedDynamicSiteCount": 0,
+    "dynamicCandidateCount": 56,
+    "distinctDynamicCandidateMessageIdCount": 56,
     "callerTotalCount": 35,
     "h1BoundSiteCount": 54
   }

@@ -67,17 +67,36 @@ they are not confused with the runtime command-buffer bytes.
 The complete 29-file battle-action inventory has 54 direct uses in 11 positive and 18 zero-use files:
 49 `displayMessage` and five `displayMessageWithNoWait`. All 54 source forms are bound in the pinned
 H1 listing. Forty-three message operands are immediate `#MESSAGE_*` symbols, resolved through the
-parsed `sf2enums.asm` map and checked against the 4,267-line `gamescript.txt` ID domain. The remaining
-eleven preserve their dynamic source expressions without selecting a message ID. The tracked corpus
+parsed `sf2enums.asm` map and checked against the 4,267-line `gamescript.txt` ID domain.
+
+**Confirmed:** all eleven remaining dynamic operands now have finite, source-derived candidate domains:
+four `createbattlescenemessage.asm` sites cover attack-type (3), spell selector (9), muddled base-plus-
+bounded-offset (10), and Prism Laser enemy selector (2); `inflictdamage.asm` covers the five
+attacker/critical/cutoff assignments; `displaydeathmessage.asm` covers the two side assignments; and
+`castspell.asm` covers Muddle (1), Desoul (2), and Absorb MP (2). The two `breakuseditem.asm` callers
+pass `d0 = 0` (break) or `d0 = 1` (destroy) into `battlesceneScript_GetItemBreakMessage`; its `dodge(a2)`
+base selection plus the parsed 25-row `itemBreakMessage` table (`ITEM_` / `ITEMBREAK_` shorthand,
+`tableEnd.w` sentinel) gives ten candidates at each caller. The source-derived `(item ID, message
+offset)` bytes plus the `FFFF` sentinel exactly match H1 range `$BCF0..$BD24`; the verifier joins the
+accepted item-auxiliary owner on pinned provenance, table address, row count, and its consumer rule.
+Across all sites that is 56 candidate
+occurrences and 56 distinct line IDs; none remains statically unresolved. Candidate records retain the
+source symbol when one exists and otherwise only the derived in-domain line ID. The tracked corpus
 contains symbols and numeric IDs only; it does not decode or reproduce dialogue text.
+
+The spell selector first compares the battle-scene spell index for Spoit through Atlas, then reloads
+`BATTLEACTION_OFFSET_ITEM_OR_SPELL(a3)` specifically for Aqua and Aqua level 2 before its default
+assignment. This is a static source-order fact; it does not claim normal-game reachability or rendered
+presentation.
 
 ## Runtime Question Queue
 
-The eleven dynamic `d1`/`d2` message operands remain a static control-flow follow-up: their source
-routes must be parsed before any message ID is claimed. One future grouped H3 queue remains for normal
-caller reachability; observed `$10`/`$11` wait, input, and service-completion behavior; and rendered
-text, portrait/layout, timing, persistence, and caller-visible completion. The static macro names,
-dispatcher join, and buffer layout do not settle those runtime questions.
+One future grouped H3 queue remains for normal caller reachability; observed `$10`/`$11` wait, input,
+and service-completion behavior; selection frequencies; and rendered text, portrait/layout, timing,
+persistence, and caller-visible completion. The static macro names, dispatcher join, buffer layout,
+message IDs, operand registers, selector/default/override ordering, muddle bound, and item-break lookup
+only bound candidates; they do not establish which normal-game caller paths reach each case, selection
+frequencies, or how the battle-scene renderer presents them.
 
 ## Reproduction
 

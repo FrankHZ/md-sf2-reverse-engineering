@@ -131,6 +131,195 @@
               "maxLineIdValue": 4266,
               "idsAreContiguous": true
             },
+            "itemBreakMessageResolver": {
+              "sourcePath": "data/stats/items/itembreakmessages.asm",
+              "sourceH1StartAddress": 48368,
+              "sourceH1EndAddressExclusive": 48420,
+              "h1ListingPath": "build/sf2build-h1.lst",
+              "h1ByteCount": 52,
+              "h1Sha256": "037C7F69095E47FA84808F9E596403EDA681D10766205D7B3EF86E3C36BA12B5",
+              "macroSourcePath": "sf2macros.asm",
+              "tableSymbol": "table_ItemBreakMessages",
+              "sourceMacro": "itemBreakMessage",
+              "macroFormalParameterCount": 2,
+              "itemPrefix": "ITEM_",
+              "messageOffsetPrefix": "ITEMBREAK_",
+              "tableRows": [
+                {
+                  "itemSymbol": "ITEM_POWER_RING",
+                  "itemId": 19,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_PROTECT_RING",
+                  "itemId": 20,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_QUICK_RING",
+                  "itemId": 21,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_RUNNING_RING",
+                  "itemId": 22,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_WHITE_RING",
+                  "itemId": 23,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_BLACK_RING",
+                  "itemId": 24,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_EVIL_RING",
+                  "itemId": 25,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_MISTY_KNUCKLES",
+                  "itemId": 30,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_GIANT_KNUCKLES",
+                  "itemId": 31,
+                  "messageOffsetSymbol": "ITEMBREAK_PIECES",
+                  "messageOffset": 1
+                },
+                {
+                  "itemSymbol": "ITEM_HEAT_AXE",
+                  "itemId": 40,
+                  "messageOffsetSymbol": "ITEMBREAK_FLAMES",
+                  "messageOffset": 0
+                },
+                {
+                  "itemSymbol": "ITEM_ATLAS_AXE",
+                  "itemId": 41,
+                  "messageOffsetSymbol": "ITEMBREAK_FLAMES",
+                  "messageOffset": 0
+                },
+                {
+                  "itemSymbol": "ITEM_RUNE_AXE",
+                  "itemId": 43,
+                  "messageOffsetSymbol": "ITEMBREAK_RUSTED",
+                  "messageOffset": 4
+                },
+                {
+                  "itemSymbol": "ITEM_GRAND_CANNON",
+                  "itemId": 54,
+                  "messageOffsetSymbol": "ITEMBREAK_SPLIT",
+                  "messageOffset": 2
+                },
+                {
+                  "itemSymbol": "ITEM_LEVANTER",
+                  "itemId": 69,
+                  "messageOffsetSymbol": "ITEMBREAK_FLAMES",
+                  "messageOffset": 0
+                },
+                {
+                  "itemSymbol": "ITEM_DARK_SWORD",
+                  "itemId": 70,
+                  "messageOffsetSymbol": "ITEMBREAK_RUSTED",
+                  "messageOffset": 4
+                },
+                {
+                  "itemSymbol": "ITEM_VALKYRIE",
+                  "itemId": 80,
+                  "messageOffsetSymbol": "ITEMBREAK_SPLIT",
+                  "messageOffset": 2
+                },
+                {
+                  "itemSymbol": "ITEM_HOLY_LANCE",
+                  "itemId": 81,
+                  "messageOffsetSymbol": "ITEMBREAK_SPLIT",
+                  "messageOffset": 2
+                },
+                {
+                  "itemSymbol": "ITEM_HALBERD",
+                  "itemId": 83,
+                  "messageOffsetSymbol": "ITEMBREAK_SPLIT",
+                  "messageOffset": 2
+                },
+                {
+                  "itemSymbol": "ITEM_INDRA_STAFF",
+                  "itemId": 92,
+                  "messageOffsetSymbol": "ITEMBREAK_MANGLED",
+                  "messageOffset": 3
+                },
+                {
+                  "itemSymbol": "ITEM_MAGE_STAFF",
+                  "itemId": 93,
+                  "messageOffsetSymbol": "ITEMBREAK_FLAMES",
+                  "messageOffset": 0
+                },
+                {
+                  "itemSymbol": "ITEM_WISH_STAFF",
+                  "itemId": 94,
+                  "messageOffsetSymbol": "ITEMBREAK_MANGLED",
+                  "messageOffset": 3
+                },
+                {
+                  "itemSymbol": "ITEM_SUPPLY_STAFF",
+                  "itemId": 96,
+                  "messageOffsetSymbol": "ITEMBREAK_MANGLED",
+                  "messageOffset": 3
+                },
+                {
+                  "itemSymbol": "ITEM_FREEZE_STAFF",
+                  "itemId": 98,
+                  "messageOffsetSymbol": "ITEMBREAK_MANGLED",
+                  "messageOffset": 3
+                },
+                {
+                  "itemSymbol": "ITEM_GODDESS_STAFF",
+                  "itemId": 99,
+                  "messageOffsetSymbol": "ITEMBREAK_MANGLED",
+                  "messageOffset": 3
+                },
+                {
+                  "itemSymbol": "ITEM_DEMON_ROD",
+                  "itemId": 101,
+                  "messageOffsetSymbol": "ITEMBREAK_MANGLED",
+                  "messageOffset": 3
+                }
+              ],
+              "tableSentinelValue": -1,
+              "itemIndexMaskSymbol": "ITEMENTRY_MASK_INDEX",
+              "itemIndexMaskValue": 127,
+              "entrySizeSymbol": "ITEMENTRY_SIZE",
+              "entrySizeValue": 2,
+              "baseMessages": [
+                {
+                  "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_HIT_AND_BROKEN_START",
+                  "lineId": 372
+                },
+                {
+                  "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_MISS_AND_BROKEN_START",
+                  "lineId": 382
+                },
+                {
+                  "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_HIT_AND_DESTROYED_START",
+                  "lineId": 377
+                },
+                {
+                  "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_MISS_AND_DESTROYED_START",
+                  "lineId": 387
+                }
+              ]
+            },
             "immediateMessages": [
               {
                 "messageSymbol": "MESSAGE_BATTLE_IS_CURSED_AND_STUNNED",
@@ -763,6 +952,80 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "attack-type-chain",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_ATTACK",
+                        "lineId": 273
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_SECOND_ATTACK",
+                        "lineId": 293
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_COUNTER_ATTACK",
+                        "lineId": 292
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "selector-register",
+                        "symbol": "BATTLESCENE_ATTACK_TYPE",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "default-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_ATTACK",
+                        "messageLineId": 273
+                      },
+                      {
+                        "kind": "zero-branch",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_Attack",
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "override-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_SECOND_ATTACK",
+                        "messageLineId": 293
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "BATTLEACTION_ATTACKTYPE_SECOND",
+                        "value": 1,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_Attack",
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "final-override-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_COUNTER_ATTACK",
+                        "messageLineId": 292
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 41094,
@@ -782,6 +1045,185 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "spell-selector-chain",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_PUT_ON_A_DEMON_SMILE",
+                        "lineId": 310
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_BELCHED_OUT_FLAMES",
+                        "lineId": 278
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_A_SNOWSTORM",
+                        "lineId": 279
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_CAST_DEMON_BREATH",
+                        "lineId": 276
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_ODD_EYE_BEAM",
+                        "lineId": 320
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_SUMMONED",
+                        "lineId": 283
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_AQUA_BREATH",
+                        "lineId": 281
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_BUBBLE_BREATH",
+                        "lineId": 282
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_SPELLCAST_DEFAULT",
+                        "lineId": 274
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "selector-register",
+                        "symbol": "BATTLESCENE_SPELL_INDEX",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_SPOIT",
+                        "value": 15,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_PUT_ON_A_DEMON_SMILE",
+                        "messageLineId": 310
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_FLAME",
+                        "value": 17,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_BELCHED_OUT_FLAMES",
+                        "messageLineId": 278
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_KIWI",
+                        "value": 41,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_BELCHED_OUT_FLAMES",
+                        "messageLineId": 278
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_SNOW",
+                        "value": 18,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_A_SNOWSTORM",
+                        "messageLineId": 279
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_DEMON",
+                        "value": 19,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_CAST_DEMON_BREATH",
+                        "messageLineId": 276
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_ODDEYE",
+                        "value": 43,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_ODD_EYE_BEAM",
+                        "messageLineId": 320
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_DAO",
+                        "value": 29,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_SUMMONED",
+                        "messageLineId": 283
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_APOLLO",
+                        "value": 30,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_SUMMONED",
+                        "messageLineId": 283
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_NEPTUN",
+                        "value": 31,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_SUMMONED",
+                        "messageLineId": 283
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_ATLAS",
+                        "value": 32,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_SUMMONED",
+                        "messageLineId": 283
+                      },
+                      {
+                        "kind": "selector-register",
+                        "symbol": "BATTLEACTION_OFFSET_ITEM_OR_SPELL",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_AQUA",
+                        "value": 40,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_AQUA_BREATH",
+                        "messageLineId": 281
+                      },
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "SPELL_AQUA|SPELL_LV2",
+                        "value": 104,
+                        "branchMnemonic": "beq",
+                        "branchTarget": "@Message_CastSpell",
+                        "messageSymbol": "MESSAGE_SPELLCAST_BLEW_OUT_BUBBLE_BREATH",
+                        "messageLineId": 282
+                      },
+                      {
+                        "kind": "final-default-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_SPELLCAST_DEFAULT",
+                        "messageLineId": 274
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 41276,
@@ -839,6 +1281,99 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "muddled-message-offset",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_MUDDLED_ACTIONS_START",
+                        "lineId": 322
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 323
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 324
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 325
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 326
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 327
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 328
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 329
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 330
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 331
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "base-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_MUDDLED_ACTIONS_START",
+                        "messageLineId": 322
+                      },
+                      {
+                        "kind": "random-bound",
+                        "symbol": null,
+                        "value": 16,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "clamp-branch",
+                        "symbol": null,
+                        "value": 9,
+                        "branchMnemonic": "bls",
+                        "branchTarget": "@Message_Muddled",
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "fallback-offset",
+                        "symbol": null,
+                        "value": 0,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "add-offset",
+                        "symbol": "d0",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 41396,
@@ -858,6 +1393,49 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "prism-enemy-branch",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_DEMON_LASER",
+                        "lineId": 321
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_PRISM_LASER",
+                        "lineId": 319
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "selector-branch",
+                        "symbol": "ENEMY_ZEON_GUARD",
+                        "value": 38,
+                        "branchMnemonic": "bne",
+                        "branchTarget": "@PrismFlower",
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "equal-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_DEMON_LASER",
+                        "messageLineId": 321
+                      },
+                      {
+                        "kind": "non-equal-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_PRISM_LASER",
+                        "messageLineId": 319
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 41446,
@@ -934,6 +1512,88 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "damage-branch-chain",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_CRITICAL_HIT",
+                        "lineId": 287
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_DAMAGE_ALLY",
+                        "lineId": 284
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_HEAVY_ATTACK",
+                        "lineId": 288
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_DAMAGE_ENEMY",
+                        "lineId": 285
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_CUTOFF",
+                        "lineId": 294
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "attacker-side-bit",
+                        "symbol": "COMBATANT_BIT_ENEMY",
+                        "value": 7,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "ally-critical-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_CRITICAL_HIT",
+                        "messageLineId": 287
+                      },
+                      {
+                        "kind": "ally-default-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_DAMAGE_ALLY",
+                        "messageLineId": 284
+                      },
+                      {
+                        "kind": "enemy-critical-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_HEAVY_ATTACK",
+                        "messageLineId": 288
+                      },
+                      {
+                        "kind": "enemy-default-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_DAMAGE_ENEMY",
+                        "messageLineId": 285
+                      },
+                      {
+                        "kind": "cutoff-override-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_CUTOFF",
+                        "messageLineId": 294
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 44570,
@@ -1067,6 +1727,49 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "death-side-branch",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_IS_EXHAUSTED",
+                        "lineId": 291
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_WAS_DEFEATED",
+                        "lineId": 290
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "target-side-bit",
+                        "symbol": "COMBATANT_BIT_ENEMY",
+                        "value": 7,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "ally-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_IS_EXHAUSTED",
+                        "messageLineId": 291
+                      },
+                      {
+                        "kind": "enemy-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_WAS_DEFEATED",
+                        "messageLineId": 290
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 45202,
@@ -1276,6 +1979,36 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "muddle-spell-shared-assignment",
+                    "register": "d2",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_IS_IN_A_DEEP_HAZE",
+                        "lineId": 337
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "muddle2-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_IS_IN_A_DEEP_HAZE",
+                        "messageLineId": 337
+                      },
+                      {
+                        "kind": "muddle1-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_IS_IN_A_DEEP_HAZE",
+                        "messageLineId": 337
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 46336,
@@ -1295,6 +2028,49 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "desoul-side-branch",
+                    "register": "d2",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_SOUL_WAS_STOLEN_ALLY",
+                        "lineId": 304
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_SOUL_WAS_STOLEN_ENEMY",
+                        "lineId": 305
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "target-side-bit",
+                        "symbol": "COMBATANT_BIT_ENEMY",
+                        "value": 7,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "ally-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_SOUL_WAS_STOLEN_ALLY",
+                        "messageLineId": 304
+                      },
+                      {
+                        "kind": "enemy-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_SOUL_WAS_STOLEN_ENEMY",
+                        "messageLineId": 305
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 46434,
@@ -1333,6 +2109,49 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "absorb-side-branch",
+                    "register": "d1",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_ABSORBED_MAGIC_POINTS",
+                        "lineId": 317
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_MP_WAS_DRAINED_BY",
+                        "lineId": 314
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "actor-side-bit",
+                        "symbol": "COMBATANT_BIT_ENEMY",
+                        "value": 7,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "ally-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_ABSORBED_MAGIC_POINTS",
+                        "messageLineId": 317
+                      },
+                      {
+                        "kind": "enemy-assignment",
+                        "symbol": null,
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": "MESSAGE_BATTLE_MP_WAS_DRAINED_BY",
+                        "messageLineId": 314
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 46700,
@@ -1656,6 +2475,81 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "item-break-message",
+                    "register": "d3",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_HIT_AND_BROKEN_START",
+                        "lineId": 372
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 373
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 374
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 375
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 376
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_MISS_AND_BROKEN_START",
+                        "lineId": 382
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 383
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 384
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 385
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 386
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "caller-mode",
+                        "symbol": null,
+                        "value": 0,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "dodge-base-selection",
+                        "symbol": "dodge(a2)",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "table-offset-add",
+                        "symbol": "table_ItemBreakMessages",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 48184,
@@ -1675,6 +2569,81 @@
                 "messageOperand": {
                   "kind": "dynamic-expression",
                   "messageSymbol": null,
+                  "staticResolution": {
+                    "resolver": "item-break-message",
+                    "register": "d3",
+                    "candidateMessages": [
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_HIT_AND_DESTROYED_START",
+                        "lineId": 377
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 378
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 379
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 380
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 381
+                      },
+                      {
+                        "messageSymbol": "MESSAGE_BATTLE_USED_ITEM_MISS_AND_DESTROYED_START",
+                        "lineId": 387
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 388
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 389
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 390
+                      },
+                      {
+                        "messageSymbol": null,
+                        "lineId": 391
+                      }
+                    ],
+                    "controlFacts": [
+                      {
+                        "kind": "caller-mode",
+                        "symbol": null,
+                        "value": 1,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "dodge-base-selection",
+                        "symbol": "dodge(a2)",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      },
+                      {
+                        "kind": "table-offset-add",
+                        "symbol": "table_ItemBreakMessages",
+                        "value": null,
+                        "branchMnemonic": null,
+                        "branchTarget": null,
+                        "messageSymbol": null,
+                        "messageLineId": null
+                      }
+                    ]
+                  },
                   "lineId": null
                 },
                 "h1ExpansionAddress": 48228,
@@ -1736,6 +2705,10 @@
               },
               "distinctImmediateMessageSymbolCount": 41,
               "distinctImmediateMessageIdCount": 41,
+              "dynamicResolutionCount": 11,
+              "unresolvedDynamicSiteCount": 0,
+              "dynamicCandidateCount": 56,
+              "distinctDynamicCandidateMessageIdCount": 56,
               "callerTotalCount": 35,
               "h1BoundSiteCount": 54
             }
@@ -1786,6 +2759,268 @@
         }
       ]
     },
+    "messageCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageSymbol",
+        "lineId"
+      ],
+      "properties": {
+        "messageSymbol": {
+          "$ref": "#/definitions/nullableMessageSymbol"
+        },
+        "lineId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4266
+        }
+      }
+    },
+    "staticMessageControlFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "symbol",
+        "value",
+        "branchMnemonic",
+        "branchTarget",
+        "messageSymbol",
+        "messageLineId"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "branchMnemonic": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "branchTarget": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "messageSymbol": {
+          "$ref": "#/definitions/nullableMessageSymbol"
+        },
+        "messageLineId": {
+          "$ref": "#/definitions/nullableLineId"
+        }
+      }
+    },
+    "staticMessageResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolver",
+        "register",
+        "candidateMessages",
+        "controlFacts"
+      ],
+      "properties": {
+        "resolver": {
+          "enum": [
+            "attack-type-chain",
+            "spell-selector-chain",
+            "muddled-message-offset",
+            "prism-enemy-branch",
+            "damage-branch-chain",
+            "death-side-branch",
+            "muddle-spell-shared-assignment",
+            "desoul-side-branch",
+            "absorb-side-branch",
+            "item-break-message"
+          ]
+        },
+        "register": {
+          "enum": [
+            "d1",
+            "d2",
+            "d3"
+          ]
+        },
+        "candidateMessages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/messageCandidate"
+          }
+        },
+        "controlFacts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 15,
+          "items": {
+            "$ref": "#/definitions/staticMessageControlFact"
+          }
+        }
+      }
+    },
+    "itemBreakMessageTableRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "itemSymbol",
+        "itemId",
+        "messageOffsetSymbol",
+        "messageOffset"
+      ],
+      "properties": {
+        "itemSymbol": {
+          "type": "string",
+          "pattern": "^ITEM_[A-Z0-9_]+$"
+        },
+        "itemId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 127
+        },
+        "messageOffsetSymbol": {
+          "type": "string",
+          "pattern": "^ITEMBREAK_[A-Z0-9_]+$"
+        },
+        "messageOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        }
+      }
+    },
+    "itemBreakMessageResolver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceH1StartAddress",
+        "sourceH1EndAddressExclusive",
+        "h1ListingPath",
+        "h1ByteCount",
+        "h1Sha256",
+        "macroSourcePath",
+        "tableSymbol",
+        "sourceMacro",
+        "macroFormalParameterCount",
+        "itemPrefix",
+        "messageOffsetPrefix",
+        "tableRows",
+        "tableSentinelValue",
+        "itemIndexMaskSymbol",
+        "itemIndexMaskValue",
+        "entrySizeSymbol",
+        "entrySizeValue",
+        "baseMessages"
+      ],
+      "properties": {
+        "sourcePath": {
+          "const": "data/stats/items/itembreakmessages.asm"
+        },
+        "sourceH1StartAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceH1EndAddressExclusive": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "h1ListingPath": {
+          "const": "build/sf2build-h1.lst"
+        },
+        "h1ByteCount": {
+          "const": 52
+        },
+        "h1Sha256": {
+          "const": "037C7F69095E47FA84808F9E596403EDA681D10766205D7B3EF86E3C36BA12B5"
+        },
+        "macroSourcePath": {
+          "const": "sf2macros.asm"
+        },
+        "tableSymbol": {
+          "const": "table_ItemBreakMessages"
+        },
+        "sourceMacro": {
+          "const": "itemBreakMessage"
+        },
+        "macroFormalParameterCount": {
+          "const": 2
+        },
+        "itemPrefix": {
+          "const": "ITEM_"
+        },
+        "messageOffsetPrefix": {
+          "const": "ITEMBREAK_"
+        },
+        "tableRows": {
+          "type": "array",
+          "minItems": 25,
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/definitions/itemBreakMessageTableRow"
+          }
+        },
+        "tableSentinelValue": {
+          "const": -1
+        },
+        "itemIndexMaskSymbol": {
+          "const": "ITEMENTRY_MASK_INDEX"
+        },
+        "itemIndexMaskValue": {
+          "const": 127
+        },
+        "entrySizeSymbol": {
+          "const": "ITEMENTRY_SIZE"
+        },
+        "entrySizeValue": {
+          "const": 2
+        },
+        "baseMessages": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/definitions/messageCandidate"
+          }
+        }
+      }
+    },
     "messageOperand": {
       "type": "object",
       "additionalProperties": false,
@@ -1806,6 +3041,9 @@
         },
         "lineId": {
           "$ref": "#/definitions/nullableLineId"
+        },
+        "staticResolution": {
+          "$ref": "#/definitions/staticMessageResolution"
         }
       },
       "oneOf": [
@@ -1823,9 +3061,17 @@
               "minimum": 0,
               "maximum": 4266
             }
+          },
+          "not": {
+            "required": [
+              "staticResolution"
+            ]
           }
         },
         {
+          "required": [
+            "staticResolution"
+          ],
           "properties": {
             "kind": {
               "const": "dynamic-expression"
@@ -2231,6 +3477,10 @@
         "messageOperandKindCounts",
         "distinctImmediateMessageSymbolCount",
         "distinctImmediateMessageIdCount",
+        "dynamicResolutionCount",
+        "unresolvedDynamicSiteCount",
+        "dynamicCandidateCount",
+        "distinctDynamicCandidateMessageIdCount",
         "callerTotalCount",
         "h1BoundSiteCount"
       ],
@@ -2271,6 +3521,18 @@
         "distinctImmediateMessageIdCount": {
           "const": 41
         },
+        "dynamicResolutionCount": {
+          "const": 11
+        },
+        "unresolvedDynamicSiteCount": {
+          "const": 0
+        },
+        "dynamicCandidateCount": {
+          "const": 56
+        },
+        "distinctDynamicCandidateMessageIdCount": {
+          "const": 56
+        },
         "callerTotalCount": {
           "const": 35
         },
@@ -2287,6 +3549,7 @@
         "battleSceneDispatcher",
         "writeBscParamDefinition",
         "textLineDomain",
+        "itemBreakMessageResolver",
         "immediateMessages",
         "fileTotals",
         "callerTotals",
@@ -2338,6 +3601,9 @@
         },
         "textLineDomain": {
           "$ref": "#/definitions/textLineDomain"
+        },
+        "itemBreakMessageResolver": {
+          "$ref": "#/definitions/itemBreakMessageResolver"
         },
         "immediateMessages": {
           "type": "array",
