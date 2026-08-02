@@ -4306,6 +4306,65 @@
       ],
       "documents":["docs/research/common-scripting.md"],
       "designContracts":["docs/design/map-exploration.md"]
+    },
+    {
+      "id": "scripting.map.transition-runtime-boundary",
+      "subsystem": "scripting.map",
+      "status": "confirmed",
+      "symbol": "csc37_loadMapAndFadeIn",
+      "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+      "addresses": [
+        {"id":"fade-handler","space":"rom","kind":"symbol","value":288154},
+        {"id":"wrapper-entry","space":"rom","kind":"observation","value":292092},
+        {"id":"wrapper-injection-call","space":"rom","kind":"observation","value":292114},
+        {"id":"execute-entry","space":"rom","kind":"observation","value":291116},
+        {"id":"script-word-read","space":"rom","kind":"observation","value":291160},
+        {"id":"opcode-dispatch-call","space":"rom","kind":"observation","value":291194},
+        {"id":"opcode-dispatch-return","space":"rom","kind":"observation","value":291198},
+        {"id":"script-end","space":"rom","kind":"observation","value":291380},
+        {"id":"warp-handler","space":"rom","kind":"observation","value":291714},
+        {"id":"reset-handler","space":"rom","kind":"observation","value":288142},
+        {"id":"reload-handler","space":"rom","kind":"observation","value":288520},
+        {"id":"map-load-handler","space":"rom","kind":"observation","value":288182},
+        {"id":"current-map","space":"ram","kind":"state","value":16774929,"symbol":"CURRENT_MAP"},
+        {"id":"view-target-entity","space":"ram","kind":"state","value":16754732,"symbol":"VIEW_TARGET_ENTITY"},
+        {"id":"fading-setting","space":"ram","kind":"state","value":16768752,"symbol":"FADING_SETTING"},
+        {"id":"map-event-type","space":"ram","kind":"state","value":16754762,"symbol":"MAP_EVENT_TYPE"},
+        {"id":"map-event-param-1","space":"ram","kind":"state","value":16754764,"symbol":"MAP_EVENT_PARAM_1"},
+        {"id":"view-plane-a-pixel-x","space":"ram","kind":"state","value":16754704,"symbol":"VIEW_PLANE_A_PIXEL_X"},
+        {"id":"view-plane-a-pixel-y","space":"ram","kind":"state","value":16754706,"symbol":"VIEW_PLANE_A_PIXEL_Y"}
+      ],
+      "evidence": [
+        {
+          "level": "H3",
+          "fixture": "tests/fixtures/h3/map-script-transition-v1.json",
+          "fixtureId": "sf2-map-script-transition-runtime-v1",
+          "verifier": "src/sf2tool/h3/map_script_transition.py",
+          "bindings": [
+            {"addressId":"wrapper-entry","fixtureField":"function.entryAddress"},
+            {"addressId":"wrapper-injection-call","fixtureField":"function.entryInjectionCallSiteAddress"},
+            {"addressId":"execute-entry","fixtureField":"function.executeMapScriptAddress"},
+            {"addressId":"script-word-read","fixtureField":"function.scriptWordReadAfterAddress"},
+            {"addressId":"opcode-dispatch-call","fixtureField":"function.opcodeDispatchCallAddress"},
+            {"addressId":"opcode-dispatch-return","fixtureField":"function.opcodeDispatchReturnAddress"},
+            {"addressId":"script-end","fixtureField":"function.endAddress"},
+            {"addressId":"warp-handler","fixtureField":"function.warpHandlerAddress"},
+            {"addressId":"reset-handler","fixtureField":"function.resetHandlerAddress"},
+            {"addressId":"fade-handler","fixtureField":"function.fadeHandlerAddress"},
+            {"addressId":"reload-handler","fixtureField":"function.reloadHandlerAddress"},
+            {"addressId":"map-load-handler","fixtureField":"function.mapLoadHandlerAddress"},
+            {"addressId":"current-map","fixtureField":"ram.currentMapAddress"},
+            {"addressId":"view-target-entity","fixtureField":"ram.viewTargetEntityAddress"},
+            {"addressId":"fading-setting","fixtureField":"ram.fadingSettingAddress"},
+            {"addressId":"map-event-type","fixtureField":"ram.mapEventTypeAddress"},
+            {"addressId":"map-event-param-1","fixtureField":"ram.mapEventParam1Address"},
+            {"addressId":"view-plane-a-pixel-x","fixtureField":"ram.viewPlaneAPixelXAddress"},
+            {"addressId":"view-plane-a-pixel-y","fixtureField":"ram.viewPlaneAPixelYAddress"}
+          ]
+        }
+      ],
+      "documents": ["docs/research/common-scripting.md"],
+      "designContracts": ["docs/design/map-exploration.md"]
     }
   ]
 }

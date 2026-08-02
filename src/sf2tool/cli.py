@@ -117,6 +117,7 @@ from sf2tool.h3.map_script_entity_presentation_fx import (
 from sf2tool.h3.map_script_screen_presentation import (
     verify_map_script_screen_presentation,
 )
+from sf2tool.h3.map_script_transition import verify_map_script_transition
 from sf2tool.h3.map_script_ui_primary import verify_map_script_ui_primary
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
@@ -729,6 +730,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_script_control_audio)
     h3_map_script_control_audio.add_argument("--timeout-seconds", type=int, default=180)
+    h3_map_script_transition = h3_commands.add_parser(
+        "map-script-transition",
+        help="verify one-launch map-script transition opcode, service, and return boundaries",
+    )
+    _add_local_paths(h3_map_script_transition)
+    h3_map_script_transition.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_block_mutation = h3_commands.add_parser(
         "map-block-mutation",
         help="verify one-launch set-blocks and set-blocks-var layout mutation boundaries",
@@ -1658,6 +1665,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-script-control-audio":
         print_record(
             verify_map_script_control_audio(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-script-transition":
+        print_record(
+            verify_map_script_transition(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

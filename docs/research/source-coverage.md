@@ -397,8 +397,11 @@ sites across all 304 zero-inclusive program totals (38 `warp`, seven `resetMap`,
 24 `reloadMap`, and 17 `mapLoad`). The contract separately keeps the 79-ID canonical map domain and
 the exact `MAP_CURRENT` source sentinel, named handler cursor/call/fall-through structure, the shared
 parsed packed-coordinate multiplier, and zero-inclusive direct/effective caller maps for four service
-targets. The sole grouped H3 follow-up is `map-script-transition-presentation-matrix`; map/camera,
-event-consumer, fade, and display outcomes remain runtime questions rather than static claims.
+targets. Its five-case/one-launch H3 matrix now confirms only opcode/terminal reads, A6 cursor
+advancement, handler/return chronology, csc07 event bytes, seeded map/view-target/plane-A state, direct service seams, and
+the csc37 source-write-2 versus first-csc48-wait-sample-0 boundary. The grouped
+`map-script-transition-presentation-matrix` queue retains map/camera presentation, event consumption,
+fade/display timing, normal-story reachability, persistence, and unobserved service effects.
 The adjacent camera-control family is exact as three source-named forms: 125 `setCameraEntity` `$24`,
 247 `setCamDest` `$32`, and 43 `cameraSpeed` `$45` commands (415 total) in 123 non-empty source
 groups, with the same complete 304-row zero-inclusive program domain. Its contract keeps the physical
