@@ -6,19 +6,23 @@
   "properties": {
     "schemaVersion": { "const": 1 }, "id": { "const": "sf2-gameflow-core-static-v1" },
     "upstream": { "type": "object" },
-    "scopes": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
+    "scopes": { "type": "array", "const": ["code/gameflow/exploration/exploration.asm", "code/gameflow/exploration/explorationfunctions_0.asm", "code/gameflow/exploration/explorationfunctions_1.asm", "code/gameflow/exploration/explorationfunctions_2.asm", "code/gameflow/exploration/explorationvints.asm", "code/gameflow/mainloop.asm", "code/gameflow/start/basetiles.asm", "code/gameflow/start/gameinit.asm", "code/gameflow/start/gameintro.asm", "code/gameflow/start/gamestart.asm", "code/gameflow/start/regioncheck.asm", "code/gameflow/start/systeminit.asm", "code/gameflow/start/z80init.asm"] },
     "summary": {
-      "type": "object",
+      "type": "object", "additionalProperties": false,
       "required": ["fileCount", "startupFileCount", "mainLoopFileCount", "explorationFileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"],
       "properties": {
         "fileCount": { "const": 13 }, "startupFileCount": { "const": 7 },
         "mainLoopFileCount": { "const": 1 }, "explorationFileCount": { "const": 5 },
-        "layoutIncludedFileCount": { "const": 13 }, "indexedRecordCount": { "const": 13 },
+        "sourceLineCount": { "const": 3126 }, "statementCount": { "const": 1975 },
+        "globalLabelCount": { "const": 200 }, "localLabelCount": { "const": 81 },
+        "directCallSiteCount": { "const": 176 }, "uniqueDirectTargetCount": { "const": 114 },
+        "internalDirectTargetCount": { "const": 33 }, "externalDirectTargetCount": { "const": 81 },
+        "layoutIncludedFileCount": { "const": 13 }, "indexedRecordCount": { "const": 14 },
         "indexedFileCount": { "const": 13 }
       }
     },
-    "indexedRecordIds": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
-    "indexedSourcePaths": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
+    "indexedRecordIds": { "type": "array", "const": ["gameflow.exploration.actions", "gameflow.exploration.engine", "gameflow.exploration.interaction", "gameflow.exploration.item-handoff", "gameflow.exploration.loop", "gameflow.main-loop", "gameflow.start.base-tiles", "gameflow.start.cold-start", "gameflow.start.game-init", "gameflow.start.intro", "gameflow.start.region", "gameflow.start.system-init", "gameflow.start.z80-init", "map.block-mutation.copy-helper"] },
+    "indexedSourcePaths": { "type": "array", "const": ["code/gameflow/exploration/exploration.asm", "code/gameflow/exploration/explorationfunctions_0.asm", "code/gameflow/exploration/explorationfunctions_1.asm", "code/gameflow/exploration/explorationfunctions_2.asm", "code/gameflow/exploration/explorationvints.asm", "code/gameflow/mainloop.asm", "code/gameflow/start/basetiles.asm", "code/gameflow/start/gameinit.asm", "code/gameflow/start/gameintro.asm", "code/gameflow/start/gamestart.asm", "code/gameflow/start/regioncheck.asm", "code/gameflow/start/systeminit.asm", "code/gameflow/start/z80init.asm"] },
     "representativeSymbols": { "type": "object", "minProperties": 13, "maxProperties": 13 },
     "representativeAddresses": { "type": "object", "minProperties": 13, "maxProperties": 13, "additionalProperties": { "type": "integer", "minimum": 0 } },
     "internalDirectCallTargets": { "type": "array", "minItems": 33, "maxItems": 33, "uniqueItems": true },

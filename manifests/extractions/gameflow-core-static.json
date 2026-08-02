@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-gameflow-core-static-v1",
-  "outputSha256": "3950687191D102268D9C7EBD2052ACEB106206F8F23AFAE0E3E7D9FC068CF765",
+  "outputSha256": "8860D9DF81A929053784ADCE19C8A3FDAD15D04BED587F9F18D6DE36E7D652DE",
   "summary": {
     "fileCount": 13,
     "startupFileCount": 7,
@@ -16,7 +16,7 @@
     "internalDirectTargetCount": 33,
     "externalDirectTargetCount": 81,
     "layoutIncludedFileCount": 13,
-    "indexedRecordCount": 13,
+    "indexedRecordCount": 14,
     "indexedFileCount": 13
   }
 }

@@ -48,6 +48,21 @@ def _require_fragments(source: str, fragments: tuple[str, ...], owner: str) -> N
         raise ValueError(f"{owner} source-shape drift: missing {missing}")
 
 
+def _index_records_for_gameflow_scope() -> list[dict[str, Any]]:
+    """Return every accepted index record whose source belongs to this layout scope."""
+    source_paths = {path.as_posix() for path in SOURCE_PATHS}
+    records = [
+        record
+        for record in load_json(RESEARCH_INDEX)["records"]
+        if record["sourcePath"] in source_paths
+    ]
+    indexed_source_paths = {record["sourcePath"] for record in records}
+    if indexed_source_paths != source_paths:
+        missing = sorted(source_paths - indexed_source_paths)
+        raise ValueError(f"gameflow core research-index source coverage drift: missing {missing}")
+    return records
+
+
 def _startup_facts(sources: dict[str, str]) -> dict[str, Any]:
     start = sources["code/gameflow/start/gamestart.asm"]
     system = sources["code/gameflow/start/systeminit.asm"]
@@ -290,12 +305,7 @@ def build_gameflow_inventory(upstream_path: Path) -> dict[str, Any]:
     representative_addresses = {
         symbol: _listing_address(listing, symbol) for symbol in representative_symbols.values()
     }
-    source_paths = {path.as_posix() for path in SOURCE_PATHS}
-    records = [
-        record
-        for record in load_json(RESEARCH_INDEX)["records"]
-        if record["sourcePath"] in source_paths
-    ]
+    records = _index_records_for_gameflow_scope()
     sources = {path.as_posix(): read_upstream_text(disasm / path) for path in SOURCE_PATHS}
     labels = {label for row in files for label in row["globalLabels"]}
     calls: Counter[str] = Counter()
@@ -360,7 +370,13 @@ def verify_gameflow_inventory(
         raise ValueError("gameflow core summary drift")
     if output["representativeAddresses"] != fixture["function"]:
         raise ValueError("gameflow core H1 address drift")
-    for field in ("startupFacts", "explorationFacts", "runtimeQuestions"):
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "startupFacts",
+        "explorationFacts",
+        "runtimeQuestions",
+    ):
         if output[field] != fixture["expected"][field]:
             raise ValueError(f"gameflow core {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
