@@ -99,9 +99,10 @@ flowchart LR
     service --> unknown["Final service mutation and persistence remain partly Unknown"]
 ```
 
-The return arrows in this diagram are **Inferred system relationships**: stronger combatant state and
-retained resources can affect later choices because later systems read those fields. The diagram does
-not claim the original designers intended a particular power curve, spending cadence, or optimal loop.
+The links into later-action use and later service-choice use are **Inferred system relationships**:
+stronger combatant state and retained resources can affect later choices because later systems read
+those fields. The diagram does not claim the original designers intended a particular power curve,
+spending cadence, or optimal loop.
 
 ## Battle-Driven Progression
 
@@ -209,7 +210,7 @@ The table deliberately says “calls” rather than converting helper names into
 | Church Cure | poison cost 10, stun cost 20, and curse item-price `>> 2` operands | Separate status-write paths follow payment | Complete totals, final state, and presentation are not runtime-closed. |
 | Church Promote | level 20 plus regular/special promotion-data gates | `SetClass -> Promote`; special branches include item/spell/weapon handling | Complete stat effects, item edge cases, and persistence are **Unknown**. |
 | Caravan | force 12, storage 64, and member inventory 4 are distinct guards | Deposit adds to caravan before member drop; derive/give have distinct normal and exchange sequences | Helper-internal results and persistence are **Unknown**. |
-| Blacksmith placement | mithril item 123, promoted-class gate, four-order boundary, and 5,000-gold cost | `DecreaseGold -> DropItemBySlot -> PickMithrilWeapon -> ClearFlag` after earlier gates | RNG distribution, order persistence, and final fulfillment lifecycle are **Unknown**. |
+| Blacksmith placement | mithril item 123, promoted-class gate, a four-order post-placement continuation boundary (not an admission gate), and 5,000-gold cost | `DecreaseGold -> DropItemBySlot -> PickMithrilWeapon -> ClearFlag` after earlier gates | RNG distribution, order persistence, and final fulfillment lifecycle are **Unknown**. |
 
 The confirmed battle-drop route into Deals is runtime evidence. Shop, caravan, and blacksmith use of
 Deals remains source-static unless a listed runtime fixture owns the same path. These two evidence
