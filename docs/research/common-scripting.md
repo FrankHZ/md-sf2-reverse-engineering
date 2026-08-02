@@ -1010,16 +1010,37 @@ reparse or characterize the sound driver. Its 309 uses are source-enum categorie
 fixture identity and `sf2enums.asm` source identity, is guarded by SHA-256
 `205C2F9E7CC481B7C5B387D2736635FC40E5763C41544A3A8C9D0D205F4FA654`.
 
+**Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
+one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
+The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug
+P2-START/`DEBUG_MODE_TOGGLE` skip-gate path, `$06` dispatch and return, `$05`'s A6 word read and
+`SOUND_COMMAND_GET_D0_PARAMETER` trap with `MUSIC_STOP` value 32, `$0A`'s four-byte cursor advance,
+save/call/restore stack deltas, and target return, and `$0B`'s A6 replacement before `$FFFF` reaches
+the common end/return boundary. The session-only trampoline replaces `$47512` `jsr (a0)` plus its
+four-byte `$47514` `movem.l (sp)+,d0-a1` with a six-byte absolute JSR. In separately verified 20-byte
+`$FF` padding it supplies the A0 RAM script, calls `ExecuteMapScript`, uses `addq.l #4,sp` to discard
+the patched `$47518` return, then executes the original `movem.l (sp)+,d0-a1` and `rts` sequence. The
+post-handler callback is the final stub `rts` seam `$FF9A`, after the restored-register epilogue; the
+observer replays the saved Map Test prompt after that bounded completion. It does not patch the
+interpreter, handlers, trap, or their callees. Every callback is wrapped in `pcall`; a callback exception
+writes case plus expected/actual call-site, target, return, and pending state, deletes the observation,
+removes all callback IDs, and exits nonzero. The passing run reports zero residual callbacks and no Lua
+Console error.
+
 ### Grouped H3 runtime-question queue
 
-**Unknown:** the grouped queue is exactly:
+**Unknown:** the same five IDs retain only their unresolved runtime meaning:
 
-- `map-script-control-audio/wait-normal-and-skip-gate` — normal execution and skip-gate outcomes;
-- `map-script-control-audio/no-op-dispatch-boundary` — dispatch and return observations for `$06`;
-- `map-script-control-audio/sound-dispatch-boundary` — sound-command consumer behavior and timing;
-- `map-script-control-audio/subroutine-call-return-boundary` — callee effects and return-state behavior;
-- `map-script-control-audio/jump-cursor-redirect-and-end-boundary` — cursor redirect, termination, and
-  any normal-story reachability.
+- `map-script-control-audio/wait-normal-and-skip-gate` — durations beyond D0=1 and normal-story input
+  sampling;
+- `map-script-control-audio/no-op-dispatch-boundary` — normal-story reachability beyond the synthetic
+  `$06` dispatch/return seam;
+- `map-script-control-audio/sound-dispatch-boundary` — sound-driver, Z80/YM/PSG, audible, and timing
+  effects after the observed trap;
+- `map-script-control-audio/subroutine-call-return-boundary` — arbitrary target effects, persistence,
+  and caller-context behavior beyond the bounded direct-`rts` target;
+- `map-script-control-audio/jump-cursor-redirect-and-end-boundary` — normal-story reachability and
+  effects of real target streams.
 
 Provenance: pinned `ShiningForceCentral/SF2DISASM` branch `master`, commit
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; `disasm/sf2cutscenemacros.asm` forms named above;
@@ -1029,7 +1050,12 @@ named handlers; `sf2enums.asm`; H1 listing addresses above; and local US ROM SHA
 `uv run pytest tests/python/test_map_script_engine.py -k script_control -q` and
 `uv run sf2 h2 map-script-engine`; observed static result is fixture ID
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field
-`expected.scriptControlCommandFacts`.
+`expected.scriptControlCommandFacts`. Reproduce the bounded runtime result with
+`uv run sf2 h3 map-script-control-audio --timeout-seconds 180`; its fixture is
+`tests/fixtures/h3/map-script-control-audio-v1.json`, ID
+`sf2-map-script-control-audio-runtime-v1`, parsed by
+`schemas/h3/h3-map-script-control-audio-observation.schema.json` and observed by
+`tools/bizhawk/map_script_control_audio_observer.lua`.
 
 ## Confirmed Map-Script Roster/Death Command Family
 

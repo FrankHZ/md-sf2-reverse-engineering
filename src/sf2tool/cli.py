@@ -108,6 +108,7 @@ from sf2tool.h3.map_event_dispatch import verify_map_event_dispatch
 from sf2tool.h3.map_init_dispatch import verify_map_init_dispatch
 from sf2tool.h3.map_interaction_trigger import verify_map_interaction_trigger
 from sf2tool.h3.map_lifecycle import verify_map_lifecycle
+from sf2tool.h3.map_script_control_audio import verify_map_script_control_audio
 from sf2tool.h3.map_script_dialogue import verify_map_script_dialogue
 from sf2tool.h3.map_script_entity_clone import verify_map_script_entity_clone
 from sf2tool.h3.map_script_entity_presentation_fx import (
@@ -722,6 +723,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_lifecycle)
     h3_map_lifecycle.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map_script_control_audio = h3_commands.add_parser(
+        "map-script-control-audio",
+        help="verify one-launch map-script wait, control, and sound-command dispatch boundaries",
+    )
+    _add_local_paths(h3_map_script_control_audio)
+    h3_map_script_control_audio.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_block_mutation = h3_commands.add_parser(
         "map-block-mutation",
         help="verify one-launch set-blocks and set-blocks-var layout mutation boundaries",
@@ -1643,6 +1650,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-lifecycle":
         print_record(
             verify_map_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-script-control-audio":
+        print_record(
+            verify_map_script_control_audio(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
