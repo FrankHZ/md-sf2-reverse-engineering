@@ -4235,5 +4235,77 @@
     {"id":"map.script-dialogue.text-cursor","subsystem":"map.script-dialogue.runtime","status":"confirmed","symbol":"csc04_setTextIndex","sourcePath":"code/common/scripting/map/mapscriptengine_2.asm","addresses":[{"id":"entry","space":"rom","kind":"symbol","value":291698},{"id":"return","space":"rom","kind":"observation","value":291702,"description":"Handler rts observed before its call-return stack pop"}],"evidence":[{"level":"H3","fixture":"tests/fixtures/h3/map-script-dialogue-v1.json","fixtureId":"sf2-map-script-dialogue-runtime-v1","verifier":"src/sf2tool/h3/map_script_dialogue.py","bindings":[{"addressId":"entry","fixtureField":"function.csc04_setTextIndexAddress"},{"addressId":"return","fixtureField":"function.csc04_setTextIndexReturnAddress"}]}],"documents":["docs/research/common-scripting.md"],"designContracts":["docs/design/dialogue-system.md"]},
     {"id":"map.script-dialogue.hide-text","subsystem":"map.script-dialogue.runtime","status":"confirmed","symbol":"csc09_hideDialogueAndPortraitWindows","sourcePath":"code/common/scripting/map/mapscriptengine_2.asm","addresses":[{"id":"entry","space":"rom","kind":"symbol","value":291838},{"id":"return","space":"rom","kind":"observation","value":291848,"description":"Handler rts observed before its call-return stack pop"}],"evidence":[{"level":"H3","fixture":"tests/fixtures/h3/map-script-dialogue-v1.json","fixtureId":"sf2-map-script-dialogue-runtime-v1","verifier":"src/sf2tool/h3/map_script_dialogue.py","bindings":[{"addressId":"entry","fixtureField":"function.csc09_hideDialogueAndPortraitWindowsAddress"},{"addressId":"return","fixtureField":"function.csc09_hideDialogueAndPortraitWindowsReturnAddress"}]}],"documents":["docs/research/common-scripting.md"],"designContracts":["docs/design/dialogue-system.md"]},
     {"id":"map.script.entity-clone.runtime-boundary","subsystem":"map.script.entity-clone.runtime","status":"confirmed","symbol":"csc25_cloneEntity","sourcePath":"code/common/scripting/map/mapscriptengine_1.asm","addresses":[{"id":"entry","space":"rom","kind":"symbol","value":289882},{"id":"source-operand-read","space":"rom","kind":"observation","value":289882,"description":"First advancing A6 word-read PC."},{"id":"source-lookup-call","space":"rom","kind":"observation","value":289884,"description":"First direct BSR observed before the unmodified lookup entry."},{"id":"source-byte-read","space":"rom","kind":"observation","value":289888,"description":"First lookup return-resumption and source-named byte-read PC."},{"id":"source-lookup-return","space":"rom","kind":"observation","value":289888,"description":"First lookup return-resumption PC."},{"id":"destination-word-read","space":"rom","kind":"observation","value":289892,"description":"Second advancing A6 word-read PC."},{"id":"destination-lookup-call","space":"rom","kind":"observation","value":289894,"description":"Second direct BSR observed before the unmodified lookup entry."},{"id":"destination-byte-write","space":"rom","kind":"observation","value":289898,"description":"Second lookup return-resumption and source-named byte-write PC."},{"id":"destination-lookup-return","space":"rom","kind":"observation","value":289898,"description":"Second lookup return-resumption PC."},{"id":"return","space":"rom","kind":"observation","value":289902,"description":"Handler rts observed before its call-return stack pop."},{"id":"lookup-entry","space":"rom","kind":"observation","value":290890,"description":"Actual unpatched GetEntityAddressFromCharacter entry observed for both calls."},{"id":"run-map-setup-entry","space":"rom","kind":"observation","value":292092,"description":"Session trampoline entry reached by the Map Test harness."},{"id":"entity-data","space":"ram","kind":"state","value":16754946,"symbol":"ENTITY_DATA"},{"id":"entity-index-list","space":"ram","kind":"state","value":16757056,"symbol":"ENTITY_INDEX_LIST"}],"evidence":[{"level":"H3","fixture":"tests/fixtures/h3/map-script-entity-clone-v1.json","fixtureId":"sf2-map-script-entity-clone-runtime-v1","verifier":"src/sf2tool/h3/map_script_entity_clone.py","bindings":[{"addressId":"entry","fixtureField":"function.handlerEntryAddress"},{"addressId":"source-operand-read","fixtureField":"function.sourceOperandReadAddress"},{"addressId":"source-lookup-call","fixtureField":"function.sourceLookupCallSiteAddress"},{"addressId":"source-byte-read","fixtureField":"function.sourceFieldReadAddress"},{"addressId":"source-lookup-return","fixtureField":"function.sourceLookupReturnAddress"},{"addressId":"destination-word-read","fixtureField":"function.destinationOperandReadAddress"},{"addressId":"destination-lookup-call","fixtureField":"function.destinationLookupCallSiteAddress"},{"addressId":"destination-byte-write","fixtureField":"function.destinationFieldWriteAddress"},{"addressId":"destination-lookup-return","fixtureField":"function.destinationLookupReturnAddress"},{"addressId":"return","fixtureField":"function.handlerRtsAddress"},{"addressId":"lookup-entry","fixtureField":"function.lookupEntryAddress"},{"addressId":"run-map-setup-entry","fixtureField":"function.runMapSetupInitFunctionAddress"},{"addressId":"entity-data","fixtureField":"ram.entityDataAddress"},{"addressId":"entity-index-list","fixtureField":"ram.entityIndexListAddress"}]}],"documents":["docs/research/common-scripting.md"],"designContracts":["docs/design/map-exploration.md"]}
+    ,
+    {
+      "id": "map.script-control-audio.runtime",
+      "subsystem": "map.script-control-audio.runtime",
+      "status": "confirmed",
+      "symbol": "ExecuteMapScript",
+      "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+      "addresses": [
+        {"id":"run-map-setup-entry","space":"rom","kind":"observation","value":292092,"description":"Session-only Map Test trampoline wrapper entry."},
+        {"id":"injection-call","space":"rom","kind":"observation","value":292114,"description":"Session-only trampoline replacement call site."},
+        {"id":"trampoline-post-handler","space":"rom","kind":"observation","value":65434,"description":"Session-only trampoline final rts seam, reached after it discards the patched-call return and executes the source movem.l (sp)+,d0-a1 epilogue."},
+        {"id":"entry","space":"rom","kind":"symbol","value":291116},
+        {"id":"script-word-read-after","space":"rom","kind":"observation","value":291160},
+        {"id":"wait-skip-gate-set","space":"rom","kind":"observation","value":291152},
+        {"id":"wait-sleep-call","space":"rom","kind":"observation","value":291182},
+        {"id":"wait-skip-target","space":"rom","kind":"observation","value":291186},
+        {"id":"opcode-dispatch-call","space":"rom","kind":"observation","value":291194},
+        {"id":"opcode-dispatch-return","space":"rom","kind":"observation","value":291198},
+        {"id":"end","space":"rom","kind":"observation","value":291380},
+        {"id":"csc05-entry","space":"rom","kind":"observation","value":291704},
+        {"id":"csc05-trap","space":"rom","kind":"observation","value":291706},
+        {"id":"csc05-return","space":"rom","kind":"observation","value":291710},
+        {"id":"csc06-entry","space":"rom","kind":"observation","value":291712},
+        {"id":"csc0a-entry","space":"rom","kind":"observation","value":291850},
+        {"id":"csc0a-cursor-after-read","space":"rom","kind":"observation","value":291852},
+        {"id":"csc0a-indirect-call","space":"rom","kind":"observation","value":291854},
+        {"id":"csc0a-resume","space":"rom","kind":"observation","value":291856},
+        {"id":"csc0a-return","space":"rom","kind":"observation","value":291858},
+        {"id":"csc0b-entry","space":"rom","kind":"observation","value":291860},
+        {"id":"csc0b-cursor-redirect","space":"rom","kind":"observation","value":291862},
+        {"id":"player-2-input","space":"ram","kind":"state","value":16768665,"symbol":"PLAYER_2_INPUT"},
+        {"id":"debug-mode-toggle","space":"ram","kind":"state","value":16756905,"symbol":"DEBUG_MODE_TOGGLE"},
+        {"id":"skip-cutscene-text","space":"ram","kind":"state","value":16758344,"symbol":"SKIP_CUTSCENE_TEXT"}
+      ],
+      "evidence": [
+        {
+          "level":"H3",
+          "fixture":"tests/fixtures/h3/map-script-control-audio-v1.json",
+          "fixtureId":"sf2-map-script-control-audio-runtime-v1",
+          "verifier":"src/sf2tool/h3/map_script_control_audio.py",
+          "bindings":[
+            {"addressId":"run-map-setup-entry","fixtureField":"function.entryAddress"},
+            {"addressId":"injection-call","fixtureField":"function.entryInjectionCallSiteAddress"},
+            {"addressId":"trampoline-post-handler","fixtureField":"instrumentation.trampolinePostHandlerAddress"},
+            {"addressId":"entry","fixtureField":"function.executeMapScriptAddress"},
+            {"addressId":"script-word-read-after","fixtureField":"function.scriptWordReadAfterAddress"},
+            {"addressId":"wait-skip-gate-set","fixtureField":"function.waitSkipGateSetAddress"},
+            {"addressId":"wait-sleep-call","fixtureField":"function.waitSleepCallAddress"},
+            {"addressId":"wait-skip-target","fixtureField":"function.waitSkipTargetAddress"},
+            {"addressId":"opcode-dispatch-call","fixtureField":"function.opcodeDispatchCallAddress"},
+            {"addressId":"opcode-dispatch-return","fixtureField":"function.opcodeDispatchReturnAddress"},
+            {"addressId":"end","fixtureField":"function.endAddress"},
+            {"addressId":"csc05-entry","fixtureField":"function.csc05PlaySoundAddress"},
+            {"addressId":"csc05-trap","fixtureField":"function.playSoundTrapAddress"},
+            {"addressId":"csc05-return","fixtureField":"function.playSoundReturnAddress"},
+            {"addressId":"csc06-entry","fixtureField":"function.csc06DoNothingAddress"},
+            {"addressId":"csc0a-entry","fixtureField":"function.csc0AExecuteSubroutineAddress"},
+            {"addressId":"csc0a-cursor-after-read","fixtureField":"function.subroutineCursorAfterReadAddress"},
+            {"addressId":"csc0a-indirect-call","fixtureField":"function.subroutineIndirectCallAddress"},
+            {"addressId":"csc0a-resume","fixtureField":"function.subroutineResumeAddress"},
+            {"addressId":"csc0a-return","fixtureField":"function.subroutineReturnAddress"},
+            {"addressId":"csc0b-entry","fixtureField":"function.csc0BJumpAddress"},
+            {"addressId":"csc0b-cursor-redirect","fixtureField":"function.jumpCursorRedirectAfterAddress"},
+            {"addressId":"player-2-input","fixtureField":"ram.player2InputAddress"},
+            {"addressId":"debug-mode-toggle","fixtureField":"ram.debugModeToggleAddress"},
+            {"addressId":"skip-cutscene-text","fixtureField":"ram.skipCutsceneTextAddress"}
+          ]
+        }
+      ],
+      "documents":["docs/research/common-scripting.md"],
+      "designContracts":["docs/design/map-exploration.md"]
+    }
   ]
 }

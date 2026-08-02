@@ -56,6 +56,8 @@ Evidence is executable through:
   `tests/fixtures/h3/entity-movement-matrix-v1.json`;
 - `sf2-map-lifecycle-runtime-v1` in
   `tests/fixtures/h3/map-lifecycle-v1.json`;
+- `sf2-map-script-control-audio-runtime-v1` in
+  `tests/fixtures/h3/map-script-control-audio-v1.json`;
 - `sf2-map-interaction-trigger-runtime-v1` in
   `tests/fixtures/h3/map-interaction-trigger-v1.json`.
 - `sf2-map-script-ui-primary-runtime-v1` in
@@ -115,9 +117,20 @@ post-increment before its save/call/restore sequence; `jump` transfers a four-by
 zero cursor advance. These source control-flow facts require fidelity tests, but they do not establish
 timer units, sound playback, story reachability, persistence, or player-visible presentation.
 
-**Unknown:** runtime behavior remains only the grouped
-`map-script-control-audio/*` queue in
-[`common-scripting.md`](../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary).
+**Confirmed runtime boundary:** `sf2-map-script-control-audio-runtime-v1` preserves six one-launch
+interpreter observations: D0=1 and one `WaitForVInt` entry versus debug P2-START skip, `$06`
+dispatch/return, `$05` raw sound word and trap boundary, `$0A` cursor/stack/callee-return boundary,
+`$0B` cursor replacement, and the `$FFFF` end/return. Its session-only entry seam preserves the source
+wrapper epilogue before the observer records completion; it is an H3 harness boundary, not a gameplay
+contract. At shared physical callback PCs, the observer selects failure diagnostics by exact fixture
+case role while retaining one registration; this is likewise not adapter behavior. An
+original-fidelity adapter MUST retain these control and cursor facts without converting a source enum or
+observed trap into an audible, timing, persistence, or player-visible contract.
+
+**Unknown:** the grouped `map-script-control-audio/*` queue in
+[`common-scripting.md`](../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary)
+retains larger-duration timing, sound-driver/audible outcome, arbitrary callee effects, normal-story reachability,
+and presentation behavior.
 
 Direct map-event `txt` and operand-free `clsTxt` forms are likewise source identities, not a display
 contract. An importer MUST retain each ordered site as either a numeric text-line identifier or the

@@ -79,7 +79,9 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   program-site/handler/caller 合同、两个 map-script block-copy command 的 208 条 ordered
   program-site/handler/cursor/helper/caller 合同、四个 map-script entity population/reload command 的
   96 条 ordered program-site/handler/caller 合同、单个 source-named `cloneEntity` command 的 9 条
-  ordered program-site/handler/caller 合同、三个 map-script camera-control command 的 415 条
+  ordered program-site/handler/caller 合同、七个 map-script control/audio form 的 2,336 条 ordered
+  source-site/static-control 合同与单启动六 case wait/skip/no-op/sound/subroutine/jump/end H3 边界、
+  三个 map-script camera-control command 的 415 条
   ordered program-site/handler/caller/service 合同、四个 map-script map lifecycle command 的 108 条
   ordered program-site/handler/caller 合同，以及单启动五 case 的 handler return、direct-H1-JSR-site
   order、map/camera word 和双 marker H3 合同、三个 map-script camera-control command 的单启动七 case

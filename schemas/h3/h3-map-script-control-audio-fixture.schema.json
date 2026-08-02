@@ -1,0 +1,889 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schemaVersion",
+        "id",
+        "system",
+        "romSha256",
+        "upstreamCommit",
+        "evidenceDate",
+        "emulator",
+        "mapTestIndex",
+        "sharedHarnessFixture",
+        "staticContractFixture",
+        "observationBoundary",
+        "runtimeQuestions",
+        "provenance",
+        "function",
+        "ram",
+        "constants",
+        "instrumentation",
+        "maxFrames",
+        "cases"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": 1
+        },
+        "id": {
+            "const": "sf2-map-script-control-audio-runtime-v1"
+        },
+        "system": {
+            "const": "GEN"
+        },
+        "romSha256": {
+            "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+        },
+        "upstreamCommit": {
+            "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+        },
+        "evidenceDate": {
+            "const": "2026-08-01"
+        },
+        "emulator": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/emulator"
+                },
+                {
+                    "const": {
+                        "name": "BizHawk",
+                        "version": "2.11.1",
+                        "core": "Genesis Plus GX"
+                    }
+                }
+            ]
+        },
+        "mapTestIndex": {
+            "const": 0
+        },
+        "sharedHarnessFixture": {
+            "const": "tests/fixtures/h3/spell-damage-resistance-v1.json"
+        },
+        "staticContractFixture": {
+            "const": "tests/fixtures/h2/map-script-engine-static-v1.json"
+        },
+        "observationBoundary": {
+            "const": "Six RAM-owned streams run through the unmodified ExecuteMapScript loop in one debug Map Test 0 launch. A session-only RunMapSetupInitFunction trampoline replaces its jsr (a0) plus movem span with an absolute JSR, supplies the original A0 script input, discards that patched return, and then executes the source movem.l (sp)+,d0-a1 and rts epilogue in verified 20-byte FF padding. The observer records at the final stub rts after the restored-register epilogue, plus interpreter word reads, the debug P2-START skip-gate branch, Sleep call presence and the one WaitForVInt entry for D0=1, opcode dispatch, the csc05 sound-command trap seam, csc06 return, csc0A target/cursor/stack return boundary, csc0B cursor replacement, and csc_end return. It does not characterize larger Sleep durations, audible/Z80/YM/PSG results, persistence, normal-story reachability, or arbitrary callee effects."
+        },
+        "runtimeQuestions": {
+            "const": [
+                "map-script-control-audio/wait-normal-and-skip-gate",
+                "map-script-control-audio/no-op-dispatch-boundary",
+                "map-script-control-audio/sound-dispatch-boundary",
+                "map-script-control-audio/subroutine-call-return-boundary",
+                "map-script-control-audio/jump-cursor-redirect-and-end-boundary"
+            ]
+        },
+        "provenance": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/provenance"
+                },
+                {
+                    "const": {
+                        "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+                        "upstreamBranch": "master",
+                        "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+                        "h2FixturePath": "tests/fixtures/h2/map-script-engine-static-v1.json",
+                        "h2FixtureId": "sf2-map-script-engine-static-v1",
+                        "h2FieldPath": "expected.scriptControlCommandFacts",
+                        "command": "uv run sf2 h2 map-script-engine"
+                    }
+                }
+            ]
+        },
+        "function": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/function"
+                },
+                {
+                    "const": {
+                        "entryAddress": 292092,
+                        "entryInjectionCallSiteAddress": 292114,
+                        "executeMapScriptAddress": 291116,
+                        "scriptWordReadAfterAddress": 291160,
+                        "waitSkipGateSetAddress": 291152,
+                        "waitSleepCallAddress": 291182,
+                        "waitSkipTargetAddress": 291186,
+                        "opcodeDispatchCallAddress": 291194,
+                        "opcodeDispatchReturnAddress": 291198,
+                        "endAddress": 291380,
+                        "csc05PlaySoundAddress": 291704,
+                        "playSoundTrapAddress": 291706,
+                        "playSoundReturnAddress": 291710,
+                        "csc06DoNothingAddress": 291712,
+                        "csc0AExecuteSubroutineAddress": 291850,
+                        "subroutineCursorAfterReadAddress": 291852,
+                        "subroutineIndirectCallAddress": 291854,
+                        "subroutineResumeAddress": 291856,
+                        "subroutineReturnAddress": 291858,
+                        "csc0BJumpAddress": 291860,
+                        "jumpCursorRedirectAfterAddress": 291862
+                    }
+                }
+            ]
+        },
+        "ram": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/ram"
+                },
+                {
+                    "const": {
+                        "player2InputAddress": 16768665,
+                        "debugModeToggleAddress": 16756905,
+                        "skipCutsceneTextAddress": 16758344
+                    }
+                }
+            ]
+        },
+        "constants": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/constants"
+                },
+                {
+                    "const": {
+                        "inputBitStart": 7,
+                        "inputStartMask": 128,
+                        "savedA0StackBytes": 4,
+                        "jsrReturnStackBytes": 4
+                    }
+                }
+            ]
+        },
+        "instrumentation": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/instrumentation"
+                },
+                {
+                    "const": {
+                        "callSiteAddress": 292114,
+                        "callSiteOriginalHex": "4E904CDF03FF",
+                        "callSitePatchedHex": "4EB90000FF88",
+                        "stubAddress": 65416,
+                        "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+                        "stubHex": "207C00FF40044EB90004712C588F4CDF03FF4E75",
+                        "trampolinePostHandlerAddress": 65434,
+                        "ramInputAddress": 16728064
+                    }
+                }
+            ]
+        },
+        "maxFrames": {
+            "const": 7200
+        },
+        "cases": {
+            "allOf": [
+                {
+                    "type": "array",
+                    "minItems": 6,
+                    "maxItems": 6,
+                    "items": {
+                        "$ref": "#/definitions/case"
+                    }
+                },
+                {
+                    "const": [
+                        {
+                            "id": "wait-normal",
+                            "questionId": "map-script-control-audio/wait-normal-and-skip-gate",
+                            "kind": "wait-normal",
+                            "input": {
+                                "waitDuration": 1,
+                                "soundSourceSymbol": null,
+                                "subroutineTarget": null
+                            },
+                            "expected": {
+                                "id": "wait-normal",
+                                "questionId": "map-script-control-audio/wait-normal-and-skip-gate",
+                                "handlerEntries": [
+                                    "ExecuteMapScript"
+                                ],
+                                "executeMapScriptReturned": true,
+                                "scriptWordReads": [
+                                    {
+                                        "word": 32769,
+                                        "cursorAfterReadOffset": 2
+                                    },
+                                    {
+                                        "word": 65535,
+                                        "cursorAfterReadOffset": 4
+                                    }
+                                ],
+                                "skipGateSetObserved": false,
+                                "sleepCallObserved": true,
+                                "sleepD0Word": 1,
+                                "dispatchCallObserved": false,
+                                "playSoundTrapD0Word": null,
+                                "csc06Returned": false,
+                                "subroutineCursorAfterReadOffset": null,
+                                "subroutineStackDeltaAtCall": null,
+                                "subroutineTargetStackDelta": null,
+                                "subroutineTargetReturned": false,
+                                "subroutineResumeStackDelta": null,
+                                "jumpCursorRedirectOffset": null,
+                                "endReached": true
+                            }
+                        },
+                        {
+                            "id": "wait-skip",
+                            "questionId": "map-script-control-audio/wait-normal-and-skip-gate",
+                            "kind": "wait-skip",
+                            "input": {
+                                "waitDuration": 1,
+                                "soundSourceSymbol": null,
+                                "subroutineTarget": null
+                            },
+                            "expected": {
+                                "id": "wait-skip",
+                                "questionId": "map-script-control-audio/wait-normal-and-skip-gate",
+                                "handlerEntries": [
+                                    "ExecuteMapScript"
+                                ],
+                                "executeMapScriptReturned": true,
+                                "scriptWordReads": [
+                                    {
+                                        "word": 32769,
+                                        "cursorAfterReadOffset": 2
+                                    },
+                                    {
+                                        "word": 65535,
+                                        "cursorAfterReadOffset": 4
+                                    }
+                                ],
+                                "skipGateSetObserved": true,
+                                "sleepCallObserved": false,
+                                "sleepD0Word": null,
+                                "dispatchCallObserved": false,
+                                "playSoundTrapD0Word": null,
+                                "csc06Returned": false,
+                                "subroutineCursorAfterReadOffset": null,
+                                "subroutineStackDeltaAtCall": null,
+                                "subroutineTargetStackDelta": null,
+                                "subroutineTargetReturned": false,
+                                "subroutineResumeStackDelta": null,
+                                "jumpCursorRedirectOffset": null,
+                                "endReached": true
+                            }
+                        },
+                        {
+                            "id": "csc06-no-op",
+                            "questionId": "map-script-control-audio/no-op-dispatch-boundary",
+                            "kind": "no-op",
+                            "input": {
+                                "waitDuration": null,
+                                "soundSourceSymbol": null,
+                                "subroutineTarget": null
+                            },
+                            "expected": {
+                                "id": "csc06-no-op",
+                                "questionId": "map-script-control-audio/no-op-dispatch-boundary",
+                                "handlerEntries": [
+                                    "ExecuteMapScript",
+                                    "csc06_doNothing"
+                                ],
+                                "executeMapScriptReturned": true,
+                                "scriptWordReads": [
+                                    {
+                                        "word": 6,
+                                        "cursorAfterReadOffset": 2
+                                    },
+                                    {
+                                        "word": 65535,
+                                        "cursorAfterReadOffset": 4
+                                    }
+                                ],
+                                "skipGateSetObserved": false,
+                                "sleepCallObserved": false,
+                                "sleepD0Word": null,
+                                "dispatchCallObserved": true,
+                                "playSoundTrapD0Word": null,
+                                "csc06Returned": true,
+                                "subroutineCursorAfterReadOffset": null,
+                                "subroutineStackDeltaAtCall": null,
+                                "subroutineTargetStackDelta": null,
+                                "subroutineTargetReturned": false,
+                                "subroutineResumeStackDelta": null,
+                                "jumpCursorRedirectOffset": null,
+                                "endReached": true
+                            }
+                        },
+                        {
+                            "id": "play-sound-dispatch",
+                            "questionId": "map-script-control-audio/sound-dispatch-boundary",
+                            "kind": "sound",
+                            "input": {
+                                "waitDuration": null,
+                                "soundSourceSymbol": "MUSIC_STOP",
+                                "subroutineTarget": null
+                            },
+                            "expected": {
+                                "id": "play-sound-dispatch",
+                                "questionId": "map-script-control-audio/sound-dispatch-boundary",
+                                "handlerEntries": [
+                                    "ExecuteMapScript",
+                                    "csc05_playSound"
+                                ],
+                                "executeMapScriptReturned": true,
+                                "scriptWordReads": [
+                                    {
+                                        "word": 5,
+                                        "cursorAfterReadOffset": 2
+                                    },
+                                    {
+                                        "word": 32,
+                                        "cursorAfterReadOffset": 4
+                                    },
+                                    {
+                                        "word": 65535,
+                                        "cursorAfterReadOffset": 6
+                                    }
+                                ],
+                                "skipGateSetObserved": false,
+                                "sleepCallObserved": false,
+                                "sleepD0Word": null,
+                                "dispatchCallObserved": true,
+                                "playSoundTrapD0Word": 32,
+                                "csc06Returned": false,
+                                "subroutineCursorAfterReadOffset": null,
+                                "subroutineStackDeltaAtCall": null,
+                                "subroutineTargetStackDelta": null,
+                                "subroutineTargetReturned": false,
+                                "subroutineResumeStackDelta": null,
+                                "jumpCursorRedirectOffset": null,
+                                "endReached": true
+                            }
+                        },
+                        {
+                            "id": "execute-subroutine-return",
+                            "questionId": "map-script-control-audio/subroutine-call-return-boundary",
+                            "kind": "subroutine",
+                            "input": {
+                                "waitDuration": null,
+                                "soundSourceSymbol": null,
+                                "subroutineTarget": "csc06_doNothing"
+                            },
+                            "expected": {
+                                "id": "execute-subroutine-return",
+                                "questionId": "map-script-control-audio/subroutine-call-return-boundary",
+                                "handlerEntries": [
+                                    "ExecuteMapScript",
+                                    "csc0A_executeSubroutine",
+                                    "csc06_doNothing"
+                                ],
+                                "executeMapScriptReturned": true,
+                                "scriptWordReads": [
+                                    {
+                                        "word": 10,
+                                        "cursorAfterReadOffset": 2
+                                    },
+                                    {
+                                        "word": 65535,
+                                        "cursorAfterReadOffset": 8
+                                    }
+                                ],
+                                "skipGateSetObserved": false,
+                                "sleepCallObserved": false,
+                                "sleepD0Word": null,
+                                "dispatchCallObserved": true,
+                                "playSoundTrapD0Word": null,
+                                "csc06Returned": false,
+                                "subroutineCursorAfterReadOffset": 6,
+                                "subroutineStackDeltaAtCall": -4,
+                                "subroutineTargetStackDelta": -8,
+                                "subroutineTargetReturned": true,
+                                "subroutineResumeStackDelta": -4,
+                                "jumpCursorRedirectOffset": null,
+                                "endReached": true
+                            }
+                        },
+                        {
+                            "id": "jump-cursor-and-end",
+                            "questionId": "map-script-control-audio/jump-cursor-redirect-and-end-boundary",
+                            "kind": "jump",
+                            "input": {
+                                "waitDuration": null,
+                                "soundSourceSymbol": null,
+                                "subroutineTarget": null
+                            },
+                            "expected": {
+                                "id": "jump-cursor-and-end",
+                                "questionId": "map-script-control-audio/jump-cursor-redirect-and-end-boundary",
+                                "handlerEntries": [
+                                    "ExecuteMapScript",
+                                    "csc0B_jump"
+                                ],
+                                "executeMapScriptReturned": true,
+                                "scriptWordReads": [
+                                    {
+                                        "word": 11,
+                                        "cursorAfterReadOffset": 2
+                                    },
+                                    {
+                                        "word": 65535,
+                                        "cursorAfterReadOffset": 8
+                                    }
+                                ],
+                                "skipGateSetObserved": false,
+                                "sleepCallObserved": false,
+                                "sleepD0Word": null,
+                                "dispatchCallObserved": true,
+                                "playSoundTrapD0Word": null,
+                                "csc06Returned": false,
+                                "subroutineCursorAfterReadOffset": null,
+                                "subroutineStackDeltaAtCall": null,
+                                "subroutineTargetStackDelta": null,
+                                "subroutineTargetReturned": false,
+                                "subroutineResumeStackDelta": null,
+                                "jumpCursorRedirectOffset": 6,
+                                "endReached": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "definitions": {
+        "emulator": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "version",
+                "core"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "core": {
+                    "type": "string"
+                }
+            }
+        },
+        "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "upstreamRepository",
+                "upstreamBranch",
+                "upstreamCommit",
+                "h2FixturePath",
+                "h2FixtureId",
+                "h2FieldPath",
+                "command"
+            ],
+            "properties": {
+                "upstreamRepository": {
+                    "type": "string"
+                },
+                "upstreamBranch": {
+                    "type": "string"
+                },
+                "upstreamCommit": {
+                    "type": "string"
+                },
+                "h2FixturePath": {
+                    "type": "string"
+                },
+                "h2FixtureId": {
+                    "type": "string"
+                },
+                "h2FieldPath": {
+                    "type": "string"
+                },
+                "command": {
+                    "type": "string"
+                }
+            }
+        },
+        "function": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "entryAddress",
+                "entryInjectionCallSiteAddress",
+                "executeMapScriptAddress",
+                "scriptWordReadAfterAddress",
+                "waitSkipGateSetAddress",
+                "waitSleepCallAddress",
+                "waitSkipTargetAddress",
+                "opcodeDispatchCallAddress",
+                "opcodeDispatchReturnAddress",
+                "endAddress",
+                "csc05PlaySoundAddress",
+                "playSoundTrapAddress",
+                "playSoundReturnAddress",
+                "csc06DoNothingAddress",
+                "csc0AExecuteSubroutineAddress",
+                "subroutineCursorAfterReadAddress",
+                "subroutineIndirectCallAddress",
+                "subroutineResumeAddress",
+                "subroutineReturnAddress",
+                "csc0BJumpAddress",
+                "jumpCursorRedirectAfterAddress"
+            ],
+            "properties": {
+                "entryAddress": {
+                    "type": "integer"
+                },
+                "entryInjectionCallSiteAddress": {
+                    "type": "integer"
+                },
+                "executeMapScriptAddress": {
+                    "type": "integer"
+                },
+                "scriptWordReadAfterAddress": {
+                    "type": "integer"
+                },
+                "waitSkipGateSetAddress": {
+                    "type": "integer"
+                },
+                "waitSleepCallAddress": {
+                    "type": "integer"
+                },
+                "waitSkipTargetAddress": {
+                    "type": "integer"
+                },
+                "opcodeDispatchCallAddress": {
+                    "type": "integer"
+                },
+                "opcodeDispatchReturnAddress": {
+                    "type": "integer"
+                },
+                "endAddress": {
+                    "type": "integer"
+                },
+                "csc05PlaySoundAddress": {
+                    "type": "integer"
+                },
+                "playSoundTrapAddress": {
+                    "type": "integer"
+                },
+                "playSoundReturnAddress": {
+                    "type": "integer"
+                },
+                "csc06DoNothingAddress": {
+                    "type": "integer"
+                },
+                "csc0AExecuteSubroutineAddress": {
+                    "type": "integer"
+                },
+                "subroutineCursorAfterReadAddress": {
+                    "type": "integer"
+                },
+                "subroutineIndirectCallAddress": {
+                    "type": "integer"
+                },
+                "subroutineResumeAddress": {
+                    "type": "integer"
+                },
+                "subroutineReturnAddress": {
+                    "type": "integer"
+                },
+                "csc0BJumpAddress": {
+                    "type": "integer"
+                },
+                "jumpCursorRedirectAfterAddress": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ram": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "player2InputAddress",
+                "debugModeToggleAddress",
+                "skipCutsceneTextAddress"
+            ],
+            "properties": {
+                "player2InputAddress": {
+                    "type": "integer"
+                },
+                "debugModeToggleAddress": {
+                    "type": "integer"
+                },
+                "skipCutsceneTextAddress": {
+                    "type": "integer"
+                }
+            }
+        },
+        "constants": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "inputBitStart",
+                "inputStartMask",
+                "savedA0StackBytes",
+                "jsrReturnStackBytes"
+            ],
+            "properties": {
+                "inputBitStart": {
+                    "type": "integer"
+                },
+                "inputStartMask": {
+                    "type": "integer"
+                },
+                "savedA0StackBytes": {
+                    "type": "integer"
+                },
+                "jsrReturnStackBytes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "instrumentation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "callSiteAddress",
+                "callSiteOriginalHex",
+                "callSitePatchedHex",
+                "stubAddress",
+                "stubOriginalHex",
+                "stubHex",
+                "trampolinePostHandlerAddress",
+                "ramInputAddress"
+            ],
+            "properties": {
+                "callSiteAddress": {
+                    "type": "integer"
+                },
+                "callSiteOriginalHex": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]+$"
+                },
+                "callSitePatchedHex": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]+$"
+                },
+                "stubAddress": {
+                    "type": "integer"
+                },
+                "stubOriginalHex": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]+$"
+                },
+                "stubHex": {
+                    "type": "string",
+                    "pattern": "^[0-9A-F]+$"
+                },
+                "trampolinePostHandlerAddress": {
+                    "type": "integer"
+                },
+                "ramInputAddress": {
+                    "type": "integer"
+                }
+            }
+        },
+        "case": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "questionId",
+                "kind",
+                "input",
+                "expected"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "questionId": {
+                    "enum": [
+                        "map-script-control-audio/wait-normal-and-skip-gate",
+                        "map-script-control-audio/no-op-dispatch-boundary",
+                        "map-script-control-audio/sound-dispatch-boundary",
+                        "map-script-control-audio/subroutine-call-return-boundary",
+                        "map-script-control-audio/jump-cursor-redirect-and-end-boundary"
+                    ]
+                },
+                "kind": {
+                    "enum": [
+                        "wait-normal",
+                        "wait-skip",
+                        "no-op",
+                        "sound",
+                        "subroutine",
+                        "jump"
+                    ]
+                },
+                "input": {
+                    "$ref": "#/definitions/input"
+                },
+                "expected": {
+                    "$ref": "#/definitions/expected"
+                }
+            }
+        },
+        "input": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "waitDuration",
+                "soundSourceSymbol",
+                "subroutineTarget"
+            ],
+            "properties": {
+                "waitDuration": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 255
+                },
+                "soundSourceSymbol": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "subroutineTarget": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "wordRead": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "word",
+                "cursorAfterReadOffset"
+            ],
+            "properties": {
+                "word": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "cursorAfterReadOffset": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "expected": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "questionId",
+                "handlerEntries",
+                "executeMapScriptReturned",
+                "scriptWordReads",
+                "skipGateSetObserved",
+                "sleepCallObserved",
+                "sleepD0Word",
+                "dispatchCallObserved",
+                "playSoundTrapD0Word",
+                "csc06Returned",
+                "subroutineCursorAfterReadOffset",
+                "subroutineStackDeltaAtCall",
+                "subroutineTargetStackDelta",
+                "subroutineTargetReturned",
+                "subroutineResumeStackDelta",
+                "jumpCursorRedirectOffset",
+                "endReached"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "questionId": {
+                    "type": "string"
+                },
+                "handlerEntries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "executeMapScriptReturned": {
+                    "type": "boolean"
+                },
+                "scriptWordReads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/wordRead"
+                    }
+                },
+                "skipGateSetObserved": {
+                    "type": "boolean"
+                },
+                "sleepCallObserved": {
+                    "type": "boolean"
+                },
+                "sleepD0Word": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "dispatchCallObserved": {
+                    "type": "boolean"
+                },
+                "playSoundTrapD0Word": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "csc06Returned": {
+                    "type": "boolean"
+                },
+                "subroutineCursorAfterReadOffset": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "subroutineStackDeltaAtCall": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "subroutineTargetStackDelta": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "subroutineTargetReturned": {
+                    "type": "boolean"
+                },
+                "subroutineResumeStackDelta": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "jumpCursorRedirectOffset": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "endReached": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}
