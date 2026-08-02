@@ -288,6 +288,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   loop from accepted battle control, player/AI control, movement/target, action construction,
   combat/spell resolution, state replay, and outcome evidence while retaining tactics, balance,
   presentation, and general-simulation Unknown/decision boundaries.
+- [`progression-and-economy.md`](./design/progression-and-economy.md): connects action-local EXP,
+  persistent EXP and level-up, stat refresh, gold, enemy drops, item destinations, source-static
+  service exchanges, and save boundaries after an adversarial owner/fixture audit, while retaining
+  balance, campaign reachability, service-runtime, and end-to-end persistence Unknown boundaries.
 - [`combat-resolution.md`](./design/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
   spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
   fixture 边界。
