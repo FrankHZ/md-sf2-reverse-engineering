@@ -554053,6 +554053,82 @@
           }
         }
       }
+    },
+    "soundCommandSites": [
+      {
+        "category": "zoneEvents",
+        "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+        "operationSourceOrder": 0,
+        "sourceOperand": "SOUND_COMMAND_FADE_OUT",
+        "resolvedValue": 253,
+        "sourceCategory": "sound-command",
+        "weightCounts": {
+          "physicalProgramOccurrenceCount": 1,
+          "physicalRecordWeightedSiteCount": 1,
+          "setupRecordReferenceWeightedSiteCount": 1,
+          "routeRecordReferenceWeightedSiteCount": 1
+        }
+      },
+      {
+        "category": "zoneEvents",
+        "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+        "operationSourceOrder": 12,
+        "sourceOperand": "SOUND_COMMAND_INIT_DRIVER",
+        "resolvedValue": 32,
+        "sourceCategory": "sound-command",
+        "weightCounts": {
+          "physicalProgramOccurrenceCount": 1,
+          "physicalRecordWeightedSiteCount": 1,
+          "setupRecordReferenceWeightedSiteCount": 1,
+          "routeRecordReferenceWeightedSiteCount": 1
+        }
+      },
+      {
+        "category": "zoneEvents",
+        "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+        "operationSourceOrder": 13,
+        "sourceOperand": "MUSIC_TOWN",
+        "resolvedValue": 8,
+        "sourceCategory": "music",
+        "weightCounts": {
+          "physicalProgramOccurrenceCount": 1,
+          "physicalRecordWeightedSiteCount": 1,
+          "setupRecordReferenceWeightedSiteCount": 1,
+          "routeRecordReferenceWeightedSiteCount": 1
+        }
+      }
+    ],
+    "soundCommandCallerTotals": [
+      {
+        "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+        "siteCount": 3,
+        "weightCounts": {
+          "physicalProgramOccurrenceCount": 3,
+          "physicalRecordWeightedSiteCount": 3,
+          "setupRecordReferenceWeightedSiteCount": 3,
+          "routeRecordReferenceWeightedSiteCount": 3
+        }
+      }
+    ],
+    "soundCommandSummary": {
+      "soundDataContractId": "sf2-sound-data-static-v1",
+      "siteCount": 3,
+      "observedSourceSymbolCount": 3,
+      "observedResolvedValueCount": 3,
+      "completeCallerProgramCount": 914,
+      "positiveCallerProgramCount": 1,
+      "zeroCallerProgramCount": 913,
+      "weightCounts": {
+        "physicalProgramOccurrenceCount": 3,
+        "physicalRecordWeightedSiteCount": 3,
+        "setupRecordReferenceWeightedSiteCount": 3,
+        "routeRecordReferenceWeightedSiteCount": 3
+      },
+      "sourceCategorySiteCounts": {
+        "music": 1,
+        "sfx": 0,
+        "sound-command": 2
+      }
     }
   }
 }

@@ -12,6 +12,7 @@ from sf2tool.h2.map_events import (
     RAW_ZONE_DEFAULT_SYMBOL,
     SCHEMA,
     _bind_operations_to_h1,
+    _build_sound_command_domain,
     _decode_event_record,
     _derived_action_payload_context_specs,
     _direct_flag_access_sites_for_program,
@@ -31,10 +32,14 @@ from sf2tool.h2.map_events import (
     _reconcile_event_reference_counts,
     _reconcile_operation_weight_contract,
     _reconcile_script_invocation_graph_contract,
+    _reconcile_sound_command_reference_contract,
     _reconcile_textbox_reference_contract,
     _record_target_ownership,
     _script_invocation_graph_contract,
     _setup_category_joins,
+    _sound_command_enum_values,
+    _sound_command_reference_contract,
+    _sound_command_service_definition,
     _source_macro_catalog,
     _target_program_contract,
     _textbox_reference_contract,
@@ -3648,3 +3653,321 @@ def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None
         fixture_schema["definitions"]["mapEventOperationDefinition"]["additionalProperties"]
         is False
     )
+
+
+def _sound_command_inputs(
+    complete_output: dict[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, list[dict[str, Any]]], dict[str, Any]]:
+    """Return the source-built inputs for the direct ``sndCom`` corpus tests."""
+    upstream_path = Path("local/upstream/SF2DISASM")
+    return (
+        complete_output["operationDefinitions"],
+        {
+            "entityEvents": complete_output["entityTargetPrograms"],
+            "zoneEvents": complete_output["zoneTargetPrograms"],
+            "itemEvents": complete_output["itemTargetPrograms"],
+        },
+        _build_sound_command_domain(
+            Path("local/roms/sf2-us.bin"),
+            upstream_path,
+            disasm=upstream_path / "disasm",
+            upstream_commit=complete_output["upstream"]["commit"],
+            rom_sha256=complete_output["romSha256"],
+        ),
+    )
+
+
+def test_sound_command_enum_parser_ignores_comments_and_near_misses() -> None:
+    source = """
+; MUSIC_COMMENT: equ $FF
+MUSIC_TOWN: equ $08 ; retained direct source enum
+SFX_BLAZE: equ 65
+SOUND_COMMAND_FADE_OUT: equ $FD
+XMUSIC_TOWN: equ $09
+MUSIC-TOWN: equ $0A
+MUSIC_MISSING_COLON equ $0B
+"""
+
+    assert _sound_command_enum_values(source) == {
+        "MUSIC_TOWN": 8,
+        "SFX_BLAZE": 65,
+        "SOUND_COMMAND_FADE_OUT": 253,
+    }
+
+
+def test_sound_command_service_definition_guards_macro_target_emission_and_order(
+    complete_output: dict[str, Any],
+) -> None:
+    definitions, _, _ = _sound_command_inputs(complete_output)
+    assert _sound_command_service_definition(definitions) == {
+        "definitionId": "event-service-macro:sndCom",
+        "sourceMacro": "sndCom",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 27,
+        "serviceTarget": "#SOUND_COMMAND",
+        "operandOrdinal": 1,
+        "emissionStatementTemplates": ["trap #sound_command", "dc.w \\1"],
+    }
+
+    missing = [
+        definition
+        for definition in definitions
+        if definition["definitionId"] != "event-service-macro:sndCom"
+    ]
+    with pytest.raises(ValueError, match="service-definition coverage"):
+        _sound_command_service_definition(missing)
+
+    for field, value, expected_error in (
+        ("sourceMacro", "sndComNearMiss", "service emission/order"),
+        ("serviceTarget", "#TEXTBOX", "service-definition coverage"),
+        (
+            "emissionStatementTemplates",
+            ["dc.w \\1", "trap #sound_command"],
+            "service emission/order",
+        ),
+    ):
+        mutated = copy.deepcopy(definitions)
+        definition = next(
+            row
+            for row in mutated
+            if row["definitionId"] == "event-service-macro:sndCom"
+        )
+        definition[field] = value
+        with pytest.raises(ValueError, match=expected_error):
+            _sound_command_service_definition(mutated)
+
+
+def test_sound_command_contract_is_complete_and_guards_source_relations(
+    complete_output: dict[str, Any],
+) -> None:
+    definitions, programs_by_category, sound_domain = _sound_command_inputs(complete_output)
+    contract = _sound_command_reference_contract(
+        definitions,
+        programs_by_category,
+        sound_domain=sound_domain,
+    )
+    expected_fields = {
+        "soundCommandSites",
+        "soundCommandCallerTotals",
+        "soundCommandSummary",
+    }
+    assert set(contract) == expected_fields
+    assert contract["soundCommandSummary"] == {
+        "soundDataContractId": "sf2-sound-data-static-v1",
+        "siteCount": 3,
+        "observedSourceSymbolCount": 3,
+        "observedResolvedValueCount": 3,
+        "completeCallerProgramCount": 914,
+        "positiveCallerProgramCount": 1,
+        "zeroCallerProgramCount": 913,
+        "weightCounts": {
+            "physicalProgramOccurrenceCount": 3,
+            "physicalRecordWeightedSiteCount": 3,
+            "setupRecordReferenceWeightedSiteCount": 3,
+            "routeRecordReferenceWeightedSiteCount": 3,
+        },
+        "sourceCategorySiteCounts": {"music": 1, "sfx": 0, "sound-command": 2},
+    }
+    assert contract["soundCommandSites"] == [
+        {
+            "category": "zoneEvents",
+            "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+            "operationSourceOrder": 0,
+            "sourceOperand": "SOUND_COMMAND_FADE_OUT",
+            "resolvedValue": 253,
+            "sourceCategory": "sound-command",
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 1,
+                "setupRecordReferenceWeightedSiteCount": 1,
+                "routeRecordReferenceWeightedSiteCount": 1,
+            },
+        },
+        {
+            "category": "zoneEvents",
+            "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+            "operationSourceOrder": 12,
+            "sourceOperand": "SOUND_COMMAND_INIT_DRIVER",
+            "resolvedValue": 32,
+            "sourceCategory": "sound-command",
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 1,
+                "setupRecordReferenceWeightedSiteCount": 1,
+                "routeRecordReferenceWeightedSiteCount": 1,
+            },
+        },
+        {
+            "category": "zoneEvents",
+            "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+            "operationSourceOrder": 13,
+            "sourceOperand": "MUSIC_TOWN",
+            "resolvedValue": 8,
+            "sourceCategory": "music",
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 1,
+                "physicalRecordWeightedSiteCount": 1,
+                "setupRecordReferenceWeightedSiteCount": 1,
+                "routeRecordReferenceWeightedSiteCount": 1,
+            },
+        },
+    ]
+    assert contract["soundCommandCallerTotals"] == [
+        {
+            "callerProgramKey": "Map20_21F_ZoneEvent0:406188",
+            "siteCount": 3,
+            "weightCounts": {
+                "physicalProgramOccurrenceCount": 3,
+                "physicalRecordWeightedSiteCount": 3,
+                "setupRecordReferenceWeightedSiteCount": 3,
+                "routeRecordReferenceWeightedSiteCount": 3,
+            },
+        }
+    ]
+    for operand, expected_error in (
+        ("MUSIC_UNDECLARED", "enum resolution"),
+        ("NOT_A_SOUND_ENUM", "operand namespace"),
+    ):
+        mutated_programs = copy.deepcopy(programs_by_category)
+        mutated_programs["zoneEvents"][39]["operations"][13]["operandTexts"] = [operand]
+        with pytest.raises(ValueError, match=expected_error):
+            _sound_command_reference_contract(
+                definitions,
+                mutated_programs,
+                sound_domain=sound_domain,
+            )
+
+    bad_value_domain = copy.deepcopy(sound_domain)
+    bad_value_domain["_enumValues"]["MUSIC_TOWN"] = 65
+    with pytest.raises(ValueError, match="music-domain"):
+        _sound_command_reference_contract(
+            definitions,
+            programs_by_category,
+            sound_domain=bad_value_domain,
+        )
+
+    reordered_programs = copy.deepcopy(programs_by_category)
+    reordered_programs["zoneEvents"][39]["operations"][13]["sourceOrder"] = 14
+    with pytest.raises(ValueError, match="source/use-site"):
+        _sound_command_reference_contract(
+            definitions,
+            reordered_programs,
+            sound_domain=sound_domain,
+        )
+
+    reweighted_programs = copy.deepcopy(programs_by_category)
+    reweighted_programs["zoneEvents"][39]["referenceCounts"]["physicalRecordCount"] = 2
+    with pytest.raises(ValueError, match="sound-command"):
+        _reconcile_sound_command_reference_contract(
+            contract,
+            definitions,
+            reweighted_programs,
+            sound_domain=sound_domain,
+        )
+
+    for mutate in (
+        lambda value: value.__setitem__("soundCommandCallerTotals", []),
+        lambda value: value["soundCommandSummary"].__setitem__(
+            "zeroCallerProgramCount", 912
+        ),
+        lambda value: value["soundCommandCallerTotals"][0].__setitem__(
+            "siteCount", 2
+        ),
+    ):
+        stale = copy.deepcopy(contract)
+        mutate(stale)
+        with pytest.raises(ValueError, match="sound-command"):
+            _reconcile_sound_command_reference_contract(
+                stale,
+                definitions,
+                programs_by_category,
+                sound_domain=sound_domain,
+            )
+
+
+def test_sound_command_schemas_recursively_close_exact_corpus_mutations(
+    complete_output: dict[str, Any],
+) -> None:
+    fixture = load_json(FIXTURE)
+    fixtures = (
+        (complete_output, SCHEMA),
+        (fixture, FIXTURE_SCHEMA),
+    )
+    for instance, schema in fixtures:
+        validate_json(instance, schema, owner="sound-command baseline")
+        output = instance if schema == SCHEMA else instance["expected"]
+
+        missing = copy.deepcopy(instance)
+        target = missing if schema == SCHEMA else missing["expected"]
+        del target["soundCommandSites"][0]["sourceOperand"]
+        with pytest.raises(ValueError, match="sound-command missing nested field"):
+            validate_json(missing, schema, owner="sound-command missing nested field")
+
+        extra = copy.deepcopy(instance)
+        target = extra if schema == SCHEMA else extra["expected"]
+        target["soundCommandCallerTotals"][0]["weightCounts"]["unexpected"] = {
+            "physicalProgramOccurrenceCount": 0,
+            "physicalRecordWeightedSiteCount": 0,
+            "setupRecordReferenceWeightedSiteCount": 0,
+            "routeRecordReferenceWeightedSiteCount": 0,
+        }
+        with pytest.raises(ValueError, match="sound-command extra nested field"):
+            validate_json(extra, schema, owner="sound-command extra nested field")
+
+        renamed = copy.deepcopy(instance)
+        target = renamed if schema == SCHEMA else renamed["expected"]
+        target["soundCommandSummary"]["siteCountRenamed"] = target[
+            "soundCommandSummary"
+        ].pop("siteCount")
+        with pytest.raises(ValueError, match="sound-command renamed field"):
+            validate_json(renamed, schema, owner="sound-command renamed field")
+
+        reordered = copy.deepcopy(instance)
+        target = reordered if schema == SCHEMA else reordered["expected"]
+        target["soundCommandSites"].reverse()
+        with pytest.raises(ValueError, match="sound-command order mutation"):
+            validate_json(reordered, schema, owner="sound-command order mutation")
+
+        out_of_range = copy.deepcopy(instance)
+        target = out_of_range if schema == SCHEMA else out_of_range["expected"]
+        target["soundCommandSites"][2]["resolvedValue"] = 65
+        with pytest.raises(ValueError, match="sound-command category boundary"):
+            validate_json(
+                out_of_range,
+                schema,
+                owner="sound-command category boundary",
+            )
+
+        wrong_zero_count = copy.deepcopy(instance)
+        target = wrong_zero_count if schema == SCHEMA else wrong_zero_count["expected"]
+        target["soundCommandSummary"]["zeroCallerProgramCount"] = 912
+        with pytest.raises(ValueError, match="sound-command caller total"):
+            validate_json(
+                wrong_zero_count,
+                schema,
+                owner="sound-command caller total",
+            )
+
+        assert output["soundCommandSummary"]["siteCount"] == 3
+
+    reordered_golden = copy.deepcopy(fixture)
+    reordered_golden["expected"]["soundCommandSites"].reverse()
+    with pytest.raises(ValueError, match="map events complete semantic fixture drift"):
+        _verify_complete_map_events_fixture(reordered_golden, complete_output)
+
+    output_schema = load_json(SCHEMA)
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    for schema, definition_root in (
+        (output_schema, output_schema["definitions"]),
+        (
+            fixture_schema,
+            fixture_schema["definitions"]["outputContract"]["definitions"],
+        ),
+    ):
+        for definition in (
+            "soundCommandSite",
+            "soundCommandCallerTotal",
+            "soundCommandSummary",
+        ):
+            assert definition_root[definition]["additionalProperties"] is False
+        assert schema["$schema"] == "http://json-schema.org/draft-07/schema#"
