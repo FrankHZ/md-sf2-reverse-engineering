@@ -12,6 +12,8 @@ from sf2tool.h2.entity_action_scripts import build_entity_action_script_contract
 from sf2tool.h2.map_entities import build_map_entities_contract
 from sf2tool.h2.map_script_engine import build_map_script_engine_contract
 from sf2tool.h2.map_setup import build_map_setup_contract
+from sf2tool.h2.sound_data import ID as SOUND_DATA_ID
+from sf2tool.h2.sound_data import build_sound_data_inventory
 from sf2tool.h2.text_banks import (
     GAMESCRIPT_PATH,
     build_text_line_domain_contract,
@@ -33,6 +35,8 @@ MANIFEST = repo_path("manifests/extractions/map-events-static.json")
 SCHEMA = repo_path("schemas/map-events-static.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/map-events-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-map-events-static-fixture.schema.json")
+SOUND_ENUM_PATH = Path("sf2enums.asm")
+SOUND_COMMAND_CATEGORIES = ("music", "sfx", "sound-command")
 
 CATEGORY_CONFIG = {
     "entityEvents": {
@@ -1362,6 +1366,349 @@ def _reconcile_textbox_reference_contract(
     for field, value in expected.items():
         if contract[field] != value:
             raise ValueError(f"map event textbox {field} reconciliation drift")
+
+
+_SOUND_ENUM_EQUATE = re.compile(
+    r"^\s*(?P<symbol>(?:MUSIC|SFX|SOUND_COMMAND)_[A-Z0-9_]+):\s+equ\s+"
+    r"(?P<value>\$[0-9A-Fa-f]+|0|[1-9][0-9]*)\s*(?:;.*)?$",
+    re.MULTILINE,
+)
+
+
+def _sound_command_category(symbol: str) -> str:
+    """Classify only the source enum namespace, not an audible interpretation."""
+    if symbol.startswith("MUSIC_"):
+        return "music"
+    if symbol.startswith("SFX_"):
+        return "sfx"
+    if symbol.startswith("SOUND_COMMAND_"):
+        return "sound-command"
+    raise ValueError(f"map event sound operand lacks a sound enum namespace: {symbol}")
+
+
+def _sound_command_service_definition(
+    operation_definitions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Derive the one direct `sndCom` service form from its parsed macro definition."""
+    definitions = [
+        definition
+        for definition in operation_definitions
+        if definition["family"] == "event-service-macro"
+        and definition["serviceTarget"] == "#SOUND_COMMAND"
+    ]
+    if len(definitions) != 1:
+        raise ValueError("map event sound-command service-definition coverage drift")
+    definition = definitions[0]
+    if (
+        definition["sourceMacro"] != "sndCom"
+        or definition["formalParameterOrdinals"] != [1]
+        or definition["emissionStatementTemplates"]
+        != ["trap #sound_command", "dc.w \\1"]
+    ):
+        raise ValueError("map event sound-command service emission/order drift")
+    return {
+        "definitionId": definition["definitionId"],
+        "sourceMacro": definition["sourceMacro"],
+        "sourcePath": definition["sourcePath"],
+        "definitionSourceLine": definition["definitionSourceLine"],
+        "serviceTarget": definition["serviceTarget"],
+        "operandOrdinal": definition["formalParameterOrdinals"][0],
+        "emissionStatementTemplates": definition["emissionStatementTemplates"],
+    }
+
+
+def _sound_command_enum_values(source: str) -> dict[str, int]:
+    """Parse the sound namespaces directly from `sf2enums.asm`."""
+    values: dict[str, int] = {}
+    for match in _SOUND_ENUM_EQUATE.finditer(source):
+        symbol = match.group("symbol")
+        if symbol in values:
+            raise ValueError(f"map event sound enum duplicate definition: {symbol}")
+        value_text = match.group("value")
+        values[symbol] = int(value_text[1:], 16) if value_text.startswith("$") else int(value_text)
+    if not values:
+        raise ValueError("map event sound enum source inventory drift")
+    return values
+
+
+def _sound_command_domain(
+    disasm: Path,
+    sound_data_contract: dict[str, Any],
+    *,
+    upstream_commit: str,
+    rom_sha256: str,
+) -> dict[str, Any]:
+    """Join direct enum parsing to the source-built music/SFX domain owner."""
+    enum_path = disasm / SOUND_ENUM_PATH
+    enum_source = read_upstream_text(enum_path)
+    enum_sha256 = hashlib.sha256(enum_path.read_bytes()).hexdigest().upper()
+    command_model = sound_data_contract.get("commandModel")
+    bank_selection = command_model.get("bankSelection") if isinstance(command_model, dict) else None
+    sfx_model = command_model.get("sfxModel") if isinstance(command_model, dict) else None
+    if (
+        sound_data_contract.get("id") != SOUND_DATA_ID
+        or sound_data_contract.get("upstream", {}).get("commit") != upstream_commit
+        or sound_data_contract.get("rom", {}).get("sha256") != rom_sha256
+        or sound_data_contract.get("scope") != "data/sound"
+        or not isinstance(bank_selection, dict)
+        or not isinstance(sfx_model, dict)
+        or bank_selection.get("enumSourcePath") != SOUND_ENUM_PATH.as_posix()
+        or bank_selection.get("enumSourceSha256") != enum_sha256
+    ):
+        raise ValueError("map event sound-data contract provenance drift")
+    music_slot_count = bank_selection.get("summary", {}).get("commandSlotCount")
+    sfx_summary = sfx_model.get("summary")
+    sfx_minimum = sfx_summary.get("minimumCommand") if isinstance(sfx_summary, dict) else None
+    sfx_maximum = sfx_summary.get("maximumCommand") if isinstance(sfx_summary, dict) else None
+    if (
+        not isinstance(music_slot_count, int)
+        or music_slot_count <= 0
+        or not isinstance(sfx_minimum, int)
+        or not isinstance(sfx_maximum, int)
+        or sfx_minimum > sfx_maximum
+    ):
+        raise ValueError("map event sound-data command-domain drift")
+    return {
+        "soundDataContractId": SOUND_DATA_ID,
+        "soundDataSourceScope": sound_data_contract["scope"],
+        "sourceEnumPath": SOUND_ENUM_PATH.as_posix(),
+        "sourceEnumSha256": enum_sha256,
+        "musicCommandDomain": {
+            "minimumValue": 1,
+            "maximumValue": music_slot_count,
+            "soundDataFactPath": "commandModel.bankSelection",
+        },
+        "sfxCommandDomain": {
+            "minimumValue": sfx_minimum,
+            "maximumValue": sfx_maximum,
+            "soundDataFactPath": "commandModel.sfxModel",
+        },
+        "sourceNamespaceCategories": list(SOUND_COMMAND_CATEGORIES),
+        "_enumValues": _sound_command_enum_values(enum_source),
+    }
+
+
+def _build_sound_command_domain(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    disasm: Path,
+    upstream_commit: str,
+    rom_sha256: str,
+) -> dict[str, Any]:
+    """Build the source/ROM sound owner rather than treating its fixture as truth."""
+    return _sound_command_domain(
+        disasm,
+        build_sound_data_inventory(rom_path, upstream_path),
+        upstream_commit=upstream_commit,
+        rom_sha256=rom_sha256,
+    )
+
+
+def _sound_command_weight_counts(reference_counts: dict[str, int]) -> dict[str, int]:
+    """Keep target-program occurrence and joined record weights separate."""
+    required = {
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+    }
+    if set(reference_counts) != required or any(
+        not isinstance(value, int) or value < 0 for value in reference_counts.values()
+    ):
+        raise ValueError("map event sound-command caller reference-weight shape drift")
+    return {
+        "physicalProgramOccurrenceCount": 1,
+        "physicalRecordWeightedSiteCount": reference_counts["physicalRecordCount"],
+        "setupRecordReferenceWeightedSiteCount": reference_counts[
+            "setupRecordReferenceCount"
+        ],
+        "routeRecordReferenceWeightedSiteCount": reference_counts[
+            "routeRecordReferenceCount"
+        ],
+    }
+
+
+def _empty_sound_command_weight_counts() -> dict[str, int]:
+    return {
+        "physicalProgramOccurrenceCount": 0,
+        "physicalRecordWeightedSiteCount": 0,
+        "setupRecordReferenceWeightedSiteCount": 0,
+        "routeRecordReferenceWeightedSiteCount": 0,
+    }
+
+
+def _add_sound_command_weight_counts(
+    destination: dict[str, int], source: dict[str, int]
+) -> None:
+    if set(destination) != set(source) or any(
+        not isinstance(value, int) or value < 0 for value in source.values()
+    ):
+        raise ValueError("map event sound-command weight aggregation drift")
+    for field, value in source.items():
+        destination[field] += value
+
+
+def _sound_command_reference_contract(
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    *,
+    sound_domain: dict[str, Any],
+) -> dict[str, Any]:
+    """Build direct `sndCom` source/H1 sites and zero-inclusive caller totals."""
+    service_definition = _sound_command_service_definition(operation_definitions)
+    enum_values = sound_domain.get("_enumValues")
+    music_domain = sound_domain.get("musicCommandDomain")
+    sfx_domain = sound_domain.get("sfxCommandDomain")
+    if (
+        not isinstance(enum_values, dict)
+        or not isinstance(music_domain, dict)
+        or not isinstance(sfx_domain, dict)
+        or sound_domain.get("sourceNamespaceCategories") != list(SOUND_COMMAND_CATEGORIES)
+    ):
+        raise ValueError("map event sound-command domain shape drift")
+    caller_sites = {
+        (category, _program_key(program["canonicalSymbol"], program["entryAddress"])): []
+        for category, programs in programs_by_category.items()
+        for program in programs
+    }
+    operand_sites: dict[str, list[dict[str, Any]]] = {}
+    sites: list[dict[str, Any]] = []
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            caller_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            weights = _sound_command_weight_counts(program["referenceCounts"])
+            for operation_index, operation in enumerate(program["operations"]):
+                if operation["definitionId"] != service_definition["definitionId"]:
+                    continue
+                if (
+                    operation["sourceMnemonic"] != service_definition["sourceMacro"]
+                    or operation["family"] != "event-service-macro"
+                    or operation["sourceOrder"] != operation_index
+                    or len(operation["operandTexts"]) != 1
+                ):
+                    raise ValueError("map event sound-command source/use-site drift")
+                source_operand = operation["operandTexts"][0]
+                if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", source_operand) is None:
+                    raise ValueError("map event sound-command operand syntax drift")
+                try:
+                    source_category = _sound_command_category(source_operand)
+                except ValueError as error:
+                    raise ValueError("map event sound-command operand namespace drift") from error
+                resolved_value = enum_values.get(source_operand)
+                if not isinstance(resolved_value, int) or not 0 <= resolved_value <= 0xFFFF:
+                    raise ValueError("map event sound-command enum resolution drift")
+                if source_category == "music" and not (
+                    music_domain["minimumValue"]
+                    <= resolved_value
+                    <= music_domain["maximumValue"]
+                ):
+                    raise ValueError("map event sound-command music-domain drift")
+                if source_category == "sfx" and not (
+                    sfx_domain["minimumValue"]
+                    <= resolved_value
+                    <= sfx_domain["maximumValue"]
+                ):
+                    raise ValueError("map event sound-command SFX-domain drift")
+                site = {
+                    "category": category,
+                    "callerProgramKey": caller_key,
+                    "operationSourceOrder": operation["sourceOrder"],
+                    "sourceOperand": source_operand,
+                    "resolvedValue": resolved_value,
+                    "sourceCategory": source_category,
+                    "weightCounts": dict(weights),
+                }
+                sites.append(site)
+                caller_sites[(category, caller_key)].append(site)
+                operand_sites.setdefault(source_operand, []).append(site)
+    if not sites:
+        raise ValueError("map event sound-command source-use coverage drift")
+
+    def total_weights(contained_sites: list[dict[str, Any]]) -> dict[str, int]:
+        result = _empty_sound_command_weight_counts()
+        for site in contained_sites:
+            _add_sound_command_weight_counts(result, site["weightCounts"])
+        return result
+
+    def source_category_site_counts(contained_sites: list[dict[str, Any]]) -> dict[str, int]:
+        result = {source_category: 0 for source_category in SOUND_COMMAND_CATEGORIES}
+        for site in contained_sites:
+            result[site["sourceCategory"]] += 1
+        return result
+
+    caller_totals = []
+    complete_caller_program_count = 0
+    positive_caller_program_count = 0
+    for category, programs in programs_by_category.items():
+        for program in programs:
+            complete_caller_program_count += 1
+            caller_key = _program_key(program["canonicalSymbol"], program["entryAddress"])
+            contained_sites = caller_sites[(category, caller_key)]
+            if not contained_sites:
+                continue
+            positive_caller_program_count += 1
+            caller_totals.append(
+                {
+                    "callerProgramKey": caller_key,
+                    "siteCount": len(contained_sites),
+                    "weightCounts": total_weights(contained_sites),
+                }
+            )
+    zero_caller_program_count = (
+        complete_caller_program_count - positive_caller_program_count
+    )
+    if (
+        complete_caller_program_count != len(caller_sites)
+        or positive_caller_program_count != len(caller_totals)
+        or zero_caller_program_count < 0
+    ):
+        raise ValueError("map event sound-command caller completeness drift")
+    observed_source_symbol_count = 0
+    for contained_sites in operand_sites.values():
+        first_site = contained_sites[0]
+        if any(
+            site["sourceCategory"] != first_site["sourceCategory"]
+            or site["resolvedValue"] != first_site["resolvedValue"]
+            for site in contained_sites
+        ):
+            raise ValueError("map event sound-command operand identity drift")
+        observed_source_symbol_count += 1
+    contract = {
+        "soundCommandSites": sites,
+        "soundCommandCallerTotals": caller_totals,
+        "soundCommandSummary": {
+            "soundDataContractId": sound_domain["soundDataContractId"],
+            "siteCount": len(sites),
+            "observedSourceSymbolCount": observed_source_symbol_count,
+            "observedResolvedValueCount": len(
+                {site["resolvedValue"] for site in sites}
+            ),
+            "completeCallerProgramCount": complete_caller_program_count,
+            "positiveCallerProgramCount": positive_caller_program_count,
+            "zeroCallerProgramCount": zero_caller_program_count,
+            "weightCounts": total_weights(sites),
+            "sourceCategorySiteCounts": source_category_site_counts(sites),
+        },
+    }
+    return contract
+
+
+def _reconcile_sound_command_reference_contract(
+    contract: dict[str, Any],
+    operation_definitions: list[dict[str, Any]],
+    programs_by_category: dict[str, list[dict[str, Any]]],
+    *,
+    sound_domain: dict[str, Any],
+) -> None:
+    """Reject macro, enum, source-use, order, and weight drift before fixtures."""
+    expected = _sound_command_reference_contract(
+        operation_definitions,
+        programs_by_category,
+        sound_domain=sound_domain,
+    )
+    for field, value in expected.items():
+        if contract[field] != value:
+            raise ValueError(f"map event sound-command {field} reconciliation drift")
 
 
 def _source_program_block(
@@ -4511,6 +4858,13 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
     map_script_engine = build_map_script_engine_contract(rom_path, upstream_path)
     entity_action_scripts = build_entity_action_script_contract(rom_path, upstream_path)
     text_line_domain_contract = build_text_line_domain_contract(rom_path, upstream_path)
+    sound_command_domain = _build_sound_command_domain(
+        rom_path,
+        upstream_path,
+        disasm=disasm,
+        upstream_commit=commit,
+        rom_sha256=setup["romSha256"],
+    )
     source_macro_catalog = _source_macro_catalog(
         disasm, (SERVICE_MACROS_PATH, CUTSCENE_MACROS_PATH)
     )
@@ -4654,6 +5008,17 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         text_line_domain_contract=text_line_domain_contract,
         upstream_commit=commit,
         rom_sha256=setup["romSha256"],
+    )
+    sound_command_reference_contract = _sound_command_reference_contract(
+        list(operation_definitions.values()),
+        programs_by_category,
+        sound_domain=sound_command_domain,
+    )
+    _reconcile_sound_command_reference_contract(
+        sound_command_reference_contract,
+        list(operation_definitions.values()),
+        programs_by_category,
+        sound_domain=sound_command_domain,
     )
     operation_orders_by_category = {
         "entityEvents": entity_target_program_operation_orders,
@@ -4876,6 +5241,7 @@ def build_map_events_contract(rom_path: Path, upstream_path: Path) -> dict[str, 
         **direct_flag_state_contract,
         **script_invocation_contract,
         **textbox_reference_contract,
+        **sound_command_reference_contract,
         "consumerFacts": _consumer_facts(setup),
         "entityEventReachabilityFacts": _entity_event_reachability_facts(disasm, addresses),
         "entityTargetProgramSummary": entity_target_program_summary,

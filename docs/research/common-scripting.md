@@ -1031,6 +1031,32 @@ reparse or characterize the sound driver. Its 309 uses are source-enum categorie
 fixture identity and `sf2enums.asm` source identity, is guarded by SHA-256
 `205C2F9E7CC481B7C5B387D2736635FC40E5763C41544A3A8C9D0D205F4FA654`.
 
+**Confirmed — map-event direct `sndCom` source-reference boundary:** this is a separate static
+source/H1 inventory, not an extension of the map-script `playSound` corpus. `sf2macros.asm:27-29`
+defines `sndCom` as the ordered source emission `trap #sound_command` then `dc.w \1`. Across the
+complete 684 entity, 150 zone, and 80 item target-program corpus, exactly three direct uses occur in
+one positive caller, `Map20_21F_ZoneEvent0` at
+`data/maps/entries/map20/mapsetups/s3_zoneevents_543.asm:26,40-41`: in order,
+`SOUND_COMMAND_FADE_OUT` `$FD`/253, `SOUND_COMMAND_INIT_DRIVER` `$20`/32, and `MUSIC_TOWN`
+`$08`/8. The zero-inclusive source computation covers all 914 caller programs and derives one
+positive plus 913 zero-use callers without materializing 913 redundant zero records. Each of the
+three source/H1 sites has physical-program, physical-record, setup-reference, and route-reference
+weight 1, so every aggregate weight is 3. The operand categories are source namespaces only:
+`sound-command` 2, `music` 1, `sfx` 0. The join checks `sf2enums.asm` directly against the pinned
+`sf2-sound-data-static-v1` domain (`music` 1–64; `sfx` 65–120) but does not reparse or characterize
+the sound driver. The compact exact-order site list, one-positive-caller record, and complete
+summary are fixture-pinned and rebuilt from the parsed use sites before comparison.
+
+**Unknown:** no H3 run was added for this direct map-event source slice. The static trap emission
+and enum join do not establish normal-story reachability, trap/driver dispatch, audible or timed
+behavior, Z80/YM/PSG state, persistence, or caller-context lifetime. Provenance: pinned
+`ShiningForceCentral/SF2DISASM` `master` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`, the
+source/H1 rows above, `sf2enums.asm`, local USA ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, and
+`uv run sf2 h2 map-events`; observed output is `sf2-map-events-static-v1`, fixture
+`tests/fixtures/h2/map-events-static-v1.json`, fields `expected.soundCommand*`. Evidence date:
+2026-08-02.
+
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
 one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
 The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug

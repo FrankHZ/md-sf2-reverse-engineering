@@ -691,8 +691,15 @@ sentinel emissions. It joins the maintained `sf2-text-banks-static-v1` declared 
 through its source/ROM parser, not its golden fixture and without decoding text, making all 4,267 IDs
 from 0 through 4,266 zero-inclusive line totals; 942 IDs are observed (11 through 4,178). This
 records macro/operand/sentinel and caller/reference identity only, not displayed content, speaker,
-window, wait, input, story, or presentation behavior.
-Evidence date: 2026-07-27. All 32 animation tables also have
+window, wait, input, story, or presentation behavior. The rail also now closes the distinct direct
+map-event `sndCom` source-reference surface: one parsed `trap #sound_command`/`dc.w \1` definition,
+three ordered source/H1 uses in one Map20 zone caller, three distinct enum operands/values, and
+physical/setup/route aggregate weights of 3. Its complete 914-program source computation derives one
+positive caller and 913 zero-use callers without reproducing zero rows; source namespaces are two
+`sound-command`, one `music`, and zero `sfx`. The enum join is bounded to the maintained
+sound-data source domain and remains a static routing fact, not driver, audible, timing, persistence,
+or caller-context evidence; those runtime questions remain Unknown. Evidence date: 2026-08-02. The
+preceding map-event boundary facts retain their 2026-07-27 evidence date. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
 1. keep the completed ten-case setup-selector, six-case init-dispatch, nine-case grouped
