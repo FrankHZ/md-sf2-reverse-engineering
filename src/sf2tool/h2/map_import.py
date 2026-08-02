@@ -243,6 +243,35 @@ def _layout_resources(
 
 
 def _event_handler_resources(events: dict[str, Any], category: str) -> list[dict[str, Any]]:
+    public_record_fields = {
+        "entityEvents": (
+            "address",
+            "kind",
+            "relativeOffset",
+            "resolvedTargetAddress",
+            "entity",
+            "flags",
+        ),
+        "zoneEvents": (
+            "address",
+            "kind",
+            "relativeOffset",
+            "resolvedTargetAddress",
+            "x",
+            "y",
+        ),
+        "itemEvents": (
+            "address",
+            "kind",
+            "relativeOffset",
+            "resolvedTargetAddress",
+            "x",
+            "y",
+            "facing",
+            "item",
+        ),
+    }
+    fields = public_record_fields[category]
     contract = events["categories"][category]
     tables = {row["symbol"]: row for row in contract["tables"]}
     handlers = []
@@ -253,10 +282,61 @@ def _event_handler_resources(events: dict[str, Any], category: str) -> list[dict
                 "id": source["symbol"],
                 "address": source["address"],
                 "kind": "directReturn" if source["directReturnStub"] else "table",
-                "records": [] if table is None else table["records"],
+                "records": (
+                    []
+                    if table is None
+                    else [
+                        {field: record[field] for field in fields} for record in table["records"]
+                    ]
+                ),
             }
         )
     return handlers
+
+
+def _init_profile_operations(init: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    bodies = {row["sourceOwnerSymbol"]: row for row in init["primarySourceBodies"]}
+    operations_by_symbol: dict[str, list[dict[str, Any]]] = {}
+    for profile in init["sourceFiles"]:
+        symbol = profile["symbol"]
+        source_owner = profile["sourceOwnerSymbol"]
+        body = bodies.get(source_owner)
+        if body is None:
+            raise ValueError(f"canonical map init profile lacks source body: {symbol}")
+        first_index = profile["firstOperationIndex"]
+        last_index = profile["lastOperationIndex"]
+        if first_index > last_index:
+            raise ValueError(f"canonical map init profile operation boundary drift: {symbol}")
+        expected_indices = list(range(first_index, last_index + 1))
+        if profile["operationIndices"] != expected_indices:
+            raise ValueError(f"canonical map init profile operation boundary drift: {symbol}")
+        source_operations = body["operations"]
+        operations = source_operations[first_index : last_index + 1]
+        if [operation["index"] for operation in operations] != expected_indices:
+            raise ValueError(f"canonical map init source operation boundary drift: {symbol}")
+        operations_by_symbol[symbol] = [
+            {
+                "index": operation["index"] - first_index,
+                "labels": [
+                    label
+                    for label in operation["labels"]
+                    if not (operation["index"] == first_index and label == symbol)
+                ],
+                "opcode": operation["opcode"],
+                "operandText": operation["operandText"],
+                "branchTargetSymbol": operation["branchTargetSymbol"],
+                "branchTargetAddress": operation["branchTargetAddress"],
+                "localBranchTargetIndex": (
+                    operation["localBranchTargetIndex"] - first_index
+                    if operation["localBranchTargetIndex"] in expected_indices
+                    else None
+                ),
+            }
+            for operation in operations
+        ]
+    if set(operations_by_symbol) != {row["symbol"] for row in init["sourceFiles"]}:
+        raise ValueError("canonical map init profile operation coverage drift")
+    return operations_by_symbol
 
 
 def _setup_resources(
@@ -317,6 +397,7 @@ def _setup_resources(
         for row in descriptions["sourceFiles"]
     ]
     init_functions_by_symbol = {row["symbol"]: row for row in init["sourceFiles"]}
+    init_operations_by_symbol = _init_profile_operations(init)
     resources = {
         "setupRoutes": setup_routes,
         "setupDefinitions": setup_definitions,
@@ -332,8 +413,8 @@ def _setup_resources(
                 "kind": "directReturn" if row["directReturnStub"] else "operationList",
                 "bodySha256": row["bodySha256"],
                 "scriptTargets": row["scriptTargets"],
-                "callTargets": row["callTargets"],
-                "operations": row["operations"],
+                "callTargets": row["directCallTargets"],
+                "operations": init_operations_by_symbol[symbol],
             }
             for symbol, row in sorted(init_functions_by_symbol.items())
         ],
@@ -365,7 +446,7 @@ def _setup_resources(
         "setupDefinitionReferenceCount": len(setup_definitions) * 6,
         "setupRecordCount": setup_record_count,
         "initOperationCount": sum(
-            len(row["operations"]) for row in init_functions_by_symbol.values()
+            len(init_operations_by_symbol[symbol]) for symbol in init_functions_by_symbol
         ),
         "standaloneProgramCount": len(scripts["programs"]),
         "standaloneOperationCount": sum(len(row["operations"]) for row in scripts["programs"]),
