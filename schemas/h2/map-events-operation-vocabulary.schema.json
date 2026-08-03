@@ -1,0 +1,557 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-operation-vocabulary.schema.json",
+  "title": "Map events operation-vocabulary section",
+  "type": "object",
+  "required": [
+    "operationDefinitions",
+    "operationDefinitionOrder",
+    "operationPayloadContexts",
+    "operationPayloadContextOrder",
+    "operationVocabulary",
+    "operationVocabularyOrder",
+    "operationFamilyOrder",
+    "operationFamilyCounts",
+    "operationFamilyCountOrder",
+    "operationVocabularySummary"
+  ],
+  "properties": {
+    "operationDefinitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/mapEventOperationDefinition"
+      }
+    },
+    "operationDefinitionOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "operationPayloadContexts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/mapEventPayloadContext"
+      }
+    },
+    "operationPayloadContextOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "operationVocabulary": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/mapEventOperationVocabulary"
+      }
+    },
+    "operationVocabularyOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "operationFamilyOrder": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "data-directive",
+          "entity-action-command",
+          "entity-action-payload-command",
+          "entity-action-wrapper",
+          "event-service-macro",
+          "map-script-macro",
+          "raw-68000-control-flow",
+          "raw-68000-instruction",
+          "stream-terminator"
+        ]
+      }
+    },
+    "operationFamilyCounts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/mapEventOperationFamilyCount"
+      }
+    },
+    "operationFamilyCountOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "operationVocabularySummary": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/mapEventOperationVocabularySummary"
+        }
+      ],
+      "type": "object"
+    }
+  },
+  "definitions": {
+    "mapEventOperationWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uniquePhysicalOperationCount",
+        "physicalRecordWeightedOperationCount",
+        "setupRecordReferenceWeightedOperationCount",
+        "routeRecordReferenceWeightedOperationCount"
+      ],
+      "properties": {
+        "uniquePhysicalOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordWeightedOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceWeightedOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceWeightedOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapEventOperationEngineCatalog": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "catalog",
+            "kind",
+            "opcode",
+            "encodedBytes",
+            "aliasOf",
+            "handler"
+          ],
+          "properties": {
+            "catalog": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "minLength": 1
+            },
+            "opcode": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              ]
+            },
+            "encodedBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "aliasOf": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ]
+            },
+            "handler": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "catalog",
+            "handler",
+            "opcode",
+            "encodedBytes",
+            "isInlineTerminator"
+          ],
+          "properties": {
+            "catalog": {
+              "type": "string"
+            },
+            "handler": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ]
+            },
+            "opcode": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "encodedBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "isInlineTerminator": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "mapEventOperationDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "definitionId",
+        "family",
+        "sourceMacro",
+        "sourcePath",
+        "definitionSourceLine",
+        "formalParameterOrdinals",
+        "emissionStatementTemplates",
+        "engineCatalog",
+        "serviceTarget"
+      ],
+      "properties": {
+        "definitionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "enum": [
+            "data-directive",
+            "entity-action-command",
+            "entity-action-payload-command",
+            "entity-action-wrapper",
+            "event-service-macro",
+            "map-script-macro",
+            "raw-68000-control-flow",
+            "raw-68000-instruction",
+            "stream-terminator"
+          ]
+        },
+        "sourceMacro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "formalParameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "emissionStatementTemplates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "engineCatalog": {
+          "$ref": "#/definitions/mapEventOperationEngineCatalog"
+        },
+        "serviceTarget": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        }
+      }
+    },
+    "mapEventPayloadContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "sourcePath",
+        "openerSourceLine",
+        "openerSourceMnemonic",
+        "contextFamily",
+        "parentContextId",
+        "terminatorMnemonic",
+        "terminatorSourceLine"
+      ],
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "openerSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "openerSourceMnemonic": {
+          "enum": [
+            "entityActions",
+            "entityActionsWait",
+            "customActscript",
+            "customActscriptWait"
+          ]
+        },
+        "contextFamily": {
+          "enum": [
+            "entity-action-payload",
+            "entity-action-command-payload"
+          ]
+        },
+        "parentContextId": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "terminatorMnemonic": {
+          "enum": [
+            "endActions",
+            "ac_end"
+          ]
+        },
+        "terminatorSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "mapEventOperationVocabularyCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "zoneEvents",
+        "itemEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "zoneEvents": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "itemEvents": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapEventOperationVocabulary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mnemonic",
+        "family",
+        "definitionId",
+        "categoryOperationCounts",
+        "weightCounts"
+      ],
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "enum": [
+            "data-directive",
+            "entity-action-command",
+            "entity-action-payload-command",
+            "entity-action-wrapper",
+            "event-service-macro",
+            "map-script-macro",
+            "raw-68000-control-flow",
+            "raw-68000-instruction",
+            "stream-terminator"
+          ]
+        },
+        "definitionId": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "categoryOperationCounts": {
+          "$ref": "#/definitions/mapEventOperationVocabularyCounts"
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/mapEventOperationWeightCounts"
+        }
+      }
+    },
+    "mapEventOperationFamilyCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "categoryOperationCounts",
+        "weightCounts"
+      ],
+      "properties": {
+        "family": {
+          "enum": [
+            "data-directive",
+            "entity-action-command",
+            "entity-action-payload-command",
+            "entity-action-wrapper",
+            "event-service-macro",
+            "map-script-macro",
+            "raw-68000-control-flow",
+            "raw-68000-instruction",
+            "stream-terminator"
+          ]
+        },
+        "categoryOperationCounts": {
+          "$ref": "#/definitions/mapEventOperationVocabularyCounts"
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/mapEventOperationWeightCounts"
+        }
+      }
+    },
+    "mapEventOperationVocabularySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uniqueMnemonicCount",
+        "definitionJoinCount",
+        "unclassifiedOperationCount",
+        "ambiguousMnemonicFamilyDefinitionCount",
+        "categoryPhysicalOperationCounts",
+        "definitionJoinCounts",
+        "weightCounts"
+      ],
+      "properties": {
+        "uniqueMnemonicCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "definitionJoinCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unclassifiedOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ambiguousMnemonicFamilyDefinitionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "categoryPhysicalOperationCounts": {
+          "$ref": "#/definitions/mapEventOperationVocabularyCounts"
+        },
+        "definitionJoinCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "data-directive",
+            "entity-action-command",
+            "entity-action-payload-command",
+            "entity-action-wrapper",
+            "event-service-macro",
+            "map-script-macro",
+            "raw-68000-control-flow",
+            "raw-68000-instruction",
+            "stream-terminator"
+          ],
+          "properties": {
+            "data-directive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "entity-action-command": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "entity-action-payload-command": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "entity-action-wrapper": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "event-service-macro": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "map-script-macro": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "raw-68000-control-flow": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "raw-68000-instruction": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "stream-terminator": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/mapEventOperationWeightCounts"
+        }
+      }
+    }
+  }
+}

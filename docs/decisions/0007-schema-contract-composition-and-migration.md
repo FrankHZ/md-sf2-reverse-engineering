@@ -196,6 +196,16 @@ schema-migration milestone or merge-readiness boundary.
   no duplicate bodies. The unchanged fixture owns exact values and operation order; the production
   verifier rejects schema-valid provenance, H1-address, domain-model, and alternate-source drift before
   writing output.
+- The map-events stage replaces its 1,697,344-byte mirrored schema pair with nine semantic section
+  schemas, one shared target-program component, and three small output/index/shard roots under
+  `schemas/h2/`. The 13-schema set is below 300 KiB, has zero component-level golden `const` or exact
+  corpus-cardinality locks, retains only six root identity constants, and resolves ten tracked resources
+  with no duplicate bodies. The former 19.6 MiB monolithic fixture is an index plus nine routing/setup,
+  program, operation, direct-
+  flag, script-invocation, textbox, and sound-command shards. The loader rejects path, identity,
+  section-order, field-inventory, duplicate-field, and incomplete-coverage drift before recomposing the
+  exact 103-field logical fixture; the unchanged complete-equality and canonical-digest gates still own
+  every value and ordering relationship.
 
 ## Acceptance and Guardrails
 

@@ -10,6 +10,10 @@ from typing import Any
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import build_entity_action_script_contract
 from sf2tool.h2.map_entities import build_map_entities_contract
+from sf2tool.h2.map_events_fixture import (
+    OUTPUT_SCHEMA,
+    load_map_events_fixture,
+)
 from sf2tool.h2.map_script_engine import build_map_script_engine_contract
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.h2.sound_data import ID as SOUND_DATA_ID
@@ -32,9 +36,7 @@ MAP_SETUP_MACROS_PATH = Path("sf2mapsetupmacros.asm")
 SERVICE_MACROS_PATH = Path("sf2macros.asm")
 CUTSCENE_MACROS_PATH = Path("sf2cutscenemacros.asm")
 MANIFEST = repo_path("manifests/extractions/map-events-static.json")
-SCHEMA = repo_path("schemas/map-events-static.schema.json")
-FIXTURE = repo_path("tests/fixtures/h2/map-events-static-v1.json")
-FIXTURE_SCHEMA = repo_path("schemas/h2-map-events-static-fixture.schema.json")
+SCHEMA = OUTPUT_SCHEMA
 SOUND_ENUM_PATH = Path("sf2enums.asm")
 SOUND_COMMAND_CATEGORIES = ("music", "sfx", "sound-command")
 
@@ -5366,8 +5368,7 @@ def _verify_complete_map_events_fixture(fixture: dict[str, Any], output: dict[st
 def verify_map_events_contract(
     rom_path: Path, upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
-    fixture = load_json(FIXTURE)
-    validate_json(fixture, FIXTURE_SCHEMA, owner=str(FIXTURE))
+    fixture = load_map_events_fixture()
     manifest = load_json(MANIFEST)
     output = build_map_events_contract(rom_path, upstream_path)
     validate_json(output, SCHEMA, owner="map events static contract")

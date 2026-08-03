@@ -1,0 +1,646 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-direct-flags.schema.json",
+  "title": "Map events direct-flags section",
+  "type": "object",
+  "required": [
+    "directFlagServiceDefinitions",
+    "directFlagServiceDefinitionOrder",
+    "directFlagAccessSites",
+    "directFlagAccessSiteOrder",
+    "directFlagProgramTotals",
+    "directFlagProgramTotalOrder",
+    "directFlagTotals",
+    "directFlagTotalOrder",
+    "directFlagStateSummary"
+  ],
+  "properties": {
+    "directFlagServiceDefinitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/directFlagServiceDefinition"
+      }
+    },
+    "directFlagServiceDefinitionOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "directFlagAccessSites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/directFlagAccessSite"
+      }
+    },
+    "directFlagAccessSiteOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "directFlagProgramTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/directFlagProgramTotal"
+      }
+    },
+    "directFlagProgramTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "directFlagTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/directFlagTotal"
+      }
+    },
+    "directFlagTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "directFlagStateSummary": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/directFlagStateSummary"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "directFlagReferenceWeights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount"
+      ],
+      "properties": {
+        "physicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "directFlagWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalProgramOccurrenceCount",
+        "physicalRecordWeightedSiteCount",
+        "setupRecordReferenceWeightedSiteCount",
+        "routeRecordReferenceWeightedSiteCount"
+      ],
+      "properties": {
+        "physicalProgramOccurrenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "directFlagAccessKindCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read",
+        "set",
+        "clear"
+      ],
+      "properties": {
+        "read": {
+          "$ref": "#/definitions/directFlagWeightCounts"
+        },
+        "set": {
+          "$ref": "#/definitions/directFlagWeightCounts"
+        },
+        "clear": {
+          "$ref": "#/definitions/directFlagWeightCounts"
+        }
+      }
+    },
+    "directFlagCategoryAccessKindCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "zoneEvents",
+        "itemEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "$ref": "#/definitions/directFlagAccessKindCounts"
+        },
+        "zoneEvents": {
+          "$ref": "#/definitions/directFlagAccessKindCounts"
+        },
+        "itemEvents": {
+          "$ref": "#/definitions/directFlagAccessKindCounts"
+        }
+      }
+    },
+    "directFlagConditionTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTargetSymbol",
+        "instructionTargetAddress",
+        "instructionTargetAddressLabels",
+        "effectiveTargetSymbol",
+        "effectiveTargetAddress",
+        "effectiveTargetAddressLabels",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTargetSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instructionTargetAddressLabels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetSourceOwnerLabel"
+          }
+        },
+        "effectiveTargetSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveTargetAddressLabels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetSourceOwnerLabel"
+          }
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "directFlagConditionConsumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "operationSourceOrder",
+        "sourceLine",
+        "address",
+        "sourceMnemonic",
+        "mnemonic",
+        "sizeSuffix",
+        "operandTexts",
+        "branchPolarity",
+        "target"
+      ],
+      "properties": {
+        "relation": {
+          "type": "string"
+        },
+        "operationSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceMnemonic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mnemonic": {
+          "enum": [
+            "beq",
+            "bne"
+          ]
+        },
+        "sizeSuffix": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                ".b",
+                ".w",
+                ".l",
+                ".s"
+              ]
+            }
+          ]
+        },
+        "operandTexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "branchPolarity": {
+          "enum": [
+            "equal",
+            "not-equal"
+          ]
+        },
+        "target": {
+          "$ref": "#/definitions/directFlagConditionTarget"
+        }
+      }
+    },
+    "directFlagAccessSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "accessKind",
+        "sourceMacro",
+        "definitionId",
+        "flagNumber",
+        "flagOperandText",
+        "programCanonicalSymbol",
+        "programEntryAddress",
+        "programOrder",
+        "sourcePath",
+        "operationSourceOrder",
+        "sourceLine",
+        "address",
+        "referenceWeights",
+        "conditionConsumer",
+        "siteOrder",
+        "programKey"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "accessKind": {
+          "enum": [
+            "read",
+            "set",
+            "clear"
+          ]
+        },
+        "sourceMacro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flagNumber": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "flagOperandText": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "programOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operationSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "referenceWeights": {
+          "$ref": "#/definitions/directFlagReferenceWeights"
+        },
+        "conditionConsumer": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/directFlagConditionConsumer"
+            }
+          ]
+        },
+        "siteOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "programKey": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "directFlagServiceDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accessKind",
+        "sourceMacro",
+        "definitionId",
+        "sourcePath",
+        "definitionSourceLine",
+        "trapOperand",
+        "flagOperandOrdinal",
+        "emissionStatementTemplates"
+      ],
+      "properties": {
+        "accessKind": {
+          "enum": [
+            "read",
+            "set",
+            "clear"
+          ]
+        },
+        "sourceMacro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "trapOperand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "flagOperandOrdinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "emissionStatementTemplates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "directFlagProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "programKey",
+        "programOrder",
+        "siteOrders",
+        "accessKindCounts"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "programKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "siteOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "accessKindCounts": {
+          "$ref": "#/definitions/directFlagAccessKindCounts"
+        }
+      }
+    },
+    "directFlagTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flagNumber",
+        "siteOrders",
+        "accessKindCounts",
+        "categoryAccessKindCounts"
+      ],
+      "properties": {
+        "flagNumber": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "siteOrders": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "accessKindCounts": {
+          "$ref": "#/definitions/directFlagAccessKindCounts"
+        },
+        "categoryAccessKindCounts": {
+          "$ref": "#/definitions/directFlagCategoryAccessKindCounts"
+        }
+      }
+    },
+    "directFlagReadConditionConsumerCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "immediateConditionConsumerCount",
+        "sourceMnemonicCounts",
+        "missingImmediateOperationCount",
+        "nonConditionalImmediateOperationCount",
+        "nonAdjacentImmediateOperationCount",
+        "unrecognizedConditionalMnemonicCount",
+        "missingTargetIdentityCount"
+      ],
+      "properties": {
+        "immediateConditionConsumerCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceMnemonicCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "beq.s",
+            "bne.s",
+            "bne.w"
+          ],
+          "properties": {
+            "beq.s": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bne.s": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bne.w": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "missingImmediateOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nonConditionalImmediateOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nonAdjacentImmediateOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unrecognizedConditionalMnemonicCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missingTargetIdentityCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "directFlagStateSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serviceDefinitionCount",
+        "directFlagAccessSiteCount",
+        "observedFlagCount",
+        "readFlagDomain",
+        "writeFlagDomain",
+        "readWriteOverlap",
+        "accessKindCounts",
+        "categoryAccessKindCounts",
+        "readConditionConsumerCounts"
+      ],
+      "properties": {
+        "serviceDefinitionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directFlagAccessSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedFlagCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "readFlagDomain": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "writeFlagDomain": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "readWriteOverlap": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "accessKindCounts": {
+          "$ref": "#/definitions/directFlagAccessKindCounts"
+        },
+        "categoryAccessKindCounts": {
+          "$ref": "#/definitions/directFlagCategoryAccessKindCounts"
+        },
+        "readConditionConsumerCounts": {
+          "$ref": "#/definitions/directFlagReadConditionConsumerCounts"
+        }
+      }
+    }
+  }
+}

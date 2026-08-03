@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-entity-programs.schema.json",
+  "title": "Map events entity-programs section",
+  "type": "object",
+  "required": [
+    "entityTargetProgramSummary",
+    "entityTargetPrograms",
+    "entityTargetProgramOrder",
+    "entityTargetProgramLabelOrders",
+    "entityTargetProgramOperationOrders",
+    "entityTargetProgramControlFlow",
+    "entityTargetProgramControlFlowTargetOrders",
+    "entityTargetProgramOperationWeightOrders",
+    "entityTargetProgramPayloadContextOrders"
+  ],
+  "properties": {
+    "entityTargetProgramSummary": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramSummary",
+      "type": "object"
+    },
+    "entityTargetPrograms": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgram"
+      }
+    },
+    "entityTargetProgramOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "entityTargetProgramLabelOrders": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramLabelOrder"
+      }
+    },
+    "entityTargetProgramOperationOrders": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramOperationOrder"
+      }
+    },
+    "entityTargetProgramControlFlow": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramControlFlow"
+    },
+    "entityTargetProgramControlFlowTargetOrders": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramControlFlowTargetOrders",
+      "type": "object"
+    },
+    "entityTargetProgramOperationWeightOrders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "entityTargetProgramPayloadContextOrders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
