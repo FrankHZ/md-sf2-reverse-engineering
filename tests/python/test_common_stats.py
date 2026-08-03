@@ -1,22 +1,33 @@
+import json
 import shutil
 from copy import deepcopy
 
 import pytest
 
+from sf2tool.h2 import stats as stats_module
 from sf2tool.h2.stats import (
     _combatant_clamp_contract,
     _combatant_distance_contract,
     _combatant_getter_contract,
     _combatant_mutation_contract,
+    _verify_stats_fixture_owner,
     build_stats_inventory,
+    verify_stats_inventory,
 )
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 from sf2tool.paths import repo_path
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 FIXTURE = repo_path("tests/fixtures/h2/common-stats-static-v1.json")
-OUTPUT_SCHEMA = repo_path("schemas/common-stats-static.schema.json")
-FIXTURE_SCHEMA = repo_path("schemas/h2-common-stats-static-fixture.schema.json")
+OUTPUT_SCHEMA = repo_path("schemas/h2/common-stats-output.schema.json")
+FIXTURE_SCHEMA = repo_path("schemas/h2/common-stats-fixture.schema.json")
+SOURCE_RECORD_SCHEMA = repo_path("schemas/h2/common-stats-source-record.schema.json")
+GETTERS_SCHEMA = repo_path("schemas/h2/common-stats-getters.schema.json")
+MUTATIONS_SCHEMA = repo_path("schemas/h2/common-stats-mutations.schema.json")
+CLAMPS_SCHEMA = repo_path("schemas/h2/common-stats-clamps.schema.json")
+DISTANCE_SCHEMA = repo_path("schemas/h2/common-stats-distance.schema.json")
+ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
+RESEARCH_INDEX = repo_path("manifests/research-index.json")
 MUTATION_ROUTINES = [
     "LoadAllyName",
     "SetClass",
@@ -82,6 +93,37 @@ CLAMP_ROUTINES = [
     "IncreaseAndClampLong",
     "DecreaseAndClampLong",
 ]
+
+
+def _canonical_fixture_owner_output() -> dict[str, object]:
+    fixture = load_json(FIXTURE)
+    representative_symbols = fixture["expected"]["representativeSymbols"]
+    return {
+        "upstream": {"commit": fixture["upstreamCommit"]},
+        "files": [
+            {
+                "path": f"code/common/stats/{relative}",
+                "globalLabels": [symbol],
+            }
+            for relative, symbol in representative_symbols.items()
+        ],
+        "statsFacts": fixture["expected"]["statsFacts"],
+        "alternateSources": fixture["expected"]["alternateSources"],
+    }
+
+
+def _assert_fixture_mutation_rejected(broken: dict[str, object], *, owner: str) -> None:
+    try:
+        validate_json(broken, FIXTURE_SCHEMA, owner=owner)
+    except ValueError:
+        return
+    with pytest.raises(ValueError, match="common stats"):
+        _verify_stats_fixture_owner(
+            broken,
+            _canonical_fixture_owner_output(),
+            rom_manifest=load_json(ROM_MANIFEST),
+            research_index=load_json(RESEARCH_INDEX),
+        )
 
 
 def _copy_getter_sources(tmp_path):
@@ -522,8 +564,7 @@ def test_combatant_distance_schema_rejects_deep_drift() -> None:
     def invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["statsFacts"]["combatantDistanceContract"])
-        with pytest.raises(ValueError, match="statsFacts"):
-            validate_json(broken, FIXTURE_SCHEMA, owner="statsFacts distance contract")
+        _assert_fixture_mutation_rejected(broken, owner="statsFacts distance contract")
 
     invalid(lambda value: value["sourceRange"].pop("endAddressExclusive"))
     invalid(lambda value: value["routineOperations"].reverse())
@@ -546,13 +587,12 @@ def test_combatant_distance_schema_rejects_deep_drift() -> None:
 
 def test_combatant_clamp_schema_rejects_complete_shape_drift() -> None:
     fixture = load_json(FIXTURE)
-    schema = load_json(FIXTURE_SCHEMA)
+    schema = load_json(CLAMPS_SCHEMA)
 
     def invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["statsFacts"]["combatantClampContract"])
-        with pytest.raises(ValueError, match="statsFacts"):
-            validate_json(broken, FIXTURE_SCHEMA, owner="statsFacts clamp contract")
+        _assert_fixture_mutation_rejected(broken, owner="statsFacts clamp contract")
 
     invalid(lambda value: value["routineOrder"].reverse())
     invalid(lambda value: value["routineAddresses"].__setitem__("IncreaseAndClampLong", 37851))
@@ -593,16 +633,15 @@ def test_combatant_clamp_schema_rejects_complete_shape_drift() -> None:
     invalid(lambda value: value["h3BoundaryCrossCheck"].pop("uncoveredHelpers"))
     invalid(lambda value: value["boundedFunctionOrder"].reverse())
     invalid(lambda value: value.__setitem__("unexpected", True))
-    output_schema = load_json(OUTPUT_SCHEMA)
-    assert (
-        output_schema["definitions"]["combatantClampFacts"]
-        == schema["definitions"]["combatantClampFacts"]
-    )
-    routine_operations = schema["definitions"]["combatantClampFacts"]["properties"][
-        "routineOperations"
-    ]
+    routine_operations = schema["properties"]["routineOperations"]
     assert all(
-        item["allOf"][0]["items"] == {"$ref": "#/definitions/combatantGetterInstructionRecord"}
+        item["allOf"][0]["items"]
+        == {
+            "$ref": (
+                "https://sf2-research.example/schemas/h2/"
+                "common-stats-source-record.schema.json"
+            )
+        }
         for item in routine_operations["properties"].values()
     )
 
@@ -785,13 +824,12 @@ def test_combatant_distance_caller_identity_change_fails_construction(tmp_path) 
 
 def test_combatant_mutation_schema_rejects_deep_drift() -> None:
     fixture = load_json(FIXTURE)
-    schema = load_json(FIXTURE_SCHEMA)
+    schema = load_json(MUTATIONS_SCHEMA)
 
     def invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["statsFacts"]["combatantMutationContract"])
-        with pytest.raises(ValueError, match="statsFacts"):
-            validate_json(broken, FIXTURE_SCHEMA, owner="statsFacts mutation contract")
+        _assert_fixture_mutation_rejected(broken, owner="statsFacts mutation contract")
 
     invalid(lambda value: value["wrappers"].pop("SetMoveOrders"))
     invalid(lambda value: value["routineOrder"].reverse())
@@ -832,15 +870,16 @@ def test_combatant_mutation_schema_rejects_deep_drift() -> None:
         )
     )
     invalid(lambda value: value.__setitem__("unexpected", True))
-    assert schema["definitions"]["combatantMutationFacts"]["additionalProperties"] is False
-    output_schema = load_json(OUTPUT_SCHEMA)
-    assert (
-        output_schema["definitions"]["combatantMutationFacts"]
-        == schema["definitions"]["combatantMutationFacts"]
-    )
-    corpus = schema["definitions"]["combatantMutationFacts"]["properties"]["routineOperations"]
+    assert schema["additionalProperties"] is False
+    corpus = schema["properties"]["routineOperations"]
     assert all(
-        item["allOf"][0]["items"] == {"$ref": "#/definitions/combatantGetterInstructionRecord"}
+        item["items"]
+        == {
+            "$ref": (
+                "https://sf2-research.example/schemas/h2/"
+                "common-stats-source-record.schema.json"
+            )
+        }
         for item in corpus["properties"].values()
     )
 
@@ -1000,13 +1039,9 @@ def test_composite_getter_guards_reject_copy_shift_and_mask_mutations(
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
-def test_combatant_getter_schemas_are_shared_closed_and_reject_drift() -> None:
+def test_combatant_getter_component_is_shared_closed_and_rejects_drift() -> None:
     fixture = load_json(FIXTURE)
-    output_schema = load_json(OUTPUT_SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    for definition in ("combatantGetterInstructionRecord", "combatantGetterFacts"):
-        assert output_schema["definitions"][definition] == fixture_schema["definitions"][definition]
-    facts = output_schema["definitions"]["combatantGetterFacts"]
+    facts = load_json(GETTERS_SCHEMA)
     assert facts["additionalProperties"] is False
     assert facts["properties"]["entryAddressAbi"]["additionalProperties"] is False
     assert facts["properties"]["getters"]["additionalProperties"] is False
@@ -1014,8 +1049,7 @@ def test_combatant_getter_schemas_are_shared_closed_and_reject_drift() -> None:
     def invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["statsFacts"]["combatantGetterContract"])
-        with pytest.raises(ValueError, match="statsFacts"):
-            validate_json(broken, FIXTURE_SCHEMA, owner="statsFacts getter contract")
+        _assert_fixture_mutation_rejected(broken, owner="statsFacts getter contract")
 
     invalid(lambda value: value.pop("routineOrder"))
     invalid(lambda value: value["getters"].pop("GetEnemy"))
@@ -1039,7 +1073,7 @@ def test_combatant_getter_schemas_are_shared_closed_and_reject_drift() -> None:
     )
 
 
-def test_combatant_stats_sibling_contracts_remain_mirrored() -> None:
+def test_combatant_stats_roots_reuse_the_same_structural_components() -> None:
     fixture = load_json(FIXTURE)
     assert set(fixture["expected"]["statsFacts"]) == {
         "flags",
@@ -1056,16 +1090,108 @@ def test_combatant_stats_sibling_contracts_remain_mirrored() -> None:
     }
     output_schema = load_json(OUTPUT_SCHEMA)
     fixture_schema = load_json(FIXTURE_SCHEMA)
-    for definition in (
-        "combatantGetterFacts",
-        "combatantMutationFacts",
-        "combatantClampFacts",
-        "combatantDistanceFacts",
-    ):
-        assert definition in output_schema["definitions"]
-        assert definition in fixture_schema["definitions"]
-        assert output_schema["definitions"][definition] == fixture_schema["definitions"][definition]
-    assert (
-        output_schema["definitions"]["combatantGetterInstructionRecord"]
-        == fixture_schema["definitions"]["combatantGetterInstructionRecord"]
-    )
+    assert "definitions" not in output_schema
+    assert "definitions" not in fixture_schema
+    component_refs = {
+        "combatantGetterContract": (
+            "https://sf2-research.example/schemas/h2/common-stats-getters.schema.json"
+        ),
+        "combatantMutationContract": (
+            "https://sf2-research.example/schemas/h2/common-stats-mutations.schema.json"
+        ),
+        "combatantClampContract": (
+            "https://sf2-research.example/schemas/h2/common-stats-clamps.schema.json"
+        ),
+        "combatantDistanceContract": (
+            "https://sf2-research.example/schemas/h2/common-stats-distance.schema.json"
+        ),
+    }
+    output_facts = output_schema["properties"]["statsFacts"]["properties"]
+    fixture_facts = fixture_schema["properties"]["expected"]["properties"]["statsFacts"][
+        "properties"
+    ]
+    for field, reference in component_refs.items():
+        assert output_facts[field] == {"$ref": reference}
+        assert fixture_facts[field] == {"$ref": reference}
+
+
+def test_common_stats_function_address_golden_is_owned_outside_schema() -> None:
+    fixture = load_json(FIXTURE)
+    broken = deepcopy(fixture)
+    broken["function"]["updateForceAddress"] += 2
+    validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid function-address mutation")
+    with pytest.raises(ValueError, match="common stats function binding drift"):
+        _verify_stats_fixture_owner(
+            broken,
+            _canonical_fixture_owner_output(),
+            rom_manifest=load_json(ROM_MANIFEST),
+            research_index=load_json(RESEARCH_INDEX),
+        )
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_common_stats_verifier_rejects_schema_valid_function_drift_before_write(
+    tmp_path, monkeypatch
+) -> None:
+    broken = deepcopy(load_json(FIXTURE))
+    broken["function"]["updateForceAddress"] += 2
+    fixture_path = tmp_path / "common-stats.json"
+    fixture_path.write_text(json.dumps(broken, indent=2) + "\n", encoding="utf-8")
+    validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid function-address mutation")
+
+    output_path = tmp_path / "output.json"
+    monkeypatch.setattr(stats_module, "FIXTURE", fixture_path)
+    with pytest.raises(ValueError, match="common stats function binding drift"):
+        verify_stats_inventory(UPSTREAM, output_path=output_path)
+    assert not output_path.exists()
+
+
+def test_common_stats_function_binding_rejects_index_address_and_owner_drift() -> None:
+    fixture = load_json(FIXTURE)
+    output = _canonical_fixture_owner_output()
+    rom_manifest = load_json(ROM_MANIFEST)
+
+    wrong_address = deepcopy(load_json(RESEARCH_INDEX))
+    party = next(record for record in wrong_address["records"] if record["id"] == "stats.party")
+    party["addresses"][0]["value"] += 2
+    with pytest.raises(ValueError, match="common stats function binding drift"):
+        _verify_stats_fixture_owner(
+            fixture,
+            output,
+            rom_manifest=rom_manifest,
+            research_index=wrong_address,
+        )
+
+    wrong_owner = deepcopy(load_json(RESEARCH_INDEX))
+    party = next(record for record in wrong_owner["records"] if record["id"] == "stats.party")
+    party["evidence"][0]["verifier"] = "src/sf2tool/h2/other.py"
+    with pytest.raises(ValueError, match="common stats research-index evidence owner drift"):
+        _verify_stats_fixture_owner(
+            fixture,
+            output,
+            rom_manifest=rom_manifest,
+            research_index=wrong_owner,
+        )
+
+
+def test_common_stats_schema_composition_audit_stays_local_and_golden_free() -> None:
+    schema_paths = [
+        SOURCE_RECORD_SCHEMA,
+        GETTERS_SCHEMA,
+        MUTATIONS_SCHEMA,
+        CLAMPS_SCHEMA,
+        DISTANCE_SCHEMA,
+        OUTPUT_SCHEMA,
+        FIXTURE_SCHEMA,
+    ]
+    report = schema_composition_audit(schema_paths)
+
+    assert report["schemaCount"] == 7
+    assert report["totalSizeBytes"] < 1_100_000
+    assert report["constCount"] == 4
+    assert report["largeConstCount"] == 0
+    assert report["referencedResourceCount"] == 5
+    assert report["unresolvedReferences"] == []
+    assert report["duplicateBodyGroups"] == []
+    components = report["files"][:5]
+    assert all(component["constCount"] == 0 for component in components)

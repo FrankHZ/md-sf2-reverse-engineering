@@ -1,0 +1,6335 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-stats-getters.schema.json",
+  "title": "Common stats getter contract shape",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sourcePath",
+    "sourceRange",
+    "routineOrder",
+    "routineAddresses",
+    "constants",
+    "routineOperations",
+    "entryAddressAbi",
+    "getters",
+    "jumpInterfaceAliases",
+    "internalDirectCallerOccurrences",
+    "internalEffectiveDirectCallSiteCounts",
+    "externalDirectCallerOccurrences",
+    "externalEffectiveDirectCallSiteCounts",
+    "staticBoundary"
+  ],
+  "properties": {
+    "sourcePath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "startAddress",
+        "endAddressExclusive",
+        "physicalSpanBytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endAddressExclusive": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalSpanBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "routineOrder": {
+      "type": "array",
+      "minItems": 31,
+      "maxItems": 31
+    },
+    "routineAddresses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "GetCombatantName",
+        "GetClass",
+        "GetLevel",
+        "GetMaxHp",
+        "GetCurrentHp",
+        "GetMaxMp",
+        "GetCurrentMp",
+        "GetBaseAtt",
+        "GetCurrentAtt",
+        "GetBaseDef",
+        "GetCurrentDef",
+        "GetBaseAgi",
+        "GetCurrentAgi",
+        "GetBaseMov",
+        "GetCurrentMov",
+        "GetBaseResistance",
+        "GetCurrentResistance",
+        "GetBaseProwess",
+        "GetCurrentProwess",
+        "GetStatusEffects",
+        "GetCombatantX",
+        "GetCombatantY",
+        "GetCurrentExp",
+        "GetMovetype",
+        "GetAiCommandset",
+        "GetMoveOrders",
+        "GetTriggerRegions",
+        "GetActivationBitfield",
+        "GetEnemy",
+        "GetKills",
+        "GetDefeats"
+      ],
+      "properties": {
+        "GetCombatantName": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetClass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetLevel": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMaxHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMaxMp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentMp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseAtt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentAtt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseDef": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentDef": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseAgi": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentAgi": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseMov": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentMov": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseResistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentResistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseProwess": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentProwess": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetStatusEffects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantY": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentExp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMovetype": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetAiCommandset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMoveOrders": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetTriggerRegions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEnemy": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetKills": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetDefeats": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "constants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "COMBATANT_BIT_ENEMY",
+        "ALLYNAME_CHARACTERS_COUNTER",
+        "NIBBLE_SHIFT_COUNT",
+        "BYTE_SHIFT_COUNT",
+        "BYTE_LOWER_NIBBLE_MASK",
+        "BYTE_MASK",
+        "COMBATANT_ALLIES_SPACE_END_MINUS_ONE",
+        "COMBATANT_ENEMIES_START",
+        "COMBATANT_ENEMIES_SPACE_END",
+        "COMBATANT_ENEMIES_START_MINUS_ALLIES_SPACE_END",
+        "COMBATANT_OFFSET_CLASS",
+        "COMBATANT_OFFSET_LEVEL",
+        "COMBATANT_OFFSET_HP_MAX",
+        "COMBATANT_OFFSET_HP_CURRENT",
+        "COMBATANT_OFFSET_MP_MAX",
+        "COMBATANT_OFFSET_MP_CURRENT",
+        "COMBATANT_OFFSET_ATT_BASE",
+        "COMBATANT_OFFSET_ATT_CURRENT",
+        "COMBATANT_OFFSET_DEF_BASE",
+        "COMBATANT_OFFSET_DEF_CURRENT",
+        "COMBATANT_OFFSET_AGI_BASE",
+        "COMBATANT_OFFSET_AGI_CURRENT",
+        "COMBATANT_OFFSET_MOV_BASE",
+        "COMBATANT_OFFSET_MOV_CURRENT",
+        "COMBATANT_OFFSET_RESIST_BASE",
+        "COMBATANT_OFFSET_RESIST_CURRENT",
+        "COMBATANT_OFFSET_PROWESS_BASE",
+        "COMBATANT_OFFSET_PROWESS_CURRENT",
+        "COMBATANT_OFFSET_STATUSEFFECTS",
+        "COMBATANT_OFFSET_X",
+        "COMBATANT_OFFSET_Y",
+        "COMBATANT_OFFSET_EXP",
+        "COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET",
+        "COMBATANT_OFFSET_MOVE_ORDERS",
+        "COMBATANT_OFFSET_TRIGGER_REGIONS",
+        "COMBATANT_OFFSET_ACTIVATION_BITFIELD",
+        "COMBATANT_OFFSET_ENEMY_INDEX",
+        "COMBATANT_OFFSET_ALLY_KILLS",
+        "COMBATANT_OFFSET_ALLY_DEFEATS"
+      ],
+      "properties": {
+        "COMBATANT_BIT_ENEMY": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ALLYNAME_CHARACTERS_COUNTER": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "NIBBLE_SHIFT_COUNT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "BYTE_SHIFT_COUNT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "BYTE_LOWER_NIBBLE_MASK": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "BYTE_MASK": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_ALLIES_SPACE_END_MINUS_ONE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_ENEMIES_START": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_ENEMIES_SPACE_END": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_ENEMIES_START_MINUS_ALLIES_SPACE_END": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_CLASS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_LEVEL": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_HP_MAX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_HP_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_MP_MAX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_MP_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_ATT_BASE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_ATT_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_DEF_BASE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_DEF_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_AGI_BASE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_AGI_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_MOV_BASE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_MOV_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_RESIST_BASE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_RESIST_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_PROWESS_BASE": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_PROWESS_CURRENT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_STATUSEFFECTS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_X": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_Y": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_EXP": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_MOVETYPE_AND_AI_COMMANDSET": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_MOVE_ORDERS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_TRIGGER_REGIONS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_ACTIVATION_BITFIELD": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_ENEMY_INDEX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_ALLY_KILLS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "COMBATANT_OFFSET_ALLY_DEFEATS": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "routineOperations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "GetCombatantName",
+        "GetClass",
+        "GetLevel",
+        "GetMaxHp",
+        "GetCurrentHp",
+        "GetMaxMp",
+        "GetCurrentMp",
+        "GetBaseAtt",
+        "GetCurrentAtt",
+        "GetBaseDef",
+        "GetCurrentDef",
+        "GetBaseAgi",
+        "GetCurrentAgi",
+        "GetBaseMov",
+        "GetCurrentMov",
+        "GetBaseResistance",
+        "GetCurrentResistance",
+        "GetBaseProwess",
+        "GetCurrentProwess",
+        "GetStatusEffects",
+        "GetCombatantX",
+        "GetCombatantY",
+        "GetCurrentExp",
+        "GetMovetype",
+        "GetAiCommandset",
+        "GetMoveOrders",
+        "GetTriggerRegions",
+        "GetActivationBitfield",
+        "GetEnemy",
+        "GetKills",
+        "GetDefeats"
+      ],
+      "properties": {
+        "GetCombatantName": {
+          "type": "array",
+          "minItems": 17,
+          "maxItems": 17
+        },
+        "GetClass": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetLevel": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetMaxHp": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentHp": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetMaxMp": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentMp": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetBaseAtt": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentAtt": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetBaseDef": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentDef": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetBaseAgi": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentAgi": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetBaseMov": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentMov": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetBaseResistance": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentResistance": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetBaseProwess": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCurrentProwess": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetStatusEffects": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetCombatantX": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "GetCombatantY": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "GetCurrentExp": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetMovetype": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7
+        },
+        "GetAiCommandset": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "GetMoveOrders": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "GetTriggerRegions": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "GetActivationBitfield": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetEnemy": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10
+        },
+        "GetKills": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "GetDefeats": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        }
+      }
+    },
+    "entryAddressAbi": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "routines"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "routines": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetCombatantEntryAddress",
+            "GetCombatantByte",
+            "GetCombatantWord"
+          ],
+          "properties": {
+            "GetCombatantEntryAddress": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "routineAddress",
+                "operations",
+                "validRoutes",
+                "errorRoutes",
+                "addressCalculation",
+                "errorHandling"
+              ],
+              "properties": {
+                "routineAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "operations": {
+                  "type": "array",
+                  "minItems": 25,
+                  "maxItems": 25
+                },
+                "validRoutes": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "ally",
+                    "enemy"
+                  ],
+                  "properties": {
+                    "ally": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "enemyThresholdComparisonInstructionIndex",
+                        "enemyThresholdBranchInstructionIndex",
+                        "enemyThresholdBranchTarget",
+                        "enemyThresholdBranchTaken",
+                        "upperBoundComparisonInstructionIndex",
+                        "errorBranchInstructionIndex",
+                        "errorBranchTarget",
+                        "errorBranchTaken",
+                        "addressBranchInstructionIndex",
+                        "addressBranchTarget"
+                      ],
+                      "properties": {
+                        "enemyThresholdComparisonInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "enemyThresholdBranchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "enemyThresholdBranchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "enemyThresholdBranchTaken": {
+                          "type": "boolean"
+                        },
+                        "upperBoundComparisonInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "errorBranchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "errorBranchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "errorBranchTaken": {
+                          "type": "boolean"
+                        },
+                        "addressBranchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "addressBranchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "enemy": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "enemyThresholdComparisonInstructionIndex",
+                        "enemyThresholdBranchInstructionIndex",
+                        "enemyThresholdBranchTarget",
+                        "enemyThresholdBranchTaken",
+                        "upperBoundComparisonInstructionIndex",
+                        "errorBranchInstructionIndex",
+                        "errorBranchTarget",
+                        "errorBranchTaken",
+                        "indexAdjustmentInstructionIndex"
+                      ],
+                      "properties": {
+                        "enemyThresholdComparisonInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "enemyThresholdBranchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "enemyThresholdBranchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "enemyThresholdBranchTaken": {
+                          "type": "boolean"
+                        },
+                        "upperBoundComparisonInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "errorBranchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "errorBranchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "errorBranchTaken": {
+                          "type": "boolean"
+                        },
+                        "indexAdjustmentInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  }
+                },
+                "errorRoutes": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "allyAboveUpperBound",
+                    "enemyAboveUpperBound"
+                  ],
+                  "properties": {
+                    "allyAboveUpperBound": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "comparisonInstructionIndex",
+                        "branchInstructionIndex",
+                        "branchTarget",
+                        "branchTaken"
+                      ],
+                      "properties": {
+                        "comparisonInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "branchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "branchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "branchTaken": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "enemyAboveUpperBound": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "comparisonInstructionIndex",
+                        "branchInstructionIndex",
+                        "branchTarget",
+                        "branchTaken"
+                      ],
+                      "properties": {
+                        "comparisonInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "branchInstructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "branchTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "branchTaken": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                },
+                "addressCalculation": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "selectorMaskConstant",
+                    "selectorMaskValue",
+                    "selectorMaskInstructionIndex",
+                    "leftShiftCount",
+                    "leftShiftInstructionIndexes",
+                    "copyInstructionIndex",
+                    "subtractInstructionIndex",
+                    "entryStrideBytes",
+                    "baseLoadInstructionIndex",
+                    "addressAddInstructionIndex",
+                    "restoreInstructionIndex",
+                    "terminalInstructionIndex"
+                  ],
+                  "properties": {
+                    "selectorMaskConstant": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "selectorMaskValue": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "selectorMaskInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "leftShiftCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "leftShiftInstructionIndexes": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "copyInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "subtractInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "entryStrideBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "baseLoadInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "addressAddInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "restoreInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "terminalInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "errorHandling": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "restoreInstructionIndex",
+                    "errorCodeWriteInstructionIndex",
+                    "errorReturnAddressWriteInstructionIndex",
+                    "trapInstructionIndex",
+                    "vintFunctionArgumentInstructionIndex",
+                    "vintArgumentInstructionIndex",
+                    "infiniteLoopInstructionIndex",
+                    "infiniteLoopTarget"
+                  ],
+                  "properties": {
+                    "restoreInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "errorCodeWriteInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "errorReturnAddressWriteInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "trapInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "vintFunctionArgumentInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "vintArgumentInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "infiniteLoopInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "infiniteLoopTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            },
+            "GetCombatantByte": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "routineAddress",
+                "operations",
+                "entryAddressCallInstructionIndex",
+                "read",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "routineAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "operations": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "entryAddressCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "read": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "zeroInitializationInstructionIndex",
+                    "readInstructionIndex",
+                    "readOpcode",
+                    "sourceOperand",
+                    "destinationRegister"
+                  ],
+                  "properties": {
+                    "zeroInitializationInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "readInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "readOpcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sourceOperand": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "destinationRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "GetCombatantWord": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "routineAddress",
+                "operations",
+                "entryAddressCallInstructionIndex",
+                "read",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "routineAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "operations": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "entryAddressCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "read": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "readInstructionIndex",
+                    "readOpcode",
+                    "sourceOperand",
+                    "destinationRegister"
+                  ],
+                  "properties": {
+                    "readInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "readOpcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sourceOperand": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "destinationRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "getters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "GetClass",
+        "GetLevel",
+        "GetMaxHp",
+        "GetCurrentHp",
+        "GetMaxMp",
+        "GetCurrentMp",
+        "GetBaseAtt",
+        "GetCurrentAtt",
+        "GetBaseDef",
+        "GetCurrentDef",
+        "GetBaseAgi",
+        "GetCurrentAgi",
+        "GetBaseMov",
+        "GetCurrentMov",
+        "GetBaseResistance",
+        "GetCurrentResistance",
+        "GetBaseProwess",
+        "GetCurrentProwess",
+        "GetStatusEffects",
+        "GetCombatantX",
+        "GetCombatantY",
+        "GetCurrentExp",
+        "GetMovetype",
+        "GetAiCommandset",
+        "GetMoveOrders",
+        "GetTriggerRegions",
+        "GetActivationBitfield",
+        "GetKills",
+        "GetDefeats",
+        "GetCombatantName",
+        "GetEnemy"
+      ],
+      "properties": {
+        "GetClass": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetLevel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetMaxHp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentHp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetMaxMp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentMp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetBaseAtt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentAtt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetBaseDef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentDef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetBaseAgi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentAgi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetBaseMov": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentMov": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetBaseResistance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentResistance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetBaseProwess": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentProwess": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetStatusEffects": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCombatantX": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex",
+                "signExtendInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "signExtendInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCombatantY": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex",
+                "signExtendInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "signExtendInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCurrentExp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetMovetype": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return",
+            "highNibble"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "outputRegister",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "outputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "highNibble": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceRegister",
+                "outputRegister",
+                "mask",
+                "shift"
+              ],
+              "properties": {
+                "sourceRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "outputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mask": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "constant",
+                    "value",
+                    "instructionIndex"
+                  ],
+                  "properties": {
+                    "constant": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "shift": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "constant",
+                    "value",
+                    "instructionIndex"
+                  ],
+                  "properties": {
+                    "constant": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "GetAiCommandset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return",
+            "lowNibble"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "outputRegister",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "outputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "lowNibble": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceRegister",
+                "outputRegister",
+                "mask"
+              ],
+              "properties": {
+                "sourceRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "outputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mask": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "constant",
+                    "value",
+                    "instructionIndex"
+                  ],
+                  "properties": {
+                    "constant": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "value": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "GetMoveOrders": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return",
+            "splitValue"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "primaryOutputRegister",
+                "secondaryOutputRegister",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "primaryOutputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "secondaryOutputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "splitValue": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "copy",
+                "highByte",
+                "lowByte"
+              ],
+              "properties": {
+                "copy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceRegister",
+                    "destinationRegister",
+                    "instructionIndex"
+                  ],
+                  "properties": {
+                    "sourceRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "destinationRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "highByte": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceRegister",
+                    "outputRegister",
+                    "mask",
+                    "shift"
+                  ],
+                  "properties": {
+                    "sourceRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "outputRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mask": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "constant",
+                        "value",
+                        "instructionIndex"
+                      ],
+                      "properties": {
+                        "constant": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "shift": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "constant",
+                        "value",
+                        "instructionIndex"
+                      ],
+                      "properties": {
+                        "constant": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  }
+                },
+                "lowByte": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceRegister",
+                    "outputRegister",
+                    "mask"
+                  ],
+                  "properties": {
+                    "sourceRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "outputRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mask": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "constant",
+                        "value",
+                        "instructionIndex"
+                      ],
+                      "properties": {
+                        "constant": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "GetTriggerRegions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return",
+            "splitValue"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "primaryOutputRegister",
+                "secondaryOutputRegister",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "primaryOutputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "secondaryOutputRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "splitValue": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "copy",
+                "highNibble",
+                "lowNibble"
+              ],
+              "properties": {
+                "copy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceRegister",
+                    "destinationRegister",
+                    "instructionIndex"
+                  ],
+                  "properties": {
+                    "sourceRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "destinationRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "highNibble": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceRegister",
+                    "outputRegister",
+                    "mask",
+                    "shift"
+                  ],
+                  "properties": {
+                    "sourceRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "outputRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mask": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "constant",
+                        "value",
+                        "instructionIndex"
+                      ],
+                      "properties": {
+                        "constant": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    },
+                    "shift": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "constant",
+                        "value",
+                        "instructionIndex"
+                      ],
+                      "properties": {
+                        "constant": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  }
+                },
+                "lowNibble": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "sourceRegister",
+                    "outputRegister",
+                    "mask"
+                  ],
+                  "properties": {
+                    "sourceRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "outputRegister": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "mask": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "constant",
+                        "value",
+                        "instructionIndex"
+                      ],
+                      "properties": {
+                        "constant": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instructionIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "GetActivationBitfield": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetKills": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetDefeats": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "field",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "entryAddressAbi"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "entryAddressAbi": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "field": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "constant",
+                "value",
+                "loadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "constant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "loadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetCombatantName": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "allyNameSource",
+            "enemyNameSource",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "enemyBitTestInstructionIndex",
+                "enemyBranchInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enemyBitTestInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enemyBranchInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "allyNameSource": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "entryAddressCallInstructionIndex",
+                "lengthCounterConstant",
+                "lengthCounterValue",
+                "lengthCounterInitializationInstructionIndex",
+                "lengthZeroInitializationInstructionIndex",
+                "byteTestInstructionIndex",
+                "breakBranchInstructionIndex",
+                "incrementInstructionIndex",
+                "lengthLoopInstructionIndex",
+                "doneBranchInstructionIndex"
+              ],
+              "properties": {
+                "entryAddressCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lengthCounterConstant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "lengthCounterValue": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lengthCounterInitializationInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lengthZeroInitializationInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "byteTestInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "breakBranchInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "incrementInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "lengthLoopInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "doneBranchInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "enemyNameSource": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "enemyIndexCallInstructionIndex",
+                "nameTableLoadInstructionIndex",
+                "findNameCallInstructionIndex"
+              ],
+              "properties": {
+                "enemyIndexCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "nameTableLoadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "findNameCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "addressRegister",
+                "lengthRegister",
+                "restoreInstructionIndex",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "addressRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "lengthRegister": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "restoreInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "GetEnemy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routineAddress",
+            "selector",
+            "nonEnemy",
+            "enemy",
+            "return"
+          ],
+          "properties": {
+            "routineAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selector": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "enemyBitTestInstructionIndex",
+                "enemyBranchInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enemyBitTestInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enemyBranchInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "nonEnemy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minusOneResultInstructionIndex",
+                "terminalInstructionIndex",
+                "sourceUnreachableBranchInstructionIndex"
+              ],
+              "properties": {
+                "minusOneResultInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceUnreachableBranchInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "enemy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fieldConstant",
+                "fieldValue",
+                "fieldLoadInstructionIndex",
+                "helperCallInstructionIndex",
+                "helper",
+                "readWidthBits"
+              ],
+              "properties": {
+                "fieldConstant": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "fieldValue": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "fieldLoadInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helperCallInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "helper": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "readWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "widthBits",
+                "restoreInstructionIndex",
+                "terminalInstructionIndex"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "widthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "restoreInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminalInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "jumpInterfaceAliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_GetActivationBitfield",
+        "j_GetBaseAgi",
+        "j_GetBaseAtt",
+        "j_GetBaseDef",
+        "j_GetBaseMov",
+        "j_GetBaseProwess",
+        "j_GetBaseResistance",
+        "j_GetClass",
+        "j_GetCombatantName",
+        "j_GetCombatantX",
+        "j_GetCombatantY",
+        "j_GetCurrentAgi",
+        "j_GetCurrentAtt",
+        "j_GetCurrentDef",
+        "j_GetCurrentExp",
+        "j_GetCurrentHp",
+        "j_GetCurrentMov",
+        "j_GetCurrentMp",
+        "j_GetCurrentProwess",
+        "j_GetCurrentResistance",
+        "j_GetDefeats",
+        "j_GetEnemy",
+        "j_GetKills",
+        "j_GetLevel",
+        "j_GetMaxHp",
+        "j_GetMaxMp",
+        "j_GetMoveOrders",
+        "j_GetMovetype",
+        "j_GetStatusEffects",
+        "j_GetTriggerRegions"
+      ],
+      "properties": {
+        "j_GetActivationBitfield": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetBaseAgi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetBaseAtt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetBaseDef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetBaseMov": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetBaseProwess": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetBaseResistance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetClass": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCombatantName": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCombatantX": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCombatantY": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentAgi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentAtt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentDef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentExp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentHp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentMov": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentMp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentProwess": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetCurrentResistance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetDefeats": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetEnemy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetKills": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetLevel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetMaxHp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetMaxMp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetMoveOrders": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetMovetype": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetStatusEffects": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "j_GetTriggerRegions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "internalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/stats/combatantstats_1.asm"
+      ],
+      "properties": {
+        "code/common/stats/combatantstats_1.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "internalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "GetCombatantName",
+        "GetClass",
+        "GetLevel",
+        "GetMaxHp",
+        "GetCurrentHp",
+        "GetMaxMp",
+        "GetCurrentMp",
+        "GetBaseAtt",
+        "GetCurrentAtt",
+        "GetBaseDef",
+        "GetCurrentDef",
+        "GetBaseAgi",
+        "GetCurrentAgi",
+        "GetBaseMov",
+        "GetCurrentMov",
+        "GetBaseResistance",
+        "GetCurrentResistance",
+        "GetBaseProwess",
+        "GetCurrentProwess",
+        "GetStatusEffects",
+        "GetCombatantX",
+        "GetCombatantY",
+        "GetCurrentExp",
+        "GetMovetype",
+        "GetAiCommandset",
+        "GetMoveOrders",
+        "GetTriggerRegions",
+        "GetActivationBitfield",
+        "GetEnemy",
+        "GetKills",
+        "GetDefeats"
+      ],
+      "properties": {
+        "GetCombatantName": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetClass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetLevel": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMaxHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMaxMp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentMp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseAtt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentAtt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseDef": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentDef": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseAgi": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentAgi": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseMov": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentMov": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseResistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentResistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseProwess": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentProwess": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetStatusEffects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantY": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentExp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMovetype": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetAiCommandset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMoveOrders": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetTriggerRegions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEnemy": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetKills": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetDefeats": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "externalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/blacksmith/blacksmithactions.asm",
+        "code/common/menus/caravan/caravanactions_1.asm",
+        "code/common/menus/church/churchactions_1.asm",
+        "code/common/menus/church/churchactions_2.asm",
+        "code/common/menus/equipmenu.asm",
+        "code/common/menus/getallyportrait.asm",
+        "code/common/menus/item/fielditemeffects.asm",
+        "code/common/menus/main/mainactions.asm",
+        "code/common/menus/memberscreen.asm",
+        "code/common/menus/memberslistscreen.asm",
+        "code/common/menus/ministatuswindow.asm",
+        "code/common/menus/nameallyscreen.asm",
+        "code/common/menus/nameunderportraitwindow.asm",
+        "code/common/menus/unusedsub_156A8.asm",
+        "code/common/menus/writememberlisttext.asm",
+        "code/common/scripting/entity/entityfunctions_1.asm",
+        "code/common/scripting/entity/getallymapsprite.asm",
+        "code/common/scripting/entity/getcombatantmapsprite.asm",
+        "code/common/scripting/map/headquartersfunctions.asm",
+        "code/common/scripting/map/mapscriptengine_1.asm",
+        "code/common/scripting/map/mapscriptengine_2.asm",
+        "code/common/scripting/map/resetalliesstats.asm",
+        "code/common/scripting/text/textfunctions_1.asm",
+        "code/common/stats/combatantstats_3.asm",
+        "code/common/stats/getcombatanttype.asm",
+        "code/common/stats/items/fielditemeffects.asm",
+        "code/common/stats/levelup.asm",
+        "code/common/stats/newgame.asm",
+        "code/common/stats/updatecombatantstats.asm",
+        "code/gameflow/battle/ai/command/attack.asm",
+        "code/gameflow/battle/ai/command/attack/adjusttargetpriority.asm",
+        "code/gameflow/battle/ai/command/attack/determinebattleaction.asm",
+        "code/gameflow/battle/ai/command/attack/prioritizetargets.asm",
+        "code/gameflow/battle/ai/command/attack/targetprioritizationhelperfunctions.asm",
+        "code/gameflow/battle/ai/command/heal.asm",
+        "code/gameflow/battle/ai/command/heal/calculatehealtargetpriority.asm",
+        "code/gameflow/battle/ai/command/heal/determinehealingspelllevel.asm",
+        "code/gameflow/battle/ai/command/heal/doescombatantrequirehealing.asm",
+        "code/gameflow/battle/ai/command/heal/iscombatantatlessthanhalfhp.asm",
+        "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
+        "code/gameflow/battle/ai/command/move.asm",
+        "code/gameflow/battle/ai/command/moveorder.asm",
+        "code/gameflow/battle/ai/command/moveorder/buildmovestringformoveorder.asm",
+        "code/gameflow/battle/ai/command/support.asm",
+        "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm",
+        "code/gameflow/battle/ai/determineaistandbymovement_1.asm",
+        "code/gameflow/battle/ai/determineaistandbymovement_2.asm",
+        "code/gameflow/battle/ai/gethighestusablespelllevel.asm",
+        "code/gameflow/battle/ai/iscombatantconfused.asm",
+        "code/gameflow/battle/ai/movementhelperfunctions.asm",
+        "code/gameflow/battle/ai/startaicontrol.asm",
+        "code/gameflow/battle/battleactions/animateaction.asm",
+        "code/gameflow/battle/battleactions/battleactionsengine_2.asm",
+        "code/gameflow/battle/battleactions/calculatedamage.asm",
+        "code/gameflow/battle/battleactions/calculatespelldamage.asm",
+        "code/gameflow/battle/battleactions/castspell.asm",
+        "code/gameflow/battle/battleactions/createbattlesceneanimation.asm",
+        "code/gameflow/battle/battleactions/createbattlescenemessage.asm",
+        "code/gameflow/battle/battleactions/determinecriticalhit.asm",
+        "code/gameflow/battle/battleactions/determinedodge.asm",
+        "code/gameflow/battle/battleactions/determinedoubleandcounter.asm",
+        "code/gameflow/battle/battleactions/determineineffectiveattack.asm",
+        "code/gameflow/battle/battleactions/dropenemyitem.asm",
+        "code/gameflow/battle/battleactions/earnexp.asm",
+        "code/gameflow/battle/battleactions/getresistancetospell.asm",
+        "code/gameflow/battle/battleactions/getspellanimation.asm",
+        "code/gameflow/battle/battleactions/inflictailment.asm",
+        "code/gameflow/battle/battleactions/inflictcursedamage.asm",
+        "code/gameflow/battle/battleactions/inflictdamage.asm",
+        "code/gameflow/battle/battleactions/initbattlesceneproperties.asm",
+        "code/gameflow/battle/battleactions/isabletocounterattack.asm",
+        "code/gameflow/battle/battleactions/sorttargets.asm",
+        "code/gameflow/battle/battlefield/battlefieldengine.asm",
+        "code/gameflow/battle/battlefield/buildactionrangegrids.asm",
+        "code/gameflow/battle/battlefield/buildtargetsarray.asm",
+        "code/gameflow/battle/battlefield/checkfortrappedchest.asm",
+        "code/gameflow/battle/battlefield/determineattackpositionformoveorder.asm",
+        "code/gameflow/battle/battlefield/getactionrange.asm",
+        "code/gameflow/battle/battlefield/getmoveorderposition.asm",
+        "code/gameflow/battle/battlefield/getmovestringdestination.asm",
+        "code/gameflow/battle/battlefield/getreachabletargets.asm",
+        "code/gameflow/battle/battlefield/initializemovementarrays.asm",
+        "code/gameflow/battle/battlefield/populatetargetslist.asm",
+        "code/gameflow/battle/battlefield/updatemovablegrid.asm",
+        "code/gameflow/battle/battlefield/updateoccupiedterrainfunctions.asm",
+        "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+        "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+        "code/gameflow/battle/battlefunctions/battlefunctions_3.asm",
+        "code/gameflow/battle/battlefunctions/executeindividualturn.asm",
+        "code/gameflow/battle/battleloop/activateenemies.asm",
+        "code/gameflow/battle/battleloop/countremainingcombatants.asm",
+        "code/gameflow/battle/battleloop/heallivingandimmortalallies.asm",
+        "code/gameflow/battle/battleloop/initializecombatants.asm",
+        "code/gameflow/battle/battleloop/killallenemies.asm",
+        "code/gameflow/battle/battleloop/populateenemyspawns.asm",
+        "code/gameflow/battle/battleloop/processafterturneffects.asm",
+        "code/gameflow/battle/battleloop/triggerregions.asm",
+        "code/gameflow/battle/battleloop/turnorderfunctions.asm",
+        "code/gameflow/battle/battleloop/upgradeenemies.asm",
+        "code/gameflow/battle/battleloop_2.asm",
+        "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+        "code/gameflow/battle/battlescenes/battlesceneengine_1.asm",
+        "code/gameflow/battle/battlescenes/battlesceneengine_2.asm",
+        "code/gameflow/battle/battlescenes/getbattlescenebackground.asm",
+        "code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm",
+        "code/gameflow/battle/cutscenes/battleendcutscenesend.asm",
+        "code/gameflow/battle/cutscenes/battleendcutscenesstart.asm",
+        "code/gameflow/battle/getlaserfacing.asm",
+        "code/gameflow/special/battletest.asm"
+      ],
+      "properties": {
+        "code/common/menus/blacksmith/blacksmithactions.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/menus/caravan/caravanactions_1.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/menus/church/churchactions_1.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/common/menus/church/churchactions_2.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/common/menus/equipmenu.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/common/menus/getallyportrait.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/menus/item/fielditemeffects.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/common/menus/main/mainactions.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/menus/memberscreen.asm": {
+          "type": "array",
+          "minItems": 15,
+          "maxItems": 15
+        },
+        "code/common/menus/memberslistscreen.asm": {
+          "type": "array",
+          "minItems": 11,
+          "maxItems": 11
+        },
+        "code/common/menus/ministatuswindow.asm": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7
+        },
+        "code/common/menus/nameallyscreen.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/menus/nameunderportraitwindow.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/common/menus/unusedsub_156A8.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/menus/writememberlisttext.asm": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "code/common/scripting/entity/entityfunctions_1.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/common/scripting/entity/getallymapsprite.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/common/scripting/entity/getcombatantmapsprite.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/scripting/map/headquartersfunctions.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/scripting/map/mapscriptengine_1.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/common/scripting/map/mapscriptengine_2.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/common/scripting/map/resetalliesstats.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/common/scripting/text/textfunctions_1.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/stats/combatantstats_3.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/common/stats/getcombatanttype.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/common/stats/items/fielditemeffects.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/common/stats/levelup.asm": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8
+        },
+        "code/common/stats/newgame.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/common/stats/updatecombatantstats.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/ai/command/attack.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/attack/adjusttargetpriority.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/attack/determinebattleaction.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/attack/prioritizetargets.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/ai/command/attack/targetprioritizationhelperfunctions.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/heal.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/ai/command/heal/calculatehealtargetpriority.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/heal/determinehealingspelllevel.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/ai/command/heal/doescombatantrequirehealing.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/heal/iscombatantatlessthanhalfhp.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/command/move.asm": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "code/gameflow/battle/ai/command/moveorder.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/ai/command/moveorder/buildmovestringformoveorder.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/ai/command/support.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/ai/command/support/prioritizetargetsforsupportspells.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/determineaistandbymovement_1.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/ai/determineaistandbymovement_2.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/ai/gethighestusablespelllevel.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/ai/iscombatantconfused.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/ai/movementhelperfunctions.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/ai/startaicontrol.asm": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7
+        },
+        "code/gameflow/battle/battleactions/animateaction.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/battleactionsengine_2.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/calculatedamage.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleactions/calculatespelldamage.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/castspell.asm": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "code/gameflow/battle/battleactions/createbattlesceneanimation.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleactions/createbattlescenemessage.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/determinecriticalhit.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/determinedodge.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleactions/determinedoubleandcounter.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/determineineffectiveattack.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/dropenemyitem.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/earnexp.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/battleactions/getresistancetospell.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battleactions/getspellanimation.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleactions/inflictailment.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleactions/inflictcursedamage.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleactions/inflictdamage.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleactions/initbattlesceneproperties.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleactions/isabletocounterattack.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleactions/sorttargets.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefield/battlefieldengine.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefield/buildactionrangegrids.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefield/buildtargetsarray.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/battlefield/checkfortrappedchest.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefield/determineattackpositionformoveorder.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefield/getactionrange.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefield/getmoveorderposition.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefield/getmovestringdestination.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefield/getreachabletargets.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefield/initializemovementarrays.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefield/populatetargetslist.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefield/updatemovablegrid.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefield/updateoccupiedterrainfunctions.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlefunctions/battlefunctions_0.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefunctions/battlefunctions_2.asm": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "code/gameflow/battle/battlefunctions/battlefunctions_3.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlefunctions/executeindividualturn.asm": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8
+        },
+        "code/gameflow/battle/battleloop/activateenemies.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleloop/countremainingcombatants.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleloop/heallivingandimmortalallies.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/battleloop/initializecombatants.asm": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8
+        },
+        "code/gameflow/battle/battleloop/killallenemies.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleloop/populateenemyspawns.asm": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "code/gameflow/battle/battleloop/processafterturneffects.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleloop/triggerregions.asm": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "code/gameflow/battle/battleloop/turnorderfunctions.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battleloop/upgradeenemies.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battleloop_2.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlescenes/battlesceneengine_0.asm": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "code/gameflow/battle/battlescenes/battlesceneengine_1.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/battle/battlescenes/battlesceneengine_2.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/battlescenes/getbattlescenebackground.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/cutscenes/battleendcutscenesend.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/cutscenes/battleendcutscenesstart.asm": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code/gameflow/battle/getlaserfacing.asm": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "code/gameflow/special/battletest.asm": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6
+        }
+      }
+    },
+    "externalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "GetCombatantName",
+        "GetClass",
+        "GetLevel",
+        "GetMaxHp",
+        "GetCurrentHp",
+        "GetMaxMp",
+        "GetCurrentMp",
+        "GetBaseAtt",
+        "GetCurrentAtt",
+        "GetBaseDef",
+        "GetCurrentDef",
+        "GetBaseAgi",
+        "GetCurrentAgi",
+        "GetBaseMov",
+        "GetCurrentMov",
+        "GetBaseResistance",
+        "GetCurrentResistance",
+        "GetBaseProwess",
+        "GetCurrentProwess",
+        "GetStatusEffects",
+        "GetCombatantX",
+        "GetCombatantY",
+        "GetCurrentExp",
+        "GetMovetype",
+        "GetAiCommandset",
+        "GetMoveOrders",
+        "GetTriggerRegions",
+        "GetActivationBitfield",
+        "GetEnemy",
+        "GetKills",
+        "GetDefeats"
+      ],
+      "properties": {
+        "GetCombatantName": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetClass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetLevel": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMaxHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMaxMp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentMp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseAtt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentAtt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseDef": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentDef": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseAgi": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentAgi": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseMov": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentMov": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseResistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentResistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetBaseProwess": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentProwess": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetStatusEffects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantY": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentExp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMovetype": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetAiCommandset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetMoveOrders": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetTriggerRegions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEnemy": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetKills": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetDefeats": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "staticBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerVisibleMeaning",
+        "callerAndRuntimeOutcome",
+        "setterAndClampFollowup"
+      ],
+      "properties": {
+        "callerVisibleMeaning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerAndRuntimeOutcome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "setterAndClampFollowup": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

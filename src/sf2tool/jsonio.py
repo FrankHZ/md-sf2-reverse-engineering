@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from functools import cache
 from pathlib import Path
@@ -121,6 +122,108 @@ def build_schema_registry(schema_root: Path) -> SchemaRegistry:
 def tracked_schema_registry() -> SchemaRegistry:
     """Return the immutable registry for tracked project schemas."""
     return build_schema_registry(SCHEMA_ROOT)
+
+
+def schema_composition_audit(
+    schema_paths: list[Path],
+    *,
+    registry: SchemaRegistry | None = None,
+    large_const_bytes: int = 1024,
+) -> dict[str, Any]:
+    """Report reusable-schema composition without treating file size as correctness."""
+    active_registry = tracked_schema_registry() if registry is None else registry
+    files: list[dict[str, Any]] = []
+    unresolved_references: list[dict[str, str]] = []
+    body_owners: dict[str, list[str]] = {}
+    referenced_resources: set[str] = set()
+
+    for schema_path in schema_paths:
+        schema = load_json(schema_path)
+        const_count = 0
+        const_payload_bytes = 0
+        large_const_count = 0
+
+        def visit(
+            value: Any,
+            *,
+            base_uri: str = "",
+            owner: str = str(schema_path),
+        ) -> None:
+            nonlocal const_count, const_payload_bytes, large_const_count
+            if isinstance(value, list):
+                for item in value:
+                    visit(item, base_uri=base_uri)
+                return
+            if not isinstance(value, dict):
+                return
+
+            schema_id = value.get("$id")
+            if isinstance(schema_id, str):
+                base_uri = urljoin(base_uri, schema_id)
+            if "const" in value:
+                payload_size = len(
+                    json.dumps(
+                        value["const"],
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                )
+                const_count += 1
+                const_payload_bytes += payload_size
+                large_const_count += payload_size >= large_const_bytes
+            reference = value.get("$ref")
+            if isinstance(reference, str) and not reference.startswith("#"):
+                resolved_reference = urljoin(base_uri, reference)
+                resource_uri, _ = urldefrag(resolved_reference)
+                referenced_resources.add(resource_uri)
+                try:
+                    active_registry[resource_uri]
+                except NoSuchResource:
+                    unresolved_references.append(
+                        {"owner": owner, "reference": resolved_reference}
+                    )
+            for key, child in value.items():
+                if key != "const":
+                    visit(child, base_uri=base_uri)
+
+        visit(schema)
+        structural_body = {
+            key: value
+            for key, value in schema.items()
+            if key not in {"$schema", "$id", "title", "description"}
+        }
+        digest = hashlib.sha256(
+            json.dumps(
+                structural_body,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        body_owners.setdefault(digest, []).append(str(schema_path))
+        files.append(
+            {
+                "path": str(schema_path),
+                "sizeBytes": schema_path.stat().st_size,
+                "constCount": const_count,
+                "constPayloadBytes": const_payload_bytes,
+                "largeConstCount": large_const_count,
+            }
+        )
+
+    return {
+        "schemaCount": len(files),
+        "totalSizeBytes": sum(item["sizeBytes"] for item in files),
+        "constCount": sum(item["constCount"] for item in files),
+        "constPayloadBytes": sum(item["constPayloadBytes"] for item in files),
+        "largeConstCount": sum(item["largeConstCount"] for item in files),
+        "referencedResourceCount": len(referenced_resources),
+        "unresolvedReferences": unresolved_references,
+        "duplicateBodyGroups": [
+            owners for owners in body_owners.values() if len(owners) > 1
+        ],
+        "files": files,
+    }
 
 
 def validate_json(

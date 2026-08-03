@@ -33,9 +33,9 @@ ALTERNATE_SOURCES = {
     ),
 }
 MANIFEST = repo_path("manifests/extractions/common-stats-static.json")
-SCHEMA = repo_path("schemas/common-stats-static.schema.json")
+SCHEMA = repo_path("schemas/h2/common-stats-output.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/common-stats-static-v1.json")
-FIXTURE_SCHEMA = repo_path("schemas/h2-common-stats-static-fixture.schema.json")
+FIXTURE_SCHEMA = repo_path("schemas/h2/common-stats-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 
@@ -2751,6 +2751,73 @@ def build_stats_inventory(upstream_path: Path) -> dict[str, Any]:
     }
 
 
+def _verify_stats_fixture_owner(
+    fixture: dict[str, Any],
+    output: dict[str, Any],
+    *,
+    rom_manifest: dict[str, Any],
+    research_index: dict[str, Any],
+) -> None:
+    """Keep exact common-stats evidence outside the reusable shape schemas."""
+    if (
+        fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("common stats provenance drift")
+
+    expected_functions: dict[str, tuple[int, str, str]] = {}
+    for record in research_index["records"]:
+        addresses = {address["id"]: address for address in record.get("addresses", [])}
+        for evidence in record.get("evidence", []):
+            if evidence.get("fixtureId") != ID:
+                continue
+            if (
+                evidence.get("fixture") != "tests/fixtures/h2/common-stats-static-v1.json"
+                or evidence.get("verifier") != "src/sf2tool/h2/stats.py"
+            ):
+                raise ValueError("common stats research-index evidence owner drift")
+            for binding in evidence.get("bindings", []):
+                fixture_field = binding.get("fixtureField", "")
+                if not fixture_field.startswith("function.") or fixture_field.count(".") != 1:
+                    raise ValueError("common stats research-index function binding drift")
+                field = fixture_field.removeprefix("function.")
+                address = addresses.get(binding.get("addressId"))
+                if (
+                    field in expected_functions
+                    or address is None
+                    or address.get("space") != "rom"
+                    or address.get("kind") != "symbol"
+                ):
+                    raise ValueError("common stats research-index function binding drift")
+                expected_functions[field] = (
+                    address["value"],
+                    record["sourcePath"],
+                    record["symbol"],
+                )
+
+    if set(expected_functions) != set(fixture["function"]):
+        raise ValueError("common stats function binding coverage drift")
+    representative_symbols = fixture["expected"]["representativeSymbols"]
+    for field, (address, source_path, symbol) in expected_functions.items():
+        relative = Path(source_path).relative_to(SOURCE_ROOT).as_posix()
+        if (
+            fixture["function"][field] != address
+            or representative_symbols.get(relative) != symbol
+        ):
+            raise ValueError(f"common stats function binding drift: {field}")
+
+    by_relative = {
+        Path(row["path"]).relative_to(SOURCE_ROOT).as_posix(): row for row in output["files"]
+    }
+    for relative, symbol in representative_symbols.items():
+        if relative not in by_relative or symbol not in by_relative[relative]["globalLabels"]:
+            raise ValueError(f"common stats symbol drift: {relative}::{symbol}")
+    if output["statsFacts"] != fixture["expected"]["statsFacts"]:
+        raise ValueError("common stats model drift")
+    if output["alternateSources"] != fixture["expected"]["alternateSources"]:
+        raise ValueError("common stats alternate-source drift")
+
+
 def verify_stats_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -2759,23 +2826,14 @@ def verify_stats_inventory(
     manifest = load_json(MANIFEST)
     output = build_stats_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="common stats static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
-    ):
-        raise ValueError("common stats provenance drift")
+    _verify_stats_fixture_owner(
+        fixture,
+        output,
+        rom_manifest=load_json(ROM_MANIFEST),
+        research_index=load_json(RESEARCH_INDEX),
+    )
     if output["summary"] != manifest["summary"]:
         raise ValueError("common stats summary drift")
-    by_relative = {
-        Path(row["path"]).relative_to(SOURCE_ROOT).as_posix(): row for row in output["files"]
-    }
-    for relative, symbol in fixture["expected"]["representativeSymbols"].items():
-        if symbol not in by_relative[relative]["globalLabels"]:
-            raise ValueError(f"common stats symbol drift: {relative}::{symbol}")
-    if output["statsFacts"] != fixture["expected"]["statsFacts"]:
-        raise ValueError("common stats model drift")
-    if output["alternateSources"] != fixture["expected"]["alternateSources"]:
-        raise ValueError("common stats alternate-source drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("common stats canonical hash drift")

@@ -36,9 +36,11 @@ derived stats. The settings pass clears flags, deals, and caravan and sets messa
 `c834c652b6862bc5679fd7f69a38a7093206efc6` supplies all 31 global entries from
 `code/common/stats/combatantstats_1.asm:GetCombatantName` (`0x82D0`) through `GetDefeats`
 in one 586-byte physical interval (`0x82D0..0x851A`). The exact fixture
-`sf2-common-stats-static-v1`, `src/sf2tool/h2/stats.py`, both mirrored schemas, and
-`tests/python/test_common_stats.py` retain every routine's complete instruction/local-label corpus,
-H1 address, offset use-site, lower helper, width, terminal, aliases, and instruction-scoped callers.
+`sf2-common-stats-static-v1`, `src/sf2tool/h2/stats.py`, the shared structural components under
+`schemas/h2/common-stats-*.schema.json`, and `tests/python/test_common_stats.py` retain every
+routine's complete instruction/local-label corpus, H1 address, offset use-site, lower helper, width,
+terminal, aliases, and instruction-scoped callers. Exact values and order belong to the fixture and
+owner verifier rather than being duplicated as schema `const` payloads.
 Reproduce with `uv run sf2 h2 common-stats`; observed 2026-07-22 canonical SHA-256 is
 `E9A59AD35815F78345CBB35BED7DE21521AC4E4C6C44E5227BDF64DD07517D76`.
 
@@ -92,8 +94,9 @@ zero-site helper cannot be reached indirectly or at runtime.
 
 The output contract is `statsFacts.combatantClampContract` in fixture
 `tests/fixtures/h2/common-stats-static-v1.json` under fixture ID `sf2-common-stats-static-v1`; its
-strict mirrored output/fixture schemas and focused tests retain every operation, H1 boundary, caller
-target identity/site count, and existing H3 boundary. Reproduce with `uv run sf2 h2 common-stats`.
+shared closed component schema, exact fixture/verifier comparison, and focused tests retain every
+operation, H1 boundary, caller target identity/site count, and existing H3 boundary. Reproduce with
+`uv run sf2 h2 common-stats`.
 
 ### H3 Runtime-Question Queue
 

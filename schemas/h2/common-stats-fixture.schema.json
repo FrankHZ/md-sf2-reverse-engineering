@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-stats-fixture.schema.json",
+  "title": "SF2 common stats static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "upstreamCommit",
+    "function",
+    "expected"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-common-stats-static-v1"
+    },
+    "romSha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "upstreamCommit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "function": {
+      "type": "object",
+      "minProperties": 12,
+      "maxProperties": 12,
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "representativeSymbols",
+        "statsFacts",
+        "alternateSources"
+      ],
+      "properties": {
+        "representativeSymbols": {
+          "type": "object",
+          "minProperties": 20,
+          "maxProperties": 20
+        },
+        "statsFacts": {
+          "type": "object",
+          "minProperties": 11,
+          "maxProperties": 11,
+          "required": [
+            "combatantGetterContract",
+            "combatantMutationContract",
+            "combatantClampContract",
+            "combatantDistanceContract"
+          ],
+          "properties": {
+            "combatantGetterContract": {
+              "$ref": "https://sf2-research.example/schemas/h2/common-stats-getters.schema.json"
+            },
+            "combatantMutationContract": {
+              "$ref": "https://sf2-research.example/schemas/h2/common-stats-mutations.schema.json"
+            },
+            "combatantClampContract": {
+              "$ref": "https://sf2-research.example/schemas/h2/common-stats-clamps.schema.json"
+            },
+            "combatantDistanceContract": {
+              "$ref": "https://sf2-research.example/schemas/h2/common-stats-distance.schema.json"
+            }
+          }
+        },
+        "alternateSources": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    }
+  }
+}
